@@ -1,5 +1,5 @@
-import { Redis } from 'ioredis';
-import { Kysely } from 'kysely';
+import { type Redis } from 'ioredis';
+import { type Kysely } from 'kysely';
 import { type Database } from '../plugins/db.js';
 import { DirectusRetryService } from './directus-retry.service.js';
 import { type FastifyBaseLogger } from 'fastify';
@@ -7,14 +7,16 @@ import { type FastifyBaseLogger } from 'fastify';
 export interface RegistrationUpdateMetadata {
     registrationId: string | number;
     registrationType: string;
-    paymentType?: string; // 'deposit' | 'final' for trips
+    paymentType?: string;
 }
 
+const COLLECTION_MAP = new Map<string, keyof Database>([
+    ['event_signup', 'event_signups'],
+    ['pub_crawl_signup', 'pub_crawl_signups'],
+    ['trip_signup', 'trip_signups']
+]);
+
 export class RegistrationService {
-    /**
-     * Updates the registration status in both Directus (via retry queue)
-     * and the PostgreSQL database directly for immediate consistency.
-     */
     static async updateStatus(
         db: Kysely<Database>,
         redis: Redis,
@@ -28,13 +30,7 @@ export class RegistrationService {
             return;
         }
 
-        const collectionMap = new Map<string, string>([
-            ['event_signup', 'event_signups'],
-            ['pub_crawl_signup', 'pub_crawl_signups'],
-            ['trip_signup', 'trip_signups']
-        ]);
-
-        const targetCollection = collectionMap.get(registrationType);
+        const targetCollection = COLLECTION_MAP.get(registrationType);
         if (!targetCollection) {
             log.warn(`[RegistrationService] Unknown registration type: ${registrationType}`);
             return;
@@ -57,15 +53,14 @@ export class RegistrationService {
         }
 
         try {
-            await db.updateTable(targetCollection as keyof Database)
+            await db.updateTable(targetCollection)
                 .set(updateData as never)
                 .where('id' as never, '=', Number(registrationId) as never)
                 .execute();
 
             log.info(`[RegistrationService] Direct SQL update success for ${targetCollection} ${registrationId}`);
 
-            // 2. Queue Directus Update for shadow-write and retry-safety
-            await DirectusRetryService.queueUpdate(redis, targetCollection, registrationId, updateData);
+            await DirectusRetryService.queueUpdate(redis, targetCollection as string, registrationId, updateData);
             log.info(`[RegistrationService] Queued Directus update for ${targetCollection} ${registrationId}`);
         } catch (error) {
             log.error(error, `[RegistrationService] Failed to update registration ${registrationId}`);

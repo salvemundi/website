@@ -1,45 +1,39 @@
 import { safeConsoleError, logInfo } from '../utils/logger.js';
-import { Redis } from 'ioredis';
-import fetch from 'isomorphic-fetch';
+import { type Redis } from 'ioredis';
 import { GraphService } from './graph.service.js';
 import { TokenService } from './token.service.js';
+import { z } from 'zod';
 
-interface ProvisionTask {
-    email: string;
-    firstName: string;
-    lastName: string;
-    phoneNumber?: string;
-    dateOfBirth?: string;
-    retries: number;
-    maxRetries: number;
-}
+export const ProvisionTaskSchema = z.object({
+    email: z.string(),
+    firstName: z.string(),
+    lastName: z.string(),
+    phoneNumber: z.string().optional(),
+    dateOfBirth: z.string().optional(),
+    retries: z.number(),
+    maxRetries: z.number()
+});
+
+type ProvisionTask = z.infer<typeof ProvisionTaskSchema>;
 
 export class ProvisionWorkerService {
     private static readonly QUEUE_KEY = 'v7:queue:provision:new_user';
     private static shouldStop = false;
 
-    /**
-     * Queues a provisioning task in Redis.
-     */
     static async queueProvisioning(redis: Redis, data: Omit<ProvisionTask, 'retries' | 'maxRetries'>) {
         const task: ProvisionTask = {
             ...data,
             retries: 0,
             maxRetries: 10
         };
-        // Use zadd for scheduled/retryable tasks
         await redis.zadd(this.QUEUE_KEY, Date.now(), JSON.stringify(task));
     }
 
-    /**
-     * Starts the worker loop.
-     */
     static async start(redis: Redis) {
         logInfo('[ProvisionWorker] Starting worker loop...');
 
         while (!this.shouldStop) {
             try {
-                // 1. Fetch tasks that are due
                 const tasks = await redis.zrangebyscore(this.QUEUE_KEY, 0, Date.now(), 'LIMIT', 0, 5);
 
                 if (tasks.length === 0) {
@@ -49,23 +43,37 @@ export class ProvisionWorkerService {
 
                 for (const taskJson of tasks) {
                     if (this.shouldStop) break;
-                    const task: ProvisionTask = JSON.parse(taskJson);
+
+                    let taskRaw: unknown;
+                    try {
+                        taskRaw = JSON.parse(taskJson);
+                    } catch (_err) {
+                        await redis.zrem(this.QUEUE_KEY, taskJson);
+                        continue;
+                    }
+
+                    const parsed = ProvisionTaskSchema.safeParse(taskRaw);
+                    if (!parsed.success) {
+                        await redis.zrem(this.QUEUE_KEY, taskJson);
+                        continue;
+                    }
+
+                    const task = parsed.data;
 
                     try {
                         const normalize = (str: string) => {
                             return str
                                 .toLowerCase()
                                 .normalize('NFD')
-                                .replace(/[\u0300-\u036f]/g, '') // Remove accents/diacritics
-                                .replace(/[^a-z0-9]/g, '.')    // Replace non-alphanumeric with dots
-                                .replace(/\.+/g, '.')          // Remove consecutive dots
+                                .replace(/[\u0300-\u036f]/g, '')
+                                .replace(/[^a-z0-9]/g, '.')
+                                .replace(/\.+/g, '.')
                                 .trim();
                         };
 
                         const upnPrefix = `${normalize(task.firstName)}.${normalize(task.lastName)}`.replace(/\.+/g, '.').replace(/^\.|\.$/g, '');
 
-                        // 2. Create User in Azure
-                        const token = await TokenService.getAccessToken();
+                        const token = await TokenService.getAccessToken(redis);
                         const upn = await GraphService.generateUniqueUpn(upnPrefix, token);
 
                         logInfo(`[ProvisionWorker] Provisioning ${task.email} as ${upn}...`);
@@ -82,7 +90,7 @@ export class ProvisionWorkerService {
                             task.firstName,
                             task.lastName,
                             token,
-                            task.email, // Passing original email as personalEmail
+                            task.email,
                             task.phoneNumber,
                             task.dateOfBirth,
                             paymentDate,
@@ -91,17 +99,14 @@ export class ProvisionWorkerService {
 
                         logInfo(`[ProvisionWorker] Azure account created for ${task.email}`);
 
-                        // 2.1 Add to 'Leden_Actief_Lidmaatschap' group
                         const activeGroupId = process.env.AZURE_ACTIVE_LID_GROUP_ID || '2e17c12a-28d6-49ae-981a-8b5b8d88db8a';
                         try {
                             logInfo(`[ProvisionWorker] Adding user to group ${activeGroupId}...`);
                             await GraphService.addGroupMember(activeGroupId, result.id, token);
                         } catch (groupErr: any) {
                             safeConsoleError(`[ProvisionWorker][addGroupMember] Failed to add user to active lid group: ${groupErr.message}`);
-                            // We don't fail the whole task if this fails, but it's worth logging
-                        } 
+                        }
 
-                        // 3. Sync to Directus (Strict Seqential: Sync BEFORE Mail)
                         if (process.env.AZURE_SYNC_SERVICE_URL) {
                             logInfo(`[ProvisionWorker] Triggering immediate sync for Entra ID ${result.id}...`);
                             const syncRes = await fetch(`${process.env.AZURE_SYNC_SERVICE_URL}/api/sync/run/${encodeURIComponent(result.id)}`, {
@@ -116,7 +121,6 @@ export class ProvisionWorkerService {
                             logInfo(`[ProvisionWorker] Sync completed for ${task.email}`);
                         }
 
-                        // 4. Queue Welcome Email (ONLY after azure + sync success)
                         logInfo(`[ProvisionWorker] Sending combined welcome & payment email to ${task.email}...`);
 
                         const mailRes = await fetch(`${process.env.MAIL_SERVICE_URL}/api/mail/send`, {
@@ -141,28 +145,24 @@ export class ProvisionWorkerService {
                         if (!mailRes.ok) throw new Error(`Mail service failed: ${mailRes.statusText}`);
                         logInfo(`[ProvisionWorker][${task.email}] Welcome email successful.`);
 
-                        // Success -> Remove task
                         await redis.zrem(this.QUEUE_KEY, taskJson);
                     } catch (error: any) {
                         safeConsoleError(`[ProvisionWorker][${task.email}] Failed:`, error.message);
 
-                        // If user already exists, we consider it "Success" (or at least done)
                         if (error.message?.includes('already exists') || error.status === 409) {
                             logInfo(`[ProvisionWorker][${task.email}] User already exists. Removing task.`);
                             await redis.zrem(this.QUEUE_KEY, taskJson);
                             continue;
                         }
 
-                        // Retry logic
                         task.retries += 1;
                         await redis.zrem(this.QUEUE_KEY, taskJson);
 
                         if (task.retries < task.maxRetries) {
-                            const delay = 30000 * Math.pow(task.retries, 2); // 30s, 2m, 4.5m...
+                            const delay = 30000 * Math.pow(task.retries, 2);
                             await redis.zadd(this.QUEUE_KEY, Date.now() + delay, JSON.stringify(task));
                         } else {
                             safeConsoleError(`[ProvisionWorker][${task.email}] Max retries reached.`);
-                            // Graceful failure logging: create a system_log in Directus
                             try {
                                 const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL;
                                 const directusToken = process.env.DIRECTUS_STATIC_TOKEN;

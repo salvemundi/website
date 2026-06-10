@@ -1,17 +1,23 @@
 import { safeConsoleError } from '../utils/logger.js';
-const DIRECTUS_URL = process.env.DIRECTUS_SERVICE_URL || '';
-const STATIC_TOKEN = process.env.DIRECTUS_STATIC_TOKEN || '';
 
 export class AuditService {
+    private static getDirectusConfig() {
+        const url = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
+        const token = process.env.DIRECTUS_STATIC_TOKEN || '';
+        return { url, token };
+    }
+
     static async logMail(to: string, templateId: string, status: 'SUCCESS' | 'FAILED', error?: string) {
-        if (!STATIC_TOKEN) return;
+        const { url, token } = this.getDirectusConfig();
+
+        if (!token || !url) return;
 
         try {
-            await fetch(`${DIRECTUS_URL}/items/system_logs`, {
+            await fetch(`${url}/items/system_logs`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${STATIC_TOKEN}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     type: 'email',

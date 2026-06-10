@@ -1,16 +1,9 @@
 import { DirectusService } from '../directus.service.js';
 import { GraphService } from '../graph.service.js';
-import { DbCommittee as Committee, DbDirectusUser as DirectusUser, DbCommitteeMember as CommitteeMember } from '@salvemundi/validations';
+import { type DbCommittee as Committee, type DbDirectusUser as DirectusUser, type DbCommitteeMember as CommitteeMember } from '@salvemundi/validations';
 import { GROUP_ACTIVE_LID, GROUP_EXPIRED_LID } from './sync-types.js';
 
-/**
- * SyncCache: Beheert het ophalen en structureren van gegevens uit Directus en Azure AD 
- * om de synchronisatie te versnellen door bulk-fetches en caching.
- */
 export class SyncCache {
-    /**
-     * Haalt alle commissies op en bouwt caches op ID en Azure Group ID.
-     */
     static async getCommittees() {
         const committees = (await DirectusService.getAllCommittees()) as unknown as Committee[];
         const committeeCache = new Map<string, Committee>();
@@ -26,9 +19,6 @@ export class SyncCache {
         return { committees, committeeCache, committeeByIdCache };
     }
 
-    /**
-     * Haalt alle Directus gebruikers op en bouwt een cache op Entra ID.
-     */
     static async getUsers() {
         const allLeden = (await DirectusService.getAllUsers()) as unknown as DirectusUser[];
         const userCacheByEntra = new Map<string, DirectusUser>();
@@ -73,9 +63,6 @@ export class SyncCache {
         return mainMembershipState;
     }
 
-    /**
-     * Bouwt de volledige commissie-lidmaatschapsmap op basis van Azure AD groepsdetails.
-     */
     static async getAzureMembershipMap(relevantAzureGroupIds: string[], committeeCache: Map<string, Committee>, token: string) {
         const groupDetails = await GraphService.getBatchGroupDetails(relevantAzureGroupIds, token);
         const membershipMap = new Map<string, Map<number, boolean>>();
@@ -85,14 +72,12 @@ export class SyncCache {
             if (!dComm || typeof dComm.id !== 'number') continue;
             const committeeId = dComm.id;
 
-            // 1. Process explicit members
             for (const memberId of details.members) {
                 const userMap = membershipMap.get(memberId) || new Map<number, boolean>();
                 userMap.set(committeeId, details.owners.includes(memberId));
                 membershipMap.set(memberId, userMap);
             }
 
-            // 2. Process owners (ensure they are treated as members and leaders)
             for (const ownerId of details.owners) {
                 const userMap = membershipMap.get(ownerId) || new Map<number, boolean>();
                 if (!userMap.has(committeeId)) {

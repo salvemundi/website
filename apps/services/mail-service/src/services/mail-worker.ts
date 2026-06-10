@@ -1,5 +1,5 @@
 import { safeConsoleError } from '../utils/logger.js';
-import { Redis } from 'ioredis';
+import { type Redis } from 'ioredis';
 import { MailerService } from './mailer.js';
 import { AuditService } from './audit.js';
 import { z } from 'zod';
@@ -16,7 +16,7 @@ export type MailTask = z.infer<typeof MailTaskSchema>;
 
 export class MailWorkerService {
     private static readonly QUEUE_KEY = 'mail_queue';
-    private static shouldStop: boolean = false;
+    private static shouldStop = false;
 
     static async queueMail(redis: Redis, to: string, templateId: string, data: Record<string, unknown>) {
         const task: MailTask = {
@@ -46,7 +46,7 @@ export class MailWorkerService {
 
                     let parsedResult: unknown;
                     try {
-                        parsedResult = JSON.parse(taskJson) as unknown;
+                        parsedResult = JSON.parse(taskJson);
                     } catch (err) {
                         safeConsoleError('[mail-worker.ts][startWorker]', err);
                         await redis.zrem(this.QUEUE_KEY, taskJson);
@@ -77,7 +77,7 @@ export class MailWorkerService {
                         task.retries += 1;
                         if (task.retries >= task.maxRetries) {
                             await redis.zrem(this.QUEUE_KEY, taskJson);
-                            await AuditService.logMail(task.to, task.templateId, 'FAILED', `Max retries reached`);
+                            await AuditService.logMail(task.to, task.templateId, 'FAILED', 'Max retries reached');
                         } else {
                             const delay = 60000 * Math.pow(task.retries, 2);
                             const newScore = Date.now() + delay;
@@ -89,9 +89,9 @@ export class MailWorkerService {
                 }
             } catch (error: unknown) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
-                const isConnectionFailure = 
-                    errorMessage.includes('Connection is closed') || 
-                    errorMessage.includes('ECONNREFUSED') || 
+                const isConnectionFailure =
+                    errorMessage.includes('Connection is closed') ||
+                    errorMessage.includes('ECONNREFUSED') ||
                     errorMessage.includes('ENOTFOUND');
 
                 if (isConnectionFailure) {

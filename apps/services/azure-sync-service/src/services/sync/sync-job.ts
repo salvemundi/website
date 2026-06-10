@@ -1,11 +1,11 @@
 import { safeConsoleError, logInfo } from '../../utils/logger.js';
-import { GraphService, AzureUser } from '../graph.service.js';
+import { GraphService, type AzureUser } from '../graph.service.js';
 import { TokenService } from '../token.service.js';
-import { Redis } from 'ioredis';
+import { type Redis } from 'ioredis';
 import { db } from '../../plugins/db.js';
 import { sql } from 'kysely';
 import {
-    SyncStatus, SyncOptions, SyncContext,
+    type SyncStatus, type SyncOptions, type SyncContext,
     SYNC_REDIS_KEY, SYNC_ABORT_KEY, GROUP_ACTIVE_LID,
     getInitialStatus
 } from './sync-types.js';
@@ -14,23 +14,16 @@ import { SyncProcessor } from './sync-processor.js';
 import { SyncCache } from './sync-cache.js';
 
 export class SyncJob {
-    /**
-     * Returns the current status of the sync job.
-     */
     static async getStatus(redis: Redis): Promise<SyncStatus> {
         return await getSyncStatus(redis);
     }
 
-    /**
-     * Entry point for a full bulk synchronization.
-     */
     static async run(redis: Redis, options: SyncOptions = { fields: [] }) {
         const jobId = Math.random().toString(36).substring(2, 11);
         if (!options.fields?.length) {
             options.fields = ['status', 'membership_status', 'membership_expiry', 'committees', 'profile_photo', 'geboortedatum', 'phone_number', 'originele_betaaldatum'];
         }
 
-        // 1. Mutex: prevent duplicate runs
         const current = await getSyncStatus(redis);
         if (current.active && current.status === 'running') {
             const lastHeartbeat = current.lastHeartbeat ? new Date(current.lastHeartbeat).getTime() : 0;
@@ -43,7 +36,6 @@ export class SyncJob {
         try {
             const token = await TokenService.getAccessToken(redis);
 
-            // 2. PRE-FETCH DATA
             if (!options.silent) logInfo(`[SYNC] [${jobId}] Step 1: Fetching users & group data...`);
             const [azureUsers, { committees, committeeCache, committeeByIdCache }, { allLeden, userCacheByEntra }, { membershipCache }] = await Promise.all([
                 GraphService.getAllUsers(token),
@@ -82,7 +74,6 @@ export class SyncJob {
 
             await redis.set(SYNC_REDIS_KEY, JSON.stringify(status), 'EX', 86400 * 7);
 
-            // 3. FILTER BY ACTIVE STATUS
             let usersToProcess = azureUsers;
             if (options.activeOnly) {
                 usersToProcess = azureUsers.filter(u => ctx.mainMembershipState.get(u.id)?.has(GROUP_ACTIVE_LID));
@@ -91,7 +82,6 @@ export class SyncJob {
                 await persistSyncStatus(redis, status);
             }
 
-            // 4. PARALLEL CHUNK PROCESSING
             const CHUNK_SIZE = 50;
             for (let i = 0; i < usersToProcess.length; i += CHUNK_SIZE) {
                 if (await redis.get(SYNC_ABORT_KEY)) {
@@ -125,7 +115,6 @@ export class SyncJob {
                 await persistSyncStatus(redis, status);
             }
 
-            // 5. IDENTIFY ORPHANS & FINISH
             const azureUserIds = new Set(azureUsers.map(u => u.id));
             for (const dUser of allLeden) {
                 if (dUser.entra_id && !azureUserIds.has(dUser.entra_id)) {
@@ -146,9 +135,6 @@ export class SyncJob {
         }
     }
 
-    /**
-     * Entry point for a single user synchronization.
-     */
     static async syncByEntraId(redis: Redis, entraId: string, token: string, options: SyncOptions = { fields: [] }) {
         if (!options.fields?.length) {
             options.fields = ['status', 'membership_status', 'membership_expiry', 'committees', 'profile_photo', 'geboortedatum', 'phone_number', 'originele_betaaldatum'];
@@ -213,7 +199,6 @@ export class SyncJob {
         const movedExpired = status.movedExpiredCount ?? 0;
         const errors = status.errorCount ?? 0;
 
-        // Skip logging a successful summary if nothing actually changed and there were no errors
         if (movedActive === 0 && movedExpired === 0 && errors === 0) {
             return;
         }

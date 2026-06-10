@@ -1,37 +1,37 @@
-import { FastifyInstance } from 'fastify';
+import { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
 import { type MolliePaymentMetadata } from '@salvemundi/validations';
 import { timingSafeCompare } from '@salvemundi/validations/security';
+import { getMollieClient } from '../services/mollie.service.js';
+import { PaymentService } from '../services/payment.service.js';
+
+async function verifyMollieWebhook(request: FastifyRequest<{ Querystring: { token?: string } }>, reply: FastifyReply) {
+    const webhookSecret = process.env.MOLLIE_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+        request.server.log.error('[FINANCE] MOLLIE_WEBHOOK_SECRET is NOT SET. Webhook processing disabled for security.');
+        return reply.status(500).send({ error: 'Webhook secret not configured' });
+    }
+
+    const headerSecretRaw = request.headers['x-webhook-secret'];
+    const headerSecret = Array.isArray(headerSecretRaw) ? headerSecretRaw[0] : headerSecretRaw;
+    const queryToken = request.query.token;
+
+    const authHeader = request.headers.authorization;
+    const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+    const hasValidBearer = !!(internalToken && authHeader === `Bearer ${internalToken}`);
+
+    const isAuthorized = hasValidBearer ||
+        timingSafeCompare(headerSecret || '', webhookSecret) ||
+        timingSafeCompare(queryToken || '', webhookSecret);
+
+    if (!isAuthorized) {
+        return reply.status(401).send({ error: 'Unauthorized' });
+    }
+}
 
 export default async function mollieRoutes(fastify: FastifyInstance) {
     await Promise.resolve();
-    /**
-     * POST /api/finance/webhook/mollie
-     * Payload: { id: "tr_..." }
-     */
-    fastify.post<{ Body: { id: string }, Querystring: { token?: string } }>('/webhook/mollie', async (request, reply) => {
-        const webhookSecret = process.env.MOLLIE_WEBHOOK_SECRET;
-        if (!webhookSecret) {
-            fastify.log.error('[FINANCE] MOLLIE_WEBHOOK_SECRET is NOT SET. Webhook processing disabled for security.');
-            return reply.status(500).send({ error: 'Webhook secret not configured' });
-        }
 
-        const headerSecretRaw = request.headers['x-webhook-secret'];
-        const headerSecret = Array.isArray(headerSecretRaw) ? headerSecretRaw[0] : headerSecretRaw;
-        const queryToken = request.query.token;
-
-        // Also accept internal service token via Authorization header (used by frontend proxy)
-        const authHeader = request.headers.authorization;
-        const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
-        const hasValidBearer = !!(internalToken && authHeader === `Bearer ${internalToken}`);
-
-        const isAuthorized = hasValidBearer ||
-            timingSafeCompare(headerSecret || '', webhookSecret) ||
-            timingSafeCompare(queryToken || '', webhookSecret);
-
-        if (!isAuthorized) {
-            return reply.status(401).send({ error: 'Unauthorized' });
-        }
-
+    fastify.post<{ Body: { id: string }, Querystring: { token?: string } }>('/webhook/mollie', { preHandler: [verifyMollieWebhook] }, async (request, reply) => {
         const { id } = request.body;
 
         if (!id) {
@@ -41,14 +41,11 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
         fastify.log.info(`[FINANCE] Received Mollie webhook for payment ${id}`);
 
         try {
-            // 1. Fetch current status from Mollie
-            const { getMollieClient } = await import('../services/mollie.service.js');
             const mollie = getMollieClient();
             const payment = await mollie.payments.get(id);
 
             const metadata = payment.metadata as MolliePaymentMetadata;
 
-            // 2. Fetch transaction details from DB (needed for access_token)
             const txResult = await fastify.db
                 .selectFrom('transactions')
                 .select('access_token')
@@ -56,8 +53,6 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
                 .executeTakeFirst();
             const accessToken = txResult?.access_token || '';
 
-            // 3. Finalize Payment via Service (Centralized Logic)
-            const { PaymentService } = await import('../services/payment.service.js');
             await PaymentService.finalizePayment(
                 fastify,
                 id,
@@ -66,7 +61,6 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
                 accessToken
             );
 
-            // 4. Log specific statuses for visibility
             if (['failed', 'canceled', 'expired'].includes(payment.status)) {
                 fastify.log.info(`[FINANCE] Payment ${id} failed with status: ${payment.status}.`);
             }

@@ -1,5 +1,5 @@
 import { safeConsoleError } from '../utils/logger.js';
-import { Redis } from 'ioredis';
+import { type Redis } from 'ioredis';
 import { z } from 'zod';
 
 const AzureUpdateTaskSchema = z.object({
@@ -19,9 +19,15 @@ export class AzureRetryService {
     private static readonly QUEUE_KEY = 'azure_update_retry_queue';
     private static shouldStop = false;
 
-    /**
-     * Queues an update request for Azure AD.
-     */
+    private static getConfig() {
+        const azureMgmtUrl = process.env.AZURE_MANAGEMENT_SERVICE_URL;
+        const azureSyncUrl = process.env.AZURE_SYNC_SERVICE_URL;
+        const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+        const expectedHeader = `Bearer ${internalToken}`;
+
+        return { azureMgmtUrl, azureSyncUrl, expectedHeader };
+    }
+
     static async queueUpdate(redis: Redis, entraId: string, data: AzureUpdateTask['data'], triggerSync: boolean = true) {
         const task: AzureUpdateTask = {
             entraId,
@@ -35,9 +41,6 @@ export class AzureRetryService {
         safeConsoleError(`[AzureRetry] Queued Azure update for Entra ID ${entraId}`);
     }
 
-    /**
-     * Starts the background worker loop.
-     */
     static async startWorker(redis: Redis) {
         safeConsoleError('[AzureRetry] Starting Azure Update Worker Loop...');
 
@@ -64,10 +67,11 @@ export class AzureRetryService {
                         const task = result.data;
 
                         try {
-                            await this.processUpdate(task);
+                            const config = this.getConfig();
+                            await this.processUpdate(task, config);
 
                             if (task.triggerSync) {
-                                await this.triggerSync(task.entraId);
+                                await this.triggerSync(task.entraId, config);
                             }
 
                             await redis.zrem(this.QUEUE_KEY, taskStr);
@@ -103,17 +107,14 @@ export class AzureRetryService {
         this.shouldStop = true;
     }
 
-    private static async processUpdate(task: AzureUpdateTask) {
-        const azureMgmtUrl = process.env.AZURE_MANAGEMENT_SERVICE_URL;
-        const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+    private static async processUpdate(task: AzureUpdateTask, config: ReturnType<typeof AzureRetryService.getConfig>) {
+        if (!config.azureMgmtUrl) throw new Error('AZURE_MANAGEMENT_SERVICE_URL not configured');
 
-        if (!azureMgmtUrl) throw new Error('AZURE_MANAGEMENT_SERVICE_URL not configured');
-
-        const res = await fetch(`${azureMgmtUrl}/api/users/${task.entraId}`, {
+        const res = await fetch(`${config.azureMgmtUrl}/api/users/${task.entraId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${internalToken}`
+                'Authorization': config.expectedHeader
             },
             body: JSON.stringify(task.data)
         });
@@ -124,16 +125,13 @@ export class AzureRetryService {
         }
     }
 
-    private static async triggerSync(entraId: string) {
-        const azureSyncUrl = process.env.AZURE_SYNC_SERVICE_URL;
-        const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+    private static async triggerSync(entraId: string, config: ReturnType<typeof AzureRetryService.getConfig>) {
+        if (!config.azureSyncUrl) return;
 
-        if (!azureSyncUrl) return; // Optional
-
-        const res = await fetch(`${azureSyncUrl}/api/sync/run/${entraId}`, {
+        const res = await fetch(`${config.azureSyncUrl}/api/sync/run/${entraId}`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${internalToken}`
+                'Authorization': config.expectedHeader
             }
         });
 

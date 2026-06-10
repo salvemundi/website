@@ -124,17 +124,12 @@ export class GraphService {
         }
     }
 
-    /**
-     * Fetches members and owners for multiple groups. 
-     * Handles pagination for large groups to ensure all members are returned.
-     */
     static async getBatchGroupDetails(groupIds: string[], token: string): Promise<Map<string, { members: string[], owners: string[] }>> {
         const result = new Map<string, { members: string[], owners: string[] }>();
         const client = this.getClient(token);
 
         for (const id of groupIds) {
             try {
-                // 1. Fetch all members with pagination
                 let members: string[] = [];
                 let response = await client.api(`/groups/${id}/members`).select('id').top(999).get() as Record<string, unknown>;
                 members = [...((response.value as { id: string }[] | undefined) || []).map(m => m.id)];
@@ -144,7 +139,6 @@ export class GraphService {
                     members = [...members, ...((response.value as { id: string }[] | undefined) || []).map(m => m.id)];
                 }
 
-                // 2. Fetch owners (usually few, but we use the dedicated method)
                 const owners = await this.getGroupOwners(id, token);
 
                 result.set(id, { members, owners });
@@ -158,15 +152,10 @@ export class GraphService {
         return result;
     }
 
-    /**
-     * Fetches profile photos for multiple users in a single batch request.
-     * Note: Returns null if no photo exists for a user.
-     */
     static async getUserPhotosBatch(userIds: string[], token: string): Promise<Map<string, { buffer: Buffer; contentType: string } | null>> {
         const result = new Map<string, { buffer: Buffer; contentType: string } | null>();
         const client = this.getClient(token);
 
-        // MS Graph batch limit is 20 requests
         for (let i = 0; i < userIds.length; i += 20) {
             const batchIds = userIds.slice(i, i + 20);
             const requests = batchIds.map(id => ({
@@ -191,7 +180,6 @@ export class GraphService {
                 }
             } catch (error) {
                 safeConsoleError(`[GraphService] Batch photo fetch failed:`, error);
-                // Fallback: fill remaining with nulls so we don't crash
                 batchIds.forEach(id => { if (!result.has(id)) result.set(id, null); });
             }
         }
@@ -199,9 +187,6 @@ export class GraphService {
         return result;
     }
 
-    /**
-     * Fetches a user's profile photo binary data from Entra ID.
-     */
     static async getUserPhoto(userId: string, token: string): Promise<{ buffer: Buffer; contentType: string } | null> {
         try {
             const response = await fetch(`https://graph.microsoft.com/v1.0/users/${userId}/photo/$value`, {

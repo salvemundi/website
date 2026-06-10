@@ -1,5 +1,5 @@
-import { Redis } from 'ioredis';
-import { SyncStatus, SYNC_REDIS_KEY, getInitialStatus } from './sync-types.js';
+import { type Redis } from 'ioredis';
+import { type SyncStatus, SYNC_REDIS_KEY, getInitialStatus } from './sync-types.js';
 import { safeConsoleError } from '../../utils/logger.js';
 
 export function parseAzureDate(dateStr?: string): string | null {

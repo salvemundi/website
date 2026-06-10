@@ -1,17 +1,8 @@
-import { FastifyInstance } from 'fastify';
+import { type FastifyInstance } from 'fastify';
+import { verifyInternalToken } from '../middleware/auth.js';
 
 export default async function monitoringRoutes(fastify: FastifyInstance) {
-    /**
-     * Get the status of all provisioning queues.
-     */
-    fastify.get('/status', async (request, reply) => {
-        const authHeader = request.headers.authorization;
-        const expectedToken = process.env.INTERNAL_SERVICE_TOKEN;
-
-        if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
-            return reply.status(401).send({ error: 'Unauthorized' });
-        }
-
+    fastify.get('/status', { preHandler: [verifyInternalToken] }, async (request, reply) => {
         try {
             const newUserQueue = 'v7:queue:provision:new_user';
             const syncQueue = 'v7:queue:provision:sync_existing';
@@ -21,7 +12,6 @@ export default async function monitoringRoutes(fastify: FastifyInstance) {
                 fastify.redis.zcard(syncQueue)
             ]);
 
-            // Fetch a few sample tasks from each
             const [newUserSamples, syncSamples] = await Promise.all([
                 fastify.redis.zrange(newUserQueue, 0, 9),
                 fastify.redis.zrange(syncQueue, 0, 9)
@@ -32,11 +22,11 @@ export default async function monitoringRoutes(fastify: FastifyInstance) {
                 queues: {
                     new_users: {
                         count: newUsersCount,
-                        samples: newUserSamples.map(s => JSON.parse(s))
+                        samples: newUserSamples.map(s => JSON.parse(s) as unknown)
                     },
                     sync_existing: {
                         count: syncUsersCount,
-                        samples: syncSamples.map(s => JSON.parse(s))
+                        samples: syncSamples.map(s => JSON.parse(s) as unknown)
                     }
                 },
                 timestamp: new Date().toISOString(),

@@ -1,26 +1,27 @@
 import { safeConsoleError, logInfo, logWarn } from '../utils/logger.js';
-import { Redis } from 'ioredis';
+import { type Redis } from 'ioredis';
 import { DirectusService } from './directus.service.js';
-import { DirectusUser } from '../types/schema.js';
+import { type DirectusUser } from '../types/schema.js';
 
 export class ExpiryCheckJob {
     private static readonly REDIS_PREFIX = 'v7:mail:notified:';
-    private static shouldStop: boolean = false;
+    private static shouldStop = false;
 
-    /**
-     * Starts the expiry check loop (runs once a day).
-     */
+    private static getConfig() {
+        const mailUrl = process.env.MAIL_SERVICE_URL;
+        const token = process.env.INTERNAL_SERVICE_TOKEN;
+        return { mailUrl, token };
+    }
+
     static async start(redis: Redis) {
         logInfo('[ExpiryCheckJob] Starting daily monitoring loop...');
 
-        while (!ExpiryCheckJob['shouldStop']) {
+        while (!this.shouldStop) {
             try {
-                // 1. Run the check
                 await this.runCheck(redis);
 
-                // 2. Wait 24 hours before next run (or check every hour but skip if already run today)
                 const now = new Date();
-                const nextRun = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 0, 0); // Next day at 09:00
+                const nextRun = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 0, 0);
                 const delay = nextRun.getTime() - now.getTime();
 
                 logInfo(`[ExpiryCheckJob] Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
@@ -28,7 +29,7 @@ export class ExpiryCheckJob {
             } catch (error: unknown) {
                 const message = error instanceof Error ? error.message : String(error);
                 safeConsoleError('[ExpiryCheckJob] Loop Error:', message);
-                await new Promise(resolve => setTimeout(resolve, 60000)); // Retry in 1 min
+                await new Promise(resolve => setTimeout(resolve, 60000));
             }
         }
     }
@@ -40,14 +41,12 @@ export class ExpiryCheckJob {
         const lastRunKey = 'v7:expiry-check:last-run';
         const lockKey = 'lock:expiry-check:run';
 
-        // 1. Check if already run successfully today
         const lastRun = await redis.get(lastRunKey);
         if (lastRun === todayStr) {
             logInfo(`[ExpiryCheckJob] Already successfully ran expiry check today (${todayStr}). Skipping.`);
             return;
         }
 
-        // 2. Acquire lock to prevent concurrent runs
         const hasLock = await redis.set(lockKey, 'running', 'EX', 1800, 'NX');
         if (!hasLock) {
             logInfo('[ExpiryCheckJob] Another instance is currently running the expiry check. Skipping.');
@@ -75,7 +74,6 @@ export class ExpiryCheckJob {
 
                 if (diffDays === 30) milestone = 'reminder_30';
                 else if (diffDays === 7) milestone = 'reminder_7';
-                // Only send the expired notification if they expired within the last 14 days (grace period)
                 else if (diffDays <= 0 && diffDays >= -14) milestone = 'expired';
 
                 if (milestone) {
@@ -83,7 +81,6 @@ export class ExpiryCheckJob {
                 }
             }
 
-            // Set last run key so we don't run again today
             await redis.set(lastRunKey, todayStr, 'EX', 86400 * 2);
         } finally {
             await redis.del(lockKey);
@@ -94,15 +91,13 @@ export class ExpiryCheckJob {
         const year = new Date().getFullYear();
         const redisKey = `${this.REDIS_PREFIX}${member.id}:${milestone}:${year}`;
 
-        // Already notified for this milestone this year?
         const exists = await redis.get(redisKey);
         if (exists) return;
 
         const templateId = milestone === 'expired' ? 'membership_expired' : 'membership_reminder';
 
         try {
-            const mailUrl = process.env.MAIL_SERVICE_URL;
-            const token = process.env.INTERNAL_SERVICE_TOKEN;
+            const { mailUrl, token } = this.getConfig();
 
             if (!mailUrl || !token) {
                 logWarn('[ExpiryCheckJob] Missing Mail URL or Token. Cannot notify.');
@@ -127,7 +122,7 @@ export class ExpiryCheckJob {
             });
 
             if (response.ok) {
-                await redis.set(redisKey, '1', 'EX', 86400 * 365); // Cache for a year
+                await redis.set(redisKey, '1', 'EX', 86400 * 365);
                 logInfo(`[ExpiryCheckJob] Notified ${member.email || 'leeg'} for milestone: ${milestone}`);
             } else {
                 safeConsoleError(`[ExpiryCheckJob] Failed to send ${templateId} to ${member.email || 'leeg'}:`, response.statusText);

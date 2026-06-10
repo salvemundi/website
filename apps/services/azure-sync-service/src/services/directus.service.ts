@@ -1,7 +1,7 @@
 import { safeConsoleError } from '../utils/logger.js';
 import { getDirectusClient } from '../config/directus.js';
 import { updateItem, readItems, createItem, deleteItem, readUsers, updateUser, createUser, uploadFiles } from '@directus/sdk';
-import { DirectusUser, CommitteeMember, Event, EventSignup } from '../types/schema.js';
+import { type DirectusUser, type CommitteeMember, type Event, type EventSignup } from '../types/schema.js';
 
 export class DirectusService {
     static async getUserById(id: string): Promise<DirectusUser | null> {
@@ -9,8 +9,7 @@ export class DirectusService {
             filter: { id: { _eq: id } },
             fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as never[]
         }));
-        const user = users[0] as unknown as DirectusUser | undefined;
-        return user || null;
+        return (users[0] as unknown as DirectusUser) || null;
     }
 
     static async getUserByEntraId(entraId: string): Promise<DirectusUser | null> {
@@ -18,8 +17,7 @@ export class DirectusService {
             filter: { entra_id: { _eq: entraId } },
             fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as never[]
         }));
-        const user = users[0] as unknown as DirectusUser | undefined;
-        return user || null;
+        return (users[0] as unknown as DirectusUser) || null;
     }
 
     static async getUserByEmail(email: string): Promise<DirectusUser | null> {
@@ -27,16 +25,15 @@ export class DirectusService {
             filter: { email: { _eq: email.toLowerCase() } },
             fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as never[]
         }));
-        const user = users[0] as unknown as DirectusUser | undefined;
-        return user || null;
+        return (users[0] as unknown as DirectusUser) || null;
     }
 
     static async updateUser(id: string, data: Partial<DirectusUser>) {
-        return await getDirectusClient().request(updateUser(id, data));
+        return await getDirectusClient().request(updateUser(id, data as never));
     }
 
     static async createUser(data: Partial<DirectusUser>) {
-        return await getDirectusClient().request(createUser(data));
+        return await getDirectusClient().request(createUser(data as never));
     }
 
     static async getCommitteeByAzureId(azureGroupId: string) {
@@ -139,14 +136,11 @@ export class DirectusService {
         }
     }
 
-    /**
-     * Uploads a photo buffer to Directus and links it to the user.
-     */
     static async uploadUserAvatar(userId: string, buffer: Buffer, filename: string, contentType: string) {
         const client = getDirectusClient();
         const formData = new FormData();
 
-        const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+        const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
         const blob = new Blob([arrayBuffer], { type: contentType });
         formData.append('file', blob, filename);
 
@@ -156,7 +150,7 @@ export class DirectusService {
 
             await client.request(updateUser(userId, {
                 avatar: fileId
-            }));
+            } as never));
 
             return fileId;
         } catch (error: unknown) {

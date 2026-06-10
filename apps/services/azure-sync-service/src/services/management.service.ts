@@ -2,25 +2,21 @@ import 'isomorphic-fetch';
 import { logInfo } from '../utils/logger.js';
 
 export class ManagementService {
-    private static get baseUrl() {
-        return process.env.AZURE_MANAGEMENT_SERVICE_URL?.replace(/\/$/, '') || 'http://localhost:3004';
+    private static getConfig() {
+        const baseUrl = process.env.AZURE_MANAGEMENT_SERVICE_URL?.replace(/\/$/, '') || 'http://localhost:3004';
+        const token = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
+        return { baseUrl, token };
     }
 
-    private static get token() {
-        return process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
-    }
-
-    /**
-     * Delegates group member addition to the management service.
-     */
     static async addGroupMember(groupId: string, userId: string): Promise<void> {
-        logInfo(`[ManagementService] Delegating addGroupMember(group: ${groupId}, user: ${userId}) to ${this.baseUrl}`);
-        
-        const response = await fetch(`${this.baseUrl}/api/groups/${groupId}/members`, {
+        const { baseUrl, token } = this.getConfig();
+        logInfo(`[ManagementService] Delegating addGroupMember(group: ${groupId}, user: ${userId}) to ${baseUrl}`);
+
+        const response = await fetch(`${baseUrl}/api/groups/${groupId}/members`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.token}`
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({ userId })
         });
@@ -32,16 +28,14 @@ export class ManagementService {
         }
     }
 
-    /**
-     * Delegates group member removal to the management service.
-     */
     static async removeGroupMember(groupId: string, userId: string): Promise<void> {
-        logInfo(`[ManagementService] Delegating removeGroupMember(group: ${groupId}, user: ${userId}) to ${this.baseUrl}`);
+        const { baseUrl, token } = this.getConfig();
+        logInfo(`[ManagementService] Delegating removeGroupMember(group: ${groupId}, user: ${userId}) to ${baseUrl}`);
 
-        const response = await fetch(`${this.baseUrl}/api/groups/${groupId}/members/${userId}`, {
+        const response = await fetch(`${baseUrl}/api/groups/${groupId}/members/${userId}`, {
             method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${this.token}`
+                'Authorization': `Bearer ${token}`
             }
         });
 

@@ -1,7 +1,7 @@
-import { AzureUser, GraphService } from '../graph.service.js';
-import { DirectusUser } from '../../types/schema.js';
+import { type AzureUser, GraphService } from '../graph.service.js';
+import { type DirectusUser } from '../../types/schema.js';
 import { DirectusService } from '../directus.service.js';
-import { SyncContext } from './sync-types.js';
+import { type SyncContext } from './sync-types.js';
 import { parseAzureDate, sanitizeAzureDate } from './sync-helpers.js';
 import { SyncLifecycle } from './sync-lifecycle.js';
 import { logInfo, safeConsoleError } from '../../utils/logger.js';
@@ -109,15 +109,13 @@ export class SyncProcessor {
         }
 
         if (Object.keys(updatePayload).length > 0) {
-            /* eslint-disable security/detect-object-injection */
             for (const key of Object.keys(updatePayload)) {
                 const oldValue = currentUser[key as keyof DirectusUser];
                 const newValue = updatePayload[key];
                 if (oldValue !== newValue) {
-                    changes.push({ field: key, old: (oldValue) || 'leeg', new: newValue });
+                    changes.push({ field: key, old: oldValue || 'leeg', new: newValue });
                 }
             }
-            /* eslint-enable security/detect-object-injection */
             if (changes.length > 0) {
                 await DirectusService.updateUser(currentUser.id, updatePayload);
             }
@@ -135,7 +133,9 @@ export class SyncProcessor {
                 committee_id: typeof m.committee_id === 'number'
                     ? { id: m.committee_id }
                     : m.committee_id
-            })) as DirectusCommitteeMembership[]; const azureMemberships = ctx.membershipMap.get(aUser.id) || new Map<number, boolean>();
+            })) as DirectusCommitteeMembership[];
+
+            const azureMemberships = ctx.membershipMap.get(aUser.id) || new Map<number, boolean>();
 
             for (const [committeeId, isLeader] of azureMemberships) {
                 const committee = ctx.committeeByIdCache?.get(Number(committeeId));
@@ -150,7 +150,8 @@ export class SyncProcessor {
                     await DirectusService.addMemberToCommittee(currentUser.id, committeeId, isLeader);
                     changes.push({ field: 'Commissie', old: 'Geen', new: `Toegevoegd aan ${committeeName}${isLeader ? ' (Leider)' : ''}` });
                 } else if (existing.is_leader !== isLeader) {
-                    await DirectusService.addMemberToCommittee(currentUser.id, Number(committeeId), isLeader); changes.push({ field: `${committeeName} status`, old: 'Lid', new: 'Leider' });
+                    await DirectusService.addMemberToCommittee(currentUser.id, Number(committeeId), isLeader);
+                    changes.push({ field: `${committeeName} status`, old: 'Lid', new: 'Leider' });
                 }
             }
 

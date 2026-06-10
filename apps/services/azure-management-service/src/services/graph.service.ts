@@ -1,6 +1,5 @@
 import { safeConsoleError } from '../utils/logger.js';
 import { Client } from '@microsoft/microsoft-graph-client';
-import 'isomorphic-fetch';
 import crypto from 'crypto';
 
 export class GraphService {
@@ -12,11 +11,6 @@ export class GraphService {
         });
     }
 
-    /**
-     * Adds a member to a group in Azure AD.
-     * @param groupId The Entra ID of the group (committee).
-     * @param memberId The Entra ID of the user.
-     */
     static async addGroupMember(groupId: string, memberId: string, token: string) {
         const client = this.getClient(token);
         const memberUrl = `https://graph.microsoft.com/v1.0/directoryObjects/${memberId}`;
@@ -27,20 +21,12 @@ export class GraphService {
             });
     }
 
-    /**
-     * Removes a member from a group in Azure AD.
-     * @param groupId The Entra ID of the group.
-     * @param memberId The Entra ID of the user.
-     */
     static async removeGroupMember(groupId: string, memberId: string, token: string) {
         const client = this.getClient(token);
         return await client.api(`/groups/${groupId}/members/${memberId}/$ref`)
             .delete();
     }
 
-    /**
-     * Adds an owner to a group in Azure AD (Set Leader).
-     */
     static async addGroupOwner(groupId: string, ownerId: string, token: string) {
         const client = this.getClient(token);
         const ownerUrl = `https://graph.microsoft.com/v1.0/directoryObjects/${ownerId}`;
@@ -51,19 +37,12 @@ export class GraphService {
             });
     }
 
-    /**
-     * Removes an owner from a group in Azure AD (Unset Leader).
-     */
     static async removeGroupOwner(groupId: string, ownerId: string, token: string) {
         const client = this.getClient(token);
         return await client.api(`/groups/${groupId}/owners/${ownerId}/$ref`)
             .delete();
     }
 
-    /**
-     * Resolves a unique User Principal Name by checking active directory
-     * and appending a number if the chosen name is already taken.
-     */
     static async generateUniqueUpn(baseName: string, token: string, domain: string = 'lid.salvemundi.nl'): Promise<string> {
         const client = this.getClient(token);
         let candidateUpn = `${baseName}@${domain}`;
@@ -78,7 +57,7 @@ export class GraphService {
                 const response = await client.api('/users')
                     .filter(`userPrincipalName eq '${candidateUpn}'`)
                     .select('id')
-                    .get();
+                    .get() as { value?: unknown[] };
 
                 if (!response.value || response.value.length === 0) {
                     return candidateUpn;
@@ -92,9 +71,6 @@ export class GraphService {
         }
     }
 
-    /**
-     * Creates a new user in Microsoft Entra ID.
-     */
     static async createUser(
         upn: string,
         firstName: string,
@@ -108,7 +84,6 @@ export class GraphService {
     ) {
         const client = this.getClient(token);
 
-        // Generate a cryptographically secure temporary password
         const randomPart = crypto.randomUUID().split('-')[0];
         const specialPart = crypto.randomUUID().split('-')[1].toUpperCase();
         const tempPassword = `SM-${randomPart}!${specialPart}#`;
@@ -121,7 +96,7 @@ export class GraphService {
             mailNickname: upn.split('@')[0],
             userPrincipalName: upn,
             otherMails: [personalEmail],
-            mail: upn, // Set primary mail to the new UPN
+            mail: upn,
             passwordProfile: {
                 forceChangePasswordNextSignIn: true,
                 password: tempPassword
@@ -130,7 +105,6 @@ export class GraphService {
 
         if (phoneNumber) user.mobilePhone = phoneNumber;
 
-        // Add Custom Security Attributes if provided
         if (dateOfBirth || originalPaymentDate || membershipExpiry) {
             user.customSecurityAttributes = {
                 SalveMundiLidmaatschap: {
@@ -138,30 +112,26 @@ export class GraphService {
                 }
             };
             if (dateOfBirth) {
-                const cleanDob = dateOfBirth.replace(/-/g, '');
-                user.customSecurityAttributes.SalveMundiLidmaatschap.Geboortedatum = cleanDob;
+                user.customSecurityAttributes.SalveMundiLidmaatschap.Geboortedatum = dateOfBirth.replace(/-/g, '');
             }
             if (originalPaymentDate) {
-                const cleanPaidDate = originalPaymentDate.replace(/-/g, '');
-                user.customSecurityAttributes.SalveMundiLidmaatschap.OrigineleBetaalDatumStr = cleanPaidDate;
+                user.customSecurityAttributes.SalveMundiLidmaatschap.OrigineleBetaalDatumStr = originalPaymentDate.replace(/-/g, '');
             }
             if (membershipExpiry) {
-                const cleanExpiry = membershipExpiry.replace(/-/g, '');
-                user.customSecurityAttributes.SalveMundiLidmaatschap.VerloopdatumStr = cleanExpiry;
+                user.customSecurityAttributes.SalveMundiLidmaatschap.VerloopdatumStr = membershipExpiry.replace(/-/g, '');
             }
         }
 
-        const result = await client.api('/users').post(user);
+        const result = await client.api('/users').post(user) as Record<string, unknown>;
 
         return {
             ...result,
+            id: String(result.id),
+            userPrincipalName: String(result.userPrincipalName),
             temporaryPassword: tempPassword
         };
     }
 
-    /**
-     * Updates an existing user in Microsoft Entra ID.
-     */
     static async updateUser(
         entraId: string,
         token: string,
@@ -190,37 +160,25 @@ export class GraphService {
                 }
             };
             if (data.dateOfBirth) {
-                const cleanDob = data.dateOfBirth.replace(/-/g, '');
-                payload.customSecurityAttributes.SalveMundiLidmaatschap.Geboortedatum = cleanDob;
+                payload.customSecurityAttributes.SalveMundiLidmaatschap.Geboortedatum = data.dateOfBirth.replace(/-/g, '');
             }
             if (data.membershipExpiry) {
-                const cleanExpiry = data.membershipExpiry.replace(/-/g, '');
-                payload.customSecurityAttributes.SalveMundiLidmaatschap.VerloopdatumStr = cleanExpiry;
+                payload.customSecurityAttributes.SalveMundiLidmaatschap.VerloopdatumStr = data.membershipExpiry.replace(/-/g, '');
             }
             if (data.originalPaymentDate) {
-                const cleanPaidDate = data.originalPaymentDate.replace(/-/g, '');
-                payload.customSecurityAttributes.SalveMundiLidmaatschap.OrigineleBetaalDatumStr = cleanPaidDate;
+                payload.customSecurityAttributes.SalveMundiLidmaatschap.OrigineleBetaalDatumStr = data.originalPaymentDate.replace(/-/g, '');
             }
         }
 
         return await client.api(`/users/${entraId}`).update(payload);
     }
 
-    /**
-     * Gets a user's group memberships from Entra ID
-     */
     static async getUserGroups(entraId: string, token: string) {
         const client = this.getClient(token);
-        const response = await client.api(`/users/${entraId}/memberOf`)
-            .select('id,displayName')
-            .get();
-
+        const response = await client.api(`/users/${entraId}/memberOf`).select('id,displayName').get() as { value?: unknown[] };
         return response.value || [];
     }
 
-    /**
-     * Updates a user's profile photo in Microsoft Entra ID.
-     */
     static async updateUserPhoto(entraId: string, photo: Buffer, token: string) {
         const client = this.getClient(token);
         return await client.api(`/users/${entraId}/photo/$value`)

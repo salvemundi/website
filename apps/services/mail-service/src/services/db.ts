@@ -1,7 +1,9 @@
 import pkg from 'pg';
-const { Pool } = pkg;
 import { Kysely, PostgresDialect } from 'kysely';
 import { type DirectusSchema } from '@salvemundi/validations';
+import { safeConsoleError } from '../utils/logger.js';
+
+const { Pool } = pkg;
 
 export interface Database {
     pub_crawl_tickets: DirectusSchema['pub_crawl_tickets'][number];
@@ -11,14 +13,14 @@ export interface Database {
 
 const pool = new Pool({
     user: process.env.DB_USER,
-    host: process.env.DB_HOST || 'v7-core-db',
+    host: process.env.DB_HOST,
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
-    port: Number(process.env.DB_PORT) || 5432,
+    port: Number(process.env.DB_PORT),
 });
 
-pool.on('error', (_err) => {
-    // Silent error handler for idle clients to prevent service crash.
+pool.on('error', (err) => {
+    safeConsoleError('[db.ts] Postgres pool idle client error', err);
 });
 
 export const db = new Kysely<Database>({

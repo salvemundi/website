@@ -1,14 +1,18 @@
-import { type FastifyInstance } from 'fastify';
+import { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
 import { type MolliePaymentMetadata } from '@salvemundi/validations';
 import { getMollieClient } from '../services/mollie.service.js';
 import crypto from 'node:crypto';
+import { verifyInternalToken } from '../middleware/auth.js';
+
+const PRODUCT_TYPE_MAP = new Map<string, string>([
+    ['pub_crawl_signup', 'Kroegentocht'],
+    ['trip_signup', 'Reis'],
+    ['event_signup', 'Activiteit']
+]);
 
 export default async function paymentsRoutes(fastify: FastifyInstance) {
     await Promise.resolve();
-    /**
-     * POST /api/payments/create
-     * Creates a new Mollie payment and stores a transaction record.
-     */
+
     fastify.post<{
         Body: {
             amount: number;
@@ -26,7 +30,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             redirectUrl: string;
             couponCode?: string | null;
         }
-    }>('/create', async (request, reply) => {
+    }>('/create', { preHandler: [verifyInternalToken] }, async (request, reply) => {
         const {
             amount,
             description,
@@ -56,8 +60,6 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
 
             fastify.log.info(`[FINANCE] Creating Mollie payment with webhookUrl: ${webhookUrl || 'undefined'}`);
 
-            // 1. Create payment in Mollie
-            // Generate a random access_token for guest security (IDOR mitigation)
             const accessToken = crypto.randomUUID();
             const separator = redirectUrl.includes('?') ? '&' : '?';
             const finalRedirectUrl = `${redirectUrl}${separator}t=${accessToken}`;
@@ -69,7 +71,6 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 },
                 description,
                 redirectUrl: finalRedirectUrl,
-                // Only provide webhookUrl if it's not localhost (Mollie requirement)
                 ...(webhookUrl ? { webhookUrl } : {}),
                 metadata: {
                     registrationId,
@@ -85,26 +86,15 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 }
             });
 
-            // 2. Store transaction in PostgreSQL
-            // Map registrationType to literal Dutch names for the UI as requested
-            const productTypeMap = new Map<string, string>([
-                ['pub_crawl_signup', 'Kroegentocht'],
-                ['trip_signup', 'Reis'],
-                ['event_signup', 'Activiteit']
-            ]);
-
             let productType = 'Overig';
             if (isContribution) {
-                // INTERNAL type for audit logs and system triggers
                 productType = 'membership';
-            } else if (registrationType && productTypeMap.has(registrationType)) {
-                productType = productTypeMap.get(registrationType) || 'Overig';
+            } else if (registrationType && PRODUCT_TYPE_MAP.has(registrationType)) {
+                productType = PRODUCT_TYPE_MAP.get(registrationType) || 'Overig';
             } else if (registrationType) {
-                // Pre-mapped or fallback to registrationType itself
                 productType = registrationType;
             }
 
-            // 2. Build insertion object dynamically
             const insertData: Record<string, unknown> = {
                 mollie_id: payment.id,
                 amount: amount,
@@ -140,7 +130,6 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 throw new Error('Failed to retrieve inserted transaction ID');
             }
 
-            // Handle M2M junction table for Pub Crawl
             if (registrationType === 'pub_crawl_signup' && registrationId) {
                 await fastify.db
                     .insertInto('pub_crawl_signups_transactions')
@@ -160,23 +149,11 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
         }
     });
 
-    /**
-     * POST /api/payments/approve
-     * Manually approves a pending payment and triggers automated processing.
-     */
-    fastify.post<{ Body: { mollieId: string } }>('/approve', async (request, reply) => {
-        const authHeader = request.headers.authorization;
-        const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
-
-        if (!internalToken || authHeader !== `Bearer ${internalToken}`) {
-            return reply.status(401).send({ error: 'Unauthorized: Internal Service Token required' });
-        }
-
+    fastify.post<{ Body: { mollieId: string } }>('/approve', { preHandler: [verifyInternalToken] }, async (request, reply) => {
         const { mollieId } = request.body;
         if (!mollieId) return reply.status(400).send({ error: 'Missing mollieId' });
 
         try {
-            // 1. Update approval_status
             await fastify.db
                 .updateTable('transactions')
                 .set({
@@ -186,7 +163,6 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 .where('mollie_id', '=', mollieId)
                 .execute();
 
-            // 2. Fetch transaction details to re-trigger event
             const tx = await fastify.db
                 .selectFrom('transactions')
                 .selectAll()
@@ -197,7 +173,6 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 return reply.status(400).send({ error: 'Transaction not found or not paid yet' });
             }
 
-            // Fetch full payment from Mollie to get metadata (names, phone, DOB)
             const mollie = getMollieClient();
             const payment = await mollie.payments.get(mollieId);
             const metadata = payment.metadata as MolliePaymentMetadata;

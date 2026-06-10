@@ -1,13 +1,14 @@
 export function safeConsoleError(context: string, error?: unknown) {
-    const message = error instanceof Error 
-        ? error.message 
-        : typeof error === 'string' 
-            ? error 
+    const message = error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+            ? error
             : error && typeof error === 'object'
                 ? JSON.stringify(error)
                 : error !== undefined && error !== null
-                    ? (error as number | boolean).toString()
+                    ? String(error)
                     : 'Onbekende fout';
+
     console.error(`[${context}] ${message}`);
 }
 

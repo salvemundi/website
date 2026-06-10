@@ -1,5 +1,5 @@
 import { safeConsoleError, logInfo, logWarn } from '../utils/logger.js';
-import { Redis } from 'ioredis';
+import { type Redis } from 'ioredis';
 import { ProvisionWorkerService } from './provision-worker.js';
 import { AuditService } from './audit.service.js';
 import { PaymentSuccessEventSchema } from '@salvemundi/validations';
@@ -8,7 +8,13 @@ export class EventListenerService {
     private static readonly STREAM_KEY = 'v7:events';
     private static readonly GROUP_NAME = 'azure-sync-group';
     private static readonly CONSUMER_NAME = 'azure-consumer-1';
-    private static shouldStop: boolean = false;
+    private static shouldStop = false;
+
+    private static getConfig() {
+        const managementUrl = process.env.AZURE_MANAGEMENT_SERVICE_URL;
+        const token = process.env.INTERNAL_SERVICE_TOKEN;
+        return { managementUrl, token };
+    }
 
     static async start(redis: Redis) {
         logInfo('[AzureEventListener] Starting Redis Stream listener...');
@@ -22,7 +28,7 @@ export class EventListenerService {
             }
         }
 
-        while (!EventListenerService['shouldStop']) {
+        while (!this.shouldStop) {
             try {
                 const response = (await redis.xreadgroup(
                     'GROUP', this.GROUP_NAME, this.CONSUMER_NAME,
@@ -33,12 +39,9 @@ export class EventListenerService {
                 if (response && response.length > 0) {
                     for (const [, messages] of response) {
                         for (const [id, fields] of messages) {
-                            const data: Record<string, string> = {};
-                            /* eslint-disable security/detect-object-injection */
-                            for (let i = 0; i < fields.length; i += 2) {
-                                data[fields[i]] = fields[i + 1];
-                            }
-                            /* eslint-enable security/detect-object-injection */
+                            const data = Object.fromEntries(
+                                Array.from({ length: fields.length / 2 }, (_, i) => [fields[i * 2], fields[i * 2 + 1]])
+                            ) as Record<string, string>;
 
                             await this.handleEvent(redis, { id, data });
                             await redis.xack(this.STREAM_KEY, this.GROUP_NAME, id);
@@ -65,14 +68,11 @@ export class EventListenerService {
 
                 if (data.registrationType === 'membership') {
                     if (data.userId) {
-                        // 1. Existing user: Membership Renewal / Extension
                         await ProvisionWorkerService.queueProvisioning(redis, data.userId, data.paymentId);
                         await AuditService.logMembershipRenewal(data.email, data.userId, data.paymentId);
                         logInfo(`[AzureEventListener] Queued renewal for user ${data.userId}`);
                     } else {
-                        // 2. New user: Membership Provisioning (Direct to Management Service)
-                        const managementUrl = process.env.AZURE_MANAGEMENT_SERVICE_URL;
-                        const token = process.env.INTERNAL_SERVICE_TOKEN;
+                        const { managementUrl, token } = this.getConfig();
 
                         if (managementUrl && token) {
                             const res = await fetch(`${managementUrl}/api/provisioning/user`, {

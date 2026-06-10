@@ -1,5 +1,5 @@
 import { safeConsoleError } from '../utils/logger.js';
-import { Redis } from 'ioredis';
+import { type Redis } from 'ioredis';
 import { MailWorkerService } from './mail-worker.js';
 import { PaymentSuccessEventSchema, ActivitySignupEventSchema } from '@salvemundi/validations';
 import QRCode from 'qrcode';
@@ -37,10 +37,15 @@ const pubCrawlWhatsAppUrlSchema = z.object({
 });
 
 export class EventHandlers {
+    private static getDirectusConfig() {
+        const url = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
+        const token = process.env.DIRECTUS_STATIC_TOKEN || '';
+        return { url, token };
+    }
+
     static async handlePaymentSuccess(redis: Redis, rawPayload: unknown) {
         const data = PaymentSuccessEventSchema.parse(rawPayload) as unknown as LocalPaymentSuccessEvent;
-        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
-        const directusToken = process.env.DIRECTUS_STATIC_TOKEN || '';
+        const { url, token } = this.getDirectusConfig();
 
         let templateId = 'payment_confirmed';
         let mailData: Record<string, unknown> = {
@@ -54,7 +59,7 @@ export class EventHandlers {
             accessToken: data.accessToken
         };
 
-        mailData.hasAccount = data.userId ? true : (data.email ? await this.checkUserHasAccount(directusUrl, directusToken, data.email) : false);
+        mailData.hasAccount = data.userId ? true : (data.email ? await this.checkUserHasAccount(url, token, data.email) : false);
 
         const baseUrl = process.env.PUBLIC_URL || 'https://salvemundi.nl';
         if (data.registrationId && data.accessToken) {
@@ -67,10 +72,10 @@ export class EventHandlers {
         if (data.isContribution || data.registrationType === 'membership') {
             if (data.isNewMember || !data.userId) return;
             templateId = 'membership_renewal';
-            await this.enrichMembershipRenewal(mailData, data, directusUrl, directusToken, baseUrl);
+            await this.enrichMembershipRenewal(mailData, data, url, token, baseUrl);
         } else if (data.registrationType === 'pub_crawl_signup' && data.registrationId) {
             templateId = 'pub_crawl_ticket';
-            const pubCrawlData = await this.preparePubCrawlTickets(data, directusUrl, directusToken);
+            const pubCrawlData = await this.preparePubCrawlTickets(data, url, token);
             if (!pubCrawlData) {
                 templateId = 'payment_confirmed';
                 mailData.eventName = 'Kroegentocht';
@@ -79,7 +84,7 @@ export class EventHandlers {
                 mailData = { ...mailData, ...pubCrawlData };
             }
         } else {
-            await this.enrichGenericEvent(mailData, data, directusUrl, directusToken);
+            await this.enrichGenericEvent(mailData, data, url, token);
         }
 
         await MailWorkerService.queueMail(redis, data.email, templateId, mailData);
@@ -87,11 +92,8 @@ export class EventHandlers {
 
     static async handleActivitySignup(redis: Redis, rawPayload: unknown) {
         const data = ActivitySignupEventSchema.parse(rawPayload) as unknown as LocalActivitySignupEvent;
-        const hasAccount = await this.checkUserHasAccount(
-            process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '',
-            process.env.DIRECTUS_STATIC_TOKEN || '',
-            data.email
-        );
+        const { url, token } = this.getDirectusConfig();
+        const hasAccount = await this.checkUserHasAccount(url, token, data.email);
 
         let confirmationUrl = '';
         if (data.signupId && data.accessToken) {

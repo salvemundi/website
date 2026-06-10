@@ -1,9 +1,10 @@
-import { FastifyInstance } from 'fastify';
+import { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
 import { createDirectus, rest, staticToken, readItem, readItems, updateItem } from '@directus/sdk';
 import { getMollieClient } from '../services/mollie.service.js';
 import { TRIP_SIGNUP_FIELDS, TRIP_FIELDS } from '@salvemundi/validations';
 import crypto from 'node:crypto';
 import { DbTripSignup as TripSignup, DbTrip as Trip } from '@salvemundi/validations/directus/schema';
+import { verifyInternalToken } from '../middleware/auth.js';
 
 interface TripPaymentRequest {
     signupId?: number;
@@ -30,11 +31,8 @@ interface SignupActivityWithDetails {
 
 export default async function tripRoutes(fastify: FastifyInstance) {
     await Promise.resolve();
-    /**
-     * POST /api/finance/trip-payment-request
-     * Handles both admin enrichment mail generation AND user payment creation.
-     */
-    fastify.post('/trip-payment-request', async (request, reply) => {
+
+    fastify.post('/trip-payment-request', { preHandler: [verifyInternalToken] }, async (request, reply) => {
         const { signupId, tripId, paymentType, isConfirmedByUser } = request.body as TripPaymentRequest;
 
         if (!signupId || !tripId || !paymentType) {
@@ -53,7 +51,6 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 .with(staticToken(directusToken))
                 .with(rest());
 
-            // 1. Fetch Trip and Activities
             const [trip, signupActivities] = await Promise.all([
                 directus.request(readItem('trips', tripId, { fields: [...TRIP_FIELDS] })),
                 directus.request(readItems('trip_signup_activities', {
@@ -62,20 +59,15 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 }))
             ]) as [Trip, SignupActivityWithDetails[]];
 
-            // 2. Fetch Signup
             let signup: TripSignup;
             try {
                 signup = await directus.request(readItem('trip_signups', signupId, {
                     fields: [...TRIP_SIGNUP_FIELDS]
                 })) as TripSignup;
             } catch {
-                // Gebruik 'error' direct voor logging indien nodig, maar hier is een 404 gepast.
                 return reply.status(404).send({ error: 'Signup not found' });
             }
 
-
-
-            // 3. Status checks
             if (paymentType === 'deposit' && signup.deposit_paid) {
                 return reply.status(400).send({ error: 'Aanbetaling is al voldaan.' });
             }
@@ -92,7 +84,6 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 });
             }
 
-            // 4. Calculate Total Price
             const basePrice = Number(trip.base_price || 0);
             const crewDiscount = (signup.role === 'crew' ? Number(trip.crew_discount || 0) : 0);
 
@@ -128,7 +119,6 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 description = `Restbetaling: ${trip.name}`;
             }
 
-            // 5. Manage Access Token
             let accessToken = signup.access_token;
             if (!accessToken) {
                 accessToken = crypto.randomUUID();
@@ -137,12 +127,10 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                         access_token: accessToken
                     }));
                 } catch (error: unknown) {
-                    // Identifier 'error' conform eis
                     fastify.log.error(error, `[TRIP] Failed to update access_token for signup ${signupId}`);
                 }
             }
 
-            // 6. Case A: Enrichment mail
             if (!isConfirmedByUser) {
                 const mailServiceUrl = process.env.MAIL_SERVICE_URL;
                 const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
@@ -185,7 +173,6 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 return { success: true, message: 'Enrichment email sent' };
             }
 
-            // 7. Case B: Mollie payment
             if (amount <= 0) {
                 return reply.status(400).send({
                     error: 'Het te betalen bedrag is 0 of negatief. Neem contact op met de reiscommissie.'
@@ -233,7 +220,6 @@ export default async function tripRoutes(fastify: FastifyInstance) {
 
             return { success: true, checkoutUrl: payment._links.checkout?.href };
         } catch (error: unknown) {
-            // Identifier 'error' behouden, herdeclaratie 'const error =' verwijderd.
             const message = error instanceof Error ? error.message : String(error);
             const stack = error instanceof Error ? error.stack : undefined;
 
