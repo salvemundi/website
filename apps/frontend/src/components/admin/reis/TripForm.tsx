@@ -40,6 +40,7 @@ export default function TripForm({
     }, [state, editingTrip, onSuccess]);
 
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [existingImageId, setExistingImageId] = useState<string | null>(null);
     const [imageError, setImageError] = useState<string | null>(null);
     const [registrationOpen, setRegistrationOpen] = useState(false);
     const [allowFinalPayments, setAllowFinalPayments] = useState(false);
@@ -47,7 +48,12 @@ export default function TripForm({
 
     useEffect(() => {
         if (editingTrip) {
-            if (editingTrip.image) setImagePreview(getImageUrl(editingTrip.image, { width: 400, height: 200, fit: 'cover' }));
+            if (editingTrip.image) {
+                setImagePreview(getImageUrl(editingTrip.image, { width: 400, height: 200, fit: 'cover' }));
+                setExistingImageId(editingTrip.image);
+            } else {
+                setExistingImageId(null);
+            }
             setRegistrationOpen(!!editingTrip.registration_open);
             setAllowFinalPayments(!!editingTrip.allow_final_payments);
             setIsBusTrip(!!editingTrip.is_bus_trip);
@@ -74,6 +80,7 @@ export default function TripForm({
                 return;
             }
 
+            setExistingImageId(null);
             const reader = new FileReader();
             reader.onloadend = () => setImagePreview(reader.result as string);
             reader.readAsDataURL(file);
@@ -83,6 +90,7 @@ export default function TripForm({
     const handleRemoveImage = () => {
         setImagePreview(null);
         setImageError(null);
+        setExistingImageId(null);
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -125,7 +133,7 @@ export default function TripForm({
                 <input type="hidden" name="registration_open" value={registrationOpen ? 'on' : 'off'} />
                 <input type="hidden" name="allow_final_payments" value={allowFinalPayments ? 'on' : 'off'} />
                 <input type="hidden" name="is_bus_trip" value={isBusTrip ? 'on' : 'off'} />
-                <input type="hidden" name="existing_image_id" value={editingTrip?.image || ''} />
+                <input type="hidden" name="existing_image_id" value={existingImageId || ''} />
 
                 {imageError && (
                     <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500 text-[10px] font-semibold tracking-widest uppercase">

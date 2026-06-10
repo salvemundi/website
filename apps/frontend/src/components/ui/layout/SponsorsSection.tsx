@@ -40,7 +40,7 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
                                         const src = hasSponsorImage
                                             ? getImageUrl(sponsor.image, { width: 400, height: 200, fit: 'inside' })
                                             : null;
-                                        const itemClasses = `sponsor-item ${sponsor.dark_bg ? 'sponsor-light-bg' : ''}`;
+                                        const itemClasses = `sponsor-item ${sponsor.dark_bg ? 'sponsor-dark-bg' : ''}`;
 
                                         const imageContent = src ? (
                                             <Image

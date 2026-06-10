@@ -21,6 +21,7 @@ interface ReisFormIslandProps {
     registrationStartText: string;
     participantsCount: number;
     initialUser?: EnrichedUser | null;
+    termsFileUrl?: string | null;
 }
 
 export function ReisFormIsland({
@@ -28,7 +29,8 @@ export function ReisFormIsland({
     userSignup,
     canSignUp,
     registrationStartText,
-    initialUser
+    initialUser,
+    termsFileUrl
 }: ReisFormIslandProps) {
     const { data: session } = authClient.useSession();
     const router = useRouter();
@@ -79,6 +81,7 @@ export function ReisFormIsland({
                         registrationStartText={registrationStartText}
                         currentUser={currentUser}
                         onRefresh={() => { void handleRefresh(); }}
+                        termsFileUrl={termsFileUrl}
                     />
                 )}
             </div>

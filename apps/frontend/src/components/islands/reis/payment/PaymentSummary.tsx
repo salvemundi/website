@@ -23,31 +23,31 @@ export function PaymentSummary({ pricing, paymentType, hideHeader = false }: Pay
             )}
 
             <div className="space-y-4">
-                <div className="p-6 rounded-2xl bg-white/5 border border-white/5 space-y-3">
+                <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-black/5 dark:border-white/10 space-y-3 shadow-md">
                     <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-400">Basisprijs Reis</span>
-                        <span className="text-white font-bold">€{pricing.base.toFixed(2)}</span>
+                        <span className="text-text-muted">Basisprijs Reis</span>
+                        <span className="text-text-main font-bold">€{pricing.base.toFixed(2)}</span>
                     </div>
                     {pricing.discount > 0 && (
                         <div className="flex justify-between items-center text-sm">
-                            <span className="text-green-500 italic">Crew Korting</span>
-                            <span className="text-green-500 font-bold">-€{pricing.discount.toFixed(2)}</span>
+                            <span className="text-emerald-600 dark:text-emerald-400 italic">Crew Korting</span>
+                            <span className="text-emerald-600 dark:text-emerald-400 font-bold">-€{pricing.discount.toFixed(2)}</span>
                         </div>
                     )}
                     {pricing.actPrice > 0 && (
                         <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-400">Optionele Activiteiten</span>
-                            <span className="text-white font-bold">+€{pricing.actPrice.toFixed(2)}</span>
+                            <span className="text-text-muted">Optionele Activiteiten</span>
+                            <span className="text-text-main font-bold">+€{pricing.actPrice.toFixed(2)}</span>
                         </div>
                     )}
-                    <div className="pt-3 border-t border-white/10 flex justify-between items-center">
-                        <span className="text-white font-bold text-xs tracking-widest">Totaalbedrag</span>
-                        <span className="text-xl font-bold text-white italic">€{pricing.total.toFixed(2)}</span>
+                    <div className="pt-3 border-t border-black/5 dark:border-white/10 flex justify-between items-center">
+                        <span className="text-text-main font-bold text-xs tracking-widest">Totaalbedrag</span>
+                        <span className="text-xl font-bold text-text-main italic">€{pricing.total.toFixed(2)}</span>
                     </div>
                     {paymentType === 'final' && (
                         <div className="flex justify-between items-center text-sm pt-2">
-                            <span className="text-green-500 italic">Reeds voldaan (Aanbetaling)</span>
-                            <span className="text-green-500 font-bold">-€{pricing.deposit.toFixed(2)}</span>
+                            <span className="text-emerald-600 dark:text-emerald-400 italic">Reeds voldaan (Aanbetaling)</span>
+                            <span className="text-emerald-600 dark:text-emerald-400 font-bold">-€{pricing.deposit.toFixed(2)}</span>
                         </div>
                     )}
                 </div>

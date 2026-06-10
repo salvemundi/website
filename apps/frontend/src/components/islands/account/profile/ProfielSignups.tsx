@@ -32,19 +32,19 @@ export default function ProfielSignups({
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowPastEvents((v) => !v)}
-                        className="inline-flex items-center justify-center rounded-xl bg-[var(--color-purple-50)] dark:bg-white/5 px-4 py-2 text-[10px] font-black uppercase text-[var(--color-purple-700)] dark:text-white hover:bg-[var(--color-purple-100)] dark:hover:bg-white/10 transition border border-[var(--color-purple-100)] dark:border-white/10 disabled:opacity-50"
+                        className="inline-flex items-center justify-center rounded-xl bg-purple-50 dark:bg-white/5 px-4 py-2 text-[10px] font-black uppercase text-purple-700 dark:text-white hover:bg-purple-100 dark:hover:bg-white/10 transition border border-purple-100 dark:border-white/10 disabled:opacity-50"
                     >
                         {showPastEvents ? "Verberg oude" : "Toon oude"}
                     </button>
                     <Link
                         href="/profiel/tickets"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-purple-50)] dark:bg-white/5 px-4 py-2 text-[10px] font-black uppercase text-[var(--color-purple-700)] dark:text-white hover:bg-[var(--color-purple-100)] dark:hover:bg-white/10 transition border border-[var(--color-purple-100)] dark:border-white/10"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-purple-50 dark:bg-white/5 px-4 py-2 text-[10px] font-black uppercase text-purple-700 dark:text-white hover:bg-purple-100 dark:hover:bg-white/10 transition border border-purple-100 dark:border-white/10"
                     >
                         Tickets <ChevronRight className="h-3 w-3" />
                     </Link>
                     <Link
                         href="/activiteiten"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-purple-500)] px-4 py-2 text-[10px] font-black uppercase text-white hover:bg-[var(--color-purple-600)] transition shadow-lg"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-purple-500 px-4 py-2 text-[10px] font-black uppercase text-white hover:bg-purple-600 transition shadow-lg"
                     >
                         Kalender <ChevronRight className="h-3 w-3" />
                     </Link>
@@ -83,8 +83,8 @@ export default function ProfielSignups({
                                 key={`${signup._type}-${signup.id}`}
                                 href={detailHref}
                                 className={`group h-full flex items-center justify-between gap-4 rounded-3xl p-5 text-left transition-all border shadow-sm ${isPast
-                                    ? "bg-[var(--color-licht-paars)]/5 dark:bg-[var(--color-donker-blauw)]/50 opacity-60 grayscale border-[var(--color-licht-paars)]/10 dark:border-[var(--color-donker-blauw)]/30"
-                                    : "bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 hover:shadow-lg hover:-translate-y-0.5"
+                                    ? "bg-licht-paars/5 dark:bg-white/5 opacity-60 grayscale border-licht-paars/10 dark:border-white/5"
+                                    : "bg-licht-paars/10 dark:bg-white/5 border-licht-paars/20 dark:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
                                     }`}
                             >
                                 <div className="flex items-center gap-4">
@@ -109,7 +109,7 @@ export default function ProfielSignups({
                     })}
                 </div>
             ) : (
-                <div className="rounded-3xl border-2 border-dashed border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 bg-[var(--color-licht-paars)]/5 dark:bg-[var(--color-donker-blauw)]/40 p-12 text-center shadow-inner">
+                <div className="rounded-3xl border-2 border-dashed border-licht-paars/20 dark:border-white/10 bg-licht-paars/5 dark:bg-white/5 p-12 text-center shadow-inner">
                     <p className="text-[var(--color-purple-700)] dark:text-white font-bold text-lg mb-2">
                         Je bent nog niet aangemeld voor activiteiten.
                     </p>
@@ -118,7 +118,7 @@ export default function ProfielSignups({
                     </p>
                     <Link
                         href="/activiteiten"
-                        className="inline-flex items-center gap-2 rounded-full bg-[var(--color-purple-500)] px-8 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+                        className="inline-flex items-center gap-2 rounded-full bg-purple-500 px-8 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
                     >
                         Ontdek activiteiten
                     </Link>

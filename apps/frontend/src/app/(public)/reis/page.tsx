@@ -1,4 +1,5 @@
 import { getReisSiteSettings, getUpcomingTrips, getUserTripSignup, getTripParticipantsCount, getCurrentUserProfileAction } from '@/server/actions/events/reis.actions';
+import { getDocumenten } from '@/server/actions/public/website.actions';
 import { ReisFormIsland } from '@/components/islands/reis/ReisFormIsland';
 import { ReisInfoIsland } from '@/components/islands/reis/ReisInfoIsland';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
@@ -16,10 +17,11 @@ export const metadata = {
 export default async function ReisPage() {
     await connection();
 
-    const [trips, siteSettings, session] = await Promise.all([
+    const [trips, siteSettings, session, documents] = await Promise.all([
         getUpcomingTrips(),
         getReisSiteSettings(),
-        getEnrichedSession()
+        getEnrichedSession(),
+        getDocumenten()
     ]);
 
     const isReisEnabled = siteSettings?.show ?? true;
@@ -69,6 +71,13 @@ export default async function ReisPage() {
                     : 'De inschrijvingen voor deze reis zijn momenteel gesloten.')
                 : 'Inschrijving geopend!'));
 
+    const reisvoorwaardenDoc = documents.find(
+        doc => doc.category?.toLowerCase() === 'reis' || 
+               doc.title?.toLowerCase().includes('reisvoorwaarde') ||
+               doc.title?.toLowerCase().includes('reisvoorwaarden')
+    );
+    const termsFileUrl = reisvoorwaardenDoc?.file ? `/api/assets/${reisvoorwaardenDoc.file}` : null;
+
     return (
         <PublicPageShell>
             <h1 className="sr-only">Reis</h1>
@@ -81,6 +90,7 @@ export default async function ReisPage() {
                         registrationStartText={registrationStartText}
                         participantsCount={participantsCount}
                         initialUser={currentUserProfile}
+                        termsFileUrl={termsFileUrl}
                     />
                     <ReisInfoIsland nextTrip={nextTrip} />
                 </div>
