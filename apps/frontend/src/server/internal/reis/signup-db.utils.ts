@@ -8,6 +8,7 @@ import {
 import { z } from 'zod';
 import { DbTripSignup as TripSignup, DbTripSignupActivitie as TripSignupActivity } from '@salvemundi/validations/directus/schema';
 import { RawTripSignupRow, RawTripSignupActivityRow, QueryParam } from './types';
+import { toLocalISOString } from '@/lib/utils/date-utils';
 
 export async function fetchUserSignupStatusDb(userIdOrEmail: string, tripId: number): Promise<ReisTripSignup | null> {
     if (!userIdOrEmail || userIdOrEmail === '') return null;
@@ -25,8 +26,8 @@ export async function fetchUserSignupStatusDb(userIdOrEmail: string, tripId: num
     const raw = res.rows[0] as RawTripSignupRow;
     const sanitized = {
         ...raw,
-        date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : String(raw.date_of_birth),
-        document_expiry_date: raw.document_expiry_date instanceof Date ? raw.document_expiry_date.toISOString() : String(raw.document_expiry_date),
+        date_of_birth: toLocalISOString(raw.date_of_birth),
+        document_expiry_date: toLocalISOString(raw.document_expiry_date),
         date_created: raw.created_at instanceof Date ? raw.created_at.toISOString() : (raw.created_at ? new Date(raw.created_at).toISOString() : new Date().toISOString()),
         created_at: raw.created_at instanceof Date ? raw.created_at.toISOString() : (raw.created_at ? new Date(raw.created_at).toISOString() : new Date().toISOString()),
         deposit_paid: !!raw.deposit_paid,
@@ -54,8 +55,8 @@ export async function fetchAllTripSignupsDb(tripId: number): Promise<ReisTripSig
 
     const sanitized = (res.rows as RawTripSignupRow[]).map((raw) => ({
         ...raw,
-        date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : String(raw.date_of_birth),
-        document_expiry_date: raw.document_expiry_date instanceof Date ? raw.document_expiry_date.toISOString() : String(raw.document_expiry_date),
+        date_of_birth: toLocalISOString(raw.date_of_birth),
+        document_expiry_date: toLocalISOString(raw.document_expiry_date),
         date_created: raw.created_at instanceof Date ? raw.created_at.toISOString() : (raw.created_at ? new Date(raw.created_at).toISOString() : new Date().toISOString()),
         created_at: raw.created_at instanceof Date ? raw.created_at.toISOString() : (raw.created_at ? new Date(raw.created_at).toISOString() : new Date().toISOString()),
         deposit_paid: !!raw.deposit_paid,
@@ -84,8 +85,8 @@ export async function fetchTripSignupByIdDb(signupId: number): Promise<ReisTripS
     const raw = res.rows[0] as RawTripSignupRow;
     const sanitized = {
         ...raw,
-        date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : String(raw.date_of_birth),
-        document_expiry_date: raw.document_expiry_date instanceof Date ? raw.document_expiry_date.toISOString() : String(raw.document_expiry_date),
+        date_of_birth: toLocalISOString(raw.date_of_birth),
+        document_expiry_date: toLocalISOString(raw.document_expiry_date),
         date_created: raw.created_at instanceof Date ? raw.created_at.toISOString() : (raw.created_at ? new Date(raw.created_at).toISOString() : new Date().toISOString()),
         created_at: raw.created_at instanceof Date ? raw.created_at.toISOString() : (raw.created_at ? new Date(raw.created_at).toISOString() : new Date().toISOString()),
         deposit_paid: !!raw.deposit_paid,

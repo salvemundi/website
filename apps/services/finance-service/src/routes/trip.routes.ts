@@ -183,7 +183,8 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 ? `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`
                 : undefined;
 
-            const confirmationUrl = `${process.env.PUBLIC_URL}/reis/bevestiging?id=${signupId}&t=${accessToken}`;
+            const transactionToken = crypto.randomUUID();
+            const confirmationUrl = `${process.env.PUBLIC_URL}/reis/bevestiging?id=${signupId}&t=${accessToken}&tr=${transactionToken}`;
             const mollie = getMollieClient();
             const payment = await mollie.payments.create({
                 amount: { currency: 'EUR', value: amount.toFixed(2) },
@@ -211,7 +212,7 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                     email: signup.email,
                     first_name: signup.first_name || '',
                     last_name: signup.last_name || '',
-                    access_token: accessToken,
+                    access_token: transactionToken,
                     trip_signup: signupId,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()

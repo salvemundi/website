@@ -3,6 +3,7 @@
 import { FileText, CreditCard } from 'lucide-react';
 import type { TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 import { parseBoolean } from '@salvemundi/validations';
+import { toISODate } from '@/lib/utils/date-utils';
 import {
     HorizontalInput,
     HorizontalDate,
@@ -17,8 +18,6 @@ interface CockpitSignupFormProps {
     isBusTrip?: boolean;
     section?: 'all' | 'personal' | 'admin' | 'personal_basic' | 'personal_extended';
 }
-
-const toISO = (dateStr: string) => new Date(dateStr).toISOString().split('T')[0];
 
 const formatShortDate = (date: Date) =>
     new Intl.DateTimeFormat('nl-NL', {
@@ -46,7 +45,7 @@ export default function CockpitSignupForm({
                         <HorizontalInput label="Achternaam" name="last_name" defaultValue={initialData?.last_name || signup.last_name} required />
                         <HorizontalInput label="Email" name="email" type="email" defaultValue={initialData?.email || signup.email} required />
                         <HorizontalInput label="Telefoon" name="phone_number" defaultValue={initialData?.phone_number || signup.phone_number || ''} />
-                        <HorizontalDate label="Geb. Datum" name="date_of_birth" defaultValue={initialData?.date_of_birth || (signup.date_of_birth ? toISO(signup.date_of_birth) : '')} />
+                        <HorizontalDate label="Geb. Datum" name="date_of_birth" defaultValue={initialData?.date_of_birth || (signup.date_of_birth ? toISODate(signup.date_of_birth) : '')} />
                     </div>
                 </div>
             )}
@@ -68,7 +67,7 @@ export default function CockpitSignupForm({
                                     <option value="id_card">ID Kaart</option>
                                 </HorizontalSelect>
                                 <HorizontalInput label="ID Nummer" name="document_number" defaultValue={initialData?.document_number || signup.document_number || ''} />
-                                <HorizontalDate label="Vervaldatum" name="document_expiry_date" defaultValue={initialData?.document_expiry_date || (signup.document_expiry_date ? toISO(signup.document_expiry_date) : '')} />
+                                <HorizontalDate label="Vervaldatum" name="document_expiry_date" defaultValue={initialData?.document_expiry_date || (signup.document_expiry_date ? toISODate(signup.document_expiry_date) : '')} />
                             </>
                         )}
                         <div className="grid grid-cols-1 gap-2 pt-2">

@@ -62,7 +62,7 @@ export class MailerService {
             return this.cachedLogoAttachment;
         }
 
-        const logoPath = path.join(__dirname, '../assets/Nieuw-logo-02.png');
+        const logoPath = path.join(__dirname, '../assets/newlogo.png');
         if (fs.existsSync(logoPath)) {
             this.cachedLogoAttachment = {
                 '@odata.type': '#microsoft.graph.fileAttachment',

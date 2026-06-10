@@ -52,7 +52,7 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
     })) as unknown as TripSignup[];
 
     const confirmedCount = signups.filter(s => s.status === 'confirmed').length;
-    const unpaidCount = signups.filter(s => !s.full_payment_paid).length;
+    const unpaidCount = signups.filter(s => s.status !== 'cancelled' && !s.full_payment_paid).length;
 
     return (
         <AdminPageShell
@@ -63,12 +63,12 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
                 <div className="flex items-center gap-4">
                     <div className="hidden md:flex items-center gap-4 bg-bg-soft px-4 py-2 rounded-2xl border border-border-color/50 shadow-sm">
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Bevestigd</span>
+                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Bevestigde Reizigers</span>
                             <span className="text-sm font-bold text-beheer-active leading-none">{confirmedCount}</span>
                         </div>
                         <div className="w-px h-6 bg-border-color/20" />
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Openstaand</span>
+                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Openstaande Betalingen</span>
                             <span className="text-sm font-bold text-beheer-inactive leading-none">{unpaidCount}</span>
                         </div>
                     </div>

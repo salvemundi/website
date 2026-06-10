@@ -3,6 +3,7 @@
 import { FileText, CreditCard, Bus, AlertCircle } from 'lucide-react';
 import type { TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 import { parseBoolean } from '@salvemundi/validations';
+import { toISODate } from '@/lib/utils/date-utils';
 import {
     Input,
     Select,
@@ -19,8 +20,6 @@ interface StandardSignupFormProps {
     section?: 'all' | 'personal' | 'admin' | 'personal_basic' | 'personal_extended';
     compact?: boolean;
 }
-
-const toISO = (dateStr: string) => new Date(dateStr).toISOString().split('T')[0];
 
 const formatShortDate = (d: Date) =>
     new Intl.DateTimeFormat('nl-NL', {
@@ -58,7 +57,7 @@ export default function StandardSignupForm({
                                 <Input label="Achternaam" name="last_name" defaultValue={initialData?.last_name || signup.last_name} required placeholder="Bijv. de Vries" />
                                 <Input label="Email Adres" name="email" type="email" defaultValue={initialData?.email || signup.email} required className="md:col-span-2" placeholder="jan@voorbeeld.nl" />
                                 <Input label="Telefoonnummer" name="phone_number" defaultValue={initialData?.phone_number || signup.phone_number || ''} placeholder="+31 6 12345678" />
-                                <DateAndLabel label="Geboortedatum" name="date_of_birth" defaultValue={initialData?.date_of_birth || (signup.date_of_birth ? toISO(signup.date_of_birth) : '')} />
+                                <DateAndLabel label="Geboortedatum" name="date_of_birth" defaultValue={initialData?.date_of_birth || (signup.date_of_birth ? toISODate(signup.date_of_birth) : '')} />
                             </>
                         )}
                         {(section === 'all' || section === 'personal' || section === 'personal_extended') && !isBusTrip && (
@@ -82,7 +81,7 @@ export default function StandardSignupForm({
 
                             {!isBusTrip && (
                                 <div className={`${compact ? 'mt-4' : 'mt-8'} grid grid-cols-1 md:grid-cols-2 ${compact ? 'gap-4' : 'gap-8'}`}>
-                                    <DateAndLabel label="Vervaldatum Document" name="document_expiry_date" defaultValue={initialData?.document_expiry_date || (signup.document_expiry_date ? toISO(signup.document_expiry_date) : '')} />
+                                    <DateAndLabel label="Vervaldatum Document" name="document_expiry_date" defaultValue={initialData?.document_expiry_date || (signup.document_expiry_date ? toISODate(signup.document_expiry_date) : '')} />
                                     <div className="flex items-center pt-4">
                                         <Checkbox label="Extra Koffer" name="extra_luggage" defaultChecked={initialData ? parseBoolean(initialData.extra_luggage) : parseBoolean(signup.extra_luggage)} />
                                     </div>

@@ -44,19 +44,22 @@ export class MailWorkerService {
                 for (const taskJson of tasks) {
                     if (this.shouldStop) break;
 
+                    const claimed = await redis.zrem(this.QUEUE_KEY, taskJson);
+                    if (claimed === 0) {
+                        continue;
+                    }
+
                     let parsedResult: unknown;
                     try {
                         parsedResult = JSON.parse(taskJson);
                     } catch (err) {
                         safeConsoleError('[mail-worker.ts][startWorker]', err);
-                        await redis.zrem(this.QUEUE_KEY, taskJson);
                         continue;
                     }
 
                     const validated = MailTaskSchema.safeParse(parsedResult);
                     if (!validated.success) {
                         safeConsoleError('[mail-worker.ts][startWorker]', validated.error);
-                        await redis.zrem(this.QUEUE_KEY, taskJson);
                         continue;
                     }
 
@@ -66,7 +69,6 @@ export class MailWorkerService {
                         const success = await MailerService.send(redis, task.to, task.templateId, task.data);
 
                         if (success) {
-                            await redis.zrem(this.QUEUE_KEY, taskJson);
                             await AuditService.logMail(task.to, task.templateId, 'SUCCESS');
                         } else {
                             throw new Error('MailerService returned false');
@@ -76,13 +78,11 @@ export class MailWorkerService {
 
                         task.retries += 1;
                         if (task.retries >= task.maxRetries) {
-                            await redis.zrem(this.QUEUE_KEY, taskJson);
                             await AuditService.logMail(task.to, task.templateId, 'FAILED', 'Max retries reached');
                         } else {
                             const delay = 60000 * Math.pow(task.retries, 2);
                             const newScore = Date.now() + delay;
 
-                            await redis.zrem(this.QUEUE_KEY, taskJson);
                             await redis.zadd(this.QUEUE_KEY, newScore, JSON.stringify(task));
                         }
                     }

@@ -38,3 +38,23 @@ export function normalizeDate(dateStr: string | null | undefined): string | null
     
     return dateStr;
 }
+
+/**
+ * Extracts a timezone-safe ISO date string (YYYY-MM-DD) from a string or Date object.
+ */
+export function toISODate(dateInput: Date | string | null | undefined): string {
+    if (!dateInput) return '';
+    
+    if (typeof dateInput === 'string') {
+        const match = dateInput.match(/^\d{4}-\d{2}-\d{2}$/);
+        if (match) return match[0];
+    }
+    
+    const d = dateInput instanceof Date ? dateInput : new Date(dateInput);
+    if (isNaN(d.getTime())) return '';
+    
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
