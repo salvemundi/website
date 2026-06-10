@@ -19,7 +19,6 @@ const formatDuration = (ms: number) => {
     return `${secs}s`;
 };
 
-// NIEUW: Type definitie om de 'any' waarschuwingen te voorkomen
 interface SyncSummaryPayload {
     processed?: number;
     duration_ms?: number;
