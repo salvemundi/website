@@ -19,6 +19,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
 
         if (signup.full_payment_paid) return 'Geregistreerd (Betaald)';
         if (!signup.deposit_paid) return 'Aanbetaling verwacht';
+        if (!nextTrip?.allow_final_payments) return 'Aanbetaling voldaan';
         return 'Restbetaling verwacht';
     };
 
