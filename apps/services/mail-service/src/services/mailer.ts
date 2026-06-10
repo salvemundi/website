@@ -109,7 +109,8 @@ export class MailerService {
             safeConsoleLog(`[MailerService] [timing] getLogoAttachment: ${ms(t3)} (cached: ${this.logoInitialized})`);
 
             const senderEmail = process.env.AZURE_MAIL_SENDER || 'info@salvemundi.nl';
-            const userFriendlySubject = this.SUBJECT_MAP.get(templateId) || templateId.replace(/[-_]/g, ' ');
+            const customSubject = data['subject'] as string | undefined;
+            const userFriendlySubject = customSubject || this.SUBJECT_MAP.get(templateId) || templateId.replace(/[-_]/g, ' ');
 
             // 4. Graph API call
             const t4 = performance.now();
