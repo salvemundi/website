@@ -25,7 +25,7 @@ import { getReisSiteSettings, getUpcomingTrips, getTripSignupsInternal } from '.
 const getMailUrl = () => process.env.MAIL_SERVICE_URL;
 
 const getServiceHeaders = (): HeadersInit => {
-    const token = process.env.INTERNAL_SERVICE_TOKEN;
+    const token = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
     if (!token) throw new Error('INTERNAL_SERVICE_TOKEN is missing');
     return {
         Authorization: `Bearer ${token}`,

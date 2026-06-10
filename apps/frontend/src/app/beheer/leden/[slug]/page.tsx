@@ -131,10 +131,11 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
             { name: "SaMu || Agenda", id: "cc3b152d-9152-475a-a316-ec5d766d0b78" }
         ];
 
-        if (memberData.entra_id && process.env.AZURE_MANAGEMENT_SERVICE_URL && process.env.INTERNAL_SERVICE_TOKEN) {
+        const internalToken = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
+        if (memberData.entra_id && process.env.AZURE_MANAGEMENT_SERVICE_URL && internalToken) {
             try {
                 const mgmtRes = await fetch(`${process.env.AZURE_MANAGEMENT_SERVICE_URL}/api/users/${encodeURIComponent(memberData.entra_id)}/groups`, {
-                    headers: { 'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}` },
+                    headers: { 'Authorization': `Bearer ${internalToken}` },
                     next: { revalidate: 0 } // No caching to ensure Admin sees live data
                 });
 

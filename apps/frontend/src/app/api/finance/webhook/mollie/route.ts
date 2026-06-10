@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
             headers: {
                 'Content-Type': 'application/json',
                 'x-webhook-secret': process.env.MOLLIE_WEBHOOK_SECRET || '',
-                'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`,
+                'Authorization': `Bearer ${(process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim()}`,
             },
             body: JSON.stringify({ id })
         });

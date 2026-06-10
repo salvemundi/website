@@ -15,7 +15,7 @@ const renewMembershipSchema = z.object({
 
 const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
 const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
-const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN;
+const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
 interface DbUserRow {
     email: string | null;
@@ -247,7 +247,10 @@ export async function renewMembershipAction(
 
         if (AZURE_SYNC_URL && INTERNAL_TOKEN) {
             fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(directusUserId)}`, {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${INTERNAL_TOKEN}`
+                }
             }).catch((error: unknown) => {
                 safeConsoleError(`[leden.actions.ts][renewMembershipAction] Failed to sync user for ${directusUserId}:`, error);
             });

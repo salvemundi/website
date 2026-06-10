@@ -65,7 +65,7 @@ export async function updateSignupStatus(signupId: number, status: string) {
         // 4. Trigger Email if status changed TO confirmed
         if (status === 'confirmed' && oldStatus !== 'confirmed' && signup.email) {
             const mailUrl = process.env.MAIL_SERVICE_URL;
-            const token = process.env.INTERNAL_SERVICE_TOKEN;
+            const token = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
             if (mailUrl && token) {
                 // Fetch trip name for a better email experience

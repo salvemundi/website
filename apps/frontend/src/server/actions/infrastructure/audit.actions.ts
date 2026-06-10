@@ -116,11 +116,12 @@ export async function approveSignupAction(id: string, type: string) {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
+        const internalToken = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
         const res = await fetch(`${process.env.FINANCE_SERVICE_URL}/api/payments/approve`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`
+                'Authorization': `Bearer ${internalToken}`
             },
             body: JSON.stringify({ mollieId: id })
         });
@@ -224,9 +225,10 @@ export async function getQueueStatusAction(): Promise<ActionResponse<QueueStatus
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
+        const internalToken = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
         const res = await fetch(`${process.env.AZURE_MANAGEMENT_SERVICE_URL}/api/monitoring/status`, {
             headers: {
-                'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`
+                'Authorization': `Bearer ${internalToken}`
             }
         });
 

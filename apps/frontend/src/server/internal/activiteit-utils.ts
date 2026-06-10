@@ -4,7 +4,7 @@ export const getFinanceServiceUrl = () =>
     process.env.FINANCE_SERVICE_URL;
 
 export const getInternalHeaders = () => {
-    const token = process.env.INTERNAL_SERVICE_TOKEN;
+    const token = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
     return {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
