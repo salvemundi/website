@@ -35,6 +35,10 @@
 
    /* Semantic Aliases */
    --color-theme-purple: var(--theme-purple);
+   --color-theme-purple-light: var(--theme-purple-light);
+   --color-theme-purple-dark: var(--theme-purple-dark);
+   --color-theme-purple-darker: var(--theme-purple-darker);
+   --color-theme-purple-lighter: var(--theme-purple-lighter);
    --color-theme-text: var(--text-main);
    --color-theme-bg: var(--bg-main);
 

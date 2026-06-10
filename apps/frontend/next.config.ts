@@ -48,6 +48,18 @@ const nextConfig: NextConfig = {
     async headers() {
         return [
             {
+                source: '/sw.js',
+                headers: [
+                    { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+                ],
+            },
+            {
+                source: '/manifest.webmanifest',
+                headers: [
+                    { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+                ],
+            },
+            {
                 source: '/img/:path*',
                 headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, must-revalidate' }],
             },
@@ -83,6 +95,18 @@ const withSerwist = withSerwistInit({
     swSrc: 'src/sw.ts',
     swDest: 'public/sw.js',
     disable: process.env.NODE_ENV !== 'production',
+    exclude: [
+        // Exclude source maps
+        /\.map$/,
+        // Exclude Adobe Illustrator vector files
+        /\.ai$/,
+        // Exclude all files in public/img/old/
+        /\/img\/old\//,
+        // Exclude Next.js build manifests
+        /react-loadable-manifest\.json$/,
+        /build-manifest\.json$/,
+        /middleware-manifest\.json$/,
+    ],
 });
 
 const withAnalyzer = withBundleAnalyzer({
