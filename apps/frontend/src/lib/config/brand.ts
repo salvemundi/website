@@ -4,17 +4,17 @@
  */
 export const BRAND_CONFIG = {
     // Primary brand logo (usually dark purple/black for light backgrounds)
-    logoLightMode: '/img/Nieuw-logo-02.png',
+    logoLightMode: '/img/newlogoOld.png',
 
     // Light brand logo (usually white for dark backgrounds)
-    logoDarkMode: '/img/Nieuw-logo-01.png',
+    logoDarkMode: '/img/newlogoOld.png',
 
     // Alternate yellow/gold logo
-    logoYellow: '/img/Nieuw-logo-03.png',
+    logoYellow: '/img/newlogoOld.png',
 
     // Default fallback logo path for light backgrounds
-    logoFallbackLight: '/img/Nieuw-logo-02.png',
+    logoFallbackLight: '/img/newlogoOld.png',
 
     // Default fallback logo path for dark backgrounds
-    logoFallbackDark: '/img/Nieuw-logo-01.png'
+    logoFallbackDark: '/img/newlogoOld.png'
 };
