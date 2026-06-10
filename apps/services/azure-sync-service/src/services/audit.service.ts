@@ -13,7 +13,7 @@ export class AuditService {
                     admin_name: 'Systeem',
                     timestamp: new Date().toISOString()
                 }
-            }));
+            } as never));
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             safeConsoleError('[AuditService] Failed to log action:', message);
@@ -23,7 +23,7 @@ export class AuditService {
     static async logMembershipRenewal(email: string, userId?: string, paymentId?: string) {
         await this.logSystemAction('membership_renewal', 'SUCCESS', {
             lid: email,
-            email: email,
+            email,
             user_id: userId || '',
             payment_id: paymentId || '',
             details: 'Lidmaatschap verlengd'
@@ -33,7 +33,7 @@ export class AuditService {
     static async logMembershipProvisioning(email: string, firstName: string, lastName: string, paymentId?: string) {
         await this.logSystemAction('membership_provisioning', 'SUCCESS', {
             naam: `${firstName} ${lastName}`,
-            email: email,
+            email,
             payment_id: paymentId || '',
             details: 'Account creatie gestart in Azure'
         });

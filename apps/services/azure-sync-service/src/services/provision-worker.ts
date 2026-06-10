@@ -1,5 +1,5 @@
 import { safeConsoleError, logInfo } from '../utils/logger.js';
-import { Redis } from 'ioredis';
+import { type Redis } from 'ioredis';
 import { SyncJob } from './sync/sync-job.js';
 import { TokenService } from './token.service.js';
 import { z } from 'zod';
@@ -15,7 +15,7 @@ export type ProvisionTask = z.infer<typeof ProvisionTaskSchema>;
 
 export class ProvisionWorkerService {
     private static readonly QUEUE_KEY = 'v7:queue:provision:sync_existing';
-    private static shouldStop: boolean = false;
+    private static shouldStop = false;
 
     static async queueProvisioning(redis: Redis, userId: string, paymentId?: string) {
         const task: ProvisionTask = {
@@ -31,7 +31,7 @@ export class ProvisionWorkerService {
     static async start(redis: Redis) {
         logInfo('[ProvisionWorker] Starting background worker loop...');
 
-        while (!ProvisionWorkerService['shouldStop']) {
+        while (!this.shouldStop) {
             try {
                 const now = Date.now();
                 const tasks = await redis.zrangebyscore(this.QUEUE_KEY, 0, now, 'LIMIT', 0, 5);
@@ -42,7 +42,7 @@ export class ProvisionWorkerService {
                 }
 
                 for (const taskJson of tasks) {
-                    if ((ProvisionWorkerService as unknown as Record<string, unknown>).shouldStop) break;
+                    if (this.shouldStop) break;
 
                     let taskRaw: unknown;
                     try {
@@ -65,13 +65,9 @@ export class ProvisionWorkerService {
                     try {
                         logInfo(`[ProvisionWorker] Provisioning user ${task.userId}...`);
 
-                        // 1. Get Azure Token
                         const token = await TokenService.getAccessToken(redis);
-
-                        // 2. Perform individual sync/provisioning
                         await SyncJob.syncByEntraId(redis, task.userId, token);
 
-                        // Success -> Remove
                         await redis.zrem(this.QUEUE_KEY, taskJson);
                         logInfo(`[ProvisionWorker] Successfully provisioned user ${task.userId}`);
                     } catch (error: unknown) {
@@ -82,7 +78,7 @@ export class ProvisionWorkerService {
                         await redis.zrem(this.QUEUE_KEY, taskJson);
 
                         if (task.retries < task.maxRetries) {
-                            const delay = 10000 * Math.pow(task.retries, 2); // 10s, 40s, 90s...
+                            const delay = 10000 * Math.pow(task.retries, 2);
                             await redis.zadd(this.QUEUE_KEY, Date.now() + delay, JSON.stringify(task));
                             logInfo(`[ProvisionWorker] Retrying in ${delay / 1000}s (Attempt ${task.retries}).`);
                         } else {
@@ -92,9 +88,9 @@ export class ProvisionWorkerService {
                 }
             } catch (error: unknown) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
-                const isConnectionFailure = 
-                    errorMessage.includes('Connection is closed') || 
-                    errorMessage.includes('ECONNREFUSED') || 
+                const isConnectionFailure =
+                    errorMessage.includes('Connection is closed') ||
+                    errorMessage.includes('ECONNREFUSED') ||
                     errorMessage.includes('ENOTFOUND');
 
                 if (isConnectionFailure) {

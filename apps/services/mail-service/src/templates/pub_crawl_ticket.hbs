@@ -1,68 +1,76 @@
 {{#> layout headerTitle="KROEGENTOCHT TICKETS"}}
-    <div class="status-badge">Betaling Bevestigd</div>
-    <p>Hoi <strong>{{firstName}}</strong>,</p>
+<div class="status-badge">Betaling Bevestigd</div>
+<p>Beste {{firstName}},</p>
 
-    <p>Je betaling voor de <strong>Kroegentocht</strong> is ontvangen! Hieronder vind je jouw ticket(s). Neem deze mee naar het startpunt.</p>
+<p>Je betaling voor de <strong>Kroegentocht</strong> is ontvangen! Hieronder vind je jouw ticket(s). Neem deze mee naar
+  het startpunt.</p>
 
-    {{#each tickets}}
-    <div style="margin-bottom: 25px; padding: 25px; background: #ffffff; border-radius: 20px; border: 2px dashed #a4539b; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-        <p style="text-align: center; font-weight: 800; color: #a4539b; text-transform: uppercase; font-size: 10px; letter-spacing: 1.5px; margin-bottom: 15px;">
-            Ticket {{addOne @index}} van {{../totalTickets}}
-        </p>
-        <h2 style="text-align: center; color: #5e2b52; margin: 8px 0 4px; font-weight: 900; font-size: 20px;">{{this.name}}</h2>
-        <p style="text-align: center; font-size: 13px; color: #8a7a8c; margin: 4px 0 20px;">{{../eventName}}</p>
+{{#each tickets}}
+<div
+  style="margin-bottom: 25px; padding: 25px; background: #ffffff; border-radius: 20px; border: 2px dashed #a4539b; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+  <p
+    style="text-align: center; font-weight: 800; color: #a4539b; text-transform: uppercase; font-size: 10px; letter-spacing: 1.5px; margin-bottom: 15px;">
+    Ticket {{addOne @index}} van {{../totalTickets}}
+  </p>
+  <h2 style="text-align: center; color: #5e2b52; margin: 8px 0 4px; font-weight: 900; font-size: 20px;">{{this.name}}
+  </h2>
+  <p style="text-align: center; font-size: 13px; color: #8a7a8c; margin: 4px 0 20px;">{{../eventName}}</p>
 
-        {{#if this.qrDataUrl}}
-        <div style="text-align: center; margin: 20px 0;">
-            <img src="{{this.qrDataUrl}}" alt="QR Code voor {{this.name}}" width="180" height="180" style="display: block; margin: 0 auto; border: 0;" />
-        </div>
-        {{/if}}
-    </div>
-    {{/each}}
+  {{#if this.qrDataUrl}}
+  <div style="text-align: center; margin: 20px 0;">
+    <img src="{{this.qrDataUrl}}" alt="QR Code voor {{this.name}}" width="180" height="180"
+      style="display: block; margin: 0 auto; border: 0;" />
+  </div>
+  {{/if}}
+</div>
+{{/each}}
 
-    {{#if whatsappCommunityUrl}}
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="margin-top: 20px; margin-bottom: 20px; width: 100%;">
-      <tbody>
-        <tr>
-          <td align="center">
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-              <tbody>
-                <tr>
-                  <td>
-                    <a href="{{whatsappCommunityUrl}}" target="_blank" style="background-color: #10b981; border: solid 1px #10b981; border-radius: 12px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; margin: 0; padding: 12px 24px; text-decoration: none;">
-                      Direct deelnemen aan WhatsApp Community
-                    </a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    {{/if}}
+{{#if whatsappCommunityUrl}}
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary"
+  style="margin-top: 20px; margin-bottom: 20px; width: 100%;">
+  <tbody>
+    <tr>
+      <td align="center">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+          <tbody>
+            <tr>
+              <td>
+                <a href="{{whatsappCommunityUrl}}" target="_blank"
+                  style="background-color: #10b981; border: solid 1px #10b981; border-radius: 12px; color: #ffffff; display: inline-block; font-size: 14px; font-weight: 600; margin: 0; padding: 12px 24px; text-decoration: none;">
+                  Direct deelnemen aan WhatsApp Community
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+{{/if}}
 
-    {{#if hasAccount}}
-    <p style="text-align: center;">
-        <a href="https://salvemundi.nl/profiel/tickets" class="button">Bekijk Mijn Tickets Online</a>
-    </p>
-    {{/if}}
+{{#if hasAccount}}
+<p style="text-align: center;">
+  <a href="https://salvemundi.nl/profiel/tickets" class="button">Bekijk Mijn Tickets Online</a>
+</p>
+{{/if}}
 
-    <p><strong>Tip:</strong> Maak een screenshot van je QR-code(s) voor het geval je geen bereik hebt op locatie.</p>
+<p><strong>Tip:</strong> Maak een screenshot van je QR-code(s) voor het geval je geen bereik hebt op locatie.</p>
 
-    <p>We zien je daar!</p>
+<p>We zien je daar!</p>
 
-    <div class="reference-data">
-        <p><strong>Referentie Details:</strong></p>
-        <p>Transactie ID: {{paymentId}}<br>
-        Inschrijving ID: {{signupId}}<br>
-        Email: {{email}}<br>
-        Event: {{eventName}}<br>
-        Totaal Tickets: {{totalTickets}}</p>
-    </div>
+<div class="reference-data">
+  <p><strong>Referentie Details:</strong></p>
+  <p>Transactie ID: {{paymentId}}<br>
+    Inschrijving ID: {{signupId}}<br>
+    Email: {{email}}<br>
+    Event: {{eventName}}<br>
+    Totaal Tickets: {{totalTickets}}</p>
+</div>
 
-    <p style="margin-top: 30px;">Met vriendelijke groet,<br><br>
-    <strong>Salve Mundi</strong><br>
-    Rachelsmolen 1<br>
-    5612 MA Eindhoven</p>
+<p style="margin-top: 30px;">Met vriendelijke groet,<br><br>
+  <strong>Salve Mundi</strong><br>
+  Rachelsmolen 1<br>
+  5612 MA Eindhoven
+</p>
 {{/layout}}

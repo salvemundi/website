@@ -1,29 +1,15 @@
-import { FastifyInstance } from 'fastify';
-import { timingSafeCompare } from '@salvemundi/validations/security';
+import { type FastifyInstance } from 'fastify';
 import { TokenService } from '../services/token.service.js';
 import { GraphService } from '../services/graph.service.js';
+import { verifyInternalToken } from '../middleware/auth.js';
 
 export default async function userRoutes(fastify: FastifyInstance) {
-
-    // Middleware-like check for internal service token
-    fastify.addHook('preHandler', async (request, reply) => {
-        const rawAuthHeader = request.headers['authorization'];
-        const authHeader = Array.isArray(rawAuthHeader) ? rawAuthHeader[0] : rawAuthHeader;
-        const token = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
-
-        const expectedHeader = `Bearer ${token}`;
-        if (!authHeader || !token || !timingSafeCompare(authHeader.trim(), expectedHeader)) {
-            return reply.status(401).send({ error: 'Unauthorized' });
-        }
-    });
-
-    // Update user profile
-    fastify.patch('/:entraId', async (request: any, reply) => {
-        const { entraId } = request.params;
-        const { displayName, phoneNumber, dateOfBirth, membershipExpiry, originalPaymentDate } = request.body;
+    fastify.patch('/:entraId', { preHandler: [verifyInternalToken] }, async (request, reply) => {
+        const { entraId } = request.params as { entraId: string };
+        const { displayName, phoneNumber, dateOfBirth, membershipExpiry, originalPaymentDate } = request.body as Record<string, string>;
 
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await TokenService.getAccessToken(fastify.redis);
             await GraphService.updateUser(entraId, token, { displayName, phoneNumber, dateOfBirth, membershipExpiry, originalPaymentDate });
             return { success: true, message: 'User updated in Microsoft Entra ID' };
         } catch (error: any) {
@@ -32,12 +18,11 @@ export default async function userRoutes(fastify: FastifyInstance) {
         }
     });
 
-    // Get user's groups
-    fastify.get('/:entraId/groups', async (request: any, reply) => {
-        const { entraId } = request.params;
+    fastify.get('/:entraId/groups', { preHandler: [verifyInternalToken] }, async (request, reply) => {
+        const { entraId } = request.params as { entraId: string };
 
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await TokenService.getAccessToken(fastify.redis);
             const groups = await GraphService.getUserGroups(entraId, token);
             return { success: true, groups };
         } catch (error: any) {
@@ -46,9 +31,8 @@ export default async function userRoutes(fastify: FastifyInstance) {
         }
     });
 
-    // Update user photo
-    fastify.put('/:entraId/photo', async (request: any, reply) => {
-        const { entraId } = request.params;
+    fastify.put('/:entraId/photo', { preHandler: [verifyInternalToken] }, async (request, reply) => {
+        const { entraId } = request.params as { entraId: string };
 
         try {
             const data = await request.file();
@@ -57,7 +41,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
             }
 
             const buffer = await data.toBuffer();
-            const token = await TokenService.getAccessToken();
+            const token = await TokenService.getAccessToken(fastify.redis);
 
             await GraphService.updateUserPhoto(entraId, buffer, token);
 

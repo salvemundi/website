@@ -1,26 +1,27 @@
 import { safeConsoleError, logInfo } from '../utils/logger.js';
-import { Redis } from 'ioredis';
+import { type Redis } from 'ioredis';
 import { DirectusService } from './directus.service.js';
-import { Event, EventSignup } from '../types/schema.js';
+import { type Event, type EventSignup } from '../types/schema.js';
 
 export class EventReminderJob {
     private static readonly REDIS_PREFIX = 'v7:mail:notified:event:';
-    private static shouldStop: boolean = false;
+    private static shouldStop = false;
 
-    /**
-     * Starts the event reminder loop (runs once a day).
-     */
+    private static getConfig() {
+        const mailUrl = process.env.MAIL_SERVICE_URL;
+        const token = process.env.INTERNAL_SERVICE_TOKEN;
+        return { mailUrl, token };
+    }
+
     static async start(redis: Redis) {
         logInfo('[EventReminderJob] Starting daily monitoring loop...');
 
-        while (!EventReminderJob['shouldStop']) {
+        while (!this.shouldStop) {
             try {
-                // 1. Run the check
                 await this.runCheck(redis);
 
-                // 2. Wait until next day at 09:00
                 const now = new Date();
-                const nextRun = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 30, 0); // Offset from Expiry job
+                const nextRun = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 30, 0);
                 const delay = nextRun.getTime() - now.getTime();
 
                 logInfo(`[EventReminderJob] Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
@@ -58,13 +59,11 @@ export class EventReminderJob {
     private static async notifyParticipant(redis: Redis, event: Event, signup: EventSignup) {
         const redisKey = `${this.REDIS_PREFIX}${signup.id}:reminder_3d`;
 
-        // Already notified?
         const exists = await redis.get(redisKey);
         if (exists) return;
 
         try {
-            const mailUrl = process.env.MAIL_SERVICE_URL;
-            const token = process.env.INTERNAL_SERVICE_TOKEN;
+            const { mailUrl, token } = this.getConfig();
 
             if (!mailUrl || !token) return;
 
@@ -88,7 +87,7 @@ export class EventReminderJob {
             });
 
             if (response.ok) {
-                await redis.set(redisKey, '1', 'EX', 86400 * 30); // Cache for a month
+                await redis.set(redisKey, '1', 'EX', 86400 * 30);
             }
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);

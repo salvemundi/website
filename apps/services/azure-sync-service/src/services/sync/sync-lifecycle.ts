@@ -1,6 +1,6 @@
 import { db } from '../../plugins/db.js';
-import { AzureUser } from '../graph.service.js';
-import { SyncContext, GROUP_ACTIVE_LID, GROUP_EXPIRED_LID } from './sync-types.js';
+import { type AzureUser } from '../graph.service.js';
+import { type SyncContext, GROUP_ACTIVE_LID, GROUP_EXPIRED_LID } from './sync-types.js';
 import { ManagementService } from '../management.service.js';
 import { safeConsoleError } from '../../utils/logger.js';
 
@@ -11,10 +11,6 @@ export interface DirectusUserRecord {
 }
 
 export class SyncLifecycle {
-    /**
-     * Handles the transition between active and expired memberships.
-     * Manages Azure groups and Directus membership_status.
-     */
     static async handleLifecycle(
         ctx: SyncContext,
         aUser: AzureUser,
@@ -24,7 +20,7 @@ export class SyncLifecycle {
         const changes: { field: string; old: unknown; new: unknown }[] = [];
         const lockerKey = `lock:sync:user:${aUser.id}`;
         const hasLock = await ctx.redis.set(lockerKey, 'locked', 'EX', 30, 'NX');
-        
+
         if (!hasLock) {
             safeConsoleError(`[SYNC] Skip lifecycle for ${(aUser.mail || aUser.userPrincipalName)} - already being processed.`);
             return [];
@@ -41,16 +37,13 @@ export class SyncLifecycle {
             const isActive = expiryDate && expiryDate >= today;
             const currentStatus = dUser.membership_status || 'none';
             const desiredStatus = isActive ? 'active' : 'expired';
-            
-            // Check if user is in the 2-week grace period (14 days) after expiration.
-            // During this period, we keep their Azure mailbox active so they can receive expiry warnings.
+
             const daysSinceExpiry = expiryDate ? (today.getTime() - expiryDate.getTime()) / (1000 * 60 * 60 * 24) : Infinity;
             const shouldBeInActiveGroup = isActive || (expiryDate !== null && daysSinceExpiry < 14);
-            
+
             const userInActiveGroup = ctx.mainMembershipState.get(aUser.id)?.has(GROUP_ACTIVE_LID) || false;
             const userInExpiredGroup = ctx.mainMembershipState.get(aUser.id)?.has(GROUP_EXPIRED_LID) || false;
 
-            // 1. Sync Directus Membership Status
             if (currentStatus !== desiredStatus) {
                 await db
                     .updateTable('directus_users')
@@ -74,7 +67,6 @@ export class SyncLifecycle {
                 }
             }
 
-            // 2. Sync Azure Groups
             if (shouldBeInActiveGroup) {
                 if (!userInActiveGroup) {
                     await ManagementService.addGroupMember(GROUP_ACTIVE_LID, aUser.id);

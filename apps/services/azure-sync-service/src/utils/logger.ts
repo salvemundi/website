@@ -19,10 +19,10 @@ export function logWarn(message: string, context?: unknown) {
 }
 
 export function safeConsoleError(context: string, error?: unknown) {
-    const rawMessage = error instanceof Error 
-        ? error.message 
-        : typeof error === 'string' 
-            ? error 
+    const rawMessage = error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+            ? error
             : (typeof error === 'object' && error !== null ? JSON.stringify(error) : String(error || 'Onbekende fout'));
 
     const sanitizedMessage = redactString(rawMessage);
@@ -31,4 +31,3 @@ export function safeConsoleError(context: string, error?: unknown) {
     console.error(`[${sanitizedContext}] ${sanitizedMessage}`);
     logInternalError(sanitizedMessage, { context: sanitizedContext, originalError: error });
 }
-

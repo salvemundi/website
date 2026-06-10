@@ -1,8 +1,10 @@
-import { FastifyInstance } from 'fastify';
+import { type FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
-import { Pool } from 'pg';
+import pg from 'pg';
 import { Kysely, PostgresDialect } from 'kysely';
 import { type DirectusSchema } from '@salvemundi/validations';
+
+const { Pool } = pg;
 
 export interface Database {
     transactions: DirectusSchema['transactions'][number];
@@ -22,13 +24,18 @@ declare module 'fastify' {
 }
 
 export default fp(async (fastify: FastifyInstance) => {
-    // DB_URL should be provided in .env (e.g. postgresql://user:pass@host:port/db)
+    await Promise.resolve();
+
     const pool = new Pool({
-        connectionString: process.env.DB_URL
+        host: process.env.DB_HOST || 'v7-core-db',
+        port: Number(process.env.DB_PORT) || 5432,
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
     });
 
     try {
-        await pool.query('SELECT NOW()'); // Verify connection
+        await pool.query('SELECT NOW()');
 
         const db = new Kysely<Database>({
             dialect: new PostgresDialect({

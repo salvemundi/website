@@ -1,39 +1,15 @@
-import { FastifyInstance } from 'fastify';
+import { type FastifyInstance } from 'fastify';
 import { SyncJob } from '../services/sync/sync-job.js';
 import { TokenService } from '../services/token.service.js';
 import { azureSyncRunSchema } from '@salvemundi/validations';
-import { timingSafeCompare } from '@salvemundi/validations/security';
 import { SYNC_REDIS_KEY, SYNC_ABORT_KEY, DEFAULT_SYNC_STATUS } from '../services/sync/sync-types.js';
+import { verifyInternalToken } from '../middleware/auth.js';
 
 export default async function syncRoutes(fastify: FastifyInstance) {
-    /**
-     * Security hook: Validates the internal service token for all sync routes.
-     */
-    fastify.addHook('preHandler', async (request, reply) => {
-        const token = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
-        const rawAuthHeader = request.headers.authorization as string | string[] | undefined;
-        const authHeader = Array.isArray(rawAuthHeader) ? rawAuthHeader[0] : rawAuthHeader;
-
-        if (!token) {
-            fastify.log.error('[AUTH] INTERNAL_SERVICE_TOKEN is not configured');
-            return reply.status(500).send({ error: 'Internal Server Configuration Error' });
-        }
-
-        const expectedHeader = `Bearer ${token}`;
-        if (!authHeader || !timingSafeCompare(authHeader, expectedHeader)) {
-            return reply.status(401).send({ error: 'Unauthorized' });
-        }
-    });
-
-    /**
-     * POST /run
-     * Starts the full synchronization job asynchronously.
-     */
-    fastify.post('/run', async (request, reply) => {
+    fastify.post('/run', { preHandler: [verifyInternalToken] }, async (request, reply) => {
         try {
             const options = azureSyncRunSchema.parse(request.body || {});
 
-            // Start sync job asynchronously (Fire-and-forget)
             SyncJob.run(fastify.redis, options).catch((error: unknown) => {
                 const message = error instanceof Error ? error.message : String(error);
                 fastify.log.error(`[SYNC] Full job failed: ${message}`);
@@ -50,17 +26,12 @@ export default async function syncRoutes(fastify: FastifyInstance) {
         }
     });
 
-    /**
-     * POST /run/:userId
-     * Synchronizes a specific user by their ID.
-     */
-    fastify.post<{ Params: { userId: string } }>('/run/:userId', async (request, reply) => {
+    fastify.post<{ Params: { userId: string } }>('/run/:userId', { preHandler: [verifyInternalToken] }, async (request, reply) => {
         const { userId } = request.params;
         const options = azureSyncRunSchema.parse(request.body || {});
 
         try {
             const accessToken = await TokenService.getAccessToken(fastify.redis);
-
             await SyncJob.syncByEntraId(fastify.redis, userId, accessToken, options);
             return { message: `Sync for Entra ID ${userId} completed` };
         } catch (error: unknown) {
@@ -75,11 +46,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
         }
     });
 
-    /**
-     * POST /reset
-     * Forcefully resets the sync status to idle.
-     */
-    fastify.post('/reset', async (request, reply) => {
+    fastify.post('/reset', { preHandler: [verifyInternalToken] }, async (request, reply) => {
         try {
             await Promise.all([
                 fastify.redis.set(SYNC_REDIS_KEY, JSON.stringify(DEFAULT_SYNC_STATUS), 'EX', 86400 * 7),
@@ -93,11 +60,7 @@ export default async function syncRoutes(fastify: FastifyInstance) {
         }
     });
 
-    /**
-     * GET /status
-     * Returns the current status of the synchronization job.
-     */
-    fastify.get('/status', async (_request, _reply) => {
+    fastify.get('/status', { preHandler: [verifyInternalToken] }, async (_request, _reply) => {
         return SyncJob.getStatus(fastify.redis);
     });
 

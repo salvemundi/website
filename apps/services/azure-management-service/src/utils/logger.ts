@@ -19,11 +19,13 @@ export function logWarn(message: string, context?: unknown) {
 }
 
 export function safeConsoleError(context: string, error?: unknown) {
-    const rawMessage = error instanceof Error 
-        ? error.message 
-        : typeof error === 'string' 
-            ? error 
-            : String(error || 'Onbekende fout');
+    const rawMessage = error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+            ? error
+            : (typeof error === 'object' && error !== null
+                ? JSON.stringify(error)
+                : String(error || 'Onbekende fout'));
 
     const sanitizedMessage = redactString(rawMessage);
     const sanitizedContext = redactString(context);

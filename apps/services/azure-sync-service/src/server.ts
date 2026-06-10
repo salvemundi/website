@@ -1,10 +1,13 @@
 import { safeConsoleError, logInfo } from './utils/logger.js';
 import Fastify from 'fastify';
-import dotenv from 'dotenv';
 import redisPlugin from './plugins/redis.js';
 import syncRoutes from './routes/sync.js';
-
-dotenv.config();
+import { db } from './plugins/db.js';
+import { ProvisionWorkerService } from './services/provision-worker.js';
+import { EventListenerService } from './services/event-listener.js';
+import { ExpiryCheckJob } from './services/expiry-check.job.js';
+import { EventReminderJob } from './services/event-reminder.job.js';
+import { FullSyncJob } from './services/full-sync.job.js';
 
 const fastify = Fastify({
     logger: true,
@@ -24,7 +27,11 @@ fastify.get('/health', () => {
 });
 
 fastify.addHook('onClose', async () => {
-    const { db } = await import('./plugins/db.js');
+    ProvisionWorkerService.stop();
+    EventListenerService.stop();
+    ExpiryCheckJob.stop();
+    EventReminderJob.stop();
+    FullSyncJob.stop();
     await db.destroy();
 });
 
@@ -37,12 +44,6 @@ const start = async () => {
         fastify.redis.on('error', (err: unknown) => {
             safeConsoleError('[server.ts][redisError]', err);
         });
-
-        const { ProvisionWorkerService } = await import('./services/provision-worker.js');
-        const { EventListenerService } = await import('./services/event-listener.js');
-        const { ExpiryCheckJob } = await import('./services/expiry-check.job.js');
-        const { EventReminderJob } = await import('./services/event-reminder.job.js');
-        const { FullSyncJob } = await import('./services/full-sync.job.js');
 
         ProvisionWorkerService.start(fastify.redis).catch((error: unknown) => {
             safeConsoleError('[server.ts][provisionWorker]', error);

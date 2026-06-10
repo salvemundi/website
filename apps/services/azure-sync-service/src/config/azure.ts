@@ -2,18 +2,15 @@ import { ClientSecretCredential } from '@azure/identity';
 import { Client } from '@microsoft/microsoft-graph-client';
 import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials/index.js';
 import 'isomorphic-fetch';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const tenantId = process.env.AZURE_WEBSITEV7_TENANT_ID;
-const clientId = process.env.AZURE_WEBSITEV7_SYNC_CLIENT_ID;
-const clientSecret = process.env.AZURE_WEBSITEV7_SYNC_CLIENT_SECRET;
 
 let _graphClient: Client | null = null;
 
 export function getGraphClient(): Client {
     if (_graphClient) return _graphClient;
+
+    const tenantId = process.env.AZURE_WEBSITEV7_TENANT_ID || process.env.AZURE_TENANT_ID;
+    const clientId = process.env.AZURE_WEBSITEV7_SYNC_CLIENT_ID || process.env.AZURE_SYNC_CLIENT_ID;
+    const clientSecret = process.env.AZURE_WEBSITEV7_SYNC_CLIENT_SECRET || process.env.AZURE_SYNC_CLIENT_SECRET;
 
     if (!tenantId || !clientId || !clientSecret) {
         throw new Error('Missing Azure AD credentials in environment variables');

@@ -3,6 +3,9 @@ import Fastify from 'fastify';
 import mailRoutes from './routes/mail.routes.js';
 import redisPlugin from './plugins/redis.js';
 import rateLimit from '@fastify/rate-limit';
+import { db } from './services/db.js';
+import { MailWorkerService } from './services/mail-worker.js';
+import { EventListenerService } from './services/event-listener.js';
 
 const fastify = Fastify({
     logger: true,
@@ -42,7 +45,6 @@ fastify.register(async (instance) => {
 });
 
 fastify.addHook('onClose', async () => {
-    const { db } = await import('./services/db.js');
     await db.destroy();
 });
 
@@ -54,13 +56,11 @@ const start = async () => {
             safeConsoleError('[server.ts][redisError]', err);
         });
 
-        const { MailWorkerService } = await import('./services/mail-worker.js');
         MailWorkerService.startWorker(fastify.redis).catch((error: unknown) => {
             safeConsoleError('[server.ts][startWorker]', error);
             process.exit(1);
         });
 
-        const { EventListenerService } = await import('./services/event-listener.js');
         EventListenerService.start(fastify.redis).catch((error: unknown) => {
             safeConsoleError('[server.ts][startEventListener]', error);
             process.exit(1);

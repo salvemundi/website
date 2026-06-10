@@ -1,5 +1,5 @@
-import { Redis } from 'ioredis';
-import { Committee, DirectusUser, CommitteeMember } from '../../types/schema.js';
+import { type Redis } from 'ioredis';
+import { type Committee, type DirectusUser, type CommitteeMember } from '../../types/schema.js';
 
 export interface SyncStatus {
     jobId?: string;
@@ -43,13 +43,12 @@ export interface SyncContext {
     status: SyncStatus;
     options: SyncOptions;
     token: string;
-    committeeCache: Map<string, Committee>; // azure_group_id -> committee
-    committeeByIdCache?: Map<number, Committee>; // id -> committee
-    ownerCache: Map<string, string[]>; // azure_group_id -> owner_ids[]
+    committeeCache: Map<string, Committee>;
+    committeeByIdCache?: Map<number, Committee>;
+    ownerCache: Map<string, string[]>;
     userCacheByEntra: Map<string, DirectusUser>;
-    membershipCache: Map<string, CommitteeMember[]>; // user_id -> membership[]
+    membershipCache: Map<string, CommitteeMember[]>;
     membershipMap?: Map<string, Map<number, boolean>>;
-    // mainMembershipState: entrapId -> Set of active group IDs the user is in
     mainMembershipState: Map<string, Set<string>>;
     processedEmails?: Set<string>;
     photoCache?: Map<string, { buffer: Buffer; contentType: string } | null>;
@@ -58,8 +57,15 @@ export interface SyncContext {
 export const SYNC_REDIS_KEY = 'v7:sync:status';
 export const SYNC_ABORT_KEY = 'v7:sync:abort';
 
-if (!process.env.AZURE_ACTIVE_LID_GROUP_ID) throw new Error('Missing AZURE_ACTIVE_LID_GROUP_ID'); export const GROUP_ACTIVE_LID = process.env.AZURE_ACTIVE_LID_GROUP_ID;
-if (!process.env.AZURE_EXPIRED_LID_GROUP_ID) throw new Error('Missing AZURE_EXPIRED_LID_GROUP_ID'); export const GROUP_EXPIRED_LID = process.env.AZURE_EXPIRED_LID_GROUP_ID;
+if (!process.env.AZURE_ACTIVE_LID_GROUP_ID) {
+    throw new Error('Missing AZURE_ACTIVE_LID_GROUP_ID');
+}
+export const GROUP_ACTIVE_LID = process.env.AZURE_ACTIVE_LID_GROUP_ID;
+
+if (!process.env.AZURE_EXPIRED_LID_GROUP_ID) {
+    throw new Error('Missing AZURE_EXPIRED_LID_GROUP_ID');
+}
+export const GROUP_EXPIRED_LID = process.env.AZURE_EXPIRED_LID_GROUP_ID;
 
 export const getInitialStatus = (): SyncStatus => ({
     active: false,
@@ -87,4 +93,3 @@ export const getInitialStatus = (): SyncStatus => ({
 });
 
 export const DEFAULT_SYNC_STATUS = getInitialStatus();
-

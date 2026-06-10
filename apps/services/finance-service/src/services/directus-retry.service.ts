@@ -1,7 +1,7 @@
 import { safeConsoleError } from '../utils/logger.js';
-import { Redis } from 'ioredis';
+import { type Redis } from 'ioredis';
 import { createDirectus, rest, staticToken, updateItem } from '@directus/sdk';
-import { DirectusSchema } from '@salvemundi/validations/directus/schema';
+import { type DirectusSchema } from '@salvemundi/validations/directus/schema';
 import { z } from 'zod';
 
 const DirectusUpdateTaskSchema = z.object({
@@ -18,26 +18,32 @@ export class DirectusRetryService {
     private static readonly QUEUE_KEY = 'directus_update_retry_queue';
     private static shouldStop = false;
 
-    /**
-     * Queues an update request for Directus.
-     */
+    private static getDirectusClient() {
+        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
+        const directusToken = process.env.DIRECTUS_STATIC_TOKEN || '';
+
+        if (!directusUrl || !directusToken) {
+            throw new Error('Directus configuration is missing');
+        }
+
+        return createDirectus<DirectusSchema>(directusUrl)
+            .with(staticToken(directusToken))
+            .with(rest());
+    }
+
     static async queueUpdate(redis: Redis, collection: string, id: string | number, data: object) {
         const task: DirectusUpdateTask = {
             collection,
             id,
             data: data as Record<string, unknown>,
             retries: 0,
-            maxRetries: 15 // High number of retries for critical payment updates
+            maxRetries: 15
         };
 
-        // Add to Redis Sorted Set (Score = current time)
         await redis.zadd(this.QUEUE_KEY, Date.now(), JSON.stringify(task));
         safeConsoleError(`[DirectusRetry] Queued update for ${collection}/${id}`);
     }
 
-    /**
-     * Starts the background worker loop.
-     */
     static async startWorker(redis: Redis) {
         safeConsoleError('[DirectusRetry] Starting Directus Update Worker Loop...');
 
@@ -74,8 +80,7 @@ export class DirectusRetryService {
 
                             if (task.retries < task.maxRetries) {
                                 task.retries++;
-                                // Exponential Backoff
-                                const backoffSec = Math.min(3600, 10 * Math.pow(2, task.retries - 1)); // Max 1 hour
+                                const backoffSec = Math.min(3600, 10 * Math.pow(2, task.retries - 1));
                                 const nextAttempt = Date.now() + (backoffSec * 1000);
 
                                 await redis.zadd(this.QUEUE_KEY, nextAttempt, JSON.stringify(task));
@@ -103,17 +108,7 @@ export class DirectusRetryService {
     }
 
     private static async processUpdate(task: DirectusUpdateTask) {
-        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
-        const directusToken = process.env.DIRECTUS_STATIC_TOKEN || '';
-
-        if (!directusUrl || !directusToken) {
-            throw new Error('Directus configuration is missing');
-        }
-
-        const directus = createDirectus<DirectusSchema>(directusUrl)
-            .with(staticToken(directusToken))
-            .with(rest());
-
+        const directus = this.getDirectusClient();
         await directus.request(updateItem(task.collection as never, task.id as never, task.data as never));
     }
 }

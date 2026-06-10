@@ -227,6 +227,7 @@ jobs:
           echo "AZURE_MANAGEMENT_SERVICE_URL=http://v7-${ENV_NAME}-management:3004" >> .env.${ENV_NAME}
           echo "MAIL_SERVICE_URL=http://v7-${ENV_NAME}-mail:3003" >> .env.${ENV_NAME}
           echo "NEXT_APP_INTERNAL_URL=http://v7-${ENV_NAME}-app:3000" >> .env.${ENV_NAME}
+          echo "FINANCE_SERVICE_URL=http://v7-${ENV_NAME}-finance:3001" >> .env.${ENV_NAME}
           echo "DB_HOST=v7-core-db" >> .env.${ENV_NAME}
 
           if [ ! -z "${{ secrets.REDIS_PASSWORD }}" ]; then

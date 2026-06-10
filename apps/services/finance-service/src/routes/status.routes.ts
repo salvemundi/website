@@ -1,16 +1,13 @@
 import { safeConsoleError } from '../utils/logger.js';
-import { FastifyInstance } from 'fastify';
+import { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
 import { getMollieClient } from '../services/mollie.service.js';
 import { type FinanceMolliePaymentMetadata } from '../services/payment.service.js';
+import { verifyInternalToken } from '../middleware/auth.js';
 
 export default async function statusRoutes(fastify: FastifyInstance) {
-    /**
-     * GET /api/finance/status/:id
-     * Returns the current status of a transaction.
-     * If local status is 'open', it attempts a live Mollie check.
-     */
     await Promise.resolve();
-    fastify.get<{ Params: { id: string } }>('/status/:id', async (request, reply) => {
+
+    fastify.get<{ Params: { id: string } }>('/status/:id', { preHandler: [verifyInternalToken] }, async (request, reply) => {
         const { id } = request.params;
 
         if (!id) {
@@ -48,7 +45,6 @@ export default async function statusRoutes(fastify: FastifyInstance) {
             const dbStatus = String(transaction.payment_status);
             const mollieId = transaction.mollie_id;
 
-            // Live status fallback if still open
             if (dbStatus === 'open' && mollieId) {
                 try {
                     const mollie = getMollieClient();
@@ -66,7 +62,6 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                             transaction.access_token || ''
                         );
 
-                        // Mutating the returned object for HTTP payload update
                         transaction.payment_status = livePayment.status;
                         (transaction as { updated_at?: string | null }).updated_at = new Date().toISOString();
                     }

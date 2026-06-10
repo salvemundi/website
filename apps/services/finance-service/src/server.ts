@@ -25,7 +25,7 @@ fastify.register(dbPlugin);
 fastify.register(redisPlugin);
 
 fastify.register(mollieRoutes, { prefix: '/api/finance' });
-fastify.register(paymentsRoutes, { prefix: '/api/payments' });
+fastify.register(paymentsRoutes, { prefix: '/api/finance' });
 fastify.register(tripRoutes, { prefix: '/api/finance' });
 fastify.register(statusRoutes, { prefix: '/api/finance' });
 

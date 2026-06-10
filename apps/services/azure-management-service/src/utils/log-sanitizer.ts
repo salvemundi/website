@@ -27,9 +27,9 @@ export function sanitizePayload(payload: unknown, seen = new WeakSet<object>()):
     }
 
     const isError = payload instanceof Error;
-    const sanitized: Record<string, unknown> = Object.create(null);
-    const entries: [string, unknown][] = isError 
-        ? [['message', (payload).message], ['stack', (payload).stack], ...Object.entries(payload)]
+    const sanitized: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
+    const entries: [string, unknown][] = isError
+        ? [['message', payload.message], ['stack', payload.stack], ...Object.entries(payload)]
         : Object.entries(payload);
 
     for (const [key, value] of entries) {

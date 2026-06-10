@@ -1,10 +1,12 @@
-import { FastifyInstance } from 'fastify';
-import { 
-    PaymentSuccessEventSchema, 
-    type DbFeatureFlag, 
-    type DirectusSchema, 
-    type DbTransaction, 
-    type MolliePaymentMetadata 
+import { type FastifyInstance } from 'fastify';
+import { sql } from 'kysely';
+import { createDirectus, rest, staticToken, readItems, readUser } from '@directus/sdk';
+import {
+    PaymentSuccessEventSchema,
+    type DbFeatureFlag,
+    type DirectusSchema,
+    type DbTransaction,
+    type MolliePaymentMetadata
 } from '@salvemundi/validations';
 import { RegistrationService } from './registration.service.js';
 import { AzureRetryService } from './azure-retry.service.js';
@@ -15,12 +17,18 @@ export interface FinanceMolliePaymentMetadata extends MolliePaymentMetadata {
     tripId?: number;
 }
 
-/**
- * PaymentService: Centralized logic for finalizing payments.
- * Handles database updates, event publishing, and downstream service triggers.
- * This is the SINGLE SOURCE OF TRUTH for payment finalization.
- */
 export class PaymentService {
+    private static getDirectusClient() {
+        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
+        const directusToken = process.env.DIRECTUS_STATIC_TOKEN || '';
+
+        if (!directusUrl || !directusToken) {
+            throw new Error('Directus configuration is missing');
+        }
+
+        return createDirectus<DirectusSchema>(directusUrl).with(staticToken(directusToken)).with(rest());
+    }
+
     static async finalizePayment(
         fastify: FastifyInstance,
         paymentId: string,
@@ -28,7 +36,6 @@ export class PaymentService {
         metadata: FinanceMolliePaymentMetadata | null | undefined,
         accessToken: string
     ) {
-        // 1. Fetch current status to ensure idempotency and prevent duplicate events
         const transaction = await fastify.db
             .selectFrom('transactions')
             .select(['payment_status', 'approval_status', 'user_id', 'email', 'first_name', 'last_name', 'product_type', 'coupon_code'])
@@ -42,7 +49,6 @@ export class PaymentService {
 
         const oldStatus = transaction.payment_status;
 
-        // 2. Update Database Status (Immediate update for consistency)
         if (oldStatus !== newStatus) {
             await fastify.db
                 .updateTable('transactions')
@@ -52,15 +58,14 @@ export class PaymentService {
                 })
                 .where('mollie_id', '=', paymentId)
                 .execute();
+
             fastify.log.info(`[FINANCE] Updated payment status for ${paymentId}: ${oldStatus} -> ${newStatus}`);
 
-            // Release coupon if payment failed/canceled/expired and was not already finalized
-            if (['failed', 'canceled', 'expired'].includes(newStatus) && 
-                oldStatus !== 'paid' && 
-                !['failed', 'canceled', 'expired'].includes(oldStatus || '') && 
+            if (['failed', 'canceled', 'expired'].includes(newStatus) &&
+                oldStatus !== 'paid' &&
+                !['failed', 'canceled', 'expired'].includes(oldStatus || '') &&
                 transaction.coupon_code) {
                 try {
-                    const { sql } = await import('kysely');
                     await sql`UPDATE coupons SET usage_count = GREATEST(0, usage_count - 1) WHERE UPPER(coupon_code) = UPPER(${transaction.coupon_code})`.execute(fastify.db);
                     fastify.log.info(`[FINANCE] Released coupon ${transaction.coupon_code} for failed/canceled/expired payment ${paymentId}`);
                 } catch (couponErr) {
@@ -69,7 +74,6 @@ export class PaymentService {
             }
         }
 
-        // 3. Only proceed with success logic if transitioning to 'paid' for the first time
         if (newStatus === 'paid' && oldStatus !== 'paid') {
             const userId = metadata?.userId || transaction.user_id;
             const isContribution = !!metadata?.isContribution || transaction.product_type === 'membership';
@@ -80,21 +84,11 @@ export class PaymentService {
                 await CacheInvalidationService.queueInvalidation(fastify.redis, userId);
             }
 
-            // A. Handle Manual Approval Logic for Memberships
             let approvalStatus = transaction.approval_status;
-            if (approvalStatus === 'auto_approved') { // Default state, might need update
+            if (approvalStatus === 'auto_approved') {
                 let manualApproval = false;
                 try {
-                    const { createDirectus, rest, staticToken, readItems } = await import('@directus/sdk');
-                    const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
-                    const directusToken = process.env.DIRECTUS_STATIC_TOKEN || '';
-                    
-                    if (!directusUrl || !directusToken) {
-                        throw new Error('Directus configuration is missing');
-                    }
-
-                    const directus = createDirectus<DirectusSchema>(directusUrl).with(staticToken(directusToken)).with(rest());
-
+                    const directus = this.getDirectusClient();
                     const flags = await directus.request(readItems('feature_flags', {
                         filter: { name: { _eq: 'manual_approval' } },
                         fields: ['is_active']
@@ -114,7 +108,6 @@ export class PaymentService {
                     .execute();
             }
 
-            // B. Process Success Actions (Only if approved)
             if (approvalStatus === 'approved') {
                 await this.processApprovedPayment(fastify, {
                     paymentId,
@@ -156,7 +149,6 @@ export class PaymentService {
     ) {
         const { paymentId, metadata, registrationId, registrationType, userId, accessToken, isContribution, transaction } = context;
 
-        // 1. Update Registration Status (SQL + Directus Shadow Write)
         if (registrationId && registrationType) {
             try {
                 await RegistrationService.updateStatus(
@@ -174,7 +166,6 @@ export class PaymentService {
             }
         }
 
-        // 2. Fetch QR Token if applicable
         let qrToken: string | undefined = undefined;
         if (registrationId && registrationType === 'event_signup') {
             try {
@@ -189,7 +180,6 @@ export class PaymentService {
             }
         }
 
-        // 3. Publish Success Event
         const eventData = {
             event: 'PAYMENT_SUCCESS',
             userId: userId || null,
@@ -216,7 +206,6 @@ export class PaymentService {
             fastify.log.error({ err: eventErr }, `[FINANCE] Event validation failed for ${paymentId}`);
         }
 
-        // 4. Handle Azure Sync for Memberships
         if (isContribution && userId) {
             await this.triggerAzureSync(fastify, userId);
         }
@@ -224,16 +213,7 @@ export class PaymentService {
 
     private static async triggerAzureSync(fastify: FastifyInstance, userId: string) {
         try {
-            const { createDirectus, rest, staticToken, readUser } = await import('@directus/sdk');
-            const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
-            const directusToken = process.env.DIRECTUS_STATIC_TOKEN || '';
-            
-            if (!directusUrl || !directusToken) {
-                throw new Error('Directus configuration is missing');
-            }
-
-            const directus = createDirectus<DirectusSchema>(directusUrl).with(staticToken(directusToken)).with(rest());
-
+            const directus = this.getDirectusClient();
             const user = await directus.request(readUser(userId, { fields: ['id', 'entra_id'] })) as { entra_id?: string | null };
 
             if (user.entra_id) {

@@ -1,33 +1,12 @@
-import { FastifyInstance } from 'fastify';
+import { type FastifyInstance } from 'fastify';
 import { MailRequestSchema } from '@salvemundi/validations';
-import { timingSafeCompare } from '@salvemundi/validations/security';
+import { MailWorkerService } from '../services/mail-worker.js';
+import { verifyInternalToken } from '../middleware/auth.js';
 
 export default async function mailRoutes(fastify: FastifyInstance) {
     await Promise.resolve();
-    /**
-     * Security hook: Valideert het interne service token voor alle routes in deze scope.
-     */
-    fastify.addHook('preHandler', async (request, reply) => {
-        const token = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
-        const rawAuthHeader = (request.headers as Record<string, unknown>).authorization;
-        const authHeader = typeof rawAuthHeader === 'string' ? rawAuthHeader : undefined;
 
-        if (!token) {
-            fastify.log.error('[AUTH] INTERNAL_SERVICE_TOKEN is not configured in environment variables');
-            return reply.status(500).send({ error: 'Internal Server Configuration Error' });
-        }
-
-        const expectedHeader = `Bearer ${token}`;
-        if (!authHeader || !timingSafeCompare(authHeader.trim(), expectedHeader)) {
-            return reply.status(401).send({ error: 'Unauthorized' });
-        }
-    });
-
-    /**
-     * POST /send
-     * Verwerkt aanvragen voor het versturen van e-mails via de MailWorkerService.
-     */
-    fastify.post('/send', async (request, reply) => {
+    fastify.post('/send', { preHandler: [verifyInternalToken] }, async (request, reply) => {
         const validation = MailRequestSchema.safeParse(request.body);
 
         if (!validation.success) {
@@ -40,9 +19,7 @@ export default async function mailRoutes(fastify: FastifyInstance) {
         const { to, templateId, data } = validation.data;
 
         try {
-            const { MailWorkerService } = await import('../services/mail-worker.js');
             await MailWorkerService.queueMail(fastify.redis, to, templateId, (data || {}) as Record<string, unknown>);
-
             return { success: true, message: 'Email queued for delivery' };
         } catch (error: unknown) {
             const err = error instanceof Error ? error : new Error(String(error));

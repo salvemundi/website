@@ -1,5 +1,7 @@
 import fp from 'fastify-plugin';
 import { Redis } from 'ioredis';
+import { MailWorkerService } from '../services/mail-worker.js';
+import { EventListenerService } from '../services/event-listener.js';
 
 export default fp(async (fastify) => {
     await Promise.resolve();
@@ -14,8 +16,8 @@ export default fp(async (fastify) => {
     fastify.decorate('redis', client);
 
     fastify.addHook('onClose', async (instance) => {
-        const { MailWorkerService } = await import('../services/mail-worker.js');
         MailWorkerService.stopWorker();
+        EventListenerService.stop();
         await instance.redis.quit();
     });
 });

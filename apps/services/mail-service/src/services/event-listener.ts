@@ -1,5 +1,5 @@
 import { safeConsoleError, safeConsoleLog } from '../utils/logger.js';
-import { Redis } from 'ioredis';
+import { type Redis } from 'ioredis';
 import { EventHandlers } from './event-handlers.js';
 
 export class EventListenerService {
@@ -8,16 +8,12 @@ export class EventListenerService {
     private static readonly CONSUMER_NAME = 'mail-consumer-1';
     private static shouldStop = false;
 
-    /**
-     * Start luisteren naar Redis Stream events.
-     */
     static async start(redis: Redis) {
         safeConsoleLog('[MailEventListener] Starting Redis Stream listener...');
 
         try {
             await redis.xgroup('CREATE', this.STREAM_KEY, this.GROUP_NAME, '0', 'MKSTREAM');
         } catch (error: unknown) {
-            // We gebruiken 'error' direct. De herdeclaratie 'const error =' is verwijderd om TS2492 te voorkomen.
             if (error instanceof Error && !error.message.includes('BUSYGROUP')) {
                 safeConsoleError('[MailEventListener] Error creating consumer group:', error);
             } else if (!(error instanceof Error)) {
