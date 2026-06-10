@@ -25,7 +25,7 @@ fastify.register(groupRoutes, { prefix: '/api/groups' });
 fastify.register(userRoutes, { prefix: '/api/users' });
 fastify.register(monitoringRoutes, { prefix: '/api/monitoring' });
 
-fastify.get('/health', () => {
+fastify.get('/health', { logLevel: 'silent' }, () => {
     return {
         status: 'ok',
         service: 'azure-management-service',

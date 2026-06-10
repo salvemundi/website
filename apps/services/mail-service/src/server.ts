@@ -12,7 +12,7 @@ const fastify = Fastify({
     trustProxy: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10']
 });
 
-fastify.get('/health', () => {
+fastify.get('/health', { logLevel: 'silent' }, () => {
     return {
         status: 'ok',
         service: 'mail-service',

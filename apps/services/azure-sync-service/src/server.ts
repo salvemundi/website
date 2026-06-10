@@ -17,7 +17,7 @@ const fastify = Fastify({
 fastify.register(redisPlugin);
 fastify.register(syncRoutes, { prefix: '/api/sync' });
 
-fastify.get('/health', () => {
+fastify.get('/health', { logLevel: 'silent' }, () => {
     return {
         status: 'ok',
         service: 'azure-sync-service',
