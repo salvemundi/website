@@ -60,7 +60,6 @@ export default function manifest(): MetadataRoute.Manifest {
                 sizes: '512x512',
                 type: 'image/png'
             },
-            // Nieuwe maskable icons voor betere PWA ondersteuning (o.a. Android)
             {
                 src: '/img/icons/manifest-icon-192.maskable.png',
                 sizes: '192x192',
