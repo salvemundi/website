@@ -9,14 +9,14 @@ export const metadata: Metadata = {
 
 
 interface PageProps {
-    searchParams: Promise<{ id?: string; t?: string }>;
+    searchParams: Promise<{ id?: string; t?: string; tr?: string }>;
 }
 
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
 export default async function TripConfirmationPage({ searchParams }: PageProps) {
     const params = await searchParams;
-    const token = params.t; 
+    const token = params.tr || params.t; 
 
     if (!token) {
         return (

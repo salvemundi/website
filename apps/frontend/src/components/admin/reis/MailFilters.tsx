@@ -1,7 +1,7 @@
 'use client';
 
 import { Layout, ChevronDown, Filter, Search, Users } from 'lucide-react';
-import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
+import type { Trip, TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 import { Card, FilterField } from './MailComponents';
 
 interface MailFiltersProps {
@@ -17,6 +17,7 @@ interface MailFiltersProps {
     searchTerm: string;
     setSearchTerm: (v: string) => void;
     filteredCount: number;
+    filteredRecipients: TripSignup[];
 }
 
 export default function MailFilters({
@@ -31,7 +32,8 @@ export default function MailFilters({
     setFilterPayment,
     searchTerm,
     setSearchTerm,
-    filteredCount
+    filteredCount,
+    filteredRecipients
 }: MailFiltersProps) {
     return (
         <div className="lg:col-span-1 space-y-6">
@@ -100,6 +102,40 @@ export default function MailFilters({
                     </p>
                 </div>
             </div>
+
+            {/* Geselecteerde Ontvangers */}
+            <Card title="Geselecteerde Ontvangers" icon={<Users className="h-4 w-4" />}>
+                <div className="max-h-[250px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                    {filteredRecipients.length === 0 ? (
+                        <p className="text-[10px] text-[var(--beheer-text-muted)] opacity-50 italic text-center py-4">
+                            Geen ontvangers geselecteerd
+                        </p>
+                    ) : (
+                        filteredRecipients.map(recipient => (
+                            <div 
+                                key={recipient.id} 
+                                className="flex flex-col p-3 bg-[var(--bg-main)]/30 border border-[var(--beheer-border)]/20 rounded-2xl text-[11px] hover:border-[var(--beheer-accent)]/30 transition-all shadow-inner"
+                            >
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="font-bold text-[var(--beheer-text)] truncate">{recipient.first_name} {recipient.last_name}</span>
+                                    <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${
+                                        recipient.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
+                                        recipient.status === 'cancelled' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                                        recipient.status === 'waitlist' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' :
+                                        'bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] border border-[var(--beheer-accent)]/20'
+                                    }`}>
+                                        {recipient.status === 'confirmed' ? 'Bevestigd' :
+                                         recipient.status === 'cancelled' ? 'Geannuleerd' :
+                                         recipient.status === 'waitlist' ? 'Wachtlijst' :
+                                         'Geregistreerd'}
+                                    </span>
+                                </div>
+                                <span className="text-[10px] text-[var(--beheer-text-muted)] truncate mt-0.5">{recipient.email}</span>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </Card>
         </div>
     );
 }

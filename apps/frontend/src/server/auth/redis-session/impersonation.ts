@@ -3,6 +3,7 @@ import { getRedis } from "@/server/auth/redis-client";
 import { getPermissions, type Committee } from "@/shared/lib/permissions";
 import { type ExtendedUser } from "./types";
 import { safeConsoleError } from '@/server/utils/logger';
+import { toLocalISOString } from "@/lib/utils/date-utils";
 
 interface RawImpersonationDbUser {
     id: string;
@@ -66,9 +67,9 @@ export async function getImpersonatedUser(testToken: string, pool: Pool): Promis
             email: dbUser.email,
             avatar: dbUser.avatar || undefined,
             membership_status: dbUser.membership_status || undefined,
-            membership_expiry: dbUser.membership_expiry ? (dbUser.membership_expiry instanceof Date ? dbUser.membership_expiry.toISOString() : String(dbUser.membership_expiry)) : undefined,
+            membership_expiry: toLocalISOString(dbUser.membership_expiry) || undefined,
             phone_number: dbUser.phone_number || undefined,
-            date_of_birth: dbUser.date_of_birth ? (dbUser.date_of_birth instanceof Date ? dbUser.date_of_birth.toISOString() : String(dbUser.date_of_birth)) : undefined,
+            date_of_birth: toLocalISOString(dbUser.date_of_birth) || undefined,
             minecraft_username: dbUser.minecraft_username || undefined,
             role: dbUser.role || undefined,
             committees: typedCommittees,

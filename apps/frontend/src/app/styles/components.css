@@ -259,6 +259,24 @@
 }
 
 /* ── Beheer Dropdowns & Selects ────────────────────────────────────────── */
+select {
+    color-scheme: light;
+}
+
+.dark select {
+    color-scheme: dark;
+}
+
+select option {
+    background-color: #ffffff;
+    color: #5A3761;
+}
+
+.dark select option {
+    background-color: #2d1933;
+    color: #F0F1F9;
+}
+
 .beheer-select {
     appearance: none;
     width: 100%;

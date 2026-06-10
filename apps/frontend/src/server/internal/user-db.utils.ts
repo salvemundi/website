@@ -123,9 +123,9 @@ export async function fetchUserMetadataDb(userId: string): Promise<UserMetadata 
     const raw = rows[0];
     return {
         membership_status: raw.membership_status,
-        membership_expiry: raw.membership_expiry instanceof Date ? raw.membership_expiry.toISOString() : raw.membership_expiry,
+        membership_expiry: toLocalISOString(raw.membership_expiry),
         phone_number: raw.phone_number,
-        date_of_birth: raw.date_of_birth instanceof Date ? raw.date_of_birth.toISOString() : raw.date_of_birth,
+        date_of_birth: toLocalISOString(raw.date_of_birth),
         minecraft_username: raw.minecraft_username,
         entra_id: raw.entra_id
     };

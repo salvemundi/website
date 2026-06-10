@@ -37,8 +37,7 @@ export default function MailEditor({
                                 <Mail className="h-6 w-6" />
                             </div>
                             <div className="space-y-1">
-                                <h2 className="text-xl font-bold text-[var(--beheer-text)] tracking-tight">Bericht Componeren</h2>
-                                <p className="text-[10px] font-semibold text-[var(--beheer-text-muted)] uppercase tracking-widest opacity-60">Verstuur bulk communicatie naar geselecteerde groep</p>
+                                <h2 className="text-xl font-bold text-[var(--beheer-text)] tracking-tight">Verstuur bulk communicatie naar geselecteerde groep</h2>
                             </div>
                         </div>
                     </div>
@@ -50,8 +49,8 @@ export default function MailEditor({
                         <div className="space-y-6">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--beheer-text-muted)] ml-1 opacity-70">Onderwerp van de e-mail</label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     placeholder="Bijv: Belangrijke update over de reis..."
                                     value={subject}
                                     onChange={(e) => setSubject(e.target.value)}
@@ -60,7 +59,7 @@ export default function MailEditor({
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--beheer-text-muted)] ml-1 opacity-70">Inhoud van het bericht</label>
-                                <textarea 
+                                <textarea
                                     rows={10}
                                     placeholder="Typ hier je bericht voor de deelnemers..."
                                     value={message}
