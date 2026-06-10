@@ -10,14 +10,14 @@ import { safeConsoleError } from '@/server/utils/logger';
 async function getCommitteesForUser(
     user: EnrichedUser,
     permissions: ReturnType<typeof getPermissions>
-): Promise<{ id: number; name: string }[]> {
+): Promise<{ id: number; name: string; email?: string | null }[]> {
     const memberships = user.committees ?? [];
     const isPowerful = permissions.isLeader || permissions.isICT;
 
     try {
         if (isPowerful) {
-            const { rows } = await query('SELECT id, name FROM committees ORDER BY name ASC');
-            return rows as { id: number; name: string }[];
+            const { rows } = await query('SELECT id, name, email FROM committees ORDER BY name ASC');
+            return rows as { id: number; name: string; email?: string | null }[];
         } else {
             if (memberships.length === 0) return [];
 
@@ -25,8 +25,8 @@ async function getCommitteesForUser(
             if (committeeIds.length === 0) return [];
 
             const placeholders = committeeIds.map((_, i) => `$${i + 1}`).join(', ');
-            const { rows } = await query(`SELECT id, name FROM committees WHERE id IN (${placeholders}) ORDER BY name ASC`, committeeIds);
-            return rows as { id: number; name: string }[];
+            const { rows } = await query(`SELECT id, name, email FROM committees WHERE id IN (${placeholders}) ORDER BY name ASC`, committeeIds);
+            return rows as { id: number; name: string; email?: string | null }[];
         }
     } catch (error) {
         safeConsoleError('[page][ActivityCreatePage]', error);
