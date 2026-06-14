@@ -83,8 +83,7 @@
     html {
         width: 100%;
         max-width: 100%;
-        overflow-x: hidden;
-        overflow-y: auto;
+        overflow-x: clip;
         scrollbar-gutter: stable;
         -webkit-text-size-adjust: 100%;
         -ms-text-size-adjust: 100%;
@@ -131,8 +130,7 @@
         min-height: 100vh;
         width: 100%;
         max-width: 100%;
-        overflow-x: hidden;
-        overflow-y: auto;
+        overflow-x: clip;
         overscroll-behavior-x: none;
         overscroll-behavior-y: auto;
         -webkit-overflow-scrolling: touch;

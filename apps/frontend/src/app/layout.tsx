@@ -88,10 +88,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <body className={`${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}>
                 <ImpersonationWrapper impersonation={impersonation} />
                 <HeaderWrapper initialSession={session} isAuthorized={isAuthorized} />
-                <main className="flex-grow min-h-[100dvh] pt-[calc(var(--header-total-height,80px)+env(safe-area-inset-top,0px))]">
+                <main className="flex-grow flex flex-col pt-header-total">
                     {children}
+                    <FooterWrapper initialSession={session} className="mt-auto w-full" />
                 </main>
-                <FooterWrapper initialSession={session} />
             </body>
         </html>
     );
@@ -121,7 +121,7 @@ async function HeaderWrapper({ initialSession, isAuthorized }: { initialSession:
     }
 }
 
-async function FooterWrapper({ initialSession }: { initialSession: ExtendedSession | null }) {
+async function FooterWrapper({ initialSession, className }: { initialSession: ExtendedSession | null; className?: string }) {
     await connection();
     try {
         const [documents, disabledRoutes, committees] = await Promise.all([
@@ -131,22 +131,26 @@ async function FooterWrapper({ initialSession }: { initialSession: ExtendedSessi
         ]);
 
         return (
-            <FooterIsland
-                documents={documents}
-                disabledRoutes={disabledRoutes}
-                committees={committees}
-                initialSession={initialSession}
-            />
+            <div className={className}>
+                <FooterIsland
+                    documents={documents}
+                    disabledRoutes={disabledRoutes}
+                    committees={committees}
+                    initialSession={initialSession}
+                />
+            </div>
         );
     } catch (error) {
         safeConsoleError('[layout][FooterWrapper]', error);
         return (
-            <FooterIsland
-                documents={[]}
-                disabledRoutes={[]}
-                committees={[]}
-                initialSession={null}
-            />
+            <div className={className}>
+                <FooterIsland
+                    documents={[]}
+                    disabledRoutes={[]}
+                    committees={[]}
+                    initialSession={null}
+                />
+            </div>
         );
     }
 }

@@ -9,6 +9,15 @@ import {
     Check,
     Save
 } from 'lucide-react';
+import { AdminDatepicker } from '@/components/ui/forms/AdminDatepicker';
+
+const toISODateString = (date: Date | null): string => {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
 
 interface Props {
     onSave: (formData: FormData, discountType: 'fixed' | 'percentage') => void;
@@ -24,6 +33,8 @@ export default function CouponForm({
     error
 }: Props) {
     const [discountType, setDiscountType] = React.useState<'fixed' | 'percentage'>('fixed');
+    const [validFrom, setValidFrom] = React.useState<Date | null>(null);
+    const [validUntil, setValidUntil] = React.useState<Date | null>(null);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -99,13 +110,22 @@ export default function CouponForm({
                 {/* Valid From */}
                 <div className="space-y-3">
                     <label className="text-xs font-semibold text-[var(--beheer-text-muted)]">Geldig Vanaf</label>
-                    <input type="date" name="valid_from" className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] font-semibold text-sm focus:ring-4 focus:ring-[var(--beheer-accent)]/10 focus:border-[var(--beheer-accent)] outline-none transition-all" />
+                    <input type="hidden" name="valid_from" value={validFrom ? toISODateString(validFrom) : ''} />
+                    <AdminDatepicker
+                        value={validFrom}
+                        onChange={setValidFrom}
+                    />
                 </div>
 
                 {/* Valid Until */}
                 <div className="space-y-3">
                     <label className="text-xs font-semibold text-[var(--beheer-text-muted)]">Geldig Tot</label>
-                    <input type="date" name="valid_until" className="w-full px-5 py-4 rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] font-semibold text-sm focus:ring-4 focus:ring-[var(--beheer-accent)]/10 focus:border-[var(--beheer-accent)] outline-none transition-all" />
+                    <input type="hidden" name="valid_until" value={validUntil ? toISODateString(validUntil) : ''} />
+                    <AdminDatepicker
+                        value={validUntil}
+                        onChange={setValidUntil}
+                        minDate={validFrom || undefined}
+                    />
                 </div>
             </div>
 

@@ -125,15 +125,15 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-                <div className="p-4 sm:p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
+                <div className="p-4 sm:p-6 squircle bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
                     <p className="text-sm sm:text-base font-bold text-[var(--text-muted)]">Totaal inschrijvingen</p>
                     <p className="text-2xl sm:text-3xl font-black text-[var(--theme-purple)]">{stats.total}</p>
                 </div>
-                <div className="p-4 sm:p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
+                <div className="p-4 sm:p-6 squircle bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
                     <p className="text-sm sm:text-base font-bold text-[var(--text-muted)]">Aanwezig</p>
                     <p className="text-2xl sm:text-3xl font-black text-green-600">{stats.checkedIn}</p>
                 </div>
-                <div className="p-4 sm:p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
+                <div className="p-4 sm:p-6 squircle bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
                     <p className="text-sm sm:text-base font-bold text-[var(--text-muted)]">Nog verwacht</p>
                     <p className="text-2xl sm:text-3xl font-black text-blue-600">{stats.total - stats.checkedIn}</p>
                 </div>
@@ -152,7 +152,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                 </div>
                 <button
                     onClick={startScanner}
-                    className="w-full sm:w-auto h-10 sm:h-12 px-4 sm:px-6 rounded-xl bg-[var(--theme-purple)] text-white font-bold flex items-center justify-center sm:justify-start gap-2 hover:scale-105 transition-all shadow-lg shadow-[var(--theme-purple)]/20 text-sm sm:text-base"
+                    className="w-full sm:w-auto h-10 sm:h-12 px-4 sm:px-6 squircle bg-[var(--theme-purple)] text-white font-bold flex items-center justify-center sm:justify-start gap-2 hover:scale-105 transition-all shadow-lg shadow-[var(--theme-purple)]/20 text-sm sm:text-base"
                 >
                     <QrCode className="h-4 w-4 sm:h-5 sm:w-5" />
                     Scan QR
@@ -161,10 +161,10 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
 
             {scanning && (
                 <div className="fixed inset-0 z-[9999] bg-black/80 flex flex-col items-center justify-center p-4 isolate">
-                    <div id="reader" className="scanner-reader w-full max-w-md bg-[var(--bg-card)] rounded-2xl overflow-hidden shadow-2xl" />
+                    <div id="reader" className="scanner-reader w-full max-w-md bg-[var(--bg-card)] squircle-lg overflow-hidden shadow-2xl" />
                     <button
                         onClick={() => setScanning(false)}
-                        className="mt-6 px-8 py-3 rounded-full bg-white/20 text-white font-bold hover:bg-white/30 transition-all text-base"
+                        className="mt-6 px-8 py-3 squircle bg-white/20 text-white font-bold hover:bg-white/30 transition-all text-base"
                     >
                         Annuleren
                     </button>
@@ -189,7 +189,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                 </div>
             )}
 
-            <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] overflow-hidden shadow-xl">
+            <div className="squircle-lg border border-[var(--border-color)] bg-[var(--bg-card)] overflow-hidden shadow-xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left min-w-full">
                         <thead className="bg-[var(--bg-soft)] border-b border-[var(--border-color)]">

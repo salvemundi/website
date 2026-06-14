@@ -128,10 +128,12 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                     )}
 
                     <div className="mt-6 flex flex-col gap-1.5">
-                        <p className="text-[10px] text-licht-paars dark:text-geel font-black uppercase tracking-wider pl-1">
-                            Lidmaatschap tot
-                        </p>
-                        <div className="rounded-2xl bg-licht-paars/10 dark:bg-white/5 border border-licht-paars/20 dark:border-white/10 px-5 py-4 shadow-sm text-center flex justify-center items-center min-h-[56px]">
+                        <div className="flex items-center justify-center h-6 pl-1">
+                            <p className="text-[10px] text-licht-paars dark:text-geel font-black uppercase tracking-wider">
+                                Lidmaatschap tot
+                            </p>
+                        </div>
+                        <div className="squircle bg-licht-paars/10 dark:bg-white/5 border border-licht-paars/20 dark:border-white/10 px-5 py-4 shadow-sm text-center flex justify-center items-center min-h-[56px]">
                             <p className="text-base font-bold text-purple-700 dark:text-white">
                                 {user.membership_expiry
                                     ? formatDate(user.membership_expiry, "d MMM yyyy")

@@ -178,7 +178,7 @@ function Divider() {
 
 function NoTripsView() {
     return (
-        <div className="container mx-auto px-4 py-20 max-w-2xl text-center">
+        <div className="py-20 max-w-2xl text-center mx-auto">
             <div className="bg-bg-card rounded-3xl p-12 shadow-2xl border border-border-color">
                 <div className="h-24 w-24 rounded-full bg-theme-purple/10 text-theme-purple flex items-center justify-center mx-auto mb-8 border border-theme-purple/20">
                     <Plane className="h-12 w-12 rotate-45" />

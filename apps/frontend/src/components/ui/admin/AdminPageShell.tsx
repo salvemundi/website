@@ -25,7 +25,7 @@ export default function AdminPageShell({
     centered = false
 }: AdminPageShellProps) {
     return (
-        <div className="w-full">
+        <>
             {!hideToolbar && (
                 <>
                     <AdminToolbar 
@@ -35,13 +35,13 @@ export default function AdminPageShell({
                         actions={actions}
                         centered={centered}
                     />
-                    <div className="admin-container py-4 md:py-8">
+                    <div className="admin-container py-4 md:py-8 min-h-dvh">
                         {children}
                     </div>
                 </>
             )}
 
             {hideToolbar && children}
-        </div>
+        </>
     );
 }

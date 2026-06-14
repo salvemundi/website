@@ -69,8 +69,8 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                     <div className="order-1 lg:order-1 flex flex-col gap-6">
                         {children}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
-                                <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
+                            <div className="squircle bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
+                                <div className="h-14 w-14 squircle bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
                                     <CalendarClock className="h-7 w-7" />
                                 </div>
                                 <div className="min-w-0 flex-1">
@@ -87,8 +87,8 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                             </div>
 
                             {activity?.locatie && (
-                                <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
-                                    <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
+                                <div className="squircle bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
+                                    <div className="h-14 w-14 squircle bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
                                         <MapPin className="h-7 w-7" />
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -100,8 +100,8 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                 </div>
                             )}
 
-                            <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
-                                <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
+                            <div className="squircle bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
+                                <div className="h-14 w-14 squircle bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
                                     <User className="h-7 w-7" />
                                 </div>
                                 <div className="min-w-0 flex-1">
@@ -112,8 +112,8 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                 </div>
                             </div>
 
-                            <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
-                                <div className="h-14 w-14 rounded-2xl bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
+                            <div className="squircle bg-[var(--bg-card)] border border-[var(--border-color)] p-6 shadow-lg shadow-[var(--theme-purple)]/5 flex items-center gap-4 transition-all hover:border-[var(--theme-purple)]/30 group">
+                                <div className="h-14 w-14 squircle bg-[var(--theme-purple)]/5 flex items-center justify-center text-[var(--theme-purple)] group-hover:scale-110 transition-transform shrink-0">
                                     <Mail className="h-7 w-7" />
                                 </div>
                                 <div className="min-w-0 flex-1">
@@ -133,7 +133,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                     </div>
 
                     <div className="order-2 lg:order-2 h-full">
-                        <div className="rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] p-8 shadow-xl shadow-[var(--theme-purple)]/5 h-full">
+                        <div className="squircle-lg bg-[var(--bg-card)] border border-[var(--border-color)] p-8 shadow-xl shadow-[var(--theme-purple)]/5 h-full">
                             <div className="flex items-center gap-3 mb-8">
                                 <div className="h-8 w-2 bg-[var(--theme-purple)] rounded-full shadow-[0_0_15px_var(--theme-purple)]" />
                                 <h2 className="text-2xl font-black text-[var(--theme-purple)] uppercase tracking-widest">

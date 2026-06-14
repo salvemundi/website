@@ -167,7 +167,7 @@ export async function updateMemberProfileAction(
             'SELECT email, entra_id FROM directus_users WHERE id = $1 LIMIT 1',
             [directusUserId]
         );
-        const user = updateRows[0];
+        const user = updateRows[0] as { email: string | null; entra_id: string | null } | undefined;
         if (!user) return { success: false, error: 'Lid niet gevonden' };
 
         if (user.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {

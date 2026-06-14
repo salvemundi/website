@@ -26,6 +26,8 @@ import {
 } from '@salvemundi/validations';
 import { getActivitiesInternal } from "@/server/queries/admin-event.queries";
 import { getUpcomingTrips } from "@/server/actions/events/reis.actions";
+import { getDisabledRoutes } from '@/lib/config/feature-flags';
+
 
 export const getHeroBanners = async (): Promise<HeroBanner[]> => {
     const rawData = await getSystemDirectus().request(readItems('hero_banners', {
@@ -55,7 +57,7 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
     const now = new Date();
     const today = toLocalISOString(now) ?? new Date().toISOString();
 
-    const [regularEvents, pubCrawlEvents, tripEvents] = await Promise.all([
+    const [regularEvents, pubCrawlEvents, tripEvents, disabledRoutes] = await Promise.all([
         getActivitiesInternal(true),
         client.request(readItems('pub_crawl_events', {
             fields: [...PUB_CRAWL_EVENT_FIELDS],
@@ -65,57 +67,64 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
             sort: ['date'],
             limit: limit
         })),
-        getUpcomingTrips()
+        getUpcomingTrips(),
+        getDisabledRoutes()
     ]);
 
-    const mappedRegular = (regularEvents as Activiteit[]).map((item) => {
-        return {
-            ...item,
-            category: item.committee_name || undefined,
-        };
-    });
+    const mappedRegular = (regularEvents as Activiteit[])
+        .filter(event => !event.custom_url || !disabledRoutes.includes(event.custom_url))
+        .map((item) => {
+            return {
+                ...item,
+                category: item.committee_name || undefined,
+            };
+        });
 
-    const mappedPubCrawl = (pubCrawlEvents as DbPubCrawlEvent[]).map((item) => ({
-        id: `kroeg-${item.id}`,
-        titel: item.name ?? '',
-        beschrijving: item.description ?? null,
-        locatie: 'Diverse locaties',
-        datum_start: toLocalISOString(item.date, true) ?? toLocalISOString(now, true) ?? new Date().toISOString(),
-        datum_eind: null,
-        afbeelding_id: item.image ?? null,
-        status: 'published',
-        price_members: 1,
-        price_non_members: 1,
-        only_members: false,
-        registration_deadline: null,
-        contact: item.email ?? null,
-        event_time: null,
-        event_time_end: null,
-        custom_url: '/kroegentocht',
-        category: 'Feestcommissie',
-        committee_name: 'Feestcommissie'
-    }));
+    const mappedPubCrawl = disabledRoutes.includes('/kroegentocht')
+        ? []
+        : (pubCrawlEvents as DbPubCrawlEvent[]).map((item) => ({
+            id: `kroeg-${item.id}`,
+            titel: item.name ?? '',
+            beschrijving: item.description ?? null,
+            locatie: 'Diverse locaties',
+            datum_start: toLocalISOString(item.date, true) ?? toLocalISOString(now, true) ?? new Date().toISOString(),
+            datum_eind: null,
+            afbeelding_id: item.image ?? null,
+            status: 'published',
+            price_members: 1,
+            price_non_members: 1,
+            only_members: false,
+            registration_deadline: null,
+            contact: item.email ?? null,
+            event_time: null,
+            event_time_end: null,
+            custom_url: '/kroegentocht',
+            category: 'Feestcommissie',
+            committee_name: 'Feestcommissie'
+        }));
 
-    const mappedTrips = (tripEvents as DbTrip[]).map((item) => ({
-        id: `trip-${item.id}`,
-        titel: item.name ?? '',
-        beschrijving: item.description ?? null,
-        locatie: 'Studiereis',
-        datum_start: toLocalISOString(item.start_date, true) ?? toLocalISOString(now, true) ?? new Date().toISOString(),
-        datum_eind: toLocalISOString(item.end_date, true),
-        afbeelding_id: item.image ?? null,
-        status: 'published',
-        price_members: item.base_price ?? 0,
-        price_non_members: item.base_price ?? 0,
-        only_members: true,
-        registration_deadline: item.registration_start_date ?? null,
-        contact: 'Reiscommissie',
-        event_time: null,
-        event_time_end: null,
-        custom_url: '/reis',
-        category: 'Reiscommissie',
-        committee_name: 'Reiscommissie'
-    }));
+    const mappedTrips = disabledRoutes.includes('/reis')
+        ? []
+        : (tripEvents as DbTrip[]).map((item) => ({
+            id: `trip-${item.id}`,
+            titel: item.name ?? '',
+            beschrijving: item.description ?? null,
+            locatie: 'Studiereis',
+            datum_start: toLocalISOString(item.start_date, true) ?? toLocalISOString(now, true) ?? new Date().toISOString(),
+            datum_eind: toLocalISOString(item.end_date, true),
+            afbeelding_id: item.image ?? null,
+            status: 'published',
+            price_members: item.base_price ?? 0,
+            price_non_members: item.base_price ?? 0,
+            only_members: true,
+            registration_deadline: item.registration_start_date ?? null,
+            contact: 'Reiscommissie',
+            event_time: null,
+            event_time_end: null,
+            custom_url: '/reis',
+            category: 'Reiscommissie',
+            committee_name: 'Reiscommissie'
+        }));
 
     const allEvents = [...mappedRegular, ...mappedPubCrawl, ...mappedTrips]
         .sort((a, b) => new Date(a.datum_start).getTime() - new Date(b.datum_start).getTime())

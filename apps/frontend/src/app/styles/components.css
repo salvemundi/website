@@ -304,7 +304,7 @@ select option {
 
 .beheer-select:focus {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(164, 83, 155, 0.2);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--beheer-accent) 15%, transparent);
     border-color: var(--beheer-accent);
 }
 
@@ -318,13 +318,24 @@ select option {
     font-size: 14px;
     font-weight: 700;
     transition: all 0.2s ease;
+    color-scheme: light;
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
     }
 }
 
+.dark .beheer-input {
+    color-scheme: dark;
+}
+
 .beheer-input::-webkit-calendar-picker-indicator {
     display: none !important;
+}
+
+.beheer-input::-webkit-inner-spin-button,
+.beheer-input::-webkit-clear-button {
+    display: none !important;
+    -webkit-appearance: none;
 }
 
 .beheer-input[type="date"],
@@ -342,7 +353,7 @@ select option {
 
 .beheer-input:focus {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(164, 83, 155, 0.2);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--beheer-accent) 15%, transparent);
     border-color: var(--beheer-accent);
 }
 

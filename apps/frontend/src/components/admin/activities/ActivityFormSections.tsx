@@ -1,7 +1,8 @@
 import React from 'react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { Info, Calendar as CalendarIcon, MapPin, Euro, Link as LinkIcon, Upload, X, Eye, Check } from 'lucide-react';
-import { Datepicker } from 'flowbite-react';
+import { AdminDatepicker } from '@/components/ui/forms/AdminDatepicker';
+import { AdminTimepicker } from '@/components/ui/forms/AdminTimepicker';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { ActivityAdmin } from '@salvemundi/validations';
 
@@ -33,54 +34,6 @@ const toISODateString = (date: Date | null): string => {
     return `${year}-${month}-${day}`;
 };
 
-const customDatepickerTheme: React.ComponentProps<typeof Datepicker>['theme'] = {
-    root: {
-        input: {
-            field: {
-                icon: {
-                    svg: "h-4 w-4 text-[var(--beheer-text-muted)] opacity-60"
-                },
-                input: {
-                    colors: {
-                        gray: "bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-[var(--beheer-radius)] font-bold text-sm transition-all focus:ring-4 focus:ring-[var(--beheer-accent)]/10 focus:border-[var(--beheer-accent)] pl-10 pr-3 py-2.5"
-                    }
-                }
-            }
-        }
-    },
-    popup: {
-        root: {
-            inner: "inline-block rounded-xl bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] p-4 shadow-xl text-[var(--beheer-text)]"
-        },
-        header: {
-            title: "px-2 py-3 text-center text-sm font-semibold text-[var(--beheer-text)]",
-            selectors: {
-                button: {
-                    base: "rounded-lg px-3 py-1.5 text-xs font-semibold text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)]",
-                    prev: "text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)]",
-                    next: "text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)]"
-                }
-            }
-        },
-        footer: {
-            button: {
-                today: "bg-[var(--beheer-accent)] text-white hover:bg-[var(--beheer-accent)]/90 text-xs font-bold px-3 py-1.5 rounded-lg",
-                clear: "border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)] text-xs font-bold px-3 py-1.5 rounded-lg"
-            }
-        }
-    },
-    views: {
-        days: {
-            items: {
-                item: {
-                    base: "block flex-1 cursor-pointer rounded-lg text-center text-xs font-semibold leading-9 text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)]",
-                    selected: "bg-[var(--beheer-accent)] text-white hover:bg-[var(--beheer-accent)]",
-                    disabled: "text-[var(--beheer-text-muted)] opacity-30 cursor-not-allowed"
-                }
-            }
-        }
-    }
-};
 
 export function GeneralInfoSection({
     initialData,
@@ -212,90 +165,58 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
     };
 
     return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden h-full flex flex-col">
-            <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
+        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] h-full flex flex-col">
+            <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3 rounded-t-[var(--beheer-radius)]">
                 <CalendarIcon className="h-4 w-4 text-[var(--beheer-accent)]" />
                 <h2 className="text-base font-semibold text-[var(--beheer-text)]">Planning & locatie</h2>
             </div>
             <div className="p-6 space-y-6 flex-1 flex flex-col">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                     <div>
                         <label htmlFor="event_date" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Startdatum *</label>
                         <input type="hidden" name="event_date" value={startDate ? toISODateString(startDate) : ''} />
-                        <Datepicker
-                            theme={customDatepickerTheme}
+                        <AdminDatepicker
                             value={startDate}
                             onChange={handleStartDateChange}
-                            language="nl"
-                            labelTodayButton="Vandaag"
-                            labelClearButton="Wissen"
-                            weekStart={1}
                             className={formErrors?.event_date ? 'border-red-500' : ''}
                         />
                         {formErrors?.event_date && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.event_date[0]}</p>}
                     </div>
                     <div>
-                        <label htmlFor="event_time" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Tijd</label>
-                        <div className="relative">
-                            <input
-                                type="time"
-                                id="event_time"
-                                name="event_time"
-                                value={startTime}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    setStartTime(val);
-                                    if (isSameDay && endTime && endTime < val) {
-                                        setEndTime('');
-                                    }
-                                }}
-                                onClick={(e) => e.currentTarget.showPicker()}
-                                suppressHydrationWarning
-                                className="beheer-input"
-                            />
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[var(--beheer-text-muted)] opacity-60">
-                                <svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                                </svg>
-                            </div>
-                        </div>
+                        <label htmlFor="event_time" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Starttijd</label>
+                        <AdminTimepicker
+                            id="event_time"
+                            name="event_time"
+                            value={startTime}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setStartTime(val);
+                                if (isSameDay && endTime && endTime < val) {
+                                    setEndTime('');
+                                }
+                            }}
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="event_time_end" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Eindtijd</label>
+                        <AdminTimepicker
+                            id="event_time_end"
+                            name="event_time_end"
+                            value={endTime}
+                            min={minEndTime}
+                            onChange={(e) => setEndTime(e.target.value)}
+                        />
                     </div>
                     <div>
                         <label htmlFor="event_date_end" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Einddatum</label>
                         <input type="hidden" name="event_date_end" value={endDate ? toISODateString(endDate) : ''} />
-                        <Datepicker
-                            theme={customDatepickerTheme}
+                        <AdminDatepicker
                             value={endDate}
                             onChange={handleEndDateChange}
                             minDate={startDate || undefined}
-                            language="nl"
-                            labelTodayButton="Vandaag"
-                            labelClearButton="Wissen"
-                            weekStart={1}
                             className={formErrors?.event_date_end ? 'border-red-500' : ''}
                         />
                         {formErrors?.event_date_end && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.event_date_end[0]}</p>}
-                    </div>
-                    <div>
-                        <label htmlFor="event_time_end" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Eindtijd</label>
-                        <div className="relative">
-                            <input
-                                type="time"
-                                id="event_time_end"
-                                name="event_time_end"
-                                value={endTime}
-                                min={minEndTime}
-                                onChange={(e) => setEndTime(e.target.value)}
-                                onClick={(e) => e.currentTarget.showPicker()}
-                                suppressHydrationWarning
-                                className="beheer-input"
-                            />
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[var(--beheer-text-muted)] opacity-60">
-                                <svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                                </svg>
-                            </div>
-                        </div>
                     </div>
                 </div>
 

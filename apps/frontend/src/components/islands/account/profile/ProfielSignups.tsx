@@ -82,7 +82,7 @@ export default function ProfielSignups({
                             <Link
                                 key={`${signup._type}-${signup.id}`}
                                 href={detailHref}
-                                className={`group h-full flex items-center justify-between gap-4 rounded-3xl p-5 text-left transition-all border shadow-sm ${isPast
+                                className={`group h-full flex items-center justify-between gap-4 squircle-lg p-5 text-left transition-all border shadow-sm ${isPast
                                     ? "bg-licht-paars/5 dark:bg-white/5 opacity-60 grayscale border-licht-paars/10 dark:border-white/5"
                                     : "bg-licht-paars/10 dark:bg-white/5 border-licht-paars/20 dark:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
                                     }`}
@@ -109,7 +109,7 @@ export default function ProfielSignups({
                     })}
                 </div>
             ) : (
-                <div className="rounded-3xl border-2 border-dashed border-licht-paars/20 dark:border-white/10 bg-licht-paars/5 dark:bg-white/5 p-12 text-center shadow-inner">
+                <div className="squircle-lg border-2 border-dashed border-licht-paars/20 dark:border-white/10 bg-licht-paars/5 dark:bg-white/5 p-12 text-center shadow-inner">
                     <p className="text-[var(--color-purple-700)] dark:text-white font-bold text-lg mb-2">
                         Je bent nog niet aangemeld voor activiteiten.
                     </p>
@@ -118,7 +118,7 @@ export default function ProfielSignups({
                     </p>
                     <Link
                         href="/activiteiten"
-                        className="inline-flex items-center gap-2 rounded-full bg-purple-500 px-8 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+                        className="inline-flex items-center gap-2 squircle bg-purple-500 px-8 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
                     >
                         Ontdek activiteiten
                     </Link>

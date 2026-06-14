@@ -22,9 +22,7 @@ export default async function EditKroegentochtPage({ params }: EditKroegentochtP
             subtitle={`Beheer de gegevens van ${event.name}`}
             backHref="/beheer/kroegentocht"
         >
-            <div className="container mx-auto px-4 pb-20 py-12">
-                <EventForm event={event} />
-            </div>
+            <EventForm event={event} />
         </AdminPageShell>
     );
 }
