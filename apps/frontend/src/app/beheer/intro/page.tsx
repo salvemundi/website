@@ -60,15 +60,13 @@ export default async function BeheerIntroPage() {
             backHref="/beheer"
             actions={<IntroVisibilityIsland initialVisible={introVisible} />}
         >
-            <div className="container mx-auto px-4 py-8 max-w-7xl">
-                <IntroManagementIsland
-                    initialSignups={signups}
-                    initialParents={parents}
-                    initialBlogs={blogs}
-                    initialPlanning={planning}
-                    initialIntroVisible={introVisible}
-                />
-            </div>
+            <IntroManagementIsland
+                initialSignups={signups}
+                initialParents={parents}
+                initialBlogs={blogs}
+                initialPlanning={planning}
+                initialIntroVisible={introVisible}
+            />
         </AdminPageShell>
     );
 }

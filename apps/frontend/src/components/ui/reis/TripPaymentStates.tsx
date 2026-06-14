@@ -10,7 +10,7 @@ export function TripAccessDenied({ error }: { error?: string }) {
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
             <div className="relative mb-8 pt-10">
                 <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-[var(--color-purple-500)]/10 rounded-full pointer-events-none" />
-                <div className="relative rounded-3xl bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)] inline-block">
+                <div className="relative squircle-lg bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)] inline-block">
                     <Search className="h-16 w-16" />
                 </div>
             </div>
@@ -28,7 +28,7 @@ export function TripAccessDenied({ error }: { error?: string }) {
                     href="/reis" 
                     text="Terug naar Reizen" 
                     icon={Home} 
-                    className="rounded-full px-8 py-3.5"
+                    className="squircle px-8 py-3.5"
                 />
             </div>
         </div>
@@ -43,7 +43,7 @@ export function TripWaitlisted() {
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
             <div className="relative mb-8 pt-10">
                 <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-amber-500/10 rounded-full pointer-events-none" />
-                <div className="relative rounded-3xl bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-amber-500 inline-block">
+                <div className="relative squircle-lg bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-amber-500 inline-block">
                     <Search className="h-16 w-16" />
                 </div>
             </div>
@@ -61,7 +61,7 @@ export function TripWaitlisted() {
                     href="/reis" 
                     text="Terug naar Reizen" 
                     icon={Home} 
-                    className="rounded-full px-8 py-3.5"
+                    className="squircle px-8 py-3.5"
                 />
             </div>
         </div>
@@ -84,7 +84,7 @@ export function TripAlreadyPaid({ tripName }: { tripName: string }) {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <BackButton href="/reis" text="Terug naar Reizen" />
-                <a href="/profiel/lidmaatschap" className="px-8 py-4 bg-orange-500 text-white font-bold rounded-2xl shadow-xl shadow-orange-500/10 transition-all">
+                <a href="/profiel/lidmaatschap" className="px-8 py-4 bg-orange-500 text-white font-bold squircle shadow-xl shadow-orange-500/10 transition-all">
                     Bekijk je profiel
                 </a>
             </div>

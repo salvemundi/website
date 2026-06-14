@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, ChevronDown, Download } from 'lucide-react';
+import { Search, Download } from 'lucide-react';
 
 interface ReisFiltersProps {
     searchQuery: string;
@@ -39,11 +39,11 @@ export default function ReisFilters({
 
                 {/* Selects Group */}
                 <div className="flex flex-col sm:flex-row items-center gap-2">
-                    <div className="relative group w-full sm:w-[160px]">
+                    <div className="w-full sm:w-[180px]">
                         <select
                             value={statusFilter}
                             onChange={(e) => onStatusChange(e.target.value)}
-                            className="beheer-select w-full pr-10 text-xs font-semibold"
+                            className="beheer-select text-xs font-semibold"
                         >
                             <option value="all">Alle statussen</option>
                             <option value="registered">Geregistreerd</option>
@@ -51,20 +51,18 @@ export default function ReisFilters({
                             <option value="waitlist">Wachtlijst</option>
                             <option value="cancelled">Geannuleerd</option>
                         </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--beheer-text-muted)] opacity-40 group-hover:text-[var(--beheer-accent)] pointer-events-none transition-colors" />
                     </div>
 
-                    <div className="relative group w-full sm:w-[140px]">
+                    <div className="w-full sm:w-[150px]">
                         <select
                             value={roleFilter}
                             onChange={(e) => onRoleChange(e.target.value)}
-                            className="beheer-select w-full pr-10 text-xs font-semibold"
+                            className="beheer-select text-xs font-semibold"
                         >
                             <option value="all">Alle rollen</option>
                             <option value="participant">Deelnemer</option>
                             <option value="crew">Crew</option>
                         </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--beheer-text-muted)] opacity-40 group-hover:text-[var(--beheer-accent)] pointer-events-none transition-colors" />
                     </div>
 
                     <button

@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 export function Card({ title, icon, children }: { title: string, icon: React.ReactNode, children: React.ReactNode }) {
     return (
@@ -20,16 +20,13 @@ export function FilterField({ label, value, onChange, children }: { label: strin
     return (
         <div className="space-y-2">
             <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--beheer-text-muted)] ml-1 opacity-60">{label}</label>
-            <div className="relative group">
-                <select 
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="w-full pl-4 pr-10 py-3.5 bg-[var(--bg-main)]/50 border border-[var(--beheer-border)]/50 rounded-2xl text-[10px] font-semibold uppercase tracking-widest text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:bg-[var(--bg-main)] transition-all appearance-none cursor-pointer shadow-inner"
-                >
-                    {children}
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] pointer-events-none group-hover:text-[var(--beheer-accent)] transition-colors opacity-50" />
-            </div>
+            <select 
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="beheer-select text-xs font-semibold"
+            >
+                {children}
+            </select>
         </div>
     );
 }

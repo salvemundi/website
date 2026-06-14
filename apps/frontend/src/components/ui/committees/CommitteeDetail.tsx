@@ -35,7 +35,7 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                         {committee.email && (
                             <a
                                 href={`mailto:${committee.email}`}
-                                className="inline-flex items-center justify-center gap-3 rounded-full bg-purple-600 px-8 py-3 text-lg font-black text-white shadow-xl shadow-purple-600/20 transition-all hover:scale-105 hover:bg-purple-500 active:scale-95 group"
+                                className="inline-flex items-center justify-center gap-3 squircle bg-purple-600 px-8 py-3 text-lg font-black text-white shadow-xl shadow-purple-600/20 transition-all hover:scale-105 hover:bg-purple-500 active:scale-95 group"
                             >
                                 <Mail className="h-5 w-5 transition-transform group-hover:-rotate-12" />
                                 Interesse? Mail ons!
@@ -45,7 +45,7 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                         {isBestuur ? (
                             <Link
                                 href="/commissies/oud-besturen"
-                                className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-border-color/50 px-8 py-3 text-lg font-bold text-text-muted hover:text-text-main hover:border-border-color transition-all"
+                                className="inline-flex items-center justify-center gap-2 squircle border-2 border-border-color/50 px-8 py-3 text-lg font-bold text-text-muted hover:text-text-main hover:border-border-color transition-all"
                             >
                                 <History className="h-5 w-5" />
                                 Geschiedenis
@@ -53,7 +53,7 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                         ) : (
                             <Link
                                 href="/contact"
-                                className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-border-color/50 px-8 py-3 text-lg font-bold text-text-muted hover:text-text-main hover:border-border-color transition-all"
+                                className="inline-flex items-center justify-center gap-2 squircle border-2 border-border-color/50 px-8 py-3 text-lg font-bold text-text-muted hover:text-text-main hover:border-border-color transition-all"
                             >
                                 <LayoutGrid className="h-5 w-5" />
                                 Andere vragen?

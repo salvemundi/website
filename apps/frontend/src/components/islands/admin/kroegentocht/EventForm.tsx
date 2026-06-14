@@ -23,9 +23,17 @@ import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import MediaAsset from '@/components/ui/media/MediaAsset';
-
 import { type PubCrawlEvent } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { safeConsoleError } from '@/server/utils/logger';
+import { AdminDatepicker } from '@/components/ui/forms/AdminDatepicker';
+
+const toISODateString = (date: Date | null): string => {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
 
 interface EventFormProps {
     event?: PubCrawlEvent;
@@ -71,6 +79,9 @@ export default function EventForm({ event }: EventFormProps) {
             { name: 'Aapjes', leaders: [] },
             { name: 'Zuipende Zebra\'s', leaders: [] }
         ]) as GroupConfig[]
+    });
+    const [eventDate, setEventDate] = useState<Date | null>(() => {
+        return formData.date ? new Date(formData.date) : null;
     });
     const [uploading, setUploading] = useState(false);
 
@@ -123,7 +134,7 @@ export default function EventForm({ event }: EventFormProps) {
     return (
         <>
             <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl mx-auto">
-                <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30 overflow-hidden">
+                <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30">
                     <div className="p-8 space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <div className="md:col-span-2 space-y-6">
@@ -146,12 +157,12 @@ export default function EventForm({ event }: EventFormProps) {
                                         <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
                                             <Calendar className="h-3 w-3" /> Datum
                                         </label>
-                                        <input
-                                            type="date"
-                                            value={formData.date}
-                                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                            className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)]"
-                                            required
+                                        <AdminDatepicker
+                                            value={eventDate}
+                                            onChange={(date) => {
+                                                setEventDate(date);
+                                                setFormData(prev => ({ ...prev, date: date ? toISODateString(date) : '' }));
+                                            }}
                                         />
                                     </div>
 

@@ -12,9 +12,7 @@ export default function NewKroegentochtPage() {
             subtitle="Maak een nieuwe kroegentocht aan"
             backHref="/beheer/kroegentocht"
         >
-            <div className="container mx-auto px-4 pb-20">
-                <EventForm />
-            </div>
+            <EventForm />
         </AdminPageShell>
     );
 }

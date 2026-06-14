@@ -21,7 +21,7 @@ interface CommitteeMembership {
 export function InfoRow({ icon: Icon, label, value }: { icon: LucideIcon, label: string, value: string }) {
     return (
         <div className="flex items-center gap-4 group">
-            <div className="h-10 w-10 shrink-0 rounded-xl bg-[var(--beheer-card-soft)] flex items-center justify-center text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors border border-[var(--beheer-border)]">
+            <div className="h-10 w-10 shrink-0 squircle bg-[var(--beheer-card-soft)] flex items-center justify-center text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-accent)] transition-colors border border-[var(--beheer-border)]">
                 <Icon className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
@@ -34,7 +34,7 @@ export function InfoRow({ icon: Icon, label, value }: { icon: LucideIcon, label:
 
 export function CommitteeCard({ membership, cleanName }: { membership: CommitteeMembership, cleanName: (n: string) => string }) {
     return (
-        <div className="p-5 rounded-3xl bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] flex flex-col gap-3 group hover:border-[var(--beheer-accent)]/30 transition-all shadow-sm">
+        <div className="p-5 squircle-lg bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] flex flex-col gap-3 group hover:border-[var(--beheer-accent)]/30 transition-all shadow-sm">
             <div className="flex items-center gap-4">
                 <div className="h-10 w-10 shrink-0 rounded-full bg-[var(--beheer-accent)]/10 flex items-center justify-center text-[var(--beheer-accent)] group-hover:scale-110 transition-transform">
                     <Shield className="h-5 w-5" />
@@ -55,8 +55,8 @@ export function CommitteeCard({ membership, cleanName }: { membership: Committee
 
 export function GroupCard({ membership, cleanName }: { membership: CommitteeMembership, cleanName: (n: string) => string }) {
     return (
-        <div className="p-4 rounded-2xl bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] flex items-center gap-4 group hover:border-[var(--beheer-accent)]/30 transition-all shadow-sm">
-            <div className="h-10 w-10 shrink-0 rounded-xl bg-[var(--beheer-card-soft)] flex items-center justify-center text-[var(--beheer-text-muted)] group-hover:bg-[var(--beheer-accent)] group-hover:text-white transition-all shadow-sm border border-[var(--beheer-border)]">
+        <div className="p-4 squircle bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] flex items-center gap-4 group hover:border-[var(--beheer-accent)]/30 transition-all shadow-sm">
+            <div className="h-10 w-10 shrink-0 squircle bg-[var(--beheer-card-soft)] flex items-center justify-center text-[var(--beheer-text-muted)] group-hover:bg-[var(--beheer-accent)] group-hover:text-white transition-all shadow-sm border border-[var(--beheer-border)]">
                 <Hash className="h-5 w-5" />
             </div>
             <p className="font-semibold text-[var(--beheer-text)] text-sm truncate">{cleanName(membership.committee_id.name)}</p>
@@ -90,7 +90,7 @@ export function SignupStatus({ status }: { status: string }) {
 
 export function EmptyState({ icon: Icon, message }: { icon: LucideIcon, message: string }) {
     return (
-        <div className="py-16 text-center border-2 border-dashed border-[var(--beheer-border)] rounded-3xl">
+        <div className="py-16 text-center border-2 border-dashed border-[var(--beheer-border)] squircle-lg">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--beheer-card-soft)] mb-3 text-[var(--beheer-text-muted)] opacity-30">
                 <Icon className="h-6 w-6" />
             </div>

@@ -62,11 +62,11 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                         placeholder="Tickets zoeken..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-12 pr-4 h-14 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-sm font-black uppercase tracking-widest focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all outline-none"
+                        className="w-full pl-12 pr-4 h-14 squircle bg-[var(--bg-card)] border border-[var(--border-color)] text-sm font-black uppercase tracking-widest focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all outline-none"
                     />
                 </div>
                 <div className="flex gap-4">
-                    <div className="px-6 py-3 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center gap-3">
+                    <div className="px-6 py-3 squircle bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-[var(--theme-purple)]/10 text-[var(--theme-purple)]">
                             <Ticket className="h-4 w-4" />
                         </div>
@@ -79,7 +79,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
             </div>
 
             {filteredTickets.length === 0 ? (
-                <div className="py-32 text-center bg-[var(--bg-card)] rounded-[3rem] border border-dashed border-[var(--border-color)]">
+                <div className="py-32 text-center bg-[var(--bg-card)] squircle-xl border border-dashed border-[var(--border-color)]">
                     <Ticket className="h-16 w-16 text-[var(--text-muted)] opacity-20 mx-auto mb-4" />
                     <h3 className="text-xl font-black text-[var(--text-main)] uppercase tracking-tight italic">Geen tickets <span className="text-[var(--theme-purple)]">gevonden</span></h3>
                     <p className="text-[var(--text-muted)] mt-2 font-medium">Je hebt nog geen tickets voor aankomende activiteiten.</p>
@@ -90,10 +90,10 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                         <div
                             key={ticket.id}
                             onClick={() => handleTicketSelect(ticket)}
-                            className="group relative bg-[var(--bg-card)] p-6 rounded-[2.5rem] border border-[var(--border-color)] hover:border-[var(--theme-purple)]/50 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:shadow-[var(--theme-purple)]/5 hover:-translate-y-1"
+                            className="group relative bg-[var(--bg-card)] p-6 squircle-lg border border-[var(--border-color)] hover:border-[var(--theme-purple)]/50 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:shadow-[var(--theme-purple)]/5 hover:-translate-y-1"
                         >
                             <div className="flex items-start justify-between mb-4">
-                                <div className="p-3 rounded-2xl bg-[var(--theme-purple)]/5 text-[var(--theme-purple)] group-hover:bg-[var(--theme-purple)] group-hover:text-white transition-all duration-500">
+                                <div className="p-3 squircle bg-[var(--theme-purple)]/5 text-[var(--theme-purple)] group-hover:bg-[var(--theme-purple)] group-hover:text-white transition-all duration-500">
                                     <QrCode className="h-6 w-6" />
                                 </div>
                                 <div className="text-right">
@@ -130,7 +130,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                         />
 
                         <div
-                            className="bg-[var(--bg-card)] rounded-[3rem] w-full max-w-lg shadow-2xl border border-white/10 overflow-hidden relative z-10 animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 duration-300 ease-out"
+                            className="bg-[var(--bg-card)] squircle-xl w-full max-w-lg shadow-2xl border border-white/10 overflow-hidden relative z-10 animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 duration-300 ease-out"
                         >
                             <button
                                 onClick={handleCloseModal}
@@ -147,7 +147,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                                     </h2>
                                 </div>
 
-                                <div className="p-6 bg-white rounded-[3rem] shadow-2xl ring-1 ring-black/5">
+                                <div className="p-6 bg-white squircle-lg shadow-2xl ring-1 ring-black/5">
                                     <QRDisplay qrToken={selectedTicket.qr_token} size={240} />
                                 </div>
 

@@ -2,10 +2,13 @@
 
 import { useState, useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Plus } from 'lucide-react';
 
 import ActivityCard from './ActivityCard';
 import ActivityFilters from './ActivityFilters';
 import AdminToast from '@/components/ui/admin/AdminToast';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import type { UserPermissions } from '@/shared/lib/permissions';
 
@@ -59,35 +62,82 @@ export default function AdminActivitiesIsland({
         return result;
     }, [events, filter, searchQuery, selectedCommittee]);
 
-    const displayedEvents = pageSize === -1 ? filteredEvents : filteredEvents.slice(0, pageSize);
+    const displayedEvents = useMemo(() => {
+        return pageSize === -1 ? filteredEvents : filteredEvents.slice(0, pageSize);
+    }, [filteredEvents, pageSize]);
+
+    const stats = useMemo(() => {
+        const upcoming = displayedEvents.filter(e => e.event_date && new Date(e.event_date) >= new Date()).length;
+        const signups = displayedEvents.reduce((acc, curr) => acc + (curr.signup_count || 0), 0);
+        return {
+            upcoming,
+            total: displayedEvents.length,
+            signups
+        };
+    }, [displayedEvents]);
     const canEdit = !!permissions?.canAccessActivitiesEdit;
 
     return (
-        <div className="flex flex-col">
+        <div className="w-full">
+            <AdminToolbar
+                title="Activiteiten Beheer"
+                subtitle="Organiseer en beheer alle activiteiten van Salve Mundi"
+                backHref="/beheer"
+                actions={
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="flex items-center gap-4 bg-bg-soft px-4 py-2 rounded-2xl border border-border-color/50 shadow-sm">
+                            <div className="flex flex-col items-center px-2">
+                                <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Aankomend</span>
+                                <span className="text-sm font-bold text-text-main leading-none">{stats.upcoming}</span>
+                            </div>
+                            <div className="w-px h-6 bg-border-color/20" />
+                            <div className="flex flex-col items-center px-2">
+                                <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Totale activiteiten</span>
+                                <span className="text-sm font-bold text-text-main leading-none">{stats.total}</span>
+                            </div>
+                            <div className="w-px h-6 bg-border-color/20" />
+                            <div className="flex flex-col items-center px-2">
+                                <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Aanmeldingen</span>
+                                <span className="text-sm font-bold text-text-main leading-none">{stats.signups}</span>
+                            </div>
+                        </div>
 
-            <ActivityFilters
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                filter={filter}
-                onFilterChange={handleFilterChange}
-                pageSize={pageSize}
-                onPageSizeChange={setPageSize}
-                selectedCommittee={selectedCommittee}
-                committees={availableCommittees}
-                onCommitteeChange={setSelectedCommittee}
+                        <Link
+                            href="/beheer/activiteiten/nieuw"
+                            className="flex items-center justify-center gap-1.5 px-4 py-2 bg-theme-purple text-white rounded-xl squircle text-xs font-semibold shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 whitespace-nowrap"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Nieuwe Activiteit
+                        </Link>
+                    </div>
+                }
             />
 
-            <div className="grid grid-cols-1 gap-8 mt-10">
-                {displayedEvents.map((event) => (
-                    <ActivityCard
-                        key={event.id}
-                        event={event}
-                        canEdit={canEdit}
-                        isPending={isPending}
-                        onViewSignups={(id) => router.push(`/beheer/activiteiten/${id}/aanmeldingen`)}
-                        onEdit={(id) => router.push(`/beheer/activiteiten/${id}/bewerken`)}
-                    />
-                ))}
+            <div className="admin-container py-4 md:py-8 flex flex-col">
+                <ActivityFilters
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    filter={filter}
+                    onFilterChange={handleFilterChange}
+                    pageSize={pageSize}
+                    onPageSizeChange={setPageSize}
+                    selectedCommittee={selectedCommittee}
+                    committees={availableCommittees}
+                    onCommitteeChange={setSelectedCommittee}
+                />
+
+                <div className="grid grid-cols-1 gap-8 mt-10">
+                    {displayedEvents.map((event) => (
+                        <ActivityCard
+                            key={event.id}
+                            event={event}
+                            canEdit={canEdit}
+                            isPending={isPending}
+                            onViewSignups={(id) => router.push(`/beheer/activiteiten/${id}/aanmeldingen`)}
+                            onEdit={(id) => router.push(`/beheer/activiteiten/${id}/bewerken`)}
+                        />
+                    ))}
+                </div>
             </div>
 
             <AdminToast toast={toast} onClose={hideToast} />

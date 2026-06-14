@@ -30,7 +30,7 @@ function BentoCard({
     return (
         <section
             className={[
-                'rounded-2xl sm:rounded-3xl',
+                'squircle sm:squircle-lg',
                 'bg-bg-card border border-border-color dark:border-white/10',
                 'shadow-lg sm:shadow-xl',
                 'p-6 sm:p-8',
@@ -80,7 +80,7 @@ async function SafeHavensContent() {
                         <BentoCard>
                             <div className="flex flex-col gap-6">
                                 <div className="flex items-start gap-4 sm:gap-6">
-                                    <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-purple-600 flex items-center justify-center shrink-0 shadow-lg">
+                                    <div className="h-14 w-14 sm:h-16 sm:w-16 squircle bg-purple-600 flex items-center justify-center shrink-0 shadow-lg">
                                         <Shield className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
                                     </div>
 
@@ -97,7 +97,7 @@ async function SafeHavensContent() {
                                 </div>
 
                                 <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="rounded-2xl bg-bg-main/50 border border-border-color p-5 transition-colors hover:bg-bg-main">
+                                    <div className="squircle bg-bg-main/50 border border-border-color p-5 transition-colors hover:bg-bg-main">
                                         <div className="flex items-start gap-3">
                                             <Lock className="mt-0.5 h-5 w-5 text-purple-500 shrink-0" />
                                             <div>
@@ -112,7 +112,7 @@ async function SafeHavensContent() {
                                         </div>
                                     </div>
 
-                                    <div className="rounded-2xl bg-bg-main/50 border border-border-color p-5 transition-colors hover:bg-bg-main">
+                                    <div className="squircle bg-bg-main/50 border border-border-color p-5 transition-colors hover:bg-bg-main">
                                         <div className="flex items-start gap-3">
                                             <Users className="mt-0.5 h-5 w-5 text-purple-500 shrink-0" />
                                             <div>
@@ -148,7 +148,7 @@ async function SafeHavensContent() {
                                             <SafeHavenCard key={safeHaven.id} safeHaven={safeHaven} />
                                         ))
                                     ) : (
-                                        <div className="col-span-full rounded-2xl bg-bg-main/50 border border-dashed border-border-color p-10 text-center">
+                                        <div className="col-span-full squircle bg-bg-main/50 border border-dashed border-border-color p-10 text-center">
                                             <Shield className="h-8 w-8 text-purple-500 mx-auto mb-4" />
                                             <p className="text-lg font-bold text-text-main opacity-60">Wordt binnenkort aangevuld</p>
                                         </div>
@@ -193,7 +193,7 @@ async function SafeHavensContent() {
                         <BentoCard>
                             <div className="flex flex-col gap-6">
                                 <div className="text-center">
-                                    <div className="mx-auto mb-5 h-14 w-14 rounded-2xl bg-purple-600 flex items-center justify-center shadow-lg">
+                                    <div className="mx-auto mb-5 h-14 w-14 squircle bg-purple-600 flex items-center justify-center shadow-lg">
                                         <MapPin className="h-7 w-7 text-white" />
                                     </div>
 
@@ -211,7 +211,7 @@ async function SafeHavensContent() {
                                         href="https://www.fontys.nl/fontyshelpt.htm"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="group flex items-center justify-between gap-3 rounded-xl bg-purple-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl hover:scale-[1.02]"
+                                        className="group flex items-center justify-between gap-3 squircle bg-purple-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl hover:scale-[1.02]"
                                     >
                                         <div className="flex items-center gap-3">
                                             <Shield className="h-5 w-5" />
@@ -222,7 +222,7 @@ async function SafeHavensContent() {
                                         <ExternalLink className="h-4 w-4 opacity-70 group-hover:opacity-100" />
                                     </a>
 
-                                    <div className="group flex items-center justify-center gap-2 rounded-xl bg-purple-800 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl">
+                                    <div className="group flex items-center justify-center gap-2 squircle bg-purple-800 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl">
                                         <ObfuscatedEmail
                                             email="bestuur@salvemundi.nl"
                                             className="text-white hover:text-white"
@@ -230,7 +230,7 @@ async function SafeHavensContent() {
                                         />
                                     </div>
 
-                                    <div className="mt-4 rounded-xl bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-900/50 p-4">
+                                    <div className="mt-4 squircle bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-900/50 p-4">
                                         <div className="flex items-center justify-center gap-2 mb-2 text-red-600 dark:text-red-400">
                                             <Phone className="h-4 w-4" />
                                             <p className="font-bold text-sm text-center">Noodgeval? Bel 112</p>

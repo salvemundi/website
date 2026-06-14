@@ -1,6 +1,6 @@
 'use client';
 
-import { Layout, ChevronDown, Filter, Search, Users } from 'lucide-react';
+import { Layout, Filter, Search, Users } from 'lucide-react';
 import type { Trip, TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 import { Card, FilterField } from './MailComponents';
 
@@ -39,18 +39,15 @@ export default function MailFilters({
         <div className="lg:col-span-1 space-y-6">
             {/* Trip Selector */}
             <Card title="Selecteer Reis" icon={<Layout className="h-4 w-4" />}>
-                <div className="relative group">
-                    <select 
-                        value={selectedTripId}
-                        onChange={onTripChange}
-                        className="w-full pl-4 pr-10 py-3.5 bg-[var(--bg-main)]/50 border border-[var(--beheer-border)]/50 rounded-2xl text-[11px] font-semibold tracking-tight text-[var(--beheer-text)] focus:ring-2 focus:ring-[var(--beheer-accent)] focus:bg-[var(--bg-main)] transition-all appearance-none cursor-pointer shadow-inner"
-                    >
-                        {trips.map(trip => (
-                            <option key={trip.id} value={trip.id} className="text-base font-semibold">{trip.name}</option>
-                        ))}
-                    </select>
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] pointer-events-none group-hover:text-[var(--beheer-accent)] transition-colors opacity-50" />
-                </div>
+                <select 
+                    value={selectedTripId}
+                    onChange={onTripChange}
+                    className="beheer-select text-[11px] font-semibold tracking-tight"
+                >
+                    {trips.map(trip => (
+                        <option key={trip.id} value={trip.id} className="text-base font-semibold">{trip.name}</option>
+                    ))}
+                </select>
             </Card>
 
             {/* Filters */}

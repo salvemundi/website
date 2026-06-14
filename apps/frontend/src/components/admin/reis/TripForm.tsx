@@ -6,6 +6,15 @@ import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import TripFormSidebar from './TripFormSidebar';
 import { createTrip, updateTrip } from '@/server/actions/admin/reis-core.actions';
+import { AdminDatepicker } from '@/components/ui/forms/AdminDatepicker';
+
+const toISODateString = (date: Date | null): string => {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
 
 interface ActionState {
     success: boolean;
@@ -45,6 +54,21 @@ export default function TripForm({
     const [registrationOpen, setRegistrationOpen] = useState(false);
     const [allowFinalPayments, setAllowFinalPayments] = useState(false);
     const [isBusTrip, setIsBusTrip] = useState(false);
+    const [startDate, setStartDate] = useState<Date | null>(() => {
+        const d = (editingTrip?.start_date as string) || (state?.initialData?.start_date as string);
+        return d ? new Date(d) : null;
+    });
+    const [endDate, setEndDate] = useState<Date | null>(() => {
+        const d = (editingTrip?.end_date as string) || (state?.initialData?.end_date as string);
+        return d ? new Date(d) : null;
+    });
+
+    useEffect(() => {
+        if (editingTrip) {
+            setStartDate(editingTrip.start_date ? new Date(editingTrip.start_date) : null);
+            setEndDate(editingTrip.end_date ? new Date(editingTrip.end_date) : null);
+        }
+    }, [editingTrip]);
 
     useEffect(() => {
         if (editingTrip) {
@@ -182,8 +206,8 @@ export default function TripForm({
                         </div>
 
                         {/* Section 2: Planning & Capaciteit */}
-                        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
-                            <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
+                        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)]">
+                            <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3 rounded-t-[var(--beheer-radius)]">
                                 <CalendarIcon className="h-4 w-4 text-[var(--beheer-accent)]" />
                                 <h2 className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text)]">Planning & Capaciteit</h2>
                             </div>
@@ -191,12 +215,22 @@ export default function TripForm({
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label htmlFor="start_date" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Startdatum *</label>
-                                        <input type="date" id="start_date" name="start_date" className={`beheer-input ${formErrors.start_date ? 'border-red-500' : ''}`} defaultValue={(state?.initialData?.start_date as string) || editingTrip?.start_date?.split('T')[0]} />
+                                        <input type="hidden" name="start_date" value={startDate ? toISODateString(startDate) : ''} />
+                                        <AdminDatepicker
+                                            value={startDate}
+                                            onChange={setStartDate}
+                                            className={formErrors.start_date ? 'border-red-500' : ''}
+                                        />
                                         {formErrors.start_date && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.start_date[0]}</p>}
                                     </div>
                                     <div>
                                         <label htmlFor="end_date" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Einddatum</label>
-                                        <input type="date" id="end_date" name="end_date" className="beheer-input" defaultValue={(state?.initialData?.end_date as string) || editingTrip?.end_date?.split('T')[0]} />
+                                        <input type="hidden" name="end_date" value={endDate ? toISODateString(endDate) : ''} />
+                                        <AdminDatepicker
+                                            value={endDate}
+                                            onChange={setEndDate}
+                                            minDate={startDate || undefined}
+                                        />
                                     </div>
                                 </div>
 

@@ -22,7 +22,7 @@ async function RegistrationSection() {
 
     if (!event) {
         return (
-            <div className="bg-bg-card dark:border dark:border-white/10 p-8 rounded-3xl text-center shadow-lg">
+            <div className="bg-bg-card dark:border dark:border-white/10 p-8 squircle-lg text-center shadow-lg">
                 <div className="w-16 h-16 bg-theme-purple/10 rounded-full flex items-center justify-center mx-auto mb-6">
                     <Calendar className="w-8 h-8 text-theme-purple" />
                 </div>
@@ -36,7 +36,7 @@ async function RegistrationSection() {
 
     if (!event.show) {
         return (
-            <div className="bg-slate-100 dark:bg-white/5 p-8 rounded-3xl text-center border border-slate-200 dark:border-white/10">
+            <div className="bg-slate-100 dark:bg-white/5 p-8 squircle-lg text-center border border-slate-200 dark:border-white/10">
                 <h2 className="text-xl font-black">{event.name}</h2>
                 <p className="text-slate-500 mt-2 italic">{event.disabled_message || 'De inschrijvingen voor de kroegentocht zijn momenteel gesloten.'}</p>
             </div>
@@ -52,7 +52,7 @@ async function RegistrationSection() {
             </div>
 
             <div className="w-full lg:w-1/2 flex flex-col gap-6">
-                <section className="bg-bg-card dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg">
+                <section className="bg-bg-card dark:border dark:border-white/10 squircle sm:squircle-lg p-6 sm:p-8 shadow-lg">
                     <h2 className="text-xl sm:text-2xl font-black text-theme-purple mb-6 flex items-center gap-3">
                         <Info className="w-7 h-7 text-theme-purple" />
                         Over de Kroegentocht
@@ -71,7 +71,7 @@ async function RegistrationSection() {
                     </div>
                 </section>
 
-                <section className="bg-bg-card dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg">
+                <section className="bg-bg-card dark:border dark:border-white/10 squircle sm:squircle-lg p-6 sm:p-8 shadow-lg">
                     <h2 className="text-xl sm:text-2xl font-black text-theme-purple mb-6 flex items-center gap-3">
                         <Calendar className="w-7 h-7 text-theme-purple" />
                         Activiteit Details
@@ -111,7 +111,7 @@ async function RegistrationSection() {
                     </div>
                 </section>
 
-                <section className="bg-bg-card dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg">
+                <section className="bg-bg-card dark:border dark:border-white/10 squircle sm:squircle-lg p-6 sm:p-8 shadow-lg">
                     <h2 className="text-xl sm:text-2xl font-black text-theme-purple mb-6 flex items-center gap-3">
                         <ShieldAlert className="w-7 h-7 text-theme-purple" />
                         Belangrijke Info
@@ -124,7 +124,7 @@ async function RegistrationSection() {
                             { icon: <Ticket className="h-5 w-5" />, title: 'Tickets', content: <>Tickets zijn <strong>overdraagbaar</strong>.</> },
                         ].map((item, i) => (
                             <div key={i} className="flex gap-4 group">
-                                <div className="h-10 w-10 rounded-xl bg-theme-purple/5 text-theme-purple flex items-center justify-center flex-shrink-0 border border-theme-purple/10">
+                                <div className="h-10 w-10 squircle bg-theme-purple/5 text-theme-purple flex items-center justify-center flex-shrink-0 border border-theme-purple/10">
                                     {item.icon}
                                 </div>
                                 <div className="space-y-1">
