@@ -38,11 +38,11 @@ export class AzureRetryService {
         };
 
         await redis.zadd(this.QUEUE_KEY, Date.now(), JSON.stringify(task));
-        safeConsoleError(`[AzureRetry] Queued Azure update for Entra ID ${entraId}`);
+        safeConsoleError('azure-retry.service.ts][queueUpdate]', `Queued Azure update for Entra ID ${entraId}`);
     }
 
     static async startWorker(redis: Redis) {
-        safeConsoleError('[AzureRetry] Starting Azure Update Worker Loop...');
+        safeConsoleError('azure-retry.service.ts][startWorker]', 'Starting Azure Update Worker Loop...');
 
         while (!this.shouldStop) {
             try {
@@ -59,7 +59,7 @@ export class AzureRetryService {
                         const result = AzureUpdateTaskSchema.safeParse(JSON.parse(taskStr));
 
                         if (!result.success) {
-                            safeConsoleError(`[AzureRetry] Corrupt queue entry detected, removing task: ${result.error.message}`);
+                            safeConsoleError('azure-retry.service.ts][startWorker]', `Corrupt queue entry detected, removing task: ${result.error.message}`);
                             await redis.zrem(this.QUEUE_KEY, taskStr);
                             continue;
                         }
@@ -75,10 +75,10 @@ export class AzureRetryService {
                             }
 
                             await redis.zrem(this.QUEUE_KEY, taskStr);
-                            safeConsoleError(`[AzureRetry] Successfully updated Azure user ${task.entraId}`);
+                            safeConsoleError('azure-retry.service.ts][startWorker]', `Successfully updated Azure user ${task.entraId}`);
                         } catch (error: unknown) {
-                            const err = error instanceof Error ? error : new Error(String(error));
-                            safeConsoleError(`[AzureRetry] Failed attempt ${task.retries + 1} for ${task.entraId}: ${err.message}`);
+                            const typedError = error instanceof Error ? error : new Error(String(error));
+                            safeConsoleError('azure-retry.service.ts][startWorker]', `Failed attempt ${task.retries + 1} for ${task.entraId}: ${typedError.message}`);
                             await redis.zrem(this.QUEUE_KEY, taskStr);
 
                             if (task.retries < task.maxRetries) {
@@ -88,16 +88,16 @@ export class AzureRetryService {
                                 await redis.zadd(this.QUEUE_KEY, nextAttempt, JSON.stringify(task));
                             }
                         }
-                    } catch (parseErr: unknown) {
-                        const err = parseErr instanceof Error ? parseErr : new Error(String(parseErr));
-                        safeConsoleError(`[AzureRetry] Corrupt JSON detected, removing task: ${err.message}`);
+                    } catch (parseError: unknown) {
+                        const typedParseError = parseError instanceof Error ? parseError : new Error(String(parseError));
+                        safeConsoleError('azure-retry.service.ts][startWorker]', `Corrupt JSON detected, removing task: ${typedParseError.message}`);
                         await redis.zrem(this.QUEUE_KEY, taskStr);
                     }
                 }
                 await new Promise(resolve => setTimeout(resolve, 2000));
             } catch (error: unknown) {
-                const err = error instanceof Error ? error : new Error(String(error));
-                safeConsoleError(`[AzureRetry] Worker loop error: ${err.message}`);
+                const typedError = error instanceof Error ? error : new Error(String(error));
+                safeConsoleError('azure-retry.service.ts][startWorker]', typedError);
                 await new Promise(resolve => setTimeout(resolve, 10000));
             }
         }
@@ -120,8 +120,8 @@ export class AzureRetryService {
         });
 
         if (!res.ok) {
-            const errBody = await res.text();
-            throw new Error(`Azure Management Service returned ${res.status}: ${errBody}`);
+            const errorBody = await res.text();
+            throw new Error(`Azure Management Service returned ${res.status}: ${errorBody}`);
         }
     }
 
@@ -136,7 +136,7 @@ export class AzureRetryService {
         });
 
         if (!res.ok) {
-            safeConsoleError(`[AzureRetry] Failed to trigger sync for ${entraId} (Status: ${res.status})`);
+            safeConsoleError('azure-retry.service.ts][triggerSync]', `Failed to trigger sync for ${entraId} (Status: ${res.status})`);
         }
     }
 }
