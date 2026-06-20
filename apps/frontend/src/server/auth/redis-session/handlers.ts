@@ -61,8 +61,9 @@ export async function beforeHandler(ctx: AuthContext) {
             let parsed: unknown;
             try {
                 parsed = JSON.parse(cached);
-            } catch (error) {
-                safeConsoleError('[redis-session/handlers][beforeHandler] JSON Parse Error', error);
+            } catch (error: unknown) {
+                const typedError = error instanceof Error ? error : new Error(String(error));
+                safeConsoleError('handlers.ts][beforeHandler]', `JSON Parse Error: ${typedError.message}`);
                 return;
             }
 
@@ -74,8 +75,9 @@ export async function beforeHandler(ctx: AuthContext) {
 
             return { response: finalSession as ExtendedSession };
         }
-    } catch (error) {
-        safeConsoleError('[redis-session/handlers/beforeHandler] Critical Error:', error);
+    } catch (error: unknown) {
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('handlers.ts][beforeHandler]', `Critical Error: ${typedError.message}`);
         return;
     }
 }
@@ -90,9 +92,9 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
         if (hasClone(returned)) {
             try {
                 sessionData = await returned.clone().json();
-            } catch (error) {
-                // Log de fout, zo is 'error' nuttig gebruikt
-                safeConsoleError('[redis-session/handlers][afterHandler] Clone/JSON error', error);
+            } catch (error: unknown) {
+                const typedError = error instanceof Error ? error : new Error(String(error));
+                safeConsoleError('handlers.ts][afterHandler]', `Clone/JSON error: ${typedError.message}`);
                 return {
                     response: context.response || returned,
                     headers: context.headers || null
@@ -193,8 +195,9 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
                 try {
                     const redis = await getRedis();
                     await redis.set(`session:${token}`, JSON.stringify(sessionWithUser), 'EX', 300);
-                } catch (error) {
-                    safeConsoleError('[redis-session/handlers][afterHandler] Redis Cache Error:', error);
+                } catch (error: unknown) {
+                    const typedError = error instanceof Error ? error : new Error(String(error));
+                    safeConsoleError('handlers.ts][afterHandler]', `Redis Cache Error: ${typedError.message}`);
                 }
             }
         }
@@ -223,8 +226,9 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
             headers: originalHeaders
         };
 
-    } catch (error) {
-        safeConsoleError('[redis-session/handlers][afterHandler] Critical Error:', error);
+    } catch (error: unknown) {
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('handlers.ts][afterHandler]', `Critical Error: ${typedError.message}`);
         return {
             response: context.response || returned || null,
             headers: context.headers || null

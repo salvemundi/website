@@ -12,7 +12,7 @@ export class TokenService {
         const clientSecret = process.env.AZURE_WEBSITEV7_PROVISIONING_CLIENT_SECRET || process.env.AZURE_PROVISIONING_CLIENT_SECRET;
 
         if (!tenantId || !clientId || !clientSecret) {
-            throw new Error('Missing Azure AD Provisioning credentials');
+            throw new Error('token.service.ts][getAzureConfig] Missing Azure AD Provisioning credentials');
         }
 
         return { tenantId, clientId, clientSecret };
@@ -22,11 +22,12 @@ export class TokenService {
         try {
             const cachedToken = await redis.get(this.CACHE_KEY);
             if (cachedToken) return cachedToken;
-        } catch (error) {
-            safeConsoleError('[TokenService] Redis cache read error:', error);
+        } catch (error: unknown) {
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            safeConsoleError('token.service.ts][getAccessToken]', `Redis cache read error: ${typedError.message}`);
         }
 
-        logInfo('[TokenService] Cache miss. Fetching fresh token from Azure...');
+        logInfo('token.service.ts][getAccessToken]', 'Cache miss. Fetching fresh token from Azure...');
 
         if (!this.credential) {
             const { tenantId, clientId, clientSecret } = this.getAzureConfig();
@@ -37,8 +38,9 @@ export class TokenService {
 
         try {
             await redis.set(this.CACHE_KEY, tokenResponse.token, 'EX', 3000);
-        } catch (error) {
-            safeConsoleError('[TokenService] Redis cache write error:', error);
+        } catch (error: unknown) {
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            safeConsoleError('token.service.ts][getAccessToken]', `Redis cache write error: ${typedError.message}`);
         }
 
         return tokenResponse.token;

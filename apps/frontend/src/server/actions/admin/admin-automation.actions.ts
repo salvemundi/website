@@ -32,7 +32,6 @@ export async function getSystemAutomationSettings(): Promise<{ success: boolean;
             [AUTOMATION_FLAGS]
         );
 
-        // If auto_sync_nightly is missing, we could insert it here or just handle it gracefully
         const foundFlags = rows.map((r) => r.route_match);
         if (!foundFlags.includes('auto_sync_nightly')) {
             await query(
@@ -57,7 +56,8 @@ export async function getSystemAutomationSettings(): Promise<{ success: boolean;
             }))
         };
     } catch (error: unknown) {
-        safeConsoleError('[Automation] Failed to fetch settings:', error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('admin-automation.actions.ts][getSystemAutomationSettings]', `Failed to fetch settings: ${typedError.message}`);
         return { success: false, error: 'Ophalen automatisering instellingen mislukt' };
     }
 }

@@ -4,10 +4,10 @@ import { DirectusService } from './directus.service.js';
 import { SyncJob } from './sync/sync-job.js';
 
 export class FullSyncJob {
-    private static shouldStop = false;
+    private static shouldStop = false as boolean;
 
     static async start(redis: Redis) {
-        logInfo('[FullSyncJob] Starting nightly synchronization loop...');
+        logInfo('full-sync.job.ts][start]', 'Starting nightly synchronization loop...');
 
         while (!this.shouldStop) {
             try {
@@ -19,26 +19,26 @@ export class FullSyncJob {
                 }
 
                 const delay = nextRun.getTime() - now.getTime();
-                logInfo(`[FullSyncJob] Next full sync scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours (at ${nextRun.toISOString()}).`);
+                logInfo('full-sync.job.ts][start]', `Next full sync scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours (at ${nextRun.toISOString()}).`);
 
                 await new Promise(resolve => setTimeout(resolve, delay));
                 if (this.shouldStop) break;
 
                 const isActive = await DirectusService.isFlagActive('auto_sync_nightly');
                 if (!isActive) {
-                    logInfo('[FullSyncJob] Nightly sync is DISABLED via feature flag. Skipping run.');
+                    logInfo('full-sync.job.ts][start]', 'Nightly sync is DISABLED via feature flag. Skipping run.');
                     continue;
                 }
 
-                logInfo('[FullSyncJob] Triggering automated nightly sync...');
+                logInfo('full-sync.job.ts][start]', 'Triggering automated nightly sync...');
                 await SyncJob.run(redis, {
                     fields: ['status', 'membership_status', 'membership_expiry', 'committees'],
                     silent: true
                 });
 
             } catch (error: unknown) {
-                const message = error instanceof Error ? error.message : String(error);
-                safeConsoleError('[FullSyncJob] Loop Error:', message);
+                const typedError = error instanceof Error ? error : new Error(String(error));
+                safeConsoleError('full-sync.job.ts][start]', `Loop Error: ${typedError.message}`);
                 await new Promise(resolve => setTimeout(resolve, 300000));
             }
         }

@@ -16,8 +16,7 @@ import { getValidCoupon, claimCoupon, releaseCoupon } from '@/server/utils/coupo
 import { normalizeDate } from '@/lib/utils/date-utils';
 import { safeConsoleError } from '@/server/utils/logger';
 
-const getFinanceServiceUrl = () =>
-    getExpandedEnv('FINANCE_SERVICE_URL');
+const getFinanceServiceUrl = () => getExpandedEnv('FINANCE_SERVICE_URL');
 
 const getInternalHeaders = () => {
     const token = (getExpandedEnv('INTERNAL_SERVICE_TOKEN') || '').replace(/^"|"$/g, '').trim();
@@ -69,7 +68,6 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     if (!success) {
         return { success: false, error: 'Te veel inschrijfpogingen. Probeer het over een paar minuten opnieuw.' };
     }
-
 
     const session = await getEnrichedSession();
 
@@ -132,11 +130,12 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
             await releaseCoupon(parsed.data.coupon);
         }
         return { success: false, error: 'Er is een fout opgetreden bij het aanmaken van de betaling.' };
-    } catch (error) {
+    } catch (error: unknown) {
         if (couponClaimed && parsed.data.coupon) {
             await releaseCoupon(parsed.data.coupon);
         }
-        safeConsoleError('[MembershipActions] Payment initiation failed:', error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('membership.actions.ts][initiateMembershipPaymentAction]', `Payment initiation failed: ${typedError.message}`);
         return { success: false, error: 'Kan geen verbinding maken met betaalservice' };
     }
 }
@@ -171,10 +170,9 @@ export async function getTransactionStatusAction(transactionId: string) {
         }
 
         return { status: 'open', user_id: transaction.user_id };
-    } catch (error) {
-        safeConsoleError('[MembershipActions] Status check failed:', error);
+    } catch (error: unknown) {
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('membership.actions.ts][getTransactionStatusAction]', `Status check failed: ${typedError.message}`);
         return { status: 'error', user_id: null };
     }
 }
-
-

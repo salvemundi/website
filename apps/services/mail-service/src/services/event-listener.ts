@@ -9,15 +9,14 @@ export class EventListenerService {
     private static shouldStop = false;
 
     static async start(redis: Redis) {
-        safeConsoleLog('[MailEventListener] Starting Redis Stream listener...');
+        safeConsoleLog('event-listener.service.ts][start]', 'Starting Redis Stream listener...');
 
         try {
             await redis.xgroup('CREATE', this.STREAM_KEY, this.GROUP_NAME, '0', 'MKSTREAM');
         } catch (error: unknown) {
-            if (error instanceof Error && !error.message.includes('BUSYGROUP')) {
-                safeConsoleError('[MailEventListener] Error creating consumer group:', error);
-            } else if (!(error instanceof Error)) {
-                safeConsoleError('[MailEventListener] Unexpected error type during group creation:', String(error));
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            if (!typedError.message.includes('BUSYGROUP')) {
+                safeConsoleError('event-listener.service.ts][start]', `Error creating consumer group: ${typedError.message}`);
             }
         }
 
@@ -44,9 +43,8 @@ export class EventListenerService {
                     }
                 }
             } catch (error: unknown) {
-                const message = error instanceof Error ? error.message : String(error);
-                safeConsoleError('[MailEventListener] Loop Error:', message);
-
+                const typedError = error instanceof Error ? error : new Error(String(error));
+                safeConsoleError('event-listener.service.ts][start]', `Loop Error: ${typedError.message}`);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
@@ -55,11 +53,11 @@ export class EventListenerService {
     private static async handleEvent(redis: Redis, message: { id: string; data: Record<string, string> }) {
         try {
             if (!message.data.payload) {
-                safeConsoleLog(`[MailEventListener] Message ${message.id} missing payload`);
+                safeConsoleLog('event-listener.service.ts][handleEvent]', `Message ${message.id} missing payload`);
                 return;
             }
             const payload = JSON.parse(message.data.payload) as { event?: string };
-            safeConsoleLog(`[MailEventListener] Received event: ${payload.event}`);
+            safeConsoleLog('event-listener.service.ts][handleEvent]', `Received event: ${payload.event}`);
 
             if (payload.event === 'PAYMENT_SUCCESS') {
                 await EventHandlers.handlePaymentSuccess(redis, payload);
@@ -67,8 +65,8 @@ export class EventListenerService {
                 await EventHandlers.handleActivitySignup(redis, payload);
             }
         } catch (error: unknown) {
-            const messageStr = error instanceof Error ? error.message : String(error);
-            safeConsoleError('[MailEventListener] Error handling event:', messageStr);
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            safeConsoleError('event-listener.service.ts][handleEvent]', `Error handling event: ${typedError.message}`);
         }
     }
 

@@ -8,7 +8,7 @@ const directusUrlEnv = process.env.DIRECTUS_SERVICE_URL || process.env.INTERNAL_
 const directusTokenEnv = process.env.DIRECTUS_STATIC_TOKEN;
 
 if (!directusUrlEnv || !directusTokenEnv) {
-    throw new Error('Missing DIRECTUS_SERVICE_URL or DIRECTUS_STATIC_TOKEN');
+    throw new Error('directus.ts] Missing DIRECTUS_SERVICE_URL or DIRECTUS_STATIC_TOKEN');
 }
 
 const directusUrl: string = directusUrlEnv;
@@ -39,8 +39,9 @@ async function logDirectusError(error: DirectusError) {
                 timestamp: new Date().toISOString()
             }
         });
-    } catch (logErr) {
-        safeConsoleError('[DirectusLog] Failed to persist error log:', logErr);
+    } catch (logError: unknown) {
+        const typedLogError = logError instanceof Error ? logError : new Error(String(logError));
+        safeConsoleError('directus.ts][logDirectusError]', `Failed to persist error log: ${typedLogError.message}`);
     }
 }
 
@@ -57,20 +58,20 @@ export async function fetchWithRetry(
                 return response;
             }
             throw new Error(`Server responded with ${response.status}`);
-        } catch (e: unknown) {
-            const error = e instanceof Error ? e : new Error(String(e));
+        } catch (error: unknown) {
+            const typedError = error instanceof Error ? error : new Error(String(error));
             const isLastRetry = i === retries;
-            const isTimeout = error.name === 'TimeoutError' || error.name === 'AbortError' || error.message.includes('timeout');
+            const isTimeout = typedError.name === 'TimeoutError' || typedError.name === 'AbortError' || typedError.message.includes('timeout');
 
-            if (isLastRetry || (!isTimeout && !error.message.includes('Server responded with 5'))) {
-                safeConsoleError('[Directus][fetchWithRetry]', error);
-                throw error;
+            if (isLastRetry || (!isTimeout && !typedError.message.includes('Server responded with 5'))) {
+                safeConsoleError('directus.ts][fetchWithRetry]', typedError);
+                throw typedError;
             }
 
-            await new Promise(res => setTimeout(res, backoff * (i + 1)));
+            await new Promise(resolve => setTimeout(resolve, backoff * (i + 1)));
         }
     }
-    throw new Error('Fetch failed after retries');
+    throw new Error('directus.ts][fetchWithRetry] Fetch failed after retries');
 }
 
 export function getSystemDirectus() {
@@ -154,10 +155,10 @@ export function getSystemDirectus() {
                     }
 
                     return response;
-                } catch (e: unknown) {
-                    const error = e instanceof Error ? e : new Error(String(e));
+                } catch (error: unknown) {
+                    const typedError = error instanceof Error ? error : new Error(String(error));
 
-                    if (error.name === 'TimeoutError' || error.name === 'AbortError' || error.message.includes('timeout')) {
+                    if (typedError.name === 'TimeoutError' || typedError.name === 'AbortError' || typedError.message.includes('timeout')) {
                         const timeoutError = new DirectusError(
                             `Service timeout (8s) for ${urlStr}.`,
                             504,
@@ -168,10 +169,10 @@ export function getSystemDirectus() {
                         throw timeoutError;
                     }
 
-                    if (e instanceof DirectusError) throw e;
+                    if (error instanceof DirectusError) throw error;
 
                     const errorObj = new DirectusError(
-                        error.message || 'Unknown network error during Directus fetch',
+                        typedError.message || 'Unknown network error during Directus fetch',
                         500,
                         'FETCH_ERROR',
                         urlStr

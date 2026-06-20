@@ -15,14 +15,12 @@ import {
 import { createManualSignupSchema, deleteSignupSchema, toggleCheckInSchema, USER_BASIC_FIELDS, type UserBasic } from "@salvemundi/validations";
 import { revalidatePath, revalidateTag } from "next/cache";
 
-
 const getNotificationUrl = () => process.env.INTERNAL_NOTIFICATION_API_URL || process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
 
 async function checkAdminAccess() {
     const user = await getAuthorizedUser();
     if (!user) return null;
 
-    // Use isAdmin/isICT for broad management access, or check for granular activity edit permission
     if (user.isAdmin || user.isICT || user.canAccessActivitiesEdit) {
         return { user };
     }
@@ -44,7 +42,8 @@ async function sendCancellationEmail(email: string, eventName: string) {
             })
         });
     } catch (error) {
-        safeConsoleError('[Aanmeldingen.actions - sendCancellationEmail] Fout opgetreden:', error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('aanmeldingen.actions.ts][sendCancellationEmail]', `Fout opgetreden: ${typedError.message}`);
     }
 }
 
@@ -113,7 +112,6 @@ export async function searchMembersAction(query: string) {
         );
         return { success: true, data: users as unknown as UserBasic[] };
     } catch {
-
         return { success: false, error: "Search failed", data: [] as UserBasic[] };
     }
 }
@@ -161,8 +159,6 @@ export async function createManualSignupAction(
         }
 
         try {
-            // Directus SDK will handle the database insertion and trigger internal logic (activity logs, etc.)
-            // Since they share the same database, we don't need the redundant createEventSignupDb call here which causes ID conflicts.
             const newItem = await getSystemDirectus().request(createItem('event_signups', payload)) as unknown as { id?: number } | null;
 
             if (!newItem || !newItem.id) {
@@ -176,19 +172,20 @@ export async function createManualSignupAction(
             revalidatePath('/beheer/activiteiten');
             return { success: true };
         } catch (error) {
-            safeConsoleError('[CMS Sync] Directus createItem failed (signup):', error);
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            safeConsoleError('aanmeldingen.actions.ts][createManualSignupAction]', `Directus createItem failed (signup): ${typedError.message}`);
             await logAdminAction('system_activity_signup_failed', 'ERROR', {
                 context: 'activiteit',
                 event_id: eventId,
                 context_name: eventName,
-                error: error instanceof Error ? error.message : JSON.stringify(error),
+                error: typedError.message,
                 payload: payload
             });
             return { success: false, error: 'Synchronisatie met CMS mislukt. Aanmelding niet opgeslagen.' };
         }
     } catch (error: unknown) {
-        const errMessage = error instanceof Error ? error.message : String(error);
-        if (errMessage.includes('UNIQUE') || errMessage.includes('duplicate')) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('UNIQUE') || errorMessage.includes('duplicate')) {
             return { success: false, error: "This person is already signed up." };
         }
         return { success: false, error: "Failed to save signup." };
@@ -215,11 +212,9 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
         const updated = await updateEventSignupDb(signupId, payload);
         if (!updated) throw new Error("Database update mislukt");
 
-        // Sync to Directus - now awaited
         try {
             await getSystemDirectus().request(updateItem('event_signups', signupId, payload));
         } catch (error) {
-            // Revert DB on sync fail
             await updateEventSignupDb(signupId, { checked_in: !checkedIn, checked_in_at: !checkedIn ? new Date().toISOString() : null });
             await logAdminAction('system_event_signup_checkin_rollback', 'ERROR', { context: 'activiteit', event_id: eventId, id: signupId, error: String(error), action: 'rollback_restore' });
             return { success: false, error: "CMS Synchronisatie mislukt. Check-in status niet bijgewerkt." };
@@ -250,7 +245,6 @@ export async function findSignupByTokenAction(token: string) {
         return { success: false, error: 'Ongeldige token' };
     }
 
-    // Admin-only access
     const session = await checkAdminAccess();
     if (!session?.user) return { success: false, error: 'Unauthorized' };
 

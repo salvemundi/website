@@ -19,8 +19,9 @@ const pool = new Pool({
     port: Number(process.env.DB_PORT),
 });
 
-pool.on('error', (err) => {
-    safeConsoleError('[db.ts] Postgres pool idle client error', err);
+pool.on('error', (error: unknown) => {
+    const typedError = error instanceof Error ? error : new Error(String(error));
+    safeConsoleError('db.ts][poolOnError]', `Postgres pool idle client error: ${typedError.message}`);
 });
 
 export const db = new Kysely<Database>({

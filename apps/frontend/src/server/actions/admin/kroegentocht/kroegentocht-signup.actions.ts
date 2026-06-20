@@ -26,7 +26,6 @@ export async function getPubCrawlSignups(eventId: number) {
     await requireKroegAdmin();
     try {
         const sqlSignups = await fetchPubCrawlSignupsDb(eventId);
-
         const openSignupIds = sqlSignups.filter(s => s.payment_status === 'open').map(s => s.id);
 
         if (openSignupIds.length > 0) {
@@ -43,19 +42,22 @@ export async function getPubCrawlSignups(eventId: number) {
                     const latestStatus = directusStatusMap.get(Number(signup.id));
                     if (latestStatus && latestStatus !== signup.payment_status) {
                         (signup as { [key: string]: unknown }).payment_status = latestStatus;
-                        updatePubCrawlSignupDb(Number(signup.id), { payment_status: latestStatus as 'open' | 'paid' | 'failed' | 'canceled' | 'expired' }).catch((error) => {
-                            safeConsoleError('[Kroegentocht-Action][getPubCrawlSignups] Failed to update signup payment status:', error);
+                        updatePubCrawlSignupDb(Number(signup.id), { payment_status: latestStatus as 'open' | 'paid' | 'failed' | 'canceled' | 'expired' }).catch((syncError) => {
+                            const typedSyncError = syncError instanceof Error ? syncError : new Error(String(syncError));
+                            safeConsoleError('kroegentocht-signup.actions.ts][getPubCrawlSignups]', `Failed to update signup payment status: ${typedSyncError.message}`);
                         });
                     }
                 }
-            } catch (error) {
-                safeConsoleError('[Kroegentocht-Action][getPubCrawlSignups] Directus sync check failed:', error);
+            } catch (syncCheckError) {
+                const typedSyncCheckError = syncCheckError instanceof Error ? syncCheckError : new Error(String(syncCheckError));
+                safeConsoleError('kroegentocht-signup.actions.ts][getPubCrawlSignups]', `Directus sync check failed: ${typedSyncCheckError.message}`);
             }
         }
 
         return sqlSignups;
     } catch (error: unknown) {
-        safeConsoleError('[Kroegentocht-Action][getPubCrawlSignups] Failed to fetch signups:', error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('kroegentocht-signup.actions.ts][getPubCrawlSignups]', `Failed to fetch signups: ${typedError.message}`);
         throw new Error('Kon aanmeldingen niet ophalen');
     }
 }
@@ -65,7 +67,8 @@ export async function getPubCrawlSignup(id: number) {
     try {
         return await fetchPubCrawlSignupByIdDb(id);
     } catch (error: unknown) {
-        safeConsoleError(`[Kroegentocht-Action][getPubCrawlSignup] Failed to fetch signup ${id}:`, error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('kroegentocht-signup.actions.ts][getPubCrawlSignup]', `Failed to fetch signup ${id}: ${typedError.message}`);
         throw new Error('Kon aanmelding niet ophalen');
     }
 }
@@ -76,13 +79,15 @@ export async function deletePubCrawlSignup(id: number, eventId: number) {
         await deletePubCrawlSignupDb(id);
         revalidateTag(`signups-${eventId}`, 'max');
 
-        getSystemDirectus().request(deleteItem('pub_crawl_signups', id)).catch((error) => {
-            safeConsoleError(`[Kroegentocht-Action][deletePubCrawlSignup] Failed to delete signup ${id}:`, error);
+        getSystemDirectus().request(deleteItem('pub_crawl_signups', id)).catch((deleteError) => {
+            const typedDeleteError = deleteError instanceof Error ? deleteError : new Error(String(deleteError));
+            safeConsoleError('kroegentocht-signup.actions.ts][deletePubCrawlSignup]', `Failed to delete signup ${id}: ${typedDeleteError.message}`);
         });
 
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError(`[Kroegentocht-Action][deletePubCrawlSignup] Failed to delete signup ${id}:`, error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('kroegentocht-signup.actions.ts][deletePubCrawlSignup]', `Failed to delete signup ${id}: ${typedError.message}`);
         throw new Error('Verwijderen mislukt');
     }
 }
@@ -103,13 +108,15 @@ export async function updatePubCrawlSignup(id: number, eventId: number, data: Pa
         await updatePubCrawlSignupDb(id, filteredData);
         revalidateTag(`signups-${eventId}`, 'max');
 
-        getSystemDirectus().request(updateItem('pub_crawl_signups', id, filteredData)).catch((error) => {
-            safeConsoleError(`[Kroegentocht-Action][updatePubCrawlSignup] Failed to update signup ${id}:`, error);
+        getSystemDirectus().request(updateItem('pub_crawl_signups', id, filteredData)).catch((updateError) => {
+            const typedUpdateError = updateError instanceof Error ? updateError : new Error(String(updateError));
+            safeConsoleError('kroegentocht-signup.actions.ts][updatePubCrawlSignup]', `Failed to update signup ${id}: ${typedUpdateError.message}`);
         });
 
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError(`[Kroegentocht-Action][updatePubCrawlSignup] Failed to update signup ${id}:`, error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('kroegentocht-signup.actions.ts][updatePubCrawlSignup]', `Failed to update signup ${id}: ${typedError.message}`);
         throw new Error('Bijwerken mislukt');
     }
 }
@@ -128,14 +135,16 @@ export async function togglePubCrawlTicketCheckIn(ticketId: number, currentStatu
         getSystemDirectus().request(updateItem('pub_crawl_tickets', ticketId, {
             checked_in: newStatus,
             checked_in_at: now
-        })).catch((error) => {
-            safeConsoleError(`[Kroegentocht-Action][togglePubCrawlTicketCheckIn] Failed to update ticket ${ticketId}:`, error);
+        })).catch((ticketError) => {
+            const typedTicketError = ticketError instanceof Error ? ticketError : new Error(String(ticketError));
+            safeConsoleError('kroegentocht-signup.actions.ts][togglePubCrawlTicketCheckIn]', `Failed to update ticket ${ticketId}: ${typedTicketError.message}`);
         });
 
         revalidateTag(`signups-${eventId}`, 'max');
         return { success: true, newStatus };
     } catch (error: unknown) {
-        safeConsoleError(`[Kroegentocht-Action][togglePubCrawlTicketCheckIn] Failed to toggle check-in ${ticketId}:`, error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('kroegentocht-signup.actions.ts][togglePubCrawlTicketCheckIn]', `Failed to toggle check-in ${ticketId}: ${typedError.message}`);
         throw new Error('Inchecken mislukt');
     }
 }
@@ -150,8 +159,9 @@ export async function updatePubCrawlTickets(signupId: number, eventId: number, t
             getSystemDirectus().request(updateItem('pub_crawl_tickets', ticket.id, {
                 name: ticket.name,
                 initial: ticket.initial
-            })).catch((error) => {
-                safeConsoleError(`[Kroegentocht-Action][updatePubCrawlTickets] Failed to update ticket ${ticket.id}:`, error);
+            })).catch((ticketError) => {
+                const typedTicketError = ticketError instanceof Error ? ticketError : new Error(String(ticketError));
+                safeConsoleError('kroegentocht-signup.actions.ts][updatePubCrawlTickets]', `Failed to update ticket ${ticket.id}: ${typedTicketError.message}`);
             });
         }
 
@@ -160,14 +170,16 @@ export async function updatePubCrawlTickets(signupId: number, eventId: number, t
 
         getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, {
             name_initials: nameInitials
-        })).catch((error) => {
-            safeConsoleError(`[Kroegentocht-Action][updatePubCrawlTickets] Failed to update signup ${signupId}:`, error);
+        })).catch((signupError) => {
+            const typedSignupError = signupError instanceof Error ? signupError : new Error(String(signupError));
+            safeConsoleError('kroegentocht-signup.actions.ts][updatePubCrawlTickets]', `Failed to update signup ${signupId}: ${typedSignupError.message}`);
         });
 
         revalidateTag(`signups-${eventId}`, 'max');
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError('[Kroegentocht-Action] updatePubCrawlTickets failed:', error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('kroegentocht-signup.actions.ts][updatePubCrawlTickets]', `updatePubCrawlTickets failed: ${typedError.message}`);
         throw new Error('Bijwerken tickets mislukt');
     }
 }
@@ -176,8 +188,9 @@ export async function deletePubCrawlTicket(ticketId: number, signupId: number, e
     await requireKroegAdmin();
     try {
         await query('DELETE FROM pub_crawl_tickets WHERE id = $1', [ticketId]);
-        getSystemDirectus().request(deleteItem('pub_crawl_tickets', ticketId)).catch((error) => {
-            safeConsoleError(`[Kroegentocht-Action][deletePubCrawlTicket] Failed to delete ticket ${ticketId}:`, error);
+        getSystemDirectus().request(deleteItem('pub_crawl_tickets', ticketId)).catch((ticketError) => {
+            const typedTicketError = ticketError instanceof Error ? ticketError : new Error(String(ticketError));
+            safeConsoleError('kroegentocht-signup.actions.ts][deletePubCrawlTicket]', `Failed to delete ticket ${ticketId}: ${typedTicketError.message}`);
         });
 
         const { rows: remainingTickets } = await query<{ name: string | null; initial: string | null }>(
@@ -196,14 +209,16 @@ export async function deletePubCrawlTicket(ticketId: number, signupId: number, e
         getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, {
             amount_tickets: amountTickets,
             name_initials: nameInitials
-        })).catch((error) => {
-            safeConsoleError(`[Kroegentocht-Action][deletePubCrawlTicket] Failed to update signup ${signupId}:`, error);
+        })).catch((signupError) => {
+            const typedSignupError = signupError instanceof Error ? signupError : new Error(String(signupError));
+            safeConsoleError('kroegentocht-signup.actions.ts][deletePubCrawlTicket]', `Failed to update signup ${signupId}: ${typedSignupError.message}`);
         });
 
         revalidateTag(`signups-${eventId}`, 'max');
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError('[Kroegentocht-Action][deletePubCrawlTicket] Failed to delete ticket:', error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('kroegentocht-signup.actions.ts][deletePubCrawlTicket]', `Failed to delete ticket: ${typedError.message}`);
         throw new Error('Verwijderen ticket mislukt');
     }
 }
@@ -233,16 +248,12 @@ export async function distributePubCrawlSignups(eventId: number) {
             throw new Error('Geen betaalde aanmeldingen gevonden om te verdelen.');
         }
 
-        // Initialize total tickets count per group name
         const groupTicketCounts = new Map<string, number>(groups.map(g => [g, 0]));
-
-        // Greedy LPT partition: sort signups by ticket count descending
         const sortedSignups = [...paidSignups].sort((a, b) => b.amount_tickets - a.amount_tickets);
 
         for (const signup of sortedSignups) {
             if (!signup.id) continue;
 
-            // Find group with minimum tickets assigned
             let bestGroup = groups[0];
             let minTickets = Infinity;
 
@@ -254,18 +265,16 @@ export async function distributePubCrawlSignups(eventId: number) {
                 }
             }
 
-            // Assign signup to that group
             await updatePubCrawlSignupDb(Number(signup.id), { group_name: bestGroup });
-
-            // Update local map count
             groupTicketCounts.set(bestGroup, minTickets + signup.amount_tickets);
         }
 
         revalidateTag(`signups-${eventId}`, 'max');
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError('[Kroegentocht-Action][distributePubCrawlSignups] Error:', error);
-        throw error;
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('kroegentocht-signup.actions.ts][distributePubCrawlSignups]', `Error: ${typedError.message}`);
+        throw typedError;
     }
 }
 
@@ -282,7 +291,8 @@ export async function savePubCrawlGroupsAssignment(eventId: number, assignments:
         revalidateTag(`signups-${eventId}`, 'max');
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError('[Kroegentocht-Action][savePubCrawlGroupsAssignment] Error:', error);
-        throw error;
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('kroegentocht-signup.actions.ts][savePubCrawlGroupsAssignment]', `Error: ${typedError.message}`);
+        throw typedError;
     }
 }

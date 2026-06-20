@@ -31,7 +31,8 @@ export class AuditService {
                 })
             });
         } catch (error: unknown) {
-            safeConsoleError('[AuditService] Failed to log to Directus:', error);
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            safeConsoleError('audit.service.ts][logMail]', `Failed to log to Directus: ${typedError.message}`);
         }
     }
 }

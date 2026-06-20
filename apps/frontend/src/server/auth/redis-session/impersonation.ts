@@ -82,8 +82,9 @@ export async function getImpersonatedUser(testToken: string, pool: Pool): Promis
 
         await redis.set(cacheKey, JSON.stringify(targetUser), 'EX', 3600);
         return targetUser;
-    } catch (error) {
-        safeConsoleError('[RedisPlugin] Impersonation Error:', error);
+    } catch (error: unknown) {
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('impersonation.ts][getImpersonatedUser]', `Impersonation Error: ${typedError.message}`);
         return null;
     }
 }

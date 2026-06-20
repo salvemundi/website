@@ -27,9 +27,6 @@ interface FinancePaymentResponse {
     checkoutUrl?: string;
 }
 
-/**
- * Fetches all published activities directly from the database (SQL-first).
- */
 export async function getActivities(email?: string): Promise<(Activiteit & { is_signed_up?: boolean })[]> {
     const activities = await getActivitiesInternal(true);
 
@@ -47,30 +44,22 @@ export async function getActivities(email?: string): Promise<(Activiteit & { is_
             is_signed_up: signedUpEventIds.has(Number(activity.id)) || ((activity as unknown as { type?: string }).type === 'pub_crawl' && signedUpPubCrawlIds.has(Number(activity.id)))
         }));
     } catch (error: unknown) {
-        safeConsoleError('[Error] Failed to fetch user signups for activities:', error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('public-activiteit.actions.ts][getActivities]', `Failed to fetch user signups for activities: ${typedError.message}`);
         return activities;
     }
 }
 
-/**
- * Fetches a single activity by ID directly from the database (SQL-first).
- */
 export async function getActivityById(id: string): Promise<Activiteit | null> {
     const cleanId = id.includes('-') ? id.split('-')[0] : id;
     if (!/^\d+$/.test(cleanId)) return null;
     return await getActivityByIdInternal(cleanId);
 }
 
-/**
- * Fetches a single activity by custom URL slug or numeric ID.
- */
 export async function getActivityBySlug(slug: string): Promise<Activiteit | null> {
     return await getActivityBySlugInternal(slug);
 }
 
-/**
- * Checks if a user is already signed up for an activity (By email).
- */
 export async function checkUserSignupStatus(eventId: number, email: string, userId?: string | null) {
     try {
         const { query } = await import('@/lib/database');
@@ -103,15 +92,13 @@ export async function checkUserSignupStatus(eventId: number, email: string, user
             };
         }
         return { isSignedUp: false };
-    } catch (error) {
-        safeConsoleError('[Error] Failed to check user signup status:', error);
+    } catch (error: unknown) {
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('public-activiteit.actions.ts][checkUserSignupStatus]', `Failed to check user signup status: ${typedError.message}`);
         throw new Error('Er is een fout opgetreden bij het controleren van uw inschrijving');
     }
 }
 
-/**
- * Sign up for an activity (Directus Event).
- */
 export async function signupForActivity(data: EventSignupForm) {
     const { rateLimit } = await import('@/server/utils/ratelimit');
     const { success } = await rateLimit('event-signup', 10, 600);
@@ -205,11 +192,13 @@ export async function signupForActivity(data: EventSignupForm) {
 
             try {
                 await deleteEventSignupDb(signupId);
-                getSystemDirectus().request(deleteItem('event_signups', signupId)).catch((error: unknown) => {
-                    safeConsoleError(`[Public-Activiteit-Action][signupForActivity] Failed to delete signup ${signupId}:`, error);
+                getSystemDirectus().request(deleteItem('event_signups', signupId)).catch((deleteError: unknown) => {
+                    const typedDeleteError = deleteError instanceof Error ? deleteError : new Error(String(deleteError));
+                    safeConsoleError('public-activiteit.actions.ts][signupForActivity]', `Failed to delete signup ${signupId}: ${typedDeleteError.message}`);
                 });
-            } catch (error: unknown) {
-                safeConsoleError(`[Public-Activiteit-Action][signupForActivity] Failed to delete signup ${signupId}:`, error);
+            } catch (deleteError: unknown) {
+                const typedDeleteError = deleteError instanceof Error ? deleteError : new Error(String(deleteError));
+                safeConsoleError('public-activiteit.actions.ts][signupForActivity]', `Failed to delete signup ${signupId}: ${typedDeleteError.message}`);
                 throw new Error('Er is een fout opgetreden bij het aanmelden voor deze activiteit');
             }
 
@@ -240,10 +229,11 @@ export async function signupForActivity(data: EventSignupForm) {
             };
         }
     } catch (error: unknown) {
-        if (typeof error === 'object' && error !== null && 'code' in error && error.code === '23505') {
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        if ((typedError as { code?: string }).code === '23505') {
             return { success: false, error: 'U bent al aangemeld voor deze activiteit.' };
         }
 
-        return { success: false, error: 'Er is een fout opgetreden bij de inschrijving.' };
+        return { success: false, error: 'Er is een fout opgetreden bij die inschrijving.' };
     }
 }
