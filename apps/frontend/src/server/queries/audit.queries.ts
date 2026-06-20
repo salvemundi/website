@@ -92,15 +92,17 @@ export async function getSystemLogsInternal(limit: number = 50, source: 'admin' 
             'sticker_deleted'
         ];
 
-        const legacyFilterList = legacyAdminTypes.map(t => `'${t}'`).join(', ');
-
         const filter = source === 'admin'
-            ? `WHERE type LIKE 'admin_%' OR type IN (${legacyFilterList})`
-            : `WHERE type NOT LIKE 'admin_%' AND type NOT IN (${legacyFilterList})`;
+            ? `WHERE type LIKE 'admin_%' OR type = ANY($1)`
+            : `WHERE type NOT LIKE 'admin_%' AND NOT (type = ANY($1))`;
+
+        const logsFilter = source === 'admin'
+            ? `WHERE type LIKE 'admin_%' OR type = ANY($2)`
+            : `WHERE type NOT LIKE 'admin_%' AND NOT (type = ANY($2))`;
 
         const [logsResult, countResult] = await Promise.all([
-            query(`SELECT * FROM system_logs ${filter} ORDER BY created_at DESC LIMIT $1`, [limit]),
-            query(`SELECT COUNT(*)::int AS total FROM system_logs ${filter}`)
+            query(`SELECT * FROM system_logs ${logsFilter} ORDER BY created_at DESC LIMIT $1`, [limit, legacyAdminTypes]),
+            query(`SELECT COUNT(*)::int AS total FROM system_logs ${filter}`, [legacyAdminTypes])
         ]);
 
         const logs: SystemLog[] = (logsResult.rows as SystemLogRow[]).map((r: SystemLogRow) => {

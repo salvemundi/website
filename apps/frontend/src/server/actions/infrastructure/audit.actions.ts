@@ -71,11 +71,19 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
             return;
         }
 
+        const impersonationDetails = impersonatedBy ? {
+            impersonated_by_id: impersonatedBy.id,
+            impersonated_by_name: impersonatedBy.name,
+            impersonated_target_id: user.id,
+            impersonated_target_name: user.name || user.email
+        } : {};
+
         await insertSystemLogInternal({
             type,
             status,
             payload: {
                 ...(safePayload as { [key: string]: unknown }),
+                ...impersonationDetails,
                 admin_id: adminId,
                 admin_name: adminName,
                 timestamp: new Date().toISOString()
