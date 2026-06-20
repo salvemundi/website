@@ -19,7 +19,6 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
-  # Hulpservice om de juiste Docker tag te bepalen (branchnaam)
   prepare:
     runs-on: ubuntu-latest
     outputs:
@@ -37,7 +36,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm'
+          cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter=@salvemundi/validations build
       - run: pnpm type-check
@@ -66,6 +65,8 @@ jobs:
           tags: ghcr.io/salvemundi/v7-app:${{ needs.prepare.outputs.tag }}
           cache-from: type=gha,scope=${{ github.workflow }}-frontend
           cache-to: type=gha,mode=max,scope=${{ github.workflow }}-frontend
+          labels: |
+            environment=${{ needs.prepare.outputs.tag }}
 
   build-services:
     needs: [prepare, lint]
@@ -103,6 +104,8 @@ jobs:
           tags: ghcr.io/salvemundi/${{ matrix.image }}:${{ needs.prepare.outputs.tag }}
           cache-from: type=gha,scope=${{ github.workflow }}-${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.service }}
+          labels: |
+            environment=${{ needs.prepare.outputs.tag }}
 
   deploy:
     name: Deploy to VPS
@@ -207,6 +210,7 @@ jobs:
           echo "BETTER_AUTH_URL=${{ vars.BETTER_AUTH_URL }}" >> .env.${ENV_NAME}
           echo "FRONTEND_PORT=${FRONTEND_PORT}" >> .env.${ENV_NAME}
           echo "FINANCE_PORT=${FINANCE_PORT}" >> .env.${ENV_NAME}
+          echo "ENV_NAME=${ENV_NAME}" >> .env.${ENV_NAME}
 
           # FIX: Next.js standalone dwingen om extern bereikbaar te zijn binnen de Docker bridge (voor proxy-afhandeling)
           echo "HOSTNAME=0.0.0.0" >> .env.${ENV_NAME}

@@ -4,7 +4,7 @@ services:
     image: ghcr.io/salvemundi/v7-app:${IMAGE_TAG:-latest}
     restart: always
     env_file:
-      - .env.acc
+      - .env.${ENV_NAME}
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
@@ -46,7 +46,7 @@ services:
     image: ghcr.io/salvemundi/v7-finance:${IMAGE_TAG:-latest}
     restart: always
     env_file:
-      - .env.acc
+      - .env.${ENV_NAME}
     ports:
       - "127.0.0.1:${FINANCE_PORT:-3001}:3001"
     environment:
@@ -88,7 +88,7 @@ services:
     image: ghcr.io/salvemundi/v7-sync:${IMAGE_TAG:-latest}
     restart: always
     env_file:
-      - .env.acc
+      - .env.${ENV_NAME}
     ports:
       - "127.0.0.1:${SYNC_PORT:-3002}:3002"
     environment:
@@ -134,7 +134,7 @@ services:
     image: ghcr.io/salvemundi/v7-mail:${IMAGE_TAG:-latest}
     restart: always
     env_file:
-      - .env.acc
+      - .env.${ENV_NAME}
     ports:
       - "127.0.0.1:${MAIL_PORT:-3003}:3003"
     environment:
@@ -177,7 +177,7 @@ services:
     image: ghcr.io/salvemundi/v7-management:${IMAGE_TAG:-latest}
     restart: always
     env_file:
-      - .env.acc
+      - .env.${ENV_NAME}
     ports:
       - "127.0.0.1:${MANAGEMENT_PORT:-3004}:3004"
     environment:
