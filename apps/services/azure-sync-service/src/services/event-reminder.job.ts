@@ -14,7 +14,7 @@ export class EventReminderJob {
     }
 
     static async start(redis: Redis) {
-        logInfo('[EventReminderJob] Starting daily monitoring loop...');
+        logInfo('event-reminder.job.ts][start]', 'Starting daily monitoring loop...');
 
         while (!this.shouldStop) {
             try {
@@ -24,31 +24,31 @@ export class EventReminderJob {
                 const nextRun = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 30, 0);
                 const delay = nextRun.getTime() - now.getTime();
 
-                logInfo(`[EventReminderJob] Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
+                logInfo('event-reminder.job.ts][start]', `Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
                 await new Promise(resolve => setTimeout(resolve, delay));
             } catch (error: unknown) {
-                const message = error instanceof Error ? error.message : String(error);
-                safeConsoleError('[EventReminderJob] Loop Error:', message);
+                const typedError = error instanceof Error ? error : new Error(String(error));
+                safeConsoleError('event-reminder.job.ts][start]', `Loop Error: ${typedError.message}`);
                 await new Promise(resolve => setTimeout(resolve, 60000));
             }
         }
     }
 
     static async runCheck(redis: Redis) {
-        logInfo('[EventReminderJob] Running upcoming event scan (3 days ahead)...');
+        logInfo('event-reminder.job.ts][runCheck]', 'Running upcoming event scan (3 days ahead)...');
 
         const isActive = await DirectusService.isFlagActive('mail_event_reminders');
         if (!isActive) {
-            logInfo('[EventReminderJob] Automated event reminders are DISABLED via feature flag. Skipping run.');
+            logInfo('event-reminder.job.ts][runCheck]', 'Automated event reminders are DISABLED via feature flag. Skipping run.');
             return;
         }
 
         const upcomingEvents = await DirectusService.getUpcomingEvents(3);
-        logInfo(`[EventReminderJob] Found ${upcomingEvents.length} events scheduled in 3 days.`);
+        logInfo('event-reminder.job.ts][runCheck]', `Found ${upcomingEvents.length} events scheduled in 3 days.`);
 
         for (const event of upcomingEvents) {
             const signups = await DirectusService.getPaidEventSignups(event.id);
-            logInfo(`[EventReminderJob] Notifying ${signups.length} participants for event: ${event.name}`);
+            logInfo('event-reminder.job.ts][runCheck]', `Notifying ${signups.length} participants for event: ${event.name}`);
 
             for (const signup of signups) {
                 await this.notifyParticipant(redis, event, signup);
@@ -90,8 +90,8 @@ export class EventReminderJob {
                 await redis.set(redisKey, '1', 'EX', 86400 * 30);
             }
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : String(error);
-            safeConsoleError(`[EventReminderJob] Error notifying ${signup.participant_email}:`, message);
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            safeConsoleError('event-reminder.job.ts][notifyParticipant]', `Error notifying ${signup.participant_email}: ${typedError.message}`);
         }
     }
 

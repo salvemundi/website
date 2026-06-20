@@ -2,28 +2,25 @@ import 'server-only';
 import { Pool, type QueryResult, type QueryResultRow } from 'pg';
 import { safeConsoleError, logWarn } from '@/server/utils/logger';
 
-
-
-// Declare global variable to hold the pool instance across hot-reloads
 declare global {
     var _pgPool: Pool | undefined;
 }
 
 const poolConfig = {
     user: process.env.DB_USER,
-    host: process.env.DB_HOST ?? 'v7-core-db',
+    host: process.env.DB_HOST,
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
-    port: Number(process.env.DB_PORT) || 5432,
-    max: 20, // Max 20 clients in the pool
+    port: Number(process.env.DB_PORT),
+    max: 20,
     idleTimeoutMillis: 30000
 };
 
-// Use global cache in development to prevent connection exhaustion during hot-reloads
 if (!globalThis._pgPool) {
     globalThis._pgPool = new Pool(poolConfig);
     globalThis._pgPool.on('error', (error) => {
-        safeConsoleError('[DB-Pool] Unexpected error on idle client', error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('db.ts][poolOnError]', `Unexpected error on idle client: ${typedError.message}`);
     });
 }
 
@@ -33,14 +30,13 @@ export async function query<R extends QueryResultRow = QueryResultRow>(text: str
     for (let i = 0; i <= retries; i++) {
         try {
             const res = await pool.query(text, params);
-            // console.debug(`[DB-Query] Executed in ${duration}ms`, { text, rows: res.rowCount });
             return res;
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : '';
             const errorCode = (error as { code?: string }).code;
             const isConnectionError = errorMessage.includes('Connection terminated unexpectedly') || errorCode === 'ECONNRESET';
             if (isConnectionError && i < retries) {
-                logWarn(`[DB-Query] Connection error, retrying... (${i + 1}/${retries})`);
+                logWarn('db.ts][query]', `Connection error, retrying... (${i + 1}/${retries})`);
                 await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
                 continue;
             }
@@ -50,23 +46,15 @@ export async function query<R extends QueryResultRow = QueryResultRow>(text: str
             }
             const pgError = error as PgError;
 
-            safeConsoleError('[DB-Query Error]', {
-                message: errorMessage,
-                code: errorCode,
-                text,
-                detail: pgError.detail,
-                hint: pgError.hint
-            });
+            safeConsoleError('db.ts][query]', `DB-Query Error: ${errorMessage} (Code: ${errorCode}). Query: ${text}. Detail: ${pgError.detail ?? ''}. Hint: ${pgError.hint ?? ''}`);
 
             if (process.env.DB_USER === 'dummy') {
-                logWarn('[DB-Query] Build-time DB connection failure detected. Returning empty result.');
+                logWarn('db.ts][query]', 'Build-time DB connection failure detected. Returning empty result.');
                 return { rows: [], rowCount: 0, command: '', oid: 0, fields: [] };
             }
 
             throw error;
         }
     }
-    throw new Error('[DB-Query] Unexpected end of function');
+    throw new Error('db.ts][query] Unexpected end of function');
 }
-
-

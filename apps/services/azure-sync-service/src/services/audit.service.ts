@@ -13,10 +13,10 @@ export class AuditService {
                     admin_name: 'Systeem',
                     timestamp: new Date().toISOString()
                 }
-            } as never));
+            }));
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : String(error);
-            safeConsoleError('[AuditService] Failed to log action:', message);
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            safeConsoleError('audit.service.ts][logSystemAction]', `Failed to log action: ${typedError.message}`);
         }
     }
 

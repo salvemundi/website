@@ -2,10 +2,6 @@ import { cookies } from 'next/headers';
 import { getRedis } from './redis-client';
 import { safeConsoleError } from '@/server/utils/logger';
 
-/**
- * Clears the current user's session cache in Redis.
- * This forces the next request to re-fetch the user data from the database/Azure.
- */
 export async function clearSessionCache() {
     try {
         const cookieStore = await cookies();
@@ -17,8 +13,9 @@ export async function clearSessionCache() {
             await redis.del(`session:${sessionToken}`);
             return true;
         }
-    } catch (error) {
-        safeConsoleError('[SessionUtils] Failed to clear session cache:', error);
+    } catch (error: unknown) {
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('session.utils.ts][clearSessionCache]', `Failed to clear session cache: ${typedError.message}`);
     }
     return false;
 }

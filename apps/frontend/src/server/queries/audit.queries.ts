@@ -42,7 +42,6 @@ interface CountRow {
 
 export async function getPendingSignupsInternal(): Promise<PendingSignup[]> {
     try {
-        // Memberships (Transactions) — only type that needs manual approval
         const membershipSql = `
             SELECT mollie_id, created_at, email, first_name, last_name, product_name, amount, payment_status, approval_status, user_id
             FROM transactions
@@ -69,14 +68,14 @@ export async function getPendingSignupsInternal(): Promise<PendingSignup[]> {
 
         return result;
     } catch (error: unknown) {
-        safeConsoleError('[AuditQueries] Failed to fetch pending signups:', error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('audit.queries.ts][getPendingSignupsInternal]', `Failed to fetch pending signups: ${typedError.message}`);
         throw error;
     }
 }
 
 export async function getSystemLogsInternal(limit: number = 50, source: 'admin' | 'system' = 'admin'): Promise<{ logs: SystemLog[]; totalCount: number }> {
     try {
-        // Legacy and current admin-action types that may not have 'admin_' prefix but are executed by administrators.
         const legacyAdminTypes = [
             'impersonation_active',
             'impersonation_started',
@@ -110,7 +109,8 @@ export async function getSystemLogsInternal(limit: number = 50, source: 'admin' 
             if (typeof r.payload === 'string') {
                 try {
                     parsedPayload = JSON.parse(r.payload) as z.infer<typeof SystemLogSchema>['payload'];
-                } catch (_parseError) {
+                } catch (parseError) {
+                    safeConsoleError('audit.queries.ts][getSystemLogsInternal]', parseError);
                     parsedPayload = { error: 'Invalid JSON payload string' };
                 }
             } else {
@@ -132,7 +132,8 @@ export async function getSystemLogsInternal(limit: number = 50, source: 'admin' 
 
         return { logs, totalCount };
     } catch (error: unknown) {
-        safeConsoleError('[AuditQueries] Failed to fetch system logs:', error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('audit.queries.ts][getSystemLogsInternal]', `Failed to fetch system logs: ${typedError.message}`);
         throw error;
     }
 }
@@ -159,7 +160,8 @@ export async function insertSystemLogInternal(data: {
         `;
         await query(sql, [data.type, data.status, payloadStr]);
     } catch (error: unknown) {
-        safeConsoleError('[AuditQueries] Failed to insert system log:', error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('audit.queries.ts][insertSystemLogInternal]', `Failed to insert system log: ${typedError.message}`);
     }
 }
 
@@ -181,7 +183,8 @@ export async function getIdNameLookupInternal(): Promise<Record<string, string>>
         }
         return lookup;
     } catch (error: unknown) {
-        safeConsoleError('[AuditQueries] Failed to fetch ID name lookup:', error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('audit.queries.ts][getIdNameLookupInternal]', `Failed to fetch ID name lookup: ${typedError.message}`);
         return {};
     }
 }

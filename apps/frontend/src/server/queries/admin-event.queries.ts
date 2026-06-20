@@ -109,7 +109,7 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
 
     const parsed = activitiesSchema.safeParse(mappedData);
     if (!parsed.success) {
-        safeConsoleError('[Validation Error] getActivitiesInternal:', parsed.error);
+        safeConsoleError('admin-event.queries.ts][getActivitiesInternal]', `Validation Error: ${parsed.error.message}`);
         return mappedData as Activiteit[];
     }
 
@@ -134,7 +134,7 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
 
     const parsed = activitiesSchema.element.safeParse(mapped);
     if (!parsed.success) {
-        safeConsoleError('[Validation Error] getActivityByIdInternal:', parsed.error);
+        safeConsoleError('admin-event.queries.ts][getActivityByIdInternal]', `Validation Error: ${parsed.error.message}`);
         return mapped as Activiteit;
     }
     return parsed.data;
@@ -142,7 +142,7 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
 
 export async function getActivityBySlugInternal(slug: string): Promise<Activiteit | null> {
     const { slugify } = await import('@/shared/lib/utils/slug');
-    const activities = await getActivitiesInternal(false); // Get all to be sure
+    const activities = await getActivitiesInternal(false);
 
     return activities.find(a => {
         const genSlug = slugify(a.titel);

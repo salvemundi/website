@@ -68,15 +68,13 @@ export async function setImpersonateToken(token: string) {
             success: true,
             name: fullName || targetUser.email || 'Onbekende gebruiker'
         };
-    } catch (error) {
-        safeConsoleError('[Impersonation] Error setting token:', error);
+    } catch (error: unknown) {
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('impersonation.actions.ts][setImpersonateToken]', `Error setting token: ${typedError.message}`);
         return { success: false, error: "Deze token bestaat niet of is verlopen." };
     }
 }
 
-/**
- * Beëindigt de huidige impersonatie-sessie.
- */
 export async function clearImpersonateToken() {
     const cookieStore = await cookies();
     const testToken = cookieStore.get(TEST_TOKEN_COOKIE)?.value;

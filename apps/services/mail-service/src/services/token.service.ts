@@ -12,7 +12,7 @@ export class TokenService {
         const clientSecret = process.env.AZURE_MAIL_CLIENT_SECRET || process.env.AZURE_WEBSITEV7_MAIL_CLIENT_SECRET;
 
         if (!tenantId || !clientId || !clientSecret) {
-            throw new Error('Missing Azure AD credentials for Mail Service (TENANT_ID, CLIENT_ID, or CLIENT_SECRET)');
+            throw new Error('token.service.ts][getAzureConfig] Missing Azure AD credentials for Mail Service (TENANT_ID, CLIENT_ID, or CLIENT_SECRET)');
         }
 
         return { tenantId, clientId, clientSecret };
@@ -24,11 +24,12 @@ export class TokenService {
             if (cachedToken) {
                 return cachedToken;
             }
-        } catch (error) {
-            safeConsoleError('[TokenService] Redis cache read error:', error);
+        } catch (error: unknown) {
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            safeConsoleError('token.service.ts][getAccessToken]', `Redis cache read error: ${typedError.message}`);
         }
 
-        safeConsoleLog('[TokenService] Cache miss or expired. Fetching fresh token from Azure...');
+        safeConsoleLog('token.service.ts][getAccessToken]', 'Cache miss or expired. Fetching fresh token from Azure...');
 
         if (!this.credential) {
             const { tenantId, clientId, clientSecret } = this.getAzureConfig();
@@ -39,8 +40,9 @@ export class TokenService {
 
         try {
             await redis.set(this.CACHE_KEY, tokenResponse.token, 'EX', 3000);
-        } catch (error) {
-            safeConsoleError('[TokenService] Redis cache write error:', error);
+        } catch (error: unknown) {
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            safeConsoleError('token.service.ts][getAccessToken]', `Redis cache write error: ${typedError.message}`);
         }
 
         return tokenResponse.token;

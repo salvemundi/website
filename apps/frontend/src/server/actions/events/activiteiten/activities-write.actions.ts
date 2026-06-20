@@ -17,11 +17,6 @@ import { safeConsoleError } from '@/server/utils/logger';
 import { deleteEventDb } from "@/server/internal/event-db.utils";
 import { ensureActivitiesEdit, verifyActivityBOLA } from "@/server/actions/events/activiteiten/auth-check";
 
-/**
- * WRITE ACTIONS: Create, Update, Delete.
- * Gated by: ActivitiesEdit (Leaders, Bestuur, ICT)
- */
-
 export async function deleteActivity(eventId: number) {
     try {
         await verifyActivityBOLA(eventId);
@@ -62,7 +57,6 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
     let imageId: string | null = null;
 
     if (imageFile && imageFile.size > 0 && imageFile.name !== 'undefined') {
-        // Validation: Max 5MB and image only
         if (imageFile.size > 5 * 1024 * 1024) {
             return { success: false, error: "Afbeelding is te groot (max 5MB)." };
         }
@@ -76,7 +70,8 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
             const res = (await getSystemDirectus().request(uploadFiles(fileData))) as unknown as { id: string };
             imageId = res.id;
         } catch (error: unknown) {
-            safeConsoleError(`[Activities-Write-Action][createActivityAction] Failed to upload image:`, error);
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            safeConsoleError('activities-write.actions.ts][createActivityAction]', `Failed to upload image: ${typedError.message}`);
         }
     }
 
@@ -97,7 +92,6 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
 
     const data = validated.data;
 
-    // Check for duplicate name (case-insensitive)
     const { query: dbQuery } = await import("@/lib/database");
     const nameCheck = await dbQuery(
         "SELECT id FROM events WHERE LOWER(name) = LOWER($1) LIMIT 1",
@@ -121,8 +115,6 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
     if (imageId) directusPayload.image = imageId;
 
     try {
-        // Directus SDK will handle the database insertion and trigger internal logic (activity logs, etc.)
-        // Since they share the same database, we don't need the redundant createEventDb call here which causes ID conflicts.
         const newItem = (await getSystemDirectus().request(createItem('events', directusPayload))) as unknown as { id: number } | null | undefined;
 
         if (!newItem || !newItem.id) {
@@ -138,11 +130,12 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
 
         return { success: true, id: newItem.id };
     } catch (error: unknown) {
-        safeConsoleError('[CMS Sync] Directus createItem failed:', error);
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('activities-write.actions.ts][createActivityAction]', `Directus createItem failed: ${typedError.message}`);
         await logAdminAction('system_activity_create_failed', 'ERROR', {
             context: 'activiteit',
             context_name: data.name,
-            error: error instanceof Error ? error.message : JSON.stringify(error),
+            error: typedError.message,
             payload: directusPayload
         });
         return { success: false, error: 'Synchronisatie met CMS mislukt. Activiteit is niet aangemaakt.', initialData: rawData };
@@ -171,7 +164,6 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
         const removeImage = formData.get('removeImage') === 'true';
 
         if (imageFile && imageFile.size > 0 && imageFile.name !== 'undefined') {
-            // Validation: Max 5MB and image only
             if (imageFile.size > 5 * 1024 * 1024) {
                 return { success: false, error: "Afbeelding is te groot (max 5MB)." };
             }
@@ -204,7 +196,6 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
 
         const data = validated.data;
 
-        // Check for duplicate name if changed
         const oldName = oldData.name as string | undefined;
         if (data.name.toLowerCase() !== oldName?.toLowerCase()) {
             const { query: dbQuery } = await import("@/lib/database");
@@ -240,11 +231,12 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
 
             return { success: true };
         } catch (error) {
-            safeConsoleError('[CMS Sync] Directus updateItem failed:', error);
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            safeConsoleError('activities-write.actions.ts][updateActivityAction]', `Directus updateItem failed: ${typedError.message}`);
             await logAdminAction('system_activity_update_failed', 'ERROR', {
                 context: 'activiteit',
                 id: eventId,
-                error: error instanceof Error ? error.message : JSON.stringify(error)
+                error: typedError.message
             });
             return { success: false, error: 'Synchronisatie met CMS mislukt. Wijzigingen zijn niet opgeslagen.' };
         }

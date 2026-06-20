@@ -20,9 +20,6 @@ interface InternalSessionResponse {
     response?: SessionPayload;
 }
 
-/**
- * Direct Provider Proxy (V7)
- */
 async function proxy(request: NextRequest) {
     const { pathname, origin } = request.nextUrl;
     const nonce = btoa(crypto.randomUUID()).substring(0, 16);
@@ -81,7 +78,8 @@ async function proxy(request: NextRequest) {
                 request: { headers: requestHeaders }
             }));
         } catch (error) {
-            safeConsoleError('[Proxy] Failed to inject request headers:', error);
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            safeConsoleError('proxy.ts][nextWithNonce]', `Failed to inject request headers: ${typedError.message}`);
             return withSecurity(NextResponse.next());
         }
     };
@@ -134,7 +132,8 @@ async function proxy(request: NextRequest) {
                         }
                     }
                 } catch (redisError) {
-                    safeConsoleError('[Proxy] Redis session cache check failed (falling back to database):', redisError);
+                    const typedRedisError = redisError instanceof Error ? redisError : new Error(String(redisError));
+                    safeConsoleError('proxy.ts][proxy]', `Redis session cache check failed (falling back to database): ${typedRedisError.message}`);
                 }
             }
 
@@ -194,13 +193,15 @@ async function proxy(request: NextRequest) {
                                     });
                                     return response;
                                 }
-                            } catch (parseErr) {
-                                safeConsoleError('[Proxy] Failed to parse session text response:', parseErr);
+                            } catch (parseError) {
+                                const typedParseError = parseError instanceof Error ? parseError : new Error(String(parseError));
+                                safeConsoleError('proxy.ts][proxy]', `Failed to parse session text response: ${typedParseError.message}`);
                             }
                         }
                     }
                 } catch (fetchError) {
-                    safeConsoleError('[Proxy] Fetch error retrieving session from internal API:', fetchError);
+                    const typedFetchError = fetchError instanceof Error ? fetchError : new Error(String(fetchError));
+                    safeConsoleError('proxy.ts][proxy]', `Fetch error retrieving session from internal API: ${typedFetchError.message}`);
                 }
             }
 
@@ -219,7 +220,8 @@ async function proxy(request: NextRequest) {
             return withSecurity(NextResponse.redirect(authRedirectUrl));
 
         } catch (error) {
-            safeConsoleError('[Proxy] Critical error during auth check:', error);
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            safeConsoleError('proxy.ts][proxy]', `Critical error during auth check: ${typedError.message}`);
             return withSecurity(NextResponse.rewrite(new URL('/404', request.url)));
         }
     }
