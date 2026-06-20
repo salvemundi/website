@@ -52,8 +52,11 @@ export function useActivityForm({
     const handleCommitteeChange = useCallback((committeeId: string) => {
         const committee = committees.find(c => String(c.id) === committeeId);
         
-        // Alleen invullen als het veld leeg is OF als de huidige waarde een commissie-email is
-        const isCurrentEmailACommitteeEmail = !contactEmail || committees.some(c => c.email && c.email === contactEmail);
+        // Alleen invullen als het veld leeg is, de algemene email is, OF als de huidige waarde een commissie-email is
+        const isCurrentEmailACommitteeEmail = 
+            !contactEmail || 
+            contactEmail === 'info@salvemundi.nl' || 
+            committees.some(c => c.email && c.email === contactEmail);
         
         if (isCurrentEmailACommitteeEmail) {
             if (committee?.email) {

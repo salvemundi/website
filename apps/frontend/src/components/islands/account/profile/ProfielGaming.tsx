@@ -34,8 +34,8 @@ export default function ProfielGaming({
     return (
         <Tile title="Social Gaming" icon={<Gamepad2 className="h-5 w-5" />} className="h-fit">
             <div className="flex flex-col gap-1.5 relative group">
-                <div className="flex items-center justify-between gap-2 pl-1">
-                    <p className="text-[11px] font-black uppercase text-[var(--color-licht-paars)] dark:text-[var(--color-geel)] tracking-wider text-left">
+                <div className="flex items-center justify-between gap-2 h-6 pl-1">
+                    <p className="text-[11px] font-black uppercase text-licht-paars dark:text-geel tracking-wider text-left">
                         Minecraft Username
                     </p>
                     {!isEditingMinecraft && (
@@ -44,8 +44,8 @@ export default function ProfielGaming({
                         </button>
                     )}
                 </div>
-                <div className="flex items-center gap-3 rounded-2xl bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] p-5 border border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 shadow-sm min-h-[68px]">
-                    <Gamepad2 className="h-5 w-5 text-purple-300 dark:text-[var(--color-licht-paars)]" />
+                <div className="flex items-center gap-3 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-[68px]">
+                    <Gamepad2 className="h-5 w-5 text-purple-300 dark:text-licht-paars" />
                     {isEditingMinecraft ? (
                         <form onSubmit={(e) => { void handleSubmitMinecraft(onSaveMinecraft)(e); }} className="flex flex-col w-full gap-2" autoComplete="off">                            <div className="flex w-full items-center gap-2">
                             <input

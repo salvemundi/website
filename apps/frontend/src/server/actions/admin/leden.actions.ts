@@ -162,26 +162,43 @@ export async function updateMemberProfileAction(
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        await fetch(`${AZURE_MGMT_URL}/api/users/${encodeURIComponent(directusUserId)}`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${INTERNAL_TOKEN}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                displayName: payload.first_name || payload.last_name ? `${payload.first_name || ''} ${payload.last_name || ''}`.trim() : undefined,
-                phoneNumber: payload.phone_number,
-                dateOfBirth: payload.date_of_birth
-            })
-        }).catch((error: unknown) => {
-            safeConsoleError(`[leden.actions.ts][updateMemberProfileAction] Azure patch request failed:`, error);
-        });
-
         const { query: queryUpdate } = await import("@/lib/database");
-        const { rows: updateRows } = await queryUpdate<{ email: string | null }>('SELECT email FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId]);
-        const firstUpdateRow = updateRows[0] as { email: string | null } | undefined;
-        const emailSlugForUpdate = firstUpdateRow?.email?.split('@')[0]?.replace(/\./g, '-') ?? directusUserId;
+        const { rows: updateRows } = await queryUpdate<{ email: string | null; entra_id: string | null }>(
+            'SELECT email, entra_id FROM directus_users WHERE id = $1 LIMIT 1',
+            [directusUserId]
+        );
+        const user = updateRows[0] as { email: string | null; entra_id: string | null } | undefined;
+        if (!user) return { success: false, error: 'Lid niet gevonden' };
 
+        if (user.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {
+            await fetch(`${AZURE_MGMT_URL}/api/users/${encodeURIComponent(user.entra_id)}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${INTERNAL_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    displayName: payload.first_name || payload.last_name ? `${payload.first_name || ''} ${payload.last_name || ''}`.trim() : undefined,
+                    phoneNumber: payload.phone_number,
+                    dateOfBirth: payload.date_of_birth
+                })
+            }).catch((error: unknown) => {
+                safeConsoleError(`[leden.actions.ts][updateMemberProfileAction] Azure patch request failed:`, error);
+            });
+        }
+
+        if (AZURE_SYNC_URL && INTERNAL_TOKEN) {
+            await fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(directusUserId)}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${INTERNAL_TOKEN}`
+                }
+            }).catch((error: unknown) => {
+                safeConsoleError(`[leden.actions.ts][updateMemberProfileAction] Failed to sync user for ${directusUserId}:`, error);
+            });
+        }
+
+        const emailSlugForUpdate = user.email?.split('@')[0]?.replace(/\./g, '-') ?? directusUserId;
         revalidatePath(`/beheer/leden/${encodeURIComponent(emailSlugForUpdate)}`);
 
         await logAdminAction('admin_member_profile_updated', 'SUCCESS', {
@@ -228,6 +245,21 @@ export async function renewMembershipAction(
         await getSystemDirectus().request(updateUser(directusUserId, { membership_expiry: newExpiryStr }));
 
         if (user.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {
+            // Update Entra ID custom security attributes (membershipExpiry)
+            await fetch(`${AZURE_MGMT_URL}/api/users/${encodeURIComponent(user.entra_id)}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${INTERNAL_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    membershipExpiry: newExpiryStr
+                })
+            }).catch((error: unknown) => {
+                safeConsoleError(`[leden.actions.ts][renewMembershipAction] Failed to update Entra ID custom attribute for ${directusUserId}:`, error);
+            });
+
+            // Add user to active group
             const { rows: committees } = await (await import("@/lib/database")).query<{ azure_group_id: string | null }>(
                 "SELECT azure_group_id FROM committees WHERE name = 'Leden_Actief_Lidmaatschap' LIMIT 1"
             );
@@ -246,7 +278,7 @@ export async function renewMembershipAction(
         }
 
         if (AZURE_SYNC_URL && INTERNAL_TOKEN) {
-            fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(directusUserId)}`, {
+            await fetch(`${AZURE_SYNC_URL}/api/sync/run/${encodeURIComponent(directusUserId)}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${INTERNAL_TOKEN}`

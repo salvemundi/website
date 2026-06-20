@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @source "../../src";
+@source "../../../node_modules/flowbite-react/dist/**/*.js";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -35,6 +36,10 @@
 
    /* Semantic Aliases */
    --color-theme-purple: var(--theme-purple);
+   --color-theme-purple-light: var(--theme-purple-light);
+   --color-theme-purple-dark: var(--theme-purple-dark);
+   --color-theme-purple-darker: var(--theme-purple-darker);
+   --color-theme-purple-lighter: var(--theme-purple-lighter);
    --color-theme-text: var(--text-main);
    --color-theme-bg: var(--bg-main);
 
@@ -179,6 +184,10 @@
 
 @utility mb-safe {
    margin-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility pt-header-total {
+   padding-top: calc(var(--header-total-height, 80px) + env(safe-area-inset-top, 0px));
 }
 
 /* Stabilize Autofill - Import at the absolute bottom to ensure it overrides defaults */

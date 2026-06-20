@@ -8,6 +8,11 @@ import { safeConsoleError } from '@/server/utils/logger';
 const FINANCE_URL = process.env.FINANCE_SERVICE_URL;
 const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
+interface FinanceErrorResponse {
+    error?: string;
+    message?: string;
+}
+
 export async function sendPaymentEmail(signupId: number, tripId: number, paymentType: 'deposit' | 'final') {
     await requireAdminResource(AdminResource.Reis);
 
@@ -33,15 +38,22 @@ export async function sendPaymentEmail(signupId: number, tripId: number, payment
 
         if (!response.ok) {
             const errText = await response.text().catch(() => 'Unknown API Error');
-            safeConsoleError('[ReisMailActions][sendPaymentEmail]', errText);
+            let parsedError = errText;
+             try {
+                const parsed = JSON.parse(errText) as FinanceErrorResponse;
+                parsedError = parsed.error || parsed.message || errText;
+            } catch {
+            }
+
+            safeConsoleError('[ReisMailActions][sendPaymentEmail]', parsedError);
             await logAdminAction('system_mail_error', 'ERROR', {
                 context: 'reis',
                 signup_id: signupId,
                 trip_id: tripId,
                 payment_type: paymentType,
-                errorMessage: errText
+                errorMessage: parsedError
             });
-            return { success: false, error: errText };
+            return { success: false, error: parsedError };
         }
 
         return { success: true };
@@ -122,6 +134,7 @@ export async function sendBulkPaymentEmails(tripId: number, signupIds: number[],
         successCount: 0,
         failCount: 0
     };
+    const errors: string[] = [];
 
     for (const signupId of signupIds) {
         try {
@@ -130,22 +143,26 @@ export async function sendBulkPaymentEmails(tripId: number, signupIds: number[],
                 results.successCount++;
             } else {
                 results.failCount++;
+                errors.push(`Deelnemer #${signupId}: ${res.error || 'Onbekende fout'}`);
             }
         } catch (error) {
+            const errMsg = error instanceof Error ? error.message : String(error);
             safeConsoleError('[ReisMailActions][sendBulkPaymentEmails]', error);
             await logAdminAction('system_mail_error', 'ERROR', {
                 context: 'reis',
                 trip_id: tripId,
                 signup_id: signupId,
                 payment_type: paymentType,
-                errorMessage: error instanceof Error ? error.message : String(error)
+                errorMessage: errMsg
             });
             results.failCount++;
+            errors.push(`Deelnemer #${signupId}: ${errMsg}`);
         }
     }
 
     return {
         success: results.failCount === 0,
+        errors,
         ...results
     };
 }

@@ -1,6 +1,8 @@
 import React from 'react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { Info, Calendar as CalendarIcon, MapPin, Euro, Link as LinkIcon, Upload, X, Eye, Check } from 'lucide-react';
+import { AdminDatepicker } from '@/components/ui/forms/AdminDatepicker';
+import { AdminTimepicker } from '@/components/ui/forms/AdminTimepicker';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { ActivityAdmin } from '@salvemundi/validations';
 
@@ -23,6 +25,15 @@ const toInputSafe = (value: unknown): string => {
     if (value === null || value === undefined) return '';
     return String(value);
 };
+
+const toISODateString = (date: Date | null): string => {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 
 export function GeneralInfoSection({
     initialData,
@@ -105,30 +116,107 @@ export function GeneralInfoSection({
 }
 
 export function PlanningLocationSection({ initialData, formErrors }: { initialData?: Record<string, InitialValue>, formErrors?: Record<string, string[] | undefined> }) {
+    const initialStartDateStr = formatDate(initialData?.event_date) || toLocalISOString(new Date()) || '';
+    const initialEndDateStr = formatDate(initialData?.event_date_end);
+    const initialStartTimeStr = formatTime(initialData?.event_time) || '00:00';
+    const initialEndTimeStr = formatTime(initialData?.event_time_end);
+
+    const [startDate, setStartDate] = React.useState<Date | null>(
+        initialStartDateStr ? new Date(initialStartDateStr) : new Date()
+    );
+    const [endDate, setEndDate] = React.useState<Date | null>(
+        initialEndDateStr ? new Date(initialEndDateStr) : null
+    );
+    const [startTime, setStartTime] = React.useState<string>(initialStartTimeStr);
+    const [endTime, setEndTime] = React.useState<string>(initialEndTimeStr);
+
+    const isSameDay = React.useMemo(() => {
+        return startDate && endDate && startDate.toDateString() === endDate.toDateString();
+    }, [startDate, endDate]);
+
+    const minEndTime = React.useMemo(() => {
+        return isSameDay ? startTime || undefined : undefined;
+    }, [isSameDay, startTime]);
+
+    const registrationDeadlineMax = React.useMemo(() => {
+        if (!startDate) return undefined;
+        const year = startDate.getFullYear();
+        const month = String(startDate.getMonth() + 1).padStart(2, '0');
+        const day = String(startDate.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+        const timeStr = startTime ? `T${startTime.slice(0, 5)}` : 'T00:00';
+        return `${dateStr}${timeStr}`;
+    }, [startDate, startTime]);
+
+    const handleStartDateChange = (date: Date | null) => {
+        setStartDate(date);
+        if (date && endDate && endDate < date) {
+            setEndDate(null);
+        }
+    };
+
+    const handleEndDateChange = (date: Date | null) => {
+        setEndDate(date);
+        if (date && startDate && date.toDateString() === startDate.toDateString()) {
+            if (endTime && startTime && endTime < startTime) {
+                setEndTime('');
+            }
+        }
+    };
+
     return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
+        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] h-full flex flex-col">
+            <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3 rounded-t-[var(--beheer-radius)]">
                 <CalendarIcon className="h-4 w-4 text-[var(--beheer-accent)]" />
                 <h2 className="text-base font-semibold text-[var(--beheer-text)]">Planning & locatie</h2>
             </div>
-            <div className="p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-6 space-y-6 flex-1 flex flex-col">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                     <div>
                         <label htmlFor="event_date" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Startdatum *</label>
-                        <input type="date" id="event_date" name="event_date" defaultValue={formatDate(initialData?.event_date)} suppressHydrationWarning className={`beheer-input ${formErrors?.event_date ? 'border-red-500' : ''}`} />
+                        <input type="hidden" name="event_date" value={startDate ? toISODateString(startDate) : ''} />
+                        <AdminDatepicker
+                            value={startDate}
+                            onChange={handleStartDateChange}
+                            className={formErrors?.event_date ? 'border-red-500' : ''}
+                        />
                         {formErrors?.event_date && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.event_date[0]}</p>}
                     </div>
                     <div>
-                        <label htmlFor="event_time" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Tijd</label>
-                        <input type="time" id="event_time" name="event_time" defaultValue={formatTime(initialData?.event_time)} suppressHydrationWarning className="beheer-input" />
-                    </div>
-                    <div>
-                        <label htmlFor="event_date_end" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Einddatum</label>
-                        <input type="date" id="event_date_end" name="event_date_end" defaultValue={formatDate(initialData?.event_date_end)} suppressHydrationWarning className="beheer-input" />
+                        <label htmlFor="event_time" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Starttijd</label>
+                        <AdminTimepicker
+                            id="event_time"
+                            name="event_time"
+                            value={startTime}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setStartTime(val);
+                                if (isSameDay && endTime && endTime < val) {
+                                    setEndTime('');
+                                }
+                            }}
+                        />
                     </div>
                     <div>
                         <label htmlFor="event_time_end" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Eindtijd</label>
-                        <input type="time" id="event_time_end" name="event_time_end" defaultValue={formatTime(initialData?.event_time_end)} suppressHydrationWarning className="beheer-input" />
+                        <AdminTimepicker
+                            id="event_time_end"
+                            name="event_time_end"
+                            value={endTime}
+                            min={minEndTime}
+                            onChange={(e) => setEndTime(e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="event_date_end" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Einddatum</label>
+                        <input type="hidden" name="event_date_end" value={endDate ? toISODateString(endDate) : ''} />
+                        <AdminDatepicker
+                            value={endDate}
+                            onChange={handleEndDateChange}
+                            minDate={startDate || undefined}
+                            className={formErrors?.event_date_end ? 'border-red-500' : ''}
+                        />
+                        {formErrors?.event_date_end && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.event_date_end[0]}</p>}
                     </div>
                 </div>
 
@@ -141,13 +229,30 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                     </div>
                     <div>
                         <label htmlFor="registration_deadline" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Inschrijfdeadline</label>
-                        <input type="datetime-local" id="registration_deadline" name="registration_deadline" defaultValue={formatDateTime(initialData?.registration_deadline)} suppressHydrationWarning className="beheer-input" />
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-[var(--beheer-text-muted)] opacity-60">
+                                <svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 10h16m-8-3V4M7 7V4m10 3V4M5 20h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Zm3-7h.01v.01H8V13Zm4 0h.01v.01H12V13Zm4 0h.01v.01H16V13Zm-8 4h.01v.01H8V17Zm4 0h.01v.01H12V17Zm4 0h.01v.01H16V17Z"/>
+                                </svg>
+                            </div>
+                            <input
+                                type="datetime-local"
+                                id="registration_deadline"
+                                name="registration_deadline"
+                                defaultValue={formatDateTime(initialData?.registration_deadline)}
+                                max={registrationDeadlineMax}
+                                onClick={(e) => e.currentTarget.showPicker()}
+                                suppressHydrationWarning
+                                className={`beheer-input pl-9 pr-3 ${formErrors?.registration_deadline ? 'border-red-500' : ''}`}
+                            />
+                        </div>
+                        {formErrors?.registration_deadline && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.registration_deadline[0]}</p>}
                     </div>
                 </div>
 
-                <div className="pt-4 border-t border-[var(--beheer-border)]/50">
+                <div className="pt-4 mt-auto">
                     <label htmlFor="custom_url" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2 flex items-center gap-2">
-                        <LinkIcon className="h-3 w-3" /> Custom redirect URL (optioneel)
+                        <LinkIcon className="h-3 w-3" /> Custom redirect URL
                     </label>
                     <input type="text" id="custom_url" name="custom_url" defaultValue={toInputSafe(initialData?.custom_url)} className="beheer-input" placeholder="bijv. https://forms.gle/..." />
                 </div>
@@ -163,7 +268,8 @@ export function CapacityCostsSection({
     onContactEmailChange,
     onCommitteeChange,
     onlyMembers,
-    onOnlyMembersChange
+    onOnlyMembersChange,
+    formErrors
 }: {
     initialData?: Record<string, InitialValue>,
     committees: { id: string | number, name: string }[],
@@ -171,19 +277,21 @@ export function CapacityCostsSection({
     onContactEmailChange: (val: string) => void,
     onCommitteeChange: (id: string) => void,
     onlyMembers: boolean,
-    onOnlyMembersChange: (val: boolean) => void
+    onOnlyMembersChange: (val: boolean) => void,
+    formErrors?: Record<string, string[] | undefined>
 }) {
     return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
+        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden h-full flex flex-col">
             <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
                 <Euro className="h-4 w-4 text-[var(--beheer-accent)]" />
                 <h2 className="text-base font-semibold text-[var(--beheer-text)]">Kosten & capaciteit</h2>
             </div>
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 flex-1 flex flex-col">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label htmlFor="max_sign_ups" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Max. deelnemers</label>
-                        <input type="number" id="max_sign_ups" name="max_sign_ups" defaultValue={toInputSafe(initialData?.max_sign_ups)} min="0" className="beheer-input" placeholder="Onbeperkt" />
+                        <input type="number" id="max_sign_ups" name="max_sign_ups" defaultValue={toInputSafe(initialData?.max_sign_ups)} min="0" className={`beheer-input ${formErrors?.max_sign_ups ? 'border-red-500 ring-4 ring-red-500/10' : ''}`} placeholder="Onbeperkt" />
+                        {formErrors?.max_sign_ups && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.max_sign_ups[0]}</p>}
                     </div>
                     <div>
                         <label htmlFor="price_members" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Leden (€)</label>
@@ -195,7 +303,7 @@ export function CapacityCostsSection({
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-[var(--beheer-border)]/50 pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
                     <div>
                         <label htmlFor="committee_id" className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-2">Organiserende commissie</label>
                         <select
@@ -224,7 +332,7 @@ export function CapacityCostsSection({
                     </div>
                 </div>
 
-                <label className="relative flex items-center gap-4 bg-[var(--beheer-card-soft)]/50 p-4 rounded-2xl border border-[var(--beheer-border)]/50 cursor-pointer group z-10">
+                <label className="relative flex items-center gap-4 bg-[var(--beheer-card-soft)]/50 p-4 rounded-2xl border border-[var(--beheer-border)]/50 cursor-pointer group z-10 mt-auto">
                     <div className="relative flex items-center justify-center">
                         <input type="checkbox" id="only_members" checked={onlyMembers} onChange={(e) => onOnlyMembersChange(e.target.checked)} className="peer sr-only" />
                         <div className="w-5 h-5 border-2 border-[var(--beheer-border)] rounded peer-checked:border-[var(--beheer-accent)] peer-checked:bg-[var(--beheer-accent)] transition-all"></div>
@@ -259,7 +367,7 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
                     </div>
                 ) : (
                     <div className="relative group overflow-hidden rounded-xl border border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 h-[160px] flex items-center justify-center">
-                        <MediaAsset asset={imagePreview} alt="Preview" fill className="object-contain transition-transform duration-700" />
+                        <MediaAsset asset={imagePreview} alt="Preview" fill objectFit="contain" className="object-contain transition-transform duration-700" />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                             <button type="button" onClick={onUploadClick} className="bg-white text-slate-900 p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-4 w-4" /></button>
                             <button type="button" onClick={onRemoveClick} className="bg-red-500 text-white p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-4 w-4" /></button>
@@ -306,7 +414,14 @@ export function StatusSection({ status, onStatusChange, initialData }: { status:
                         <span className="text-base font-semibold text-[var(--beheer-text-muted)] group-hover:text-[var(--beheer-text)] transition-colors">Inplannen</span>
                         {status === 'scheduled' && (
                             <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
-                                <input type="datetime-local" name="publish_date" defaultValue={formatDateTime(initialData?.publish_date)} suppressHydrationWarning className="beheer-input text-sm py-2" />
+                                <input
+                                    type="datetime-local"
+                                    name="publish_date"
+                                    defaultValue={formatDateTime(initialData?.publish_date)}
+                                    onClick={(e) => e.currentTarget.showPicker()}
+                                    suppressHydrationWarning
+                                    className="beheer-input text-sm py-2"
+                                />
                             </div>
                         )}
                     </div>

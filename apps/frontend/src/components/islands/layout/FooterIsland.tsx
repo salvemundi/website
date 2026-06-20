@@ -201,7 +201,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 <Link
                                     href={ROUTES.SAFE_HAVENS}
                                     className={
-                                        'inline-flex items-center gap-1 rounded-full px-2 py-1 font-semibold transition ' +
+                                        'inline-flex items-center gap-1 squircle px-2 py-1 font-semibold transition ' +
                                         'bg-[var(--color-purple-500)]/20 text-[var(--color-purple-700)] ' +
                                         'dark:bg-[var(--color-white)]/15 dark:text-[var(--color-white)] ' +
                                         'hover:bg-[var(--color-purple-500)]/30 dark:hover:bg-[var(--color-white)]/25'

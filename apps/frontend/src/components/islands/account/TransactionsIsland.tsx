@@ -42,7 +42,7 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
             className="w-full"
         >
             {paidTransactions.length === 0 ? (
-                <div className="rounded-3xl border-2 border-dashed border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-black/10 p-12 text-center shadow-inner">
+                <div className="squircle-lg border-2 border-dashed border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-black/10 p-12 text-center shadow-inner">
                     <p className="text-[var(--text-main)] font-bold text-lg mb-2">Geen betaalde transacties gevonden.</p>
                     <p className="text-[var(--text-muted)] text-sm">Zodra je een betaling afrondt, verschijnt deze hier.</p>
                 </div>

@@ -20,7 +20,7 @@ export default function PublicPageShell({
 }: PublicPageShellProps) {
     if (backgroundImage) {
         return (
-            <div className="w-full relative min-h-[85vh] overflow-hidden flex flex-col">
+            <div className="w-full relative min-h-dvh overflow-hidden flex flex-col">
                 <div 
                     className="absolute inset-0 bg-cover bg-center pointer-events-none -z-10"
                     style={{
@@ -37,7 +37,7 @@ export default function PublicPageShell({
     }
 
     return (
-        <div className="w-full">
+        <div className="w-full min-h-dvh">
             {children}
         </div>
     );

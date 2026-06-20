@@ -14,6 +14,16 @@ import {
 import { formatDate } from '@/shared/lib/utils/date';
 import type { IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import { ActionButton, EmptyState, Field, inputClass, Button } from './IntroTabComponents';
+import { AdminDatepicker } from '@/components/ui/forms/AdminDatepicker';
+import { AdminTimepicker } from '@/components/ui/forms/AdminTimepicker';
+
+const toISODateString = (date: Date | null): string => {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
 
 interface Props {
     planning: IntroPlanningItem[];
@@ -72,13 +82,22 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <Field label="Datum *">
-                            <input type="date" value={editingPlanning.date || ''} onChange={e => setEditingPlanning({ ...editingPlanning, date: e.target.value })} className={`${inputClass} dark:[color-scheme:dark]`} />
+                            <AdminDatepicker
+                                value={editingPlanning.date ? new Date(editingPlanning.date) : null}
+                                onChange={(date) => setEditingPlanning({ ...editingPlanning, date: date ? toISODateString(date) : '' })}
+                            />
                         </Field>
                         <Field label="Starttijd *">
-                            <input type="time" value={editingPlanning.time_start || ''} onChange={e => setEditingPlanning({ ...editingPlanning, time_start: e.target.value })} className={`${inputClass} dark:[color-scheme:dark]`} />
+                            <AdminTimepicker
+                                value={editingPlanning.time_start || ''}
+                                onChange={e => setEditingPlanning({ ...editingPlanning, time_start: e.target.value })}
+                            />
                         </Field>
                         <Field label="Eindtijd">
-                            <input type="time" value={editingPlanning.time_end || ''} onChange={e => setEditingPlanning({ ...editingPlanning, time_end: e.target.value })} className={`${inputClass} dark:[color-scheme:dark]`} />
+                            <AdminTimepicker
+                                value={editingPlanning.time_end || ''}
+                                onChange={e => setEditingPlanning({ ...editingPlanning, time_end: e.target.value })}
+                            />
                         </Field>
                         <div className="md:col-span-2">
                             <Field label="Titel *">

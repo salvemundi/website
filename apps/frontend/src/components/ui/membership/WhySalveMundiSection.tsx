@@ -59,7 +59,7 @@ const pijlers: Pijler[] = [
     {
         titel: 'Ontwikkeling',
         beschrijving:
-            'Boost je CV door actief te worden in een van onze 10 commissies. Leer organiseren, besturen en samenwerken in een professionele omgeving.',
+            'Boost je CV door actief te worden in een van onze commissies. Leer organiseren, besturen en samenwerken in een professionele omgeving.',
         icon: (
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -83,8 +83,8 @@ const pijlers: Pijler[] = [
 
 export function WhySalveMundiSection() {
     return (
-        <section className="px-6 py-6 sm:py-8">
-            <div className="mx-auto max-w-app">
+        <section className="py-6 sm:py-8">
+            <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 {/* Sectie-header */}
                 <div className="text-center mb-6 sm:mb-10">
                     <h2 className="text-3xl font-black text-gradient sm:text-4xl md:text-5xl">
@@ -97,7 +97,7 @@ export function WhySalveMundiSection() {
                     {pijlers.map((pijler) => (
                         <div
                             key={pijler.titel}
-                            className="group relative rounded-3xl bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+                            className="group relative squircle-lg bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
                         >
                             {/* Flex container for Icon + Title */}
                             <div className="flex items-center gap-3.5 mb-4">

@@ -282,12 +282,15 @@ select option {
     width: 100%;
     padding: 0.625rem 2.5rem 0.625rem 1.25rem;
     background-color: var(--beheer-card-bg);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a4539b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-position: right 1rem center;
+    background-repeat: no-repeat;
+    background-size: 1.2em;
     border: 1px solid var(--beheer-border);
     color: var(--beheer-text);
     border-radius: var(--beheer-radius);
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 0.05em;
+    font-size: 14px;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
     @supports (corner-shape: squircle) {
@@ -295,9 +298,13 @@ select option {
     }
 }
 
+.dark .beheer-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+}
+
 .beheer-select:focus {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(164, 83, 155, 0.2);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--beheer-accent) 15%, transparent);
     border-color: var(--beheer-accent);
 }
 
@@ -311,14 +318,42 @@ select option {
     font-size: 14px;
     font-weight: 700;
     transition: all 0.2s ease;
+    color-scheme: light;
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
     }
 }
 
+.dark .beheer-input {
+    color-scheme: dark;
+}
+
+.beheer-input::-webkit-calendar-picker-indicator {
+    display: none !important;
+}
+
+.beheer-input::-webkit-inner-spin-button,
+.beheer-input::-webkit-clear-button {
+    display: none !important;
+    -webkit-appearance: none;
+}
+
+.beheer-input[type="date"],
+.beheer-input[type="datetime-local"] {
+    padding-left: 2.25rem !important;
+    padding-right: 0.5rem !important;
+    cursor: pointer;
+}
+
+.beheer-input[type="time"] {
+    padding-left: 0.5rem !important;
+    padding-right: 2.25rem !important;
+    cursor: pointer;
+}
+
 .beheer-input:focus {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(164, 83, 155, 0.2);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--beheer-accent) 15%, transparent);
     border-color: var(--beheer-accent);
 }
 

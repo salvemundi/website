@@ -231,7 +231,7 @@ export default function TripPaymentFlowIsland({
                     {/* Seamless Header */}
                     <div className="pb-6 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
                         <div>
-                            <h2 className="text-2xl sm:text-3xl font-black text-white italic tracking-tighter flex items-center gap-3">
+                            <h2 className="text-2xl sm:text-3xl font-black text-text-main italic tracking-tighter flex items-center gap-3">
                                 {step === 1 && <User className="w-7 h-7 text-theme-purple" />}
                                 {step === 2 && <Compass className="w-7 h-7 text-theme-purple" />}
                                 {step === 3 && <CreditCard className="w-7 h-7 text-theme-purple" />}
