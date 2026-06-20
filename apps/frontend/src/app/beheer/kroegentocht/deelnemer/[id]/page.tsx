@@ -43,9 +43,7 @@ export default async function DeelnemerPage({ params }: DeelnemerPageProps) {
             subtitle={`Inschrijving van ${signup.name}`}
             backHref="/beheer/kroegentocht"
         >
-            <div className="container mx-auto px-4 py-6 max-w-7xl">
-                <SignupForm signup={signup} eventGroups={eventGroups} />
-            </div>
+            <SignupForm signup={signup} eventGroups={eventGroups} />
         </AdminPageShell>
     );
 }

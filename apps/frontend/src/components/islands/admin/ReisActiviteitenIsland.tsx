@@ -4,8 +4,7 @@ import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Layers,
-    Plus,
-    ChevronDown
+    Plus
 } from 'lucide-react';
 import { deleteTripActivity, createTripActivity, updateTripActivity } from '@/server/actions/admin/reis-activities.actions';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -108,17 +107,16 @@ export default function ReisActiviteitenIsland({
         <div className="w-full">
             <div className="flex flex-col gap-8">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                    <div className="relative group min-w-[240px]">
+                    <div className="min-w-[240px]">
                         <select
                             value={selectedTripId}
                             onChange={handleTripChange}
-                            className="beheer-select w-full pr-10 py-2.5 text-xs font-semibold"
+                            className="beheer-select text-xs font-semibold"
                         >
                             {initialTrips.map(trip => (
                                 <option key={trip.id} value={trip.id}>{trip.name}</option>
                             ))}
                         </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--beheer-text-muted)] opacity-40 group-hover:text-[var(--beheer-accent)] pointer-events-none" />
                     </div>
 
                     <button

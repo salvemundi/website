@@ -75,7 +75,7 @@ export default async function AzureSyncPage() {
             }
         >
             <SyncProvider initialStatus={initialStatus}>
-                <div className="container mx-auto px-4 py-8 max-w-7xl relative z-10">
+                <div className="relative z-10">
                     <div className="flex flex-col gap-6">
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                             <div className="lg:col-span-4 lg:sticky lg:top-8">

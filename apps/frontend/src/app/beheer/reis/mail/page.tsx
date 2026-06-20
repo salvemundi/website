@@ -30,7 +30,7 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
     if (trips.length === 0) {
         return (
             <AdminPageShell title="Reis Mail" backHref="/beheer/reis">
-                <div className="container mx-auto px-4 py-20 text-center">
+                <div className="py-20 text-center mx-auto">
                     <p className="text-slate-500 font-bold italic tracking-widest">Geen reizen gevonden.</p>
                 </div>
             </AdminPageShell>

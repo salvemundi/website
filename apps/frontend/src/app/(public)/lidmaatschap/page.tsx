@@ -54,7 +54,7 @@ export default async function MembershipPage() {
 
                     {isGuest && (
                         <aside className="w-full sm:w-1/2 flex flex-col gap-6">
-                            <div className="w-full text-center bg-bg-card dark:border dark:border-white/10 rounded-[2rem] p-8 shadow-lg">
+                            <div className="w-full text-center bg-bg-card dark:border dark:border-white/10 squircle-xl p-8 shadow-lg">
                                 <h2 className="text-3xl font-black text-theme-purple mb-4 tracking-tight">
                                     Waarom Lid Worden?
                                 </h2>

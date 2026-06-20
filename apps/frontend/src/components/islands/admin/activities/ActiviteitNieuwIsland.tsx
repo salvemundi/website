@@ -97,21 +97,11 @@ export default function ActiviteitNieuwIsland({
                 subtitle="Creëer een nieuwe activiteit voor de vereniging"
                 backHref="/beheer/activiteiten"
             />
-            <div className="container mx-auto px-4 py-8 max-w-6xl">
-                <form action={formAction}>
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
+                <form action={formAction} className="space-y-6">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                        <div className="lg:col-span-8 space-y-6">
+                        <div className="lg:col-span-8">
                             <GeneralInfoSection initialData={initialData} formErrors={state.fieldErrors} />
-                            <PlanningLocationSection initialData={initialData} formErrors={state.fieldErrors} />
-                            <CapacityCostsSection
-                                initialData={initialData}
-                                committees={committees}
-                                contactEmail={contactEmail}
-                                onContactEmailChange={setContactEmail}
-                                onCommitteeChange={handleCommitteeChange}
-                                onlyMembers={onlyMembers}
-                                onOnlyMembersChange={setOnlyMembers}
-                            />
                         </div>
 
                         <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-8">
@@ -146,6 +136,20 @@ export default function ActiviteitNieuwIsland({
                                 </button>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <PlanningLocationSection initialData={initialData} formErrors={state.fieldErrors} />
+                        <CapacityCostsSection
+                            initialData={initialData}
+                            committees={committees}
+                            contactEmail={contactEmail}
+                            onContactEmailChange={setContactEmail}
+                            onCommitteeChange={handleCommitteeChange}
+                            onlyMembers={onlyMembers}
+                            onOnlyMembersChange={setOnlyMembers}
+                            formErrors={state.fieldErrors}
+                        />
                     </div>
                 </form>
             </div>

@@ -28,6 +28,7 @@ interface ReisRegistrationFormProps {
     registrationStartText: string;
     currentUser: EnrichedUser | null;
     onRefresh?: () => void;
+    termsFileUrl?: string | null;
 }
 
 export function ReisRegistrationForm({
@@ -35,7 +36,8 @@ export function ReisRegistrationForm({
     canSignUp,
     registrationStartText,
     currentUser,
-    onRefresh
+    onRefresh,
+    termsFileUrl
 }: ReisRegistrationFormProps) {
     const [isSuccess, setIsSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -237,7 +239,7 @@ export function ReisRegistrationForm({
                     />
                     <span className="text-sm leading-snug">
                         Ik accepteer de{' '}
-                        <a href="/reisvoorwaarden.pdf" download className="underline font-semibold text-theme-purple hover:text-theme-purple/80" target="_blank" rel="noopener noreferrer">
+                        <a href={termsFileUrl || "/reisvoorwaarden.pdf"} download className="underline font-semibold text-theme-purple hover:text-theme-purple/80" target="_blank" rel="noopener noreferrer">
                             algemene voorwaarden
                         </a>
                     </span>

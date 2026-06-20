@@ -132,7 +132,7 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
 
                 <div className="col-span-1 @md:col-span-2 @3xl:col-span-3">
                     {trip.is_bus_trip && (
-                        <div className="p-4 rounded-xl bg-theme-purple/5 flex items-center justify-start gap-8">
+                        <div className="p-4 squircle bg-theme-purple/5 flex items-center justify-start gap-8">
                             <div className="flex items-center gap-3 min-w-[180px]">
                                 <Bus className="w-5 h-5 text-theme-purple" />
                                 <div>
@@ -148,7 +148,7 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
                     )}
 
                     {!trip.is_bus_trip && (
-                        <div className="p-4 rounded-xl bg-theme-purple/5 flex items-center justify-start gap-8">
+                        <div className="p-4 squircle bg-theme-purple/5 flex items-center justify-start gap-8">
                             <div className="flex items-center gap-3 min-w-[180px]">
                                 <Briefcase className="w-5 h-5 text-theme-purple" />
                                 <div>

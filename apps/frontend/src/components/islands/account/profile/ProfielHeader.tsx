@@ -106,14 +106,14 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
 
                     {Array.isArray(user.committees) && user.committees.length > 0 && (
                         <div className="mt-6">
-                            <p className="text-[10px] text-[var(--color-licht-paars)] dark:text-[var(--color-geel)] font-black uppercase tracking-wider mb-3 text-center">
+                            <p className="text-[10px] text-licht-paars dark:text-geel font-black uppercase tracking-wider mb-3 text-center">
                                 Mijn Commissies
                             </p>
                             <div className="flex flex-wrap gap-2 justify-center">
                                 {user.committees.map((committee) => (
                                     <span
                                         key={committee.id}
-                                        className="group relative inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] border border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 rounded-full text-xs font-bold text-purple-700 dark:text-white shadow-sm max-w-full"
+                                        className="group relative inline-flex items-center gap-2 px-4 py-2 bg-licht-paars/10 dark:bg-white/5 border border-licht-paars/20 dark:border-white/10 rounded-full text-xs font-bold text-purple-700 dark:text-white shadow-sm max-w-full"
                                     >
                                         {committee.is_leader && !committee.name.toLowerCase().includes('bestuur') && (
                                             <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border-2 border-bg-card shadow-md flex items-center justify-center shrink-0">
@@ -128,10 +128,12 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                     )}
 
                     <div className="mt-6 flex flex-col gap-1.5">
-                        <p className="text-[10px] text-[var(--color-licht-paars)] dark:text-[var(--color-geel)] font-black uppercase tracking-wider pl-1">
-                            Lidmaatschap tot
-                        </p>
-                        <div className="rounded-2xl bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] border border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 px-5 py-4 shadow-sm text-center flex justify-center items-center min-h-[56px]">
+                        <div className="flex items-center justify-center h-6 pl-1">
+                            <p className="text-[10px] text-licht-paars dark:text-geel font-black uppercase tracking-wider">
+                                Lidmaatschap tot
+                            </p>
+                        </div>
+                        <div className="squircle bg-licht-paars/10 dark:bg-white/5 border border-licht-paars/20 dark:border-white/10 px-5 py-4 shadow-sm text-center flex justify-center items-center min-h-[56px]">
                             <p className="text-base font-bold text-purple-700 dark:text-white">
                                 {user.membership_expiry
                                     ? formatDate(user.membership_expiry, "d MMM yyyy")

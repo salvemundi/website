@@ -12,7 +12,7 @@ export default function NotFound() {
                 <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-purple-500/10 rounded-full pointer-events-none" />
                 
                 {/* Icon Container */}
-                <div className="relative rounded-3xl bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)] inline-block">
+                <div className="relative squircle-lg bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)] inline-block">
                     <Search className="h-16 w-16" />
                 </div>
                 
@@ -35,14 +35,14 @@ export default function NotFound() {
                     href="/" 
                     text="Terug naar Home" 
                     icon={Home} 
-                    className="rounded-full px-8 py-3.5"
+                    className="squircle px-8 py-3.5"
                 />
 
                 <BackButton 
                     onClick={() => window.history.back()} 
                     text="Vorige Pagina" 
                     icon={ArrowLeft} 
-                    className="rounded-full px-8 py-3.5"
+                    className="squircle px-8 py-3.5"
                 />
             </div>
         </div>

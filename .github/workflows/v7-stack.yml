@@ -230,10 +230,15 @@ jobs:
           echo "FINANCE_SERVICE_URL=http://v7-${ENV_NAME}-finance:3001" >> .env.${ENV_NAME}
           echo "DB_HOST=v7-core-db" >> .env.${ENV_NAME}
 
+          REDIS_DB_SUFFIX=""
+          if [ "$ENV_NAME" = "acc" ]; then
+            REDIS_DB_SUFFIX="/1"
+          fi
+
           if [ ! -z "${{ secrets.REDIS_PASSWORD }}" ]; then
-            echo "REDIS_URL=redis://default:${{ secrets.REDIS_PASSWORD }}@v7-core-redis:6379" >> .env.${ENV_NAME}
+            echo "REDIS_URL=redis://default:${{ secrets.REDIS_PASSWORD }}@v7-core-redis:6379${REDIS_DB_SUFFIX}" >> .env.${ENV_NAME}
           else
-            echo "REDIS_URL=redis://v7-core-redis:6379" >> .env.${ENV_NAME}
+            echo "REDIS_URL=redis://v7-core-redis:6379${REDIS_DB_SUFFIX}" >> .env.${ENV_NAME}
           fi
 
           # 6. Pull en restart

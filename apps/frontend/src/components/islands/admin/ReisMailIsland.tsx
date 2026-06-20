@@ -97,7 +97,12 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
                 if (res.success) {
                     showToast(`${filteredRecipients.length} betalingsverzoeken succesvol verstuurd!`, 'success');
                 } else {
-                    showToast(`Verzenden voltooid: ${res.successCount || 0} gelukt, ${res.failCount || 0} mislukt.`, 'info');
+                    const errorMsg = res.errors.length > 0
+                        ? (res.errors.length === 1
+                            ? res.errors[0]
+                            : `${res.errors.length} verzoeken mislukt. Eerste fout: ${res.errors[0]}`)
+                        : `Verzenden voltooid: ${res.successCount || 0} gelukt, ${res.failCount || 0} mislukt.`;
+                    showToast(errorMsg, 'error');
                 }
             }
         } catch {

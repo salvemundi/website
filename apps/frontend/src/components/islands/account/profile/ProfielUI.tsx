@@ -16,7 +16,7 @@ export function Tile({
     title, icon, children, className = "", actions
 }: TileProps) {
     return (
-        <section className={`relative overflow-hidden rounded-3xl bg-[var(--bg-card)] border border-transparent dark:border-white/10 shadow-lg ${className}`}>
+        <section className={`relative overflow-hidden squircle-xl bg-[var(--bg-card)] border border-transparent dark:border-white/10 shadow-lg ${className}`}>
             <div className="relative p-6 sm:p-8">
                 {(title || actions) && (
                     <header className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -54,7 +54,7 @@ interface QuickLinkProps {
 export function QuickLink({
     label, subtitle, icon, onClick, href, locked, external
 }: QuickLinkProps) {
-    const common = "group flex items-center gap-4 rounded-2xl bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] p-5 transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-purple-300)] border border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 hover:border-[var(--color-purple-300)] shadow-sm w-full hover:-translate-y-0.5";
+    const common = "group flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-300 border border-licht-paars/20 dark:border-white/10 hover:border-purple-300 shadow-sm w-full hover:-translate-y-0.5";
 
     const inner = (
         <>

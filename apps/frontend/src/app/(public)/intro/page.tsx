@@ -40,7 +40,7 @@ const IntroInfoStudent = () => (
             </ul>
         </div>
 
-        <div className="p-6 bg-bg-soft rounded-2xl border border-border-color/20 shadow-inner">
+        <div className="p-6 bg-bg-soft squircle border border-border-color/20 shadow-inner">
             <p className="text-sm font-bold text-text-muted leading-relaxed italic">
                 Of je nu een hardcore gamer bent, een toekomstige developer of gewoon houdt van een goed feestje: bij Salve Mundi hoor je erbij.
             </p>
@@ -79,7 +79,7 @@ const IntroInfoParent = () => (
             </ul>
         </div>
 
-        <div className="p-6 bg-bg-soft rounded-2xl border border-border-color/20 shadow-inner">
+        <div className="p-6 bg-bg-soft squircle border border-border-color/20 shadow-inner">
             <p className="text-sm font-bold text-text-muted leading-relaxed italic">
                 Heb je vragen? Neem contact op met de introcommissie.
             </p>
@@ -102,7 +102,7 @@ export default async function IntroPage() {
             <section className="px-fluid-md py-fluid-lg">
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto w-full items-start lg:items-stretch">
                     <div className="flex-1 space-y-6 flex flex-col">
-                        <div className="bg-bg-card dark:border dark:border-white/10 rounded-[2rem] shadow-xl p-fluid-md sm:p-10 flex-1 flex flex-col">
+                        <div className="bg-bg-card dark:border dark:border-white/10 squircle-xl shadow-xl p-fluid-md sm:p-10 flex-1 flex flex-col">
                             {user ? <IntroInfoParent /> : <IntroInfoStudent />}
                         </div>
                         {!user && <IntroLightboxIsland />}
@@ -111,7 +111,7 @@ export default async function IntroPage() {
                     <div className="flex-1 w-full flex flex-col">
                         {user ? (
                             isAlreadyParent ? (
-                                <div className="bg-gradient-theme rounded-[2rem] p-10 shadow-xl text-center flex flex-col items-center justify-center min-h-[300px] flex-1">
+                                <div className="bg-gradient-theme squircle-xl p-10 shadow-xl text-center flex flex-col items-center justify-center min-h-[300px] flex-1">
                                     <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-6">
                                         <CheckCircle2 className="w-10 h-10 text-white" />
                                     </div>

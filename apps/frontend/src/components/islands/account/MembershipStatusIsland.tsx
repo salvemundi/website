@@ -53,7 +53,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
     if (!isExpired) {
         return (
             <div className="text-theme-text dark:text-white">
-                <div className="bg-green-500/10 dark:bg-green-500/20 border border-green-500/20 dark:border-green-500/40 p-5 rounded-2xl mb-6 flex items-start gap-4">
+                <div className="bg-green-500/10 dark:bg-green-500/20 border border-green-500/20 dark:border-green-500/40 p-5 squircle mb-6 flex items-start gap-4">
                     <div className="bg-green-500 rounded-full p-1 mt-0.5 shadow-sm shadow-green-500/20">
                         <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -69,7 +69,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                     Welkom terug, <span className="font-bold text-theme-purple dark:text-purple-400">{user.first_name}</span>!
                 </p>
 
-                <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/30 p-5 rounded-3xl mb-8">
+                <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/30 p-5 squircle-lg mb-8">
                     <p className="text-xs text-theme-purple dark:text-purple-400 font-bold uppercase tracking-widest mb-3">Jouw gegevens</p>
                     <div className="space-y-1">
                         <p className="font-bold text-xl leading-tight dark:text-white">
@@ -113,7 +113,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                     Je lidmaatschap is verlopen. Om weer toegang te krijgen tot alle activiteiten en je account te behouden, vragen we je de jaarlijkse contributie te voldoen.
                 </p>
                 {baseAmount === 10 && (
-                    <div className="mt-4 p-3 bg-purple-500/10 border border-purple-500/20 rounded-2xl flex items-center gap-3">
+                    <div className="mt-4 p-3 bg-purple-500/10 border border-purple-500/20 squircle flex items-center gap-3">
                         <span className="bg-purple-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Actief Lid</span>
                         <p className="text-sm font-bold text-theme-purple dark:text-purple-400">
                             Commissie-korting toegepast: Jouw verlenging kost slechts €10,00.
@@ -122,7 +122,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                 )}
             </div>
 
-            <div className="bg-purple-50 dark:bg-white/5 border border-purple-100 dark:border-white/10 rounded-3xl p-6 mb-8 text-center">
+            <div className="bg-purple-50 dark:bg-white/5 border border-purple-100 dark:border-white/10 squircle-lg p-6 mb-8 text-center">
                 <p className="text-sm font-bold text-theme-purple dark:text-purple-400 uppercase tracking-widest mb-6">Contributie Verlengen</p>
                 <button
                     onClick={() => { void handleRenewal(); }}

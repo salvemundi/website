@@ -47,7 +47,7 @@ export default function AddLeaderForm({
                         setLeaderName('');
                         setLeaderSignupId('');
                     }}
-                    className="w-full px-2.5 py-1.5 bg-[var(--bg-card)] border border-[var(--border-color)]/30 rounded-lg text-xs font-semibold text-[var(--text-main)] focus:outline-none cursor-pointer"
+                    className="beheer-select text-xs font-semibold"
                 >
                     <option value="signup">Deelnemer uit groep</option>
                     <option value="external">Externe persoon (Handmatig typen)</option>
@@ -69,7 +69,7 @@ export default function AddLeaderForm({
                                 setLeaderName(found.name);
                             }
                         }}
-                        className="w-full px-2.5 py-1.5 bg-[var(--bg-card)] border border-[var(--border-color)]/30 rounded-lg text-xs font-semibold text-[var(--text-main)] focus:outline-none cursor-pointer"
+                        className="beheer-select text-xs font-semibold"
                     >
                         <option value="">Selecteer deelnemer...</option>
                         {participantsList.map((p, pIdx) => (

@@ -74,10 +74,12 @@ export default function ProfielDetails({
         >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                    <p className="text-[11px] text-[var(--color-licht-paars)] dark:text-[var(--color-geel)] font-black uppercase tracking-wider text-left pl-1">
-                        E-mailadres
-                    </p>
-                    <div className="flex items-center gap-4 rounded-2xl bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] p-5 border border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 shadow-sm min-h-[68px]">
+                    <div className="flex items-center h-6 pl-1">
+                        <p className="text-[11px] text-licht-paars dark:text-geel font-black uppercase tracking-wider text-left">
+                            E-mailadres
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-[68px]">
                         <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-[var(--color-purple-300)]">
                             <Mail className="h-5 w-5" />
                         </div>
@@ -89,10 +91,12 @@ export default function ProfielDetails({
 
                 {user.fontys_email && (
                     <div className="flex flex-col gap-1.5">
-                        <p className="text-[11px] text-[var(--color-licht-paars)] dark:text-[var(--color-geel)] font-black uppercase tracking-wider text-left pl-1">
-                            Fontys e-mail
-                        </p>
-                        <div className="flex items-center gap-4 rounded-2xl bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] p-5 border border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 shadow-sm min-h-[68px]">
+                        <div className="flex items-center h-6 pl-1">
+                            <p className="text-[11px] text-licht-paars dark:text-geel font-black uppercase tracking-wider text-left">
+                                Fontys e-mail
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-[68px]">
                             <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-[var(--color-purple-300)]">
                                 <Mail className="h-5 w-5" />
                             </div>
@@ -104,8 +108,8 @@ export default function ProfielDetails({
                 )}
 
                 <div className="flex flex-col gap-1.5 relative group">
-                    <div className="flex items-center justify-between gap-2 pl-1">
-                        <p className="text-[11px] font-black uppercase text-[var(--color-licht-paars)] dark:text-[var(--color-geel)] tracking-wider text-left">
+                    <div className="flex items-center justify-between gap-2 h-6 pl-1">
+                        <p className="text-[11px] font-black uppercase text-licht-paars dark:text-geel tracking-wider text-left">
                             Telefoonnummer
                         </p>
                         {!isEditingPhoneNumber && (
@@ -114,7 +118,7 @@ export default function ProfielDetails({
                             </button>
                         )}
                     </div>
-                    <div className="flex items-center gap-4 rounded-2xl bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] p-5 border border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 shadow-sm min-h-[68px]">
+                    <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-[68px]">
                         <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-[var(--color-purple-300)]">
                             <Phone className="h-5 w-5" />
                         </div>
@@ -145,10 +149,12 @@ export default function ProfielDetails({
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                    <p className="text-[11px] font-black uppercase text-[var(--color-licht-paars)] dark:text-[var(--color-geel)] tracking-wider text-left pl-1">
-                        Geboortedatum
-                    </p>
-                    <div className="flex items-center gap-4 rounded-2xl bg-[var(--color-licht-paars)]/10 dark:bg-[var(--color-donker-blauw)] p-5 border border-[var(--color-licht-paars)]/20 dark:border-[var(--color-donker-blauw)]/50 shadow-sm min-h-[68px]">
+                    <div className="flex items-center h-6 pl-1">
+                        <p className="text-[11px] font-black uppercase text-licht-paars dark:text-geel tracking-wider text-left">
+                            Geboortedatum
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-[68px]">
                         <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-[var(--color-purple-300)]">
                             <Calendar className="h-5 w-5" />
                         </div>
