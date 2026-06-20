@@ -48,7 +48,7 @@ services:
     env_file:
       - .env.acc
     ports:
-      - "${FINANCE_PORT:-3001}:3001"
+      - "127.0.0.1:${FINANCE_PORT:-3001}:3001"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - MOLLIE_API_KEY=${MOLLIE_API_KEY}
@@ -64,7 +64,15 @@ services:
       - NEXT_APP_INTERNAL_URL=${NEXT_APP_INTERNAL_URL}
       - TZ=Europe/Amsterdam
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3001/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:3001/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -82,7 +90,7 @@ services:
     env_file:
       - .env.acc
     ports:
-      - "${SYNC_PORT:-3002}:3002"
+      - "127.0.0.1:${SYNC_PORT:-3002}:3002"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
@@ -102,7 +110,15 @@ services:
       - AZURE_EXPIRED_LID_GROUP_ID=${AZURE_EXPIRED_LID_GROUP_ID:-98c1d807-613a-4a23-9618-3f8821d35fe9}
       - TZ=Europe/Amsterdam
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3002/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:3002/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -120,7 +136,7 @@ services:
     env_file:
       - .env.acc
     ports:
-      - "${MAIL_PORT:-3003}:3003"
+      - "127.0.0.1:${MAIL_PORT:-3003}:3003"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_MAIL_CLIENT_ID=${AZURE_WEBSITEV7_MAIL_CLIENT_ID}
@@ -137,7 +153,15 @@ services:
       - DB_HOST=v7-core-db
       - TZ=Europe/Amsterdam
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3003/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:3003/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -155,7 +179,7 @@ services:
     env_file:
       - .env.acc
     ports:
-      - "${MANAGEMENT_PORT:-3004}:3004"
+      - "127.0.0.1:${MANAGEMENT_PORT:-3004}:3004"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_WEBSITEV7_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
@@ -170,7 +194,15 @@ services:
       - AZURE_EXPIRED_LID_GROUP_ID=${AZURE_EXPIRED_LID_GROUP_ID:-98c1d807-613a-4a23-9618-3f8821d35fe9}
       - TZ=Europe/Amsterdam
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3004/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:3004/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
