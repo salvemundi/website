@@ -41,9 +41,6 @@ peerDependencyRules:
     react: "^19.0.0"
     react-dom: "^19.0.0"
 
-patchedDependencies:
-  brace-expansion@5.0.6: patches/brace-expansion@5.0.6.patch
-
 minimumReleaseAgeExclude:
   - brace-expansion@5.0.6
   - uuid@11.1.1
