@@ -44,3 +44,6 @@ peerDependencyRules:
 minimumReleaseAgeExclude:
   - brace-expansion@5.0.6
   - uuid@11.1.1
+
+patchedDependencies:
+  brace-expansion@5.0.6: patches/brace-expansion@5.0.6.patch
