@@ -11,8 +11,11 @@
         "forceConsistentCasingInFileNames": true,
         "baseUrl": ".",
         "paths": {
-            "@salvemundi/validations": ["../../packages/validations/src/index.ts"]
-        }
+            "@salvemundi/validations": [
+                "../../packages/validations/src/index.ts"
+            ]
+        },
+        "ignoreDeprecations": "6.0"
     },
     "include": [
         "src/**/*"
