@@ -37,7 +37,7 @@ export function PhoneAndLabel({ label, defaultValue, name }: { label: string; de
                 <PhoneInput 
                     name={name} 
                     value={val} 
-                    onChange={(e: any) => setVal(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVal(e.target.value)}
                     autoComplete="off"
                     className="w-full px-4 py-2.5 bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm border border-(--beheer-border)/40 rounded-xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main)/80 transition-all font-semibold outline-none shadow-inner"
                 />
@@ -153,7 +153,7 @@ export function HorizontalPhone({ label, name, defaultValue }: { label: string; 
                     id={id}
                     name={name} 
                     value={val} 
-                    onChange={(e: any) => setVal(e.target.value)} 
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVal(e.target.value)} 
                     className="bg-transparent text-xs text-(--beheer-text) font-semibold outline-none h-7 w-full border-none p-0 focus:ring-0"
                 />
             </div>
