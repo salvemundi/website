@@ -79,8 +79,8 @@
 
    /* Semantic Background — Light Mode defaults */
    --bg-main: #F0F1F9;
-   --bg-soft: varwhite;
-   --bg-card: varwhite;
+   --bg-soft: var(--color-white);
+   --bg-card: var(--color-white);
 
    /* Semantic Text — Light Mode defaults */
    --text-main: #5A3761;

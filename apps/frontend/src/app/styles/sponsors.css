@@ -1,15 +1,8 @@
-/* ==========================================================================
-   SPONSORS.CSS — Infinite Scroll Sponsor Banner
-   Used on the homepage / sponsor section.
-   ========================================================================== */
-
 @keyframes scroll-sponsors {
     0% { transform: translateX(0); }
     100% { transform: translateX(-25%); }
 }
 
-/* ── Scroll Container ────────────────────────────────────────────────────────
-   Fade edges via mask so the track scrolls "into nothing" on both sides.    */
 .sponsors-scroll-container {
     position: relative;
     width: 100%;
@@ -17,7 +10,7 @@
     padding: 2rem 0;
     mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-    isolation: isolate; /* Fix for Chromium mask rendering pop-in */
+    isolation: isolate;
 }
 
 .sponsors-scroll-track {
@@ -26,7 +19,7 @@
     width: max-content;
     animation: scroll-sponsors var(--scroll-duration, 20s) linear infinite;
     will-change: transform;
-    transform: translate3d(0, 0, 0); /* Force GPU acceleration */
+    transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
 }
 
@@ -34,14 +27,13 @@
     display: flex;
     flex-wrap: nowrap;
     gap: 5rem;
-    padding-right: 5rem; /* The key to seamless looping with gap */
+    padding-right: 5rem;
 }
 
 .sponsors-scroll-track:hover {
     animation-play-state: paused;
 }
 
-/* ── Sponsor Card ─────────────────────────────────────────────────────────── */
 .sponsor-item {
     flex-shrink: 0;
     display: inline-flex;
@@ -57,7 +49,6 @@
     transform: translateY(-4px);
 }
 
-/* ── Logo ─────────────────────────────────────────────────────────────────── */
 .sponsor-logo {
     max-height: 80px;
     height: auto;
@@ -84,16 +75,13 @@ html.dark .sponsor-item {
     box-shadow: none;
 }
 
-/* ── Per-sponsor Background Overrides ────────────────────────────────────── */
-/* Allow individual sponsors to force a light or dark card surface
-   regardless of the current site theme.                                      */
 .sponsor-dark-bg {
     background: var(--bg-card-dark, #0f172a) !important;
     box-shadow: none !important;
 }
 
 .sponsor-light-bg {
-    background: varwhite !important;
+    background: var(--color-white) !important;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
     padding: 1.25rem 2.5rem;
     display: flex;
@@ -114,7 +102,6 @@ html.dark .sponsor-item {
     box-shadow: none !important;
 }
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .sponsors-scroll-track {
         animation-duration: calc(var(--scroll-duration, 20s) * 1.2);
@@ -122,9 +109,6 @@ html.dark .sponsor-item {
     .sponsors-set {
         gap: 2.5rem;
         padding-right: 2.5rem;
-    }
-
-    .sponsor-item {
     }
 
     .sponsor-logo {

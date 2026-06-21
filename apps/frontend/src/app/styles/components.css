@@ -11,7 +11,7 @@
     }
 
     .scrollbar-thin::-webkit-scrollbar-thumb {
-        background-color: varpurple-300;
+        background-color: var(--color-purple-300);
         border-radius: 4px;
     }
 
@@ -74,7 +74,7 @@
     /* ── Form Label ─────────────────────────────────────────────────────────── */
     .form-label {
         display: block;
-        font-size: varsm;
+        font-size: var(--font-size-sm);
         font-weight: 600;
         margin-bottom: 0.5rem;
         color: var(--theme-purple);
@@ -89,7 +89,7 @@
         border: 1.5px solid var(--border-color);
         color: var(--text-main);
         font-weight: 500;
-        font-size: varbase;
+        font-size: var(--font-size-base);
         transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
         appearance: none;
     }
@@ -106,7 +106,7 @@
     .dark .form-input {
         background-color: rgba(255, 255, 255, 0.05);
         border-color: rgba(255, 255, 255, 0.1);
-        color: varwhite;
+        color: var(--color-white);
     }
 
     /* Autofill management moved to dedicated autofill.css for global stability */
@@ -147,9 +147,9 @@
         transition: all 0.3s ease;
         cursor: pointer;
         border: none;
-        font-size: varbase;
+        font-size: var(--font-size-base);
         background-color: var(--theme-purple);
-        color: varwhite;
+        color: var(--color-white);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
@@ -169,25 +169,25 @@
 
     /* ── Form Title ─────────────────────────────────────────────────────────── */
     .form-title {
-        font-size: var3xl; /* Fluid 1.5rem to 2.25rem */
+        font-size: var(--font-size-3xl); /* Fluid 1.5rem to 2.25rem */
         font-weight: 900;
-        color: varpurple-700;
+        color: var(--color-purple-700);
         letter-spacing: -0.025em;
         line-height: 1.2;
     }
 
     .dark .form-title {
-        color: varpurple-300;
+        color: var(--color-purple-300);
     }
 
     /* Inverted variant for gradient-themed sections */
     .bg-gradient-theme .form-button {
-        background-color: varwhite;
-        color: varpurple-800;
+        background-color: var(--color-white);
+        color: var(--color-purple-800);
     }
 
     .bg-gradient-theme .form-button:hover:not(:disabled) {
-        background-color: varwhite-soft;
+        background-color: var(--color-white-soft);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
     }
 

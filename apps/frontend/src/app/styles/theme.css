@@ -32,18 +32,14 @@
     --theme-info: #132A40; /* Donker Blauw */
 }
 
-/* ── Semantic Aliases ──────────────────────────────────────────────────────── */
-/* Maps atomic palette tokens onto role-named vars used throughout the app.
-   New code should use the --color-* and semantic vars directly.
-   Aliases here exist purely for backwards-compat with old components.        */
 :root {
     color-scheme: light;
-    --theme-purple: varpurple-700;
-    --theme-purple-light: varpurple-500;
-    --theme-purple-dark: varpurple-800;
-    --theme-purple-darker: varpurple-900;
-    --theme-purple-lighter: varpurple-100;
-    --theme-white: varwhite;
+    --theme-purple: var(--color-purple-700);
+    --theme-purple-light: var(--color-purple-500);
+    --theme-purple-dark: var(--color-purple-800);
+    --theme-purple-darker: var(--color-purple-900);
+    --theme-purple-lighter: var(--color-purple-100);
+    --theme-white: var(--color-white);
 
     /* ── Beheer Page Tokens ────────────────────────────────────────── */
     --beheer-active: #22c55e;        /* Green-500 */
@@ -62,7 +58,7 @@
 }
 
 .dark {
-    --theme-purple: varpurple-300;
+    --theme-purple: var(--color-purple-300);
     --beheer-active: #4ade80;        /* Green-400 */
     --beheer-inactive: #f87171;      /* Red-400 */
     --beheer-card-bg: var(--bg-card);
