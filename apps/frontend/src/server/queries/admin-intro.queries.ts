@@ -11,7 +11,7 @@ import {
 import { z } from 'zod';
 import { safeConsoleError } from '@/server/utils/logger';
 
-interface DbIntroBlogRow {
+interface IntroBlogRow {
     id: string | number;
     title?: unknown;
     content?: unknown;
@@ -19,7 +19,7 @@ interface DbIntroBlogRow {
     is_published?: unknown;
 }
 
-interface DbIntroPlanningRow {
+interface IntroPlanningRow {
     id: string | number;
     date?: unknown;
     time_start?: unknown;
@@ -66,7 +66,7 @@ export async function getIntroBlogsInternal(): Promise<IntroBlog[]> {
         const sql = 'SELECT * FROM intro_blogs ORDER BY id DESC LIMIT 200';
         const { rows } = await query(sql);
 
-        const mapped = (rows as DbIntroBlogRow[]).map(i => ({
+        const mapped = (rows as IntroBlogRow[]).map(i => ({
             id: Number(i.id),
             title: typeof i.title === 'string' ? i.title : '',
             content: typeof i.content === 'string' ? i.content : '',
@@ -102,7 +102,7 @@ export async function getIntroPlanningInternal(): Promise<IntroPlanningItem[]> {
             return '';
         };
 
-        const mapped = (rows as DbIntroPlanningRow[]).map(i => ({
+        const mapped = (rows as IntroPlanningRow[]).map(i => ({
             id: Number(i.id),
             date: toStr(i.date),
             time_start: toTimeStr(i.time_start),

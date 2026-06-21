@@ -1,9 +1,9 @@
-import { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
+import { type FastifyInstance} from 'fastify';
 import { createDirectus, rest, staticToken, readItem, readItems, updateItem } from '@directus/sdk';
 import { getMollieClient } from '../services/mollie.service.js';
 import { TRIP_SIGNUP_FIELDS, TRIP_FIELDS } from '@salvemundi/validations';
 import crypto from 'node:crypto';
-import { DbTripSignup as TripSignup, DbTrip as Trip } from '@salvemundi/validations/directus/schema';
+import { TripSignup, Trip } from '@salvemundi/validations/directus/schema';
 import { verifyInternalToken } from '../middleware/auth.js';
 
 interface TripPaymentRequest {

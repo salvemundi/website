@@ -1,7 +1,7 @@
 import 'server-only';
 import { query } from '@/lib/database';
 import { toLocalISOString } from '@/lib/utils/date-utils';
-import { DbTrip as Trip } from '@salvemundi/validations/directus/schema';
+import { Trip as Trip } from '@salvemundi/validations/directus/schema';
 import { RawTripRow } from './types';
 
 export async function fetchFullTripsDb(): Promise<Trip[]> {

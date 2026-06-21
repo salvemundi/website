@@ -2,6 +2,7 @@
 
 import React from 'react';
 import type { TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
+import { formatShortDate } from '@/lib/utils/date-utils';
 import {
     User,
     Mail,
@@ -32,19 +33,6 @@ const formatFullDate = (d: Date) => {
         }).format(d);
     } catch (error) {
         safeConsoleError('[SignupView][formatFullDate]', error);
-        return 'Onbekend';
-    }
-};
-
-const formatShortDate = (d: Date) => {
-    try {
-        return new Intl.DateTimeFormat('nl-NL', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        }).format(d);
-    } catch (error) {
-        safeConsoleError('[SignupView][formatShortDate]', error);
         return 'Onbekend';
     }
 };

@@ -5,7 +5,7 @@ import { query } from '@/lib/database';
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteit-utils';
 import { safeConsoleError } from '@/server/utils/logger';
 
-interface DbEventSignupWithEvent {
+interface EventSignupWithEvent {
     id: number;
     event_id: number;
     participant_email: string;
@@ -40,7 +40,7 @@ export async function retryActivityPayment(signupId: number) {
             return { success: false, error: "Aanmelding niet gevonden." };
         }
 
-        const signup = signupRes.rows[0] as DbEventSignupWithEvent;
+        const signup = signupRes.rows[0] as EventSignupWithEvent;
 
         const isAdmin = currentUser.role === 'admin' || currentUser.role === '06e78cf9-f9c3-4f9e-a86d-1907de634567' || currentUser.isICT;
         const isParticipant = currentUser.email === signup.participant_email;

@@ -117,7 +117,7 @@ export async function uploadUserAvatar(formData: FormData) {
 
     const parsedFile = imageUploadSchema.safeParse(file);
     if (!parsedFile.success) {
-        return { success: false, error: parsedFile.error.errors[0].message };
+        return { success: false, error: parsedFile.error.issues[0].message };
     }
     const safeFile = parsedFile.data;
 

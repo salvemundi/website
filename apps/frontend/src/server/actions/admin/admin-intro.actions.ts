@@ -4,10 +4,10 @@ import * as signups from './intro/intro-signup.actions';
 import * as blogs from './intro/intro-blog.actions';
 import * as planning from './intro/intro-planning.actions';
 import * as settings from './intro/intro-settings.actions';
-import type { DbIntroSignup, DbIntroParentSignup } from '@salvemundi/validations/directus/schema';
+import type { IntroSignup, IntroParentSignup } from '@salvemundi/validations/directus/schema';
 import { type IntroBlog, type IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 
-export async function getIntroSignups(): Promise<DbIntroSignup[]> {
+export async function getIntroSignups(): Promise<IntroSignup[]> {
     return signups.getIntroSignups();
 }
 
@@ -15,7 +15,7 @@ export async function deleteIntroSignup(id: number) {
     return signups.deleteIntroSignup(id);
 }
 
-export async function getIntroParentSignups(): Promise<DbIntroParentSignup[]> {
+export async function getIntroParentSignups(): Promise<IntroParentSignup[]> {
     return signups.getIntroParentSignups();
 }
 

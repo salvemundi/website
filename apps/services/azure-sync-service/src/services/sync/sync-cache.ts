@@ -1,13 +1,13 @@
 import { DirectusService } from '../directus.service.js';
 import { GraphService } from '../graph.service.js';
-import { type DbCommittee as Committee, type DbDirectusUser as DirectusUser, type DbCommitteeMember as CommitteeMember } from '@salvemundi/validations';
+import { Directus } from '@salvemundi/validations';
 import { GROUP_ACTIVE_LID, GROUP_EXPIRED_LID } from './sync-types.js';
 
 export class SyncCache {
     static async getCommittees() {
-        const committees = (await DirectusService.getAllCommittees()) as unknown as Committee[];
-        const committeeCache = new Map<string, Committee>();
-        const committeeByIdCache = new Map<number, Committee>();
+        const committees = (await DirectusService.getAllCommittees()) as unknown as Directus.Committee[];
+        const committeeCache = new Map<string, Directus.Committee>();
+        const committeeByIdCache = new Map<number, Directus.Committee>();
 
         for (const c of committees) {
             committeeByIdCache.set(Number(c.id), c);
@@ -20,8 +20,8 @@ export class SyncCache {
     }
 
     static async getUsers() {
-        const allLeden = (await DirectusService.getAllUsers()) as unknown as DirectusUser[];
-        const userCacheByEntra = new Map<string, DirectusUser>();
+        const allLeden = (await DirectusService.getAllUsers()) as unknown as Directus.CustomDirectusUser[];
+        const userCacheByEntra = new Map<string, Directus.CustomDirectusUser>();
 
         for (const u of allLeden) {
             if (u.entra_id) {
@@ -33,14 +33,16 @@ export class SyncCache {
     }
 
     static async getMemberships() {
-        const allMemberships = (await DirectusService.getAllCommitteeMembers()) as unknown as CommitteeMember[];
-        const membershipCache = new Map<string, CommitteeMember[]>();
+        const allMemberships = (await DirectusService.getAllCommitteeMembers()) as unknown as Directus.CommitteeMember[];
+        const membershipCache = new Map<string, Directus.CommitteeMember[]>();
 
         for (const m of allMemberships) {
             if (!m.user_id) continue;
-            const list = membershipCache.get(m.user_id) || [];
+            const userId = typeof m.user_id === 'string' ? m.user_id : m.user_id.id;
+
+            const list = membershipCache.get(userId) || [];
             list.push(m);
-            membershipCache.set(m.user_id, list);
+            membershipCache.set(userId, list);
         }
 
         return { allMemberships, membershipCache };
@@ -63,7 +65,7 @@ export class SyncCache {
         return mainMembershipState;
     }
 
-    static async getAzureMembershipMap(relevantAzureGroupIds: string[], committeeCache: Map<string, Committee>, token: string) {
+    static async getAzureMembershipMap(relevantAzureGroupIds: string[], committeeCache: Map<string, Directus.Committee>, token: string) {
         const groupDetails = await GraphService.getBatchGroupDetails(relevantAzureGroupIds, token);
         const membershipMap = new Map<string, Map<number, boolean>>();
 

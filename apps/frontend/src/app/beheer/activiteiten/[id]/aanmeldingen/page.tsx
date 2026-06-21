@@ -48,7 +48,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
     const dbSignups = await getActivitySignupsInternal(id);
 
     const signups: Signup[] = dbSignups.map(s => ({
-        id: s.id ?? 0,
+        id: s.id,
         participant_name: s.participant_name || 'Onbekend',
         participant_email: s.participant_email || '-',
         participant_phone: s.participant_phone,

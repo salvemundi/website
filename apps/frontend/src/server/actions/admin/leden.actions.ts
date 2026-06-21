@@ -17,7 +17,7 @@ const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
 const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
-interface DbUserRow {
+interface UserRow {
     email: string | null;
     first_name: string | null;
     last_name: string | null;
@@ -228,9 +228,9 @@ export async function renewMembershipAction(
 
     try {
         const { query } = await import("@/lib/database");
-        const { rows } = await query<DbUserRow>('SELECT email, membership_expiry, entra_id, first_name, last_name, phone_number, date_of_birth FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId]);
+        const { rows } = await query<UserRow>('SELECT email, membership_expiry, entra_id, first_name, last_name, phone_number, date_of_birth FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId]);
 
-        const user = rows[0] as DbUserRow | undefined;
+        const user = rows[0] as UserRow | undefined;
         if (!user) return { success: false, error: 'Kon lid niet ophalen' };
 
         const today = new Date();
@@ -312,9 +312,9 @@ export async function provisionAzureAccountAction(directusUserId: string) {
 
     try {
         const { query } = await import("@/lib/database");
-        const { rows } = await query<DbUserRow>('SELECT email, first_name, last_name, phone_number, date_of_birth FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId]);
+        const { rows } = await query<UserRow>('SELECT email, first_name, last_name, phone_number, date_of_birth FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId]);
 
-        const user = rows[0] as DbUserRow | undefined;
+        const user = rows[0] as UserRow | undefined;
         if (!user || !user.email) return { success: false, error: "Lid niet gevonden of geen e-mailadres." };
 
         const res = await fetch(`${AZURE_MGMT_URL}/api/provisioning/user`, {

@@ -31,13 +31,16 @@
     "scripts": {
         "build": "tsc",
         "type-check": "tsc --noEmit",
-        "lint": "eslint ."
+        "lint": "eslint .",
+        "typegen": "directus-ts-typegen --output src/directus/schema.ts && node -e \"const fs=require('fs');fs.writeFileSync('src/directus/schema.ts',fs.readFileSync('src/directus/schema.ts','utf8').replace(/: \\\"datetime\\\"/g,': string | \\\"datetime\\\"'))\""
     },
     "dependencies": {
         "zod": "^4.4.3"
     },
     "devDependencies": {
+        "@directus/sdk": "^21.1.0",
         "@types/node": "^22.0.0",
+        "directus-ts-typegen": "^0.6.0",
         "eslint": "^9.39.4",
         "typescript": "5.7.3"
     }

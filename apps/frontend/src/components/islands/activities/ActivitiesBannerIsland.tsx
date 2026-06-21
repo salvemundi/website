@@ -27,9 +27,7 @@ export default function ActivitiesBannerIsland({ events, serverTime }: Activitie
             .filter(e => getEventTime(e) >= now.getTime())
             .sort((a, b) => getEventTime(a) - getEventTime(b));
 
-        if (upcoming.length > 0) return upcoming[0];
-
-        return [...events].sort((a, b) => getEventTime(b) - getEventTime(a))[0] || null;
+        return upcoming.length > 0 ? upcoming[0] : null;
     }, [events, serverTime]);
 
     if (!upcomingEvent) return null;

@@ -17,7 +17,7 @@ interface CommitteeMemberJson {
     };
 }
 
-interface DbCommitteeRow {
+interface CommitteeRow {
     id: string;
     name: string;
     commissie_token: string | null;
@@ -57,7 +57,7 @@ export async function getCommittees(): Promise<Committee[]> {
             WHERE c.is_visible = true
             GROUP BY c.id
         `;
-        const { rows: committeesWithMembers } = await query<DbCommitteeRow>(sql);
+        const { rows: committeesWithMembers } = await query<CommitteeRow>(sql);
 
         const parsed = committeesSchema.safeParse(committeesWithMembers);
 
@@ -104,7 +104,7 @@ export async function getCommitteeBySlug(slug: string): Promise<Committee | null
             LIMIT 1
         `;
 
-        const { rows } = await query<DbCommitteeRow>(sql, [slug]);
+        const { rows } = await query<CommitteeRow>(sql, [slug]);
 
         if (rows.length === 0) {
             const all = await getCommittees();

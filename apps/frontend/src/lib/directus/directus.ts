@@ -1,8 +1,18 @@
 import 'server-only';
 import { createDirectus, rest, staticToken } from '@directus/sdk';
-import { type DirectusSchema } from '@salvemundi/validations/directus/schema';
+import { type Schema } from '@salvemundi/validations';
 import { insertSystemLogInternal } from '@/server/queries/audit.queries';
 import { safeConsoleError } from '@/server/utils/logger';
+
+type FilterFriendlySchema = {
+    [K in keyof Schema]: Schema[K] extends readonly unknown[]
+        ? {
+            [F in keyof Schema[K][number]]: Schema[K][number][F] extends string | null ? Schema[K][number][F] | "datetime" : Schema[K][number][F]
+          }[]
+        : {
+            [F in keyof Schema[K]]: Schema[K][F] extends string | null ? Schema[K][F] | "datetime" : Schema[K][F]
+        }
+};
 
 const directusUrlEnv = process.env.DIRECTUS_SERVICE_URL || process.env.INTERNAL_DIRECTUS_URL;
 const directusTokenEnv = process.env.DIRECTUS_STATIC_TOKEN;
@@ -75,7 +85,7 @@ export async function fetchWithRetry(
 }
 
 export function getSystemDirectus() {
-    return createDirectus<DirectusSchema>(directusUrl, {
+    return createDirectus<FilterFriendlySchema>(directusUrl, {
         globals: {
             fetch: async (url: string | URL, options?: RequestInit) => {
                 const urlStr = url.toString();

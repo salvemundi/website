@@ -4,7 +4,7 @@ import { getActivityBySlug, checkUserSignupStatus } from '@/server/actions/event
 import { getSignupStatus } from '@/server/actions/events/public-activiteit-status.actions';
 import ActivityDetailIsland from '@/components/islands/activities/ActivityDetailIsland';
 import EventSignupIsland from '@/components/islands/activities/EventSignupIsland';
-import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
+import { type EventSignup } from '@salvemundi/validations/directus/schema';
 import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import BackButton from '@/components/ui/navigation/BackButton';
@@ -84,7 +84,7 @@ async function ActivityContent({ params, searchParams }: PageProps) {
         const statusRes = await getSignupStatus(undefined, sParams.token);
         if (statusRes.status === 'paid') {
             verifiedPaymentStatus = 'paid';
-            qrToken = (statusRes.signup as DbEventSignup).qr_token || sParams.token;
+            qrToken = (statusRes.signup as EventSignup).qr_token || sParams.token;
             isSignedUp = true;
         }
     }

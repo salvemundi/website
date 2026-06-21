@@ -14,7 +14,7 @@ import {
     X
 } from 'lucide-react';
 import { ActionButton, EmptyState, Button } from './IntroTabComponents';
-import { type DbIntroParentSignup as IntroParentRow } from '@salvemundi/validations/directus/schema';
+import { type IntroParentSignup as IntroParentRow } from '@salvemundi/validations/directus/schema';
 import { formatDate } from '@/shared/lib/utils/date';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';

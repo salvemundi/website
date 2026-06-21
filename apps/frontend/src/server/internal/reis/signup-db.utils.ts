@@ -6,7 +6,7 @@ import {
     type ReisTripSignup
 } from '@salvemundi/validations/schema/reis.zod';
 import { z } from 'zod';
-import { DbTripSignup as TripSignup, DbTripSignupActivitie as TripSignupActivity } from '@salvemundi/validations/directus/schema';
+import { TripSignup as TripSignup, TripSignupActivity as TripSignupActivity } from '@salvemundi/validations/directus/schema';
 import { RawTripSignupRow, RawTripSignupActivityRow, QueryParam } from './types';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 

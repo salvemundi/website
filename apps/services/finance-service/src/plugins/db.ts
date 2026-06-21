@@ -1,20 +1,34 @@
 import { type FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 import pg from 'pg';
-import { Kysely, PostgresDialect } from 'kysely';
-import { type DirectusSchema } from '@salvemundi/validations';
+import { Kysely, PostgresDialect, type Generated } from 'kysely';
+import { type Schema } from '@salvemundi/validations';
 
 const { Pool } = pg;
 
+type KyselyDbSchema<Schema, GeneratedWrapper> = {
+    [Table in keyof Schema]: Schema[Table] extends readonly unknown[]
+        ? {
+            [Field in keyof Schema[Table][number] as Exclude<Schema[Table][number][Field], null> extends readonly unknown[] ? never : Field]: Field extends 'id'
+                ? Schema[Table][number][Field] extends number
+                    ? GeneratedWrapper
+                    : Schema[Table][number][Field]
+                : Schema[Table][number][Field];
+          }
+        : never;
+};
+
+type Db = KyselyDbSchema<Schema, Generated<number>>;
+
 export interface Database {
-    transactions: DirectusSchema['transactions'][number];
-    event_signups: DirectusSchema['event_signups'][number];
-    trip_signups: DirectusSchema['trip_signups'][number];
-    pub_crawl_signups: DirectusSchema['pub_crawl_signups'][number];
-    trip_signup_activities: DirectusSchema['trip_signup_activities'][number];
-    trip_activities: DirectusSchema['trip_activities'][number];
-    pub_crawl_signups_transactions: DirectusSchema['pub_crawl_signups_transactions'][number];
-    coupons: DirectusSchema['coupons'][number];
+    transactions: Db['transactions'];
+    event_signups: Db['event_signups'];
+    trip_signups: Db['trip_signups'];
+    pub_crawl_signups: Db['pub_crawl_signups'];
+    trip_signup_activities: Db['trip_signup_activities'];
+    trip_activities: Db['trip_activities'];
+    pub_crawl_signups_transactions: Db['pub_crawl_signups_transactions'];
+    coupons: Db['coupons'];
 }
 
 declare module 'fastify' {

@@ -3,13 +3,14 @@
 import { FileText, CreditCard } from 'lucide-react';
 import type { TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 import { parseBoolean } from '@salvemundi/validations';
-import { toISODate } from '@/lib/utils/date-utils';
+import { toISODate, formatShortDate } from '@/lib/utils/date-utils';
 import {
     HorizontalInput,
     HorizontalDate,
     HorizontalSelect,
     HorizontalTextarea,
-    HorizontalCheckbox
+    HorizontalCheckbox,
+    HorizontalPhone
 } from './TripSignupFormFields';
 
 interface CockpitSignupFormProps {
@@ -19,12 +20,6 @@ interface CockpitSignupFormProps {
     section?: 'all' | 'personal' | 'admin' | 'personal_basic' | 'personal_extended';
 }
 
-const formatShortDate = (date: Date) =>
-    new Intl.DateTimeFormat('nl-NL', {
-        day: 'numeric',
-        month: 'short',
-        year: '2-digit'
-    }).format(date);
 
 export default function CockpitSignupForm({
     signup,
@@ -44,7 +39,7 @@ export default function CockpitSignupForm({
                         <HorizontalInput label="Voornaam" name="first_name" defaultValue={initialData?.first_name || signup.first_name} required />
                         <HorizontalInput label="Achternaam" name="last_name" defaultValue={initialData?.last_name || signup.last_name} required />
                         <HorizontalInput label="Email" name="email" type="email" defaultValue={initialData?.email || signup.email} required />
-                        <HorizontalInput label="Telefoon" name="phone_number" defaultValue={initialData?.phone_number || signup.phone_number || ''} />
+                        <HorizontalPhone label="Telefoon" name="phone_number" defaultValue={initialData?.phone_number || signup.phone_number || ''} />
                         <HorizontalDate label="Geb. Datum" name="date_of_birth" defaultValue={initialData?.date_of_birth || (signup.date_of_birth ? toISODate(signup.date_of_birth) : '')} />
                     </div>
                 </div>

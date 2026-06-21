@@ -18,7 +18,12 @@ export * from './schema/stickers.zod.js';
 export * from './schema/shared.zod.js';
 export * from './schema/events.zod.js';
 export * from './schema/audit.zod.js';
-export * from './directus/schema.js';
+export * as Directus from './directus/schema.js';
 export * from './directus/fields.js';
 export * from './utils/boolean-utils.js';
-export * from './directus/schema.js';
+
+import { type DirectusUser as SDKDirectusUser } from '@directus/sdk';
+import { type Schema } from './directus/schema.js';
+
+export type DirectusUser = SDKDirectusUser<Schema> & Schema['directus_users'];
+export type { Schema };

@@ -6,7 +6,7 @@ import { defineConfig } from "eslint/config";
 
 export function createBackendConfig(serviceDirName) {
     return defineConfig([
-        { ignores: ["dist/**", "build/**", ".next/**", "node_modules/**", "eslint.config.mjs", "eslint.config.js"] },
+        { ignores: ["dist/**", "build/**", ".next/**", "node_modules/**", "eslint.config.mjs", "eslint.config.js", "**/directus/schema.ts"] },
         eslint.configs.recommended,
         ...tseslint.configs.recommendedTypeChecked,
         {
@@ -29,19 +29,14 @@ export function createBackendConfig(serviceDirName) {
                 "unused-imports": unusedImports,
             },
             rules: {
-                // 1. HARDCORE SECURITY & LOGIC BUGS
                 "@typescript-eslint/no-unnecessary-condition": "error",
                 "no-constant-condition": "error",
                 "no-eval": "error",
                 "no-implied-eval": "error",
                 "eqeqeq": ["error", "always"],
-
-                // 2. ASYNC & DATABASE VEILIGHEID
                 "@typescript-eslint/no-floating-promises": "error",
                 "@typescript-eslint/await-thenable": "error",
                 "@typescript-eslint/no-misused-promises": "error",
-
-                // 3. STRICTE TYPE VEILIGHEID
                 "@typescript-eslint/no-explicit-any": "error",
                 "@typescript-eslint/no-unsafe-assignment": "error",
                 "@typescript-eslint/no-unsafe-member-access": "error",
@@ -50,8 +45,6 @@ export function createBackendConfig(serviceDirName) {
                 "@typescript-eslint/ban-ts-comment": "error",
                 "@typescript-eslint/no-non-null-assertion": "error",
                 "@typescript-eslint/only-throw-error": "error",
-
-                // 4. CODE HYGIËNE & CLEANUP
                 "@typescript-eslint/no-unused-vars": "off",
                 "unused-imports/no-unused-imports": "error",
                 "unused-imports/no-unused-vars": [
@@ -67,8 +60,6 @@ export function createBackendConfig(serviceDirName) {
                 ],
                 "prefer-const": "error",
                 "prefer-rest-params": "error",
-
-                // 5. BACKEND ARCHITECTUUR REGELS
                 "no-restricted-syntax": [
                     "error",
                     {
@@ -78,7 +69,6 @@ export function createBackendConfig(serviceDirName) {
                 ]
             }
         },
-        // UITZONDERINGEN VOOR DE BACKEND
         {
             files: ["src/utils/logger.ts", "src/utils/log-sanitizer.ts", "src/server.ts"],
             rules: {

@@ -1,7 +1,7 @@
 import { safeConsoleError } from '../utils/logger.js';
 import { type Redis } from 'ioredis';
 import { createDirectus, rest, staticToken, updateItem } from '@directus/sdk';
-import { type DirectusSchema } from '@salvemundi/validations/directus/schema';
+import { Directus } from '@salvemundi/validations';
 import { z } from 'zod';
 
 const DirectusUpdateTaskSchema = z.object({
@@ -26,7 +26,7 @@ export class DirectusRetryService {
             throw new Error('Directus configuration is missing');
         }
 
-        return createDirectus<DirectusSchema>(directusUrl)
+        return createDirectus<Directus.Schema>(directusUrl)
             .with(staticToken(directusToken))
             .with(rest());
     }

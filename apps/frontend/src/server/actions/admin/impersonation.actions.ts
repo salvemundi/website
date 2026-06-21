@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createDirectus, staticToken, rest, readMe } from "@directus/sdk";
-import { type DbDirectusUser as DirectusUser } from "@salvemundi/validations/directus/schema";
+import { type DirectusUser } from '@salvemundi/validations';
 import { getRedis } from "@/server/auth/redis-client";
 import { isSuperAdmin } from "@/lib/auth/auth-utils";
 import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";

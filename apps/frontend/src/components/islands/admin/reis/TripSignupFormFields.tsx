@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { DateInput } from '@/shared/ui/DateInput';
+import { PhoneInput } from '@/shared/ui/PhoneInput';
 
 // --- Shared Types ---
 export interface FieldProps extends React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> {
@@ -19,6 +20,24 @@ export function DateAndLabel({ label, defaultValue, name }: { label: string; def
                     name={name} 
                     value={val} 
                     onChange={(newVal) => setVal(newVal)}
+                    autoComplete="off"
+                    className="w-full px-4 py-2.5 bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm border border-(--beheer-border)/40 rounded-xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main)/80 transition-all font-semibold outline-none shadow-inner"
+                />
+            </div>
+        </div>
+    );
+}
+
+export function PhoneAndLabel({ label, defaultValue, name }: { label: string; defaultValue: string; name: string }) {
+    const [val, setVal] = React.useState(defaultValue);
+    return (
+        <div className="space-y-1.5 group/field">
+            <label className="block text-[11px] font-semibold text-(--beheer-text-muted) group-focus-within/field:text-(--beheer-accent) transition-colors px-1 opacity-70">{label}</label>
+            <div className="relative">
+                <PhoneInput 
+                    name={name} 
+                    value={val} 
+                    onChange={(e: any) => setVal(e.target.value)}
                     autoComplete="off"
                     className="w-full px-4 py-2.5 bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm border border-(--beheer-border)/40 rounded-xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main)/80 transition-all font-semibold outline-none shadow-inner"
                 />
@@ -116,6 +135,25 @@ export function HorizontalDate({ label, name, defaultValue }: { label: string; n
                     name={name} 
                     value={val} 
                     onChange={(nv) => setVal(nv)} 
+                    className="bg-transparent text-xs text-(--beheer-text) font-semibold outline-none h-7 w-full border-none p-0 focus:ring-0"
+                />
+            </div>
+        </div>
+    );
+}
+
+export function HorizontalPhone({ label, name, defaultValue }: { label: string; name: string; defaultValue: string }) {
+    const [val, setVal] = React.useState(defaultValue);
+    const id = React.useId();
+    return (
+        <div className="flex items-center gap-3 py-0.5 group">
+            <label htmlFor={id} className="w-28 shrink-0 text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 group-hover:opacity-100 group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 transition-all cursor-pointer">{label}</label>
+            <div className="flex-1 bg-slate-500/5 dark:bg-black/40 rounded-lg px-3 border border-(--beheer-border)/5 group-focus-within:border-(--beheer-accent)/20 transition-all">
+                <PhoneInput 
+                    id={id}
+                    name={name} 
+                    value={val} 
+                    onChange={(e: any) => setVal(e.target.value)} 
                     className="bg-transparent text-xs text-(--beheer-text) font-semibold outline-none h-7 w-full border-none p-0 focus:ring-0"
                 />
             </div>

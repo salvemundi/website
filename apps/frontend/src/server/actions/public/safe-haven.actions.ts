@@ -5,7 +5,7 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { query } from '@/lib/database';
 import { safeConsoleError } from '@/server/utils/logger';
 
-interface DbSafeHavenRow {
+interface SafeHavenRow {
     id: string;
     contact_name: string;
     image: string | null;
@@ -19,7 +19,7 @@ async function fetchSafeHavensFromDirectus(isAuthenticated: boolean): Promise<Sa
             ? 'SELECT id, contact_name, email, phone_number, image FROM safe_havens LIMIT 10'
             : 'SELECT id, contact_name, image FROM safe_havens LIMIT 10';
 
-        const { rows } = await query<DbSafeHavenRow>(queryText, []);
+        const { rows } = await query<SafeHavenRow>(queryText, []);
 
         const mappedData = rows.map((item) => ({
             id: item.id,

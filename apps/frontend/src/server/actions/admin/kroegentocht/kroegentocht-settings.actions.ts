@@ -8,7 +8,7 @@ import { query } from '@/lib/database';
 import { requireKroegAdmin } from './kroegentocht-event.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 
-interface DbFeatureFlag {
+interface FeatureFlag {
     id: number;
     name: string;
     is_active: boolean;
@@ -23,7 +23,7 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
         const sql = 'SELECT id, is_active FROM feature_flags WHERE route_match = $1 LIMIT 1';
         const { rows } = await query(sql, [route]);
 
-        const flag = rows[0] as DbFeatureFlag | undefined;
+        const flag = rows[0] as FeatureFlag | undefined;
         const oldStatus = flag ? !!flag.is_active : true;
         const newStatus = !oldStatus;
 
@@ -64,7 +64,7 @@ export async function getKroegentochtSettings() {
     noStore();
     await requireKroegAdmin();
     try {
-        const { rows } = await query<DbFeatureFlag>('SELECT is_active FROM feature_flags WHERE route_match = $1 LIMIT 1', ['/kroegentocht']);
+        const { rows } = await query<FeatureFlag>('SELECT is_active FROM feature_flags WHERE route_match = $1 LIMIT 1', ['/kroegentocht']);
         const isVisible = rows.length > 0 ? !!rows[0].is_active : true;
         return { show: isVisible };
     } catch (error) {

@@ -16,6 +16,11 @@ export const IntroLightboxIsland = () => {
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
+    const closeLightbox = () => {
+        setLightboxOpen(false);
+        setLightboxSrc(null);
+    };
+
     useEffect(() => {
         if (!lightboxOpen) return;
         const onKey = (e: KeyboardEvent) => {
@@ -30,11 +35,6 @@ export const IntroLightboxIsland = () => {
     const openLightbox = (src: string) => {
         setLightboxSrc(src);
         setLightboxOpen(true);
-    };
-
-    const closeLightbox = () => {
-        setLightboxOpen(false);
-        setLightboxSrc(null);
     };
 
     return (
@@ -68,7 +68,7 @@ export const IntroLightboxIsland = () => {
 
             {lightboxOpen && lightboxSrc && (
                 <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/90 backdrop-blur-lg animate-in fade-in duration-300"
+                    className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-300"
                     onClick={(e) => {
                         if (e.target === e.currentTarget) {
                             closeLightbox();
@@ -77,7 +77,7 @@ export const IntroLightboxIsland = () => {
                 >
                     <button
                         onClick={closeLightbox}
-                        className="absolute top-4 right-4 sm:top-8 sm:right-8 z-[101] bg-white/10 text-white rounded-full p-3 hover:bg-white/20 transition-colors border border-white/20"
+                        className="absolute top-4 right-4 z-50 p-2 rounded-full bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground backdrop-blur-sm transition-colors border border-border"
                         aria-label="Sluiten"
                     >
                         ×

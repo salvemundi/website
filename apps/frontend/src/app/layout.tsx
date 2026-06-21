@@ -99,60 +99,53 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
 async function HeaderWrapper({ initialSession, isAuthorized }: { initialSession: ExtendedSession | null, isAuthorized: boolean }) {
     await connection();
+    let disabledRoutes: string[] = [];
     try {
-        const disabledRoutes = await getDisabledRoutes();
-
-        return (
-            <NavigationHeader
-                disabledRoutes={disabledRoutes}
-                initialSession={initialSession}
-                isAdmin={isAuthorized}
-            />
-        );
+        disabledRoutes = await getDisabledRoutes();
     } catch (error) {
         safeConsoleError('[layout][HeaderWrapper]', error);
-        return (
-            <NavigationHeader
-                disabledRoutes={[]}
-                initialSession={null}
-                isAdmin={false}
-            />
-        );
+        initialSession = null;
+        isAuthorized = false;
     }
+
+    return (
+        <NavigationHeader
+            disabledRoutes={disabledRoutes}
+            initialSession={initialSession}
+            isAdmin={isAuthorized}
+        />
+    );
 }
 
 async function FooterWrapper({ initialSession, className }: { initialSession: ExtendedSession | null; className?: string }) {
     await connection();
+    let documents: Awaited<ReturnType<typeof getDocumenten>> = [];
+    let disabledRoutes: string[] = [];
+    let committees: Awaited<ReturnType<typeof getCommittees>> = [];
+    
     try {
-        const [documents, disabledRoutes, committees] = await Promise.all([
+        const results = await Promise.all([
             getDocumenten(),
             getDisabledRoutes(),
             getCommittees(),
         ]);
-
-        return (
-            <div className={className}>
-                <FooterIsland
-                    documents={documents}
-                    disabledRoutes={disabledRoutes}
-                    committees={committees}
-                    initialSession={initialSession}
-                />
-            </div>
-        );
+        documents = results[0];
+        disabledRoutes = results[1];
+        committees = results[2];
     } catch (error) {
         safeConsoleError('[layout][FooterWrapper]', error);
-        return (
-            <div className={className}>
-                <FooterIsland
-                    documents={[]}
-                    disabledRoutes={[]}
-                    committees={[]}
-                    initialSession={null}
-                />
-            </div>
-        );
     }
+
+    return (
+        <div className={className}>
+            <FooterIsland
+                documents={documents}
+                disabledRoutes={disabledRoutes}
+                committees={committees}
+                initialSession={initialSession}
+            />
+        </div>
+    );
 }
 
 async function ImpersonationWrapper({ impersonation }: { impersonation: ImpersonationInfo | null }) {

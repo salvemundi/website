@@ -100,7 +100,7 @@ export const auth = betterAuth({
             trustedProviders: ["microsoft"] }
     },
     plugins: [
-        nextCookies(),
-        createRedisSessionPlugin(pool)
+        createRedisSessionPlugin(pool),
+        nextCookies()
     ]
 });

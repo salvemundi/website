@@ -29,12 +29,6 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
     const [guestEmail, setGuestEmail] = useState('');
     const [guestPhone, setGuestPhone] = useState('');
 
-    useEffect(() => {
-        if (!isOpen) {
-            resetForm();
-        }
-    }, [isOpen]);
-
     const resetForm = () => {
         setActiveTab('member');
         setIsLoading(false);
@@ -45,6 +39,14 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
         setGuestEmail('');
         setGuestPhone('');
     };
+
+    useEffect(() => {
+        if (!isOpen) {
+            resetForm();
+        }
+    }, [isOpen]);
+
+
 
     const handleMemberSelect = (user: UserBasic) => {
         setSelectedMember(user);

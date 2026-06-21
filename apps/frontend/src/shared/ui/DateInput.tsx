@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { IMaskInput } from 'react-imask';
+import { IMaskInput, IMask } from 'react-imask';
 import { type InputProps } from './Input';
 import { useFormFieldOptional } from './FormField';
 
@@ -49,8 +49,14 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(({
                 if (typeof ref === 'function') ref(el);
                 else if (ref) (ref as React.MutableRefObject<HTMLInputElement | null>).current = el;
             }}
-            mask="00-00-0000"
-            lazy={true}
+            mask="d-m-Y"
+            blocks={{
+                d: { mask: IMask.MaskedRange, from: 1, to: 31, maxLength: 2 },
+                m: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2 },
+                Y: { mask: IMask.MaskedRange, from: new Date().getFullYear() - 100, to: new Date().getFullYear(), maxLength: 4 }
+            }}
+            lazy={false}
+            placeholderChar="x"
             placeholder={placeholder}
             value={formatDisplayValue(value)}
             onAccept={handleAccept}

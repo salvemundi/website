@@ -34,7 +34,7 @@ async function checkAccess() {
     return session;
 }
 
-interface DbCouponRow {
+interface CouponRow {
     id: string | number;
     coupon_code?: unknown;
     discount_type?: unknown;
@@ -56,7 +56,7 @@ export async function getCoupons(): Promise<Coupon[]> {
             fields: [...COUPON_FIELDS]
         }));
 
-        return (items as unknown as DbCouponRow[]).map(i => ({
+        return (items as unknown as CouponRow[]).map(i => ({
             id: Number(i.id),
             coupon_code: typeof i.coupon_code === 'string' ? i.coupon_code : '',
             discount_type: (typeof i.discount_type === 'string' ? i.discount_type : 'percentage') as 'fixed' | 'percentage',
@@ -80,7 +80,7 @@ export async function createCoupon(couponData: { coupon_code: string; discount_t
         const { createItem } = await import('@directus/sdk');
         const item = await getSystemDirectus().request(createItem('coupons', couponData));
 
-        const i = item as unknown as DbCouponRow;
+        const i = item as unknown as CouponRow;
 
         return {
             id: Number(i.id),
