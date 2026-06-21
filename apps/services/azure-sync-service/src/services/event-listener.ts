@@ -17,14 +17,14 @@ export class EventListenerService {
     }
 
     static async start(redis: Redis) {
-        logInfo('event-listener.service.ts][start]', 'Starting Redis Stream listener...');
+        logInfo('[event-listener.ts][start] ', 'Starting Redis Stream listener...');
 
         try {
             await redis.xgroup('CREATE', this.STREAM_KEY, this.GROUP_NAME, '0', 'MKSTREAM');
         } catch (error: unknown) {
             const typedError = error instanceof Error ? error : new Error(String(error));
             if (!typedError.message.includes('BUSYGROUP')) {
-                safeConsoleError('event-listener.service.ts][start]', `Error creating consumer group: ${typedError.message}`);
+                safeConsoleError('[event-listener.ts][start] ', `Error creating consumer group: ${typedError.message}`);
             }
         }
 
@@ -50,7 +50,7 @@ export class EventListenerService {
                 }
             } catch (error: unknown) {
                 const typedError = error instanceof Error ? error : new Error(String(error));
-                safeConsoleError('event-listener.service.ts][start]', `Loop Error: ${typedError.message}`);
+                safeConsoleError('[event-listener.ts][start] ', `Loop Error: ${typedError.message}`);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
@@ -61,7 +61,7 @@ export class EventListenerService {
             const payloadStr = message.data.payload;
             if (!payloadStr) return;
             const rawData = JSON.parse(payloadStr) as Record<string, unknown>;
-            logInfo('event-listener.service.ts][handleEvent]', `Received event: ${String(rawData.event)}`);
+            logInfo('[event-listener.ts][handleEvent] ', `Received event: ${String(rawData.event)}`);
 
             if (rawData.event === 'PAYMENT_SUCCESS') {
                 const data = PaymentSuccessEventSchema.parse(rawData);
@@ -70,7 +70,7 @@ export class EventListenerService {
                     if (data.userId) {
                         await ProvisionWorkerService.queueProvisioning(redis, data.userId, data.paymentId);
                         await AuditService.logMembershipRenewal(data.email, data.userId, data.paymentId);
-                        logInfo('event-listener.service.ts][handleEvent]', `Queued renewal for user ${data.userId}`);
+                        logInfo('[event-listener.ts][handleEvent] ', `Queued renewal for user ${data.userId}`);
                     } else {
                         const { managementUrl, token } = this.getConfig();
 
@@ -94,18 +94,18 @@ export class EventListenerService {
                             if (!res.ok) throw new Error(`Management service error: ${await res.text()}`);
 
                             await AuditService.logMembershipProvisioning(data.email, data.firstName || '', data.lastName || '', data.paymentId);
-                            logInfo('event-listener.service.ts][handleEvent]', `Triggered new user provisioning for ${data.email}`);
+                            logInfo('[event-listener.ts][handleEvent] ', `Triggered new user provisioning for ${data.email}`);
                         } else {
-                            logWarn('event-listener.service.ts][handleEvent]', 'Skipping provisioning: AZURE_MANAGEMENT_SERVICE_URL or token missing');
+                            logWarn('[event-listener.ts][handleEvent] ', 'Skipping provisioning: AZURE_MANAGEMENT_SERVICE_URL or token missing');
                         }
                     }
                 } else {
-                    logInfo('event-listener.service.ts][handleEvent]', `Ignored PAYMENT_SUCCESS for non-membership type: ${data.registrationType}`);
+                    logInfo('[event-listener.ts][handleEvent] ', `Ignored PAYMENT_SUCCESS for non-membership type: ${data.registrationType}`);
                 }
             }
         } catch (error: unknown) {
             const typedError = error instanceof Error ? error : new Error(String(error));
-            safeConsoleError('event-listener.service.ts][handleEvent]', `Error handling event: ${typedError.message}`);
+            safeConsoleError('[event-listener.ts][handleEvent] ', `Error handling event: ${typedError.message}`);
         }
     }
 

@@ -49,7 +49,7 @@ export default function ProfielDetails({
                 router.push('/');
             }
         } catch (error) {
-            safeConsoleError('[ProfielDetails][handleLogout]', error);
+            safeConsoleError('[ProfielDetails.tsx][ProfielDetails] ', error);
         }
     };
 

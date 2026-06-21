@@ -11,7 +11,7 @@ export async function getActivitySignups(eventId: string) {
     try {
         return await getActivitySignupsInternal(eventId);
     } catch (error) {
-        safeConsoleError('[AdminActiviteitActions][getActivitySignups]', error);
+        safeConsoleError('[admin-activiteit.actions.ts][getActivitySignups] ', error);
         throw new Error('Er is een fout opgetreden bij het ophalen van de inschrijvingen');
     }
 }

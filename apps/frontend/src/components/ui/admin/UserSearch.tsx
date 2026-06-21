@@ -58,7 +58,7 @@ export default function UserSearch({
                     setResults([]);
                 }
             } catch (error) {
-                safeConsoleError('[UserSearch.tsx][fetchResults] Fout bij het ophalen van zoekresultaten', error);
+                safeConsoleError('[UserSearch.tsx][UserSearch] Fout bij het ophalen van zoekresultaten', error);
                 setResults([]);
             } finally {
                 setIsLoading(false);

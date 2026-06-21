@@ -76,7 +76,7 @@ export default function ConfirmationIsland({
                     setSignupData({ errorType: 'timeout' });
                 }
             } catch (error) {
-                safeConsoleError('[ConfirmationIsland][checkStatus]', error);
+                safeConsoleError('[ConfirmationIsland.tsx][ConfirmationIsland] ', error);
                 setStatus('failed');
             }
         };
@@ -113,7 +113,7 @@ export default function ConfirmationIsland({
                 link.href = dataUrl;
                 link.click();
             } catch (error) {
-                safeConsoleError('[ConfirmationIsland][downloadTicket]', error);
+                safeConsoleError('[ConfirmationIsland.tsx][ConfirmationIsland] ', error);
             }
         })();
     };

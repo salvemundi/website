@@ -15,7 +15,7 @@ export async function clearSessionCache() {
         }
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('session.utils.ts][clearSessionCache]', `Failed to clear session cache: ${typedError.message}`);
+        safeConsoleError('[session-utils.ts][clearSessionCache] ', `Failed to clear session cache: ${typedError.message}`);
     }
     return false;
 }

@@ -101,7 +101,7 @@ export default function EventForm({ event }: EventFormProps) {
                 setFormData(prev => ({ ...prev, image: result.id }));
                 showToast('Afbeelding succesvol geüpload', 'success');
             } catch (error) {
-                safeConsoleError('[EventForm][handleImageUpload] Upload mislukt', error);
+                safeConsoleError('[EventForm.tsx][EventForm] Upload mislukt', error);
                 const message = error instanceof Error ? error.message : 'Upload mislukt';
                 showToast(message, 'error');
             } finally {
@@ -125,7 +125,7 @@ export default function EventForm({ event }: EventFormProps) {
                 router.refresh();
             } catch (error) {
                 const message = error instanceof Error ? error.message : 'Fout bij opslaan';
-                safeConsoleError(`[EventForm][handleSubmit] Error:`, error);
+                safeConsoleError(`[EventForm.tsx][EventForm] Error:`, error);
                 showToast(message, 'error');
             }
         });

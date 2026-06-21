@@ -40,7 +40,7 @@ export async function getSyncStatus(redis: Redis): Promise<SyncStatus> {
     try {
         return JSON.parse(data) as SyncStatus;
     } catch (error) {
-        safeConsoleError('[SyncUtils][getSyncStatus]', error);
+        safeConsoleError('[sync-helpers.ts][getSyncStatus] ', error);
         return getInitialStatus();
     }
 }
@@ -49,7 +49,7 @@ export async function persistSyncStatus(redis: Redis, status: SyncStatus, forceJ
     if (forceJobIdMatch) {
         const current = await getSyncStatus(redis);
         if (current.jobId && current.jobId !== status.jobId && current.active) {
-            safeConsoleError(`[SYNC] Ghost job detected (${status.jobId}). Will not overwrite running job ${current.jobId}`);
+            safeConsoleError(`[sync-helpers.ts][persistSyncStatus] Ghost job detected (${status.jobId}). Will not overwrite running job ${current.jobId}`);
             return;
         }
     }

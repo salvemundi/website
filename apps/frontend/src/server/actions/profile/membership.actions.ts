@@ -135,7 +135,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
             await releaseCoupon(parsed.data.coupon);
         }
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('membership.actions.ts][initiateMembershipPaymentAction]', `Payment initiation failed: ${typedError.message}`);
+        safeConsoleError('[membership.actions.ts][initiateMembershipPaymentAction] ', `Payment initiation failed: ${typedError.message}`);
         return { success: false, error: 'Kan geen verbinding maken met betaalservice' };
     }
 }
@@ -172,7 +172,7 @@ export async function getTransactionStatusAction(transactionId: string) {
         return { status: 'open', user_id: transaction.user_id };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('membership.actions.ts][getTransactionStatusAction]', `Status check failed: ${typedError.message}`);
+        safeConsoleError('[membership.actions.ts][getTransactionStatusAction] ', `Status check failed: ${typedError.message}`);
         return { status: 'error', user_id: null };
     }
 }

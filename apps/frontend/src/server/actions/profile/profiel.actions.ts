@@ -42,10 +42,10 @@ function safeParseArray<T>(schema: z.Schema<T>, data: unknown[], context: string
     const parsed = schema.array().safeParse(data);
     if (parsed.success) return parsed.data;
 
-    safeConsoleError(`[Profiel Actions][safeParseArray][${context}] Data miste verplichte velden:`, {
-        issues: parsed.error.issues,
-        receivedData: data
-    });
+    safeConsoleError(`[profiel.actions.ts][safeParseArray] [Profiel Actions][safeParseArray][${context}] Data miste verplichte velden:`, {
+            issues: parsed.error.issues,
+            receivedData: data
+        });
     return [];
 }
 

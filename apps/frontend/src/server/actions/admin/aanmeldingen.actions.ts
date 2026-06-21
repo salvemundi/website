@@ -43,7 +43,7 @@ async function sendCancellationEmail(email: string, eventName: string) {
         });
     } catch (error) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('aanmeldingen.actions.ts][sendCancellationEmail]', `Fout opgetreden: ${typedError.message}`);
+        safeConsoleError('[aanmeldingen.actions.ts][sendCancellationEmail] ', `Fout opgetreden: ${typedError.message}`);
     }
 }
 
@@ -173,7 +173,7 @@ export async function createManualSignupAction(
             return { success: true };
         } catch (error) {
             const typedError = error instanceof Error ? error : new Error(String(error));
-            safeConsoleError('aanmeldingen.actions.ts][createManualSignupAction]', `Directus createItem failed (signup): ${typedError.message}`);
+            safeConsoleError('[aanmeldingen.actions.ts][createManualSignupAction] ', `Directus createItem failed (signup): ${typedError.message}`);
             await logAdminAction('system_activity_signup_failed', 'ERROR', {
                 context: 'activiteit',
                 event_id: eventId,

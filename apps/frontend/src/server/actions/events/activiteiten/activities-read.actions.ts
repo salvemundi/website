@@ -14,7 +14,7 @@ export const getAdminActivities = cache(async (search?: string, filter: 'all' | 
         const parsed = AdminActivitySchema.array().parse(eventsWithCounts);
         return parsed;
     } catch (error: unknown) {
-        safeConsoleError(`[Activities-Read-Action][getAdminActivities] Failed to get activities:`, error);
+        safeConsoleError(`[activities-read.actions.ts][getAdminActivities] Failed to get activities:`, error);
         return [];
     }
 });

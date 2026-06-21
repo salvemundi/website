@@ -109,7 +109,7 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
 
     const parsed = activitiesSchema.safeParse(mappedData);
     if (!parsed.success) {
-        safeConsoleError('admin-event.queries.ts][getActivitiesInternal]', `Validation Error: ${parsed.error.message}`);
+        safeConsoleError('[admin-event.queries.ts][getActivitiesInternal] ', `Validation Error: ${parsed.error.message}`);
         return mappedData as Activiteit[];
     }
 
@@ -134,7 +134,7 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
 
     const parsed = activitiesSchema.element.safeParse(mapped);
     if (!parsed.success) {
-        safeConsoleError('admin-event.queries.ts][getActivityByIdInternal]', `Validation Error: ${parsed.error.message}`);
+        safeConsoleError('[admin-event.queries.ts][getActivityByIdInternal] ', `Validation Error: ${parsed.error.message}`);
         return mapped as Activiteit;
     }
     return parsed.data;

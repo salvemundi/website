@@ -22,7 +22,7 @@ export class SyncLifecycle {
         const hasLock = await ctx.redis.set(lockerKey, 'locked', 'EX', 30, 'NX');
 
         if (!hasLock) {
-            safeConsoleError(`[SYNC] Skip lifecycle for ${(aUser.mail || aUser.userPrincipalName)} - already being processed.`);
+            safeConsoleError(`[sync-lifecycle.ts][handleLifecycle] Skip lifecycle for ${(aUser.mail || aUser.userPrincipalName)} - already being processed.`);
             return [];
         }
 

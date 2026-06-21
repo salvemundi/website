@@ -24,7 +24,7 @@ export function extractHeadersSafely(ctx: unknown): Headers | null {
             if (h && typeof h === 'object') return new Headers(h as Record<string, string>);
         }
     } catch (error: unknown) {
-        safeConsoleError('[RedisPlugin][extractHeadersSafely] Error:', error);
+        safeConsoleError('[utils.ts][extractHeadersSafely] Error:', error);
     }
 
     return null;

@@ -39,39 +39,39 @@ const start = async () => {
     try {
         const port = Number(process.env.PORT) || 3002;
         await fastify.listen({ port, host: '0.0.0.0' });
-        logInfo(`Azure Sync Service listening on port ${port}`);
+        logInfo(`[server.ts][start] Azure Sync Service listening on port ${port}`);
 
         fastify.redis.on('error', (err: unknown) => {
-            safeConsoleError('[server.ts][redisError]', err);
+            safeConsoleError('[server.ts][start] ', err);
         });
 
         ProvisionWorkerService.start(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][provisionWorker]', error);
+            safeConsoleError('[server.ts][start] ', error);
             process.exit(1);
         });
 
         EventListenerService.start(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][eventListener]', error);
+            safeConsoleError('[server.ts][start] ', error);
             process.exit(1);
         });
 
         ExpiryCheckJob.start(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][expiryCheckJob]', error);
+            safeConsoleError('[server.ts][start] ', error);
             process.exit(1);
         });
 
         EventReminderJob.start(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][eventReminderJob]', error);
+            safeConsoleError('[server.ts][start] ', error);
             process.exit(1);
         });
 
         FullSyncJob.start(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][fullSyncJob]', error);
+            safeConsoleError('[server.ts][start] ', error);
             process.exit(1);
         });
 
     } catch (error: unknown) {
-        safeConsoleError('[server.ts][start]', error);
+        safeConsoleError('[server.ts][start] ', error);
         process.exit(1);
     }
 };

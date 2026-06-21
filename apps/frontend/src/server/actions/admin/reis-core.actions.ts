@@ -36,7 +36,7 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
         const fileObj = (Array.isArray(response) ? response[0] : response) as DirectusFile | undefined;
         return fileObj?.id || null;
     } catch (error) {
-        safeConsoleError('[ReisCore][handleImageUpload] Upload failed:', error);
+        safeConsoleError('[reis-core.actions.ts][handleImageUpload] Upload failed:', error);
         return null;
     }
 }
@@ -91,7 +91,7 @@ export async function createTrip(prevState: unknown, formData: FormData) {
 
         // Shadow Write (Directus)
         getSystemDirectus().request(updateItem('trips', newId, validated.data)).catch(err => {
-            safeConsoleError(`[ReisCore][createTrip] Directus shadow write failed for ${newId}:`, err);
+            safeConsoleError(`[reis-core.actions.ts][createTrip] Directus shadow write failed for ${newId}:`, err);
         });
 
         await logAdminAction('admin_trip_created', 'SUCCESS', {
@@ -108,7 +108,7 @@ export async function createTrip(prevState: unknown, formData: FormData) {
 
         return { success: true, id: newId };
     } catch (error) {
-        safeConsoleError('[ReisCore][createTrip] Error:', error);
+        safeConsoleError('[reis-core.actions.ts][createTrip] Error:', error);
         const rawData = Object.fromEntries(formData.entries());
         return {
             success: false,
@@ -161,7 +161,7 @@ export async function updateTrip(prevState: unknown, formData: FormData) {
 
         // Shadow Write (Directus)
         getSystemDirectus().request(updateItem('trips', id, validated.data)).catch(err => {
-            safeConsoleError(`[ReisCore][updateTrip] Directus shadow write failed for ${id}:`, err);
+            safeConsoleError(`[reis-core.actions.ts][updateTrip] Directus shadow write failed for ${id}:`, err);
         });
 
         await logAdminAction('admin_trip_updated', 'SUCCESS', {
@@ -177,7 +177,7 @@ export async function updateTrip(prevState: unknown, formData: FormData) {
 
         return { success: true };
     } catch (error) {
-        safeConsoleError(`[ReisCore][updateTrip] Error for ${formData.get('id')}:`, error);
+        safeConsoleError(`[reis-core.actions.ts][updateTrip] Error for ${formData.get('id')}:`, error);
         const rawData = Object.fromEntries(formData.entries());
         return {
             success: false,
@@ -194,7 +194,7 @@ export async function deleteTrip(id: number) {
 
         // Shadow Delete (Directus)
         getSystemDirectus().request(deleteItem('trips', id)).catch(err => {
-            safeConsoleError(`[ReisCore][deleteTrip] Directus shadow delete failed for ${id}:`, err);
+            safeConsoleError(`[reis-core.actions.ts][deleteTrip] Directus shadow delete failed for ${id}:`, err);
         });
 
         await logAdminAction('admin_trip_deleted', 'SUCCESS', {
@@ -207,7 +207,7 @@ export async function deleteTrip(id: number) {
         revalidatePath('/beheer/reis/activiteiten');
         return { success: true };
     } catch (error) {
-        safeConsoleError(`[ReisCore][deleteTrip] Error for ${id}:`, error);
+        safeConsoleError(`[reis-core.actions.ts][deleteTrip] Error for ${id}:`, error);
         return { success: false, error: error instanceof Error ? error.message : 'Interne serverfout' };
     }
 }
@@ -249,7 +249,7 @@ export async function toggleReisVisibility(): Promise<{ success: boolean; show?:
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
         } catch (e) {
-            safeConsoleError('[ReisCore][toggleVisibility] Redis clear failed:', e);
+            safeConsoleError('[reis-core.actions.ts][toggleReisVisibility] Redis clear failed:', e);
         }
 
         revalidateTag('feature_flags', 'max');
@@ -259,7 +259,7 @@ export async function toggleReisVisibility(): Promise<{ success: boolean; show?:
 
         return { success: true, show: newStatus };
     } catch (e) {
-        safeConsoleError('[ReisCore][toggleVisibility] Error:', e);
+        safeConsoleError('[reis-core.actions.ts][toggleReisVisibility] Error:', e);
         return { success: false, error: 'Bijwerken mislukt' };
     }
 }

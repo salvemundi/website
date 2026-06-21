@@ -67,7 +67,7 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
 
         const payloadStr = JSON.stringify(safePayload);
         if (payloadStr.length > 15000) {
-            logWarn('[audit.actions][logAdminAction] Log payload too large, dropping.');
+            logWarn('[audit.actions.ts][logAdminAction] Log payload too large, dropping.');
             return;
         }
 
@@ -90,7 +90,7 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
             }
         });
     } catch (error) {
-        safeConsoleError('[audit.actions][logAdminAction] Failed to log admin action:', error);
+        safeConsoleError('[audit.actions.ts][logAdminAction] Failed to log admin action:', error);
     }
 }
 
@@ -114,7 +114,7 @@ export async function getPendingSignupsAction(): Promise<ActionResponse<PendingS
         const aggregated = await getPendingSignupsInternal();
         return { success: true, data: aggregated };
     } catch (error) {
-        safeConsoleError('[audit.actions][getPendingSignupsAction] Failed to fetch pending signups:', error);
+        safeConsoleError('[audit.actions.ts][getPendingSignupsAction] Failed to fetch pending signups:', error);
         return { success: false, error: "Kon inschrijvingen niet ophalen." };
     }
 }
@@ -145,7 +145,7 @@ export async function approveSignupAction(id: string, type: string) {
         revalidatePath('/beheer/logging');
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError(`[audit.actions][approveSignupAction] Failed to approve signup ${id}:`, error);
+        safeConsoleError(`[audit.actions.ts][approveSignupAction] Failed to approve signup ${id}:`, error);
         return { success: false, error: "Goedkeuren mislukt." };
     }
 }
@@ -166,7 +166,7 @@ export async function rejectSignupAction(id: string, type: string) {
         revalidatePath('/beheer/logging');
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError(`[audit.actions][rejectSignupAction] Failed to reject signup ${id}:`, error);
+        safeConsoleError(`[audit.actions.ts][rejectSignupAction] Failed to reject signup ${id}:`, error);
         return { success: false, error: "Afwijzen mislukt." };
     }
 }
@@ -180,7 +180,7 @@ export async function getAuditSettingsAction(): Promise<ActionResponse<{ manual_
         const flag = rows[0] as FeatureFlag | undefined;
         return { success: true, data: { manual_approval: !!flag?.is_active } };
     } catch (error: unknown) {
-        safeConsoleError('[audit.actions][getAuditSettingsAction] Failed to fetch audit settings:', error);
+        safeConsoleError('[audit.actions.ts][getAuditSettingsAction] Failed to fetch audit settings:', error);
         return { success: true, data: { manual_approval: false } };
     }
 }
@@ -209,7 +209,7 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
         revalidateTag('audit_settings', 'max');
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError('[audit.actions][updateAuditSettingsAction] Failed to update audit settings:', error);
+        safeConsoleError('[audit.actions.ts][updateAuditSettingsAction] Failed to update audit settings:', error);
         return { success: false, error: "Bijwerken instellingen mislukt." };
     }
 }
@@ -222,7 +222,7 @@ export async function getSystemLogsAction(limit: number = 50, source: 'admin' | 
         const result = await getSystemLogsInternal(limit, source);
         return { success: true, data: result.logs, totalCount: result.totalCount };
     } catch (error: unknown) {
-        safeConsoleError('[audit.actions][getSystemLogsAction] Failed to fetch system logs:', error);
+        safeConsoleError('[audit.actions.ts][getSystemLogsAction] Failed to fetch system logs:', error);
         return { success: false, error: "Kon logs niet ophalen." };
     }
 }
@@ -245,7 +245,7 @@ export async function getQueueStatusAction(): Promise<ActionResponse<QueueStatus
 
         return { success: true, data };
     } catch (error: unknown) {
-        safeConsoleError('[audit.actions][getQueueStatusAction] Failed to fetch queue status:', error);
+        safeConsoleError('[audit.actions.ts][getQueueStatusAction] Failed to fetch queue status:', error);
         return { success: false, error: "Kon wachtrij status niet ophalen." };
     }
 }
@@ -287,7 +287,7 @@ export async function acknowledgeSystemLogAction(logId: string) {
         revalidatePath('/beheer/logging');
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError(`[audit.actions][acknowledgeSystemLogAction] Failed to acknowledge system log ${logId}:`, error);
+        safeConsoleError(`[audit.actions.ts][acknowledgeSystemLogAction] Failed to acknowledge system log ${logId}:`, error);
         return { success: false, error: "Markeren als gezien mislukt." };
     }
 }
@@ -300,7 +300,7 @@ export async function getIdNameLookupAction(): Promise<ActionResponse<{ [key: st
         const result = await getIdNameLookupInternal();
         return { success: true, data: result };
     } catch (error: unknown) {
-        safeConsoleError('[audit.actions][getIdNameLookupAction] Failed to fetch ID name lookup map:', error);
+        safeConsoleError('[audit.actions.ts][getIdNameLookupAction] Failed to fetch ID name lookup map:', error);
         return { success: false, error: "Kon ID-namen mapping niet ophalen." };
     }
 }

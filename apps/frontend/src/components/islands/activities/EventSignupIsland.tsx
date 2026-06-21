@@ -105,7 +105,7 @@ export default function EventSignupIsland({
                     setServerError(result.error || "Herbetaling mislukt.");
                 }
             } catch (error) {
-                safeConsoleError('[EventSignupIsland][handleRetry]', error);
+                safeConsoleError('[EventSignupIsland.tsx][EventSignupIsland] ', error);
                 setServerError("Er is een fout opgetreden bij het herstarten van de betaling.");
             }
         };

@@ -53,21 +53,21 @@ const start = async () => {
         await fastify.listen({ port: 3003, host: '0.0.0.0' });
 
         fastify.redis.on('error', (err: unknown) => {
-            safeConsoleError('[server.ts][redisError]', err);
+            safeConsoleError('[server.ts][start] ', err);
         });
 
         MailWorkerService.startWorker(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][startWorker]', error);
+            safeConsoleError('[server.ts][start] ', error);
             process.exit(1);
         });
 
         EventListenerService.start(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][startEventListener]', error);
+            safeConsoleError('[server.ts][start] ', error);
             process.exit(1);
         });
 
     } catch (error) {
-        safeConsoleError('[server.ts][start]', error);
+        safeConsoleError('[server.ts][start] ', error);
         process.exit(1);
     }
 };

@@ -27,7 +27,7 @@ export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawl
                     const parsed = JSON.parse(raw.name_initials) as unknown;
                     participants = Array.isArray(parsed) ? (parsed as { name: string, initial: string }[]) : [(parsed as { name: string, initial: string })];
                 } catch (error) {
-                    safeConsoleError('[PubCrawlUtils][fetchPubCrawlSignupsDb] JSON parse error', error);
+                    safeConsoleError('[signup-db.utils.ts][fetchPubCrawlSignupsDb] JSON parse error', error);
                 }
             }
         }
@@ -66,7 +66,7 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<Enric
                 const parsed = JSON.parse(signup.name_initials) as unknown;
                 participants = Array.isArray(parsed) ? (parsed as { name: string, initial: string }[]) : [(parsed as { name: string, initial: string })];
             } catch (error) {
-                safeConsoleError('[PubCrawlUtils][fetchPubCrawlSignupByIdDb] Error parsing name_initials:', error);
+                safeConsoleError('[signup-db.utils.ts][fetchPubCrawlSignupByIdDb] Error parsing name_initials:', error);
             }
         }
     }

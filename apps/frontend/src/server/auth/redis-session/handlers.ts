@@ -63,7 +63,7 @@ export async function beforeHandler(ctx: AuthContext) {
                 parsed = JSON.parse(cached);
             } catch (error: unknown) {
                 const typedError = error instanceof Error ? error : new Error(String(error));
-                safeConsoleError('handlers.ts][beforeHandler]', `JSON Parse Error: ${typedError.message}`);
+                safeConsoleError('[handlers.ts][beforeHandler] ', `JSON Parse Error: ${typedError.message}`);
                 return;
             }
 
@@ -77,7 +77,7 @@ export async function beforeHandler(ctx: AuthContext) {
         }
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('handlers.ts][beforeHandler]', `Critical Error: ${typedError.message}`);
+        safeConsoleError('[handlers.ts][beforeHandler] ', `Critical Error: ${typedError.message}`);
         return;
     }
 }
@@ -94,7 +94,7 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
                 sessionData = await returned.clone().json();
             } catch (error: unknown) {
                 const typedError = error instanceof Error ? error : new Error(String(error));
-                safeConsoleError('handlers.ts][afterHandler]', `Clone/JSON error: ${typedError.message}`);
+                safeConsoleError('[handlers.ts][afterHandler] ', `Clone/JSON error: ${typedError.message}`);
                 return {
                     response: context.response || returned,
                     headers: context.headers || null
@@ -197,7 +197,7 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
                     await redis.set(`session:${token}`, JSON.stringify(sessionWithUser), 'EX', 300);
                 } catch (error: unknown) {
                     const typedError = error instanceof Error ? error : new Error(String(error));
-                    safeConsoleError('handlers.ts][afterHandler]', `Redis Cache Error: ${typedError.message}`);
+                    safeConsoleError('[handlers.ts][afterHandler] ', `Redis Cache Error: ${typedError.message}`);
                 }
             }
         }
@@ -228,7 +228,7 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
 
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('handlers.ts][afterHandler]', `Critical Error: ${typedError.message}`);
+        safeConsoleError('[handlers.ts][afterHandler] ', `Critical Error: ${typedError.message}`);
         return {
             response: context.response || returned || null,
             headers: context.headers || null

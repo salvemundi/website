@@ -17,7 +17,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                             const path = (ctx as { path?: unknown }).path;
                             return typeof path === 'string' && path.includes("get-session");
                         } catch (error: unknown) {
-                            safeConsoleError('[redis-session-plugin.ts][beforeMatcher] Before matcher failed:', error);
+                            safeConsoleError('[redis-session-plugin.ts][createRedisSessionPlugin] Before matcher failed:', error);
                             return false;
                         }
                     },
@@ -55,7 +55,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                                 }
                             }
                         } catch (error: unknown) {
-                            safeConsoleError('[redis-session-plugin.ts][signOutHandler] Sign out hook failed:', error);
+                            safeConsoleError('[redis-session-plugin.ts][createRedisSessionPlugin] Sign out hook failed:', error);
                         }
                         return;
                     }
@@ -68,7 +68,7 @@ export function createRedisSessionPlugin(pool: Pool): BetterAuthPlugin {
                             const path = (ctx as { path?: unknown }).path;
                             return typeof path === 'string' && path.includes("get-session");
                         } catch (error: unknown) {
-                            safeConsoleError('[redis-session-plugin.ts][afterMatcher] After matcher failed:', error);
+                            safeConsoleError('[redis-session-plugin.ts][createRedisSessionPlugin] After matcher failed:', error);
                             return false;
                         }
                     },

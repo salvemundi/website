@@ -35,7 +35,7 @@ function isDismissed(): boolean {
         const val = localStorage.getItem(DISMISSED_KEY);
         return !!val && Date.now() < parseInt(val, 10);
     } catch (error) {
-        safeConsoleError('[PwaInstallToast][isDismissed] Fout bij het uitlezen van localStorage', error);
+        safeConsoleError('[PwaInstallToast.tsx][isDismissed] Fout bij het uitlezen van localStorage', error);
         return false;
     }
 }
@@ -101,7 +101,7 @@ export function PwaInstallToast() {
         try {
             localStorage.setItem(DISMISSED_KEY, String(Date.now() + DISMISS_DURATION_MS));
         } catch (error) {
-            safeConsoleError('[PwaInstallToast][handleDismiss] Kon dismissed state niet opslaan in localStorage', error);
+            safeConsoleError('[PwaInstallToast.tsx][PwaInstallToast] Kon dismissed state niet opslaan in localStorage', error);
         }
     }, []);
 

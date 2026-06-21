@@ -20,7 +20,7 @@ if (!globalThis._pgPool) {
     globalThis._pgPool = new Pool(poolConfig);
     globalThis._pgPool.on('error', (error) => {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('db.ts][poolOnError]', `Unexpected error on idle client: ${typedError.message}`);
+        safeConsoleError('[db.ts][anonymous] ', `Unexpected error on idle client: ${typedError.message}`);
     });
 }
 
@@ -36,7 +36,7 @@ export async function query<R extends QueryResultRow = QueryResultRow>(text: str
             const errorCode = (error as { code?: string }).code;
             const isConnectionError = errorMessage.includes('Connection terminated unexpectedly') || errorCode === 'ECONNRESET';
             if (isConnectionError && i < retries) {
-                logWarn('db.ts][query]', `Connection error, retrying... (${i + 1}/${retries})`);
+                logWarn('[db.ts][query] ', `Connection error, retrying... (${i + 1}/${retries})`);
                 await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
                 continue;
             }
@@ -46,10 +46,10 @@ export async function query<R extends QueryResultRow = QueryResultRow>(text: str
             }
             const pgError = error as PgError;
 
-            safeConsoleError('db.ts][query]', `DB-Query Error: ${errorMessage} (Code: ${errorCode}). Query: ${text}. Detail: ${pgError.detail ?? ''}. Hint: ${pgError.hint ?? ''}`);
+            safeConsoleError('[db.ts][query] ', `DB-Query Error: ${errorMessage} (Code: ${errorCode}). Query: ${text}. Detail: ${pgError.detail ?? ''}. Hint: ${pgError.hint ?? ''}`);
 
             if (process.env.DB_USER === 'dummy') {
-                logWarn('db.ts][query]', 'Build-time DB connection failure detected. Returning empty result.');
+                logWarn('[db.ts][query] ', 'Build-time DB connection failure detected. Returning empty result.');
                 return { rows: [], rowCount: 0, command: '', oid: 0, fields: [] };
             }
 

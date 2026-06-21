@@ -9,7 +9,7 @@ export class ManagementService {
 
     static async addGroupMember(groupId: string, userId: string): Promise<void> {
         const { baseUrl, token } = this.getConfig();
-        logInfo(`[ManagementService] Delegating addGroupMember(group: ${groupId}, user: ${userId}) to ${baseUrl}`);
+        logInfo(`[management.service.ts][addGroupMember] Delegating addGroupMember(group: ${groupId}, user: ${userId}) to ${baseUrl}`);
 
         const response = await fetch(`${baseUrl}/api/groups/${groupId}/members`, {
             method: 'POST',
@@ -29,7 +29,7 @@ export class ManagementService {
 
     static async removeGroupMember(groupId: string, userId: string): Promise<void> {
         const { baseUrl, token } = this.getConfig();
-        logInfo(`[ManagementService] Delegating removeGroupMember(group: ${groupId}, user: ${userId}) to ${baseUrl}`);
+        logInfo(`[management.service.ts][removeGroupMember] Delegating removeGroupMember(group: ${groupId}, user: ${userId}) to ${baseUrl}`);
 
         const response = await fetch(`${baseUrl}/api/groups/${groupId}/members/${userId}`, {
             method: 'DELETE',

@@ -85,7 +85,7 @@ export async function getKroegentochtEvent() {
 
             const parsed = pubCrawlEventSchema.safeParse(event);
             if (!parsed.success) {
-                safeConsoleError('[Kroegentocht-Action][getKroegentochtEvent] Validation failed:', parsed.error.format());
+                safeConsoleError('[kroegentocht.actions.ts][getKroegentochtEvent] Validation failed:', parsed.error.format());
                 return null;
             }
             return parsed.data;
@@ -122,7 +122,7 @@ export async function getKroegentochtTickets(email: string): Promise<PubCrawlTic
         const parsed = items.map((t) => pubCrawlTicketSchema.safeParse(t).data).filter((t): t is PubCrawlTicket => !!t);
         return parsed;
     } catch (error: unknown) {
-        safeConsoleError(`[Kroegentocht-Action][getKroegentochtTickets] Failed to fetch tickets:`, error);
+        safeConsoleError(`[kroegentocht.actions.ts][getKroegentochtTickets] Failed to fetch tickets:`, error);
         throw new Error('Kon tickets niet ophalen');
     }
 }
@@ -176,7 +176,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
                 ? (parsedInitials as { name: string; initial: string }[])
                 : [(parsedInitials as { name: string; initial: string })];
         } catch (error: unknown) {
-            safeConsoleError('[Kroegentocht-Action][initiateKroegentochtPayment] Failed to parse participants data:', error);
+            safeConsoleError('[kroegentocht.actions.ts][initiateKroegentochtPayment] Failed to parse participants data:', error);
             participantsData = [];
         }
 
@@ -250,15 +250,15 @@ export async function initiateKroegentochtPayment(formData: unknown) {
             await deletePubCrawlTicketsBySignupIdDb(signupId);
             await deletePubCrawlSignupDb(signupId);
             getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId)).catch((error) => {
-                safeConsoleError(`[Kroegentocht-Action][initiateKroegentochtPayment] Failed to delete signup ${signupId}:`, error);
+                safeConsoleError(`[kroegentocht.actions.ts][initiateKroegentochtPayment] Failed to delete signup ${signupId}:`, error);
             });
         } catch (error: unknown) {
-            safeConsoleError(`[Kroegentocht-Action][initiateKroegentochtPayment] Failed to delete signup ${signupId}:`, error);
+            safeConsoleError(`[kroegentocht.actions.ts][initiateKroegentochtPayment] Failed to delete signup ${signupId}:`, error);
         }
 
         return { success: false, error: 'Failed to initiate payment. Please try again later.' };
     } catch (error: unknown) {
-        safeConsoleError('[Kroegentocht-Action][initiateKroegentochtPayment] Failed to initiate payment:', error);
+        safeConsoleError('[kroegentocht.actions.ts][initiateKroegentochtPayment] Failed to initiate payment:', error);
         return { success: false, error: 'An internal error occurred.' };
     }
 }

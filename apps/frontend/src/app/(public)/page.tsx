@@ -38,7 +38,7 @@ async function HomeContent() {
 
     try {
         session = await getEnrichedSession().catch((error) => {
-            safeConsoleError('[HomePage][HomeContent] Kon sessie niet ophalen:', error);
+            safeConsoleError('[page.tsx][HomeContent] Kon sessie niet ophalen:', error);
             return null;
         });
 
@@ -49,7 +49,7 @@ async function HomeContent() {
             getSponsors(),
         ]);
     } catch (error) {
-        safeConsoleError('[HomePage][HomeContent] Critical data fetch error:', error);
+        safeConsoleError('[page.tsx][HomeContent] Critical data fetch error:', error);
         
         let errorMessage = 'Er is een onverwachte fout opgetreden bij het laden van de homepagina. Probeer het later opnieuw.';
         if (error instanceof Error) {

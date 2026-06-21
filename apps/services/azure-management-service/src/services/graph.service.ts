@@ -63,7 +63,7 @@ export class GraphService {
                     return candidateUpn;
                 }
             } catch (error: any) {
-                safeConsoleError(`[GraphService][generateUniqueUpn] Error verifying UPN ${candidateUpn}:`, error.message);
+                safeConsoleError(`[graph.service.ts][generateUniqueUpn] Error verifying UPN ${candidateUpn}:`, error.message);
                 throw error;
             }
 

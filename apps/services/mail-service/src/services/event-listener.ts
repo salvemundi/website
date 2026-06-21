@@ -16,7 +16,7 @@ export class EventListenerService {
         } catch (error: unknown) {
             const typedError = error instanceof Error ? error : new Error(String(error));
             if (!typedError.message.includes('BUSYGROUP')) {
-                safeConsoleError('event-listener.service.ts][start]', `Error creating consumer group: ${typedError.message}`);
+                safeConsoleError('[event-listener.ts][start] ', `Error creating consumer group: ${typedError.message}`);
             }
         }
 
@@ -44,7 +44,7 @@ export class EventListenerService {
                 }
             } catch (error: unknown) {
                 const typedError = error instanceof Error ? error : new Error(String(error));
-                safeConsoleError('event-listener.service.ts][start]', `Loop Error: ${typedError.message}`);
+                safeConsoleError('[event-listener.ts][start] ', `Loop Error: ${typedError.message}`);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
@@ -66,7 +66,7 @@ export class EventListenerService {
             }
         } catch (error: unknown) {
             const typedError = error instanceof Error ? error : new Error(String(error));
-            safeConsoleError('event-listener.service.ts][handleEvent]', `Error handling event: ${typedError.message}`);
+            safeConsoleError('[event-listener.ts][handleEvent] ', `Error handling event: ${typedError.message}`);
         }
     }
 

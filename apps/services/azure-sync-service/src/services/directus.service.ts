@@ -131,7 +131,7 @@ export class DirectusService {
             return items[0] ? !!items[0].is_active : false;
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
-            safeConsoleError(`[Directus.Service.ts][isFlagActive] Error checking flag ${key}:`, message);
+            safeConsoleError(`[directus.service.ts][isFlagActive] Error checking flag ${key}:`, message);
             return false;
         }
     }
@@ -154,7 +154,7 @@ export class DirectusService {
             return fileId;
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
-            safeConsoleError(`[Directus.Service.ts][uploadUserAvatar] Failed to upload avatar for user ${userId}:`, message);
+            safeConsoleError(`[directus.service.ts][uploadUserAvatar] Failed to upload avatar for user ${userId}:`, message);
             throw error;
         }
     }

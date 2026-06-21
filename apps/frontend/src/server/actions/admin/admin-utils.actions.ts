@@ -30,7 +30,7 @@ export async function checkAdminAccess() {
         const h = await headers();
         h.forEach((v, k) => safeHeaders.set(k, v));
     } catch (error) {
-        safeConsoleError(`[AdminUtilsActions][checkAdminAccess] Failed to fetch headers:`, error);
+        safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Failed to fetch headers:`, error);
         return { isAuthorized: false, user: null, isIct: false, impersonation: null };
     }
 
@@ -61,7 +61,7 @@ export async function checkAdminAccess() {
             // Store granular permissions in the user object for convenience
             Object.assign(user, perms);
         } catch (error) {
-            safeConsoleError(`[AdminUtilsActions][checkAdminAccess] Error while enriching user:`, error);
+            safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Error while enriching user:`, error);
         }
 
         if (!user.name && (user.first_name || user.last_name)) {
@@ -87,7 +87,7 @@ export async function checkAdminAccess() {
             } : null
         };
     } catch (error) {
-        safeConsoleError(`[AdminUtilsActions][checkAdminAccess] Error in checkAdminAccess:`, error);
+        safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Error in checkAdminAccess:`, error);
         return { isAuthorized: false, user: null, isIct: false, impersonation: null };
     }
 }

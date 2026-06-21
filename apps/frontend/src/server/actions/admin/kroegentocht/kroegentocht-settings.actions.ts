@@ -38,7 +38,7 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
         } catch (error) {
-            safeConsoleError(`[Kroegentocht-Action][toggleKroegentochtVisibility] Failed to delete feature flag cache:`, error);
+            safeConsoleError(`[kroegentocht-settings.actions.ts][toggleKroegentochtVisibility] Failed to delete feature flag cache:`, error);
         }
 
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -50,12 +50,12 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
         } catch (error) {
-            safeConsoleError(`[Kroegentocht-Action][toggleKroegentochtVisibility] Failed to delete feature flag cache:`, error);
+            safeConsoleError(`[kroegentocht-settings.actions.ts][toggleKroegentochtVisibility] Failed to delete feature flag cache:`, error);
         }
 
         return { success: true, show: newStatus };
     } catch (error) {
-        safeConsoleError(`[Kroegentocht-Action][toggleKroegentochtVisibility] Failed to toggle visibility:`, error);
+        safeConsoleError(`[kroegentocht-settings.actions.ts][toggleKroegentochtVisibility] Failed to toggle visibility:`, error);
         return { success: false, error: 'Bijwerken mislukt' };
     }
 }
@@ -68,7 +68,7 @@ export async function getKroegentochtSettings() {
         const isVisible = rows.length > 0 ? !!rows[0].is_active : true;
         return { show: isVisible };
     } catch (error) {
-        safeConsoleError(`[Kroegentocht-Action][getKroegentochtSettings] Failed to fetch settings:`, error);
+        safeConsoleError(`[kroegentocht-settings.actions.ts][getKroegentochtSettings] Failed to fetch settings:`, error);
         return { show: true };
     }
 }

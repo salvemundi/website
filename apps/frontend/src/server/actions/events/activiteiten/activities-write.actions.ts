@@ -71,7 +71,7 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
             imageId = res.id;
         } catch (error: unknown) {
             const typedError = error instanceof Error ? error : new Error(String(error));
-            safeConsoleError('activities-write.actions.ts][createActivityAction]', `Failed to upload image: ${typedError.message}`);
+            safeConsoleError('[activities-write.actions.ts][createActivityAction] ', `Failed to upload image: ${typedError.message}`);
         }
     }
 
@@ -131,7 +131,7 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
         return { success: true, id: newItem.id };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('activities-write.actions.ts][createActivityAction]', `Directus createItem failed: ${typedError.message}`);
+        safeConsoleError('[activities-write.actions.ts][createActivityAction] ', `Directus createItem failed: ${typedError.message}`);
         await logAdminAction('system_activity_create_failed', 'ERROR', {
             context: 'activiteit',
             context_name: data.name,
@@ -232,7 +232,7 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
             return { success: true };
         } catch (error) {
             const typedError = error instanceof Error ? error : new Error(String(error));
-            safeConsoleError('activities-write.actions.ts][updateActivityAction]', `Directus updateItem failed: ${typedError.message}`);
+            safeConsoleError('[activities-write.actions.ts][updateActivityAction] ', `Directus updateItem failed: ${typedError.message}`);
             await logAdminAction('system_activity_update_failed', 'ERROR', {
                 context: 'activiteit',
                 id: eventId,

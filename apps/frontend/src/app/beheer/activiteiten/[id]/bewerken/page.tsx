@@ -29,7 +29,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
     try {
         userCommittees = await fetchUserCommitteesDb(user.id);
     } catch (error) {
-        safeConsoleError('[page][BewerkenActiviteitPage]', error);
+        safeConsoleError('[page.tsx][BewerkenActiviteitPage] ', error);
     }
 
     const permissions = getPermissions(userCommittees);

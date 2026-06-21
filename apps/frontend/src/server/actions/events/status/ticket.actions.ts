@@ -93,7 +93,7 @@ export async function getMyTickets() {
             return dateB - dateA;
         });
     } catch (error: unknown) {
-        safeConsoleError('[ticket.actions][getMyTickets] Failed to fetch tickets:', error);
+        safeConsoleError('[ticket.actions.ts][getMyTickets] Failed to fetch tickets:', error);
         return [];
     }
 }

@@ -32,7 +32,7 @@ const formatFullDate = (d: Date) => {
             year: 'numeric'
         }).format(d);
     } catch (error) {
-        safeConsoleError('[SignupView][formatFullDate]', error);
+        safeConsoleError('[SignupView.tsx][formatFullDate] ', error);
         return 'Onbekend';
     }
 };

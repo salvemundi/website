@@ -59,7 +59,7 @@ export default async function ScannerPage({ params }: { params: Promise<{ id: st
             }));
         }
     } catch (error) {
-        safeConsoleError('[scanner-page.tsx][ScannerPage]', error);
+        safeConsoleError('[page.tsx][ScannerPage] ', error);
         return notFound();
     }
 

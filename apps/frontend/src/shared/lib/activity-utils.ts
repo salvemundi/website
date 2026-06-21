@@ -38,7 +38,7 @@ export const formatDutchDate = (dateStr?: string | null): string | null => {
             year: 'numeric'
         }).format(date);
     } catch (error) {
-        safeConsoleError('[ActiviteitUtils][formatDutchDate]', error);
+        safeConsoleError('[activity-utils.ts][formatDutchDate] ', error);
         return dateStr;
     }
 };

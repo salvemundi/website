@@ -86,7 +86,7 @@ export default function LogsTab({
                 showToast(res.error || 'Mislukt', 'error');
             }
         } catch (error) {
-            safeConsoleError('[LogsTab][handleAcknowledge]', error);
+            safeConsoleError('[LogsTab.tsx][LogsTab] ', error);
             showToast('Er is een fout opgetreden', 'error');
         } finally {
             setAcknowledging(null);

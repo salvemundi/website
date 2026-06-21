@@ -29,7 +29,7 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
             authClient.signIn.social({ 
                 provider: 'microsoft', 
                 callbackURL
-            }).catch(err => safeConsoleError('[HeaderShell][useEffect:Auto-login] Error during social sign-in', err));
+            }).catch(err => safeConsoleError('[HeaderShell.tsx][HeaderShell] [useEffect:Auto-login] Error during social sign-in', err));
         }
     }, [searchParams, pathname, router]);
  

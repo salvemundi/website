@@ -133,12 +133,12 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
         const { getSystemDirectus } = await import('@/lib/directus');
         const { updateItem } = await import('@directus/sdk');
         getSystemDirectus().request(updateItem('trip_signups', signupId, dbData)).catch((error: unknown) => {
-            safeConsoleError(`[Reis-Payment-Action][updateSignupDetails] Failed to update signup ${signupId}:`, error);
+            safeConsoleError(`[reis-payment.actions.ts][updateSignupDetails] Failed to update signup ${signupId}:`, error);
         });
 
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError(`[Reis-Payment-Action][updateSignupDetails] Failed to update signup ${signupId}:`, error);
+        safeConsoleError(`[reis-payment.actions.ts][updateSignupDetails] Failed to update signup ${signupId}:`, error);
         return { success: false, error: 'Opslaan mislukt door een serverfout.' };
     }
 }
@@ -231,7 +231,7 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
 
         if (!response.ok) {
             const errData = (await response.json()) as TripPaymentErrorResponse & { error?: string };
-            safeConsoleError(`[Reis-Payment-Action][initiateTripPaymentAction] Finance service returned status ${response.status}:`, errData);
+            safeConsoleError(`[reis-payment.actions.ts][initiateTripPaymentAction] Finance service returned status ${response.status}:`, errData);
             return { success: false, error: errData.message || errData.error || 'Betaalverzoek mislukt.' };
         }
 
@@ -240,7 +240,7 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
 
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        safeConsoleError('[reis-payment-action][initiateTripPaymentAction] Exception in initiateTripPaymentAction:', error);
+        safeConsoleError('[reis-payment.actions.ts][initiateTripPaymentAction] Exception in initiateTripPaymentAction:', error);
         return { success: false, error: `Interne fout bij starten betaling: ${errorMessage}` };
     }
 }

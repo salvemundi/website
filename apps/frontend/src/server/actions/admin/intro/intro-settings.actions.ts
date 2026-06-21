@@ -31,7 +31,7 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
         } catch (error) {
-            safeConsoleError(`[IntroSettings][toggleIntroVisibility] Failed to delete feature flag cache:`, error);
+            safeConsoleError(`[intro-settings.actions.ts][toggleIntroVisibility] Failed to delete feature flag cache:`, error);
         }
 
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -44,12 +44,12 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
             const redis = await getRedis();
             await redis.del(FLAGS_CACHE_KEY);
         } catch (error) {
-            safeConsoleError(`[IntroSettings][toggleIntroVisibility] Failed to delete feature flag cache:`, error);
+            safeConsoleError(`[intro-settings.actions.ts][toggleIntroVisibility] Failed to delete feature flag cache:`, error);
         }
 
         return { success: true, show: newStatus };
     } catch (error) {
-        safeConsoleError(`[IntroSettings][toggleIntroVisibility] Failed to toggle intro visibility:`, error);
+        safeConsoleError(`[intro-settings.actions.ts][toggleIntroVisibility] Failed to toggle intro visibility:`, error);
         return { success: false, error: 'Bijwerken mislukt' };
     }
 }

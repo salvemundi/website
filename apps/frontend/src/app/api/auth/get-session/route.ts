@@ -7,7 +7,7 @@ export async function GET(_request: Request) {
 
         return Response.json(session);
     } catch (error) {
-        safeConsoleError(`[GetSession API] CRITICAL ERROR: ${error instanceof Error ? error.stack : error}`, {});
+        safeConsoleError(`[route.ts][GET] [GetSession API] CRITICAL ERROR: ${error instanceof Error ? error.stack : error}`, {});
         return new Response(JSON.stringify({ error: 'Internal Server Error', details: error instanceof Error ? error.message : String(error) }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }

@@ -58,7 +58,7 @@ export default function SystemManagementIsland({
             setStatuses(data);
             setLastUpdated(new Date());
         } catch (error) {
-            safeConsoleError('[SystemManagementIsland][fetchStatus]', error);
+            safeConsoleError('[SystemManagementIsland.tsx][SystemManagementIsland] ', error);
         } finally {
             setIsRefreshing(false);
         }
@@ -85,7 +85,7 @@ export default function SystemManagementIsland({
                 showToast(res.error || 'Bijwerken mislukt', 'error');
             }
         } catch (error) {
-            safeConsoleError('[SystemManagementIsland][handleToggleAutomation]', error);
+            safeConsoleError('[SystemManagementIsland.tsx][SystemManagementIsland] ', error);
             showToast('Er is een onverwachte fout opgetreden', 'error');
         } finally {
             setTogglingId(null);

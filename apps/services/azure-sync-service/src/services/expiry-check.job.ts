@@ -14,7 +14,7 @@ export class ExpiryCheckJob {
     }
 
     static async start(redis: Redis) {
-        logInfo('expiry-check.job.ts][start]', 'Starting daily monitoring loop...');
+        logInfo('[expiry-check.job.ts][start] ', 'Starting daily monitoring loop...');
 
         while (!this.shouldStop) {
             try {
@@ -24,18 +24,18 @@ export class ExpiryCheckJob {
                 const nextRun = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 0, 0);
                 const delay = nextRun.getTime() - now.getTime();
 
-                logInfo('expiry-check.job.ts][start]', `Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
+                logInfo('[expiry-check.job.ts][start] ', `Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);
                 await new Promise(resolve => setTimeout(resolve, delay));
             } catch (error: unknown) {
                 const typedError = error instanceof Error ? error : new Error(String(error));
-                safeConsoleError('expiry-check.job.ts][start]', `Loop Error: ${typedError.message}`);
+                safeConsoleError('[expiry-check.job.ts][start] ', `Loop Error: ${typedError.message}`);
                 await new Promise(resolve => setTimeout(resolve, 60000));
             }
         }
     }
 
     static async runCheck(redis: Redis) {
-        logInfo('expiry-check.job.ts][runCheck]', 'Running membership expiry scan...');
+        logInfo('[expiry-check.job.ts][runCheck] ', 'Running membership expiry scan...');
 
         const todayStr = new Date().toISOString().split('T')[0];
         const lastRunKey = 'v7:expiry-check:last-run';
@@ -43,20 +43,20 @@ export class ExpiryCheckJob {
 
         const lastRun = await redis.get(lastRunKey);
         if (lastRun === todayStr) {
-            logInfo('expiry-check.job.ts][runCheck]', `Already successfully ran expiry check today (${todayStr}). Skipping.`);
+            logInfo('[expiry-check.job.ts][runCheck] ', `Already successfully ran expiry check today (${todayStr}). Skipping.`);
             return;
         }
 
         const hasLock = await redis.set(lockKey, 'running', 'EX', 1800, 'NX');
         if (!hasLock) {
-            logInfo('expiry-check.job.ts][runCheck]', 'Another instance is currently running the expiry check. Skipping.');
+            logInfo('[expiry-check.job.ts][runCheck] ', 'Another instance is currently running the expiry check. Skipping.');
             return;
         }
 
         try {
             const isActive = await DirectusService.isFlagActive('mail_expiry_check');
             if (!isActive) {
-                logInfo('expiry-check.job.ts][runCheck]', 'Automated membership emails are DISABLED via feature flag. Skipping run.');
+                logInfo('[expiry-check.job.ts][runCheck] ', 'Automated membership emails are DISABLED via feature flag. Skipping run.');
                 return;
             }
 
@@ -100,7 +100,7 @@ export class ExpiryCheckJob {
             const { mailUrl, token } = this.getConfig();
 
             if (!mailUrl || !token) {
-                logWarn('expiry-check.job.ts][notifyMember]', 'Missing Mail URL or Token. Cannot notify.');
+                logWarn('[expiry-check.job.ts][notifyMember] ', 'Missing Mail URL or Token. Cannot notify.');
                 return;
             }
 
@@ -123,13 +123,13 @@ export class ExpiryCheckJob {
 
             if (response.ok) {
                 await redis.set(redisKey, '1', 'EX', 86400 * 365);
-                logInfo('expiry-check.job.ts][notifyMember]', `Notified ${member.email || 'leeg'} for milestone: ${milestone}`);
+                logInfo('[expiry-check.job.ts][notifyMember] ', `Notified ${member.email || 'leeg'} for milestone: ${milestone}`);
             } else {
-                safeConsoleError('expiry-check.job.ts][notifyMember]', `Failed to send ${templateId} to ${member.email || 'leeg'}: ${response.statusText}`);
+                safeConsoleError('[expiry-check.job.ts][notifyMember] ', `Failed to send ${templateId} to ${member.email || 'leeg'}: ${response.statusText}`);
             }
         } catch (error: unknown) {
             const typedError = error instanceof Error ? error : new Error(String(error));
-            safeConsoleError('expiry-check.job.ts][notifyMember]', `Error triggering mail for ${member.email || 'leeg'}: ${typedError.message}`);
+            safeConsoleError('[expiry-check.job.ts][notifyMember] ', `Error triggering mail for ${member.email || 'leeg'}: ${typedError.message}`);
         }
     }
 

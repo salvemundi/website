@@ -71,7 +71,7 @@ export async function getValidCoupon(code: string): Promise<CouponValidationResu
         };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('coupon.utils.ts][getValidCoupon]', `Database error during validation: ${typedError.message}`);
+        safeConsoleError('[coupon.utils.ts][getValidCoupon] ', `Database error during validation: ${typedError.message}`);
         return { valid: false, error: 'Fout bij raadplegen van de database' };
     }
 }
@@ -118,7 +118,7 @@ export async function claimCoupon(code: string): Promise<CouponValidationResult>
         };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('coupon.utils.ts][claimCoupon]', `Database error during coupon claiming: ${typedError.message}`);
+        safeConsoleError('[coupon.utils.ts][claimCoupon] ', `Database error during coupon claiming: ${typedError.message}`);
         return { valid: false, error: 'Fout bij verwerken van coupon' };
     }
 }
@@ -134,6 +134,6 @@ export async function releaseCoupon(code: string): Promise<void> {
         await query(sql, [code.trim()]);
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('coupon.utils.ts][releaseCoupon]', `Database error during coupon releasing: ${typedError.message}`);
+        safeConsoleError('[coupon.utils.ts][releaseCoupon] ', `Database error during coupon releasing: ${typedError.message}`);
     }
 }

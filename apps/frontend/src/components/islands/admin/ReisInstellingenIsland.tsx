@@ -73,7 +73,7 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
                     showToast(result.error || 'Fout bij bijwerken zichtbaarheid', 'error');
                 }
             } catch (error) {
-                safeConsoleError('[ReisInstellingenIsland][handleToggleVisibility]', error);
+                safeConsoleError('[ReisInstellingenIsland.tsx][ReisInstellingenIsland] ', error);
                 showToast('Er is een onverwachte fout opgetreden', 'error');
             }
         });
@@ -93,7 +93,7 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
                 showToast(res.error || 'Verwijderen mislukt', 'error');
             }
         } catch (error) {
-            safeConsoleError('[ReisInstellingenIsland][handleDelete]', error);
+            safeConsoleError('[ReisInstellingenIsland.tsx][ReisInstellingenIsland] ', error);
             showToast('Er is een fout opgetreden', 'error');
         } finally {
             setIsDeleting(null);

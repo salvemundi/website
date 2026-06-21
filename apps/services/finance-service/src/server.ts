@@ -35,7 +35,7 @@ const start = async () => {
         await fastify.listen({ port: 3001, host: '0.0.0.0' });
 
         fastify.redis.on('error', (err: unknown) => {
-            safeConsoleError('[server.ts][redisError]', err);
+            safeConsoleError('[server.ts][start] ', err);
         });
 
         const { CacheInvalidationService } = await import('./services/cache-invalidation.js');
@@ -43,22 +43,22 @@ const start = async () => {
         const { AzureRetryService } = await import('./services/azure-retry.service.js');
 
         CacheInvalidationService.startWorker(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][cacheInvalidationWorker]', error);
+            safeConsoleError('[server.ts][start] ', error);
             process.exit(1);
         });
 
         DirectusRetryService.startWorker(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][directusRetryWorker]', error);
+            safeConsoleError('[server.ts][start] ', error);
             process.exit(1);
         });
 
         AzureRetryService.startWorker(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][azureRetryWorker]', error);
+            safeConsoleError('[server.ts][start] ', error);
             process.exit(1);
         });
 
     } catch (error) {
-        safeConsoleError('[server.ts][start]', error);
+        safeConsoleError('[server.ts][start] ', error);
         process.exit(1);
     }
 };

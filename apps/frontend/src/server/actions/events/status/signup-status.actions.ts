@@ -168,7 +168,7 @@ export async function getSignupStatus(
 
         return { status: paymentStatus };
     } catch (error) {
-        safeConsoleError('[SignupStatusActions][getSignupStatus] Failed to resolve status:', error);
+        safeConsoleError('[signup-status.actions.ts][getSignupStatus] Failed to resolve status:', error);
         return { status: 'error' };
     }
 }

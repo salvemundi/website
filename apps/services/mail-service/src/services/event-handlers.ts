@@ -120,7 +120,7 @@ export class EventHandlers {
             const json = await res.json() as { data?: unknown[] };
             return (json.data?.length ?? 0) > 0;
         } catch (error) {
-            safeConsoleError('[EventHandlers][checkUserHasAccount]', error);
+            safeConsoleError('[event-handlers.ts][checkUserHasAccount] ', error);
             return false;
         }
     }
@@ -138,7 +138,7 @@ export class EventHandlers {
                 mailData.confirmationUrl = `${baseUrl}/lidmaatschap/bevestiging?transaction_id=${data.paymentId}&t=${data.accessToken || ''}`;
             }
         } catch (error) {
-            safeConsoleError('[EventHandlers][enrichMembershipRenewal]', error);
+            safeConsoleError('[event-handlers.ts][enrichMembershipRenewal] ', error);
         }
     }
 
@@ -170,7 +170,7 @@ export class EventHandlers {
                 hasAccount: await this.checkUserHasAccount(url, token, data.email)
             };
         } catch (error) {
-            safeConsoleError('[EventHandlers][preparePubCrawlTickets]', error);
+            safeConsoleError('[event-handlers.ts][preparePubCrawlTickets] ', error);
             return null;
         }
     }
@@ -189,7 +189,7 @@ export class EventHandlers {
             const validated = pubCrawlWhatsAppUrlSchema.parse(data);
             return validated.whatsapp_community_url ?? null;
         } catch (error) {
-            safeConsoleError('[EventHandlers][getPubCrawlWhatsAppLink]', error);
+            safeConsoleError('[event-handlers.ts][getPubCrawlWhatsAppLink] ', error);
             throw error;
         }
     }
@@ -217,7 +217,7 @@ export class EventHandlers {
                 mailData.eventName = eventJson.data?.name || mailData.eventName;
             }
         } catch (error) {
-            safeConsoleError('[EventHandlers][enrichGenericEvent]', error);
+            safeConsoleError('[event-handlers.ts][enrichGenericEvent] ', error);
         }
     }
 
@@ -241,7 +241,7 @@ export class EventHandlers {
                 color: { dark: '#5e2b52', light: '#ffffff' }
             });
         } catch (error) {
-            safeConsoleError('[EventHandlers][generateQrDataUrl]', error);
+            safeConsoleError('[event-handlers.ts][generateQrDataUrl] ', error);
             return '';
         }
     }

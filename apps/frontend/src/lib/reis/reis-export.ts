@@ -29,7 +29,7 @@ const formatCSVDate = (dateInput: string | Date | null | undefined, includeTime:
 
         return new Intl.DateTimeFormat('nl-NL', options).format(d);
     } catch (error) {
-        safeConsoleError('[generateReisCSVData][formatCSVDate]', error);
+        safeConsoleError('[reis-export.ts][formatCSVDate] ', error);
         return '';
     }
 };

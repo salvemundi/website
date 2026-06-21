@@ -29,7 +29,7 @@ export default function MemberActivitiesTab({ signups }: Props) {
                 year: 'numeric'
             }).format(new Date(dateString));
         } catch (error) {
-            safeConsoleError('[MemberActivitiesTab][formatDate]', error);
+            safeConsoleError('[MemberActivitiesTab.tsx][MemberActivitiesTab] ', error);
             return 'Onbekend';
         }
     };

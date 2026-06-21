@@ -45,7 +45,7 @@ export async function sendPaymentEmail(signupId: number, tripId: number, payment
             } catch {
             }
 
-            safeConsoleError('[ReisMailActions][sendPaymentEmail]', parsedError);
+            safeConsoleError('[reis-mail.actions.ts][sendPaymentEmail] ', parsedError);
             await logAdminAction('system_mail_error', 'ERROR', {
                 context: 'reis',
                 signup_id: signupId,
@@ -58,7 +58,7 @@ export async function sendPaymentEmail(signupId: number, tripId: number, payment
 
         return { success: true };
     } catch (error) {
-        safeConsoleError('[ReisMailActions][sendPaymentEmail]', error);
+        safeConsoleError('[reis-mail.actions.ts][sendPaymentEmail] ', error);
         await logAdminAction('system_mail_error', 'ERROR', {
             context: 'reis',
             signup_id: signupId,
@@ -104,7 +104,7 @@ export async function sendBulkTripEmail(data: {
 
         if (!response.ok) {
             const errorData = (await response.json().catch(() => ({}))) as unknown;
-            safeConsoleError('[ReisMailActions][sendBulkTripEmail]', errorData);
+            safeConsoleError('[reis-mail.actions.ts][sendBulkTripEmail] ', errorData);
             await logAdminAction('system_mail_error', 'ERROR', {
                 context: 'reis',
                 trip_id: data.tripId,
@@ -116,7 +116,7 @@ export async function sendBulkTripEmail(data: {
 
         return { success: true };
     } catch (error) {
-        safeConsoleError('[ReisMailActions][sendBulkTripEmail]', error);
+        safeConsoleError('[reis-mail.actions.ts][sendBulkTripEmail] ', error);
         await logAdminAction('system_mail_error', 'ERROR', {
             context: 'reis',
             trip_id: data.tripId,
@@ -147,7 +147,7 @@ export async function sendBulkPaymentEmails(tripId: number, signupIds: number[],
             }
         } catch (error) {
             const errMsg = error instanceof Error ? error.message : String(error);
-            safeConsoleError('[ReisMailActions][sendBulkPaymentEmails]', error);
+            safeConsoleError('[reis-mail.actions.ts][sendBulkPaymentEmails] ', error);
             await logAdminAction('system_mail_error', 'ERROR', {
                 context: 'reis',
                 trip_id: tripId,

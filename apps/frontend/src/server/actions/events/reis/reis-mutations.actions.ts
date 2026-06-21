@@ -196,7 +196,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
                         return { success: true };
                     }
                 } catch (error: unknown) {
-                    safeConsoleError(`[Reis-Mutations-Action][createTripSignup] Failed to fetch user signup status:`, error);
+                    safeConsoleError(`[reis-mutations.actions.ts][createTripSignup] Failed to fetch user signup status:`, error);
                 }
             }
 
@@ -225,12 +225,12 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
                 }
             })
         }).catch((error: unknown) => {
-            safeConsoleError(`[Reis-Mutations-Action][createTripSignup] Failed to send trip signup email:`, error);
+            safeConsoleError(`[reis-mutations.actions.ts][createTripSignup] Failed to send trip signup email:`, error);
         });
 
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError(`[Reis-Mutations-Action][createTripSignup] Failed to create trip signup for trip ${tripId}:`, error);
+        safeConsoleError(`[reis-mutations.actions.ts][createTripSignup] Failed to create trip signup for trip ${tripId}:`, error);
         const message = error instanceof Error ? error.message : 'Interne serverfout tijdens inschrijving.';
         return { success: false, message: message };
     } finally {
@@ -250,7 +250,7 @@ export async function revalidateReisAction() {
         revalidatePath('/beheer/reis');
         return { success: true };
     } catch (error: unknown) {
-        safeConsoleError(`[Reis-Mutations-Action][revalidateReisAction] Failed to revalidate reis:`, error);
+        safeConsoleError(`[reis-mutations.actions.ts][revalidateReisAction] Failed to revalidate reis:`, error);
         return { success: false };
     }
 }

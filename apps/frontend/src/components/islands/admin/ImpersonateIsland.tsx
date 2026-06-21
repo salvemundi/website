@@ -40,7 +40,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                     showToast(result.error || 'Ongeldige token of fout bij valideren.', 'error');
                 }
             } catch (error) {
-                safeConsoleError('[ImpersonateIsland][handleSave]', error);
+                safeConsoleError('[ImpersonateIsland.tsx][ImpersonateIsland] ', error);
                 setStatus('error');
                 showToast('Er is een onverwachte fout opgetreden.', 'error');
             }
@@ -55,7 +55,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                 setStatus('idle');
                 setTimeout(() => window.location.reload(), 1000);
             } catch (error) {
-                safeConsoleError('[ImpersonateIsland][handleClear]', error);
+                safeConsoleError('[ImpersonateIsland.tsx][ImpersonateIsland] ', error);
                 showToast('Er is een onverwachte fout opgetreden.', 'error');
             }
         });

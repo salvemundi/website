@@ -53,13 +53,13 @@ export class MailWorkerService {
                     try {
                         parsedResult = JSON.parse(taskJson);
                     } catch (err) {
-                        safeConsoleError('[mail-worker.ts][startWorker]', err);
+                        safeConsoleError('[mail-worker.ts][startWorker] ', err);
                         continue;
                     }
 
                     const validated = MailTaskSchema.safeParse(parsedResult);
                     if (!validated.success) {
-                        safeConsoleError('[mail-worker.ts][startWorker]', validated.error);
+                        safeConsoleError('[mail-worker.ts][startWorker] ', validated.error);
                         continue;
                     }
 
@@ -74,7 +74,7 @@ export class MailWorkerService {
                             throw new Error('MailerService returned false');
                         }
                     } catch (error: unknown) {
-                        safeConsoleError('[mail-worker.ts][startWorker]', error);
+                        safeConsoleError('[mail-worker.ts][startWorker] ', error);
 
                         task.retries += 1;
                         if (task.retries >= task.maxRetries) {
@@ -95,11 +95,11 @@ export class MailWorkerService {
                     errorMessage.includes('ENOTFOUND');
 
                 if (isConnectionFailure) {
-                    safeConsoleError('[mail-worker.ts][startWorker]', error);
+                    safeConsoleError('[mail-worker.ts][startWorker] ', error);
                     throw error;
                 }
 
-                safeConsoleError('[mail-worker.ts][startWorker]', error);
+                safeConsoleError('[mail-worker.ts][startWorker] ', error);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }

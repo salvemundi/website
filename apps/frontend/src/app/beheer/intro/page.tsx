@@ -29,7 +29,7 @@ export default async function BeheerIntroPage() {
     try {
         userCommittees = await fetchUserCommitteesDb(session.user.id);
     } catch (error) {
-        safeConsoleError('[page][BeheerIntroPage]', error);
+        safeConsoleError('[page.tsx][BeheerIntroPage] ', error);
     }
 
     const permissions = getPermissions(userCommittees);

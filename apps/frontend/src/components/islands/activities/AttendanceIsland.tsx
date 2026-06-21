@@ -42,7 +42,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
             }));
             setSignups(mapped);
         } catch (error) {
-            safeConsoleError('[AttendanceIsland][fetchData]', error);
+            safeConsoleError('[AttendanceIsland.tsx][AttendanceIsland] ', error);
         } finally {
             setLoading(false);
         }
@@ -63,7 +63,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                 ));
             }
         } catch (error) {
-            safeConsoleError('[AttendanceIsland][handleToggleCheckIn]', error);
+            safeConsoleError('[AttendanceIsland.tsx][AttendanceIsland] ', error);
         }
     }, [eventId]);
 
@@ -99,15 +99,15 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                                 setScanning(false);
                                 await handleScan(decodedText);
                             } catch (error) {
-                                safeConsoleError('[AttendanceIsland][startScannerRender]', error);
+                                safeConsoleError('[AttendanceIsland.tsx][AttendanceIsland] ', error);
                             }
                         })();
                     }, (errorMessage) => {
-                        safeConsoleError('[AttendanceIsland][scannerError]', errorMessage);
+                        safeConsoleError('[AttendanceIsland.tsx][AttendanceIsland] ', errorMessage);
                     });
                 }, 100);
             } catch (error) {
-                safeConsoleError('[AttendanceIsland][startScanner]', error);
+                safeConsoleError('[AttendanceIsland.tsx][AttendanceIsland] ', error);
             }
         })();
     };

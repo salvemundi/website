@@ -51,7 +51,7 @@ async function logDirectusError(error: DirectusError) {
         });
     } catch (logError: unknown) {
         const typedLogError = logError instanceof Error ? logError : new Error(String(logError));
-        safeConsoleError('directus.ts][logDirectusError]', `Failed to persist error log: ${typedLogError.message}`);
+        safeConsoleError('[directus.ts][logDirectusError] ', `Failed to persist error log: ${typedLogError.message}`);
     }
 }
 
@@ -74,7 +74,7 @@ export async function fetchWithRetry(
             const isTimeout = typedError.name === 'TimeoutError' || typedError.name === 'AbortError' || typedError.message.includes('timeout');
 
             if (isLastRetry || (!isTimeout && !typedError.message.includes('Server responded with 5'))) {
-                safeConsoleError('directus.ts][fetchWithRetry]', typedError);
+                safeConsoleError('[directus.ts][fetchWithRetry] ', typedError);
                 throw typedError;
             }
 
