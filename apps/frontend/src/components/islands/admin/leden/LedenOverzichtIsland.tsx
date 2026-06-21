@@ -29,7 +29,7 @@ const formatDate = (dateString: string | null | undefined) => {
             year: 'numeric'
         }).format(d);
     } catch (error) {
-        safeConsoleError('[LedenOverzicht][formatDate]', error);
+        safeConsoleError('[LedenOverzichtIsland.tsx][formatDate] ', error);
         return 'Onbekend';
     }
 };
@@ -52,7 +52,7 @@ export default function LedenOverzichtIsland({
             const today = startOfDay(new Date());
             return startOfDay(expiryDate) >= today;
         } catch (error) {
-            safeConsoleError('[LedenOverzicht][isMembershipActive]', error);
+            safeConsoleError('[LedenOverzichtIsland.tsx][LedenOverzichtIsland] ', error);
             return false;
         }
     }, []);
@@ -87,7 +87,7 @@ export default function LedenOverzichtIsland({
                     showToast(res.error || 'Fout bij versturen', 'error');
                 }
             } catch (error) {
-                safeConsoleError('[LedenOverzicht][handleSendReminder]', error);
+                safeConsoleError('[LedenOverzichtIsland.tsx][LedenOverzichtIsland] ', error);
                 showToast('Er is een onverwachte fout opgetreden', 'error');
             } finally {
                 setIsSendingReminder(false);

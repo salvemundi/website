@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
         const text = await response.text();
         return new NextResponse(text, { status: response.status });
     } catch (error) {
-        safeConsoleError('[MollieWebhook][POST]', error);
+        safeConsoleError('[route.ts][POST] ', error);
         return NextResponse.json({ received: true }, { status: 200 });
     }
 }

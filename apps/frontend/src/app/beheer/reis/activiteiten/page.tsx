@@ -39,7 +39,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
                 title = `${trip[0].name} - Activiteiten | SV Salve Mundi`;
             }
         } catch (error) {
-            safeConsoleError('[ReisActiviteitenPage][generateMetadata]', error);
+            safeConsoleError('[page.tsx][generateMetadata] ', error);
         }
     }
 

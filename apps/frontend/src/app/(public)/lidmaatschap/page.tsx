@@ -26,7 +26,7 @@ export default async function MembershipPage() {
         try {
             committees = await fetchUserCommitteesDb(user.id);
         } catch (error) {
-            safeConsoleError('[Membership][MembershipPage] Error fetching committees:', error);
+            safeConsoleError('[page.tsx][MembershipPage] Error fetching committees:', error);
         }
     }
 

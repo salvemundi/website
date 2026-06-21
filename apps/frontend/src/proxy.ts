@@ -79,7 +79,7 @@ async function proxy(request: NextRequest) {
             }));
         } catch (error) {
             const typedError = error instanceof Error ? error : new Error(String(error));
-            safeConsoleError('proxy.ts][nextWithNonce]', `Failed to inject request headers: ${typedError.message}`);
+            safeConsoleError('[proxy.ts][proxy] ', `Failed to inject request headers: ${typedError.message}`);
             return withSecurity(NextResponse.next());
         }
     };
@@ -133,7 +133,7 @@ async function proxy(request: NextRequest) {
                     }
                 } catch (redisError) {
                     const typedRedisError = redisError instanceof Error ? redisError : new Error(String(redisError));
-                    safeConsoleError('proxy.ts][proxy]', `Redis session cache check failed (falling back to database): ${typedRedisError.message}`);
+                    safeConsoleError('[proxy.ts][proxy] ', `Redis session cache check failed (falling back to database): ${typedRedisError.message}`);
                 }
             }
 
@@ -195,13 +195,13 @@ async function proxy(request: NextRequest) {
                                 }
                             } catch (parseError) {
                                 const typedParseError = parseError instanceof Error ? parseError : new Error(String(parseError));
-                                safeConsoleError('proxy.ts][proxy]', `Failed to parse session text response: ${typedParseError.message}`);
+                                safeConsoleError('[proxy.ts][proxy] ', `Failed to parse session text response: ${typedParseError.message}`);
                             }
                         }
                     }
                 } catch (fetchError) {
                     const typedFetchError = fetchError instanceof Error ? fetchError : new Error(String(fetchError));
-                    safeConsoleError('proxy.ts][proxy]', `Fetch error retrieving session from internal API: ${typedFetchError.message}`);
+                    safeConsoleError('[proxy.ts][proxy] ', `Fetch error retrieving session from internal API: ${typedFetchError.message}`);
                 }
             }
 
@@ -221,7 +221,7 @@ async function proxy(request: NextRequest) {
 
         } catch (error) {
             const typedError = error instanceof Error ? error : new Error(String(error));
-            safeConsoleError('proxy.ts][proxy]', `Critical error during auth check: ${typedError.message}`);
+            safeConsoleError('[proxy.ts][proxy] ', `Critical error during auth check: ${typedError.message}`);
             return withSecurity(NextResponse.rewrite(new URL('/404', request.url)));
         }
     }

@@ -12,7 +12,7 @@ export default function MembershipError({
         reset: () => void;
     }) {
     useEffect(() => {
-        safeConsoleError('[Membership][MembershipError] Error:', error);
+        safeConsoleError('[error.tsx][MembershipError] Error:', error);
     }, [error]);
 
     return (

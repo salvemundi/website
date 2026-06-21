@@ -18,7 +18,7 @@ export class SyncProcessor {
             const existingByEmail = Array.from(ctx.userCacheByEntra.values()).find(u => u.email?.toLowerCase() === email);
 
             if (existingByEmail) {
-                logInfo(`[SYNC] Linking existing user ${email} to Entra ID ${aUser.id}`);
+                logInfo(`[sync-processor.ts][syncUserOptimized] Linking existing user ${email} to Entra ID ${aUser.id}`);
                 await DirectusService.updateUser(existingByEmail.id, { entra_id: aUser.id });
                 dUser = { ...existingByEmail, entra_id: aUser.id };
                 ctx.userCacheByEntra.set(aUser.id, dUser);
@@ -68,7 +68,7 @@ export class SyncProcessor {
                 changes.push({ field: 'User', old: 'Bestaat niet', new: 'Nieuw lid aangemaakt' });
                 ctx.status.createdUsers.push({ email, changes: [...changes] });
             } catch (error) {
-                safeConsoleError('[SyncProcessor][syncUserOptimized][createUser]', error);
+                safeConsoleError('[sync-processor.ts][syncUserOptimized] [createUser]', error);
                 throw new Error(`Kon gebruiker ${email} niet aanmaken. Bestaat waarschijnlijk al zonder Entra ID. Gebruik 'Forceer Entra Link' om ze te koppelen.`, { cause: error });
             }
         }

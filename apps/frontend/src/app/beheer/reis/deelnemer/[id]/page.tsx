@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             };
         }
     } catch (error) {
-        safeConsoleError('[DeelnemerDetailPage][generateMetadata]', error);
+        safeConsoleError('[page.tsx][generateMetadata] ', error);
     }
 
     return { title: 'Deelnemer Details | SV Salve Mundi' };

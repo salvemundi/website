@@ -91,7 +91,7 @@ export default function MemberProfileTab({
                 year: 'numeric'
             }).format(d);
         } catch (error) {
-            safeConsoleError('[MemberProfileTab][formatDate]', error);
+            safeConsoleError('[MemberProfileTab.tsx][MemberProfileTab] ', error);
             return 'Onbekend';
         }
     };

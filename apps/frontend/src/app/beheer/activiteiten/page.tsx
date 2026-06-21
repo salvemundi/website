@@ -23,7 +23,7 @@ export default async function AdminActiviteitenPage() {
     try {
         userCommittees = await fetchUserCommitteesDb(user?.id || '');
     } catch (error) {
-        safeConsoleError('[page][AdminActiviteitenPage]', error);
+        safeConsoleError('[page.tsx][AdminActiviteitenPage] ', error);
     }
 
     const permissions = getPermissions(userCommittees);

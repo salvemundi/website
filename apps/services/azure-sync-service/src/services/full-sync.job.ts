@@ -11,7 +11,7 @@ export class FullSyncJob {
     }
 
     static async start(redis: Redis) {
-        logInfo('full-sync.job.ts][start]', 'Starting nightly synchronization loop...');
+        logInfo('[full-sync.job.ts][start] ', 'Starting nightly synchronization loop...');
 
         while (!this.isStopped()) {
             try {
@@ -23,18 +23,18 @@ export class FullSyncJob {
                 }
 
                 const delay = nextRun.getTime() - now.getTime();
-                logInfo('full-sync.job.ts][start]', `Next full sync scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours (at ${nextRun.toISOString()}).`);
+                logInfo('[full-sync.job.ts][start] ', `Next full sync scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours (at ${nextRun.toISOString()}).`);
 
                 await new Promise(resolve => setTimeout(resolve, delay));
                 if (this.isStopped()) break;
 
                 const isActive = await DirectusService.isFlagActive('auto_sync_nightly');
                 if (!isActive) {
-                    logInfo('full-sync.job.ts][start]', 'Nightly sync is DISABLED via feature flag. Skipping run.');
+                    logInfo('[full-sync.job.ts][start] ', 'Nightly sync is DISABLED via feature flag. Skipping run.');
                     continue;
                 }
 
-                logInfo('full-sync.job.ts][start]', 'Triggering automated nightly sync...');
+                logInfo('[full-sync.job.ts][start] ', 'Triggering automated nightly sync...');
                 await SyncJob.run(redis, {
                     fields: ['status', 'membership_status', 'membership_expiry', 'committees'],
                     silent: true
@@ -42,7 +42,7 @@ export class FullSyncJob {
 
             } catch (error: unknown) {
                 const typedError = error instanceof Error ? error : new Error(String(error));
-                safeConsoleError('full-sync.job.ts][start]', `Loop Error: ${typedError.message}`);
+                safeConsoleError('[full-sync.job.ts][start] ', `Loop Error: ${typedError.message}`);
                 await new Promise(resolve => setTimeout(resolve, 300000));
             }
         }

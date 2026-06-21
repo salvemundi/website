@@ -67,7 +67,7 @@ export default function KroegentochtManagementIsland({
                     const data = await getPubCrawlSignups(Number(eventId));
                     setSignups(data);
                 } catch (error) {
-                    safeConsoleError('[KroegentochtManagementIsland][loadSignups]', error);
+                    safeConsoleError('[KroegentochtManagementIsland.tsx][KroegentochtManagementIsland] ', error);
                     showToast('Fout bij het laden van aanmeldingen. Probeer het opnieuw.', 'error');
                     setError('Kon gegevens niet ophalen van de server.');
                 }
@@ -108,7 +108,7 @@ export default function KroegentochtManagementIsland({
                         router.refresh();
                     }
                 } catch (error) {
-                    safeConsoleError('[KroegentochtManagementIsland][handleToggleVisibility]', error);
+                    safeConsoleError('[KroegentochtManagementIsland.tsx][KroegentochtManagementIsland] ', error);
                     showToast('Fout bij bijwerken zichtbaarheid', 'error');
                 }
             })();
@@ -124,7 +124,7 @@ export default function KroegentochtManagementIsland({
             setSignups(prev => prev.filter(s => s.id !== id));
             showToast('Inschrijving succesvol verwijderd', 'success');
         } catch (error) {
-            safeConsoleError('[KroegentochtManagementIsland][handleDeleteSignup]', error);
+            safeConsoleError('[KroegentochtManagementIsland.tsx][KroegentochtManagementIsland] ', error);
             showToast('Fout bij verwijderen: ' + String(error), 'error');
         }
     };

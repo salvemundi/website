@@ -101,7 +101,7 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
 
         return { success: true, data: newCoupon };
     } catch (error) {
-        safeConsoleError(`[AdminCoupons] Failed to create coupon`, error);
+        safeConsoleError(`[admin-coupons.actions.ts][createCoupon] Failed to create coupon`, error);
         // Directus SDK errors might contain more info, but for simplicity:
         return { success: false, error: 'Aanmaken mislukt (controleer op unieke code of velden)' };
     }
@@ -114,7 +114,7 @@ export async function deleteCoupon(id: number): Promise<{ success: boolean; erro
         revalidatePath('/beheer/coupons');
         return { success: true };
     } catch (error) {
-        safeConsoleError(`[AdminCoupons] Failed to delete coupon`, error);
+        safeConsoleError(`[admin-coupons.actions.ts][deleteCoupon] Failed to delete coupon`, error);
         return { success: false, error: 'Verwijderen mislukt (wordt mogelijk nog gebruikt)' };
     }
 }
@@ -126,7 +126,7 @@ export async function toggleCouponActive(id: number, currentActive: boolean): Pr
         revalidatePath('/beheer/coupons');
         return { success: true };
     } catch (error) {
-        safeConsoleError(`[AdminCoupons] Failed to toggle coupon`, error);
+        safeConsoleError(`[admin-coupons.actions.ts][toggleCouponActive] Failed to toggle coupon`, error);
         return { success: false, error: 'Bijwerken mislukt' };
     }
 }

@@ -28,7 +28,7 @@ export default function StickerManagementIsland({
             setStickers(prev => prev.filter(s => s.id !== id));
             showToast('Sticker succesvol verwijderd', 'success');
         } catch (error) {
-            safeConsoleError('[StickerManagementIsland][handleDelete]', error);
+            safeConsoleError('[StickerManagementIsland.tsx][StickerManagementIsland] ', error);
             showToast('Fout bij verwijderen', 'error');
         }
     };
@@ -39,7 +39,7 @@ export default function StickerManagementIsland({
             setStickers(prev => prev.map(s => s.id === id ? { ...s, status: 'published' } : s));
             showToast('Sticker succesvol gepubliceerd', 'success');
         } catch (error) {
-            safeConsoleError('[StickerManagementIsland][handleApprove]', error);
+            safeConsoleError('[StickerManagementIsland.tsx][StickerManagementIsland] ', error);
             showToast('Fout bij publiceren', 'error');
         }
     };

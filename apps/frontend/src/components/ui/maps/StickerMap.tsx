@@ -107,7 +107,7 @@ export default function StickerMap({
                 });
                 setMapStyleObj(style);
             } catch (err) {
-                safeConsoleError('[StickerMap.tsx][loadAndPatchStyle]', `Style Load Failed: ${err instanceof Error ? err.message : String(err)}`);
+                safeConsoleError('[StickerMap.tsx][StickerMap] ', `Style Load Failed: ${err instanceof Error ? err.message : String(err)}`);
             }
         };
         void loadAndPatchStyle();

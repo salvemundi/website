@@ -35,7 +35,7 @@ export function parseActivityOptions(options: unknown): ActivityOption[] {
         try {
             return JSON.parse(options) as ActivityOption[];
         } catch (error) {
-            safeConsoleError('[ReisUtils][parseActivityOptions]', error);
+            safeConsoleError('[reis-utils.ts][parseActivityOptions] ', error);
             return [];
         }
     }
@@ -50,7 +50,7 @@ export function parseSelectedOptions(selected: unknown): Record<string, boolean>
             const parsed = JSON.parse(selected) as unknown;
             return (typeof parsed === 'object' && parsed !== null) ? (parsed as Record<string, boolean>) : {};
         } catch (error) {
-            safeConsoleError('[ReisUtils][parseSelectedOptions]', error);
+            safeConsoleError('[reis-utils.ts][parseSelectedOptions] ', error);
             return {};
         }
     }

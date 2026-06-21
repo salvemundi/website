@@ -83,10 +83,10 @@ export async function retryActivityPayment(signupId: number) {
             return { success: true, checkoutUrl: paymentData.checkoutUrl };
         }
 
-        safeConsoleError(`[payment-retry.actions][retryActivityPayment] Finance payment creation failed. Status: ${paymentRes.status}`);
+        safeConsoleError(`[payment-retry.actions.ts][retryActivityPayment] Finance payment creation failed. Status: ${paymentRes.status}`);
         return { success: false, error: "Kon geen nieuwe betaling aanmaken. Probeer het later opnieuw." };
     } catch (error: unknown) {
-        safeConsoleError('[payment-retry.actions][retryActivityPayment] Unexpected failure:', error);
+        safeConsoleError('[payment-retry.actions.ts][retryActivityPayment] Unexpected failure:', error);
         return { success: false, error: "Er is een onverwachte fout opgetreden. Probeer het later opnieuw." };
     }
 }

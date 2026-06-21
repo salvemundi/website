@@ -70,7 +70,7 @@ export async function setImpersonateToken(token: string) {
         };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('impersonation.actions.ts][setImpersonateToken]', `Error setting token: ${typedError.message}`);
+        safeConsoleError('[impersonation.actions.ts][setImpersonateToken] ', `Error setting token: ${typedError.message}`);
         return { success: false, error: "Deze token bestaat niet of is verlopen." };
     }
 }

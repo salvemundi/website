@@ -93,7 +93,7 @@ export default function LedenDetailIsland({
 
             return expiryDate >= today;
         } catch (error) {
-            safeConsoleError('[LedenDetailIsland][isMembershipActive]', error);
+            safeConsoleError('[LedenDetailIsland.tsx][LedenDetailIsland] ', error);
             return false;
         }
     }, [localMember.membership_expiry]);

@@ -16,7 +16,7 @@ export async function getTrips(): Promise<Trip[]> {
     const parsed = z.array(tripSchema).safeParse(sanitized);
 
     if (!parsed.success) {
-        safeConsoleError('admin-reis.queries.ts][getTrips]', `Validation failed for trips: ${parsed.error.message}`);
+        safeConsoleError('[admin-reis.queries.ts][getTrips] ', `Validation failed for trips: ${parsed.error.message}`);
         return sanitized as Trip[];
     }
 

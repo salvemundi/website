@@ -46,7 +46,7 @@ export function ReisFormIsland({
             await authClient.getSession();
             router.refresh();
         } catch (error) {
-            safeConsoleError('[ReisFormIsland][handleRefresh]', error);
+            safeConsoleError('[ReisFormIsland.tsx][ReisFormIsland] ', error);
         } finally {
             setTimeout(() => setRefreshing(false), 800);
         }

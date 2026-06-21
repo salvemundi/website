@@ -86,7 +86,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 setLastUpdated(new Date());
             }
         } catch (error) {
-            safeConsoleError('[SyncProvider][fetchStatus]', error);
+            safeConsoleError('[SyncContext.tsx][SyncProvider] ', error);
         }
     }, []);
 
@@ -129,7 +129,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 void fetchStatus();
             }
         } catch (error) {
-            safeConsoleError('[SyncProvider][handleFullSync]', error);
+            safeConsoleError('[SyncContext.tsx][SyncProvider] ', error);
             showToast('Netwerkfout bij het starten van de sync.', 'error');
         } finally {
             setIsStartingSync(false);
@@ -147,7 +147,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 void fetchStatus();
             }
         } catch (error) {
-            safeConsoleError('[SyncProvider][handleStopSync]', error);
+            safeConsoleError('[SyncContext.tsx][SyncProvider] ', error);
             showToast('Netwerkfout bij het stoppen van de sync.', 'error');
         } finally {
             setIsStopping(false);
@@ -165,7 +165,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 void fetchStatus();
             }
         } catch (error) {
-            safeConsoleError('[SyncProvider][handleResetSync]', error);
+            safeConsoleError('[SyncContext.tsx][SyncProvider] ', error);
             showToast('Netwerkfout bij het resetten van de sync.', 'error');
         } finally {
             setIsResetting(false);
@@ -186,7 +186,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 void fetchStatus();
             }
         } catch (error) {
-            safeConsoleError('[SyncProvider][handleUserSync]', error);
+            safeConsoleError('[SyncContext.tsx][SyncProvider] ', error);
             showToast('Netwerkfout bij het synchroniseren van de gebruiker.', 'error');
         } finally {
             setIsUserSyncLoading(false);

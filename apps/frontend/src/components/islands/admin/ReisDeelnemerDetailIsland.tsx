@@ -90,7 +90,7 @@ export default function ReisDeelnemerDetailIsland({
                 showToast('Activiteiten succesvol bijgewerkt', 'success');
             }
         } catch (error) {
-            safeConsoleError('[ReisDeelnemerDetailIsland][handleUpdateActivities]', error);
+            safeConsoleError('[ReisDeelnemerDetailIsland.tsx][ReisDeelnemerDetailIsland] ', error);
             showToast('Geen verbinding met de server', 'error');
         } finally {
             setIsUpdatingActivities(false);
@@ -109,7 +109,7 @@ export default function ReisDeelnemerDetailIsland({
                     showToast(res.error || 'Verwijderen mislukt', 'error');
                 }
             } catch (error) {
-                safeConsoleError('[ReisDeelnemerDetailIsland][handleDelete]', error);
+                safeConsoleError('[ReisDeelnemerDetailIsland.tsx][ReisDeelnemerDetailIsland] ', error);
                 showToast('Er is een onverwachte fout opgetreden', 'error');
             }
         });

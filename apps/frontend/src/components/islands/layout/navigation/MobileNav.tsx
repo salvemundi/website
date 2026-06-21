@@ -32,7 +32,7 @@ export function MobileNav({ user, isAuthenticated, navItems, canAccessAdmin }: O
                 router.push('/');
             }
         } catch (error) {
-            safeConsoleError('[MobileNav][onLogout] Logout function failed:', error);
+            safeConsoleError('[MobileNav.tsx][MobileNav] Logout function failed:', error);
         }
     };
 

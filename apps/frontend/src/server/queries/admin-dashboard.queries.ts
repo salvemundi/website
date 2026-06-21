@@ -94,7 +94,7 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
 
         return DashboardStatsSchema.parse(stats);
     } catch (error) {
-        safeConsoleError('[AdminDashboard][getDashboardStatsInternal]', error);
+        safeConsoleError('[admin-dashboard.queries.ts][getDashboardStatsInternal] ', error);
         return {
             totalMembers: 0,
             upcomingEventsCount: 0,
@@ -132,7 +132,7 @@ export async function getRecentActivitiesInternal(): Promise<RecentActivity[]> {
 
         return z.array(RecentActivitySchema).parse(mapped);
     } catch (error) {
-        safeConsoleError('[AdminDashboard][getRecentActivitiesInternal]', error);
+        safeConsoleError('[admin-dashboard.queries.ts][getRecentActivitiesInternal] ', error);
         return [];
     }
 }

@@ -34,7 +34,7 @@ const getAuthEnv = () => {
     try {
         return authEnvSchema.parse(process.env);
     } catch (error: unknown) {
-        safeConsoleError("[auth.ts][getAuthEnv]", error);
+        safeConsoleError("[auth.ts][getAuthEnv] ", error);
         throw error;
     }
 };

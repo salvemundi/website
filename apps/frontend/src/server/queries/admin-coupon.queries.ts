@@ -69,7 +69,7 @@ export async function getCoupons(): Promise<Coupon[]> {
             date_created: typeof i.date_created === 'string' ? i.date_created : undefined
         }));
     } catch (error) {
-        safeConsoleError('[admin-coupon.queries][getCoupons] error while fetching coupons:', error);
+        safeConsoleError('[admin-coupon.queries.ts][getCoupons] error while fetching coupons:', error);
         throw error;
     }
 }
@@ -95,7 +95,7 @@ export async function createCoupon(couponData: { coupon_code: string; discount_t
             date_created: typeof i.date_created === 'string' ? i.date_created : undefined
         };
     } catch (error) {
-        safeConsoleError('[admin-coupon.queries][createCoupon] error while creating coupon:', error);
+        safeConsoleError('[admin-coupon.queries.ts][createCoupon] error while creating coupon:', error);
         throw error;
     }
 }

@@ -39,7 +39,7 @@ export async function getEnrichedSession(): Promise<{ user: EnrichedUser; sessio
             h = await headers();
         } catch (error) {
             // Log de fout zodat 'error' gebruikt wordt en de linter niet klaagt
-            safeConsoleError('[AuthUtils][getEnrichedSession] Header retrieval failed', error);
+            safeConsoleError('[auth-utils.ts][getEnrichedSession] Header retrieval failed', error);
             return null;
         }
 
@@ -60,11 +60,11 @@ export async function getEnrichedSession(): Promise<{ user: EnrichedUser; sessio
         return null;
     } catch (error) {
         const stack = error instanceof Error ? error.stack : new Error().stack;
-        safeConsoleError('[AuthUtils][getEnrichedSession] Critical failure', {
-            message: error instanceof Error ? error.message : String(error),
-            stack,
-            errorObject: error
-        });
+        safeConsoleError('[auth-utils.ts][getEnrichedSession] Critical failure', {
+                    message: error instanceof Error ? error.message : String(error),
+                    stack,
+                    errorObject: error
+                });
         throw error;
     }
 }

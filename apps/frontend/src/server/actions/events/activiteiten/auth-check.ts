@@ -28,7 +28,7 @@ export async function getAuthorizedUser() {
     try {
         committees = await fetchUserCommitteesDb(user.id);
     } catch (error) {
-        safeConsoleError('[action][getAuthorizedUser]', error);
+        safeConsoleError('[auth-check.ts][getAuthorizedUser] ', error);
     }
 
     const permissions = getPermissions(committees);

@@ -55,7 +55,7 @@ export async function createTripActivity(formData: FormData) {
         if (!newId) throw new Error('Database insert failed');
 
         getSystemDirectus().request(createItem('trip_activities', validated.data)).catch((error) => {
-            safeConsoleError(`[ReisActivities][createTripActivity] Failed to create trip activity ${newId}:`, error);
+            safeConsoleError(`[reis-activities.actions.ts][createTripActivity] Failed to create trip activity ${newId}:`, error);
         });
 
         revalidateTag('trip_activities', 'max');
@@ -112,7 +112,7 @@ export async function updateTripActivity(formData: FormData) {
         if (!success) throw new Error('Database update failed');
 
         getSystemDirectus().request(updateItem('trip_activities', id, validated.data)).catch((error) => {
-            safeConsoleError(`[ReisActivities][updateTripActivity] Failed to update trip activity ${id}:`, error);
+            safeConsoleError(`[reis-activities.actions.ts][updateTripActivity] Failed to update trip activity ${id}:`, error);
         });
 
         revalidateTag('trip_activities', 'max');
@@ -137,7 +137,7 @@ export async function deleteTripActivity(id: number) {
         if (!success) throw new Error('Database delete failed');
 
         getSystemDirectus().request(deleteItem('trip_activities', id)).catch((error) => {
-            safeConsoleError(`[ReisActivities][deleteTripActivity] Failed to delete trip activity ${id}:`, error);
+            safeConsoleError(`[reis-activities.actions.ts][deleteTripActivity] Failed to delete trip activity ${id}:`, error);
         });
 
         revalidateTag('trip_activities', 'default');
@@ -148,7 +148,7 @@ export async function deleteTripActivity(id: number) {
 
         return { success: true };
     } catch (error) {
-        safeConsoleError(`[ReisActivities][deleteTripActivity] Failed to delete trip activity ${id}:`, error);
+        safeConsoleError(`[reis-activities.actions.ts][deleteTripActivity] Failed to delete trip activity ${id}:`, error);
         const message = error instanceof Error ? error.message : 'Onbekende fout';
         return { success: false, error: message };
     }

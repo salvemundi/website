@@ -35,7 +35,7 @@ export async function GET(
         });
 
         if (!res.ok) {
-            logInternalError(`Asset Route Error: ${res.status}`, { id });
+            logInternalError(`[route.ts][GET] Asset Route Error: ${res.status}`, { id });
             return new Response(null, { status: res.status });
         }
 
@@ -51,7 +51,7 @@ export async function GET(
         });
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        logInternalError(`Critical asset fetch error: ${errorMessage}`, { id });
+        logInternalError(`[route.ts][GET] Critical asset fetch error: ${errorMessage}`, { id });
         return new Response(null, { status: 500 });
     }
 }

@@ -137,7 +137,7 @@ export function filterProfileSignups(
                 // Returns true if event is today or in the future
                 return eventDate.getTime() >= todayStart.getTime();
             } catch (error) {
-                safeConsoleError('[filterProfileSignups][filter]', error);
+                safeConsoleError('[profile-admin.utils.ts][filterProfileSignups] ', error);
                 return true;
             }
         });

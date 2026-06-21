@@ -26,7 +26,7 @@ export class TokenService {
             }
         } catch (error: unknown) {
             const typedError = error instanceof Error ? error : new Error(String(error));
-            safeConsoleError('token.service.ts][getAccessToken]', `Redis cache read error: ${typedError.message}`);
+            safeConsoleError('[token.service.ts][getAccessToken] ', `Redis cache read error: ${typedError.message}`);
         }
 
         safeConsoleLog('token.service.ts][getAccessToken]', 'Cache miss or expired. Fetching fresh token from Azure...');
@@ -42,7 +42,7 @@ export class TokenService {
             await redis.set(this.CACHE_KEY, tokenResponse.token, 'EX', 3000);
         } catch (error: unknown) {
             const typedError = error instanceof Error ? error : new Error(String(error));
-            safeConsoleError('token.service.ts][getAccessToken]', `Redis cache write error: ${typedError.message}`);
+            safeConsoleError('[token.service.ts][getAccessToken] ', `Redis cache write error: ${typedError.message}`);
         }
 
         return tokenResponse.token;

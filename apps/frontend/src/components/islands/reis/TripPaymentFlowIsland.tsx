@@ -192,7 +192,7 @@ export default function TripPaymentFlowIsland({
             }
             setStep(step + 1);
         } catch (error) {
-            safeConsoleError('[TripPaymentFlowIsland][handleNext]', error);
+            safeConsoleError('[TripPaymentFlowIsland.tsx][TripPaymentFlowIsland] ', error);
             setError('Er is een onverwachte fout opgetreden.');
         } finally {
             setLoading(false);
@@ -213,7 +213,7 @@ export default function TripPaymentFlowIsland({
             setLocalSignup({ ...localSignup, ...formData });
             setStep(2);
         } catch (error) {
-            safeConsoleError('[TripPaymentFlowIsland][confirmNameAndProceed]', error);
+            safeConsoleError('[TripPaymentFlowIsland.tsx][TripPaymentFlowIsland] ', error);
             setError('Fout bij opslaan gegevens.');
         } finally {
             setLoading(false);

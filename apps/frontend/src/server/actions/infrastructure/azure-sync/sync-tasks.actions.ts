@@ -25,7 +25,7 @@ export async function triggerFullSyncAction(options?: { fields: string[]; forceL
     }
 
     if (!AZURE_SYNC_URL) {
-        safeConsoleError("[sync-tasks.actions][triggerFullSyncAction] AZURE_SYNC_SERVICE_URL is not configured.");
+        safeConsoleError("[sync-tasks.actions.ts][triggerFullSyncAction] AZURE_SYNC_SERVICE_URL is not configured.");
         return { success: false, error: "Systeemfout: Sync service URL niet geconfigureerd." };
     }
 
@@ -46,11 +46,11 @@ export async function triggerFullSyncAction(options?: { fields: string[]; forceL
 
         if (!res.ok) {
             const errorData = (await res.json().catch((parseError: unknown) => {
-                safeConsoleError('[sync-tasks.actions][triggerFullSyncAction] Error parsing sync response:', parseError);
+                safeConsoleError('[sync-tasks.actions.ts][triggerFullSyncAction] Error parsing sync response:', parseError);
                 return { error: 'Sync service onbeschikbaar' };
             })) as unknown as SyncServiceErrorResponse;
 
-            safeConsoleError(`[sync-tasks.actions][triggerFullSyncAction] POST /run failed with status ${res.status}`, errorData);
+            safeConsoleError(`[sync-tasks.actions.ts][triggerFullSyncAction] POST /run failed with status ${res.status}`, errorData);
 
             const errorMsg = typeof errorData.details === 'string'
                 ? errorData.details
@@ -70,7 +70,7 @@ export async function triggerFullSyncAction(options?: { fields: string[]; forceL
         if (error instanceof Error && error.name === 'AbortError') {
             return { success: false, error: "Kon de synchronisatie niet starten (Timeout 30s)." };
         }
-        safeConsoleError(`[sync-tasks.actions][triggerFullSyncAction] Connection error to ${AZURE_SYNC_URL}/api/sync/run`, error);
+        safeConsoleError(`[sync-tasks.actions.ts][triggerFullSyncAction] Connection error to ${AZURE_SYNC_URL}/api/sync/run`, error);
         return { success: false, error: "Kon geen verbinding maken met de sync service." };
     }
 }
@@ -85,7 +85,7 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
     }
 
     if (!AZURE_SYNC_URL) {
-        safeConsoleError("[sync-tasks.actions][triggerUserSyncAction] AZURE_SYNC_SERVICE_URL is not configured.");
+        safeConsoleError("[sync-tasks.actions.ts][triggerUserSyncAction] AZURE_SYNC_SERVICE_URL is not configured.");
         return { success: false, error: "Systeemfout: Sync service URL niet geconfigureerd." };
     }
 
@@ -97,7 +97,7 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
         }));
         targetUser = (users as unknown as DirectusUserRow[])[0] as DirectusUserRow | undefined;
     } catch (error: unknown) {
-        safeConsoleError(`[sync-tasks.actions][triggerUserSyncAction] Directus lookup failed for user ${userId}`, error);
+        safeConsoleError(`[sync-tasks.actions.ts][triggerUserSyncAction] Directus lookup failed for user ${userId}`, error);
         return { success: false, error: "Kon de gebruiker niet ophalen uit Directus." };
     }
 
@@ -127,11 +127,11 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
 
         if (!res.ok) {
             const errorData = (await res.json().catch((parseError: unknown) => {
-                safeConsoleError('[sync-tasks.actions][triggerUserSyncAction] Error parsing sync response:', parseError);
+                safeConsoleError('[sync-tasks.actions.ts][triggerUserSyncAction] Error parsing sync response:', parseError);
                 return { error: 'Sync service onbeschikbaar' };
             })) as unknown as SyncServiceErrorResponse;
 
-            safeConsoleError(`[sync-tasks.actions][triggerUserSyncAction] POST /run/:id failed with status ${res.status}`, errorData);
+            safeConsoleError(`[sync-tasks.actions.ts][triggerUserSyncAction] POST /run/:id failed with status ${res.status}`, errorData);
 
             const errorMsg = typeof errorData.details === 'string'
                 ? errorData.details
@@ -155,13 +155,13 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
     } catch (error: unknown) {
         clearTimeout(timeoutId);
         if (error instanceof Error && error.name === 'AbortError') {
-            logWarn(`[sync-tasks.actions][triggerUserSyncAction] Request to ${AZURE_SYNC_URL} timed out after 60s`);
+            logWarn(`[sync-tasks.actions.ts][triggerUserSyncAction] Request to ${AZURE_SYNC_URL} timed out after 60s`);
             return {
                 success: false,
                 error: "De synchronisatie duurt te lang (60s). De taak loopt mogelijk nog op de achtergrond; ververs de pagina over een minuut."
             };
         }
-        safeConsoleError(`[sync-tasks.actions][triggerUserSyncAction] Connection error to ${AZURE_SYNC_URL}/api/sync/run/${userId}`, error);
+        safeConsoleError(`[sync-tasks.actions.ts][triggerUserSyncAction] Connection error to ${AZURE_SYNC_URL}/api/sync/run/${userId}`, error);
         return { success: false, error: "Kon geen verbinding maken met de sync service." };
     }
 }

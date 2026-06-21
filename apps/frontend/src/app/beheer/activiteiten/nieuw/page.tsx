@@ -29,7 +29,7 @@ async function getCommitteesForUser(
             return rows as { id: number; name: string; email?: string | null }[];
         }
     } catch (error) {
-        safeConsoleError('[page][ActivityCreatePage]', error);
+        safeConsoleError('[page.tsx][getCommitteesForUser] ', error);
         return [];
     }
 }
@@ -53,7 +53,7 @@ export default async function ActivityCreatePage() {
     try {
         userCommittees = await fetchUserCommitteesDb(user.id);
     } catch (error) {
-        safeConsoleError('[page][ActivityCreatePage]', error);
+        safeConsoleError('[page.tsx][ActivityCreatePage] ', error);
     }
 
     const permissions = getPermissions(userCommittees);

@@ -33,7 +33,7 @@ export class ProvisionWorkerService {
     }
 
     static async start(redis: Redis) {
-        logInfo('provision-worker.ts][start]', 'Starting background worker loop...');
+        logInfo('[provision-worker.ts][start] ', 'Starting background worker loop...');
 
         while (!this.isStopped()) {
             try {
@@ -53,14 +53,14 @@ export class ProvisionWorkerService {
                         taskRaw = JSON.parse(taskJson);
                     } catch (parseError: unknown) {
                         const typedParseError = parseError instanceof Error ? parseError : new Error(String(parseError));
-                        safeConsoleError('provision-worker.ts][start]', `Failed to parse JSON, removing corrupt task: ${taskJson} - ${typedParseError.message}`);
+                        safeConsoleError('[provision-worker.ts][start] ', `Failed to parse JSON, removing corrupt task: ${taskJson} - ${typedParseError.message}`);
                         await redis.zrem(this.QUEUE_KEY, taskJson);
                         continue;
                     }
 
                     const parsed = ProvisionTaskSchema.safeParse(taskRaw);
                     if (!parsed.success) {
-                        safeConsoleError('provision-worker.ts][start]', `Invalid task schema, removing corrupt task: ${taskJson}`);
+                        safeConsoleError('[provision-worker.ts][start] ', `Invalid task schema, removing corrupt task: ${taskJson}`);
                         await redis.zrem(this.QUEUE_KEY, taskJson);
                         continue;
                     }
@@ -68,16 +68,16 @@ export class ProvisionWorkerService {
                     const task = parsed.data;
 
                     try {
-                        logInfo('provision-worker.ts][start]', `Provisioning user ${task.userId}...`);
+                        logInfo('[provision-worker.ts][start] ', `Provisioning user ${task.userId}...`);
 
                         const token = await TokenService.getAccessToken(redis);
                         await SyncJob.syncByEntraId(redis, task.userId, token);
 
                         await redis.zrem(this.QUEUE_KEY, taskJson);
-                        logInfo('provision-worker.ts][start]', `Successfully provisioned user ${task.userId}`);
+                        logInfo('[provision-worker.ts][start] ', `Successfully provisioned user ${task.userId}`);
                     } catch (error: unknown) {
                         const typedError = error instanceof Error ? error : new Error(String(error));
-                        safeConsoleError('provision-worker.ts][start]', `Failed provisioning for user ${task.userId}: ${typedError.message}`);
+                        safeConsoleError('[provision-worker.ts][start] ', `Failed provisioning for user ${task.userId}: ${typedError.message}`);
 
                         task.retries += 1;
                         await redis.zrem(this.QUEUE_KEY, taskJson);
@@ -85,9 +85,9 @@ export class ProvisionWorkerService {
                         if (task.retries < task.maxRetries) {
                             const delay = 10000 * Math.pow(task.retries, 2);
                             await redis.zadd(this.QUEUE_KEY, Date.now() + delay, JSON.stringify(task));
-                            logInfo('provision-worker.ts][start]', `Retrying in ${delay / 1000}s (Attempt ${task.retries}).`);
+                            logInfo('[provision-worker.ts][start] ', `Retrying in ${delay / 1000}s (Attempt ${task.retries}).`);
                         } else {
-                            safeConsoleError('provision-worker.ts][start]', `MAX RETRIES reached for user ${task.userId}. Dropping task.`);
+                            safeConsoleError('[provision-worker.ts][start] ', `MAX RETRIES reached for user ${task.userId}. Dropping task.`);
                         }
                     }
                 }
@@ -100,11 +100,11 @@ export class ProvisionWorkerService {
                     errorMessage.includes('ENOTFOUND');
 
                 if (isConnectionFailure) {
-                    safeConsoleError('provision-worker.ts][start]', typedError);
+                    safeConsoleError('[provision-worker.ts][start] ', typedError);
                     throw typedError;
                 }
 
-                safeConsoleError('provision-worker.ts][start]', typedError);
+                safeConsoleError('[provision-worker.ts][start] ', typedError);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }

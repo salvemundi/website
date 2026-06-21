@@ -150,6 +150,14 @@ const eslintConfig = [
         rules: {
             "security/detect-object-injection": "off"
         }
+    },
+    {
+        // Next.js ImageResponse (Satori) does not support the <Image /> component. 
+        // Standard HTML <img> tags are strictly required for OpenGraph endpoints.
+        files: ["src/app/**/opengraph-image.tsx", "src/app/**/twitter-image.tsx"],
+        rules: {
+            "@next/next/no-img-element": "off"
+        }
     }
 ];
 

@@ -84,7 +84,7 @@ export async function getImpersonatedUser(testToken: string, pool: Pool): Promis
         return targetUser;
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('impersonation.ts][getImpersonatedUser]', `Impersonation Error: ${typedError.message}`);
+        safeConsoleError('[impersonation.ts][getImpersonatedUser] ', `Impersonation Error: ${typedError.message}`);
         return null;
     }
 }

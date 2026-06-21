@@ -55,7 +55,7 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
                 day = d.toLocaleDateString('nl-NL', { weekday: 'long' });
             }
         } catch (error) {
-            safeConsoleError('[intro-planning.actions][upsertIntroPlanning] Error calculating day:', error);
+            safeConsoleError('[intro-planning.actions.ts][upsertIntroPlanning] Error calculating day:', error);
         }
     }
 
@@ -86,7 +86,7 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
         };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        safeConsoleError('[intro-planning.actions][upsertIntroPlanning] Failed to upsert planning:', error);
+        safeConsoleError('[intro-planning.actions.ts][upsertIntroPlanning] Failed to upsert planning:', error);
         return { success: false, error: `Opslaan mislukt: ${message}` };
     }
 }

@@ -60,7 +60,7 @@ function getParticipants(signup: ExtendedSignup): Participant[] {
                 return parsed as Participant[];
             }
         } catch (error) {
-            safeConsoleError('[SignupList][getParticipants] JSON parse error', error);
+            safeConsoleError('[SignupList.tsx][getParticipants] JSON parse error', error);
         }
         return [];
     }

@@ -57,7 +57,7 @@ export async function getSystemAutomationSettings(): Promise<{ success: boolean;
         };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('admin-automation.actions.ts][getSystemAutomationSettings]', `Failed to fetch settings: ${typedError.message}`);
+        safeConsoleError('[admin-automation.actions.ts][getSystemAutomationSettings] ', `Failed to fetch settings: ${typedError.message}`);
         return { success: false, error: 'Ophalen automatisering instellingen mislukt' };
     }
 }

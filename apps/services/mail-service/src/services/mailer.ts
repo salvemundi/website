@@ -150,7 +150,7 @@ export class MailerService {
             return true;
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : String(error);
-            safeConsoleError(`[MailerService] Failed to send email:`, errorMessage);
+            safeConsoleError(`[mailer.ts][send] Failed to send email:`, errorMessage);
             safeConsoleLog(`[MailerService] [timing] TOTAL send() (failed): ${ms(totalStart)}`);
             throw error;
         }

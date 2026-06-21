@@ -45,7 +45,7 @@ export async function getActivities(email?: string): Promise<(Activiteit & { is_
         }));
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('public-activiteit.actions.ts][getActivities]', `Failed to fetch user signups for activities: ${typedError.message}`);
+        safeConsoleError('[public-activiteit.actions.ts][getActivities] ', `Failed to fetch user signups for activities: ${typedError.message}`);
         return activities;
     }
 }
@@ -94,7 +94,7 @@ export async function checkUserSignupStatus(eventId: number, email: string, user
         return { isSignedUp: false };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('public-activiteit.actions.ts][checkUserSignupStatus]', `Failed to check user signup status: ${typedError.message}`);
+        safeConsoleError('[public-activiteit.actions.ts][checkUserSignupStatus] ', `Failed to check user signup status: ${typedError.message}`);
         throw new Error('Er is een fout opgetreden bij het controleren van uw inschrijving');
     }
 }
@@ -194,11 +194,11 @@ export async function signupForActivity(data: EventSignupForm) {
                 await deleteEventSignupDb(signupId);
                 getSystemDirectus().request(deleteItem('event_signups', signupId)).catch((deleteError: unknown) => {
                     const typedDeleteError = deleteError instanceof Error ? deleteError : new Error(String(deleteError));
-                    safeConsoleError('public-activiteit.actions.ts][signupForActivity]', `Failed to delete signup ${signupId}: ${typedDeleteError.message}`);
+                    safeConsoleError('[public-activiteit.actions.ts][signupForActivity] ', `Failed to delete signup ${signupId}: ${typedDeleteError.message}`);
                 });
             } catch (deleteError: unknown) {
                 const typedDeleteError = deleteError instanceof Error ? deleteError : new Error(String(deleteError));
-                safeConsoleError('public-activiteit.actions.ts][signupForActivity]', `Failed to delete signup ${signupId}: ${typedDeleteError.message}`);
+                safeConsoleError('[public-activiteit.actions.ts][signupForActivity] ', `Failed to delete signup ${signupId}: ${typedDeleteError.message}`);
                 throw new Error('Er is een fout opgetreden bij het aanmelden voor deze activiteit');
             }
 

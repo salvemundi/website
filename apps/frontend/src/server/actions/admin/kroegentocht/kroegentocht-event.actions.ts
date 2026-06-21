@@ -26,7 +26,7 @@ export async function getPubCrawlEvents(): Promise<PubCrawlEvent[]> {
     try {
         return await fetchPubCrawlEventsDb();
     } catch (error) {
-        safeConsoleError(`[Kroegentocht-Action][getPubCrawlEvents] Failed to fetch events:`, error);
+        safeConsoleError(`[kroegentocht-event.actions.ts][getPubCrawlEvents] Failed to fetch events:`, error);
         throw new Error('Kon events niet ophalen');
     }
 }
@@ -39,7 +39,7 @@ export async function getPubCrawlEvent(id: string | number): Promise<PubCrawlEve
         if (!event) throw new Error('Event niet gevonden');
         return pubCrawlEventSchema.parse(event);
     } catch (error) {
-        safeConsoleError(`[Kroegentocht-Action][getPubCrawlEvent] Failed to fetch event ${id}:`, error);
+        safeConsoleError(`[kroegentocht-event.actions.ts][getPubCrawlEvent] Failed to fetch event ${id}:`, error);
         throw new Error('Kon event niet ophalen');
     }
 }
@@ -150,7 +150,7 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
         return { success: true };
     } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Onbekende fout';
-        safeConsoleError(`[Kroegentocht-Action][upsertPubCrawlEvent] Failed to upsert event:`, e);
+        safeConsoleError(`[kroegentocht-event.actions.ts][upsertPubCrawlEvent] Failed to upsert event:`, e);
         throw new Error('Opslaan van event mislukt: ' + message);
     }
 }
@@ -162,7 +162,7 @@ export async function uploadPubCrawlImage(formData: FormData) {
         const response = await client.request(uploadFiles(formData));
         return response;
     } catch (error) {
-        safeConsoleError(`[Kroegentocht-Action][uploadPubCrawlImage] Failed to upload image:`, error);
+        safeConsoleError(`[kroegentocht-event.actions.ts][uploadPubCrawlImage] Failed to upload image:`, error);
         throw new Error('Afbeelding uploaden mislukt');
     }
 }
@@ -180,7 +180,7 @@ export async function updatePubCrawlEventGroups(eventId: number, groups: unknown
         revalidatePath('/beheer/kroegentocht');
         return { success: true };
     } catch (error) {
-        safeConsoleError('[Kroegentocht-Action][updatePubCrawlEventGroups] Error:', error);
+        safeConsoleError('[kroegentocht-event.actions.ts][updatePubCrawlEventGroups] Error:', error);
         throw new Error('Bijwerken groepsindeling mislukt');
     }
 }

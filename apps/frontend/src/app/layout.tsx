@@ -103,7 +103,7 @@ async function HeaderWrapper({ initialSession, isAuthorized }: { initialSession:
     try {
         disabledRoutes = await getDisabledRoutes();
     } catch (error) {
-        safeConsoleError('[layout][HeaderWrapper]', error);
+        safeConsoleError('[layout.tsx][HeaderWrapper] ', error);
         initialSession = null;
         isAuthorized = false;
     }
@@ -133,7 +133,7 @@ async function FooterWrapper({ initialSession, className }: { initialSession: Ex
         disabledRoutes = results[1];
         committees = results[2];
     } catch (error) {
-        safeConsoleError('[layout][FooterWrapper]', error);
+        safeConsoleError('[layout.tsx][FooterWrapper] ', error);
     }
 
     return (

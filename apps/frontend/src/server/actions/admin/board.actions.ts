@@ -40,14 +40,14 @@ export async function getBoardHistory(): Promise<Board[]> {
         const parsed = boardHistorySchema.safeParse(rows);
 
         if (!parsed.success) {
-            safeConsoleError('[BoardActions][getBoardHistory] Zod validation failed', parsed.error);
+            safeConsoleError('[board.actions.ts][getBoardHistory] Zod validation failed', parsed.error);
             return [];
         }
 
         return parsed.data;
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        safeConsoleError('[BoardActions][getBoardHistory] SQL Query failed:', message);
+        safeConsoleError('[board.actions.ts][getBoardHistory] SQL Query failed:', message);
         return [];
     }
 }

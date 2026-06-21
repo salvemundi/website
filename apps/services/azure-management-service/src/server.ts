@@ -45,11 +45,11 @@ const start = async () => {
         console.log(`Azure Management Service listening on port ${port}`);
 
         ProvisionWorkerService.start(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][startWorker]', error);
+            safeConsoleError('[server.ts][start] ', error);
             process.exit(1);
         });
     } catch (error) {
-        safeConsoleError('Azure Management Service failed to start:', error);
+        safeConsoleError('[server.ts][start] Azure Management Service failed to start:', error);
         process.exit(1);
     }
 };

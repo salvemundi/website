@@ -20,7 +20,7 @@ const formatFullDate = (d: Date) => {
             year: 'numeric'
         }).format(d);
     } catch (error) {
-        safeConsoleError('[ReisInfoIsland][formatFullDate]', error);
+        safeConsoleError('[ReisInfoIsland.tsx][formatFullDate] ', error);
         return 'Onbekend';
     }
 };

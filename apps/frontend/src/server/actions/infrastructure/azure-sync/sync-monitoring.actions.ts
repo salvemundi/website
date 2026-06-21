@@ -29,7 +29,7 @@ export async function getSyncStatusAction(): Promise<SyncStatus | { success: fal
     }
 
     if (!AZURE_SYNC_URL) {
-        safeConsoleError("[sync-monitoring.actions][getSyncStatusAction] AZURE_SYNC_SERVICE_URL is not configured.");
+        safeConsoleError("[sync-monitoring.actions.ts][getSyncStatusAction] AZURE_SYNC_SERVICE_URL is not configured.");
         return { success: false, error: "Systeemfout: Sync service URL niet geconfigureerd." };
     }
 
@@ -42,7 +42,7 @@ export async function getSyncStatusAction(): Promise<SyncStatus | { success: fal
         });
 
         if (!res.ok) {
-            safeConsoleError(`[sync-monitoring.actions][getSyncStatusAction] GET /status failed: ${res.status}`);
+            safeConsoleError(`[sync-monitoring.actions.ts][getSyncStatusAction] GET /status failed: ${res.status}`);
             return { success: false, error: "Status service onbeschikbaar" };
         }
 
@@ -50,7 +50,7 @@ export async function getSyncStatusAction(): Promise<SyncStatus | { success: fal
         return data;
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Kon status niet ophalen.';
-        safeConsoleError(`[sync-monitoring.actions][getSyncStatusAction] Connection error to status endpoint:`, message);
+        safeConsoleError(`[sync-monitoring.actions.ts][getSyncStatusAction] Connection error to status endpoint:`, message);
         return { success: false, error: "Kon status niet ophalen." };
     }
 }
@@ -77,7 +77,7 @@ export async function stopSyncAction() {
         return { success: true };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        safeConsoleError("[sync-monitoring.actions][stopSyncAction] Stop sync failed:", message);
+        safeConsoleError("[sync-monitoring.actions.ts][stopSyncAction] Stop sync failed:", message);
         return { success: false, error: message };
     }
 }
@@ -101,7 +101,7 @@ export async function resetSyncStatusAction() {
         return { success: true };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';
-        safeConsoleError("[sync-monitoring.actions][resetSyncStatusAction] Reset sync failed:", message);
+        safeConsoleError("[sync-monitoring.actions.ts][resetSyncStatusAction] Reset sync failed:", message);
         return { success: false, error: message };
     }
 }

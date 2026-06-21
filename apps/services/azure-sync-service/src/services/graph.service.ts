@@ -52,7 +52,7 @@ export class GraphService {
     }
 
     static async getAllUsers(token: string): Promise<AzureUser[]> {
-        logInfo(`[GraphService] getAllUsers started`);
+        logInfo(`[graph.service.ts][getAllUsers] getAllUsers started`);
         let allUsers: AzureUser[];
         const client = this.getClient(token);
 
@@ -70,7 +70,7 @@ export class GraphService {
                     if (i === retries - 1) throw error;
                     const delay = Math.pow(2, i) * 1000;
                     const statusCode = (error as { statusCode?: number }).statusCode || 500;
-                    safeConsoleError(`[GraphService] Request failed (Status ${statusCode}), retrying in ${delay}ms...`);
+                    safeConsoleError(`[graph.service.ts][getAllUsers] Request failed (Status ${statusCode}), retrying in ${delay}ms...`);
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
@@ -79,23 +79,23 @@ export class GraphService {
 
         try {
             const selectFields = 'id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,customSecurityAttributes';
-            logInfo(`[GraphService] Fetching users (page 1)...`);
+            logInfo(`[graph.service.ts][getAllUsers] Fetching users (page 1)...`);
             let response = await fetchWithRetry('/users', selectFields, 100) as Record<string, unknown>;
 
-            logInfo(`[GraphService] Received response from /users. Count: ${(response.value as unknown[] | undefined)?.length}`);
+            logInfo(`[graph.service.ts][getAllUsers] Received response from /users. Count: ${(response.value as unknown[] | undefined)?.length}`);
             allUsers = [...((response.value as AzureUser[] | undefined) || [])];
 
             let page = 1;
             while (response['@odata.nextLink']) {
                 page++;
-                logInfo(`[GraphService] Fetching users (page ${page})...`);
+                logInfo(`[graph.service.ts][getAllUsers] Fetching users (page ${page})...`);
                 response = await fetchWithRetry(response['@odata.nextLink'] as string, undefined, 100) as Record<string, unknown>;
                 allUsers = [...allUsers, ...((response.value as AzureUser[] | undefined) || [])];
             }
 
             return allUsers;
         } catch (error: unknown) {
-            safeConsoleError(`[GraphService] Error in getAllUsers:`, JSON.stringify(error, null, 2));
+            safeConsoleError(`[graph.service.ts][getAllUsers] Error in getAllUsers:`, JSON.stringify(error, null, 2));
             throw error;
         }
     }
@@ -116,7 +116,7 @@ export class GraphService {
         } catch (error: unknown) {
             const err = error as { statusCode?: number; message?: string };
             if (err.statusCode === 403 || err.message?.includes('Insufficient privileges')) {
-                safeConsoleError(`[GraphService] Insufficient privileges to read owners of group ${groupId}. Returning empty list.`);
+                safeConsoleError(`[graph.service.ts][getGroupOwners] Insufficient privileges to read owners of group ${groupId}. Returning empty list.`);
                 return [];
             }
             throw error;
@@ -143,7 +143,7 @@ export class GraphService {
                 result.set(id, { members, owners });
             } catch (error: unknown) {
                 const message = error instanceof Error ? error.message : String(error);
-                safeConsoleError(`[GraphService] Failed to fetch details for group ${id}:`, message);
+                safeConsoleError(`[graph.service.ts][getBatchGroupDetails] Failed to fetch details for group ${id}:`, message);
                 result.set(id, { members: [], owners: [] });
             }
         }
@@ -178,7 +178,7 @@ export class GraphService {
                     }
                 }
             } catch (error) {
-                safeConsoleError(`[GraphService] Batch photo fetch failed:`, error);
+                safeConsoleError(`[graph.service.ts][getUserPhotosBatch] Batch photo fetch failed:`, error);
                 batchIds.forEach(id => { if (!result.has(id)) result.set(id, null); });
             }
         }
@@ -205,7 +205,7 @@ export class GraphService {
 
             return { buffer, contentType };
         } catch (error) {
-            safeConsoleError(`[GraphService] Error fetching photo for user ${userId}:`, error);
+            safeConsoleError(`[graph.service.ts][getUserPhoto] Error fetching photo for user ${userId}:`, error);
             return null;
         }
     }

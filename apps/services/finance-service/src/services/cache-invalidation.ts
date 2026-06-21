@@ -31,11 +31,11 @@ export class CacheInvalidationService {
         };
 
         await redis.zadd(this.QUEUE_KEY, Date.now(), JSON.stringify(task));
-        safeConsoleError('cache-invalidation.ts][queueInvalidation]', `Queued task for user ${userId} in Sorted Set`);
+        safeConsoleError('[cache-invalidation.ts][queueInvalidation] ', `Queued task for user ${userId} in Sorted Set`);
     }
 
     static async startWorker(redis: Redis) {
-        safeConsoleError('cache-invalidation.ts][startWorker]', 'Starting Retry Worker Loop...');
+        safeConsoleError('[cache-invalidation.ts][startWorker] ', 'Starting Retry Worker Loop...');
 
         while (!this.shouldStop) {
             try {
@@ -52,7 +52,7 @@ export class CacheInvalidationService {
                         const result = InvalidationTaskSchema.safeParse(JSON.parse(taskStr));
 
                         if (!result.success) {
-                            safeConsoleError('cache-invalidation.ts][startWorker]', `Corrupt queue entry detected, removing task: ${result.error.message}`);
+                            safeConsoleError('[cache-invalidation.ts][startWorker] ', `Corrupt queue entry detected, removing task: ${result.error.message}`);
                             await redis.zrem(this.QUEUE_KEY, taskStr);
                             continue;
                         }
@@ -64,7 +64,7 @@ export class CacheInvalidationService {
                             await redis.zrem(this.QUEUE_KEY, taskStr);
                         } catch (error: unknown) {
                             const err = error instanceof Error ? error : new Error(String(error));
-                            safeConsoleError('cache-invalidation.ts][startWorker]', `Failed attempt ${task.retries + 1} for ${task.userId}: ${err.message}`);
+                            safeConsoleError('[cache-invalidation.ts][startWorker] ', `Failed attempt ${task.retries + 1} for ${task.userId}: ${err.message}`);
 
                             await redis.zrem(this.QUEUE_KEY, taskStr);
 
@@ -74,14 +74,14 @@ export class CacheInvalidationService {
                                 const nextAttempt = Date.now() + (backoffSec * 1000);
 
                                 await redis.zadd(this.QUEUE_KEY, nextAttempt, JSON.stringify(task));
-                                safeConsoleError('cache-invalidation.ts][startWorker]', `Rescheduled user ${task.userId} for +${backoffSec}s (next: ${new Date(nextAttempt).toISOString()})`);
+                                safeConsoleError('[cache-invalidation.ts][startWorker] ', `Rescheduled user ${task.userId} for +${backoffSec}s (next: ${new Date(nextAttempt).toISOString()})`);
                             } else {
-                                safeConsoleError('cache-invalidation.ts][startWorker]', `Max retries reached for user ${task.userId}. Dropping task.`);
+                                safeConsoleError('[cache-invalidation.ts][startWorker] ', `Max retries reached for user ${task.userId}. Dropping task.`);
                             }
                         }
                     } catch (parseErr: unknown) {
                         const err = parseErr instanceof Error ? parseErr : new Error(String(parseErr));
-                        safeConsoleError('cache-invalidation.ts][startWorker]', `Corrupt JSON detected, removing task: ${err.message}`);
+                        safeConsoleError('[cache-invalidation.ts][startWorker] ', `Corrupt JSON detected, removing task: ${err.message}`);
                         await redis.zrem(this.QUEUE_KEY, taskStr);
                     }
                 }
@@ -92,16 +92,16 @@ export class CacheInvalidationService {
                 const isFatal = errorMessage.includes('ECONNREFUSED') || errorMessage.includes('Connection is closed') || errorMessage.includes('ENOTFOUND');
 
                 if (isFatal) {
-                    safeConsoleError('cache-invalidation.ts][startWorker]', error);
+                    safeConsoleError('[cache-invalidation.ts][startWorker] ', error);
                     throw error;
                 }
 
-                safeConsoleError('cache-invalidation.ts][startWorker]', error);
+                safeConsoleError('[cache-invalidation.ts][startWorker] ', error);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }
 
-        safeConsoleError('cache-invalidation.ts][startWorker]', 'Worker Loop stopped gracefully.');
+        safeConsoleError('[cache-invalidation.ts][startWorker] ', 'Worker Loop stopped gracefully.');
     }
 
     static stopWorker() {
@@ -125,6 +125,6 @@ export class CacheInvalidationService {
             throw new Error(`Next.js API returned ${res.status}: ${errorBody}`);
         }
 
-        safeConsoleError('cache-invalidation.ts][processInvalidation]', `Successfully invalidated Next.js cache for tag: ${task.tag}`);
+        safeConsoleError('[cache-invalidation.ts][processInvalidation] ', `Successfully invalidated Next.js cache for tag: ${task.tag}`);
     }
 }

@@ -163,7 +163,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                     }
                 }
             } catch (error) {
-                safeConsoleError("[LidDetailPage][LidDetailPage] Failed fetching external Azure groups:", error);
+                safeConsoleError("[page.tsx][LidDetailPage] Failed fetching external Azure groups:", error);
             }
         }
 
@@ -177,7 +177,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
         ) {
             throw error;
         }
-        safeConsoleError("[LidDetailPage][LidDetailPage] Error loading member:", error);
+        safeConsoleError("[page.tsx][LidDetailPage] Error loading member:", error);
         throw error;
     }
 

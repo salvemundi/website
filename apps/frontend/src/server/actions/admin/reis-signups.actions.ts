@@ -52,7 +52,7 @@ export async function updateSignupStatus(signupId: number, status: string) {
 
         // Shadow Write (Directus)
         getSystemDirectus().request(updateItem('trip_signups', signupId, { status })).catch((error) => {
-            safeConsoleError(`[ReisSignups][updateSignupStatus] Failed to update trip signup ${signupId}:`, error);
+            safeConsoleError(`[reis-signups.actions.ts][updateSignupStatus] Failed to update trip signup ${signupId}:`, error);
         });
 
         await logAdminAction('admin_trip_signup_status_updated', 'SUCCESS', {
@@ -76,7 +76,7 @@ export async function updateSignupStatus(signupId: number, status: string) {
                         tripName = trip.name;
                     }
                 } catch (error) {
-                    safeConsoleError(`[ReisSignups][updateSignupStatus] Failed to fetch trip ${signup.trip_id}:`, error);
+                    safeConsoleError(`[reis-signups.actions.ts][updateSignupStatus] Failed to fetch trip ${signup.trip_id}:`, error);
                 }
 
                 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://salvemundi.nl';
@@ -103,7 +103,7 @@ export async function updateSignupStatus(signupId: number, status: string) {
                         }
                     })
                 }).catch((error) => {
-                    safeConsoleError(`[ReisSignups][updateSignupStatus] Failed to send status update email for trip ${signup.trip_id} signup ${signupId}:`, error);
+                    safeConsoleError(`[reis-signups.actions.ts][updateSignupStatus] Failed to send status update email for trip ${signup.trip_id} signup ${signupId}:`, error);
                 });
             }
         }
@@ -116,7 +116,7 @@ export async function updateSignupStatus(signupId: number, status: string) {
 
         return { success: true };
     } catch (error) {
-        safeConsoleError(`[ReisSignups][updateSignupStatus] Failed to update trip signup ${signupId}:`, error);
+        safeConsoleError(`[reis-signups.actions.ts][updateSignupStatus] Failed to update trip signup ${signupId}:`, error);
         return { success: false, error: error instanceof Error ? error.message : 'Update mislukt' };
     }
 }
@@ -129,7 +129,7 @@ export async function deleteTripSignup(signupId: number) {
         if (!success) throw new Error('Database delete mislukt');
 
         getSystemDirectus().request(deleteItem('trip_signups', signupId)).catch((error) => {
-            safeConsoleError(`[ReisSignups][deleteTripSignup] Failed to delete trip signup ${signupId}:`, error);
+            safeConsoleError(`[reis-signups.actions.ts][deleteTripSignup] Failed to delete trip signup ${signupId}:`, error);
         });
 
         await logAdminAction('admin_trip_signup_deleted', 'SUCCESS', {
@@ -145,7 +145,7 @@ export async function deleteTripSignup(signupId: number) {
 
         return { success: true };
     } catch (error) {
-        safeConsoleError(`[ReisSignups][deleteTripSignup] Failed to delete trip signup ${signupId}:`, error);
+        safeConsoleError(`[reis-signups.actions.ts][deleteTripSignup] Failed to delete trip signup ${signupId}:`, error);
         return { success: false, error: error instanceof Error ? error.message : 'Verwijderen mislukt' };
     }
 }
@@ -183,7 +183,7 @@ export async function updateTripSignup(prevState: unknown, formData: FormData) {
         if (!success) throw new Error('Database update mislukt');
 
         getSystemDirectus().request(updateItem('trip_signups', id, validated.data)).catch((error) => {
-            safeConsoleError(`[ReisSignups][updateTripSignup] Failed to update trip signup ${id}:`, error);
+            safeConsoleError(`[reis-signups.actions.ts][updateTripSignup] Failed to update trip signup ${id}:`, error);
         });
 
         await logAdminAction('admin_trip_signup_updated', 'SUCCESS', {
@@ -201,7 +201,7 @@ export async function updateTripSignup(prevState: unknown, formData: FormData) {
 
         return { success: true };
     } catch (error) {
-        safeConsoleError(`[ReisSignups][updateTripSignup] Failed to update trip signup ${id}:`, error);
+        safeConsoleError(`[reis-signups.actions.ts][updateTripSignup] Failed to update trip signup ${id}:`, error);
         return { success: false, error: error instanceof Error ? error.message : 'Update mislukt' };
     }
 }
@@ -270,7 +270,7 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
         revalidatePath(`/beheer/reis/deelnemer/${signupId}`);
         return { success: true };
     } catch (error) {
-        safeConsoleError(`[ReisSignups][updateSignupActivities] Failed to update activities for signup ${signupId}:`, error);
+        safeConsoleError(`[reis-signups.actions.ts][updateSignupActivities] Failed to update activities for signup ${signupId}:`, error);
         return { success: false, error: error instanceof Error ? error.message : 'Interne serverfout' };
     }
 }
