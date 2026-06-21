@@ -55,7 +55,7 @@ export default function MobileMenu({
         >
             {/* Backdrop */}
             <div
-                className="fixed inset-0 z-[190] bg-black/40 backdrop-blur-sm transition-all duration-300"
+                className="fixed inset-0 z-190 bg-black/40 backdrop-blur-sm transition-all duration-300"
                 onClick={onClose}
                 aria-hidden={!isOpen}
                 role="presentation"
@@ -63,7 +63,7 @@ export default function MobileMenu({
 
             {/* Slide-out paneel */}
             <nav
-                className={`fixed right-0 z-[200] flex w-full max-w-xs flex-col gap-6 bg-(--bg-main) px-6 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))] shadow-2xl transition-transform duration-300 overflow-y-auto ${isOpen ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed right-0 z-200 flex w-full max-w-xs flex-col gap-6 bg-(--bg-main) px-6 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))] shadow-2xl transition-transform duration-300 overflow-y-auto ${isOpen ? 'translate-x-0' : 'translate-x-full'
                     }`}
                 style={{ top: 0, height: '100dvh' }}
                 aria-label="Mobiele navigatie"
@@ -176,7 +176,7 @@ export default function MobileMenu({
                         onClick={onClose}
                         className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 active:scale-95 transition-all"
                         style={{
-                            background: 'linear-gradient(135deg, varpurple-500, varpurple-700)',
+                            background: 'linear-gradient(135deg, var(--color-purple-500), var(--color-purple-700))',
                             color: 'white'
                         }}
                     >
@@ -214,7 +214,7 @@ export default function MobileMenu({
                                 }}
                                 className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 active:scale-95 transition-all"
                                 style={{
-                                    backgroundColor: 'varpurple-500',
+                                    backgroundColor: 'var(--color-purple-500)',
                                     color: 'white'
                                 }}
                             >
