@@ -117,14 +117,14 @@ export default function TripForm({
         setExistingImageId(null);
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: React.SyntheticEvent) => {
         if (imageError) {
             e.preventDefault();
             return;
         }
 
         // Vangnet: check alle bestanden binnen het formulier
-        const formData = new FormData(e.currentTarget);
+        const formData = new FormData(e.currentTarget as HTMLFormElement);
         const file = formData.get('image_file') as File | null;
 
         if (file && file.size > 10 * 1024 * 1024) {
@@ -170,14 +170,14 @@ export default function TripForm({
                     {/* Main Content Area */}
                     <div className="lg:col-span-8 space-y-6">
                         {/* Section 1: Algemene Informatie */}
-                        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
-                            <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
-                                <Info className="h-4 w-4 text-[var(--beheer-accent)]" />
-                                <h2 className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text)]">Algemene Informatie</h2>
+                        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border) overflow-hidden">
+                            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3">
+                                <Info className="h-4 w-4 text-(--beheer-accent)" />
+                                <h2 className="text-[10px] font-semibold tracking-widest text-(--beheer-text)">Algemene Informatie</h2>
                             </div>
                             <div className="p-6 space-y-6">
                                 <div>
-                                    <label htmlFor="name" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Naam van de reis *</label>
+                                    <label htmlFor="name" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Naam van de reis *</label>
                                     <input
                                         type="text"
                                         id="name"
@@ -191,7 +191,7 @@ export default function TripForm({
                                 </div>
 
                                 <div>
-                                    <label htmlFor="description" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Beschrijving</label>
+                                    <label htmlFor="description" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Beschrijving</label>
                                     <textarea
                                         id="description"
                                         name="description"
@@ -206,15 +206,15 @@ export default function TripForm({
                         </div>
 
                         {/* Section 2: Planning & Capaciteit */}
-                        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)]">
-                            <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3 rounded-t-[var(--beheer-radius)]">
-                                <CalendarIcon className="h-4 w-4 text-[var(--beheer-accent)]" />
-                                <h2 className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text)]">Planning & Capaciteit</h2>
+                        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border)">
+                            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3 rounded-t-(--beheer-radius)">
+                                <CalendarIcon className="h-4 w-4 text-(--beheer-accent)" />
+                                <h2 className="text-[10px] font-semibold tracking-widest text-(--beheer-text)">Planning & Capaciteit</h2>
                             </div>
                             <div className="p-6 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label htmlFor="start_date" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Startdatum *</label>
+                                        <label htmlFor="start_date" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Startdatum *</label>
                                         <input type="hidden" name="start_date" value={startDate ? toISODateString(startDate) : ''} />
                                         <AdminDatepicker
                                             value={startDate}
@@ -224,7 +224,7 @@ export default function TripForm({
                                         {formErrors.start_date && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.start_date[0]}</p>}
                                     </div>
                                     <div>
-                                        <label htmlFor="end_date" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Einddatum</label>
+                                        <label htmlFor="end_date" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Einddatum</label>
                                         <input type="hidden" name="end_date" value={endDate ? toISODateString(endDate) : ''} />
                                         <AdminDatepicker
                                             value={endDate}
@@ -234,14 +234,14 @@ export default function TripForm({
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-[var(--beheer-border)]/30">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-(--beheer-border)/30">
                                     <div>
-                                        <label htmlFor="max_participants" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Max. Deelnemers *</label>
+                                        <label htmlFor="max_participants" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Max. Deelnemers *</label>
                                         <input type="number" id="max_participants" name="max_participants" min="0" className={`beheer-input ${formErrors.max_participants ? 'border-red-500' : ''}`} placeholder="Bijv. 50" defaultValue={(state?.initialData?.max_participants as number) || editingTrip?.max_participants} />
                                         {formErrors.max_participants && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.max_participants[0]}</p>}
                                     </div>
                                     <div>
-                                        <label htmlFor="registration_start_date" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Auto-open Datum</label>
+                                        <label htmlFor="registration_start_date" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Auto-open Datum</label>
                                         <input
                                             type="datetime-local"
                                             id="registration_start_date"
@@ -255,20 +255,20 @@ export default function TripForm({
                         </div>
 
                         {/* Section 3: Financiën */}
-                        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
-                            <div className="px-6 py-4 border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)]/50 flex items-center gap-3">
-                                <Euro className="h-4 w-4 text-[var(--beheer-accent)]" />
-                                <h2 className="text-[10px] font-semibold tracking-widest text-[var(--beheer-text)]">Financiën</h2>
+                        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border) overflow-hidden">
+                            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3">
+                                <Euro className="h-4 w-4 text-(--beheer-accent)" />
+                                <h2 className="text-[10px] font-semibold tracking-widest text-(--beheer-text)">Financiën</h2>
                             </div>
                             <div className="p-6 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label htmlFor="base_price" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Totale Prijs (€) *</label>
+                                        <label htmlFor="base_price" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Totale Prijs (€) *</label>
                                         <input type="number" id="base_price" name="base_price" step="0.01" min="0" className={`beheer-input ${formErrors.base_price ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={(state?.initialData?.base_price as number) || editingTrip?.base_price} />
                                         {formErrors.base_price && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.base_price[0]}</p>}
                                     </div>
                                     <div>
-                                        <label htmlFor="deposit_amount" className="block text-[10px] font-semibold text-[var(--beheer-text-muted)] tracking-widest mb-2">Aanbetaling (€) *</label>
+                                        <label htmlFor="deposit_amount" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Aanbetaling (€) *</label>
                                         <input type="number" id="deposit_amount" name="deposit_amount" step="0.01" min="0" className={`beheer-input ${formErrors.deposit_amount ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={(state?.initialData?.deposit_amount as number) || editingTrip?.deposit_amount} />
                                         {formErrors.deposit_amount && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.deposit_amount[0]}</p>}
                                     </div>

@@ -17,6 +17,10 @@ export class ProvisionWorkerService {
     private static readonly QUEUE_KEY = 'v7:queue:provision:sync_existing';
     private static shouldStop = false;
 
+    private static isStopped(): boolean {
+        return this.shouldStop;
+    }
+
     static async queueProvisioning(redis: Redis, userId: string, paymentId?: string) {
         const task: ProvisionTask = {
             userId,
@@ -31,7 +35,7 @@ export class ProvisionWorkerService {
     static async start(redis: Redis) {
         logInfo('provision-worker.ts][start]', 'Starting background worker loop...');
 
-        while (!this.shouldStop) {
+        while (!this.isStopped()) {
             try {
                 const now = Date.now();
                 const tasks = await redis.zrangebyscore(this.QUEUE_KEY, 0, now, 'LIMIT', 0, 5);
@@ -42,7 +46,7 @@ export class ProvisionWorkerService {
                 }
 
                 for (const taskJson of tasks) {
-                    if (this.shouldStop) break;
+                    if (this.isStopped()) break;
 
                     let taskRaw: unknown;
                     try {

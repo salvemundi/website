@@ -195,9 +195,9 @@ export class SyncJob {
     }
 
     private static async logSummary(jobId: string, status: SyncStatus) {
-        const movedActive = status.movedActiveCount ?? 0;
-        const movedExpired = status.movedExpiredCount ?? 0;
-        const errors = status.errorCount ?? 0;
+        const movedActive = status.movedActiveCount;
+        const movedExpired = status.movedExpiredCount;
+        const errors = status.errorCount;
 
         if (movedActive === 0 && movedExpired === 0 && errors === 0) {
             return;
@@ -212,8 +212,8 @@ export class SyncJob {
                     job_id: jobId, processed: status.processed, moved_active: movedActive,
                     moved_expired: movedExpired, errors: errors,
                     duration_ms: status.startTime ? (Date.now() - new Date(status.startTime).getTime()) : null,
-                    moved_active_users: status.movedActiveUsers ?? [],
-                    moved_expired_users: status.movedExpiredUsers ?? [],
+                    moved_active_users: status.movedActiveUsers,
+                    moved_expired_users: status.movedExpiredUsers,
                 })
             })
             .execute();

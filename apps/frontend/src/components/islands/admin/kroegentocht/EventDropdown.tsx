@@ -48,23 +48,23 @@ export default function EventDropdown({
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-3 px-4 py-2.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] text-[var(--beheer-text)] hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 group min-w-[200px]"
+                className="flex items-center gap-3 px-4 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) text-(--beheer-text) hover:border-(--beheer-accent)/50 transition-all active:scale-95 group min-w-[200px]"
             >
-                <div className="p-1.5 rounded-lg bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)]">
+                <div className="p-1.5 rounded-lg bg-(--beheer-accent)/10 text-(--beheer-accent)">
                     <Beer className="h-4 w-4" />
                 </div>
                 <div className="flex flex-col items-start overflow-hidden">
-                    <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-0.5">Selecteer Event</span>
+                    <span className="text-[10px] font-semibold text-(--beheer-text-muted) leading-none mb-0.5">Selecteer Event</span>
                     <span className="text-sm font-semibold truncate w-full">
                         {selectedEvent?.name || 'Geen event'}
                     </span>
                 </div>
-                <ChevronDown className={`h-4 w-4 ml-auto text-[var(--beheer-text-muted)] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-4 w-4 ml-auto text-(--beheer-text-muted) transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isOpen && (
                 <div
-                    className="absolute right-0 mt-2 w-72 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] shadow-[var(--shadow-card-elevated)] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 ease-out"
+                    className="absolute right-0 mt-2 w-72 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) shadow-(--shadow-card-elevated) z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 ease-out"
                 >
                     <div className="p-2 space-y-1 max-h-[300px] overflow-y-auto custom-scrollbar">
                         {sortedEvents.map((event) => {
@@ -80,11 +80,11 @@ export default function EventDropdown({
                                         setIsOpen(false);
                                     }}
                                     className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left group/item ${isSelected
-                                        ? 'bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)]'
-                                        : 'hover:bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'
+                                        ? 'bg-(--beheer-accent)/10 text-(--beheer-accent)'
+                                        : 'hover:bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:text-(--beheer-text)'
                                         }`}
                                 >
-                                    <div className={`p-2 rounded-lg transition-colors ${isSelected ? 'bg-[var(--beheer-accent)] text-white' : 'bg-[var(--beheer-border)]/50 group-hover/item:bg-[var(--beheer-accent)]/10 group-hover/item:text-[var(--beheer-accent)]'}`}>
+                                    <div className={`p-2 rounded-lg transition-colors ${isSelected ? 'bg-(--beheer-accent) text-white' : 'bg-(--beheer-border)/50 group-hover/item:bg-(--beheer-accent)/10 group-hover/item:text-(--beheer-accent)'}`}>
                                         <Calendar className="h-3.5 w-3.5" />
                                     </div>
                                     <div className="flex flex-col min-w-0">

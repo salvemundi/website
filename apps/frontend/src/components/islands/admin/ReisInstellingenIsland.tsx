@@ -115,7 +115,7 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
                         />
                         <button
                             onClick={handleAdd}
-                            className="px-6 py-2.5 bg-[var(--beheer-accent)] hover:opacity-90 text-white rounded-xl font-semibold tracking-widest text-[10px] shadow-lg transition-all active:scale-95 flex items-center gap-2 group border border-white/10"
+                            className="px-6 py-2.5 bg-(--beheer-accent) hover:opacity-90 text-white rounded-xl font-semibold tracking-widest text-[10px] shadow-lg transition-all active:scale-95 flex items-center gap-2 group border border-white/10"
                         >
                             <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
                             <span>Nieuwe Reis</span>
@@ -149,8 +149,8 @@ export default function ReisInstellingenIsland({ initialTrips, initialSettings }
                         ))}
                         {trips.length === 0 && (
                             <div className="col-span-full py-20 text-center">
-                                <Info className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-20" />
-                                <p className="text-[var(--beheer-text-muted)] font-semibold italic">Nog geen reizen gepland...</p>
+                                <Info className="h-12 w-12 text-(--beheer-text-muted) mx-auto mb-4 opacity-20" />
+                                <p className="text-(--beheer-text-muted) font-semibold italic">Nog geen reizen gepland...</p>
                             </div>
                         )}
                     </div>

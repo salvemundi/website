@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useOptimistic, useTransition } from 'react';
+import { useState, useMemo, useOptimistic, useTransition } from 'react';
 import {
     User as UserIcon,
     History,
@@ -170,14 +170,14 @@ export default function LedenDetailIsland({
         <div className="w-full overflow-x-hidden">
             <div className="flex flex-col md:flex-row md:items-center gap-8 mb-12">
                 <div className="relative group">
-                    <div className="h-28 w-28 rounded-[2rem] bg-[var(--beheer-accent)]/10 flex items-center justify-center text-[var(--beheer-accent)] font-semibold text-4xl shadow-2xl border border-[var(--beheer-border)] transition-transform group-hover:scale-105 duration-500 overflow-hidden">
+                    <div className="h-28 w-28 rounded-4xl bg-(--beheer-accent)/10 flex items-center justify-center text-(--beheer-accent) font-semibold text-4xl shadow-2xl border border-(--beheer-border) transition-transform group-hover:scale-105 duration-500 overflow-hidden">
                         {localMember.avatar ? (
                             <MediaAsset
                                 asset={getImageUrl(localMember.avatar, { width: 150, height: 150, fit: 'cover' }) || ''}
                                 alt="avatar"
                                 width={112}
                                 height={112}
-                                className="h-full w-full object-cover rounded-[2rem]"
+                                className="h-full w-full object-cover rounded-4xl"
                             />
                         ) : (
                             <>{localMember.first_name?.[0]}{localMember.last_name?.[0]}</>
@@ -185,12 +185,12 @@ export default function LedenDetailIsland({
                     </div>
                 </div>
                 <div className="space-y-3">
-                    <h1 className="text-4xl font-semibold text-[var(--beheer-text)] leading-none">
+                    <h1 className="text-4xl font-semibold text-(--beheer-text) leading-none">
                         {localMember.first_name} {localMember.last_name}
                     </h1>
                     <div className="flex flex-wrap items-center gap-4">
-                        <span className="text-[var(--beheer-text-muted)] font-semibold flex items-center gap-2 text-xs opacity-70">
-                            <Mail className="h-4 w-4 text-[var(--beheer-accent)]" /> {localMember.email}
+                        <span className="text-(--beheer-text-muted) font-semibold flex items-center gap-2 text-xs opacity-70">
+                            <Mail className="h-4 w-4 text-(--beheer-accent)" /> {localMember.email}
                         </span>
                         <div suppressHydrationWarning className={`px-4 py-1.5 rounded-full text-[10px] font-semibold shadow-sm border ${isMembershipActive
                             ? 'bg-green-500/10 text-green-500 border-green-500/20'
@@ -202,7 +202,7 @@ export default function LedenDetailIsland({
                 </div>
             </div>
 
-            <div className="flex flex-wrap gap-0 border-b border-[var(--beheer-border)] mb-10">
+            <div className="flex flex-wrap gap-0 border-b border-(--beheer-border) mb-10">
                 {[
                     { id: 'profiel', label: 'Profiel', icon: UserIcon },
                     { id: 'activiteiten', label: 'Activiteiten', icon: History },
@@ -213,8 +213,8 @@ export default function LedenDetailIsland({
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as typeof activeTab)}
                             className={`flex items-center gap-3 px-8 py-5 font-semibold text-xs transition-all border-b-2 cursor-pointer ${activeTab === tab.id
-                                ? 'text-[var(--beheer-accent)] border-[var(--beheer-accent)]'
-                                : 'text-[var(--beheer-text-muted)] border-transparent hover:text-[var(--beheer-text)]'
+                                ? 'text-(--beheer-accent) border-(--beheer-accent)'
+                                : 'text-(--beheer-text-muted) border-transparent hover:text-(--beheer-text)'
                                 }`}
                         >
                             <tab.icon className="h-4 w-4" /> {tab.label}

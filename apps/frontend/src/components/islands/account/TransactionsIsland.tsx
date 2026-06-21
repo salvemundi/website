@@ -43,46 +43,46 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
         >
             {paidTransactions.length === 0 ? (
                 <div className="squircle-lg border-2 border-dashed border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-black/10 p-12 text-center shadow-inner">
-                    <p className="text-[var(--text-main)] font-bold text-lg mb-2">Geen betaalde transacties gevonden.</p>
-                    <p className="text-[var(--text-muted)] text-sm">Zodra je een betaling afrondt, verschijnt deze hier.</p>
+                    <p className="text-(--text-main) font-bold text-lg mb-2">Geen betaalde transacties gevonden.</p>
+                    <p className="text-(--text-muted) text-sm">Zodra je een betaling afrondt, verschijnt deze hier.</p>
                 </div>
             ) : (
                 <div className="overflow-x-auto -mx-6 sm:mx-0">
                     <table className="w-full border-separate border-spacing-0">
                         <thead>
                             <tr className="border-b border-slate-200 dark:border-white/5">
-                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-[var(--color-purple-500)] opacity-60">Datum</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-[var(--color-purple-500)] opacity-60">Product</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-[var(--color-purple-500)] opacity-60">Type</th>
-                                <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-[var(--color-purple-500)] opacity-60">Bedrag</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-purple-500 opacity-60">Datum</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-purple-500 opacity-60">Product</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-purple-500 opacity-60">Type</th>
+                                <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-purple-500 opacity-60">Bedrag</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                             {paidTransactions.map((transaction) => (
                                 <tr key={transaction.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-all group">
                                     <td className="px-6 py-6 whitespace-nowrap">
-                                        <div className="flex items-center gap-2 text-sm font-bold text-[var(--text-main)]">
-                                            <Clock className="h-4 w-4 text-[var(--color-purple-500)] opacity-40" />
+                                        <div className="flex items-center gap-2 text-sm font-bold text-(--text-main)">
+                                            <Clock className="h-4 w-4 text-purple-500 opacity-40" />
                                             {formatDate(new Date(transaction.created_at || transaction.date_created || new Date()))}
                                         </div>
                                     </td>
                                     <td className="px-6 py-6 transition-transform group-hover:translate-x-1">
-                                        <div className="text-sm font-black text-[var(--color-purple-700)] dark:text-white leading-tight">
+                                        <div className="text-sm font-black text-purple-700 dark:text-white leading-tight">
                                             {transaction.product_name || transaction.description || 'Betaling'}
                                         </div>
                                         {transaction.coupon_code && (
-                                            <div className="flex items-center gap-1.5 text-[9px] text-[var(--color-purple-500)] font-black uppercase tracking-widest mt-1 opacity-70">
+                                            <div className="flex items-center gap-1.5 text-[9px] text-purple-500 font-black uppercase tracking-widest mt-1 opacity-70">
                                                 <Tag className="h-3 w-3" />
                                                 {transaction.coupon_code}
                                             </div>
                                         )}
                                     </td>
                                     <td className="px-6 py-6 whitespace-nowrap">
-                                        <span className="px-3 py-1 inline-flex text-[9px] font-black uppercase tracking-widest rounded-full bg-[var(--color-purple-100)] text-[var(--color-purple-700)] dark:bg-[var(--color-purple-500)]/10 dark:text-[var(--color-purple-300)] border border-[var(--color-purple-200)] dark:border-[var(--color-purple-500)]/20 shadow-sm">
+                                        <span className="px-3 py-1 inline-flex text-[9px] font-black uppercase tracking-widest rounded-full bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-300 border border-purple-200 dark:border-purple-500/20 shadow-sm">
                                             {getInferredTransactionType(transaction)}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-6 whitespace-nowrap text-right text-sm font-black text-[var(--text-main)]">
+                                    <td className="px-6 py-6 whitespace-nowrap text-right text-sm font-black text-(--text-main)">
                                         {formatAmount(transaction.amount)}
                                     </td>
                                 </tr>

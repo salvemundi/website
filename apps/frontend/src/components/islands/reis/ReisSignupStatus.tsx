@@ -83,7 +83,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                                         <Utensils className="h-5 w-5 group-hover:scale-110 transition-transform" />
                                         Activiteiten beheren
                                     </Link>
-                                    <p className="text-xs italic text-[var(--text-muted)] leading-relaxed">
+                                    <p className="text-xs italic text-(--text-muted) leading-relaxed">
                                         De restbetaling is momenteel nog niet geopend. Je kunt wel alvast je activiteiten doorgeven of wijzigen.
                                     </p>
                                 </>

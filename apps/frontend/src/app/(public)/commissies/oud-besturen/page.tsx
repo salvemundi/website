@@ -18,11 +18,11 @@ export default async function BoardHistoryPage() {
 
     return (
         <PublicPageShell>
-            <div className="container px-[var(--spacing-fluid-md)] max-w-7xl pt-[var(--spacing-fluid-md)] pb-4">
+            <div className="container px-(--spacing-fluid-md) max-w-7xl pt-(--spacing-fluid-md) pb-4">
                 <BackButton href="/commissies/bestuur" title="Terug naar Huidig Bestuur" text="Huidig Bestuur" />
             </div>
 
-            <main className="mx-auto max-w-app px-[var(--spacing-fluid-md)] pb-[var(--spacing-fluid-lg)] pt-[var(--spacing-fluid-md)]">
+            <main className="mx-auto max-w-app px-(--spacing-fluid-md) pb-(--spacing-fluid-lg) pt-(--spacing-fluid-md)">
                 {/* Header Section */}
                 <div className="flex flex-col items-center mb-16 text-center">
                     <div className="p-4 rounded-3xl bg-purple-500/10 text-purple-500 mb-6 shadow-sm ring-1 ring-purple-500/20">

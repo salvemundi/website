@@ -81,10 +81,10 @@ export default function GroupCard({
 
     return (
         <div
-            className={`rounded-[var(--radius-2xl)] border shadow-md p-5 flex flex-col justify-between transition-all ring-1 ${
+            className={`rounded-2xl border shadow-md p-5 flex flex-col justify-between transition-all ring-1 ${
                 isUnassigned
                     ? 'ring-red-500/10 border-red-500/20 hover:border-red-500/30 bg-red-500/5'
-                    : `ring-[var(--border-color)]/20 ${color.bg} ${color.border}`
+                    : `ring-(--border-color)/20 ${color.bg} ${color.border}`
             }`}
         >
             <div className="space-y-4">
@@ -108,7 +108,7 @@ export default function GroupCard({
                             >
                                 {groupName}
                             </h3>
-                            <p className="text-[10px] text-[var(--text-muted)] font-semibold mt-0.5 tracking-wider uppercase">
+                            <p className="text-[10px] text-(--text-muted) font-semibold mt-0.5 tracking-wider uppercase">
                                 {groupSignups.length} aanmeldingen
                             </p>
                         </div>
@@ -125,7 +125,7 @@ export default function GroupCard({
                 </div>
 
                 {/* Participant list */}
-                <div className="space-y-2 pt-2 border-t border-[var(--border-color)]/10">
+                <div className="space-y-2 pt-2 border-t border-(--border-color)/10">
                     {/* Leaders first */}
                     {!isUnassigned && leadersList.length > 0 && (
                         <div className={leaderGridClass}>
@@ -165,7 +165,7 @@ export default function GroupCard({
                     )}
 
                     {participantsList.length === 0 ? (
-                        <p className="text-xs text-[var(--text-muted)] italic py-3 text-center">
+                        <p className="text-xs text-(--text-muted) italic py-3 text-center">
                             Geen deelnemers in deze groep
                         </p>
                     ) : (
@@ -173,16 +173,16 @@ export default function GroupCard({
                             {visibleParticipants.map((p, idx) => (
                                 <div
                                     key={idx}
-                                    className="flex justify-between items-center bg-[var(--bg-card)]/60 px-3 py-2 rounded-lg border border-[var(--border-color)]/20 hover:border-[var(--border-color)]/40 transition-all text-xs"
+                                    className="flex justify-between items-center bg-(--bg-card)/60 px-3 py-2 rounded-lg border border-(--border-color)/20 hover:border-(--border-color)/40 transition-all text-xs"
                                 >
                                     <div className="flex flex-col min-w-0">
                                         <span
-                                            className="font-semibold text-[var(--text-main)] truncate max-w-[130px] sm:max-w-[170px]"
+                                            className="font-semibold text-(--text-main) truncate max-w-[130px] sm:max-w-[170px]"
                                             title={p.name}
                                         >
                                             {p.name}
                                         </span>
-                                        <span className="text-[9px] text-[var(--text-muted)] truncate max-w-[120px]">
+                                        <span className="text-[9px] text-(--text-muted) truncate max-w-[120px]">
                                             {p.association}
                                         </span>
                                     </div>
@@ -203,7 +203,7 @@ export default function GroupCard({
                             {regularParticipants.length > limit && (
                                 <button
                                     onClick={() => setIsExpanded(!isExpanded)}
-                                    className="w-full py-1.5 flex items-center justify-center gap-1.5 bg-[var(--bg-main)]/30 hover:bg-[var(--bg-main)]/60 border border-[var(--border-color)]/40 rounded-lg text-[10px] font-bold text-[var(--text-muted)] hover:text-[var(--text-main)] transition-all col-span-full mt-2"
+                                    className="w-full py-1.5 flex items-center justify-center gap-1.5 bg-(--bg-main)/30 hover:bg-(--bg-main)/60 border border-(--border-color)/40 rounded-lg text-[10px] font-bold text-(--text-muted) hover:text-(--text-main) transition-all col-span-full mt-2"
                                 >
                                     {isExpanded ? (
                                         <>
@@ -223,7 +223,7 @@ export default function GroupCard({
 
             {/* Action to add a leader */}
             {!isUnassigned && onAddLeader && (
-                <div className="mt-4 pt-3 border-t border-[var(--border-color)]/10">
+                <div className="mt-4 pt-3 border-t border-(--border-color)/10">
                     {showAddLeaderForm ? (
                         <AddLeaderForm
                             participantsList={participantsList}
@@ -237,7 +237,7 @@ export default function GroupCard({
                         <button
                             type="button"
                             onClick={() => setShowAddLeaderForm(true)}
-                            className="w-full py-1.5 flex items-center justify-center gap-1 bg-[var(--bg-main)]/30 hover:bg-[var(--bg-main)]/60 border border-[var(--border-color)]/30 hover:border-[var(--theme-purple)]/40 rounded-xl text-[10px] font-bold text-[var(--text-muted)] hover:text-[var(--theme-purple)] transition-all cursor-pointer"
+                            className="w-full py-1.5 flex items-center justify-center gap-1 bg-(--bg-main)/30 hover:bg-(--bg-main)/60 border border-(--border-color)/30 hover:border-(--theme-purple)/40 rounded-xl text-[10px] font-bold text-(--text-muted) hover:text-(--theme-purple) transition-all cursor-pointer"
                         >
                             <Plus className="h-3 w-3" /> Leider toevoegen
                         </button>

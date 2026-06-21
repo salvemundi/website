@@ -40,7 +40,7 @@ export function MemberBadge({ signup }: { signup: Signup }) {
         );
     }
     return (
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] text-[9px] font-semibold tracking-wider border border-[var(--beheer-border)]">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-(--beheer-card-soft) text-(--beheer-text-muted) text-[9px] font-semibold tracking-wider border border-(--beheer-border)">
             <User className="h-3 w-3 opacity-50" />
             <span>Gast</span>
         </div>
@@ -53,7 +53,7 @@ export function MemberBadge({ signup }: { signup: Signup }) {
 export function PaymentBadge({ status }: { status: string }) {
     if (status === 'paid') {
         return (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] text-[9px] font-semibold tracking-wider border border-[var(--beheer-accent)]/20">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-(--beheer-accent)/10 text-(--beheer-accent) text-[9px] font-semibold tracking-wider border border-(--beheer-accent)/20">
                 <CheckCircle2 className="h-3 w-3" />
                 <span>Betaald</span>
             </div>

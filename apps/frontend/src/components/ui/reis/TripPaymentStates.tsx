@@ -9,17 +9,17 @@ export function TripAccessDenied({ error }: { error?: string }) {
     return (
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
             <div className="relative mb-8 pt-10">
-                <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-[var(--color-purple-500)]/10 rounded-full pointer-events-none" />
-                <div className="relative squircle-lg bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)] inline-block">
+                <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-purple-500/10 rounded-full pointer-events-none" />
+                <div className="relative squircle-lg bg-(--bg-card) p-6 shadow-2xl border border-(--border-color)/20 text-purple-500 inline-block">
                     <Search className="h-16 w-16" />
                 </div>
             </div>
 
-            <h2 className="text-4xl font-black text-[var(--text-main)] mb-3 tracking-tight italic uppercase">
+            <h2 className="text-4xl font-black text-(--text-main) mb-3 tracking-tight italic uppercase">
                 Toegang Geweigerd
             </h2>
             
-            <p className="text-[var(--text-muted)] max-w-md mx-auto mb-10 font-medium">
+            <p className="text-(--text-muted) max-w-md mx-auto mb-10 font-medium">
                 {error || 'Deze link is ongeldig of verlopen. Gebruik de link uit de e-mail of log in op je account.'}
             </p>
 
@@ -43,16 +43,16 @@ export function TripWaitlisted() {
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
             <div className="relative mb-8 pt-10">
                 <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-amber-500/10 rounded-full pointer-events-none" />
-                <div className="relative squircle-lg bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-amber-500 inline-block">
+                <div className="relative squircle-lg bg-(--bg-card) p-6 shadow-2xl border border-(--border-color)/20 text-amber-500 inline-block">
                     <Search className="h-16 w-16" />
                 </div>
             </div>
 
-            <h2 className="text-4xl font-black text-[var(--text-main)] mb-3 tracking-tight italic uppercase">
+            <h2 className="text-4xl font-black text-(--text-main) mb-3 tracking-tight italic uppercase">
                 Wachtlijst
             </h2>
             
-            <p className="text-[var(--text-muted)] max-w-md mx-auto mb-10 font-medium text-balance">
+            <p className="text-(--text-muted) max-w-md mx-auto mb-10 font-medium text-balance">
                 Je staat momenteel op de wachtlijst voor deze reis. Je kunt pas betalen zodra er een plek vrijkomt en je status is aangepast naar &apos;Geregistreerd&apos;.
             </p>
 

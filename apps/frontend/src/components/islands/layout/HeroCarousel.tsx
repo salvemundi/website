@@ -57,7 +57,7 @@ export function HeroCarousel({ slideUrls }: HeroCarouselProps) {
 
     return (
         <div 
-            className="w-full h-full relative group bg-[var(--bg-main)] overflow-hidden"
+            className="w-full h-full relative group bg-(--bg-main) overflow-hidden"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -71,7 +71,7 @@ export function HeroCarousel({ slideUrls }: HeroCarouselProps) {
                     return (
                         <div
                             key={index}
-                            className="w-full h-full flex-shrink-0 relative"
+                            className="w-full h-full shrink-0 relative"
                         >
                             <Image
                                 src={src}

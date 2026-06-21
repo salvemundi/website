@@ -159,7 +159,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                         id="coupon_code"
                         placeholder="Bijv. ACTIE2024"
                         autoComplete="off"
-                        className="form-input uppercase flex-grow"
+                        className="form-input uppercase grow"
                         suppressHydrationWarning
                     />
                     <button

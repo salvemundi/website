@@ -50,15 +50,15 @@ export default function GlobalLoading() {
                     ========================================================================= */}
                 <div className="relative">
                     <LoadingSpinner size={48} />
-                    <div className="absolute inset-0 blur-3xl bg-[var(--color-purple-500)]/10 -z-10 rounded-full scale-150" />
+                    <div className="absolute inset-0 blur-3xl bg-purple-500/10 -z-10 rounded-full scale-150" />
                 </div>
 
                 <div className="text-center space-y-3 px-6">
                     <div className="space-y-1">
-                        <p className="text-[10px] font-black text-[var(--text-muted)] tracking-[0.4em] uppercase opacity-40">
+                        <p className="text-[10px] font-black text-(--text-muted) tracking-[0.4em] uppercase opacity-40">
                             Salve Mundi V7
                         </p>
-                        <p className="text-[9px] font-bold text-[var(--color-purple-500)]/30 uppercase tracking-[0.2em]">
+                        <p className="text-[9px] font-bold text-purple-500/30 uppercase tracking-[0.2em]">
                             Digital Architecture
                         </p>
                     </div>
@@ -70,7 +70,7 @@ export default function GlobalLoading() {
                         ========================================================================= */}
                     {status === 'slow' && (
                         <div className="animate-in slide-in-from-bottom-2 duration-500">
-                            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest max-w-xs leading-relaxed">
+                            <p className="text-[10px] font-bold text-(--text-muted) uppercase tracking-widest max-w-xs leading-relaxed">
                                 Dit duurt langer dan verwacht... <br />
                                 Controleer je internetverbinding of neem contact op met de ICT-commissie.
                             </p>

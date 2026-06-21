@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, useTransition } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Users } from 'lucide-react';
 import type { Committee, CommitteeMember } from '@/server/queries/admin-commissies.queries';
 import {
@@ -39,14 +39,14 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
     // NUCLEAR SSR: Default to the first committee to avoid empty mount states
     const [selected, setSelected] = useState<Committee | null>(initialCommittees[0] || null);
     const [members, setMembers] = useState<CommitteeMember[]>(initialMembers);
+    const [membersLoading, setMembersLoading] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [showAll, setShowAll] = useState(false);
 
-    const [isPending, startTransition] = useTransition();
+    const activeCommitteeIdRef = useRef<number | null>(initialCommittees[0]?.id || null);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-    const [newMemberEmail, setNewMemberEmail] = useState('');
     const [addingMember, setAddingMember] = useState(false);
     const [addError, setAddError] = useState<string | null>(null);
 
@@ -73,22 +73,60 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
 
 
     const handleSelectCommittee = useCallback(async (c: Committee) => {
-        startTransition(async () => {
-            setSelected(c);
-            setEditingDetail(false);
-            setEditShortDesc(c.short_description || '');
-            setEditDesc(c.description || '');
-            setAddError(null);
-            setNewMemberEmail('');
+        activeCommitteeIdRef.current = c.id;
+        setMembersLoading(true);
+        setSelected(c);
+        setMembers([]);
+        setEditingDetail(false);
+        setEditShortDesc(c.short_description || '');
+        setEditDesc(c.description || '');
+        setAddError(null);
 
-            try {
-                const m = await getCommitteeMembers(c.id.toString()).catch(() => []);
+        try {
+            localStorage.setItem('sm_admin_comm_selected_id', c.id.toString());
+        } catch {
+            // Ignore storage/security errors
+        }
+
+        try {
+            const m = await getCommitteeMembers(c.id.toString()).catch(() => []);
+            if (activeCommitteeIdRef.current === c.id) {
                 setMembers(m);
-            } catch {
-                showToast('Fout bij ophalen leden', 'error');
+                setMembersLoading(false);
             }
-        });
+        } catch {
+            if (activeCommitteeIdRef.current === c.id) {
+                showToast('Fout bij ophalen leden', 'error');
+                setMembersLoading(false);
+            }
+        }
     }, [showToast]);
+
+    const handleShowAllChange = useCallback((all: boolean) => {
+        setShowAll(all);
+        try {
+            localStorage.setItem('sm_admin_comm_show_all', String(all));
+        } catch {
+            // Ignore
+        }
+    }, []);
+
+    // Read from localStorage on mount (client-side only)
+    useEffect(() => {
+        const savedShowAll = localStorage.getItem('sm_admin_comm_show_all');
+        if (savedShowAll !== null) {
+            setShowAll(savedShowAll === 'true');
+        }
+
+        const savedSelectedId = localStorage.getItem('sm_admin_comm_selected_id');
+        if (savedSelectedId !== null) {
+            const idNum = Number(savedSelectedId);
+            const found = committees.find(c => c.id === idNum);
+            if (found) {
+                void handleSelectCommittee(found);
+            }
+        }
+    }, [committees, handleSelectCommittee]);
 
     const handleAddMember = async (user: UserBasic) => {
         if (!selected?.azure_group_id || !user.email) return;
@@ -99,7 +137,6 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
             setAddError(res.error ?? 'Toevoegen mislukt');
             showToast(res.error ?? 'Toevoegen mislukt', 'error');
         } else {
-            setNewMemberEmail('');
             showToast(`${user.first_name} succesvol toegevoegd aan de commissie`, 'success');
             // Sync is done on server, so we can reload immediately
             void handleSelectCommittee(selected);
@@ -183,17 +220,17 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
                             searchQuery={searchQuery}
                             onSearchChange={setSearchQuery}
                             showAll={showAll}
-                            onShowAllChange={setShowAll}
+                            onShowAllChange={handleShowAllChange}
                         />
                     </div>
                 </div>
 
                 <div className="lg:col-span-8">
                     {!selected ? (
-                        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] p-24 text-center border-2 border-dashed border-[var(--beheer-border)] opacity-60">
-                            <Users className="h-16 w-16 text-[var(--beheer-text-muted)] mx-auto mb-6 opacity-20" />
-                            <h3 className="text-xl font-semibold text-[var(--beheer-text)] mb-2">Geen selectie</h3>
-                            <p className="text-[var(--beheer-text-muted)] font-semibold text-xs max-w-xs mx-auto opacity-60">
+                        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-sm ring-1 ring-(--beheer-border) p-24 text-center border-2 border-dashed border-(--beheer-border) opacity-60">
+                            <Users className="h-16 w-16 text-(--beheer-text-muted) mx-auto mb-6 opacity-20" />
+                            <h3 className="text-xl font-semibold text-(--beheer-text) mb-2">Geen selectie</h3>
+                            <p className="text-(--beheer-text-muted) font-semibold text-xs max-w-xs mx-auto opacity-60">
                                 Kies een groep uit de lijst om de details en leden te beheren.
                             </p>
                         </div>
@@ -201,7 +238,7 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
                         <CommitteeDetail
                             selected={selected}
                             members={members}
-                            isUpdating={isPending}
+                            isUpdating={membersLoading}
                             actionLoading={actionLoading}
                             editingDetail={editingDetail}
                             onToggleEditing={() => setEditingDetail(!editingDetail)}
@@ -211,8 +248,6 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
                             onDescChange={setEditDesc}
                             onSaveDetail={() => { void handleSaveDetail(); }}
                             savingDetail={savingDetail}
-                            newMemberEmail={newMemberEmail}
-                            onNewMemberEmailChange={setNewMemberEmail}
                             onAddMember={(user) => { void handleAddMember(user); }}
                             addingMember={addingMember}
                             addError={addError}

@@ -39,28 +39,28 @@ export const EventCard: React.FC<EventCardProps> = ({
         <Link
             href={href}
             className={cn(
-                "flex flex-col gap-4 squircle-lg bg-white/95 dark:bg-black/40 backdrop-blur-md p-6 shadow-sm border border-[var(--border-color)]/20 transition group h-full ",
+                "flex flex-col gap-4 squircle-lg bg-white/95 dark:bg-black/40 backdrop-blur-md p-6 shadow-sm border border-(--border-color)/20 transition group h-full ",
                 "hover:-translate-y-1.5 hover:shadow-xl hover:border-purple-500/30"
             )}
         >
-            <div className="flex items-center gap-2 text-[11px] font-black text-[var(--color-purple-500)] dark:text-[var(--color-purple-300)]">
+            <div className="flex items-center gap-2 text-[11px] font-black text-purple-500 dark:text-purple-300">
                 <Tag className="h-4 w-4" />
                 <span>{displayCategory}</span>
             </div>
 
             <h3 className={cn(
-                "text-2xl font-black leading-[1.1] text-[var(--text-main)] dark:text-white group-hover:text-[var(--color-purple-600)] dark:group-hover:text-[var(--color-purple-300)] transition-colors line-clamp-2"
+                "text-2xl font-black leading-[1.1] text-(--text-main) dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors line-clamp-2"
             )}>
                 {displayTitle}
             </h3>
 
-            <div className="mt-auto pt-4 flex items-center justify-between border-t border-[var(--border-color)]/10">
-                <div className="flex items-center gap-2 text-[11px] font-semibold text-[var(--text-muted)] dark:text-white/60">
-                    <Calendar className="h-4 w-4 text-[var(--color-purple-500)]" />
+            <div className="mt-auto pt-4 flex items-center justify-between border-t border-(--border-color)/10">
+                <div className="flex items-center gap-2 text-[11px] font-semibold text-(--text-muted) dark:text-white/60">
+                    <Calendar className="h-4 w-4 text-purple-500" />
                     <span>{displayDate}</span>
                 </div>
 
-                <div className="h-7 w-7 rounded-full bg-purple-500/5 flex items-center justify-center text-[var(--color-purple-500)] group-hover:bg-purple-500 group-hover:text-white transition-all">
+                <div className="h-7 w-7 rounded-full bg-purple-500/5 flex items-center justify-center text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-all">
                     <ChevronRight className="h-4 w-4" />
                 </div>
             </div>

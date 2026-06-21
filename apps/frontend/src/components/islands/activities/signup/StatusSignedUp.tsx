@@ -20,22 +20,22 @@ export default function StatusSignedUp({
     serverError
 }: StatusSignedUpProps) {
     return (
-        <div className={`h-full flex flex-col justify-center space-y-8 p-8 rounded-[2rem] bg-[var(--bg-card)] border ${isPaidStatus ? 'border-[var(--color-success)]/30' : 'border-amber-500/30'} shadow-2xl transition-all duration-500`}>
+        <div className={`h-full flex flex-col justify-center space-y-8 p-8 rounded-[2rem] bg-(--bg-card) border ${isPaidStatus ? 'border-success/30' : 'border-amber-500/30'} shadow-2xl transition-all duration-500`}>
             <div className="text-center space-y-4">
-                <div className={`w-20 h-20 ${isPaidStatus ? 'bg-[var(--color-success)]/10' : 'bg-amber-500/10'} rounded-full flex items-center justify-center mx-auto shadow-inner`}>
+                <div className={`w-20 h-20 ${isPaidStatus ? 'bg-success/10' : 'bg-amber-500/10'} rounded-full flex items-center justify-center mx-auto shadow-inner`}>
                     {isPaidStatus ? (
-                        <CheckCircle2 className="h-10 w-10 text-[var(--color-success)]" />
+                        <CheckCircle2 className="h-10 w-10 text-success" />
                     ) : (
                         <CreditCard className="h-10 w-10 text-amber-500" />
                     )}
                 </div>
-                <h3 className="text-3xl font-semibold text-[var(--text-main)] leading-tight">
+                <h3 className="text-3xl font-semibold text-(--text-main) leading-tight">
                     {isPaidStatus ? 'Aanmelding Definitief!' : 'Betaling Gestart'}
                 </h3>
-                <p className="text-[var(--text-muted)] font-medium">
+                <p className="text-(--text-muted) font-medium">
                     {isPaidStatus
-                        ? <>Je bent succesvol aangemeld voor <span className="text-[var(--theme-purple)] font-semibold">{eventName}</span>.</>
-                        : <>Je aanmelding voor <span className="text-[var(--theme-purple)] font-semibold">{eventName}</span> is in afwachting van betaling.</>
+                        ? <>Je bent succesvol aangemeld voor <span className="text-(--theme-purple) font-semibold">{eventName}</span>.</>
+                        : <>Je aanmelding voor <span className="text-(--theme-purple) font-semibold">{eventName}</span> is in afwachting van betaling.</>
                     }
                 </p>
                 {!isPaidStatus && (
@@ -44,7 +44,7 @@ export default function StatusSignedUp({
                             <p className="text-[10px]  font-semibold text-amber-600 tracking-widest bg-amber-500/10 px-4 py-2.5 rounded-xl border border-amber-500/20 inline-block">
                                 Wachten op bevestiging van betaling...
                             </p>
-                            <p className="text-[11px] font-bold text-[var(--text-muted)] opacity-70 max-w-xs mx-auto">
+                            <p className="text-[11px] font-bold text-(--text-muted) opacity-70 max-w-xs mx-auto">
                                 Zodra de betaling is afgerond verschijnt hier je digitale ticket. Dit kan enkele minuten duren.
                             </p>
                         </div>
@@ -68,20 +68,20 @@ export default function StatusSignedUp({
             </div>
 
             {isPaidStatus ? (
-                <div className="relative group p-8 bg-[var(--bg-soft)] rounded-[2.5rem] border border-[var(--border-color)]/60 flex flex-col items-center transition-all hover:bg-[var(--bg-card)] animate-in fade-in zoom-in duration-700">
+                <div className="relative group p-8 bg-(--bg-soft) rounded-[2.5rem] border border-(--border-color)/60 flex flex-col items-center transition-all hover:bg-(--bg-card) animate-in fade-in zoom-in duration-700">
                     <div className="p-3 bg-white rounded-3xl shadow-xl ring-1 ring-black/5">
                         <QRDisplay qrToken={qrToken || 'PENDING_VERIFICATION'} size={240} />
                     </div>
-                    <div className="mt-6 flex items-center gap-2 text-[10px]  font-semibold text-[var(--text-muted)] opacity-60 tracking-[0.2em]">
+                    <div className="mt-6 flex items-center gap-2 text-[10px]  font-semibold text-(--text-muted) opacity-60 tracking-[0.2em]">
                         <Ticket className="h-3 w-3" /> Toon bij de ingang
                     </div>
                 </div>
             ) : (
-                <div className="p-8 bg-[var(--bg-soft)]/50 rounded-[2.5rem] border border-dashed border-[var(--border-color)] flex flex-col items-center justify-center space-y-4 opacity-60">
-                    <div className="w-48 h-48 bg-white/5 rounded-3xl flex items-center justify-center border border-[var(--border-color)]/30">
-                        <Ticket className="h-16 w-16 text-[var(--text-muted)] opacity-20" />
+                <div className="p-8 bg-(--bg-soft)/50 rounded-[2.5rem] border border-dashed border-(--border-color) flex flex-col items-center justify-center space-y-4 opacity-60">
+                    <div className="w-48 h-48 bg-white/5 rounded-3xl flex items-center justify-center border border-(--border-color)/30">
+                        <Ticket className="h-16 w-16 text-(--text-muted) opacity-20" />
                     </div>
-                    <p className="text-[10px] font-semibold  tracking-widest text-[var(--text-muted)]">Ticket wordt gegenereerd na betaling</p>
+                    <p className="text-[10px] font-semibold  tracking-widest text-(--text-muted)">Ticket wordt gegenereerd na betaling</p>
                 </div>
             )}
         </div>

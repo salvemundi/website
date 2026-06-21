@@ -81,7 +81,7 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
     if (tickets.length === 0) return null;
 
     return (
-        <section className="bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 mb-8 overflow-hidden" >
+        <section className="bg-(--bg-card) dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 mb-8 overflow-hidden" >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
                     <h2 className="text-2xl font-black text-purple-700 dark:text-purple-300 flex items-center gap-2">

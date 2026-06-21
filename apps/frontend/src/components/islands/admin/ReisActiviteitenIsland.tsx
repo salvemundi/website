@@ -121,7 +121,7 @@ export default function ReisActiviteitenIsland({
 
                     <button
                         onClick={() => setEditingActivity({})}
-                        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--beheer-accent)] text-white rounded-xl font-semibold text-xs shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10"
+                        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-accent) text-white rounded-xl font-semibold text-xs shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10"
                     >
                         <Plus className="h-3.5 w-3.5" />
                         <span>Nieuwe Activiteit</span>
@@ -143,9 +143,9 @@ export default function ReisActiviteitenIsland({
 
                 {/* List View */}
                 {activities.length === 0 && !editingActivity ? (
-                    <div className="py-24 text-center bg-[var(--beheer-card-bg)] rounded-3xl border-2 border-dashed border-[var(--beheer-border)]/20">
-                        <Layers className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-10" />
-                        <p className="text-[var(--beheer-text-muted)] font-semibold text-base opacity-60">
+                    <div className="py-24 text-center bg-(--beheer-card-bg) rounded-3xl border-2 border-dashed border-(--beheer-border)/20">
+                        <Layers className="h-12 w-12 text-(--beheer-text-muted) mx-auto mb-4 opacity-10" />
+                        <p className="text-(--beheer-text-muted) font-semibold text-base opacity-60">
                             Nog geen activiteiten voor deze reis
                         </p>
                     </div>

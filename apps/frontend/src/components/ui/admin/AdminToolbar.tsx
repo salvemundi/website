@@ -23,7 +23,7 @@ export default function AdminToolbar({
 }: AdminToolbarProps) {
     return (
         <header 
-            className="bg-bg-card border-b border-border-color sticky top-[var(--header-total-height)] z-30 w-full transition-all"
+            className="bg-bg-card border-b border-border-color sticky top-(--header-total-height) z-30 w-full transition-all"
         >
             <div className="admin-container py-4">
                 <div className={`flex flex-col ${centered ? 'items-center text-center mx-auto' : 'md:flex-row justify-between items-start md:items-center'} gap-4`}>

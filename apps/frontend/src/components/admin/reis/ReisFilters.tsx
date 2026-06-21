@@ -22,12 +22,12 @@ export default function ReisFilters({
     onDownloadCSV
 }: ReisFiltersProps) {
     return (
-        <div className="bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)]/60 rounded-[2rem] shadow-sm overflow-hidden">
+        <div className="bg-(--beheer-card-bg) border border-(--beheer-border)/60 rounded-[2rem] shadow-sm overflow-hidden">
             {/* Filters Row */}
             <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 p-2.5">
                 {/* Search */}
                 <div className="relative flex-1 group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] opacity-40 group-focus-within:text-[var(--beheer-accent)] group-focus-within:opacity-100 transition-all" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-(--beheer-text-muted) opacity-40 group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 transition-all" />
                     <input
                         type="text"
                         placeholder="Zoek deelnemers..."

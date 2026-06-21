@@ -42,34 +42,34 @@ export default function ReisTableRow({
         <div
             onClick={() => onSelect(signup)}
             className={`
-                relative bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)]/60 rounded-[2rem] squircle-lg transition-all duration-300 cursor-pointer group flex flex-col
-                ${isSelected ? 'shadow-2xl border-[var(--beheer-accent)] ring-2 ring-[var(--beheer-accent)]/20' : 'hover:shadow-lg hover:border-[var(--beheer-accent)]/20 shadow-sm'}
+                relative bg-(--beheer-card-bg) border border-(--beheer-border)/60 rounded-[2rem] squircle-lg transition-all duration-300 cursor-pointer group flex flex-col
+                ${isSelected ? 'shadow-2xl border-(--beheer-accent) ring-2 ring-(--beheer-accent)/20' : 'hover:shadow-lg hover:border-(--beheer-accent)/20 shadow-sm'}
             `}
         >
             <div className="p-4 flex flex-col h-full">
                 <div className="flex justify-between items-start mb-3">
                     <div className="min-w-0 pr-2">
-                        <div className="text-xs font-semibold text-[var(--beheer-accent)] mb-0.5 opacity-70">
+                        <div className="text-xs font-semibold text-(--beheer-accent) mb-0.5 opacity-70">
                             {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
                         </div>
-                        <div className="text-lg font-semibold text-[var(--beheer-text)] leading-tight group-hover:text-[var(--beheer-accent)] transition-colors line-clamp-2 min-h-[2.8rem] flex items-center">
+                        <div className="text-lg font-semibold text-(--beheer-text) leading-tight group-hover:text-(--beheer-accent) transition-colors line-clamp-2 min-h-[2.8rem] flex items-center">
                             {signup.first_name} {signup.last_name}
                         </div>
                     </div>
 
-                    <div className="flex items-center bg-[var(--bg-main)]/50 p-1 rounded-xl border border-[var(--beheer-border)]/20 shadow-inner shrink-0">
+                    <div className="flex items-center bg-(--bg-main)/50 p-1 rounded-xl border border-(--beheer-border)/20 shadow-inner shrink-0">
                         <button
                             onClick={(e) => { e.stopPropagation(); onSelect(signup, true); }}
-                            className="p-2 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] hover:bg-white/5 rounded-lg transition-all"
+                            className="p-2 text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-white/5 rounded-lg transition-all"
                             title="Bewerken"
                         >
                             <Edit className="h-4 w-4" />
                         </button>
-                        <div className="w-[1px] h-4 bg-[var(--beheer-border)]/20 mx-0.5" />
+                        <div className="w-[1px] h-4 bg-(--beheer-border)/20 mx-0.5" />
                         <button
                             onClick={(e) => { e.stopPropagation(); onDelete(signup.id); }}
                             disabled={isDeleteLoading}
-                            className="p-2 text-[var(--beheer-text-muted)] hover:text-red-400 hover:bg-red-400/5 rounded-lg transition-all disabled:opacity-50"
+                            className="p-2 text-(--beheer-text-muted) hover:text-red-400 hover:bg-red-400/5 rounded-lg transition-all disabled:opacity-50"
                             title="Verwijderen"
                         >
                             {isDeleteLoading ? (
@@ -82,11 +82,11 @@ export default function ReisTableRow({
                 </div>
 
                 <div className="space-y-1.5 mb-4 px-1">
-                    <div className="text-[11px] font-medium text-[var(--beheer-text-muted)] truncate opacity-80">
+                    <div className="text-[11px] font-medium text-(--beheer-text-muted) truncate opacity-80">
                         {signup.email}
                     </div>
                     <div className="flex items-center justify-between">
-                        <div className="text-[10px] font-semibold text-[var(--beheer-text-muted)] tabular-nums opacity-60">
+                        <div className="text-[10px] font-semibold text-(--beheer-text-muted) tabular-nums opacity-60">
                             {signup.date_of_birth
                                 ? new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(signup.date_of_birth))
                                 : '-'}
@@ -109,11 +109,11 @@ export default function ReisTableRow({
                     </div>
                 </div>
 
-                <div className="mt-auto pt-3 border-t border-[var(--beheer-border)]/10 flex flex-wrap items-center justify-between gap-y-2 gap-x-3">
+                <div className="mt-auto pt-3 border-t border-(--beheer-border)/10 flex flex-wrap items-center justify-between gap-y-2 gap-x-3">
                     <div className="flex-1 min-w-[120px]">
                         {isStatusLoading ? (
                             <div className="flex items-center justify-center py-2">
-                                <Loader2 className="h-5 w-5 animate-spin text-[var(--beheer-accent)]" />
+                                <Loader2 className="h-5 w-5 animate-spin text-(--beheer-accent)" />
                             </div>
                         ) : (
                             <StatusDropdown
@@ -165,21 +165,21 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
                 onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
                 className={`
                     w-full flex items-center justify-between px-3 py-2 rounded-xl border-2 transition-all duration-300
-                    ${isOpen ? 'border-[var(--beheer-accent)] shadow-lg scale-[1.02] bg-[var(--beheer-card-bg)]' : 'border-[var(--beheer-border)]/40 hover:border-[var(--beheer-accent)]/30'}
+                    ${isOpen ? 'border-(--beheer-accent) shadow-lg scale-[1.02] bg-(--beheer-card-bg)' : 'border-(--beheer-border)/40 hover:border-(--beheer-accent)/30'}
                 `}
             >
                 <div className="flex items-center gap-2">
                     <current.icon className={`h-3 w-3 ${current.color.split(' ')[0]}`} />
-                    <span className="text-[10px] font-semibold text-[var(--beheer-text)]">
+                    <span className="text-[10px] font-semibold text-(--beheer-text)">
                         {current.label}
                     </span>
                 </div>
-                <ChevronDown className={`h-3 w-3 text-[var(--beheer-text-muted)] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-3 w-3 text-(--beheer-text-muted) transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isOpen && (
                 <div
-                    className="absolute bottom-full left-0 mb-2 w-full min-w-[160px] bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)]/60 rounded-2xl shadow-2xl z-[100] overflow-hidden backdrop-blur-md animate-in fade-in zoom-in-95 slide-in-from-bottom-1 duration-150 ease-out"
+                    className="absolute bottom-full left-0 mb-2 w-full min-w-[160px] bg-(--beheer-card-bg) border border-(--beheer-border)/60 rounded-2xl shadow-2xl z-[100] overflow-hidden backdrop-blur-md animate-in fade-in zoom-in-95 slide-in-from-bottom-1 duration-150 ease-out"
                 >
                     <div className="p-1.5 space-y-0.5">
                         {statuses.map((s) => (
@@ -193,11 +193,11 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
                                 className={`
                                     w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all text-left
                                     ${currentStatus === s.value
-                                        ? 'bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)]'
-                                        : 'hover:bg-white/5 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}
+                                        ? 'bg-(--beheer-accent)/10 text-(--beheer-accent)'
+                                        : 'hover:bg-white/5 text-(--beheer-text-muted) hover:text-(--beheer-text)'}
                                 `}
                             >
-                                <s.icon className={`h-3.5 w-3.5 ${currentStatus === s.value ? 'text-[var(--beheer-accent)]' : s.color.split(' ')[0]}`} />
+                                <s.icon className={`h-3.5 w-3.5 ${currentStatus === s.value ? 'text-(--beheer-accent)' : s.color.split(' ')[0]}`} />
                                 <span className="text-[11px] font-semibold">{s.label}</span>
                             </button>
                         ))}

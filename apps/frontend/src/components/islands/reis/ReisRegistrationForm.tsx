@@ -127,7 +127,7 @@ export function ReisRegistrationForm({
                     </svg>
                 </div>
                 <h2 className="text-xl font-bold text-theme-purple dark:text-theme-white mb-2">Geen reis gepland</h2>
-                <p className="text-[var(--text-muted)] text-sm max-w-xs">
+                <p className="text-(--text-muted) text-sm max-w-xs">
                     Momenteel is er geen reis gepland. Houd deze pagina in de gaten voor nieuwe data!
                 </p>
             </div>
@@ -170,7 +170,7 @@ export function ReisRegistrationForm({
                             <div className="flex items-center gap-1 mt-0.5">
                                 <AlertCircle className="w-4 h-4 text-theme-purple shrink-0 opacity-60" />
                             </div>
-                            <p className="text-[10px] leading-relaxed text-[var(--text-muted)] font-semibold tracking-wider opacity-70">
+                            <p className="text-[10px] leading-relaxed text-(--text-muted) font-semibold tracking-wider opacity-70">
                                 <span className="text-theme-purple font-bold">LET OP:</span> Gebruik je volledige voornaam zoals op je paspoort/ID. Dit is essentieel voor je ticket!
                             </p>
                         </div>

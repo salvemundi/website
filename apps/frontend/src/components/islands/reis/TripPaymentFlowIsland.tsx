@@ -240,7 +240,7 @@ export default function TripPaymentFlowIsland({
                                 {step === 3 && 'Betalingssamenvatting'}
                                 {step === 4 && 'Gelukt!'}
                             </h2>
-                            <p className="text-[var(--text-muted)] text-sm mt-1">
+                            <p className="text-(--text-muted) text-sm mt-1">
                                 {step === 1 && `Vul je gegevens aan voor ${trip.name}`}
                                 {step === 2 && 'Kies de extra activiteiten die je wilt doen'}
                                 {step === 3 && 'Controleer je reissom en selecties'}
@@ -281,7 +281,7 @@ export default function TripPaymentFlowIsland({
                             <div className="order-2 sm:order-1 w-full sm:w-auto">
                                 <button
                                     onClick={step === 1 ? () => window.location.href = '/reis' : () => setStep(step - 1)}
-                                    className="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-sm text-[var(--text-muted)] hover:text-[var(--text-main)] transition-all flex items-center justify-center gap-2"
+                                    className="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-sm text-(--text-muted) hover:text-(--text-main) transition-all flex items-center justify-center gap-2"
                                 >
                                     <ChevronLeft className="w-4 h-4" /> 
                                     {step === 1 ? 'Annuleren' : 'Vorige'}

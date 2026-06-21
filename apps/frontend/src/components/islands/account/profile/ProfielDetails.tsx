@@ -80,7 +80,7 @@ export default function ProfielDetails({
                         </p>
                     </div>
                     <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-[68px]">
-                        <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-[var(--color-purple-300)]">
+                        <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-300">
                             <Mail className="h-5 w-5" />
                         </div>
                         <p className="font-bold text-purple-700 dark:text-white break-words text-xs sm:text-sm leading-tight min-w-0 flex-1">
@@ -97,7 +97,7 @@ export default function ProfielDetails({
                             </p>
                         </div>
                         <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-[68px]">
-                            <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-[var(--color-purple-300)]">
+                            <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-300">
                                 <Mail className="h-5 w-5" />
                             </div>
                             <p className="font-bold text-purple-700 dark:text-white break-words text-xs sm:text-sm leading-tight min-w-0 flex-1">
@@ -119,7 +119,7 @@ export default function ProfielDetails({
                         )}
                     </div>
                     <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-[68px]">
-                        <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-[var(--color-purple-300)]">
+                        <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-300">
                             <Phone className="h-5 w-5" />
                         </div>
                         {isEditingPhoneNumber ? (
@@ -155,7 +155,7 @@ export default function ProfielDetails({
                         </p>
                     </div>
                     <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-[68px]">
-                        <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-[var(--color-purple-300)]">
+                        <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-300">
                             <Calendar className="h-5 w-5" />
                         </div>
                         <p className="font-bold text-purple-700 dark:text-white text-sm">

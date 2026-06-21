@@ -125,34 +125,34 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-                <div className="p-4 sm:p-6 squircle bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
-                    <p className="text-sm sm:text-base font-bold text-[var(--text-muted)]">Totaal inschrijvingen</p>
-                    <p className="text-2xl sm:text-3xl font-black text-[var(--theme-purple)]">{stats.total}</p>
+                <div className="p-4 sm:p-6 squircle bg-(--bg-card) border border-(--border-color) shadow-sm">
+                    <p className="text-sm sm:text-base font-bold text-(--text-muted)">Totaal inschrijvingen</p>
+                    <p className="text-2xl sm:text-3xl font-black text-(--theme-purple)">{stats.total}</p>
                 </div>
-                <div className="p-4 sm:p-6 squircle bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
-                    <p className="text-sm sm:text-base font-bold text-[var(--text-muted)]">Aanwezig</p>
+                <div className="p-4 sm:p-6 squircle bg-(--bg-card) border border-(--border-color) shadow-sm">
+                    <p className="text-sm sm:text-base font-bold text-(--text-muted)">Aanwezig</p>
                     <p className="text-2xl sm:text-3xl font-black text-green-600">{stats.checkedIn}</p>
                 </div>
-                <div className="p-4 sm:p-6 squircle bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
-                    <p className="text-sm sm:text-base font-bold text-[var(--text-muted)]">Nog verwacht</p>
+                <div className="p-4 sm:p-6 squircle bg-(--bg-card) border border-(--border-color) shadow-sm">
+                    <p className="text-sm sm:text-base font-bold text-(--text-muted)">Nog verwacht</p>
                     <p className="text-2xl sm:text-3xl font-black text-blue-600">{stats.total - stats.checkedIn}</p>
                 </div>
             </div>
 
             <div className="flex flex-col gap-3 sm:gap-4">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-[var(--text-muted)]" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-(--text-muted)" />
                     <input
                         type="text"
                         placeholder="Zoek deelnemers..."
-                        className="w-full pl-9 sm:pl-10 pr-4 h-10 sm:h-12 rounded-xl bg-[var(--bg-soft)] border-none focus:ring-2 focus:ring-[var(--theme-purple)]/20 font-medium text-sm sm:text-base"
+                        className="w-full pl-9 sm:pl-10 pr-4 h-10 sm:h-12 rounded-xl bg-(--bg-soft) border-none focus:ring-2 focus:ring-(--theme-purple)/20 font-medium text-sm sm:text-base"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
                 <button
                     onClick={startScanner}
-                    className="w-full sm:w-auto h-10 sm:h-12 px-4 sm:px-6 squircle bg-[var(--theme-purple)] text-white font-bold flex items-center justify-center sm:justify-start gap-2 hover:scale-105 transition-all shadow-lg shadow-[var(--theme-purple)]/20 text-sm sm:text-base"
+                    className="w-full sm:w-auto h-10 sm:h-12 px-4 sm:px-6 squircle bg-(--theme-purple) text-white font-bold flex items-center justify-center sm:justify-start gap-2 hover:scale-105 transition-all shadow-lg shadow-(--theme-purple)/20 text-sm sm:text-base"
                 >
                     <QrCode className="h-4 w-4 sm:h-5 sm:w-5" />
                     Scan QR
@@ -161,7 +161,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
 
             {scanning && (
                 <div className="fixed inset-0 z-[9999] bg-black/80 flex flex-col items-center justify-center p-4 isolate">
-                    <div id="reader" className="scanner-reader w-full max-w-md bg-[var(--bg-card)] squircle-lg overflow-hidden shadow-2xl" />
+                    <div id="reader" className="scanner-reader w-full max-w-md bg-(--bg-card) squircle-lg overflow-hidden shadow-2xl" />
                     <button
                         onClick={() => setScanning(false)}
                         className="mt-6 px-8 py-3 squircle bg-white/20 text-white font-bold hover:bg-white/30 transition-all text-base"
@@ -189,36 +189,36 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                 </div>
             )}
 
-            <div className="squircle-lg border border-[var(--border-color)] bg-[var(--bg-card)] overflow-hidden shadow-xl">
+            <div className="squircle-lg border border-(--border-color) bg-(--bg-card) overflow-hidden shadow-xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left min-w-full">
-                        <thead className="bg-[var(--bg-soft)] border-b border-[var(--border-color)]">
+                        <thead className="bg-(--bg-soft) border-b border-(--border-color)">
                             <tr>
-                                <th className="px-4 sm:px-6 py-4 text-sm sm:text-base font-black text-[var(--theme-purple)]/40">Deelnemer</th>
-                                <th className="px-4 sm:px-6 py-4 text-sm sm:text-base font-black text-[var(--theme-purple)]/40 hidden md:table-cell">E-mail</th>
-                                <th className="px-4 sm:px-6 py-4 text-sm sm:text-base font-black text-[var(--theme-purple)]/40">Status</th>
-                                <th className="px-4 sm:px-6 py-4 text-sm sm:text-base font-black text-[var(--theme-purple)]/40 text-right whitespace-nowrap">Actie</th>
+                                <th className="px-4 sm:px-6 py-4 text-sm sm:text-base font-black text-(--theme-purple)/40">Deelnemer</th>
+                                <th className="px-4 sm:px-6 py-4 text-sm sm:text-base font-black text-(--theme-purple)/40 hidden md:table-cell">E-mail</th>
+                                <th className="px-4 sm:px-6 py-4 text-sm sm:text-base font-black text-(--theme-purple)/40">Status</th>
+                                <th className="px-4 sm:px-6 py-4 text-sm sm:text-base font-black text-(--theme-purple)/40 text-right whitespace-nowrap">Actie</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[var(--border-color)]">
+                        <tbody className="divide-y divide-(--border-color)">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={4} className="px-4 sm:px-6 py-12 text-center text-[var(--text-muted)] text-sm sm:text-base">
+                                    <td colSpan={4} className="px-4 sm:px-6 py-12 text-center text-(--text-muted) text-sm sm:text-base">
                                         <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
                                         Laden...
                                     </td>
                                 </tr>
                             ) : filteredSignups.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="px-4 sm:px-6 py-12 text-center text-[var(--text-muted)] italic text-sm sm:text-base">Geen deelnemers gevonden</td>
+                                    <td colSpan={4} className="px-4 sm:px-6 py-12 text-center text-(--text-muted) italic text-sm sm:text-base">Geen deelnemers gevonden</td>
                                 </tr>
                             ) : filteredSignups.map((s) => (
-                                <tr key={s.id} className="hover:bg-[var(--bg-soft)] transition-colors">
+                                <tr key={s.id} className="hover:bg-(--bg-soft) transition-colors">
                                     <td className="px-4 sm:px-6 py-4">
-                                        <p className="font-bold text-[var(--theme-purple)]/80 text-sm sm:text-base">{s.participant_name}</p>
-                                        <p className="text-xs sm:text-sm text-[var(--text-muted)] md:hidden">{s.participant_email}</p>
+                                        <p className="font-bold text-(--theme-purple)/80 text-sm sm:text-base">{s.participant_name}</p>
+                                        <p className="text-xs sm:text-sm text-(--text-muted) md:hidden">{s.participant_email}</p>
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 hidden md:table-cell text-sm sm:text-base font-medium text-[var(--text-muted)]">
+                                    <td className="px-4 sm:px-6 py-4 hidden md:table-cell text-sm sm:text-base font-medium text-(--text-muted)">
                                         {s.participant_email}
                                     </td>
                                     <td className="px-4 sm:px-6 py-4">
@@ -228,7 +228,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                                                 Aanwezig
                                             </span>
                                         ) : (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--bg-soft)] text-[var(--text-muted)] text-xs sm:text-sm font-bold ring-1 ring-inset ring-[var(--border-color)]">
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-(--bg-soft) text-(--text-muted) text-xs sm:text-sm font-bold ring-1 ring-inset ring-(--border-color)">
                                                 Niet ingecheckt
                                             </span>
                                         )}
@@ -252,7 +252,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                 <button
                     onClick={() => void fetchData()}
                     disabled={loading}
-                    className="flex items-center gap-2 text-base font-bold text-[var(--theme-purple)]/60 hover:text-[var(--theme-purple)] disabled:opacity-50 transition-all"
+                    className="flex items-center gap-2 text-base font-bold text-(--theme-purple)/60 hover:text-(--theme-purple) disabled:opacity-50 transition-all"
                 >
                     <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                     Lijst vernieuwen

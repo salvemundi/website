@@ -45,7 +45,7 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
             />
 
             <div
-                className="bg-[var(--bg-card)] w-full max-w-xl rounded-[2.5rem] shadow-[var(--shadow-card-elevated)] ring-1 ring-white/10 overflow-hidden flex flex-col relative z-10 border border-[var(--border-color)] dark:border-white/10 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300 ease-out"
+                className="bg-(--bg-card) w-full max-w-xl rounded-[2.5rem] shadow-(--shadow-card-elevated) ring-1 ring-white/10 overflow-hidden flex flex-col relative z-10 border border-(--border-color) dark:border-white/10 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300 ease-out"
             >
                 <div className="absolute -top-24 -right-24 w-48 h-48 bg-theme-purple/20 rounded-full blur-[80px] pointer-events-none" />
                 <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-theme-purple/10 rounded-full blur-[80px] pointer-events-none" />
@@ -55,25 +55,25 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                         <div className="bg-theme-purple/10 text-theme-purple p-2.5 rounded-2xl">
                             <AlertCircle className="h-5 w-5" />
                         </div>
-                        <h2 className="text-[10px] font-bold text-[var(--text-main)] tracking-[0.2em]">
+                        <h2 className="text-[10px] font-bold text-(--text-main) tracking-[0.2em]">
                             Naam Bevestigen
                         </h2>
                     </div>
                     <button
                         onClick={onCancel}
-                        className="text-[var(--text-muted)] hover:text-[var(--text-main)] p-2.5 rounded-full transition-all active:scale-90"
+                        className="text-(--text-muted) hover:text-(--text-main) p-2.5 rounded-full transition-all active:scale-90"
                     >
                         <X className="h-5 w-5" />
                     </button>
                 </div>
 
                 <div className="px-10 py-6 text-center">
-                    <h3 className="text-3xl font-bold text-[var(--text-main)] mb-4 tracking-tight">
+                    <h3 className="text-3xl font-bold text-(--text-main) mb-4 tracking-tight">
                         Klopt je voornaam?
                     </h3>
 
                     <div className="p-6 rounded-3xl bg-theme-purple/5 border border-theme-purple/10 mb-8">
-                        <p className="text-sm text-[var(--text-muted)] mb-2 font-medium tracking-wide opacity-70">
+                        <p className="text-sm text-(--text-muted) mb-2 font-medium tracking-wide opacity-70">
                             Ingevulde voornaam:
                         </p>
                         <p className="text-2xl font-bold text-theme-purple tracking-tight">
@@ -81,8 +81,8 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                         </p>
                     </div>
 
-                    <p className="text-base text-[var(--text-muted)] mb-8 leading-relaxed">
-                        Komt dit <span className="text-[var(--text-main)] font-bold italic">exact</span> overeen met de naam op je paspoort of ID-kaart?
+                    <p className="text-base text-(--text-muted) mb-8 leading-relaxed">
+                        Komt dit <span className="text-(--text-main) font-bold italic">exact</span> overeen met de naam op je paspoort of ID-kaart?
                         <br />
                         <span className="text-xs mt-2 inline-block opacity-80">
                             Een typefout kan leiden tot problemen bij de gate!
@@ -99,7 +99,7 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                         </button>
                         <button
                             onClick={onCancel}
-                            className="w-full py-5 bg-[var(--bg-soft)] hover:bg-[var(--bg-card)] text-[var(--text-muted)] hover:text-[var(--text-main)] rounded-2xl font-bold text-sm tracking-widest transition-all border border-[var(--border-color)] dark:border-white/5"
+                            className="w-full py-5 bg-(--bg-soft) hover:bg-(--bg-card) text-(--text-muted) hover:text-(--text-main) rounded-2xl font-bold text-sm tracking-widest transition-all border border-(--border-color) dark:border-white/5"
                         >
                             Nee, aanpassen
                         </button>

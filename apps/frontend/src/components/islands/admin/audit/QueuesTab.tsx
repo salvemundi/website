@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { CheckCircle } from 'lucide-react';
 import { QueueInfo } from '@salvemundi/validations';
 
@@ -23,18 +22,18 @@ export default function QueuesTab({ queueData }: QueuesTabProps) {
                     ? (qKey === 'new_users' ? queueData.new_users : queueData.sync_existing)
                     : undefined;
                 return (
-                    <div key={qKey} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-xl overflow-hidden">
-                        <div className="p-6 border-b border-[var(--beheer-border)]/50 flex justify-between items-center bg-[var(--beheer-card-soft)]/30">
+                    <div key={qKey} className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) shadow-xl overflow-hidden">
+                        <div className="p-6 border-b border-(--beheer-border)/50 flex justify-between items-center bg-(--beheer-card-soft)/30">
                             <div>
-                                <h3 className="text-base font-semibold text-[var(--beheer-text)] tracking-tight">
+                                <h3 className="text-base font-semibold text-(--beheer-text) tracking-tight">
                                     {qKey === 'new_users' ? 'Nieuwe Leden Wachtrij' : 'Sync Wachtrij'}
                                 </h3>
-                                <p className="text-xs font-medium text-[var(--beheer-text-muted)] mt-1 opacity-50">
+                                <p className="text-xs font-medium text-(--beheer-text-muted) mt-1 opacity-50">
                                     Redis: {qKey === 'new_users' ? 'v7:queue:provision:new_user' : 'v7:queue:provision:sync_existing'}
                                 </p>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="px-3 py-1 bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] rounded-full text-sm font-semibold">
+                                <span className="px-3 py-1 bg-(--beheer-accent)/10 text-(--beheer-accent) rounded-full text-sm font-semibold">
                                     {q?.count || 0}
                                 </span>
                             </div>
@@ -42,22 +41,22 @@ export default function QueuesTab({ queueData }: QueuesTabProps) {
                         <div className="p-0">
                             {!q?.samples || q.samples.length === 0 ? (
                                 <div className="p-12 text-center">
-                                    <CheckCircle className="h-10 w-10 text-[var(--beheer-active)] mx-auto mb-4 opacity-20" />
-                                    <p className="text-xs font-medium text-[var(--beheer-text-muted)]">Geen actieve taken</p>
+                                    <CheckCircle className="h-10 w-10 text-(--beheer-active) mx-auto mb-4 opacity-20" />
+                                    <p className="text-xs font-medium text-(--beheer-text-muted)">Geen actieve taken</p>
                                 </div>
                             ) : (
                                 <table className="w-full text-left text-xs">
                                     <thead>
-                                        <tr className="bg-[var(--beheer-card-soft)]/50 border-b border-[var(--beheer-border)]/50 font-semibold text-[var(--beheer-text-muted)] tracking-tight">
+                                        <tr className="bg-(--beheer-card-soft)/50 border-b border-(--beheer-border)/50 font-semibold text-(--beheer-text-muted) tracking-tight">
                                             <th className="p-3">Target</th>
                                             <th className="p-3 text-center">Retries</th>
                                             <th className="p-3 text-right">Status</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-[var(--beheer-border)]/10">
+                                    <tbody className="divide-y divide-(--beheer-border)/10">
                                         {(q.samples as QueueTask[]).map((task, idx: number) => (
-                                            <tr key={idx} className="hover:bg-[var(--beheer-accent)]/[0.02]">
-                                                <td className="p-3 font-bold text-[var(--beheer-text)]">
+                                            <tr key={idx} className="hover:bg-(--beheer-accent)/2">
+                                                <td className="p-3 font-bold text-(--beheer-text)">
                                                     {task.email || task.userId || 'Unknown'}
                                                 </td>
                                                 <td className="p-3 text-center font-semibold">

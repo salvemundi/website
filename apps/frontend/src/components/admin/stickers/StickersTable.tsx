@@ -46,39 +46,39 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
 
     return (
         <div className="space-y-6">
-            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] p-6 shadow-sm border border-[var(--beheer-border)]">
+            <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) p-6 shadow-sm border border-(--beheer-border)">
                 <div className="relative group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--beheer-text-muted)] group-focus-within:text-[var(--beheer-accent)] transition-colors" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-(--beheer-text-muted) group-focus-within:text-(--beheer-accent) transition-colors" />
                     <input
                         type="text"
                         placeholder="Zoek op locatie, stad, land of gebruiker..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         suppressHydrationWarning
-                        className="w-full pl-12 pr-4 py-3 bg-[var(--bg-main)]/50 border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] focus:ring-4 focus:ring-[var(--beheer-accent)]/10 focus:border-[var(--beheer-accent)] transition-all font-bold text-[10px] uppercase tracking-widest text-[var(--beheer-text)] placeholder:text-[var(--beheer-text-muted)]"
+                        className="w-full pl-12 pr-4 py-3 bg-(--bg-main)/50 border border-(--beheer-border) rounded-(--beheer-radius) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) transition-all font-bold text-[10px] uppercase tracking-widest text-(--beheer-text) placeholder:text-(--beheer-text-muted)"
                     />
                 </div>
             </div>
 
-            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-xl border border-[var(--beheer-border)] overflow-hidden">
+            <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border) overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-[var(--bg-main)]/50 border-b border-[var(--beheer-border)]">
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Locatie & Gebruiker</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Stad / Land</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Datum</th>
-                                <th className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Foto</th>
-                                <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">Acties</th>
+                            <tr className="bg-(--bg-main)/50 border-b border-(--beheer-border)">
+                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-(--beheer-text-muted)">Locatie & Gebruiker</th>
+                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-(--text-muted)">Stad / Land</th>
+                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-(--text-muted)">Datum</th>
+                                <th className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-(--text-muted)">Foto</th>
+                                <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-(--beheer-text-muted)">Acties</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[var(--beheer-border)]/10">
+                        <tbody className="divide-y divide-(--beheer-border)/10">
                             {filteredStickers.map((sticker) => (
-                                <tr key={sticker.id} className="hover:bg-[var(--bg-main)]/30 transition-colors group">
+                                <tr key={sticker.id} className="hover:bg-(--bg-main)/30 transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col gap-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-black text-[var(--beheer-text)] group-hover:text-[var(--beheer-accent)] transition-colors uppercase tracking-tight">
+                                                <span className="font-black text-(--beheer-text) group-hover:text-(--beheer-accent) transition-colors uppercase tracking-tight">
                                                     {sticker.user_created
                                                         ? `${sticker.user_created.first_name || ''} ${sticker.user_created.last_name || ''}`
                                                         : 'Systeem'}                                              </span>
@@ -92,7 +92,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                                     </span>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[var(--beheer-text-muted)]">
+                                            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-(--beheer-text-muted)">
                                                 <User className="h-3 w-3" />
                                                 {sticker.user_created
                                                     ? `${sticker.user_created.first_name || ''} ${sticker.user_created.last_name || ''}`
@@ -102,24 +102,24 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-[var(--beheer-text)] flex items-center gap-1.5 uppercase tracking-widest leading-none">
+                                            <span className="text-[10px] font-black text-(--beheer-text) flex items-center gap-1.5 uppercase tracking-widest leading-none">
                                                 <MapPin className="h-3 w-3 text-red-500" />
                                                 {sticker.city || ''}
                                             </span>
-                                            <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest flex items-center gap-1.5 mt-1.5 leading-none">
+                                            <span className="text-[10px] font-black text-(--beheer-text-muted) uppercase tracking-widest flex items-center gap-1.5 mt-1.5 leading-none">
                                                 <Globe className="h-3 w-3 text-blue-500" />
                                                 {sticker.country || ''}
                                             </span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className="text-[10px] font-black text-[var(--beheer-text-muted)] uppercase tracking-widest" suppressHydrationWarning>
+                                        <span className="text-[10px] font-black text-(--beheer-text-muted) uppercase tracking-widest" suppressHydrationWarning>
                                             {formatDate(sticker.date_created, 'dd MMM yyyy')}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <div
-                                            className="w-12 h-12 mx-auto rounded-[var(--beheer-radius)] bg-[var(--bg-main)] border border-dashed border-[var(--beheer-border)] flex items-center justify-center text-[var(--beheer-text-muted)] cursor-pointer hover:border-[var(--beheer-accent)] transition-colors overflow-hidden"
+                                            className="w-12 h-12 mx-auto rounded-(--beheer-radius) bg-(--bg-main) border border-dashed border-(--beheer-border) flex items-center justify-center text-(--beheer-text-muted) cursor-pointer hover:border-(--beheer-accent) transition-colors overflow-hidden"
                                             onClick={() => sticker.image && setSelectedImage(`${ASSET_URL}/${sticker.image}`)}
                                         >
                                             {!sticker.image ? (
@@ -130,7 +130,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                                     alt="Sticker"
                                                     width={48}
                                                     height={48}
-                                                    className="w-full h-full object-cover rounded-[var(--beheer-radius)]"
+                                                    className="w-full h-full object-cover rounded-(--beheer-radius)"
                                                 />
                                             )}
                                         </div>
@@ -159,7 +159,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                             ))}
                             {filteredStickers.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-16 text-center text-[var(--beheer-text-muted)] italic font-bold uppercase tracking-widest text-[10px]">
+                                    <td colSpan={5} className="px-6 py-16 text-center text-(--beheer-text-muted) italic font-bold uppercase tracking-widest text-[10px]">
                                         Geen stickers gevonden voor dit filter.
                                     </td>
                                 </tr>
@@ -180,11 +180,11 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                 asset={selectedImage}
                                 alt="Sticker Full"
                                 fill
-                                className="rounded-[var(--beheer-radius)] shadow-2xl border border-[var(--beheer-border)] object-contain"
+                                className="rounded-(--beheer-radius) shadow-2xl border border-(--beheer-border) object-contain"
                             />
                         </div>
                         <button
-                            className="absolute -top-4 -right-4 bg-[var(--beheer-card-bg)] text-[var(--beheer-text)] p-2 rounded-full shadow-lg hover:text-[var(--beheer-accent)] transition-colors border border-[var(--beheer-border)]"
+                            className="absolute -top-4 -right-4 bg-(--beheer-card-bg) text-(--beheer-text) p-2 rounded-full shadow-lg hover:text-(--beheer-accent) transition-colors border border-(--beheer-border)"
                             onClick={() => setSelectedImage(null)}
                         >
                             <X className="h-5 w-5" />

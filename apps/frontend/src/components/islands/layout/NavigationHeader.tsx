@@ -53,7 +53,7 @@ const NavigationHeader = ({
         <HeaderShell>
             <div className="w-full px-4 lg:px-8 z-10 relative @container h-20 flex items-center justify-between">
                 {/* Logo Section */}
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                     <Link href="/" className="group flex items-center gap-3 transition-transform duration-300 hover:scale-[1.03] active:scale-95">
                         <div className="relative w-12 h-12">
                             <Image
@@ -72,8 +72,8 @@ const NavigationHeader = ({
                             />
                         </div>
                         <div className="hidden text-left @[1024px]:block whitespace-nowrap transition-all duration-300">
-                            <p className="text-[13px] font-semibold text-[var(--color-purple-500)] leading-none">Salve Mundi</p>
-                            <p className="text-xs font-semibold text-[var(--text-main)] mt-0.5">Fontys ICT</p>
+                            <p className="text-[13px] font-semibold text-purple-500 leading-none">Salve Mundi</p>
+                            <p className="text-xs font-semibold text-(--text-main) mt-0.5">Fontys ICT</p>
                         </div>
                     </Link>
                 </div>
@@ -88,13 +88,13 @@ const NavigationHeader = ({
                                 href={link.href}
                                 className={cn(
                                     'group relative inline-flex items-center gap-2 text-sm font-semibold transition-all duration-200 whitespace-nowrap shrink-0',
-                                    active ? 'text-[var(--color-purple-500)]' : 'text-[var(--text-main)]',
-                                    !active && 'hover:text-[var(--color-purple-500)]'
+                                    active ? 'text-purple-500' : 'text-(--text-main)',
+                                    !active && 'hover:text-purple-500'
                                 )}
                             >
                                 <span className="text-[clamp(13px,1vw,15px)] font-semibold">{link.name}</span>
                                 <span className={cn(
-                                    'absolute -bottom-2 left-0 h-0.5 w-full origin-left rounded-full bg-[var(--color-purple-50)] transition-transform duration-200 ease-out',
+                                    'absolute -bottom-2 left-0 h-0.5 w-full origin-left rounded-full bg-purple-50 transition-transform duration-200 ease-out',
                                     active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
                                 )} />
                             </Link>
@@ -103,7 +103,7 @@ const NavigationHeader = ({
                 </nav>
 
                 {/* Right Actions */}
-                <div className="flex-shrink-0 flex items-center justify-end gap-3">
+                <div className="shrink-0 flex items-center justify-end gap-3">
                     <NavUserSection
                         initialSession={initialSession}
                         canAccessAdmin={canAccessAdmin}

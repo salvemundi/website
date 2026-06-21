@@ -58,7 +58,7 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
                         <Compass className="w-7 h-7 text-theme-purple" />
                         Optionele Activiteiten
                     </h2>
-                    <p className="text-[var(--text-muted)] text-sm">Kies de extra activiteiten die je wilt doen tijdens de reis.</p>
+                    <p className="text-(--text-muted) text-sm">Kies de extra activiteiten die je wilt doen tijdens de reis.</p>
                 </header>
             )}
             

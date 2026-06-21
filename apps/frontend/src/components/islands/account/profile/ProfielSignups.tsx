@@ -88,32 +88,32 @@ export default function ProfielSignups({
                                     }`}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="shrink-0 h-16 w-16 flex items-center justify-center rounded-2xl bg-[var(--color-purple-100)] dark:bg-transparent text-[var(--color-purple-500)] dark:text-[var(--color-purple-300)] shadow-sm dark:shadow-none">
+                                    <div className="shrink-0 h-16 w-16 flex items-center justify-center rounded-2xl bg-purple-100 dark:bg-transparent text-purple-500 dark:text-purple-300 shadow-sm dark:shadow-none">
                                         {icon}
                                     </div>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <h3 className="text-lg font-bold text-[var(--color-purple-700)] dark:text-white line-clamp-1">
+                                            <h3 className="text-lg font-bold text-purple-700 dark:text-white line-clamp-1">
                                                 {eventData.name}
                                             </h3>
                                         </div>
-                                        <p className="mt-1 flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
+                                        <p className="mt-1 flex items-center gap-2 text-xs font-bold text-(--text-muted)">
                                             <Calendar className="h-3.5 w-3.5" />
                                             {eventDateStr && formatDate(eventDateStr)}
                                         </p>
                                     </div>
                                 </div>
-                                <ChevronRight className="h-6 w-6 shrink-0 text-[var(--color-purple-200)] transition-transform group-hover:translate-x-1" />
+                                <ChevronRight className="h-6 w-6 shrink-0 text-purple-200 transition-transform group-hover:translate-x-1" />
                             </Link>
                         );
                     })}
                 </div>
             ) : (
                 <div className="squircle-lg border-2 border-dashed border-licht-paars/20 dark:border-white/10 bg-licht-paars/5 dark:bg-white/5 p-12 text-center shadow-inner">
-                    <p className="text-[var(--color-purple-700)] dark:text-white font-bold text-lg mb-2">
+                    <p className="text-purple-700 dark:text-white font-bold text-lg mb-2">
                         Je bent nog niet aangemeld voor activiteiten.
                     </p>
-                    <p className="text-[var(--text-muted)] text-sm mb-6">
+                    <p className="text-(--text-muted) text-sm mb-6">
                         Bekijk de kalender om aankomende activiteiten te ontdekken
                     </p>
                     <Link

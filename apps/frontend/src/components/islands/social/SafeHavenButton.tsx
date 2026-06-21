@@ -15,7 +15,7 @@ export default function SafeHavenButton() {
             onClick={() => router.push('/safe-havens')}
             className="flex items-center gap-5 p-5 rounded-2xl bg-bg-card border border-border-color shadow-sm transition-all duration-300 w-full text-left hover:border-purple-300 hover:shadow-md hover:-translate-y-0.5 cursor-pointer group"
         >
-            <div className="w-12 h-12 rounded-xl bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 flex items-center justify-center flex-shrink-0 border border-purple-500/10 dark:border-purple-400/10">
+            <div className="w-12 h-12 rounded-xl bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0 border border-purple-500/10 dark:border-purple-400/10">
                 <Shield className="h-6 w-6" />
             </div>
             <div className="flex-1 min-w-0">

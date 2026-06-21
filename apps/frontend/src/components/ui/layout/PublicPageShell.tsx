@@ -29,7 +29,7 @@ export default function PublicPageShell({
                     }}
                 />
                 <div className="absolute inset-0 bg-black/40 -z-10 pointer-events-none" />
-                <div className="flex-grow relative z-10">
+                <div className="grow relative z-10">
                     {children}
                 </div>
             </div>

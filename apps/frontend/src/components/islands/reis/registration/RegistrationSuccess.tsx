@@ -16,7 +16,7 @@ export function RegistrationSuccess({ currentUser, email }: RegistrationSuccessP
                 </svg>
             </div>
             <h2 className="text-2xl font-bold text-theme-purple dark:text-theme-white mb-2">Inschrijving Ontvangen!</h2>
-            <p className="text-[var(--text-muted)] mb-6">
+            <p className="text-(--text-muted) mb-6">
                 {currentUser 
                     ? 'Bedankt voor je inschrijving. Je status wordt nu bijgewerkt...' 
                     : `Bedankt voor je inschrijving! Check je mail (${email || 'jouw e-mailadres'}) voor de bevestiging.`}

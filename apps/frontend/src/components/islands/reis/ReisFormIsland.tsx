@@ -60,7 +60,7 @@ export function ReisFormIsland({
                 <button
                     onClick={() => { void handleRefresh(); }}
                     disabled={refreshing}
-                    className="p-3 bg-purple-500/5 hover:bg-purple-500/10 rounded-2xl text-[var(--text-muted)] hover:text-purple-500 transition-all disabled:opacity-50 active:scale-90"
+                    className="p-3 bg-purple-500/5 hover:bg-purple-500/10 rounded-2xl text-(--text-muted) hover:text-purple-500 transition-all disabled:opacity-50 active:scale-90"
                     title="Gegevens vernieuwen"
                 >
                     <RefreshCcw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />

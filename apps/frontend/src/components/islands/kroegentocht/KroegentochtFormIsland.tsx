@@ -202,7 +202,7 @@ export default function KroegentochtFormIsland({
                                     <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Deelnemer {index + 1}</span>
                                 </div>
                                 <div className="flex gap-3">
-                                    <div className="flex-grow">
+                                    <div className="grow">
                                         <label htmlFor={`field-participants-${index}-name`} className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Voornaam + tussenvoegsel</label>
                                         <Input
                                             {...register(`participants.${index}.name`)}

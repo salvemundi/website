@@ -67,15 +67,15 @@ export default function CalendarView({
     };
 
     return (
-        <div className="bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 rounded-3xl shadow-xl overflow-hidden">
-            <div className="p-6 flex items-center justify-between text-[var(--theme-purple)] dark:text-[var(--text-main)]">
+        <div className="bg-(--bg-card) dark:border dark:border-white/10 rounded-3xl shadow-xl overflow-hidden">
+            <div className="p-6 flex items-center justify-between text-(--theme-purple) dark:text-(--text-main)">
                 <h2 className="text-2xl font-bold capitalize">
                     {currentDate.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}
                 </h2>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={onPrevMonth}
-                        className="p-2 hover:bg-[var(--theme-purple)]/10 rounded-full transition-colors"
+                        className="p-2 hover:bg-(--theme-purple)/10 rounded-full transition-colors"
                         aria-label="Vorige maand"
                     >
                         <ChevronLeft className="w-6 h-6" />
@@ -86,13 +86,13 @@ export default function CalendarView({
                             onSelectDay(today);
                             onGoToDate?.(today);
                         }}
-                        className="px-4 py-1.5 bg-[var(--theme-purple)]/10 hover:bg-[var(--theme-purple)]/20 rounded-full text-sm font-semibold transition-colors"
+                        className="px-4 py-1.5 bg-(--theme-purple)/10 hover:bg-(--theme-purple)/20 rounded-full text-sm font-semibold transition-colors"
                     >
                         Vandaag
                     </button>
                     <button
                         onClick={onNextMonth}
-                        className="p-2 hover:bg-[var(--theme-purple)]/10 rounded-full transition-colors"
+                        className="p-2 hover:bg-(--theme-purple)/10 rounded-full transition-colors"
                         aria-label="Volgende maand"
                     >
                         <ChevronRight className="w-6 h-6" />
@@ -100,15 +100,15 @@ export default function CalendarView({
                 </div>
             </div>
 
-            <div className="grid grid-cols-7 bg-[var(--bg-soft)]">
+            <div className="grid grid-cols-7 bg-(--bg-soft)">
                 {weekDays.map(day => (
-                    <div key={day} className="py-3 text-center text-sm font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                    <div key={day} className="py-3 text-center text-sm font-bold text-(--text-muted) uppercase tracking-wider">
                         {day}
                     </div>
                 ))}
             </div>
 
-            <div className="grid grid-cols-7 auto-rows-fr bg-[var(--border-color)] gap-px">
+            <div className="grid grid-cols-7 auto-rows-fr bg-(--border-color) gap-px">
                 {days.map((day) => {
                     const dayEvents = getEventsForDay(day);
                     const isCurrentMonth = day.getMonth() === monthStart.getMonth();
@@ -120,15 +120,15 @@ export default function CalendarView({
                             key={day.toString()}
                             onClick={() => onSelectDay(day)}
                             className={`min-h-[120px] p-2 flex flex-col gap-1 transition-colors cursor-pointer
-                                ${!isCurrentMonth ? 'bg-[var(--bg-soft)]/50 text-[var(--text-muted)]' : 'bg-[var(--bg-card)]'}
-                                ${isSelected ? 'ring-2 ring-inset ring-[var(--theme-purple)] bg-[var(--theme-purple)]/5' : ''}
-                                hover:ring-2 hover:ring-inset hover:ring-[var(--theme-purple)]/30
+                                ${!isCurrentMonth ? 'bg-(--bg-soft)/50 text-(--text-muted)' : 'bg-(--bg-card)'}
+                                ${isSelected ? 'ring-2 ring-inset ring-(--theme-purple) bg-(--theme-purple)/5' : ''}
+                                hover:ring-2 hover:ring-inset hover:ring-(--theme-purple)/30
                             `}
                         >
                             <div className="flex justify-between items-start">
                                 <span
                                     className={`text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full
-                                        ${isDayToday ? 'bg-[var(--theme-purple)] text-[var(--color-white)]' : isSelected ? 'text-[var(--theme-purple)]' : 'text-[var(--text-main)]'}
+                                        ${isDayToday ? 'bg-(--theme-purple) text-white' : isSelected ? 'text-(--theme-purple)' : 'text-(--text-main)'}
                                     `}
                                 >
                                     {day.getDate()}
@@ -143,7 +143,7 @@ export default function CalendarView({
                                             e.stopPropagation();
                                             onEventClick(event);
                                         }}
-                                        className="w-full text-left text-[10px] p-1.5 rounded-lg bg-[var(--theme-purple)]/10 hover:bg-[var(--theme-purple)]/20 text-[var(--theme-purple)] font-bold truncate transition-all hover:scale-[1.02] border border-transparent hover:border-[var(--theme-purple)]/20"
+                                        className="w-full text-left text-[10px] p-1.5 rounded-lg bg-(--theme-purple)/10 hover:bg-(--theme-purple)/20 text-(--theme-purple) font-bold truncate transition-all hover:scale-[1.02] border border-transparent hover:border-(--theme-purple)/20"
                                         title={`${event.event_time ? event.event_time.split(':').slice(0, 2).join(':') : '00:00'} - ${event.titel}`}
                                     >
                                         <span className="opacity-60 mr-1.5 font-black">{event.event_time ? event.event_time.split(':').slice(0, 2).join(':') : '00:00'}</span>

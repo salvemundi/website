@@ -132,7 +132,7 @@ export default function ActiviteitAanmeldingenIsland({
                     <div className="flex flex-wrap items-center gap-1.5 order-2 sm:order-1">
                         <Link
                             href={`/beheer/activiteiten/${event.id}/scanner`}
-                            className="md:hidden flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--theme-purple)] text-white font-semibold text-xs rounded-xl shadow-lg shadow-[var(--theme-purple)]/20 transition-all active:scale-95 border border-white/10"
+                            className="md:hidden flex items-center justify-center gap-2 px-6 py-2.5 bg-(--theme-purple) text-white font-semibold text-xs rounded-xl shadow-lg shadow-(--theme-purple)/20 transition-all active:scale-95 border border-white/10"
                         >
                             <QrCode className="h-3.5 w-3.5" />
                             Scanner
@@ -140,7 +140,7 @@ export default function ActiviteitAanmeldingenIsland({
                         <button
                             onClick={() => exportSignupsToCSV(filteredSignups, event.name)}
                             disabled={filteredSignups.length === 0}
-                            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-xl text-xs font-semibold hover:border-[var(--beheer-accent)]/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-xl text-xs font-semibold hover:border-(--beheer-accent)/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                         >
                             <Download className="h-3.5 w-3.5" />
                             Exporteer
@@ -148,7 +148,7 @@ export default function ActiviteitAanmeldingenIsland({
                         {canAccessEdit && (
                             <button
                                 onClick={() => setIsManualModalOpen(true)}
-                                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--beheer-accent)] text-white font-semibold text-xs rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10"
+                                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-accent) text-white font-semibold text-xs rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10"
                             >
                                 <UserPlus className="h-3.5 w-3.5" />
                                 Handmatig
@@ -157,7 +157,7 @@ export default function ActiviteitAanmeldingenIsland({
                     </div>
 
                     <div className="relative group w-full sm:w-[320px] order-1 sm:order-2">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--beheer-text-muted)] opacity-40 group-focus-within:text-[var(--beheer-accent)] group-focus-within:opacity-100 transition-all" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-(--beheer-text-muted) opacity-40 group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 transition-all" />
                         <input
                             type="text"
                             placeholder="Zoek deelnemers..."
@@ -175,15 +175,15 @@ export default function ActiviteitAanmeldingenIsland({
                     eventName={event.name}
                 />
 
-                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] overflow-hidden">
+                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-sm ring-1 ring-(--beheer-border) overflow-hidden">
                     {filteredSignups.length === 0 ? (
                         <div className="p-20 text-center">
-                            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[var(--beheer-card-soft)] mb-6">
-                                <Search className="h-10 w-10 text-[var(--beheer-text-muted)] opacity-20" />
+                            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-(--beheer-card-soft) mb-6">
+                                <Search className="h-10 w-10 text-(--beheer-text-muted) opacity-20" />
                             </div>
-                            <h3 className="text-xl font-semibold text-[var(--beheer-text)] mb-2 tracking-tighter">Geen resultaten</h3>
-                            <p className="text-[var(--beheer-text-muted)] font-semibold tracking-widest text-[10px] max-w-xs mx-auto">
-                                {searchQuery ? "We konden niemand vinden die voldoet aan je zoekopdracht." : "Er zijn nog geen aanmeldingen voor deze activiteit."}
+                            <h3 className="text-xl font-semibold text-(--beheer-text) mb-2 tracking-tighter">Geen resultaten</h3>
+                            <p className="text-(--beheer-text-muted) font-semibold tracking-widest text-[10px] max-w-xs mx-auto">
+                               {searchQuery ? "We konden niemand vinden die voldoet aan je zoekopdracht." : "Er zijn nog geen aanmeldingen voor deze activiteit."}
                             </p>
                         </div>
                     ) : (

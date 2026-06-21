@@ -24,7 +24,7 @@ export default function GuestTab({
         <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
                 <div className="group">
-                    <label className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2.5 ml-1 group-focus-within:text-[var(--beheer-accent)] transition-colors">Naam Gast *</label>
+                    <label className="block text-[10px] font-semibold text-(--beheer-text-muted)  tracking-widest mb-2.5 ml-1 group-focus-within:text-(--beheer-accent) transition-colors">Naam Gast *</label>
                     <input
                         suppressHydrationWarning
                         type="text"
@@ -37,7 +37,7 @@ export default function GuestTab({
                     />
                 </div>
                 <div className="group">
-                    <label className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2.5 ml-1 group-focus-within:text-[var(--beheer-accent)] transition-colors">E-mailadres *</label>
+                    <label className="block text-[10px] font-semibold text-(--beheer-text-muted)  tracking-widest mb-2.5 ml-1 group-focus-within:text-(--beheer-accent) transition-colors">E-mailadres *</label>
                     <input
                         suppressHydrationWarning
                         type="email"
@@ -50,7 +50,7 @@ export default function GuestTab({
                     />
                 </div>
                 <div className="group">
-                    <label className="block text-[10px] font-semibold text-[var(--beheer-text-muted)]  tracking-widest mb-2.5 ml-1 group-focus-within:text-[var(--beheer-accent)] transition-colors">Telefoonnummer</label>
+                    <label className="block text-[10px] font-semibold text-(--beheer-text-muted)  tracking-widest mb-2.5 ml-1 group-focus-within:text-(--beheer-accent) transition-colors">Telefoonnummer</label>
                     <PhoneInput
                         value={phone}
                         onChange={(e) => onPhoneChange(e.target.value)}

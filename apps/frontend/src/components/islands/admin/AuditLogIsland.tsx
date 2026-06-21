@@ -224,7 +224,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
         <div className="w-full">
             <div className="flex flex-col gap-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex gap-1 bg-[var(--beheer-card-soft)] p-1 rounded-2xl w-fit border border-[var(--beheer-border)]">
+                    <div className="flex gap-1 bg-(--beheer-card-soft) p-1 rounded-2xl w-fit border border-(--beheer-border)">
                         {[
                             { id: 'pending', label: 'Wachtrij', icon: Clock },
                             { id: 'admin_logs', label: 'Beheerder', icon: Shield },
@@ -234,7 +234,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-[11px] transition-all ${activeTab === tab.id ? 'bg-[var(--beheer-card-bg)] shadow-md text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}`}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-[11px] transition-all ${activeTab === tab.id ? 'bg-(--beheer-card-bg) shadow-md text-(--beheer-accent)' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
                             >
                                 <tab.icon className="h-3 w-3" /> {tab.label}
                             </button>
@@ -242,10 +242,10 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                     </div>
 
                     {/* Compact Config Toggle */}
-                    <div className="flex items-center gap-4 px-4 py-2 bg-[var(--beheer-card-soft)] rounded-2xl border border-[var(--beheer-border)] shadow-sm">
+                    <div className="flex items-center gap-4 px-4 py-2 bg-(--beheer-card-soft) rounded-2xl border border-(--beheer-border) shadow-sm">
                         <div className="flex items-center gap-2">
                             <Shield className={`h-3.5 w-3.5 ${manualApproval ? 'text-amber-500' : 'text-green-500'}`} />
-                            <span className="text-[11px] font-semibold text-[var(--beheer-text)] leading-tight">
+                            <span className="text-[11px] font-semibold text-(--beheer-text) leading-tight">
                                 {manualApproval
                                     ? "Handmatige goedkeuring is ACTIEF. Alle aanmeldingen moeten worden goedgekeurd."
                                     : "Automatische goedkeuring is ACTIEF. Aanmeldingen worden direct verwerkt."}
@@ -298,7 +298,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         actions={
                             <a
                                 href="/beheer/sync"
-                                className="flex items-center gap-2 px-3 py-1.5 bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] rounded-lg text-xs font-semibold hover:bg-[var(--beheer-accent)]/20 transition-all active:scale-95"
+                                className="flex items-center gap-2 px-3 py-1.5 bg-(--beheer-accent)/10 text-(--beheer-accent) rounded-lg text-xs font-semibold hover:bg-(--beheer-accent)/20 transition-all active:scale-95"
                             >
                                 Sync Beheren
                             </a>

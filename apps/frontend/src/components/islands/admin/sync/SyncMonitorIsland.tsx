@@ -15,13 +15,13 @@ interface FilterTabProps {
 
 function FilterTab({ active, label, count, onClick, color = 'indigo' }: FilterTabProps) {
     const colorVariants = new Map([
-        ['indigo', 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]'],
-        ['green', 'bg-[var(--beheer-active)] text-white shadow-lg shadow-[var(--beheer-active)]/20'],
-        ['amber', 'bg-[var(--theme-warning)] text-white shadow-lg shadow-[var(--theme-warning)]/20'],
-        ['blue', 'bg-[var(--theme-info)] text-white shadow-lg shadow-[var(--theme-info)]/20'],
-        ['red', 'bg-[var(--beheer-inactive)] text-white shadow-lg shadow-[var(--beheer-inactive)]/20'],
-        ['slate', 'bg-[var(--beheer-text-muted)] text-white shadow-lg shadow-[var(--beheer-text-muted)]/20'],
-        ['purple', 'bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)]'],
+        ['indigo', 'bg-(--beheer-accent) text-white shadow-(--shadow-glow)'],
+        ['green', 'bg-(--beheer-active) text-white shadow-lg shadow-(--beheer-active)/20'],
+        ['amber', 'bg-(--theme-warning) text-white shadow-lg shadow-(--theme-warning)/20'],
+        ['blue', 'bg-(--theme-info) text-white shadow-lg shadow-(--theme-info)/20'],
+        ['red', 'bg-(--beheer-inactive) text-white shadow-lg shadow-(--beheer-inactive)/20'],
+        ['slate', 'bg-(--beheer-text-muted) text-white shadow-lg shadow-(--beheer-text-muted)/20'],
+        ['purple', 'bg-(--beheer-accent) text-white shadow-(--shadow-glow)'],
     ]);
 
     return (
@@ -29,11 +29,11 @@ function FilterTab({ active, label, count, onClick, color = 'indigo' }: FilterTa
             onClick={onClick}
             className={`w-full px-3 py-2 rounded-xl text-[11px] font-semibold transition-all whitespace-nowrap flex items-center justify-between border ${active
                 ? `${colorVariants.get(color)} border-transparent shadow-sm`
-                : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] border-[var(--beheer-border)]/50 hover:border-[var(--beheer-accent)]/30 hover:text-[var(--beheer-text)]'
+                : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) border-(--beheer-border)/50 hover:border-(--beheer-accent)/30 hover:text-(--beheer-text)'
                 }`}
         >
             <span>{label}</span>
-            <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${active ? 'bg-white/20' : 'bg-[var(--beheer-border)]/30'}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${active ? 'bg-white/20' : 'bg-(--beheer-border)/30'}`}>
                 {count}
             </span>
         </button>
@@ -57,15 +57,15 @@ export default function SyncMonitorIsland() {
     const progress = total > 0 ? (processed / total) * 100 : 0;
 
     return (
-        <div className="bg-[var(--beheer-card-bg)] p-6 rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] shadow-sm">
+        <div className="bg-(--beheer-card-bg) p-6 rounded-(--beheer-radius) border border-(--beheer-border) shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                 <div className="flex items-center gap-4">
-                    <div className="p-2.5 bg-[var(--theme-info)]/10 rounded-xl text-[var(--theme-info)]">
+                    <div className="p-2.5 bg-(--theme-info)/10 rounded-xl text-(--theme-info)">
                         <Activity className="h-5 w-5" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-semibold text-[var(--beheer-text)] tracking-tight">Sync Monitor</h3>
-                        <p className="text-[11px] font-semibold text-[var(--beheer-text-muted)] mt-1">
+                        <h3 className="text-lg font-semibold text-(--beheer-text) tracking-tight">Sync Monitor</h3>
+                        <p className="text-[11px] font-semibold text-(--beheer-text-muted) mt-1">
                             {lastUpdated && mounted ? `Laatste update: ${lastUpdated.toLocaleTimeString()}` : 'Real-time status & logs'}
                         </p>
                     </div>
@@ -73,14 +73,14 @@ export default function SyncMonitorIsland() {
             </div>
 
             {status?.fatalError && (
-                <div className="mb-8 p-5 bg-[var(--theme-error)]/5 border border-[var(--theme-error)]/10 rounded-2xl">
+                <div className="mb-8 p-5 bg-(--theme-error)/5 border border-(--theme-error)/10 rounded-2xl">
                     <div className="flex items-start gap-4">
-                        <div className="p-2 bg-[var(--theme-error)]/10 rounded-lg text-[var(--theme-error)]">
+                        <div className="p-2 bg-(--theme-error)/10 rounded-lg text-(--theme-error)">
                             <AlertCircle className="h-5 w-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-semibold text-[var(--theme-error)] tracking-tight">Kritieke Fout Gedetecteerd</h4>
-                            <p className="text-[11px] font-semibold text-[var(--beheer-text)]/80 mt-1">
+                            <h4 className="text-sm font-semibold text-(--theme-error) tracking-tight">Kritieke Fout Gedetecteerd</h4>
+                            <p className="text-[11px] font-semibold text-(--beheer-text)/80 mt-1">
                                 {status.fatalError.message}
                             </p>
 
@@ -88,14 +88,14 @@ export default function SyncMonitorIsland() {
                                 <div className="mt-4">
                                     <button
                                         onClick={() => setShowStack(!showStack)}
-                                        className="text-[11px] font-semibold text-[var(--theme-error)] hover:underline transition-colors flex items-center gap-1"
+                                        className="text-[11px] font-semibold text-(--theme-error) hover:underline transition-colors flex items-center gap-1"
                                     >
                                         {showStack ? 'Verberg details' : 'Bekijk technische details (Stack Trace)'}
                                     </button>
 
                                     {showStack && (
-                                        <div className="mt-3 p-4 bg-black/5 dark:bg-white/5 rounded-xl border border-[var(--beheer-border)] overflow-x-auto custom-scrollbar">
-                                            <pre className="text-[10px] text-[var(--beheer-text-muted)] font-mono leading-relaxed">
+                                        <div className="mt-3 p-4 bg-black/5 dark:bg-white/5 rounded-xl border border-(--beheer-border) overflow-x-auto custom-scrollbar">
+                                            <pre className="text-[10px] text-(--beheer-text-muted) font-mono leading-relaxed">
                                                 {status.fatalError.stack}
                                             </pre>
                                         </div>
@@ -111,12 +111,12 @@ export default function SyncMonitorIsland() {
                 {/* PROGRESS BAR */}
                 <div>
                     <div className="flex justify-between items-end mb-3">
-                        <span className="text-[11px] font-semibold text-[var(--beheer-text-muted)]">Voortgang ({processed} / {total})</span>
-                        <span className="text-[11px] font-semibold text-[var(--beheer-accent)]">{Math.round(progress || 0)}%</span>
+                        <span className="text-[11px] font-semibold text-(--beheer-text-muted)">Voortgang ({processed} / {total})</span>
+                        <span className="text-[11px] font-semibold text-(--beheer-accent)">{Math.round(progress || 0)}%</span>
                     </div>
-                    <div className="h-3 w-full bg-[var(--beheer-card-soft)] rounded-full overflow-hidden border border-[var(--beheer-border)]/20 shadow-inner">
+                    <div className="h-3 w-full bg-(--beheer-card-soft) rounded-full overflow-hidden border border-(--beheer-border)/20 shadow-inner">
                         <div
-                            className="h-full bg-gradient-to-r from-[var(--beheer-accent)] to-[var(--theme-info)] transition-all duration-500 relative"
+                            className="h-full bg-gradient-to-r from-(--beheer-accent) to-(--theme-info) transition-all duration-500 relative"
                             style={{ width: `${progress}%` }}
                         >
                         </div>
@@ -134,7 +134,7 @@ export default function SyncMonitorIsland() {
                     <FilterTab active={resultFilter === 'excluded'} label="Excluded" count={status?.excludedCount || 0} onClick={() => setResultFilter('excluded')} color="slate" />
                 </div>
 
-                <div className="min-h-[300px] border-t border-[var(--beheer-border)]/30 pt-8">
+                <div className="min-h-[300px] border-t border-(--beheer-border)/30 pt-8">
                     <SyncLogs
                         status={status || {
                             successfulUsers: [], createdUsers: [], warnings: [],

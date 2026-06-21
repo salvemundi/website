@@ -14,16 +14,16 @@ export function PaymentSummary({ pricing, paymentType, hideHeader = false }: Pay
         <div className="space-y-8">
             {!hideHeader && (
                 <header className="mb-6 pb-4 border-b border-black/5 dark:border-white/10">
-                    <h2 className="text-2xl sm:text-3xl font-black text-[var(--text-main)] mb-1 italic tracking-tighter flex items-center gap-3">
+                    <h2 className="text-2xl sm:text-3xl font-black text-(--text-main) mb-1 italic tracking-tighter flex items-center gap-3">
                         <CreditCard className="w-7 h-7 text-theme-purple" />
                         Betalingssamenvatting
                     </h2>
-                    <p className="text-[var(--text-muted)] text-sm">Controleer de gegevens voordat we je doorsturen naar Mollie.</p>
+                    <p className="text-(--text-muted) text-sm">Controleer de gegevens voordat we je doorsturen naar Mollie.</p>
                 </header>
             )}
 
             <div className="space-y-4">
-                <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-black/5 dark:border-white/10 space-y-3 shadow-md">
+                <div className="p-6 rounded-2xl bg-(--bg-card) border border-black/5 dark:border-white/10 space-y-3 shadow-md">
                     <div className="flex justify-between items-center text-sm">
                         <span className="text-text-muted">Basisprijs Reis</span>
                         <span className="text-text-main font-bold">€{pricing.base.toFixed(2)}</span>

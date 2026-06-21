@@ -69,27 +69,27 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                 backHref="/beheer"
                 actions={
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-4 bg-[var(--beheer-card-soft)] px-4 py-2 rounded-2xl border border-[var(--beheer-border)]/50 shadow-sm">
+                        <div className="flex items-center gap-4 bg-(--beheer-card-soft) px-4 py-2 rounded-2xl border border-(--beheer-border)/50 shadow-sm">
                             <div className="flex flex-col items-center px-2">
-                                <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1 text-center">Status</span>
-                                <span className={`text-base font-bold leading-none ${activeToken ? 'text-[var(--beheer-active)]' : 'text-[var(--beheer-text)]'}`}>
+                                <span className="text-[10px] font-semibold text-(--beheer-text-muted) leading-none mb-1 text-center">Status</span>
+                                <span className={`text-base font-bold leading-none ${activeToken ? 'text-(--beheer-active)' : 'text-(--beheer-text)'}`}>
                                     {activeToken ? 'Testen' : 'Normaal'}
                                 </span>
                             </div>
-                            <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                            <div className="w-px h-6 bg-(--beheer-border)/20" />
                             <div className="flex flex-col items-center px-2">
-                                <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1 text-center">Doel</span>
-                                <span className="text-base font-bold text-[var(--beheer-text)] leading-none">{impersonatedName || 'Zelf'}</span>
+                                <span className="text-[10px] font-semibold text-(--beheer-text-muted) leading-none mb-1 text-center">Doel</span>
+                                <span className="text-base font-bold text-(--beheer-text) leading-none">{impersonatedName || 'Zelf'}</span>
                             </div>
-                            <div className="w-px h-6 bg-[var(--beheer-border)]/20" />
+                            <div className="w-px h-6 bg-(--beheer-border)/20" />
                             <div className="flex flex-col items-center px-2">
-                                <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1 text-center">Rechten</span>
-                                <span className="text-base font-bold text-[var(--beheer-text)] leading-none">{impersonatedCommittees.length}</span>
+                                <span className="text-[10px] font-semibold text-(--beheer-text-muted) leading-none mb-1 text-center">Rechten</span>
+                                <span className="text-base font-bold text-(--beheer-text) leading-none">{impersonatedCommittees.length}</span>
                             </div>
-                            <div className="w-px h-6 bg-[var(--beheer-border)]/20 hidden sm:block" />
+                            <div className="w-px h-6 bg-(--beheer-border)/20 hidden sm:block" />
                             <div className="flex-col items-center px-2 hidden sm:flex">
-                                <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1 text-center">Beveiliging</span>
-                                <span className={`text-base font-bold leading-none ${activeToken ? 'text-[var(--beheer-inactive)]' : 'text-[var(--beheer-text)]'}`}>
+                                <span className="text-[10px] font-semibold text-(--beheer-text-muted) leading-none mb-1 text-center">Beveiliging</span>
+                                <span className={`text-base font-bold leading-none ${activeToken ? 'text-(--beheer-inactive)' : 'text-(--beheer-text)'}`}>
                                     {activeToken ? 'Override' : 'Secure'}
                                 </span>
                             </div>
@@ -99,7 +99,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                             <button
                                 onClick={handleClear}
                                 disabled={isPending}
-                                className="flex items-center gap-2 px-4 py-2 bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] border border-[var(--beheer-inactive)]/20 rounded-[var(--beheer-radius)] text-base font-semibold hover:bg-[var(--beheer-inactive)] hover:text-white transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-(--beheer-inactive)/10 text-(--beheer-inactive) border border-(--beheer-inactive)/20 rounded-(--beheer-radius) text-base font-semibold hover:bg-(--beheer-inactive) hover:text-white transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                             >
                                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                                 <span className="hidden md:inline">Stop Testen</span>
@@ -111,28 +111,28 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
 
             <div className="container mx-auto px-4 py-8 max-w-7xl">
                 {activeToken && (
-                    <div className="p-8 rounded-[var(--beheer-radius)] bg-[var(--beheer-accent)]/5 border border-[var(--beheer-accent)]/20 shadow-sm mb-8">
+                    <div className="p-8 rounded-(--beheer-radius) bg-(--beheer-accent)/5 border border-(--beheer-accent)/20 shadow-sm mb-8">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div>
-                                <h3 className="text-base font-semibold text-[var(--beheer-accent)] mb-2 flex items-center gap-2">
+                                <h3 className="text-base font-semibold text-(--beheer-accent) mb-2 flex items-center gap-2">
                                     <Shield className="h-3.5 w-3.5" />
                                     Actieve Sessie
                                 </h3>
-                                <p className="text-base font-semibold text-[var(--beheer-text)] mb-4">
-                                    Je navigeert nu over de website met de rechten van <span className="text-[var(--beheer-accent)]">{impersonatedName}</span>.
+                                <p className="text-base font-semibold text-(--beheer-text) mb-4">
+                                    Je navigeert nu over de website met de rechten van <span className="text-(--beheer-accent)">{impersonatedName}</span>.
                                 </p>
 
                                 {impersonatedCommittees.length > 0 && (
                                     <div className="flex flex-wrap gap-2 mb-4">
                                         {impersonatedCommittees.map(c => (
-                                            <span key={c} className="text-base font-semibold px-2.5 py-1 rounded-lg bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] border border-[var(--beheer-accent)]/10">
+                                            <span key={c} className="text-base font-semibold px-2.5 py-1 rounded-lg bg-(--beheer-accent)/10 text-(--beheer-accent) border border-(--beheer-accent)/10">
                                                 {c}
                                             </span>
                                         ))}
                                     </div>
                                 )}
 
-                                <div className="flex items-center gap-2 font-mono text-base bg-[var(--beheer-card-soft)] p-2.5 rounded-xl text-[var(--beheer-text-muted)] border border-[var(--beheer-border)] w-fit">
+                                <div className="flex items-center gap-2 font-mono text-base bg-(--beheer-card-soft) p-2.5 rounded-xl text-(--beheer-text-muted) border border-(--beheer-border) w-fit">
                                     <Key className="h-3 w-3" />
                                     <span>{activeToken.substring(0, 12)}...{activeToken.substring(activeToken.length - 12)}</span>
                                 </div>
@@ -144,7 +144,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                 {!activeToken && (
                     <div className="max-w-xl space-y-6">
                         <div>
-                            <label className="block text-base font-semibold text-[var(--beheer-text-muted)] mb-3 ml-1">
+                            <label className="block text-base font-semibold text-(--beheer-text-muted) mb-3 ml-1">
                                 Directus Statische Token
                             </label>
                             <div className="relative group">
@@ -153,7 +153,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                                     value={token}
                                     onChange={(e) => setToken(e.target.value)}
                                     placeholder="Plak hier de token..."
-                                    className={`w-full bg-[var(--beheer-card-bg)] border rounded-[var(--beheer-radius)] px-[var(--beheer-btn-px)] py-[var(--beheer-btn-py)] text-[var(--beheer-text)] font-semibold placeholder:text-[var(--beheer-text-muted)] focus:outline-none focus:ring-2 transition-all ${status === 'error' ? 'border-[var(--beheer-inactive)]/50 focus:ring-[var(--beheer-inactive)]/20' : 'border-[var(--beheer-border)] focus:ring-[var(--beheer-accent)]/20 focus:border-[var(--beheer-accent)]'}`}
+                                    className={`w-full bg-(--beheer-card-bg) border rounded-(--beheer-radius) px-(--beheer-btn-px) py-(--beheer-btn-py) text-(--beheer-text) font-semibold placeholder:text-(--beheer-text-muted) focus:outline-none focus:ring-2 transition-all ${status === 'error' ? 'border-(--beheer-inactive)/50 focus:ring-(--beheer-inactive)/20' : 'border-(--beheer-border) focus:ring-(--beheer-accent)/20 focus:border-(--beheer-accent)'}`}
                                     disabled={isPending}
                                     autoComplete="off"
                                     suppressHydrationWarning
@@ -164,7 +164,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                         <button
                             onClick={handleSave}
                             disabled={!token || isPending}
-                            className="w-full py-[var(--beheer-btn-py)] rounded-[var(--beheer-radius)] bg-[var(--beheer-accent)] text-white font-semibold text-base shadow-[var(--shadow-glow)] hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                            className="w-full py-(--beheer-btn-py) rounded-(--beheer-radius) bg-(--beheer-accent) text-white font-semibold text-base shadow-(--shadow-glow) hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                         >
                             {isPending ? (
                                 <><Loader2 className="h-5 w-5 animate-spin" /> Controleren...</>
@@ -175,16 +175,16 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                             )}
                         </button>
 
-                        <div className="p-8 rounded-[var(--beheer-radius)] bg-[var(--beheer-card-soft)] border border-[var(--beheer-border)]">
-                            <h3 className="text-base font-semibold text-[var(--beheer-text)] mb-4 flex items-center gap-2">
-                                <Shield className="h-3.5 w-3.5 text-[var(--beheer-accent)]" />
+                        <div className="p-8 rounded-(--beheer-radius) bg-(--beheer-card-soft) border border-(--beheer-border)">
+                            <h3 className="text-base font-semibold text-(--beheer-text) mb-4 flex items-center gap-2">
+                                <Shield className="h-3.5 w-3.5 text-(--beheer-accent)" />
                                 Hoe werkt het?
                             </h3>
-                            <ul className="text-base text-[var(--beheer-text-muted)] space-y-3 font-semibold">
-                                <li className="flex gap-3"><span className="text-[var(--beheer-accent)]">•</span> Ga naar Directus &gt; User Settings &gt; Token.</li>
-                                <li className="flex gap-3"><span className="text-[var(--beheer-accent)]">•</span> Kopieer de statische token van de user die je wilt testen.</li>
-                                <li className="flex gap-3"><span className="text-[var(--beheer-accent)]">•</span> Plak deze hierboven i.p.v. de placeholder.</li>
-                                <li className="flex gap-3 text-[var(--beheer-inactive)] opacity-80"><span className="text-[var(--beheer-inactive)] font-semibold italic">!</span> Dit overschrijft tijdelijk je eigen rechten in de datalaag.</li>
+                            <ul className="text-base text-(--beheer-text-muted) space-y-3 font-semibold">
+                                <li className="flex gap-3"><span className="text-(--beheer-accent)">•</span> Ga naar Directus &gt; User Settings &gt; Token.</li>
+                                <li className="flex gap-3"><span className="text-(--beheer-accent)">•</span> Kopieer de statische token van de user die je wilt testen.</li>
+                                <li className="flex gap-3"><span className="text-(--beheer-accent)">•</span> Plak deze hierboven i.p.v. de placeholder.</li>
+                                <li className="flex gap-3 text-(--beheer-inactive) opacity-80"><span className="text-(--beheer-inactive) font-semibold italic">!</span> Dit overschrijft tijdelijk je eigen rechten in de datalaag.</li>
                             </ul>
                         </div>
                     </div>

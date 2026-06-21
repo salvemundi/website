@@ -61,7 +61,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                     <div className="p-6 sm:p-8">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 rounded-2xl bg-theme-purple/10 flex items-center justify-center flex-shrink-0 border border-theme-purple/20">
+                                <div className="w-14 h-14 rounded-2xl bg-theme-purple/10 flex items-center justify-center shrink-0 border border-theme-purple/20">
                                     <Calendar className="h-7 w-7 text-theme-purple" />
                                 </div>
                                 <div>
@@ -111,7 +111,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
                             { icon: <ExternalLink className="h-5 w-5" />, title: 'Vragen?', content: <>Mail ons op <a href="mailto:reis@salvemundi.nl" className="text-theme-purple font-bold hover:underline">reis@salvemundi.nl</a></> },
                         ].map((item, i) => (
                             <div key={i} className="flex gap-4 group">
-                                <div className="h-10 w-10 rounded-xl bg-theme-purple/5 text-theme-purple flex items-center justify-center flex-shrink-0 group-hover:bg-theme-purple/10 transition-colors border border-theme-purple/10">
+                                <div className="h-10 w-10 rounded-xl bg-theme-purple/5 text-theme-purple flex items-center justify-center shrink-0 group-hover:bg-theme-purple/10 transition-colors border border-theme-purple/10">
                                     {item.icon}
                                 </div>
                                 <div className="space-y-1">

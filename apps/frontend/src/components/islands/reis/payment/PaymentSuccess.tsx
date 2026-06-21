@@ -14,8 +14,8 @@ export function PaymentSuccess({ trip }: PaymentSuccessProps) {
             </div>
             
              <div className="space-y-4">
-                <h2 className="text-4xl font-bold text-[var(--text-main)] italic tracking-tighter">Activiteiten Opgeslagen!</h2>
-                <p className="text-[var(--text-muted)] max-w-md mx-auto leading-relaxed">
+                <h2 className="text-4xl font-bold text-(--text-main) italic tracking-tighter">Activiteiten Opgeslagen!</h2>
+                <p className="text-(--text-muted) max-w-md mx-auto leading-relaxed">
                     Je keuzes zijn succesvol verwerkt. Zodra de restbetaling voor <strong>{trip.name}</strong> wordt geopend, ontvang je van ons een e-mail om de betaling af te ronden.
                 </p>
             </div>

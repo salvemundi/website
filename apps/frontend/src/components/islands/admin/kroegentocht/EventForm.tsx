@@ -134,19 +134,19 @@ export default function EventForm({ event }: EventFormProps) {
     return (
         <>
             <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl mx-auto">
-                <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30">
+                <div className="bg-(--bg-card) rounded-2xl shadow-(--shadow-card) ring-1 ring-(--border-color)/30">
                     <div className="p-8 space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <div className="md:col-span-2 space-y-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                                    <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
                                         <Type className="h-3 w-3" /> Event Naam
                                     </label>
                                     <input
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)]"
+                                        className="w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
                                         placeholder="Bijv. Kroegentocht Stratumseind"
                                         required
                                     />
@@ -154,7 +154,7 @@ export default function EventForm({ event }: EventFormProps) {
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                                        <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
                                             <Calendar className="h-3 w-3" /> Datum
                                         </label>
                                         <AdminDatepicker
@@ -167,40 +167,40 @@ export default function EventForm({ event }: EventFormProps) {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                                        <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
                                             <Mail className="h-3 w-3" /> Contact E-mail
                                         </label>
                                         <input
                                             type="email"
                                             value={formData.email}
                                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                            className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)]"
+                                            className="w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
                                             placeholder="Bijv. feest@salvemundi.nl"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                                    <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
                                         <MessageCircle className="h-3 w-3" /> WhatsApp Community Link
                                     </label>
                                     <input
                                         type="url"
                                         value={formData.whatsapp_community_url}
                                         onChange={(e) => setFormData({ ...formData, whatsapp_community_url: e.target.value })}
-                                        className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)]"
+                                        className="w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
                                         placeholder="Bijv. https://chat.whatsapp.com/..."
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                                <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
                                     <ImagePlus className="h-3 w-3" /> Event Afbeelding
                                 </label>
                                 <div className="relative group/img h-[184px]">
                                     {formData.image ? (
-                                        <div className="relative w-full h-full rounded-[var(--radius-xl)] overflow-hidden border-2 border-[var(--theme-purple)]/30 group">
+                                        <div className="relative w-full h-full rounded-xl overflow-hidden border-2 border-(--theme-purple)/30 group">
                                             <MediaAsset
                                                 asset={formData.image}
                                                 alt="Preview"
@@ -218,15 +218,15 @@ export default function EventForm({ event }: EventFormProps) {
                                             </div>
                                         </div>
                                     ) : (
-                                        <label className="flex flex-col items-center justify-center w-full h-full bg-[var(--bg-main)]/50 border-2 border-dashed border-[var(--border-color)]/50 rounded-[var(--radius-xl)] hover:border-[var(--theme-purple)]/50 hover:bg-[var(--theme-purple)]/5 transition-all cursor-pointer group">
+                                        <label className="flex flex-col items-center justify-center w-full h-full bg-(--bg-main)/50 border-2 border-dashed border-(--border-color)/50 rounded-xl hover:border-(--theme-purple)/50 hover:bg-(--theme-purple)/5 transition-all cursor-pointer group">
                                             {uploading ? (
-                                                <Loader2 className="h-8 w-8 text-[var(--theme-purple)] animate-spin" />
+                                                <Loader2 className="h-8 w-8 text-(--theme-purple) animate-spin" />
                                             ) : (
                                                 <>
-                                                    <div className="p-4 rounded-full bg-[var(--bg-card)] mb-2 group-hover:scale-110 transition-transform">
-                                                        <ImagePlus className="h-6 w-6 text-[var(--text-muted)]" />
+                                                    <div className="p-4 rounded-full bg-(--bg-card) mb-2 group-hover:scale-110 transition-transform">
+                                                        <ImagePlus className="h-6 w-6 text-(--text-muted)" />
                                                     </div>
-                                                    <span className="text-[10px] font-semibold text-[var(--text-muted)]">Upload Image</span>
+                                                    <span className="text-[10px] font-semibold text-(--text-muted)">Upload Image</span>
                                                 </>
                                             )}
                                             <input
@@ -243,29 +243,29 @@ export default function EventForm({ event }: EventFormProps) {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                            <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
                                 <FileText className="h-3 w-3" /> Beschrijving
                             </label>
                             <textarea
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)] min-h-[160px]"
+                                className="w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main) min-h-[160px]"
                                 placeholder="Korte omschrijving voor de deelnemers..."
                             />
                         </div>
 
-                        <div className="border-t border-[var(--border-color)]/20 pt-8 space-y-4">
-                            <h3 className="text-sm font-semibold text-[var(--text-main)] flex items-center gap-2">
-                                <Users className="h-4 w-4 text-[var(--theme-purple)]" />
+                        <div className="border-t border-(--border-color)/20 pt-8 space-y-4">
+                            <h3 className="text-sm font-semibold text-(--text-main) flex items-center gap-2">
+                                <Users className="h-4 w-4 text-(--theme-purple)" />
                                 Groepen Indeling ({formData.groups.length})
                             </h3>
-                            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                            <p className="text-xs text-(--text-muted) leading-relaxed">
                                 Definieer de groepen voor deze kroegentocht. Deelnemers kunnen vervolgens over deze groepen verdeeld worden.
                             </p>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                 {formData.groups.map((group, index) => (
-                                    <div key={index} className="flex flex-col gap-2 bg-[var(--bg-main)]/50 p-3 border border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus-within:border-[var(--theme-purple)]/50 transition-all">
+                                    <div key={index} className="flex flex-col gap-2 bg-(--bg-main)/50 p-3 border border-(--border-color)/50 rounded-xl focus-within:border-(--theme-purple)/50 transition-all">
                                         <div className="flex items-center gap-2">
                                             <input
                                                 type="text"
@@ -278,7 +278,7 @@ export default function EventForm({ event }: EventFormProps) {
                                                         )
                                                     });
                                                 }}
-                                                className="flex-1 bg-transparent border-0 focus:ring-0 text-xs font-semibold text-[var(--text-main)] px-2 py-1 focus:outline-none"
+                                                className="flex-1 bg-transparent border-0 focus:ring-0 text-xs font-semibold text-(--text-main) px-2 py-1 focus:outline-none"
                                                 placeholder={`Groep ${index + 1}`}
                                                 required
                                             />
@@ -288,7 +288,7 @@ export default function EventForm({ event }: EventFormProps) {
                                                     const updated = formData.groups.filter((_, i) => i !== index);
                                                     setFormData({ ...formData, groups: updated });
                                                 }}
-                                                className="p-1 text-[var(--text-muted)] hover:text-red-500 transition-colors cursor-pointer"
+                                                className="p-1 text-(--text-muted) hover:text-red-500 transition-colors cursor-pointer"
                                                 title="Verwijder groep"
                                             >
                                                 <X className="h-3.5 w-3.5" />
@@ -297,10 +297,10 @@ export default function EventForm({ event }: EventFormProps) {
 
                                         {group.leaders && group.leaders.length > 0 && (
                                             <div className="px-2 pb-1 space-y-1">
-                                                <p className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Leiders:</p>
+                                                <p className="text-[9px] font-bold text-(--text-muted) uppercase tracking-wider">Leiders:</p>
                                                 <div className="flex flex-wrap gap-1">
                                                     {group.leaders.map((leader, lIdx) => (
-                                                        <span key={lIdx} className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-[var(--bg-card)] border border-[var(--border-color)]/50 rounded text-[9px] font-semibold text-[var(--text-muted)]">
+                                                        <span key={lIdx} className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-(--bg-card) border border-(--border-color)/50 rounded text-[9px] font-semibold text-(--text-muted)">
                                                             {leader.name}
                                                             <button
                                                                 type="button"
@@ -334,7 +334,7 @@ export default function EventForm({ event }: EventFormProps) {
                                             groups: [...formData.groups, { name: `Groep ${formData.groups.length + 1}`, leaders: [] }]
                                         });
                                     }}
-                                    className="flex items-center justify-center gap-2 p-3 bg-[var(--bg-main)]/30 border-2 border-dashed border-[var(--border-color)]/50 rounded-[var(--radius-xl)] hover:border-[var(--theme-purple)]/50 hover:bg-[var(--theme-purple)]/5 transition-all text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--theme-purple)] cursor-pointer h-fit self-center"
+                                    className="flex items-center justify-center gap-2 p-3 bg-(--bg-main)/30 border-2 border-dashed border-(--border-color)/50 rounded-xl hover:border-(--theme-purple)/50 hover:bg-(--theme-purple)/5 transition-all text-xs font-semibold text-(--text-muted) hover:text-(--theme-purple) cursor-pointer h-fit self-center"
                                 >
                                     <Plus className="h-4 w-4" />
                                     Groep toevoegen
@@ -347,7 +347,7 @@ export default function EventForm({ event }: EventFormProps) {
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                     <Link
                         href="/beheer/kroegentocht"
-                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-xl)] text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-main)] transition-all active:scale-95"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-(--bg-card) border border-(--border-color) rounded-xl text-xs font-semibold text-(--text-muted) hover:text-(--text-main) hover:bg-(--bg-main) transition-all active:scale-95"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         Annuleren
@@ -356,7 +356,7 @@ export default function EventForm({ event }: EventFormProps) {
                     <button
                         type="submit"
                         disabled={isPending}
-                        className="w-full sm:w-auto flex items-center justify-center gap-3 px-12 py-5 bg-[var(--theme-purple)] text-white font-semibold text-sm rounded-[var(--radius-xl)] shadow-[var(--shadow-glow)] hover:opacity-95 transition-all active:scale-95 disabled:opacity-50"
+                        className="w-full sm:w-auto flex items-center justify-center gap-3 px-12 py-5 bg-(--theme-purple) text-white font-semibold text-sm rounded-xl shadow-(--shadow-glow) hover:opacity-95 transition-all active:scale-95 disabled:opacity-50"
                     >
                         {isPending ? (
                             <Loader2 className="h-5 w-5 animate-spin" />

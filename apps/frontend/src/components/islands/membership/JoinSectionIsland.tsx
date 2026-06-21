@@ -31,19 +31,19 @@ export const JoinSectionIsland: React.FC<JoinSectionIslandProps> = ({
                 <h2 className="text-3xl font-black text-gradient sm:text-4xl md:text-5xl mb-6">
                     {title}
                 </h2>
-                <p className="text-lg text-[var(--text-muted)] mb-8 max-w-2xl mx-auto leading-relaxed">
+                <p className="text-lg text-(--text-muted) mb-8 max-w-2xl mx-auto leading-relaxed">
                     {description}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Link
                         href="/lidmaatschap"
-                        className="inline-flex items-center justify-center gap-2 squircle bg-gradient-theme px-8 py-4 text-base font-semibold text-[var(--color-purple-700)] dark:text-white shadow-xl transition hover:scale-105"
+                        className="inline-flex items-center justify-center gap-2 squircle bg-gradient-theme px-8 py-4 text-base font-semibold text-purple-700 dark:text-white shadow-xl transition hover:scale-105"
                     >
                         {buttonText}
                     </Link>
                     <Link
                         href="/contact"
-                        className="inline-flex items-center justify-center gap-2 squircle bg-transparent px-8 py-4 text-base font-semibold text-[var(--color-purple-300)] transition hover:bg-[var(--bg-card)] hover:scale-105"
+                        className="inline-flex items-center justify-center gap-2 squircle bg-transparent px-8 py-4 text-base font-semibold text-purple-300 transition hover:bg-(--bg-card) hover:scale-105"
                     >
                         Neem contact op
                     </Link>

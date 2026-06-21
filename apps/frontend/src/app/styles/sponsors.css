@@ -93,7 +93,7 @@ html.dark .sponsor-item {
 }
 
 .sponsor-light-bg {
-    background: var(--color-white) !important;
+    background: varwhite !important;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
     padding: 1.25rem 2.5rem;
     display: flex;

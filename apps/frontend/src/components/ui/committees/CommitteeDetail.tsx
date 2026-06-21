@@ -62,7 +62,7 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                     </div>
                 </div>
 
-                <div className="relative w-full max-w-[450px] @[900px]:w-[450px] aspect-square order-1 @[900px]:order-2 flex-shrink-0 mx-auto @[900px]:ml-auto group">
+                <div className="relative w-full max-w-[450px] @[900px]:w-[450px] aspect-square order-1 @[900px]:order-2 shrink-0 mx-auto @[900px]:ml-auto group">
                     <div className="absolute inset-0 bg-purple-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl -z-10" />
                     {committee.image ? (
                         <Image
