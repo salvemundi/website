@@ -1,0 +1,22 @@
+diff --git a/dist/commonjs/index.js b/dist/commonjs/index.js
+index 33063dd3552cd631d7eba0fca8f849a348b31148..20d0ec902fc91fdd1d885bbdb341a52a5e2915f4 100644
+--- a/dist/commonjs/index.js
++++ b/dist/commonjs/index.js
+@@ -198,4 +198,6 @@ function expand_(str, max, isTop) {
+     }
+     return expansions;
+ }
++module.exports = expand;
++Object.assign(module.exports, exports);
+ //# sourceMappingURL=index.js.map
+\ No newline at end of file
+diff --git a/dist/esm/index.js b/dist/esm/index.js
+index 32399e7b2f5cf12236ec44f367d0342a4a38c19f..c4c014624563b896b57da8e049f9f01ddb18d1a8 100644
+--- a/dist/esm/index.js
++++ b/dist/esm/index.js
+@@ -194,4 +194,5 @@ function expand_(str, max, isTop) {
+     }
+     return expansions;
+ }
++export default expand;
+ //# sourceMappingURL=index.js.map
