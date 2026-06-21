@@ -208,6 +208,11 @@ jobs:
           echo "IMAGE_TAG=${{ needs.prepare.outputs.tag }}" >> .env.${ENV_NAME}
           echo "PUBLIC_URL=${{ vars.PUBLIC_URL }}" >> .env.${ENV_NAME}
           echo "BETTER_AUTH_URL=${{ vars.BETTER_AUTH_URL }}" >> .env.${ENV_NAME}
+          if [ "${ENV_NAME}" = "prod" ]; then
+            echo "BETTER_AUTH_TRUSTED_ORIGINS=https://salvemundi.nl,https://preprod.salvemundi.nl" >> .env.${ENV_NAME}
+          else
+            echo "BETTER_AUTH_TRUSTED_ORIGINS=https://acc.salvemundi.nl" >> .env.${ENV_NAME}
+          fi
           echo "FRONTEND_PORT=${FRONTEND_PORT}" >> .env.${ENV_NAME}
           echo "FINANCE_PORT=${FINANCE_PORT}" >> .env.${ENV_NAME}
           echo "ENV_NAME=${ENV_NAME}" >> .env.${ENV_NAME}
