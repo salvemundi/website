@@ -28,9 +28,6 @@ overrides:
   protocol-buffers-schema: 3.6.1
   uuid@<11.1.1: ^11.1.1
 
-patchedDependencies:
-  brace-expansion@5.0.6: 9670826f62d10ba297440289d2e9a7af7560e0fee50b953938d5c512e997330e
-
 importers:
 
   .:
@@ -6543,7 +6540,7 @@ snapshots:
     optionalDependencies:
       zod: 4.4.3
 
-  brace-expansion@5.0.6(patch_hash=9670826f62d10ba297440289d2e9a7af7560e0fee50b953938d5c512e997330e):
+  brace-expansion@5.0.6:
     dependencies:
       balanced-match: 4.0.4
 
@@ -8186,11 +8183,11 @@ snapshots:
 
   minimatch@10.2.5:
     dependencies:
-      brace-expansion: 5.0.6(patch_hash=9670826f62d10ba297440289d2e9a7af7560e0fee50b953938d5c512e997330e)
+      brace-expansion: 5.0.6
 
   minimatch@3.1.5:
     dependencies:
-      brace-expansion: 5.0.6(patch_hash=9670826f62d10ba297440289d2e9a7af7560e0fee50b953938d5c512e997330e)
+      brace-expansion: 5.0.6
 
   minimist@1.2.8: {}
 
