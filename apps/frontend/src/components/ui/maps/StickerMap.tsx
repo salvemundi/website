@@ -8,6 +8,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { formatDate } from '@/shared/lib/utils/date';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { FallbackLogo } from '@/components/ui/media/FallbackLogo';
+import { safeConsoleError } from '@/server/utils/logger';
 
 import { type EnrichedUser } from '@/types/auth';
 import { type StickerPublic } from '@salvemundi/validations';
@@ -106,8 +107,7 @@ export default function StickerMap({
                 });
                 setMapStyleObj(style);
             } catch (err) {
-                // eslint-disable-next-line no-restricted-syntax
-                console.error('[StickerMap] Style Load Failed:', err);
+                safeConsoleError('[StickerMap.tsx][loadAndPatchStyle]', `Style Load Failed: ${err instanceof Error ? err.message : String(err)}`);
             }
         };
         void loadAndPatchStyle();
