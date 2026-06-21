@@ -1,4 +1,3 @@
-import 'isomorphic-fetch';
 import { logInfo } from '../utils/logger.js';
 
 export class ManagementService {
