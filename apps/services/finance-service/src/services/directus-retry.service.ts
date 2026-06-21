@@ -7,7 +7,7 @@ import { z } from 'zod';
 const DirectusUpdateTaskSchema = z.object({
     collection: z.string(),
     id: z.union([z.string(), z.number()]),
-    data: z.record(z.unknown()),
+    data: z.record(z.string(), z.unknown()),
     retries: z.number(),
     maxRetries: z.number()
 });

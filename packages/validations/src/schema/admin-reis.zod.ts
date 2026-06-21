@@ -52,7 +52,7 @@ export const tripSignupActivitySchema = z.object({
     id: z.number().int().optional(),
     trip_signup_id: z.number().int(),
     trip_activity_id: z.any(), // Can be an ID (number) or a nested object from Directus
-    selected_options: z.record(z.any()).nullable().optional(),
+    selected_options: z.record(z.string(), z.any()).nullable().optional(),
 });
 
 export const tripActivitySchema = z.object({

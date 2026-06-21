@@ -42,7 +42,7 @@
     "server-only": "^0.0.1",
     "sharp": "^0.34.5",
     "tailwind-merge": "^3.5.0",
-    "zod": "^3.23.8"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.3.0",
@@ -62,8 +62,8 @@
     "@typescript-eslint/eslint-plugin": "^8.59.2",
     "@typescript-eslint/parser": "^8.59.2",
     "cross-env": "^10.1.0",
-    "eslint": "^9.23.0",
-    "eslint-config-next": "15.1.0",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "16.2.9",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-security": "^4.0.0",
     "eslint-plugin-unused-imports": "^4.4.1",

@@ -1,6 +1,5 @@
 import { safeConsoleError, logInfo } from '../utils/logger.js';
 import { Client } from '@microsoft/microsoft-graph-client';
-import 'isomorphic-fetch';
 
 export interface AzureUser {
     id: string;

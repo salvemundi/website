@@ -11,7 +11,7 @@ const BulkMailRequestSchema = z.object({
     })),
     subject: z.string(),
     template: z.string(),
-    data: z.record(z.any()).optional()
+    data: z.record(z.string(), z.any()).optional()
 });
 
 export default async function mailRoutes(fastify: FastifyInstance) {

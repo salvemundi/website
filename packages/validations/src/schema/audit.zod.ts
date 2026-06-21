@@ -42,7 +42,7 @@ export const SystemLogSchema = z.object({
     id: z.string(),
     type: z.string(),
     status: z.string(),
-    payload: z.record(z.any()).nullable(),
+    payload: z.record(z.string(), z.any()).nullable(),
     created_at: z.string(),
     acknowledged_at: z.string().nullable().optional(),
 });

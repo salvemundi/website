@@ -1,7 +1,6 @@
 import { ClientSecretCredential } from '@azure/identity';
 import { Client } from '@microsoft/microsoft-graph-client';
 import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials/index.js';
-import 'isomorphic-fetch';
 
 let _graphClient: Client | null = null;
 
