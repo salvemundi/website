@@ -6,20 +6,28 @@ Welkom bij de broncode van Salve Mundi V7. Dit project is een moderne monorepo a
 
 De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`):
 
-- **`/apps/frontend`**: De hoofdapplicatie gebouwd met Next.js 16 (App Router). Bevat de website en het ledenportaal.
-- **`/apps/services`**: Diverse microservices voor specifieke taken (Finance, Azure Sync, Mail).
+- **`/apps/frontend`**: De hoofdapplicatie gebouwd met Next.js (App Router). Bevat de website en het ledenportaal.
+- **`/apps/services`**: Diverse Fastify microservices voor specifieke taken (Finance, Azure Sync, Mail).
 - **`/infrastructure`**: Docker Compose configuraties voor de core infrastructuur (Postgres, Redis, Directus).
-- **`/packages`**: Gedeelde bibliotheken en types die door de verschillende apps worden gebruikt.
+- **`/packages`**: Gedeelde bibliotheken, configuraties en types (bijv. `validations`).
 - **`/Docs`**: Uitgebreide bron-documentatie over de architectuur en workflows (lokaal genegeerd in git).
 
 ## Technologie Stack
 
-- **Frontend**: Next.js 16.2.6 (Turbopack, PPR), TailwindCSS 4, Better Auth.
-- **Backend/CMS**: Directus 11.1.1 (Requires `DIRECTUS_STATIC_TOKEN` for build verification).
-- **Database**: PostgreSQL (centrale opslag).
+- **Runtime & Build**: Node.js 26.3, TypeScript 6.0, pnpm 11.8.
+- **Frontend**: Next.js 16.2.x, TailwindCSS 4, Better Auth.
+- **Backend/CMS**: Directus 11.1.x (Requires `DIRECTUS_STATIC_TOKEN` for build verification), Fastify 5.8.x.
+- **Database**: PostgreSQL (centrale opslag) via Kysely (type-safe query builder).
 - **Caching**: Redis.
-- **Infrastructuur**: Docker, Nginx Proxy Manager (NPM).
-- **CI/CD**: GitHub Actions.
+- **Infrastructuur**: Docker (floating major-versions), Nginx Proxy Manager (NPM).
+- **CI/CD**: GitHub Actions (met stricte pnpm caching).
+
+## Package Management & Security (pnpm v11)
+
+Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibiliteit en veiligheid te garanderen:
+- **`overrides`**: Dwingt specifieke, veilige versies af van (vaak verborgen) dependencies (zoals `kysely`, `axios`, en `defu`) over de gehele monorepo om CVE-kwetsbaarheden te voorkomen.
+- **`allowBuilds`**: Uit veiligheidsoverwegingen zijn post-install scripts geblokkeerd (`false`) voor vrijwel alle packages. We maken exclusief gebruik van pre-built binaries.
+- **`patchedDependencies`**: Bevat handmatige hotfixes (in `/patches`) voor third-party packages die missende exports of bugs bevatten (zoals `brace-expansion`). Sinds pnpm v11 is dit centraal ondergebracht in de workspace configuratie in plaats van in `package.json`.
 
 ## Lokale Ontwikkeling
 
