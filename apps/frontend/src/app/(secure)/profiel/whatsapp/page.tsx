@@ -22,13 +22,13 @@ export default async function WhatsAppGroepenPage() {
 
     return (
         <div>
-            <header className="bg-[var(--bg-soft)] py-12">
+            <header className="bg-(--bg-soft) py-12">
                 <div className="mx-auto max-w-app px-4">
                     <div className="mb-6">
                         <BackButton href="/profiel" />
                     </div>
-                    <h1 className="text-4xl font-extrabold text-[var(--text-main)]">WhatsApp Groepen</h1>
-                    <p className="text-lg text-[var(--text-muted)] mt-2 max-w-3xl">
+                    <h1 className="text-4xl font-extrabold text-(--text-main)">WhatsApp Groepen</h1>
+                    <p className="text-lg text-(--text-muted) mt-2 max-w-3xl">
                         Word lid van onze WhatsApp groepen om verbonden te blijven.
                     </p>
                 </div>

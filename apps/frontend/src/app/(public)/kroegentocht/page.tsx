@@ -124,7 +124,7 @@ async function RegistrationSection() {
                             { icon: <Ticket className="h-5 w-5" />, title: 'Tickets', content: <>Tickets zijn <strong>overdraagbaar</strong>.</> },
                         ].map((item, i) => (
                             <div key={i} className="flex gap-4 group">
-                                <div className="h-10 w-10 squircle bg-theme-purple/5 text-theme-purple flex items-center justify-center flex-shrink-0 border border-theme-purple/10">
+                                <div className="h-10 w-10 squircle bg-theme-purple/5 text-theme-purple flex items-center justify-center shrink-0 border border-theme-purple/10">
                                     {item.icon}
                                 </div>
                                 <div className="space-y-1">

@@ -19,14 +19,14 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
     const dayEvents = activities.filter(event => isSameDay(new Date(event.datum_start), selectedDay));
 
     return (
-        <div className="rounded-3xl bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-6 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="rounded-3xl bg-(--bg-card) dark:border dark:border-white/10 p-6 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-[var(--theme-purple)] dark:text-[var(--text-main)]">
+                <h3 className="text-lg font-bold text-(--theme-purple) dark:text-(--text-main)">
                     {new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long' }).format(selectedDay)}
                 </h3>
                 <button
                     onClick={onClose}
-                    className="rounded-full p-1 text-[var(--text-muted)] hover:bg-[var(--bg-soft)]"
+                    className="rounded-full p-1 text-(--text-muted) hover:bg-(--bg-soft)"
                     aria-label="Sluiten"
                 >
                     <X className="h-5 w-5" />
@@ -34,7 +34,7 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
             </div>
 
             {dayEvents.length === 0 ? (
-                <p className="text-center text-sm text-[var(--text-muted)] py-4">
+                <p className="text-center text-sm text-(--text-muted) py-4">
                     Geen activiteiten op deze dag
                 </p>
             ) : (
@@ -43,12 +43,12 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
                         <div
                             key={event.id}
                             onClick={() => onEventClick(event)}
-                            className="group cursor-pointer rounded-xl bg-[var(--bg-soft)] p-3 transition hover:ring-2 hover:ring-inset hover:ring-[var(--theme-purple)]/30"
+                            className="group cursor-pointer rounded-xl bg-(--bg-soft) p-3 transition hover:ring-2 hover:ring-inset hover:ring-(--theme-purple)/30"
                         >
-                            <h4 className="font-semibold text-[var(--theme-purple)] dark:text-[var(--text-main)] group-hover:text-[var(--theme-purple-light)]">
+                            <h4 className="font-semibold text-(--theme-purple) dark:text-(--text-main) group-hover:text-(--theme-purple-light)">
                                 {event.titel}
                             </h4>
-                            <div className="mt-2 flex items-center gap-3 text-xs text-[var(--text-muted)]">
+                            <div className="mt-2 flex items-center gap-3 text-xs text-(--text-muted)">
                                 <div className="flex items-center gap-1">
                                     <Clock className="h-3 w-3" />
                                     <span>

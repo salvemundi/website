@@ -38,9 +38,9 @@ export default function ReisTable({
     return (
         <div className="flex flex-col gap-3">
             {filteredSignups.length === 0 ? (
-                <div className="bg-[var(--beheer-card-bg)]/50 rounded-3xl border border-[var(--beheer-border)]/40 p-20 text-center">
-                    <AlertCircle className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-20" />
-                    <p className="text-[var(--beheer-text-muted)] font-semibold text-[10px]">Geen aanmeldingen gevonden</p>
+                <div className="bg-(--beheer-card-bg)/50 rounded-3xl border border-(--beheer-border)/40 p-20 text-center">
+                    <AlertCircle className="h-12 w-12 text-(--beheer-text-muted) mx-auto mb-4 opacity-20" />
+                    <p className="text-(--beheer-text-muted) font-semibold text-[10px]">Geen aanmeldingen gevonden</p>
                 </div>
             ) : (
                 <>

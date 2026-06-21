@@ -21,10 +21,10 @@ export default function StatusFailed({ signupData, isMembership, isTrip }: Statu
                 <XCircle className="h-12 w-12 text-red-500" />
             </div>
             <div className="space-y-2">
-                <h2 className="text-4xl font-semibold text-[var(--text-main)] tracking-tighter italic">
+                <h2 className="text-4xl font-semibold text-(--text-main) tracking-tighter italic">
                     Betaling <span className="text-red-500">{isCanceled ? 'gecanceld' : isExpired ? 'verlopen' : 'mislukt'}</span>
                 </h2>
-                <p className="text-[var(--text-muted)] text-lg font-medium max-w-md mx-auto">
+                <p className="text-(--text-muted) text-lg font-medium max-w-md mx-auto">
                     {isCanceled
                         ? 'Je hebt de betaling afgebroken. Geen zorgen, je gegevens zijn nog niet verwerkt.'
                         : isExpired
@@ -41,13 +41,13 @@ export default function StatusFailed({ signupData, isMembership, isTrip }: Statu
                     }
                     text="Opnieuw proberen"
                     icon={RefreshCw}
-                    className="h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white shadow-xl shadow-[var(--theme-purple)]/20"
+                    className="h-14 px-10 rounded-2xl bg-(--theme-purple) text-white shadow-xl shadow-(--theme-purple)/20"
                 />
                 <BackButton
                     href="/"
                     text="Terug naar home"
                     icon={Home}
-                    className="h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)]"
+                    className="h-14 px-10 rounded-2xl bg-(--bg-card) border border-(--border-color) text-(--text-main)"
                 />
             </div>
         </div>

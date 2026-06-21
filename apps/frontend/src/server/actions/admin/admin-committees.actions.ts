@@ -4,7 +4,7 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { revalidatePath } from "next/cache";
 import { isSuperAdmin } from '@/lib/auth';
 import { getSystemDirectus } from '@/lib/directus';
-import { updateItem, readUsers } from '@directus/sdk';
+import { updateItem, readUsers, createItem, deleteItem, readItems } from '@directus/sdk';
 import { USER_ID_FIELDS } from '@salvemundi/validations/directus/fields';
 import type { CommitteeMember } from '@/server/queries/admin-commissies.queries';
 import { getCommitteeMembers as getCommitteeMembersQuery } from '@/server/queries/admin-commissies.queries';
@@ -14,7 +14,6 @@ import {
     toggleCommitteeLeaderSchema,
     removeCommitteeMemberSchema
 } from '@salvemundi/validations';
-import { triggerUserSyncAction } from '@/server/actions/infrastructure/azure-sync/sync-tasks.actions';
 import { type EnrichedUser } from '@/types/auth';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -87,7 +86,7 @@ export async function addCommitteeMember(
         limit: 1
     }));
 
-    const user = users[0] as { entra_id?: string | null } | undefined;
+    const user = users[0] as { id: string; entra_id?: string | null } | undefined;
     if (!user || !user.entra_id) {
         return { success: false, error: 'Gebruiker niet gevonden in het systeem (email onbekend of niet gesynchroniseerd)' };
     }
@@ -103,7 +102,17 @@ export async function addCommitteeMember(
         return { success: false, error: 'Bewerking in Azure mislukt. Probeer het later opnieuw.' };
     }
 
-    await triggerUserSyncAction(user.entra_id).catch(() => { });
+    try {
+        await getSystemDirectus().request(createItem('committee_members', {
+            user_id: user.id,
+            committee_id: Number(committeeId),
+            is_leader: false,
+            is_visible: true
+        }));
+        revalidatePath('/beheer/commissies');
+    } catch (error: unknown) {
+        safeConsoleError(`[admin-committees.actions.ts][addCommitteeMember] Failed to write local membership to Directus:`, error);
+    }
 
     return { success: true };
 }
@@ -148,7 +157,37 @@ export async function removeCommitteeMember(
         return { success: false, error: 'Verwijderen uit Azure groep mislukt.' };
     }
 
-    await triggerUserSyncAction(entraId);
+    try {
+        const users = await getSystemDirectus().request(readUsers({
+            filter: { entra_id: { _eq: entraId } },
+            fields: ['id'],
+            limit: 1
+        }));
+        const user = users[0] as { id: string } | undefined;
+        if (user) {
+            const committees = await getSystemDirectus().request(readItems('committees', {
+                filter: { azure_group_id: { _eq: azureGroupId } },
+                fields: ['id'],
+                limit: 1
+            }));
+            const committee = committees[0] as unknown as { id: string | number } | undefined;
+            if (committee) {
+                const memberships = await getSystemDirectus().request(readItems('committee_members', {
+                    filter: {
+                        user_id: { _eq: user.id },
+                        committee_id: { _eq: Number(committee.id) }
+                    },
+                    fields: ['id']
+                })) as unknown as { id: number }[];
+                for (const m of memberships) {
+                    await getSystemDirectus().request(deleteItem('committee_members', m.id));
+                }
+            }
+        }
+        revalidatePath('/beheer/commissies');
+    } catch (error: unknown) {
+        safeConsoleError(`[admin-committees.actions.ts][removeCommitteeMember] Failed to delete local membership from Directus:`, error);
+    }
 
     return { success: true };
 }
@@ -194,8 +233,6 @@ export async function toggleCommitteeLeader(
             safeConsoleError(`[admin-committees.actions.ts][toggleCommitteeLeader] Failed to toggle leader in Azure for ${entraId}:`, error);
         });
     }
-
-    await triggerUserSyncAction(entraId).catch(() => { });
 
     return { success: true };
 }

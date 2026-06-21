@@ -20,7 +20,7 @@ const typeConfig: Record<string, { label: string; color: string }> = {
 export function IntroBlogGrid({ blogs }: Props) {
     if (blogs.length === 0) return (
         <div className="py-20 text-center">
-            <p className="text-[var(--beheer-text-muted)] italic font-medium uppercase tracking-widest text-xs">
+            <p className="text-(--beheer-text-muted) italic font-medium uppercase tracking-widest text-xs">
                 Er zijn nog geen berichten geplaatst.
             </p>
         </div>

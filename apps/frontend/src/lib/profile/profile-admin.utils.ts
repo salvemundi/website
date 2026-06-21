@@ -87,15 +87,15 @@ export function calculateMembershipStatus(user: SessionUser) {
     if (status === "active") statusText = "Actief";
     else if (status === "expired") statusText = "Verlopen";
 
-    let color = "bg-slate-100 dark:bg-white/5 border border-[var(--color-purple-200)] text-[var(--color-purple-700)] dark:text-white";
-    let textColor = "text-[var(--color-purple-700)] dark:text-white font-bold";
+    let color = "bg-slate-100 dark:bg-white/5 border border-purple-200 text-purple-700 dark:text-white";
+    let textColor = "text-purple-700 dark:text-white font-bold";
 
     if (status === "active") {
         if (isAdmin || isLeader) {
-            color = "bg-gradient-to-r from-[var(--color-purple-500)] to-[var(--color-purple-400)] shadow-lg";
+            color = "bg-gradient-to-r from-purple-500 to-purple-400 shadow-lg";
             textColor = "text-white";
         } else if (isCommitteeMember || isMember) {
-            color = "bg-[var(--color-purple-500)] shadow-lg";
+            color = "bg-purple-500 shadow-lg";
             textColor = "text-white";
         }
     } else if (status === "expired") {

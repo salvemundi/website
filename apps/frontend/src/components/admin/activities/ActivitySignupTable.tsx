@@ -44,7 +44,7 @@ export default function ActivitySignupTable({
         <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
-                    <tr className="border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-[10px] font-semibold tracking-widest text-[var(--beheer-text-muted)]">
+                    <tr className="border-b border-(--beheer-border) bg-(--beheer-card-soft) text-[10px] font-semibold tracking-widest text-(--beheer-text-muted)">
                         <th className="px-6 py-4">Inchecken</th>
                         <th className="px-6 py-4">Deelnemer</th>
                         <th className="px-6 py-4">Contact</th>
@@ -52,7 +52,7 @@ export default function ActivitySignupTable({
                         <th className="px-6 py-4 text-right">Acties</th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-[var(--beheer-border)]">
+                <tbody className="divide-y divide-(--beheer-border)">
                     {signups.map(signup => {
                         const name = getSignupName(signup);
                         const email = getSignupEmail(signup);
@@ -63,7 +63,7 @@ export default function ActivitySignupTable({
                         const checkedInAt = signup.checked_in_at ? new Date(signup.checked_in_at) : null;
 
                         return (
-                            <tr key={signup.id} className={`group hover:bg-[var(--beheer-card-soft)] transition-colors ${isRowDeleting ? 'opacity-50 pointer-events-none' : ''}`}>
+                            <tr key={signup.id} className={`group hover:bg-(--beheer-card-soft) transition-colors ${isRowDeleting ? 'opacity-50 pointer-events-none' : ''}`}>
                                 <td className="px-6 py-5">
                                     <div className="flex flex-col gap-1.5">
                                         <button
@@ -71,7 +71,7 @@ export default function ActivitySignupTable({
                                             disabled={!canAccessEdit}
                                             className={`flex items-center gap-2 self-start px-3 py-2 rounded-xl transition-all font-semibold text-[10px] tracking-wider border shadow-sm active:scale-95 ${signup.checked_in
                                                 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30'
-                                                : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] border-[var(--beheer-border)] hover:border-emerald-500/50 hover:text-emerald-500'
+                                                : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) border-(--beheer-border) hover:border-emerald-500/50 hover:text-emerald-500'
                                                 } ${!canAccessEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         >
                                             {signup.checked_in ? (
@@ -87,7 +87,7 @@ export default function ActivitySignupTable({
                                             )}
                                         </button>
                                         {signup.checked_in && checkedInAt && !isNaN(checkedInAt.getTime()) && (
-                                            <div className="flex items-center gap-1 text-[9px] text-[var(--beheer-text-muted)] opacity-60 font-semibold tracking-tight ml-1">
+                                            <div className="flex items-center gap-1 text-[9px] text-(--beheer-text-muted) opacity-60 font-semibold tracking-tight ml-1">
                                                 <Clock className="h-3 w-3" />
                                                 {formatTime(checkedInAt)}
                                             </div>
@@ -95,16 +95,16 @@ export default function ActivitySignupTable({
                                     </div>
                                 </td>
                                 <td className="px-6 py-5">
-                                    <div className="font-semibold text-[var(--beheer-text)] text-sm tracking-tight mb-1">{name}</div>
+                                    <div className="font-semibold text-(--beheer-text) text-sm tracking-tight mb-1">{name}</div>
                                 </td>
                                 <td className="px-6 py-5 space-y-1.5">
-                                    <div className="flex items-center gap-2 text-xs text-[var(--beheer-text-muted)] font-semibold tracking-tight">
+                                    <div className="flex items-center gap-2 text-xs text-(--beheer-text-muted) font-semibold tracking-tight">
                                         <Mail className="h-3.5 w-3.5 opacity-50" />
-                                        <a href={`mailto:${email}`} className="hover:text-[var(--beheer-accent)] transition-colors">{email}</a>
+                                        <a href={`mailto:${email}`} className="hover:text-(--beheer-accent) transition-colors">{email}</a>
                                     </div>
                                     {phone && phone !== '-' && (
-                                        <div className="flex items-center gap-2 text-xs text-[var(--beheer-text-muted)] font-semibold tracking-tight">
-                                            <a href={`tel:${phone}`} className="hover:text-[var(--beheer-accent)] transition-colors">{phone}</a>
+                                        <div className="flex items-center gap-2 text-xs text-(--beheer-text-muted) font-semibold tracking-tight">
+                                            <a href={`tel:${phone}`} className="hover:text-(--beheer-accent) transition-colors">{phone}</a>
                                         </div>
                                     )}
                                 </td>
@@ -113,7 +113,7 @@ export default function ActivitySignupTable({
                                         <MemberBadge signup={signup} />
                                         <PaymentBadge status={signup.payment_status || 'open'} />
                                     </div>
-                                    <div className="text-[10px] text-[var(--beheer-text-muted)] font-bold tracking-widest">
+                                    <div className="text-[10px] text-(--beheer-text-muted) font-bold tracking-widest">
                                         {createdAt && !isNaN(createdAt.getTime())
                                             ? formatDateTime(createdAt)
                                             : 'Datum onbekend'}
@@ -123,7 +123,7 @@ export default function ActivitySignupTable({
                                     {canAccessEdit && (
                                         <button
                                             onClick={() => onDelete(signup.id, email)}
-                                            className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-[var(--beheer-text-muted)] opacity-30 hover:opacity-100 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
+                                            className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-(--beheer-text-muted) opacity-30 hover:opacity-100 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
                                             title="Verwijder aanmelding"
                                         >
                                             {isRowDeleting ? (

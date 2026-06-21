@@ -25,7 +25,7 @@ export default function ImpersonationBanner({ targetName, adminName, committees 
             <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white px-4 py-2 shadow-xl border-b border-white/20">
                 <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 overflow-hidden">
-                        <div className="flex-shrink-0 bg-white/20 p-1.5 rounded-lg">
+                        <div className="shrink-0 bg-white/20 p-1.5 rounded-lg">
                             <Shield className="w-4 h-4" />
                         </div>
                         <div className="flex items-center gap-2 text-base font-medium truncate">
@@ -46,7 +46,7 @@ export default function ImpersonationBanner({ targetName, adminName, committees 
                     <button
                         onClick={handleStop}
                         disabled={isPending}
-                        className="flex-shrink-0 flex items-center gap-1.5 bg-white text-orange-700 px-3 py-1 rounded-full text-base font-bold hover:bg-orange-50 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                        className="shrink-0 flex items-center gap-1.5 bg-white text-orange-700 px-3 py-1 rounded-full text-base font-bold hover:bg-orange-50 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
                     >
                         {isPending ? 'Bezig...' : (
                             <>

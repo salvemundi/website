@@ -16,7 +16,7 @@ export function getComputedCouponStatus(coupon: Coupon): {
             return {
                 type: 'expired',
                 label: 'Verlopen',
-                color: 'bg-[var(--beheer-inactive)]/20 text-[var(--beheer-inactive)]',
+                color: 'bg-(--beheer-inactive)/20 text-(--beheer-inactive)',
                 description: 'Coupon is verlopen'
             };
         }
@@ -59,7 +59,7 @@ export function getComputedCouponStatus(coupon: Coupon): {
     return {
         type: 'active',
         label: 'Actief',
-        color: 'bg-[var(--beheer-active)]/20 text-[var(--beheer-active)]',
+        color: 'bg-(--beheer-active)/20 text-(--beheer-active)',
         description: 'Coupon is actief'
     };
 }

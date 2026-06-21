@@ -418,7 +418,7 @@ export default function StickerMapIsland({
         return result.data;
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
         if (!selectedLocation) return;
 
@@ -481,7 +481,7 @@ export default function StickerMapIsland({
         });
     };
 
-    const handleSubmitSync = (e: React.FormEvent) => {
+    const handleSubmitSync = (e: React.SyntheticEvent) => {
         void handleSubmit(e);
     };
 

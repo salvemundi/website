@@ -16,18 +16,18 @@ export function Tile({
     title, icon, children, className = "", actions
 }: TileProps) {
     return (
-        <section className={`relative overflow-hidden squircle-xl bg-[var(--bg-card)] border border-transparent dark:border-white/10 shadow-lg ${className}`}>
+        <section className={`relative overflow-hidden squircle-xl bg-(--bg-card) border border-transparent dark:border-white/10 shadow-lg ${className}`}>
             <div className="relative p-6 sm:p-8">
                 {(title || actions) && (
                     <header className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex min-w-0 items-center gap-3">
                             {icon && (
-                                <div className="shrink-0 flex items-center justify-center text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)]">
+                                <div className="shrink-0 flex items-center justify-center text-purple-700 dark:text-purple-300">
                                     {icon}
                                 </div>
                             )}
                             {title && (
-                                <h2 className="min-w-0 break-words whitespace-normal text-xl sm:text-2xl font-bold text-[var(--color-purple-700)] dark:text-white">
+                                <h2 className="min-w-0 break-words whitespace-normal text-xl sm:text-2xl font-bold text-purple-700 dark:text-white">
                                     {title}
                                 </h2>
                             )}
@@ -35,7 +35,7 @@ export function Tile({
                         {actions && <div className="w-full sm:w-auto flex justify-start sm:justify-end">{actions}</div>}
                     </header>
                 )}
-                <div className="text-[var(--text-main)]">{children}</div>
+                <div className="text-(--text-main)">{children}</div>
             </div>
         </section>
     );
@@ -58,13 +58,13 @@ export function QuickLink({
 
     const inner = (
         <>
-            <div className="shrink-0 flex items-center justify-center text-[var(--color-purple-700)] dark:text-[var(--color-purple-300)] transition-transform group-hover:scale-110">
+            <div className="shrink-0 flex items-center justify-center text-purple-700 dark:text-purple-300 transition-transform group-hover:scale-110">
                 {icon}
             </div>
-            <span className="flex-1 flex items-center justify-between text-sm font-bold text-[var(--color-purple-700)] dark:text-white">
+            <span className="flex-1 flex items-center justify-between text-sm font-bold text-purple-700 dark:text-white">
                 <div className="flex flex-col items-start gap-0.5">
                     <span>{label}</span>
-                    {subtitle && <span className="text-[10px] font-medium text-[var(--color-purple-500)] dark:text-[var(--color-purple-400)] leading-none opacity-80">{subtitle}</span>}
+                    {subtitle && <span className="text-[10px] font-medium text-purple-500 dark:text-purple-400 leading-none opacity-80">{subtitle}</span>}
                 </div>
                 <div className="flex items-center gap-2">
                     {locked && <Lock className="h-3 w-3 opacity-50" />}

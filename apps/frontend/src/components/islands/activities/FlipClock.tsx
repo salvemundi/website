@@ -43,7 +43,7 @@ const FlipDigit: React.FC<{ digit: number }> = ({ digit }) => {
             {previous !== null && (
                 <div
                     key={`prev-${previous}`}
-                    className="absolute inset-0 flex items-center justify-center font-black text-4xl sm:text-5xl md:text-6xl leading-none text-[var(--text-main)] digit-out"
+                    className="absolute inset-0 flex items-center justify-center font-black text-4xl sm:text-5xl md:text-6xl leading-none text-(--text-main) digit-out"
                     onAnimationEnd={() => setPrevious(null)}
                 >
                     {previous}
@@ -52,7 +52,7 @@ const FlipDigit: React.FC<{ digit: number }> = ({ digit }) => {
 
             <div
                 key={`curr-${current}`}
-                className="absolute inset-0 flex items-center justify-center font-black text-4xl sm:text-5xl md:text-6xl leading-none text-[var(--text-main)] digit-in"
+                className="absolute inset-0 flex items-center justify-center font-black text-4xl sm:text-5xl md:text-6xl leading-none text-(--text-main) digit-in"
             >
                 {current}
             </div>
@@ -67,7 +67,7 @@ const FlipBlock: React.FC<{ value: number; label: string }> = ({ value, label })
                 <FlipDigit digit={Math.floor(value / 10)} />
                 <FlipDigit digit={value % 10} />
             </div>
-            <span className="text-[10px] sm:text-xs font-bold text-[var(--color-purple-600)] dark:text-[var(--color-purple-400)] opacity-70">
+            <span className="text-[10px] sm:text-xs font-bold text-purple-600 dark:text-purple-400 opacity-70">
                 {label}
             </span>
         </div>
@@ -145,10 +145,10 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
 
             {title && (
                 <div className="text-center mb-8">
-                    <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-[var(--color-purple-800)] dark:text-[var(--color-purple-200)] tracking-tight mb-2">
+                    <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-purple-800 dark:text-purple-200 tracking-tight mb-2">
                         {title}
                     </h2>
-                    <p className="text-sm sm:text-base font-semibold text-[var(--color-purple-600)] dark:text-[var(--color-purple-400)] opacity-80">
+                    <p className="text-sm sm:text-base font-semibold text-purple-600 dark:text-purple-400 opacity-80">
                         Begint over
                     </p>
                 </div>
@@ -156,11 +156,11 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
 
             <div className="flex flex-wrap items-center justify-center gap-0.5 sm:gap-3">
                 <FlipBlock value={timeLeft.days} label="Dagen" />
-                <span className="hidden min-[340px]:block text-xl sm:text-3xl lg:text-4xl font-black text-[var(--theme-purple)]/20 pb-6">-</span>
+                <span className="hidden min-[340px]:block text-xl sm:text-3xl lg:text-4xl font-black text-(--theme-purple)/20 pb-6">-</span>
                 <FlipBlock value={timeLeft.hours} label="Uur" />
-                <span className="hidden min-[340px]:block text-xl sm:text-3xl lg:text-4xl font-black text-[var(--theme-purple)]/20 pb-6">-</span>
+                <span className="hidden min-[340px]:block text-xl sm:text-3xl lg:text-4xl font-black text-(--theme-purple)/20 pb-6">-</span>
                 <FlipBlock value={timeLeft.minutes} label="Min" />
-                <span className="hidden min-[340px]:block text-xl sm:text-3xl lg:text-4xl font-black text-[var(--theme-purple)]/20 pb-6">-</span>
+                <span className="hidden min-[340px]:block text-xl sm:text-3xl lg:text-4xl font-black text-(--theme-purple)/20 pb-6">-</span>
                 <FlipBlock value={timeLeft.seconds} label="Sec" />
             </div>
 
@@ -168,7 +168,7 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
                 <div className="mt-8">
                     <a
                         href={href}
-                        className="group relative inline-flex items-center gap-2 px-8 py-4 bg-[var(--color-purple-600)] hover:bg-[var(--color-purple-700)] text-white font-bold rounded-2xl transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 overflow-hidden"
+                        className="group relative inline-flex items-center gap-2 px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-2xl transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 overflow-hidden"
                     >
                         <span className="relative z-10 flex items-center gap-2">
                             Bekijk Activiteit

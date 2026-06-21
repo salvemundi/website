@@ -12,7 +12,7 @@ export default function NotFound() {
                 <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-purple-500/10 rounded-full pointer-events-none" />
                 
                 {/* Icon Container */}
-                <div className="relative squircle-lg bg-[var(--bg-card)] p-6 shadow-2xl border border-[var(--border-color)]/20 text-[var(--color-purple-500)] inline-block">
+                <div className="relative squircle-lg bg-(--bg-card) p-6 shadow-2xl border border-(--border-color)/20 text-purple-500 inline-block">
                     <Search className="h-16 w-16" />
                 </div>
                 
@@ -22,11 +22,11 @@ export default function NotFound() {
                 </div>
             </div>
 
-            <h2 className="text-4xl font-black text-[var(--text-main)] mb-3 tracking-tight">
+            <h2 className="text-4xl font-black text-(--text-main) mb-3 tracking-tight">
                 Pagina niet gevonden
             </h2>
             
-            <p className="text-[var(--text-muted)] max-w-md mx-auto mb-10 font-medium">
+            <p className="text-(--text-muted) max-w-md mx-auto mb-10 font-medium">
                 Oeps! De pagina die je zoekt lijkt te zijn verhuisd of bestaat niet meer. Geen probleem, we helpen je graag terug.
             </p>
 

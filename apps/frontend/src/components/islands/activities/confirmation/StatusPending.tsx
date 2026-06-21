@@ -37,10 +37,10 @@ export default function StatusPending({ signupData, initialId, isLoggedIn }: Sta
                 {isTimeout ? <RefreshCw className="h-12 w-12 text-orange-500 animate-spin-slow" /> : <Loader2 className="h-12 w-12 text-orange-500 animate-spin" />}
             </div>
             <div className="space-y-2">
-                <h2 className="text-4xl font-semibold text-[var(--text-main)] tracking-tighter italic">
+                <h2 className="text-4xl font-semibold text-(--text-main) tracking-tighter italic">
                     {isTimeout ? 'Status' : 'Betaling'} <span className="text-orange-500">{isTimeout ? 'onduidelijk' : 'open'}</span>
                 </h2>
-                <p className="text-[var(--text-muted)] text-lg font-medium max-w-md mx-auto">
+                <p className="text-(--text-muted) text-lg font-medium max-w-md mx-auto">
                     {isTimeout
                         ? 'Het duurt langer dan normaal om de status te verifiëren. Check je bank-app of wacht een momentje op de mail.'
                         : 'Je betaling staat nog op open. Zodra we de bevestiging van de bank hebben, sturen we je ticket per e-mail.'}
@@ -49,20 +49,20 @@ export default function StatusPending({ signupData, initialId, isLoggedIn }: Sta
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
                     onClick={() => window.location.reload()}
-                    className="inline-flex h-14 px-10 rounded-2xl bg-[var(--bg-soft)] border border-[var(--border-color)] text-[var(--text-main)] font-semibold items-center justify-center gap-2 hover:bg-[var(--bg-soft)]/80 transition-all"
+                    className="inline-flex h-14 px-10 rounded-2xl bg-(--bg-soft) border border-(--border-color) text-(--text-main) font-semibold items-center justify-center gap-2 hover:bg-(--bg-soft)/80 transition-all"
                 >
                     <RefreshCw className="h-4 w-4" />
                     Check opnieuw
                 </button>
                 <button
                     onClick={() => { void handleRetry(); }}
-                    className="inline-flex h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white font-semibold items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-[var(--theme-purple)]/20"
+                    className="inline-flex h-14 px-10 rounded-2xl bg-(--theme-purple) text-white font-semibold items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-(--theme-purple)/20"
                 >
                     <CreditCard className="h-4 w-4" />
                     Betaal nu
                 </button>
                 {isLoggedIn && (
-                    <a href="/profiel/tickets" className="inline-flex h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] font-semibold items-center justify-center gap-2 hover:bg-[var(--bg-soft)] transition-all">
+                    <a href="/profiel/tickets" className="inline-flex h-14 px-10 rounded-2xl bg-(--bg-card) border border-(--border-color) text-(--text-main) font-semibold items-center justify-center gap-2 hover:bg-(--bg-soft) transition-all">
                         Mijn tickets
                     </a>
                 )}

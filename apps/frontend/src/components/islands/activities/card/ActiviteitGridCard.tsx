@@ -41,7 +41,7 @@ export default function ActiviteitGridCard({
     return (
         <div
             onClick={onShowDetails}
-            className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-[var(--bg-card)] dark:border dark:border-[var(--color-white)]/10 p-0 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-75 grayscale-50' : ''}`}
+            className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-(--bg-card) dark:border dark:border-white/10 p-0 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-75 grayscale-50' : ''}`}
         >
             <div className="relative z-10 w-full aspect-video mb-0 overflow-hidden">
                 {image ? (
@@ -54,59 +54,59 @@ export default function ActiviteitGridCard({
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center bg-transparent">
-                        <Calendar className="h-12 w-12 text-[var(--theme-purple)]/20" />
+                        <Calendar className="h-12 w-12 text-(--theme-purple)/20" />
                     </div>
                 )}
                 <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 items-end">
-                    <span className="bg-[var(--theme-purple)] text-[var(--color-white)] text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
+                    <span className="bg-(--theme-purple) text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
                         {committeeLabel}
                     </span>
                     {onlyMembers && (
-                        <span className="bg-[var(--theme-warning)] text-[var(--color-white)] text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
+                        <span className="bg-(--theme-warning) text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
                             Leden Alleen
                         </span>
                     )}
                 </div>
             </div>
 
-            <div className="p-5 flex flex-col flex-grow relative z-10 space-y-3">
-                <h3 className="text-xl font-bold text-[var(--theme-purple)]/90 leading-tight group-hover:text-[var(--theme-purple)] transition-colors line-clamp-2 break-words">
+            <div className="p-5 flex flex-col grow relative z-10 space-y-3">
+                <h3 className="text-xl font-bold text-(--theme-purple)/90 leading-tight group-hover:text-(--theme-purple) transition-colors line-clamp-2 break-words">
                     {title}
                 </h3>
 
                 <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-sm text-[var(--theme-purple)]/80 font-bold">
+                    <div className="flex items-center gap-2 text-sm text-(--theme-purple)/80 font-bold">
                         <Calendar className="h-4 w-4" />
                         <span>{displayDate}</span>
                     </div>
                     {timeRange && (
-                        <p className="text-sm text-[var(--text-muted)] ml-6 font-medium">
+                        <p className="text-sm text-(--text-muted) ml-6 font-medium">
                             {timeRange}
                         </p>
                     )}
                 </div>
 
                 {short_description ? (
-                    <div className="text-[var(--text-muted)] text-sm line-clamp-5 leading-relaxed break-words overflow-hidden">
-                        <SafeMarkdown content={short_description} className="!text-[var(--text-muted)] prose-sm prose-p:my-1 prose-headings:my-1" />
+                    <div className="text-(--text-muted) text-sm line-clamp-5 leading-relaxed break-words overflow-hidden">
+                        <SafeMarkdown content={short_description} className="!text-(--text-muted) prose-sm prose-p:my-1 prose-headings:my-1" />
                     </div>
                 ) : description ? (
-                    <p className="text-[var(--text-muted)] text-sm line-clamp-3 leading-relaxed break-words overflow-hidden">
+                    <p className="text-(--text-muted) text-sm line-clamp-3 leading-relaxed break-words overflow-hidden">
                         {description}
                     </p>
                 ) : null}
 
-                <div className="flex items-center justify-between pt-4 mt-auto border-t border-[var(--border-color)]">
+                <div className="flex items-center justify-between pt-4 mt-auto border-t border-(--border-color)">
                     <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-bold text-[var(--theme-purple)]/50">Prijs</span>
-                        <span className="text-lg font-bold text-[var(--theme-purple)]/80">€{safePrice}</span>
+                        <span className="text-[10px] uppercase font-bold text-(--theme-purple)/50">Prijs</span>
+                        <span className="text-lg font-bold text-(--theme-purple)/80">€{safePrice}</span>
                     </div>
 
                     <div className="flex gap-2">
                         {!isPast && (
                             <button
                                 onClick={handleSignupClick}
-                                className={`${cannotSignUp ? 'bg-[var(--theme-purple)]/10 text-[var(--theme-purple)]/40 cursor-not-allowed' : 'bg-[var(--theme-purple)] text-[var(--color-white)] shadow-lg shadow-[var(--theme-purple)]/20 hover:scale-105'} p-2 rounded-full transition-all`}
+                                className={`${cannotSignUp ? 'bg-(--theme-purple)/10 text-(--theme-purple)/40 cursor-not-allowed' : 'bg-(--theme-purple) text-white shadow-lg shadow-(--theme-purple)/20 hover:scale-105'} p-2 rounded-full transition-all`}
                                 disabled={cannotSignUp}
                                 title={alreadySignedUp ? 'Al aangemeld' : 'Aanmelden'}
                             >
@@ -129,7 +129,7 @@ export default function ActiviteitGridCard({
                                 e.stopPropagation();
                                 onShowDetails?.();
                             }}
-                            className="p-2 rounded-full bg-[var(--bg-soft)] text-[var(--theme-purple)] hover:scale-105 transition-all"
+                            className="p-2 rounded-full bg-(--bg-soft) text-(--theme-purple) hover:scale-105 transition-all"
                             title="Meer info"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

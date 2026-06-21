@@ -89,7 +89,7 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                                         </div>
                                     </div>
                                     <div className="text-center min-w-0 w-full px-1">
-                                        <div className="text-xs font-semibold truncate text-[var(--text-main)]">
+                                        <div className="text-xs font-semibold truncate text-(--text-main)">
                                             {user.name}
                                         </div>
                                         <div className={`text-[9px] md:text-[10px] font-bold ${isGold ? 'text-yellow-600' : isSilver ? 'text-slate-500' : 'text-orange-600'}`}>

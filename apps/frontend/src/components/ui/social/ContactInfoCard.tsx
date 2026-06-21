@@ -28,21 +28,21 @@ function ActionItem({ icon, title, subtitle, href, onClick, children }: ActionIt
                 {...(onClick ? { onClick } : {})}
                 className={`${commonClasses} ${interactionClasses}`}
             >
-                <div className="text-[var(--color-purple-500)] flex-shrink-0 mt-1">
+                <div className="text-purple-500 shrink-0 mt-1">
                     {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'h-5 w-5' })}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h4 className="text-[var(--text-main)] text-lg font-semibold leading-tight group-hover:text-[var(--color-purple-600)] transition-colors">
+                    <h4 className="text-(--text-main) text-lg font-semibold leading-tight group-hover:text-purple-600 transition-colors">
                         {title}
                     </h4>
                     {subtitle && (
-                        <p className="text-[var(--text-muted)] text-base mt-0.5">
+                        <p className="text-(--text-muted) text-base mt-0.5">
                             {subtitle}
                         </p>
                     )}
                 </div>
                 {(href || onClick) && (
-                    <ChevronRight className="h-4 w-4 text-[var(--color-purple-300)] opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                    <ChevronRight className="h-4 w-4 text-purple-300 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
                 )}
             </Component>
             {children && <div className="ml-11">{children}</div>}
@@ -70,8 +70,8 @@ export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten
 
 
                     <div className="pt-4 px-2">
-                        <h3 className="font-semibold text-[var(--text-main)] text-lg mb-4 flex items-center gap-3">
-                            <FileText className="h-5 w-5 text-[var(--color-purple-500)]" />
+                        <h3 className="font-semibold text-(--text-main) text-lg mb-4 flex items-center gap-3">
+                            <FileText className="h-5 w-5 text-purple-500" />
                             Documenten
                         </h3>
                         <DocumentenLijst documenten={documenten} />

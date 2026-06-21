@@ -106,7 +106,7 @@ export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps
         void handleDeleteTicket(ticketId);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.SyntheticEvent) => {
         e.preventDefault();
         startTransition(async () => {
             try {
@@ -145,7 +145,7 @@ export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps
     return (
         <>
             <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl mx-auto" autoComplete="off">
-                <div className="bg-[var(--bg-card)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ring-1 ring-[var(--border-color)]/30">
+                <div className="bg-(--bg-card) rounded-2xl shadow-(--shadow-card) ring-1 ring-(--border-color)/30">
                     <SignupHeader />
 
                     <div className="p-8 space-y-6">

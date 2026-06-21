@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { useRouter } from 'next/navigation';
 import { 
     Users, 
@@ -25,11 +24,11 @@ export default function LedenTable({
     const router = useRouter();
 
     return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] shadow-sm ring-1 ring-[var(--beheer-border)] overflow-hidden">
+        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-sm ring-1 ring-(--beheer-border) overflow-hidden">
             <div className="overflow-x-auto custom-scrollbar">
                 <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
-                        <tr className="border-b border-[var(--beheer-border)] bg-[var(--beheer-card-soft)] text-xs font-semibold text-[var(--beheer-text-muted)]">
+                        <tr className="border-b border-(--beheer-border) bg-(--beheer-card-soft) text-xs font-semibold text-(--beheer-text-muted)">
                             <th className="px-4 md:px-8 py-4">Lid</th>
                             <th className="px-4 md:px-8 py-4">Contactgegevens</th>
                             <th className="px-4 md:px-8 py-4">Validiteit</th>
@@ -44,7 +43,7 @@ export default function LedenTable({
                             >
                                 <td className="px-4 md:px-8 py-5">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 shrink-0 rounded-2xl bg-[var(--beheer-accent)]/10 flex items-center justify-center text-[var(--beheer-accent)] font-semibold text-sm ring-2 ring-white dark:ring-slate-800 shadow-sm transition-transform group-hover:scale-110">
+                                        <div className="h-10 w-10 shrink-0 rounded-2xl bg-(--beheer-accent)/10 flex items-center justify-center text-(--beheer-accent) font-semibold text-sm ring-2 ring-white dark:ring-slate-800 shadow-sm transition-transform group-hover:scale-110">
                                             {member.first_name?.[0]}{member.last_name?.[0]}
                                         </div>
                                         <div>
@@ -60,7 +59,7 @@ export default function LedenTable({
                                         <Mail className="h-4 w-4 text-slate-300 dark:text-slate-600" />
                                         <a 
                                             href={`mailto:${member.email}`} 
-                                            className="hover:text-[var(--beheer-accent)] transition-colors"
+                                            className="hover:text-(--beheer-accent) transition-colors"
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             {member.email}

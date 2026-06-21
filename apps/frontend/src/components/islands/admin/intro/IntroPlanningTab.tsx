@@ -59,23 +59,23 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         Nieuw Item
                     </Button>
                 )}
-                <div className="flex gap-1 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] p-1.5 ml-auto shadow-sm">
-                    <button onClick={() => setView('list')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${view === 'list' ? 'bg-[var(--beheer-accent)] text-white shadow-md' : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}`}>
+                <div className="flex gap-1 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) p-1.5 ml-auto shadow-sm">
+                    <button onClick={() => setView('list')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${view === 'list' ? 'bg-(--beheer-accent) text-white shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
                         <List className="h-4 w-4" /> Lijst
                     </button>
-                    <button onClick={() => setView('calendar')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${view === 'calendar' ? 'bg-[var(--beheer-accent)] text-white shadow-md' : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)]'}`}>
+                    <button onClick={() => setView('calendar')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${view === 'calendar' ? 'bg-(--beheer-accent) text-white shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
                         <LayoutGrid className="h-4 w-4" /> Kalender
                     </button>
                 </div>
             </div>
 
             {editingPlanning !== null && (
-                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-8 mb-8 shadow-2xl">
+                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-8 mb-8 shadow-2xl">
                     <div className="flex items-center justify-between mb-8">
-                        <h3 className="font-semibold text-xs text-[var(--beheer-text-muted)]">
+                        <h3 className="font-semibold text-xs text-(--beheer-text-muted)">
                             {editingPlanning.id ? 'Planning Bewerken' : 'Nieuw Planning Item'}
                         </h3>
-                        <button onClick={() => setEditingPlanning(null)} className="p-2 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-colors">
+                        <button onClick={() => setEditingPlanning(null)} className="p-2 text-(--beheer-text-muted) hover:text-(--beheer-text) transition-colors">
                             <X className="h-5 w-5" />
                         </button>
                     </div>
@@ -114,7 +114,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         </div>
                     </div>
 
-                    <div className="flex gap-3 pt-10 border-t border-[var(--beheer-border)]/50 mt-10">
+                    <div className="flex gap-3 pt-10 border-t border-(--beheer-border)/50 mt-10">
                         <Button
                             onClick={() => { void handleSave(); }}
                             loading={saving}
@@ -133,19 +133,19 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
             {view === 'list' && (
                 <div className="grid gap-4">
                     {planning.map(item => (
-                        <div key={item.id} className="group bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-6 flex items-start justify-between gap-6 hover:border-[var(--beheer-accent)]/30 transition-all shadow-sm hover:shadow-xl">
+                        <div key={item.id} className="group bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 flex items-start justify-between gap-6 hover:border-(--beheer-accent)/30 transition-all shadow-sm hover:shadow-xl">
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
-                                    <span className="text-xs font-semibold text-[var(--beheer-accent)] bg-[var(--beheer-accent)]/5 px-2 py-0.5 rounded">{item.day || ''}</span>
-                                    {item.date && <span className="text-xs font-semibold text-[var(--beheer-text-muted)]">{formatDate(item.date)}</span>}
+                                    <span className="text-xs font-semibold text-(--beheer-accent) bg-(--beheer-accent)/5 px-2 py-0.5 rounded">{item.day || ''}</span>
+                                    {item.date && <span className="text-xs font-semibold text-(--beheer-text-muted)">{formatDate(item.date)}</span>}
                                 </div>
-                                <h4 className="font-semibold text-base text-[var(--beheer-text)]">{item.title}</h4>
-                                <p className="text-xs font-medium text-[var(--beheer-text-muted)] mt-1 opacity-70">
+                                <h4 className="font-semibold text-base text-(--beheer-text)">{item.title}</h4>
+                                <p className="text-xs font-medium text-(--beheer-text-muted) mt-1 opacity-70">
                                     {item.time_start}{item.time_end ? ` - ${item.time_end}` : ''}{item.location ? ` · ${item.location}` : ''}
                                 </p>
-                                {item.description && <p className="text-sm text-[var(--beheer-text-muted)] mt-4 font-medium leading-relaxed">{item.description}</p>}
+                                {item.description && <p className="text-sm text-(--beheer-text-muted) mt-4 font-medium leading-relaxed">{item.description}</p>}
                             </div>
-                            <div className="flex gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <ActionButton
                                     icon={Edit}
                                     onClick={() => setEditingPlanning(item)}
@@ -185,15 +185,15 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                 return (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {sorted.map(day => (
-                            <div key={day} className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-6 shadow-sm">
-                                <h3 className="font-semibold text-[var(--beheer-accent)] text-xs mb-6 capitalize pb-3 border-b border-[var(--beheer-border)]">{day}</h3>
+                            <div key={day} className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 shadow-sm">
+                                <h3 className="font-semibold text-(--beheer-accent) text-xs mb-6 capitalize pb-3 border-b border-(--beheer-border)">{day}</h3>
                                 <div className="space-y-3">
                                     {(byDay.get(day) || []).sort((a, b) => (a.time_start || '').localeCompare(b.time_start || '')).map(item => (
-                                        <div key={item.id} className="group bg-[var(--beheer-card-soft)] rounded-xl p-4 border border-transparent hover:border-[var(--beheer-accent)]/20 transition-all">
+                                        <div key={item.id} className="group bg-(--beheer-card-soft) rounded-xl p-4 border border-transparent hover:border-(--beheer-accent)/20 transition-all">
                                             <div className="flex items-start justify-between gap-2">
                                                 <div>
-                                                    <p className="font-semibold text-sm text-[var(--beheer-text)] mb-1">{item.title}</p>
-                                                    <p className="text-xs font-medium text-[var(--beheer-text-muted)] opacity-70">{item.time_start}{item.time_end ? ` - ${item.time_end}` : ''}</p>
+                                                    <p className="font-semibold text-sm text-(--beheer-text) mb-1">{item.title}</p>
+                                                    <p className="text-xs font-medium text-(--beheer-text-muted) opacity-70">{item.time_start}{item.time_end ? ` - ${item.time_end}` : ''}</p>
                                                 </div>
                                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <ActionButton

@@ -158,7 +158,7 @@ export default function KroegentochtManagementIsland({
                         {selectedEvent && (
                             <Link
                                 href={`/beheer/kroegentocht/bewerk/${selectedEvent.id}`}
-                                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] hover:border-[var(--beheer-accent)]/30 transition-all active:scale-90 text-sm font-semibold shadow-sm"
+                                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:border-(--beheer-accent)/30 transition-all active:scale-90 text-sm font-semibold shadow-sm"
                                 title="Event Details"
                             >
                                 <Settings className="h-4 w-4" />
@@ -169,7 +169,7 @@ export default function KroegentochtManagementIsland({
                         <button
                             onClick={handleRefresh}
                             disabled={isPending}
-                            className="p-2.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] rounded-[var(--beheer-radius)] text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] hover:border-[var(--beheer-accent)]/30 transition-all active:scale-90 disabled:opacity-50"
+                            className="p-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:border-(--beheer-accent)/30 transition-all active:scale-90 disabled:opacity-50"
                             title="Vernieuwen"
                         >
                             <RefreshCw className={`h-4 w-4 ${isPending ? 'animate-spin' : ''}`} />
@@ -183,7 +183,7 @@ export default function KroegentochtManagementIsland({
 
                         <Link
                             href="/beheer/kroegentocht/nieuw"
-                            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--beheer-accent)] text-white font-semibold text-base rounded-[var(--beheer-radius)] shadow-lg hover:opacity-90 transition-all active:scale-95"
+                            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-accent) text-white font-semibold text-base rounded-(--beheer-radius) shadow-lg hover:opacity-90 transition-all active:scale-95"
                         >
                             <Plus className="h-4 w-4" />
                             Nieuw Event
@@ -196,7 +196,7 @@ export default function KroegentochtManagementIsland({
                 <div className="flex flex-col">
 
                     {error && (
-                        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/50 rounded-[var(--beheer-radius)] text-red-500 text-base font-semibold flex items-center gap-3">
+                        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/50 rounded-(--beheer-radius) text-red-500 text-base font-semibold flex items-center gap-3">
                             <AlertCircle className="h-5 w-5" />
                             {error}
                             <button
@@ -226,10 +226,10 @@ export default function KroegentochtManagementIsland({
                             </div>
                         </div>
                     ) : (
-                        <div className="text-center py-20 bg-[var(--bg-card)]/40 rounded-[var(--radius-2xl)] border-2 border-dashed border-[var(--border-color)]/30">
-                            <AlertCircle className="h-16 w-16 text-[var(--text-muted)] opacity-20 mx-auto mb-4" />
-                            <h2 className="text-xl font-semibold text-[var(--text-main)] tracking-tight">Geen Event Geselecteerd</h2>
-                            <p className="text-base text-[var(--text-subtle)] mt-2">Kies een event hierboven om de data te bekijken.</p>
+                        <div className="text-center py-20 bg-(--bg-card)/40 rounded-2xl border-2 border-dashed border-(--border-color)/30">
+                            <AlertCircle className="h-16 w-16 text-(--text-muted) opacity-20 mx-auto mb-4" />
+                            <h2 className="text-xl font-semibold text-(--text-main) tracking-tight">Geen Event Geselecteerd</h2>
+                            <p className="text-base text-(--text-subtle) mt-2">Kies een event hierboven om de data te bekijken.</p>
                         </div>
                     )}
                 </div>

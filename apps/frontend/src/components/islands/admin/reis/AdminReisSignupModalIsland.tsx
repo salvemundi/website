@@ -53,13 +53,13 @@ export default function AdminReisSignupModalIsland({
             />
 
             <div
-                className="bg-[var(--beheer-card-bg)] w-full rounded-[2.5rem] shadow-[var(--shadow-card-elevated)] ring-1 ring-white/10 flex flex-col relative z-10 border border-[var(--beheer-border)] my-auto max-h-[90vh] animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 duration-300 ease-out"
+                className="bg-(--beheer-card-bg) w-full rounded-[2.5rem] shadow-(--shadow-card-elevated) ring-1 ring-white/10 flex flex-col relative z-10 border border-(--beheer-border) my-auto max-h-[90vh] animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 duration-300 ease-out"
                 style={{ maxWidth: isEditing ? '1200px' : '700px' }}
             >
-                <div className="px-8 py-6 border-b border-[var(--beheer-border)] flex justify-between items-center bg-[var(--beheer-card-soft)]/80 relative shrink-0">
-                    <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-[var(--beheer-accent)]/30 to-transparent" />
-                    <h2 className="text-[10px] font-semibold text-[var(--beheer-text)] flex items-center gap-3">
-                        <div className="bg-[var(--beheer-accent)] text-white p-2.5 rounded-2xl shadow-[var(--shadow-glow)]">
+                <div className="px-8 py-6 border-b border-(--beheer-border) flex justify-between items-center bg-(--beheer-card-soft)/80 relative shrink-0">
+                    <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-(--beheer-accent)/30 to-transparent" />
+                    <h2 className="text-[10px] font-semibold text-(--beheer-text) flex items-center gap-3">
+                        <div className="bg-(--beheer-accent) text-white p-2.5 rounded-2xl shadow-(--shadow-glow)">
                             {isEditing ? <Edit2 className="h-4 w-4" /> : <Users className="h-4 w-4" />}
                         </div>
                         {isEditing ? 'Deelnemer Bewerken' : 'Deelnemer Details'}
@@ -73,17 +73,17 @@ export default function AdminReisSignupModalIsland({
                         >
                             {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 className="h-5 w-5" />}
                         </button>
-                        <div className="w-px h-6 bg-[var(--beheer-border)]/20 mx-1" />
+                        <div className="w-px h-6 bg-(--beheer-border)/20 mx-1" />
                         <button
                             onClick={onToggleEdit}
                             title={isEditing ? "Terug naar weergave" : "Bewerken"}
-                            className={`p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border ${isEditing ? 'bg-[var(--beheer-accent)] text-white border-[var(--beheer-accent)] shadow-glow' : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] border-transparent hover:border-[var(--beheer-border)]'}`}
+                            className={`p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border ${isEditing ? 'bg-(--beheer-accent) text-white border-(--beheer-accent) shadow-glow' : 'text-(--beheer-text-muted) hover:text-(--beheer-accent) border-transparent hover:border-(--beheer-border)'}`}
                         >
                             <Edit2 className="h-5 w-5" />
                         </button>
                         <button
                             onClick={onClose}
-                            className="text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-bg)] p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border border-transparent hover:border-[var(--beheer-border)]"
+                            className="text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg) p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border border-transparent hover:border-(--beheer-border)"
                         >
                             <X className="h-5 w-5" />
                         </button>
@@ -125,10 +125,10 @@ export default function AdminReisSignupModalIsland({
                                         cockpit={true}
                                     />
 
-                                    <div className="pt-4 border-t border-[var(--beheer-border)]/10">
+                                    <div className="pt-4 border-t border-(--beheer-border)/10">
                                         <div className="flex items-center gap-2 mb-3 opacity-50">
-                                            <Ticket className="h-3 w-3 text-[var(--beheer-accent)]" />
-                                            <h3 className="text-[10px] font-semibold text-[var(--beheer-text)]">Activiteiten</h3>
+                                            <Ticket className="h-3 w-3 text-(--beheer-accent)" />
+                                            <h3 className="text-[10px] font-semibold text-(--beheer-text)">Activiteiten</h3>
                                         </div>
                                         <SignupActivities
                                             allActivities={allTripActivities}
@@ -150,11 +150,11 @@ export default function AdminReisSignupModalIsland({
                     </div>
                 )}
 
-                <div className="px-8 py-5 border-t border-[var(--beheer-border)]/10 bg-[var(--beheer-card-soft)]/90 backdrop-blur-md flex items-center justify-between gap-4 shrink-0 rounded-b-[2.5rem]">
+                <div className="px-8 py-5 border-t border-(--beheer-border)/10 bg-(--beheer-card-soft)/90 backdrop-blur-md flex items-center justify-between gap-4 shrink-0 rounded-b-[2.5rem]">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-6 py-2.5 text-[10px] font-semibold text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-colors"
+                        className="px-6 py-2.5 text-[10px] font-semibold text-(--beheer-text-muted) hover:text-(--beheer-text) transition-colors"
                     >
                         {isEditing ? 'Annuleren' : 'Sluiten'}
                     </button>
@@ -165,7 +165,7 @@ export default function AdminReisSignupModalIsland({
                                 if (formRef.current) formRef.current.requestSubmit();
                             }}
                             disabled={isPending}
-                            className="px-10 py-3 bg-[var(--beheer-accent)] text-white rounded-2xl font-semibold text-[10px] shadow-lg shadow-[var(--beheer-accent)]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
+                            className="px-10 py-3 bg-(--beheer-accent) text-white rounded-2xl font-semibold text-[10px] shadow-lg shadow-(--beheer-accent)/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
                         >
                             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                             <span>Gegevens Opslaan</span>
@@ -176,7 +176,7 @@ export default function AdminReisSignupModalIsland({
                                 type="button"
                                 onClick={() => onResendEmail(selectedSignup.id, 'deposit')}
                                 disabled={selectedSignup.deposit_paid || (sendingEmailTo?.signupId === selectedSignup.id && sendingEmailTo.type === 'deposit')}
-                                className={`px-5 py-2.5 rounded-xl text-[9px] font-semibold border transition-all ${selectedSignup.deposit_email_sent ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-[var(--beheer-accent)] text-white border-white/10 shadow-lg shadow-[var(--beheer-accent)]/20 hover:scale-[1.02]'} disabled:opacity-30 disabled:grayscale disabled:scale-100 disabled:cursor-not-allowed`}
+                                className={`px-5 py-2.5 rounded-xl text-[9px] font-semibold border transition-all ${selectedSignup.deposit_email_sent ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-(--beheer-accent) text-white border-white/10 shadow-lg shadow-(--beheer-accent)/20 hover:scale-[1.02]'} disabled:opacity-30 disabled:grayscale disabled:scale-100 disabled:cursor-not-allowed`}
                             >
                                 Aanbetaling Mail
                             </button>

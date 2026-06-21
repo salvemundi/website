@@ -26,14 +26,14 @@ export default function StatusPaidActivity({
                 <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto ring-1 ring-green-500/20">
                     <CheckCircle2 className="h-12 w-12 text-green-500" />
                 </div>
-                <h1 className="text-4xl md:text-6xl font-semibold text-[var(--text-main)] tracking-tighter italic leading-none">
+                <h1 className="text-4xl md:text-6xl font-semibold text-(--text-main) tracking-tighter italic leading-none">
                     Aanmelding <span className="text-green-500">geslaagd!</span>
                 </h1>
-                <p className="text-[var(--text-muted)] text-lg font-medium max-w-md mx-auto">
+                <p className="text-(--text-muted) text-lg font-medium max-w-md mx-auto">
                     Bedankt! Je ticket{amount > 1 ? 's' : ''} {amount > 1 ? 'zijn' : 'is'} nu beschikbaar.
                 </p>
                 {redirectUrl && (
-                    <p className="text-base font-semibold text-[var(--theme-purple)] mt-2">
+                    <p className="text-base font-semibold text-(--theme-purple) mt-2">
                         Je wordt zo automatisch doorgestuurd...
                     </p>
                 )}
@@ -44,10 +44,10 @@ export default function StatusPaidActivity({
                     <div
                         key={i}
                         id={`ticket-card-${i}`}
-                        className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] min-w-[300px] max-w-[380px] p-8 rounded-[3rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl space-y-6 relative overflow-hidden"
+                        className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] min-w-[300px] max-w-[380px] p-8 rounded-[3rem] bg-(--bg-card) border border-(--border-color) shadow-xl space-y-6 relative overflow-hidden"
                     >
                         <div className="flex flex-col items-center gap-4">
-                            <p className="text-base font-semibold text-[var(--theme-purple)]">Ticket {i + 1} / {amount}</p>
+                            <p className="text-base font-semibold text-(--theme-purple)">Ticket {i + 1} / {amount}</p>
                             <div className="p-4 bg-white rounded-3xl shadow-lg ring-1 ring-black/5">
                                 <QRDisplay qrToken={
                                     (() => {
@@ -58,8 +58,8 @@ export default function StatusPaidActivity({
                                 } size={180} />
                             </div>
                             <div className="text-center">
-                                <h3 className="text-base font-semibold text-[var(--text-main)] tracking-tight">{eventName}</h3>
-                                <p className="text-sm font-bold text-[var(--text-muted)] opacity-60">
+                                <h3 className="text-base font-semibold text-(--text-main) tracking-tight">{eventName}</h3>
+                                <p className="text-sm font-bold text-(--text-muted) opacity-60">
                                     #{signupData?.id}{amount > 1 ? `-${i + 1}` : ''}
                                 </p>
                             </div>
@@ -67,7 +67,7 @@ export default function StatusPaidActivity({
 
                         <button
                             onClick={() => downloadTicket(`ticket-card-${i}`, eventName)}
-                            className="absolute top-4 right-4 p-3 rounded-full bg-[var(--bg-soft)] border border-[var(--border-color)] text-[var(--text-muted)] hover:bg-[var(--theme-purple)] hover:text-white hover:scale-110 transition-all shadow-lg backdrop-blur-md"
+                            className="absolute top-4 right-4 p-3 rounded-full bg-(--bg-soft) border border-(--border-color) text-(--text-muted) hover:bg-(--theme-purple) hover:text-white hover:scale-110 transition-all shadow-lg backdrop-blur-md"
                             title="Download Ticket"
                         >
                             <Save className="h-5 w-5" />
@@ -80,14 +80,14 @@ export default function StatusPaidActivity({
                 <BackButton
                     href="/activiteiten"
                     text="Terug naar overzicht"
-                    className="h-14 px-10 rounded-2xl bg-[var(--theme-purple)] text-white shadow-xl shadow-[var(--theme-purple)]/20"
+                    className="h-14 px-10 rounded-2xl bg-(--theme-purple) text-white shadow-xl shadow-(--theme-purple)/20"
                 />
                 {isLoggedIn && (
                     <BackButton
                         href="/profiel/tickets"
                         text="Alle tickets"
                         icon={QrCode}
-                        className="h-14 px-10 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)]"
+                        className="h-14 px-10 rounded-2xl bg-(--bg-card) border border-(--border-color) text-(--text-main)"
                     />
                 )}
             </div>

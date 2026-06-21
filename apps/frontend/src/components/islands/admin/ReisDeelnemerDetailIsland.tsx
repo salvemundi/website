@@ -153,7 +153,7 @@ export default function ReisDeelnemerDetailIsland({
                             void handleDelete();
                         }}
                         disabled={isPending}
-                        className="px-6 py-3 bg-[var(--beheer-inactive)]/5 text-[var(--beheer-inactive)] rounded-xl font-semibold text-base border border-[var(--beheer-inactive)]/10 hover:bg-[var(--beheer-inactive)]/10 transition-all flex items-center gap-2 shadow-sm active:scale-95"
+                        className="px-6 py-3 bg-(--beheer-inactive)/5 text-(--beheer-inactive) rounded-xl font-semibold text-base border border-(--beheer-inactive)/10 hover:bg-(--beheer-inactive)/10 transition-all flex items-center gap-2 shadow-sm active:scale-95"
                     >
                         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                         <span>Verwijderen</span>
@@ -186,21 +186,21 @@ export default function ReisDeelnemerDetailIsland({
                             isUpdating={isUpdatingActivities}
                         />
 
-                        <div className="bg-[var(--beheer-card-bg)]/50 backdrop-blur-sm rounded-3xl border border-[var(--beheer-border)]/50 p-8 space-y-5 shadow-sm relative overflow-hidden group/meta">
+                        <div className="bg-(--beheer-card-bg)/50 backdrop-blur-sm rounded-3xl border border-(--beheer-border)/50 p-8 space-y-5 shadow-sm relative overflow-hidden group/meta">
                             <div className="absolute -right-8 -bottom-8 opacity-5 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700">
-                                <Clock className="h-24 w-24 text-[var(--beheer-accent)]" />
+                                <Clock className="h-24 w-24 text-(--beheer-accent)" />
                             </div>
-                            <div className="flex justify-between items-center text-base font-semibold text-[var(--beheer-text-muted)] opacity-60">
+                            <div className="flex justify-between items-center text-base font-semibold text-(--beheer-text-muted) opacity-60">
                                 <span>Aangemeld op</span>
-                                <span className="text-[var(--beheer-text)] font-semibold">
+                                <span className="text-(--beheer-text) font-semibold">
                                     {initialSignup.date_created
                                         ? formatDateTime(new Date(initialSignup.date_created))
                                         : '-'}
                                 </span>
                             </div>
-                            <div className="flex justify-between items-center text-base font-semibold text-[var(--beheer-text-muted)] opacity-60 border-t border-[var(--beheer-border)]/10 pt-4">
+                            <div className="flex justify-between items-center text-base font-semibold text-(--beheer-text-muted) opacity-60 border-t border-(--beheer-border)/10 pt-4">
                                 <span>Deelnemer ID</span>
-                                <span className="text-[var(--beheer-text)] font-semibold">#{initialSignup.id}</span>
+                                <span className="text-(--beheer-text) font-semibold">#{initialSignup.id}</span>
                             </div>
                         </div>
 
@@ -208,7 +208,7 @@ export default function ReisDeelnemerDetailIsland({
                             <button
                                 type="submit"
                                 disabled={isSaving}
-                                className="w-full py-5 bg-[var(--beheer-accent)] hover:opacity-95 text-white rounded-2xl font-semibold text-base shadow-2xl shadow-[var(--beheer-accent)]/30 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-4 group border border-white/10"
+                                className="w-full py-5 bg-(--beheer-accent) hover:opacity-95 text-white rounded-2xl font-semibold text-base shadow-2xl shadow-(--beheer-accent)/30 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-4 group border border-white/10"
                             >
                                 {isSaving ? <Loader2 className="h-7 w-7 animate-spin" /> : <Save className="h-7 w-7 group-hover:scale-110 transition-transform" />}
                                 <span>Gegevens Opslaan</span>
@@ -218,7 +218,7 @@ export default function ReisDeelnemerDetailIsland({
                                 <button
                                     type="button"
                                     onClick={() => router.push('/beheer/reis')}
-                                    className="flex-1 py-4 bg-[var(--bg-main)]/50 hover:bg-[var(--beheer-card-bg)] text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] rounded-2xl font-semibold text-base border border-[var(--beheer-border)] transition-all flex items-center justify-center gap-3 active:scale-95"
+                                    className="flex-1 py-4 bg-(--bg-main)/50 hover:bg-(--beheer-card-bg) text-(--beheer-text-muted) hover:text-(--beheer-text) rounded-2xl font-semibold text-base border border-(--beheer-border) transition-all flex items-center justify-center gap-3 active:scale-95"
                                 >
                                     <ArrowLeft className="h-4 w-4" />
                                     Annuleren
@@ -229,7 +229,7 @@ export default function ReisDeelnemerDetailIsland({
                                         void handleDelete();
                                     }}
                                     disabled={isPending}
-                                    className="p-4 bg-[var(--beheer-inactive)]/5 hover:bg-[var(--beheer-inactive)]/10 text-[var(--beheer-inactive)] rounded-2xl border border-[var(--beheer-inactive)]/20 transition-all shadow-sm active:scale-90"
+                                    className="p-4 bg-(--beheer-inactive)/5 hover:bg-(--beheer-inactive)/10 text-(--beheer-inactive) rounded-2xl border border-(--beheer-inactive)/20 transition-all shadow-sm active:scale-90"
                                 >
                                     {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 className="h-5 w-5" />}
                                 </button>

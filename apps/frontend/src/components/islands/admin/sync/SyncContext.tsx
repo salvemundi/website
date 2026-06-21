@@ -47,7 +47,7 @@ interface SyncContextType {
     handleFullSync: () => Promise<void>;
     handleStopSync: () => Promise<void>;
     handleResetSync: () => Promise<void>;
-    handleUserSync: (e: React.FormEvent) => Promise<void>;
+    handleUserSync: (e: React.SyntheticEvent) => Promise<void>;
 }
 
 const SyncContext = createContext<SyncContextType | undefined>(undefined);
@@ -172,7 +172,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
         }
     };
 
-    const handleUserSync = async (e: React.FormEvent) => {
+    const handleUserSync = async (e: React.SyntheticEvent) => {
         e.preventDefault();
         if (!userId.trim()) return;
         setIsUserSyncLoading(true);

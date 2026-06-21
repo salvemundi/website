@@ -28,11 +28,11 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
             <input type="hidden" {...register('is_bus_trip')} />
             {!hideHeader && (
                 <header className="mb-6 pb-4 border-b border-black/5 dark:border-white/10">
-                    <h2 className="text-2xl sm:text-3xl font-black text-[var(--text-main)] mb-1 italic tracking-tighter flex items-center gap-3">
+                    <h2 className="text-2xl sm:text-3xl font-black text-(--text-main) mb-1 italic tracking-tighter flex items-center gap-3">
                         <User className="w-7 h-7 text-theme-purple" />
                         Reisgegevens
                     </h2>
-                    <p className="text-[var(--text-muted)] text-sm">Vul je gegevens aan voor <span className="text-theme-purple font-bold">{trip.name}</span>.</p>
+                    <p className="text-(--text-muted) text-sm">Vul je gegevens aan voor <span className="text-theme-purple font-bold">{trip.name}</span>.</p>
                 </header>
             )}
 
@@ -136,13 +136,13 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
                             <div className="flex items-center gap-3 min-w-[180px]">
                                 <Bus className="w-5 h-5 text-theme-purple" />
                                 <div>
-                                    <p className="font-bold text-[var(--text-main)] text-sm">Vrijwillige Chauffeur?</p>
-                                    <p className="text-[10px] text-[var(--text-muted)]">Bereid om een busje te rijden.</p>
+                                    <p className="font-bold text-(--text-main) text-sm">Vrijwillige Chauffeur?</p>
+                                    <p className="text-[10px] text-(--text-muted)">Bereid om een busje te rijden.</p>
                                 </div>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
                                 <input {...register('willing_to_drive')} type="checkbox" className="sr-only peer" />
-                                <div className="w-11 h-6 bg-[var(--bg-soft)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-purple"></div>
+                                <div className="w-11 h-6 bg-(--bg-soft) peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-purple"></div>
                             </label>
                         </div>
                     )}
@@ -152,13 +152,13 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
                             <div className="flex items-center gap-3 min-w-[180px]">
                                 <Briefcase className="w-5 h-5 text-theme-purple" />
                                 <div>
-                                    <p className="font-bold text-[var(--text-main)] text-sm">Extra Koffer?</p>
-                                    <p className="text-[10px] text-[var(--text-muted)]">Ik wil een grote koffer meenemen.</p>
+                                    <p className="font-bold text-(--text-main) text-sm">Extra Koffer?</p>
+                                    <p className="text-[10px] text-(--text-muted)">Ik wil een grote koffer meenemen.</p>
                                 </div>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
                                 <input {...register('extra_luggage')} type="checkbox" className="sr-only peer" />
-                                <div className="w-11 h-6 bg-[var(--bg-soft)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-purple"></div>
+                                <div className="w-11 h-6 bg-(--bg-soft) peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-purple"></div>
                             </label>
                         </div>
                     )}

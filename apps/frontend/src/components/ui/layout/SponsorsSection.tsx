@@ -27,7 +27,7 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
 
                 {!hasSponsors ? (
                     <div className="w-full min-h-[120px] flex items-center justify-center">
-                        <p className="text-center text-sm text-[var(--text-muted)] italic">Binnenkort meer informatie.</p>
+                        <p className="text-center text-sm text-(--text-muted) italic">Binnenkort meer informatie.</p>
                     </div>
                 ) : (
                     <div className="sponsors-scroll-container">

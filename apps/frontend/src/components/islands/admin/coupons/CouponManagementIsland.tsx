@@ -158,37 +158,37 @@ export default function CouponManagementIsland({
                 <AdminStatsBar stats={adminStats} />
 
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between border-l-4 border-[var(--beheer-active)] pl-4 py-1">
-                        <h2 className="text-sm font-semibold text-[var(--beheer-text)] flex items-center gap-3">
+                    <div className="flex items-center justify-between border-l-4 border-(--beheer-active) pl-4 py-1">
+                        <h2 className="text-sm font-semibold text-(--beheer-text) flex items-center gap-3">
                             Coupons
-                            <span className="px-2.5 py-0.5 rounded-full bg-[var(--beheer-active)]/10 text-[var(--beheer-active)] text-xs font-semibold border border-[var(--beheer-active)]/20">
+                            <span className="px-2.5 py-0.5 rounded-full bg-(--beheer-active)/10 text-(--beheer-active) text-xs font-semibold border border-(--beheer-active)/20">
                                 {validCoupons.length}
                             </span>
                         </h2>
                     </div>
 
                     <div
-                        className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden shadow-xl transition-all"
+                        className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-xl transition-all"
                     >
                         {validCoupons.length === 0 ? (
                             <div className="py-24 text-center">
-                                <Ticket className="h-12 w-12 text-[var(--beheer-text-muted)] mx-auto mb-4 opacity-10" />
-                                <p className="font-semibold text-sm text-[var(--beheer-text-muted)]">Geen coupons gevonden</p>
+                                <Ticket className="h-12 w-12 text-(--beheer-text-muted) mx-auto mb-4 opacity-10" />
+                                <p className="font-semibold text-sm text-(--beheer-text-muted)">Geen coupons gevonden</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-[var(--beheer-card-soft)] border-b border-[var(--beheer-border)]">
+                                    <thead className="bg-(--beheer-card-soft) border-b border-(--beheer-border)">
                                         <tr>
-                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)]">Code</th>
-                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)]">Korting</th>
-                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)] hidden sm:table-cell">Gebruik</th>
-                                            <th className="px-8 py-5 text-xs font-semibold text-[var(--beheer-text-muted)] hidden lg:table-cell">Geldigheid</th>
-                                            <th className="px-8 py-5 text-center text-xs font-semibold text-[var(--beheer-text-muted)]">Status</th>
-                                            <th className="px-8 py-5 text-right text-xs font-semibold text-[var(--beheer-text-muted)]">Acties</th>
+                                            <th className="px-8 py-5 text-xs font-semibold text-(--beheer-text-muted)">Code</th>
+                                            <th className="px-8 py-5 text-xs font-semibold text-(--beheer-text-muted)">Korting</th>
+                                            <th className="px-8 py-5 text-xs font-semibold text-(--beheer-text-muted) hidden sm:table-cell">Gebruik</th>
+                                            <th className="px-8 py-5 text-xs font-semibold text-(--beheer-text-muted) hidden lg:table-cell">Geldigheid</th>
+                                            <th className="px-8 py-5 text-center text-xs font-semibold text-(--beheer-text-muted)">Status</th>
+                                            <th className="px-8 py-5 text-right text-xs font-semibold text-(--beheer-text-muted)">Acties</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-[var(--beheer-border)]">
+                                    <tbody className="divide-y divide-(--beheer-border)">
                                         {validCoupons.map(coupon => (
                                             <CouponRow
                                                 key={coupon.id}
@@ -209,10 +209,10 @@ export default function CouponManagementIsland({
                 <div className="mt-12 space-y-4">
                     <button
                         onClick={() => setShowExpired(!showExpired)}
-                        className="flex items-center gap-4 text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] transition-all group cursor-pointer border-l-4 border-slate-500 pl-4 py-1"
+                        className="flex items-center gap-4 text-(--beheer-text-muted) hover:text-(--beheer-text) transition-all group cursor-pointer border-l-4 border-slate-500 pl-4 py-1"
                     >
                         <h2 className="text-sm font-semibold flex items-center gap-3">
-                            {showExpired ? <ToggleRight className="h-5 w-5 text-[var(--beheer-accent)]" /> : <ToggleLeft className="h-5 w-5" />}
+                            {showExpired ? <ToggleRight className="h-5 w-5 text-(--beheer-accent)" /> : <ToggleLeft className="h-5 w-5" />}
                             Verlopen Coupons
                             <span className="px-2.5 py-0.5 rounded-full bg-slate-500/10 text-slate-500 text-xs font-semibold border border-slate-500/20">
                                 {inactiveCoupons.length}
@@ -221,15 +221,15 @@ export default function CouponManagementIsland({
                     </button>
 
                     {showExpired && (
-                        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden opacity-80 shadow-lg transition-all">
+                        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden opacity-80 shadow-lg transition-all">
                             {inactiveCoupons.length === 0 ? (
-                                <div className="py-12 text-center text-[var(--beheer-text-muted)] italic text-xs font-semibold">
+                                <div className="py-12 text-center text-(--beheer-text-muted) italic text-xs font-semibold">
                                     Niets gevonden
                                 </div>
                             ) : (
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left">
-                                        <tbody className="divide-y divide-[var(--beheer-border)]">
+                                        <tbody className="divide-y divide-(--beheer-border)">
                                             {inactiveCoupons.map(coupon => (
                                                 <CouponRow
                                                     key={coupon.id}

@@ -32,15 +32,15 @@ function slugify(text: string): string {
 
 const HEADING_CLS =
     'text-sm font-bold uppercase tracking-[0.3em] mb-4 text-center md:text-left ' +
-    'text-[var(--color-purple-700)] dark:text-[var(--color-white)]';
+    'text-purple-700 dark:text-white';
 
 const LINK_CLS =
     'inline-flex items-center gap-1 rounded-full px-2 py-1 transition ' +
-    'text-[var(--color-purple-800)] dark:text-[var(--text-light)] ' +
-    'hover:bg-[var(--color-purple-500)]/10 dark:hover:bg-[var(--color-white)]/10 ' +
-    'hover:text-[var(--color-purple-700)] dark:hover:text-[var(--color-white)]';
+    'text-purple-800 dark:text-(--text-light) ' +
+    'hover:bg-purple-500/10 dark:hover:bg-white/10 ' +
+    'hover:text-purple-700 dark:hover:text-white';
 
-const MUTED_CLS = 'text-[var(--color-purple-800)] dark:text-[var(--text-light)]';
+const MUTED_CLS = 'text-purple-800 dark:text-(--text-light)';
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRoutes = [], committees, initialSession }) => {
@@ -78,9 +78,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
     return (
         <footer className="relative overflow-hidden bg-gradient-theme">
             {/* Decoratieve achtergrond-blob links */}
-            <div className="absolute -left-10 top-10 h-64 w-64 rounded-full bg-[var(--color-purple-200)]/10 blur-3xl" />
+            <div className="absolute -left-10 top-10 h-64 w-64 rounded-full bg-purple-200/10 blur-3xl" />
             {/* Decoratieve achtergrond-blob rechts */}
-            <div className="absolute -right-10 bottom-10 h-64 w-64 rounded-full bg-[var(--color-purple-100)]/10 blur-3xl" />
+            <div className="absolute -right-10 bottom-10 h-64 w-64 rounded-full bg-purple-100/10 blur-3xl" />
 
             <div className="relative mx-auto max-w-screen-xl px-4 pt-6 sm:px-6 lg:px-8 lg:pt-8 pb-safe-4">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
@@ -98,7 +98,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                         href={`${assetUrl}/${doc.file}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className={`${LINK_CLS} bg-[var(--color-white)]/10`}
+                                        className={`${LINK_CLS} bg-white/10`}
                                         title={doc.description !== null ? doc.description : undefined}
                                     >
                                         {doc.title}
@@ -114,7 +114,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                         <ul className="grid grid-cols-2 md:grid-cols-1 gap-x-8 gap-y-2 text-sm w-full max-w-fit mx-auto md:mx-0 md:max-w-none">
                             {pageLinks.map((link) => (
                                 <li key={link.href}>
-                                    <ActiveLink href={link.href} className={LINK_CLS} activeClassName="bg-[var(--color-purple-500)]/10 text-[var(--color-purple-700)]">
+                                    <ActiveLink href={link.href} className={LINK_CLS} activeClassName="bg-purple-500/10 text-purple-700">
                                         {link.label}
                                     </ActiveLink>
                                 </li>
@@ -134,7 +134,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                     const slug = slugify(cleaned);
                                     return (
                                         <div key={committee.id}>
-                                            <ActiveLink href={`${ROUTES.COMMITTEES}/${slug}`} className={LINK_CLS} activeClassName="bg-[var(--color-purple-500)]/10 text-[var(--color-purple-700)]">
+                                            <ActiveLink href={`${ROUTES.COMMITTEES}/${slug}`} className={LINK_CLS} activeClassName="bg-purple-500/10 text-purple-700">
                                                 {cleaned}
                                             </ActiveLink>
                                         </div>
@@ -149,7 +149,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                     const slug = slugify(cleaned);
                                     return (
                                         <div key={committee.id}>
-                                            <ActiveLink href={`${ROUTES.COMMITTEES}/${slug}`} className={LINK_CLS} activeClassName="bg-[var(--color-purple-500)]/10 text-[var(--color-purple-700)]">
+                                            <ActiveLink href={`${ROUTES.COMMITTEES}/${slug}`} className={LINK_CLS} activeClassName="bg-purple-500/10 text-purple-700">
                                                 {cleaned}
                                             </ActiveLink>
                                         </div>
@@ -160,7 +160,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
 
                         {/* Alle bekijken link gecentreerd eronder */}
                         <div className="mt-6 text-center lg:text-center">
-                            <ActiveLink href={ROUTES.COMMITTEES} className={`${LINK_CLS} font-bold text-[var(--color-purple-500)]`} activeClassName="bg-[var(--color-purple-500)]/10 text-[var(--color-purple-700)]">
+                            <ActiveLink href={ROUTES.COMMITTEES} className={`${LINK_CLS} font-bold text-purple-500`} activeClassName="bg-purple-500/10 text-purple-700">
                                 Alle commissies bekijken
                             </ActiveLink>
                         </div>
@@ -202,9 +202,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                     href={ROUTES.SAFE_HAVENS}
                                     className={
                                         'inline-flex items-center gap-1 squircle px-2 py-1 font-semibold transition ' +
-                                        'bg-[var(--color-purple-500)]/20 text-[var(--color-purple-700)] ' +
-                                        'dark:bg-[var(--color-white)]/15 dark:text-[var(--color-white)] ' +
-                                        'hover:bg-[var(--color-purple-500)]/30 dark:hover:bg-[var(--color-white)]/25'
+                                        'bg-purple-500/20 text-purple-700 ' +
+                                        'dark:bg-white/15 dark:text-white ' +
+                                        'hover:bg-purple-500/30 dark:hover:bg-white/25'
                                     }
                                 >
                                     Safe Havens
@@ -221,9 +221,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 rel="noopener noreferrer"
                                 className={
                                     'inline-flex h-10 w-10 items-center justify-center rounded-full transition ' +
-                                    'bg-[var(--color-purple-500)]/15 dark:bg-[var(--color-white)]/10 ' +
-                                    'text-[var(--color-purple-700)] dark:text-[var(--color-white)] ' +
-                                    'hover:bg-[var(--color-purple-500)]/25 dark:hover:bg-[var(--color-white)]/20'
+                                    'bg-purple-500/15 dark:bg-white/10 ' +
+                                    'text-purple-700 dark:text-white ' +
+                                    'hover:bg-purple-500/25 dark:hover:bg-white/20'
                                 }
                                 aria-label="Instagram"
                             >
@@ -235,9 +235,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 rel="noopener noreferrer"
                                 className={
                                     'inline-flex h-10 w-10 items-center justify-center rounded-full transition ' +
-                                    'bg-[var(--color-purple-500)]/15 dark:bg-[var(--color-white)]/10 ' +
-                                    'text-[var(--color-purple-700)] dark:text-[var(--color-white)] ' +
-                                    'hover:bg-[var(--color-purple-500)]/25 dark:hover:bg-[var(--color-white)]/20'
+                                    'bg-purple-500/15 dark:bg-white/10 ' +
+                                    'text-purple-700 dark:text-white ' +
+                                    'hover:bg-purple-500/25 dark:hover:bg-white/20'
                                 }
                                 aria-label="Facebook"
                             >
@@ -249,9 +249,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 rel="noopener noreferrer"
                                 className={
                                     'inline-flex h-10 w-10 items-center justify-center rounded-full transition ' +
-                                    'bg-[var(--color-purple-500)]/15 dark:bg-[var(--color-white)]/10 ' +
-                                    'text-[var(--color-purple-700)] dark:text-[var(--color-white)] ' +
-                                    'hover:bg-[var(--color-purple-500)]/25 dark:hover:bg-[var(--color-white)]/20'
+                                    'bg-purple-500/15 dark:bg-white/10 ' +
+                                    'text-purple-700 dark:text-white ' +
+                                    'hover:bg-purple-500/25 dark:hover:bg-white/20'
                                 }
                                 aria-label="LinkedIn"
                             >
@@ -263,9 +263,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 rel="noopener noreferrer"
                                 className={
                                     'inline-flex h-10 w-10 items-center justify-center rounded-full transition ' +
-                                    'bg-[var(--color-purple-500)]/15 dark:bg-[var(--color-white)]/10 ' +
-                                    'text-[var(--color-purple-700)] dark:text-[var(--color-white)] ' +
-                                    'hover:bg-[var(--color-purple-500)]/25 dark:hover:bg-[var(--color-white)]/20'
+                                    'bg-purple-500/15 dark:bg-white/10 ' +
+                                    'text-purple-700 dark:text-white ' +
+                                    'hover:bg-purple-500/25 dark:hover:bg-white/20'
                                 }
                                 aria-label="TikTok"
                             >

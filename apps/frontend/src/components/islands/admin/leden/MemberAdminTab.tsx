@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
     Shield, 
     ShieldAlert, 
@@ -97,15 +97,15 @@ export default function MemberAdminTab({
         <div className="space-y-6">
             {/* Azure Provisioning */}
             {!member.entra_id && (
-                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-8 border-l-8 border-l-amber-500 shadow-sm">
+                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-8 border-l-8 border-l-amber-500 shadow-sm">
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-4">
                             <div className="h-12 w-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
                                 <ShieldAlert className="h-6 w-6" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-semibold text-[var(--beheer-text)] leading-tight">Azure Account Ontbreekt</h3>
-                                <p className="text-xs text-[var(--beheer-text-muted)] font-semibold mt-1 opacity-60">Dit lid is nog niet bekend in Microsoft Entra ID.</p>
+                                <h3 className="text-xl font-semibold text-(--beheer-text) leading-tight">Azure Account Ontbreekt</h3>
+                                <p className="text-xs text-(--beheer-text-muted) font-semibold mt-1 opacity-60">Dit lid is nog niet bekend in Microsoft Entra ID.</p>
                             </div>
                         </div>
                     </div>
@@ -125,36 +125,36 @@ export default function MemberAdminTab({
             )}
 
             {/* Azure Committee Management */}
-            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-8 shadow-sm">
+            <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-8 shadow-sm">
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h3 className="text-xl font-semibold text-[var(--beheer-text)] leading-tight">Azure Groepsbeheer</h3>
-                        <p className="text-xs text-[var(--beheer-text-muted)] font-semibold mt-1 opacity-60">Lidmaatschappen direct in Azure AD aanpassen</p>
+                        <h3 className="text-xl font-semibold text-(--beheer-text) leading-tight">Azure Groepsbeheer</h3>
+                        <p className="text-xs text-(--beheer-text-muted) font-semibold mt-1 opacity-60">Lidmaatschappen direct in Azure AD aanpassen</p>
                     </div>
-                    <div className="h-12 w-12 rounded-2xl bg-[var(--beheer-accent)]/10 text-[var(--beheer-accent)] flex items-center justify-center shadow-sm">
+                    <div className="h-12 w-12 rounded-2xl bg-(--beheer-accent)/10 text-(--beheer-accent) flex items-center justify-center shadow-sm">
                         <Shield className="h-6 w-6" />
                     </div>
                 </div>
 
                 <div className="space-y-6 mb-10">
-                    <h4 className="text-xs font-semibold text-[var(--beheer-text-muted)] opacity-40">Huidige Lidmaatschappen</h4>
+                    <h4 className="text-xs font-semibold text-(--beheer-text-muted) opacity-40">Huidige Lidmaatschappen</h4>
                     {optimisticMemberships.filter(m => m.committee_id.azure_group_id).length === 0 ? (
-                        <p className="text-xs text-[var(--beheer-text-muted)] font-medium italic opacity-30">Geen Azure-gekoppelde commissies.</p>
+                        <p className="text-xs text-(--beheer-text-muted) font-medium italic opacity-30">Geen Azure-gekoppelde commissies.</p>
                     ) : (
                         <div className="grid grid-cols-1 gap-3">
                             {optimisticMemberships.filter(m => m.committee_id.azure_group_id).map(m => {
                                 const groupId = m.committee_id.azure_group_id;
                                 if (!groupId) return null;
                                 return (
-                                    <div key={m.id} className="flex items-center justify-between p-4 rounded-2xl bg-[var(--beheer-card-soft)]/50 border border-[var(--beheer-border)] group">
+                                    <div key={m.id} className="flex items-center justify-between p-4 rounded-2xl bg-(--beheer-card-soft)/50 border border-(--beheer-border) group">
                                         <div className="flex items-center gap-3">
-                                            <Award className={`h-5 w-5 ${m.is_leader && m.committee_id.azure_group_id !== COMMITTEES.BESTUUR ? 'text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)] opacity-20'}`} />
-                                            <span className="font-semibold text-[var(--beheer-text)] text-sm">{cleanName(m.committee_id.name)}</span>
+                                            <Award className={`h-5 w-5 ${m.is_leader && m.committee_id.azure_group_id !== COMMITTEES.BESTUUR ? 'text-(--beheer-accent)' : 'text-(--beheer-text-muted) opacity-20'}`} />
+                                            <span className="font-semibold text-(--beheer-text) text-sm">{cleanName(m.committee_id.name)}</span>
                                         </div>
                                         <button 
                                             onClick={() => { void onMembershipChange(groupId, 'remove', m.committee_id.name); }}
                                             disabled={isActionInProgress === `remove-${m.committee_id.azure_group_id}`}
-                                            className="p-2 text-[var(--beheer-text-muted)] hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                                            className="p-2 text-(--beheer-text-muted) hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer disabled:opacity-50"
                                         >
                                             {isActionInProgress === `remove-${m.committee_id.azure_group_id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                                         </button>
@@ -166,7 +166,7 @@ export default function MemberAdminTab({
                 </div>
 
                 <div className="space-y-6">
-                    <h4 className="text-xs font-semibold text-[var(--beheer-text-muted)] opacity-40">Toevoegen aan Azure Groep</h4>
+                    <h4 className="text-xs font-semibold text-(--beheer-text-muted) opacity-40">Toevoegen aan Azure Groep</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {availableCommittees.map(c => (
                             <button
@@ -177,13 +177,13 @@ export default function MemberAdminTab({
                                     }
                                 }}
                                 disabled={isActionInProgress === `add-${c.azure_group_id}`}
-                                className="flex items-center justify-between p-4 rounded-2xl bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] hover:border-[var(--beheer-accent)]/50 hover:bg-[var(--beheer-accent)]/5 transition-all text-left shadow-sm group"
+                                className="flex items-center justify-between p-4 rounded-2xl bg-(--beheer-card-bg) border border-(--beheer-border) hover:border-(--beheer-accent)/50 hover:bg-(--beheer-accent)/5 transition-all text-left shadow-sm group"
                             >
                                 <div className="min-w-0 flex-1">
-                                    <p className="font-semibold text-[var(--beheer-text)] text-xs truncate">{cleanName(c.name)}</p>
-                                    <p className="text-[9px] text-[var(--beheer-text-muted)] font-medium opacity-60">Azure ID: {c.azure_group_id?.substring(0, 8)}...</p>
+                                    <p className="font-semibold text-(--beheer-text) text-xs truncate">{cleanName(c.name)}</p>
+                                    <p className="text-[9px] text-(--beheer-text-muted) font-medium opacity-60">Azure ID: {c.azure_group_id?.substring(0, 8)}...</p>
                                 </div>
-                                <div className="p-2 bg-[var(--beheer-card-soft)] rounded-lg group-hover:bg-[var(--beheer-accent)] group-hover:text-white transition-all">
+                                <div className="p-2 bg-(--beheer-card-soft) rounded-lg group-hover:bg-(--beheer-accent) group-hover:text-white transition-all">
                                     {isActionInProgress === `add-${c.azure_group_id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                                 </div>
                             </button>
@@ -193,21 +193,21 @@ export default function MemberAdminTab({
             </div>
 
             {/* Membership Renewal */}
-            <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-8 shadow-sm">
+            <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-8 shadow-sm">
                 <div className="flex items-center gap-4 mb-8">
                     <div className="h-12 w-12 rounded-2xl bg-green-500/10 text-green-500 flex items-center justify-center shadow-sm">
                         <CalendarPlus className="h-6 w-6" />
                     </div>
                     <div>
-                        <h3 className="text-xl font-semibold text-[var(--beheer-text)] leading-tight">Lidmaatschap Verlengen</h3>
-                        <p className="text-xs text-[var(--beheer-text-muted)] font-semibold mt-1 opacity-60">Handmatig verlengen (bv. bij contante betaling)</p>
+                        <h3 className="text-xl font-semibold text-(--beheer-text) leading-tight">Lidmaatschap Verlengen</h3>
+                        <p className="text-xs text-(--beheer-text-muted) font-semibold mt-1 opacity-60">Handmatig verlengen (bv. bij contante betaling)</p>
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                    <label className="text-xs font-semibold text-[var(--beheer-text-muted)] opacity-60">Verlengen met:</label>
+                    <label className="text-xs font-semibold text-(--beheer-text-muted) opacity-60">Verlengen met:</label>
                     <div className="flex gap-2">
                         {[1, 6, 12].map(m => (
-                            <button key={m} onClick={() => setRenewMonths(m)} className={`px-4 py-3 rounded-xl font-semibold text-xs transition-all cursor-pointer ${renewMonths === m ? 'bg-[var(--beheer-accent)] text-white shadow-md' : 'bg-[var(--beheer-card-soft)] text-[var(--beheer-text-muted)] hover:bg-[var(--beheer-border)]/50'}`}>
+                            <button key={m} onClick={() => setRenewMonths(m)} className={`px-4 py-3 rounded-xl font-semibold text-xs transition-all cursor-pointer ${renewMonths === m ? 'bg-(--beheer-accent) text-white shadow-md' : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:bg-(--beheer-border)/50'}`}>
                                 {m} maand{m > 1 ? 'en' : ''}
                             </button>
                         ))}
@@ -226,16 +226,16 @@ export default function MemberAdminTab({
 
             {/* Force Sync */}
             {member.entra_id && (
-                <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] p-8 shadow-sm">
+                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-8 shadow-sm">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                         <div>
-                            <h3 className="text-lg font-semibold text-[var(--beheer-text)] leading-tight">Azure AD Synchronisatie</h3>
-                            <p className="text-xs text-[var(--beheer-text-muted)] font-semibold mt-1 opacity-60">Forceer een directe sync van dit lid met Azure AD.</p>
+                            <h3 className="text-lg font-semibold text-(--beheer-text) leading-tight">Azure AD Synchronisatie</h3>
+                            <p className="text-xs text-(--beheer-text-muted) font-semibold mt-1 opacity-60">Forceer een directe sync van dit lid met Azure AD.</p>
                         </div>
                         <button
                             onClick={() => { void handleSync(); }}
                             disabled={syncLoading}
-                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-[var(--beheer-card-soft)] text-[var(--beheer-text)] rounded-xl font-semibold text-xs hover:bg-[var(--beheer-border)]/50 transition-all active:scale-95 border border-[var(--beheer-border)]/50 cursor-pointer"
+                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-(--beheer-card-soft) text-(--beheer-text) rounded-xl font-semibold text-xs hover:bg-(--beheer-border)/50 transition-all active:scale-95 border border-(--beheer-border)/50 cursor-pointer"
                         >
                             <RefreshCw className={`h-4 w-4 ${syncLoading ? 'animate-spin' : ''}`} />
                             Synchroniseer

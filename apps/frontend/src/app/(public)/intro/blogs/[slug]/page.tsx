@@ -42,7 +42,7 @@ export default async function BlogDetailPage({ params }: Props) {
             <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-10 py-12 lg:py-24">
                 <Link 
                     href="/intro/blogs" 
-                    className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--beheer-text-muted)] hover:text-[var(--beheer-accent)] transition-colors group mb-12"
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-(--beheer-text-muted) hover:text-(--beheer-accent) transition-colors group mb-12"
                 >
                     <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                     Terug naar overzicht
@@ -54,9 +54,9 @@ export default async function BlogDetailPage({ params }: Props) {
                             {config.label}
                         </span>
                         {date && (
-                            <div className="flex items-center gap-2 text-[var(--beheer-text-muted)]">
+                            <div className="flex items-center gap-2 text-(--beheer-text-muted)">
                                 <Calendar className="h-4 w-4" />
-                                <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)]">
+                                <span className="text-[10px] font-semibold text-(--beheer-text-muted)">
                                     {new Date(date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
                                 </span>
                             </div>
@@ -68,7 +68,7 @@ export default async function BlogDetailPage({ params }: Props) {
                     </h1>
 
                     {blog.excerpt && (
-                        <p className="text-xl lg:text-2xl text-[var(--beheer-text-muted)] font-medium leading-relaxed italic border-l-4 border-[var(--beheer-accent)]/30 pl-6">
+                        <p className="text-xl lg:text-2xl text-(--beheer-text-muted) font-medium leading-relaxed italic border-l-4 border-(--beheer-accent)/30 pl-6">
                             {blog.excerpt}
                         </p>
                     )}
@@ -80,15 +80,15 @@ export default async function BlogDetailPage({ params }: Props) {
                     </div>
                 </div>
 
-                <footer className="mt-20 pt-10 border-t border-[var(--beheer-border)]/10">
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-8 bg-[var(--beheer-accent)]/5 p-8 lg:p-12 squircle-lg border border-[var(--beheer-accent)]/10">
+                <footer className="mt-20 pt-10 border-t border-(--beheer-border)/10">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-8 bg-(--beheer-accent)/5 p-8 lg:p-12 squircle-lg border border-(--beheer-accent)/10">
                         <div className="space-y-2 text-center sm:text-left">
                             <h4 className="text-xl font-black text-theme dark:text-white">Wil je niets missen?</h4>
-                            <p className="text-sm text-[var(--beheer-text-muted)]">Houd deze pagina en onze socials in de gaten voor meer updates.</p>
+                            <p className="text-sm text-(--beheer-text-muted)">Houd deze pagina en onze socials in de gaten voor meer updates.</p>
                         </div>
                         <Link 
                             href="/intro" 
-                            className="px-8 py-4 bg-[var(--beheer-accent)] text-white squircle font-bold text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[var(--beheer-accent)]/20"
+                            className="px-8 py-4 bg-(--beheer-accent) text-white squircle font-bold text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-(--beheer-accent)/20"
                         >
                             Naar de Introductie
                         </Link>

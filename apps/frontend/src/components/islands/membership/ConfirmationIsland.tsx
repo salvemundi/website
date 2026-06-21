@@ -97,7 +97,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus,
 
     return (
         <div
-            className="w-full max-w-2xl bg-[var(--bg-card)] dark:border dark:border-white/10 rounded-[2.5rem] shadow-2xl p-8 sm:p-12 text-center"
+            className="w-full max-w-2xl bg-(--bg-card) dark:border dark:border-white/10 rounded-[2.5rem] shadow-2xl p-8 sm:p-12 text-center"
         >
             {renderContent()}
 

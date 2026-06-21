@@ -56,7 +56,7 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
         return (
             <AdminPageShell title="Reis Activiteiten" backHref="/beheer/reis">
                 <div className="py-20 text-center mx-auto">
-                    <p className="text-[var(--beheer-text-muted)] font-bold text-base">
+                    <p className="text-(--beheer-text-muted) font-bold text-base">
                         Geen reizen gevonden.
                     </p>
                 </div>
@@ -100,17 +100,17 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
             backHref="/beheer/reis"
             actions={
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-4 bg-[var(--beheer-card-soft)] px-4 py-2 rounded-2xl border border-[var(--beheer-border)]/50 shadow-sm mr-2">
+                    <div className="flex items-center gap-4 bg-(--beheer-card-soft) px-4 py-2 rounded-2xl border border-(--beheer-border)/50 shadow-sm mr-2">
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-[var(--beheer-text-muted)] leading-none mb-1">Activiteiten</span>
-                            <span className="text-sm font-bold text-[var(--beheer-accent)] leading-none">{activities.length}</span>
+                            <span className="text-[10px] font-semibold text-(--beheer-text-muted) leading-none mb-1">Activiteiten</span>
+                            <span className="text-sm font-bold text-(--beheer-accent) leading-none">{activities.length}</span>
                         </div>
                     </div>
                     <Link
                         href={`/beheer/reis?tripId=${activeTripId}`}
-                        className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[var(--beheer-card-bg)] border border-[var(--beheer-border)] text-[var(--beheer-text)] rounded-xl text-[11px] font-semibold hover:border-[var(--beheer-accent)]/50 transition-all shadow-sm"
+                        className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-xl text-[11px] font-semibold hover:border-(--beheer-accent)/50 transition-all shadow-sm"
                     >
-                        <Ticket className="h-3.5 w-3.5 text-[var(--beheer-accent)]" />
+                        <Ticket className="h-3.5 w-3.5 text-(--beheer-accent)" />
                         Dashboard
                     </Link>
                 </div>

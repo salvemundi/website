@@ -108,17 +108,24 @@ export class SyncProcessor {
             updatePayload.phone_number = aUser.mobilePhone;
         }
 
-        if (Object.keys(updatePayload).length > 0) {
-            for (const key of Object.keys(updatePayload)) {
-                const oldValue = currentUser[key as keyof DirectusUser];
-                const newValue = updatePayload[key];
-                if (oldValue !== newValue) {
-                    changes.push({ field: key, old: oldValue || 'leeg', new: newValue });
-                }
-            }
-            if (changes.length > 0) {
-                await DirectusService.updateUser(currentUser.id, updatePayload);
-            }
+        if ('status' in updatePayload && currentUser.status !== updatePayload.status) {
+            changes.push({ field: 'status', old: currentUser.status || 'leeg', new: updatePayload.status });
+        }
+        if ('membership_expiry' in updatePayload && currentUser.membership_expiry !== updatePayload.membership_expiry) {
+            changes.push({ field: 'membership_expiry', old: currentUser.membership_expiry || 'leeg', new: updatePayload.membership_expiry });
+        }
+        if ('date_of_birth' in updatePayload && currentUser.date_of_birth !== updatePayload.date_of_birth) {
+            changes.push({ field: 'date_of_birth', old: currentUser.date_of_birth || 'leeg', new: updatePayload.date_of_birth });
+        }
+        if ('originele_betaaldatum' in updatePayload && currentUser.originele_betaaldatum !== updatePayload.originele_betaaldatum) {
+            changes.push({ field: 'originele_betaaldatum', old: currentUser.originele_betaaldatum || 'leeg', new: updatePayload.originele_betaaldatum });
+        }
+        if ('phone_number' in updatePayload && currentUser.phone_number !== updatePayload.phone_number) {
+            changes.push({ field: 'phone_number', old: currentUser.phone_number || 'leeg', new: updatePayload.phone_number });
+        }
+
+        if (changes.length > 0 && Object.keys(updatePayload).length > 0) {
+            await DirectusService.updateUser(currentUser.id, updatePayload);
         }
 
         if (fields.includes('membership_status') || fields.includes('membership_expiry')) {
@@ -127,13 +134,13 @@ export class SyncProcessor {
         }
 
         if (fields.includes('committees')) {
-            const currentMemberships = ((ctx.membershipCache.get(currentUser.id) || []) as any[]).map(m => ({
-                ...m,
+            const currentMemberships = (ctx.membershipCache.get(currentUser.id) || []).map(m => ({
                 id: String(m.id),
-                committee_id: typeof m.committee_id === 'number'
-                    ? { id: m.committee_id }
-                    : m.committee_id
-            })) as DirectusCommitteeMembership[];
+                user_id: m.user_id,
+                is_leader: m.is_leader,
+                is_visible: m.is_visible ?? true,
+                committee_id: { id: m.committee_id }
+            })) as unknown as DirectusCommitteeMembership[];
 
             const azureMemberships = ctx.membershipMap.get(aUser.id) || new Map<number, boolean>();
 
@@ -141,25 +148,23 @@ export class SyncProcessor {
                 const committee = ctx.committeeByIdCache?.get(Number(committeeId));
                 const committeeName = committee?.name || `ID ${committeeId}`;
 
-                const existing = currentMemberships.find((m) => {
-                    const mCommId = (typeof m.committee_id === 'object' && m.committee_id !== null) ? m.committee_id.id : m.committee_id;
-                    return Number(mCommId) === Number(committeeId);
-                });
+                const existing = currentMemberships.find((m) => Number(m.committee_id.id) === Number(committeeId));
 
                 if (!existing) {
                     await DirectusService.addMemberToCommittee(currentUser.id, committeeId, isLeader);
                     changes.push({ field: 'Commissie', old: 'Geen', new: `Toegevoegd aan ${committeeName}${isLeader ? ' (Leider)' : ''}` });
                 } else if (existing.is_leader !== isLeader) {
-                    await DirectusService.addMemberToCommittee(currentUser.id, Number(committeeId), isLeader);
-                    changes.push({ field: `${committeeName} status`, old: 'Lid', new: 'Leider' });
+                    await DirectusService.updateCommitteeMember(Number(existing.id), { is_leader: isLeader });
+                    changes.push({
+                        field: `${committeeName} status`,
+                        old: existing.is_leader ? 'Leider' : 'Lid',
+                        new: isLeader ? 'Leider' : 'Lid'
+                    });
                 }
             }
 
             for (const current of currentMemberships) {
-                const currentCommId = (typeof current.committee_id === 'object' && current.committee_id !== null) ? current.committee_id.id : current.committee_id;
-                const committeeIdNum = currentCommId ? Number(currentCommId) : null;
-
-                if (committeeIdNum === null) continue;
+                const committeeIdNum = Number(current.committee_id.id);
 
                 if (!azureMemberships.has(committeeIdNum)) {
                     const committee = ctx.committeeByIdCache?.get(committeeIdNum);

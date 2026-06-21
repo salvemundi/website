@@ -4,12 +4,16 @@ import { DirectusService } from './directus.service.js';
 import { SyncJob } from './sync/sync-job.js';
 
 export class FullSyncJob {
-    private static shouldStop = false as boolean;
+    private static shouldStop = false;
+
+    private static isStopped(): boolean {
+        return this.shouldStop;
+    }
 
     static async start(redis: Redis) {
         logInfo('full-sync.job.ts][start]', 'Starting nightly synchronization loop...');
 
-        while (!this.shouldStop) {
+        while (!this.isStopped()) {
             try {
                 const now = new Date();
                 const nextRun = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 3, 0, 0);
@@ -22,7 +26,7 @@ export class FullSyncJob {
                 logInfo('full-sync.job.ts][start]', `Next full sync scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours (at ${nextRun.toISOString()}).`);
 
                 await new Promise(resolve => setTimeout(resolve, delay));
-                if (this.shouldStop) break;
+                if (this.isStopped()) break;
 
                 const isActive = await DirectusService.isFlagActive('auto_sync_nightly');
                 if (!isActive) {

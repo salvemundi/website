@@ -9,7 +9,7 @@ export class DirectusService {
             filter: { id: { _eq: id } },
             fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as never[]
         }));
-        return (users[0] as unknown as DirectusUser) || null;
+        return users.length > 0 ? (users[0] as unknown as DirectusUser) : null;
     }
 
     static async getUserByEntraId(entraId: string): Promise<DirectusUser | null> {
@@ -17,7 +17,7 @@ export class DirectusService {
             filter: { entra_id: { _eq: entraId } },
             fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as never[]
         }));
-        return (users[0] as unknown as DirectusUser) || null;
+        return users.length > 0 ? (users[0] as unknown as DirectusUser) : null;
     }
 
     static async getUserByEmail(email: string): Promise<DirectusUser | null> {
@@ -25,7 +25,7 @@ export class DirectusService {
             filter: { email: { _eq: email.toLowerCase() } },
             fields: ['id', 'email', 'first_name', 'last_name', 'entra_id', 'status', 'avatar', 'phone_number', 'date_of_birth', 'originele_betaaldatum', 'membership_status', 'membership_expiry'] as never[]
         }));
-        return (users[0] as unknown as DirectusUser) || null;
+        return users.length > 0 ? (users[0] as unknown as DirectusUser) : null;
     }
 
     static async updateUser(id: string, data: Partial<DirectusUser>) {
@@ -140,8 +140,7 @@ export class DirectusService {
         const client = getDirectusClient();
         const formData = new FormData();
 
-        const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
-        const blob = new Blob([arrayBuffer], { type: contentType });
+        const blob = new Blob([new Uint8Array(buffer)], { type: contentType });
         formData.append('file', blob, filename);
 
         try {
@@ -150,7 +149,7 @@ export class DirectusService {
 
             await client.request(updateUser(userId, {
                 avatar: fileId
-            } as never));
+            }));
 
             return fileId;
         } catch (error: unknown) {

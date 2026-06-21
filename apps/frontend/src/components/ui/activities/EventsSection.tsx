@@ -36,18 +36,18 @@ export function EventsSection({ activities = [], count = 4 }: EventsSectionProps
                     <h2 className="text-3xl font-black text-gradient sm:text-4xl md:text-5xl">
                         Komende activiteiten
                     </h2>
-                    <p className="mx-auto max-w-xl mt-2 text-xs sm:text-sm font-medium text-[var(--text-muted)] dark:text-white/60 leading-relaxed">
+                    <p className="mx-auto max-w-xl mt-2 text-xs sm:text-sm font-medium text-(--text-muted) dark:text-white/60 leading-relaxed">
                         Van legendarische borrels tot verrijkende workshops en onvergetelijke studiereizen. Er is altijd een plek voor jou!
                     </p>
                 </div>
 
                 <div className={`grid gap-4 ${gridLayoutClass}`}>
                     {!hasActivities ? (
-                        <div className="col-span-full flex flex-col items-center justify-center min-h-[320px] p-12 text-center bg-white/50 dark:bg-black/20 rounded-[2.5rem] border border-dashed border-[var(--color-purple-500)]/20">
-                            <div className="h-16 w-16 mb-4 rounded-full bg-[var(--color-purple-100)] dark:bg-transparent flex items-center justify-center text-[var(--color-purple-600)] dark:text-[var(--color-purple-300)]">
+                        <div className="col-span-full flex flex-col items-center justify-center min-h-[320px] p-12 text-center bg-white/50 dark:bg-black/20 rounded-[2.5rem] border border-dashed border-purple-500/20">
+                            <div className="h-16 w-16 mb-4 rounded-full bg-purple-100 dark:bg-transparent flex items-center justify-center text-purple-600 dark:text-purple-300">
                                 <Calendar className="h-8 w-8" />
                             </div>
-                            <p className="text-lg font-bold text-[var(--text-main)] italic">
+                            <p className="text-lg font-bold text-(--text-main) italic">
                                 Geen activiteiten gevonden.
                             </p>
                         </div>
@@ -66,10 +66,10 @@ export function EventsSection({ activities = [], count = 4 }: EventsSectionProps
                     <div className="mt-8 flex justify-center">
                         <Link 
                             href="/activiteiten"
-                            className="group relative inline-flex items-center gap-4 px-8 py-4 bg-[var(--bg-card)] hover:bg-[var(--color-purple-500)]/10 dark:hover:bg-white/10 text-[var(--text-main)] text-xs font-bold squircle border border-[var(--border-color)]/20 shadow-lg transition-all hover:scale-105 active:scale-95 backdrop-blur-sm overflow-hidden"
+                            className="group relative inline-flex items-center gap-4 px-8 py-4 bg-(--bg-card) hover:bg-purple-500/10 dark:hover:bg-white/10 text-(--text-main) text-xs font-bold squircle border border-(--border-color)/20 shadow-lg transition-all hover:scale-105 active:scale-95 backdrop-blur-sm overflow-hidden"
                         >
                             <div className="relative z-10">Alle activiteiten</div>
-                            <div className="relative z-10 h-6 w-6 rounded-full bg-[var(--color-purple-500)] flex items-center justify-center text-white group-hover:bg-[var(--color-purple-600)] transition-colors">
+                            <div className="relative z-10 h-6 w-6 rounded-full bg-purple-500 flex items-center justify-center text-white group-hover:bg-purple-600 transition-colors">
                                 <ChevronRight className="h-4 w-4" />
                             </div>
                         </Link>

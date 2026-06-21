@@ -36,7 +36,7 @@ export function ObfuscatedEmail({ email, showIcon = true, className = "" }: Obfu
         <a
             href={isMounted ? `mailto:${user}@${domain}` : undefined}
             onClick={handleMailClick}
-            className={`inline-flex items-center gap-2 hover:text-[var(--color-purple-500)] transition-colors cursor-pointer ${className}`}
+            className={`inline-flex items-center gap-2 hover:text-purple-500 transition-colors cursor-pointer ${className}`}
             title="Klik om te e-mailen"
         >
             {showIcon && <Mail className="h-4 w-4 shrink-0 opacity-70" />}

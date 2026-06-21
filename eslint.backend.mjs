@@ -2,20 +2,29 @@ import securityPlugin from "eslint-plugin-security";
 import unusedImports from "eslint-plugin-unused-imports";
 import tseslint from "typescript-eslint";
 import eslint from "@eslint/js";
+import { defineConfig } from "eslint/config";
 
 export function createBackendConfig(serviceDirName) {
-    return tseslint.config(
-        { ignores: ["dist/**", "build/**", ".next/**", "node_modules/**"] },
+    return defineConfig([
+        { ignores: ["dist/**", "build/**", ".next/**", "node_modules/**", "eslint.config.mjs", "eslint.config.js"] },
         eslint.configs.recommended,
         ...tseslint.configs.recommendedTypeChecked,
+        {
+            files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
+            ...tseslint.configs.disableTypeChecked,
+        },
         securityPlugin.configs.recommended,
         {
+            files: ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
             languageOptions: {
                 parserOptions: {
                     project: true,
                     tsconfigRootDir: serviceDirName,
                 },
             },
+        },
+        {
+            files: ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
             plugins: {
                 "unused-imports": unusedImports,
             },
@@ -77,5 +86,5 @@ export function createBackendConfig(serviceDirName) {
                 "@typescript-eslint/no-explicit-any": "off"
             }
         }
-    );
+    ]);
 }

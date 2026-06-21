@@ -57,28 +57,28 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                    <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
                         <User className="h-3 w-3" /> Naam
                     </label>
                     <input
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)]"
+                        className="w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
                         required
                         autoComplete="off"
                     />
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                    <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
                         <Mail className="h-3 w-3" /> E-mailadres
                     </label>
                     <input
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)]"
+                        className="w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
                         required
                         autoComplete="off"
                     />
@@ -87,37 +87,37 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                    <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
                         <Building2 className="h-3 w-3" /> Vereniging
                     </label>
                     <input
                         type="text"
                         value={formData.association}
                         onChange={(e) => setFormData({ ...formData, association: e.target.value })}
-                        className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)]"
+                        className="w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
                         autoComplete="off"
                     />
                 </div>
 
                 <div className="space-y-2" ref={paymentRef}>
-                    <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                    <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
                         <Tag className="h-3 w-3" /> Betaalstatus
                     </label>
                     <div className="relative">
                         <button
                             type="button"
                             onClick={() => setIsPaymentOpen(!isPaymentOpen)}
-                            className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)] flex items-center justify-between hover:border-[var(--theme-purple)]/30 text-left"
+                            className="w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main) flex items-center justify-between hover:border-(--theme-purple)/30 text-left"
                         >
                             <span className="flex items-center gap-2">
                                 <span className={`h-2.5 w-2.5 rounded-full ${selectedPayment.color}`} />
                                 {selectedPayment.label}
                             </span>
-                            <ChevronDown className={`h-4 w-4 text-[var(--text-muted)] transition-transform duration-200 ${isPaymentOpen ? 'rotate-180 text-[var(--theme-purple)]' : ''}`} />
+                            <ChevronDown className={`h-4 w-4 text-(--text-muted) transition-transform duration-200 ${isPaymentOpen ? 'rotate-180 text-(--theme-purple)' : ''}`} />
                         </button>
                         
                         {isPaymentOpen && (
-                            <div className="absolute left-0 right-0 z-50 mt-2 rounded-[var(--radius-xl)] border border-[var(--border-color)]/30 bg-[var(--bg-card)] p-1.5 shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-top-1 duration-100">
+                            <div className="absolute left-0 right-0 z-50 mt-2 rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1.5 shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-top-1 duration-100">
                                 <div className="space-y-0.5">
                                     {PAYMENT_STATUS_OPTIONS.map((opt) => (
                                         <button
@@ -129,8 +129,8 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                                             }}
                                             className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2.5 ${
                                                 formData.payment_status === opt.value
-                                                    ? 'bg-[var(--theme-purple)] text-white'
-                                                    : 'text-[var(--text-main)] hover:bg-[var(--bg-main)]'
+                                                    ? 'bg-(--theme-purple) text-white'
+                                                    : 'text-(--text-main) hover:bg-(--bg-main)'
                                             }`}
                                         >
                                             <span className={`h-2 w-2 rounded-full ${formData.payment_status === opt.value ? 'bg-white' : opt.color}`} />
@@ -148,23 +148,23 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2" ref={groupRef}>
-                    <label className="text-[10px] font-semibold text-[var(--text-muted)] ml-1 flex items-center gap-2">
+                    <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
                         <Users className="h-3 w-3" /> Groepsindeling
                     </label>
                     <div className="relative">
                         <button
                             type="button"
                             onClick={() => setIsGroupOpen(!isGroupOpen)}
-                            className="w-full px-5 py-4 bg-[var(--bg-main)]/50 border-2 border-[var(--border-color)]/50 rounded-[var(--radius-xl)] focus:ring-4 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] transition-all font-semibold text-[var(--text-main)] flex items-center justify-between hover:border-[var(--theme-purple)]/30 text-left"
+                            className="w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main) flex items-center justify-between hover:border-(--theme-purple)/30 text-left"
                         >
                             <span className="truncate">
                                 {formData.group_name || 'Geen groep (nog niet ingedeeld)'}
                             </span>
-                            <ChevronDown className={`h-4 w-4 text-[var(--text-muted)] transition-transform duration-200 ${isGroupOpen ? 'rotate-180 text-[var(--theme-purple)]' : ''}`} />
+                            <ChevronDown className={`h-4 w-4 text-(--text-muted) transition-transform duration-200 ${isGroupOpen ? 'rotate-180 text-(--theme-purple)' : ''}`} />
                         </button>
                         
                         {isGroupOpen && (
-                            <div className="absolute left-0 right-0 z-50 mt-2 rounded-[var(--radius-xl)] border border-[var(--border-color)]/30 bg-[var(--bg-card)] p-1.5 shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-top-1 duration-100">
+                            <div className="absolute left-0 right-0 z-50 mt-2 rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1.5 shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-top-1 duration-100">
                                 <div className="max-h-60 overflow-y-auto space-y-0.5">
                                     <button
                                         type="button"
@@ -174,8 +174,8 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                                         }}
                                         className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
                                             !formData.group_name
-                                                ? 'bg-[var(--theme-purple)] text-white'
-                                                : 'text-[var(--text-muted)] hover:bg-[var(--bg-main)] hover:text-[var(--text-main)]'
+                                                ? 'bg-(--theme-purple) text-white'
+                                                : 'text-(--text-muted) hover:bg-(--bg-main) hover:text-(--text-main)'
                                         }`}
                                     >
                                         Geen groep (nog niet ingedeeld)
@@ -190,8 +190,8 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                                             }}
                                             className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
                                                 formData.group_name === g
-                                                    ? 'bg-[var(--theme-purple)] text-white'
-                                                    : 'text-[var(--text-main)] hover:bg-[var(--bg-main)]'
+                                                    ? 'bg-(--theme-purple) text-white'
+                                                    : 'text-(--text-main) hover:bg-(--bg-main)'
                                             }`}
                                         >
                                             {g}

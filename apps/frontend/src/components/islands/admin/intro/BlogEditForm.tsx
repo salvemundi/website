@@ -16,10 +16,10 @@ interface Props {
 
 export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, saving }: Props) {
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-[11px] font-semibold text-[var(--beheer-text-muted)]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-[11px] font-semibold text-(--beheer-text-muted)">
             <div className="lg:col-span-2 space-y-8">
                 <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-semibold text-[var(--beheer-accent)]">
+                    <p className="text-[10px] font-semibold text-(--beheer-accent)">
                         {blog.id && blog.id !== -1 ? 'Blog Bewerken' : 'Nieuwe Blog'}
                     </p>
                     <div className="flex gap-2">
@@ -72,9 +72,9 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                 </div>
             </div>
 
-            <div className="space-y-8 lg:border-l lg:border-[var(--beheer-border)]/10 lg:pl-12">
+            <div className="space-y-8 lg:border-l lg:border-(--beheer-border)/10 lg:pl-12">
                 <div className="space-y-6">
-                    <p className="text-[10px] font-semibold text-[var(--beheer-accent)]">Instellingen</p>
+                    <p className="text-[10px] font-semibold text-(--beheer-accent)">Instellingen</p>
 
                     <Field label="Type">
                         <select
@@ -82,9 +82,9 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                             onChange={e => onChange({ ...data, blog_type: e.target.value as IntroBlog['blog_type'] })}
                             className="beheer-select text-xs font-semibold"
                         >
-                            <option value="update" className="bg-[var(--beheer-card-bg)]">Update</option>
-                            <option value="pictures" className="bg-[var(--beheer-card-bg)]">Foto&apos;s</option>                            <option value="event" className="bg-[var(--beheer-card-bg)]">Evenement</option>
-                            <option value="announcement" className="bg-[var(--beheer-card-bg)]">Aankondiging</option>
+                            <option value="update" className="bg-(--beheer-card-bg)">Update</option>
+                            <option value="pictures" className="bg-(--beheer-card-bg)">Foto&apos;s</option>                            <option value="event" className="bg-(--beheer-card-bg)">Evenement</option>
+                            <option value="announcement" className="bg-(--beheer-card-bg)">Aankondiging</option>
                         </select>
                     </Field>
 
@@ -97,7 +97,7 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                         />
                     </Field>
 
-                    <div className="p-6 bg-[var(--bg-main)]/20 rounded-2xl border border-[var(--beheer-border)]/20">
+                    <div className="p-6 bg-(--bg-main)/20 rounded-2xl border border-(--beheer-border)/20">
                         <label className="flex items-center gap-4 cursor-pointer group select-none">
                             <div className="relative">
                                 <input
@@ -106,20 +106,20 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                                     checked={data.is_published || false}
                                     onChange={e => onChange({ ...data, is_published: e.target.checked })}
                                 />
-                                <div className="h-6 w-11 bg-[var(--beheer-border)]/20 dark:bg-white/5 backdrop-blur-md rounded-full peer-checked:bg-emerald-500 transition-all border border-[var(--beheer-border)]/30 group-hover:border-emerald-500/50 shadow-inner" />
+                                <div className="h-6 w-11 bg-(--beheer-border)/20 dark:bg-white/5 backdrop-blur-md rounded-full peer-checked:bg-emerald-500 transition-all border border-(--beheer-border)/30 group-hover:border-emerald-500/50 shadow-inner" />
                                 <div className="absolute left-1 top-1 h-4 w-4 bg-white rounded-full transition-all peer-checked:left-6 shadow-lg transform peer-active:scale-90" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-semibold text-[var(--beheer-text)]">Zichtbaarheid</span>
-                                <span className="text-[9px] font-semibold text-[var(--beheer-text-muted)]">{data.is_published ? 'Openbaar' : 'Concept'}</span>
+                                <span className="text-[10px] font-semibold text-(--beheer-text)">Zichtbaarheid</span>
+                                <span className="text-[9px] font-semibold text-(--beheer-text-muted)">{data.is_published ? 'Openbaar' : 'Concept'}</span>
                             </div>
                         </label>
                     </div>
                 </div>
 
                 <div className="space-y-6">
-                    <p className="text-[10px] font-semibold text-[var(--beheer-accent)]">Voorvertoning</p>
-                    <div className="p-6 rounded-2xl bg-white/5 border border-dashed border-[var(--beheer-border)]/40 flex flex-col items-center justify-center text-center gap-3">
+                    <p className="text-[10px] font-semibold text-(--beheer-accent)">Voorvertoning</p>
+                    <div className="p-6 rounded-2xl bg-white/5 border border-dashed border-(--beheer-border)/40 flex flex-col items-center justify-center text-center gap-3">
                         <Eye className="h-6 w-6 opacity-20" />
                         <p className="text-[9px] opacity-40 italic">Voorvertoning functionaliteit binnenkort beschikbaar</p>
                     </div>

@@ -19,8 +19,8 @@ export default function EventList({ events, onEventClick, variant = 'list', serv
 
     if (events.length === 0) {
         return (
-            <div className="text-center py-12 bg-[var(--bg-card)] rounded-3xl shadow-sm">
-                <p className="text-[var(--text-muted)]">Geen activiteiten gevonden.</p>
+            <div className="text-center py-12 bg-(--bg-card) rounded-3xl shadow-sm">
+                <p className="text-(--text-muted)">Geen activiteiten gevonden.</p>
             </div>
         );
     }

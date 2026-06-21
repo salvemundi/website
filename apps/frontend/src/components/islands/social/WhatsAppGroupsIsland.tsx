@@ -21,7 +21,7 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
             {/* Info Banner */}
             <div className="bg-bg-card rounded-2xl p-6 mb-8 shadow-md">
                 <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 flex items-center justify-center flex-shrink-0 border border-purple-500/10 dark:border-purple-400/10">
+                    <div className="w-12 h-12 rounded-xl bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0 border border-purple-500/10 dark:border-purple-400/10">
                         <Info className="h-6 w-6" />
                     </div>
                     <div>
@@ -48,7 +48,7 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
                     {groups.map((group) => (
                         <div key={group.id} className="relative overflow-hidden rounded-3xl bg-bg-card p-6 shadow-lg hover:shadow-xl transition-all h-full flex flex-col justify-between">
                             <div className="flex items-start gap-4 mb-4">
-                                <div className="w-16 h-16 rounded-full bg-purple-100 dark:bg-transparent flex items-center justify-center flex-shrink-0 text-purple-500 dark:text-purple-300">
+                                <div className="w-16 h-16 rounded-full bg-purple-100 dark:bg-transparent flex items-center justify-center shrink-0 text-purple-500 dark:text-purple-300">
                                     <MessageCircle className="h-8 w-8" />
                                 </div>
                                 <div className="flex-1 mt-1">

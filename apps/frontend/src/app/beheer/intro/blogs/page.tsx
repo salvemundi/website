@@ -27,7 +27,7 @@ export default function BlogsPage() {
                         Module onder constructie
                     </p>
                     
-                    <div className="flex items-center gap-3 bg-[var(--bg-main)] px-8 py-4 rounded-2xl border border-border-color text-amber-500 shadow-sm">
+                    <div className="flex items-center gap-3 bg-(--bg-main) px-8 py-4 rounded-2xl border border-border-color text-amber-500 shadow-sm">
                         <Construction className="h-5 w-5 animate-bounce" />
                         <span className="text-base font-black tracking-widest leading-none">Binnenkort Beschikbaar</span>
                     </div>

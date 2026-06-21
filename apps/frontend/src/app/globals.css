@@ -19,7 +19,7 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    3. @theme  — Static Design Tokens (Tailwind 4 CSS-First)
    These tokens compile into Tailwind utilities AND CSS custom properties.
-   Components reference them via var(--token) or bg-[var(--bg-main)], etc.
+   Components reference them via var(--token) or bg-(--bg-main), etc.
    ─────────────────────────────────────────────────────────────────────────── */
 @theme {
    --color-text-main: var(--text-main);
@@ -79,8 +79,8 @@
 
    /* Semantic Background — Light Mode defaults */
    --bg-main: #F0F1F9;
-   --bg-soft: var(--color-white);
-   --bg-card: var(--color-white);
+   --bg-soft: varwhite;
+   --bg-card: varwhite;
 
    /* Semantic Text — Light Mode defaults */
    --text-main: #5A3761;

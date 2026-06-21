@@ -24,22 +24,22 @@ export default function AdminToast({ toast, onClose }: AdminToastProps) {
         >
             <div className={`
                 px-8 py-5 rounded-[2rem] shadow-2xl flex items-center gap-5 backdrop-blur-xl border border-white/10 relative overflow-hidden group
-                ${toast.type === 'success' ? 'bg-bg-card/90 border-l-[12px] border-l-[var(--theme-success)]' :
-                    toast.type === 'error' ? 'bg-bg-card/90 border-l-[12px] border-l-[var(--theme-error)]' :
-                        toast.type === 'loading' ? 'bg-bg-card/90 border-l-[12px] border-l-[var(--theme-warning)]' :
+                ${toast.type === 'success' ? 'bg-bg-card/90 border-l-[12px] border-l-(--theme-success)' :
+                    toast.type === 'error' ? 'bg-bg-card/90 border-l-[12px] border-l-(--theme-error)' :
+                        toast.type === 'loading' ? 'bg-bg-card/90 border-l-[12px] border-l-(--theme-warning)' :
                             'bg-bg-card/90 border-l-[12px] border-l-theme-purple'}
             `}>
-                <div className={`absolute -right-10 -top-10 h-32 w-32 blur-[60px] opacity-20 rounded-full transition-colors duration-500 pointer-events-none ${toast.type === 'success' ? 'bg-[var(--theme-success)]' :
-                    toast.type === 'error' ? 'bg-[var(--theme-error)]' :
-                        toast.type === 'loading' ? 'bg-[var(--theme-warning)]' :
+                <div className={`absolute -right-10 -top-10 h-32 w-32 blur-[60px] opacity-20 rounded-full transition-colors duration-500 pointer-events-none ${toast.type === 'success' ? 'bg-(--theme-success)' :
+                    toast.type === 'error' ? 'bg-(--theme-error)' :
+                        toast.type === 'loading' ? 'bg-(--theme-warning)' :
                             'bg-theme-purple'
                     }`} />
 
                 <div className={`
                     h-14 w-14 shrink-0 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 duration-500
-                    ${toast.type === 'success' ? 'bg-[var(--theme-success)]/10 text-[var(--theme-success)]' :
-                        toast.type === 'error' ? 'bg-[var(--theme-error)]/10 text-[var(--theme-error)]' :
-                            toast.type === 'loading' ? 'bg-[var(--theme-warning)]/10 text-[var(--theme-warning)]' :
+                    ${toast.type === 'success' ? 'bg-(--theme-success)/10 text-(--theme-success)' :
+                        toast.type === 'error' ? 'bg-(--theme-error)/10 text-(--theme-error)' :
+                            toast.type === 'loading' ? 'bg-(--theme-warning)/10 text-(--theme-warning)' :
                                 'bg-theme-purple/10 text-theme-purple'}
                 `}>
                     {toast.type === 'success' && <CheckCircle2 className="h-6 w-6" />}

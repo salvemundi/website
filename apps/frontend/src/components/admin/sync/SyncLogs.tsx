@@ -26,30 +26,30 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
     const [isExpanded, setIsExpanded] = useState(false);
     const hasDetails = !!(timestamp || stack || (changes && changes.length > 0));
     const icons = new Map<string, React.ReactNode>([
-        ['success', <CheckCircle key="success" className="h-5 w-5 text-[var(--beheer-active)]" />],
-        ['warning', <AlertTriangle key="warning" className="h-5 w-5 text-[var(--theme-warning)]" />],
-        ['error', <X key="error" className="h-5 w-5 text-[var(--beheer-inactive)]" />],
-        ['info', <Info key="info" className="h-5 w-5 text-[var(--theme-info)]" />],
-        ['excluded', <Users key="excluded" className="h-5 w-5 text-[var(--beheer-text-muted)]" />],
+        ['success', <CheckCircle key="success" className="h-5 w-5 text-(--beheer-active)" />],
+        ['warning', <AlertTriangle key="warning" className="h-5 w-5 text-(--theme-warning)" />],
+        ['error', <X key="error" className="h-5 w-5 text-(--beheer-inactive)" />],
+        ['info', <Info key="info" className="h-5 w-5 text-(--theme-info)" />],
+        ['excluded', <Users key="excluded" className="h-5 w-5 text-(--beheer-text-muted)" />],
     ]);
 
     return (
         <div
-            className={`flex flex-col border-b border-[var(--beheer-border)]/10 last:border-0 transition-colors ${hasDetails ? 'cursor-pointer hover:bg-[var(--beheer-accent)]/5' : ''}`}
+            className={`flex flex-col border-b border-(--beheer-border)/10 last:border-0 transition-colors ${hasDetails ? 'cursor-pointer hover:bg-(--beheer-accent)/5' : ''}`}
             onClick={() => hasDetails && setIsExpanded(!isExpanded)}
         >
             <div className="p-4 flex items-start gap-4 transition-colors">
                 <div className="mt-0.5">{icons.get(type)}</div>
                 <div className="min-w-0 flex-1">
-                    <div className="text-base font-semibold text-[var(--beheer-text)] truncate">{email}</div>
-                    {message && <div className="text-sm text-[var(--beheer-text-muted)] font-medium mt-1">{message}</div>}
+                    <div className="text-base font-semibold text-(--beheer-text) truncate">{email}</div>
+                    {message && <div className="text-sm text-(--beheer-text-muted) font-medium mt-1">{message}</div>}
                 </div>
                 <div className="ml-auto flex items-center gap-3">
-                    <div className="text-sm font-semibold text-[var(--beheer-text-muted)]/50 capitalize">
+                    <div className="text-sm font-semibold text-(--beheer-text-muted)/50 capitalize">
                         {type}
                     </div>
                     {hasDetails && (
-                        <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180 text-[var(--beheer-accent)]' : 'text-[var(--beheer-text-muted)]'}`}>
+                        <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180 text-(--beheer-accent)' : 'text-(--beheer-text-muted)'}`}>
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -60,34 +60,34 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
 
             {isExpanded && hasDetails && (
                 <div className="px-12 pb-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="p-4 bg-[var(--beheer-card-soft)] rounded-2xl border border-[var(--beheer-border)]/30 space-y-3">
+                    <div className="p-4 bg-(--beheer-card-soft) rounded-2xl border border-(--beheer-border)/30 space-y-3">
                         {timestamp && (
                             <div className="flex items-center gap-2">
-                                <span className="text-sm font-semibold text-[var(--beheer-text-muted)]">Tijdstip:</span>
-                                <span className="text-base font-semibold text-[var(--beheer-text)]">{new Date(timestamp).toLocaleString()}</span>
+                                <span className="text-sm font-semibold text-(--beheer-text-muted)">Tijdstip:</span>
+                                <span className="text-base font-semibold text-(--beheer-text)">{new Date(timestamp).toLocaleString()}</span>
                             </div>
                         )}
                         {stack && (
                             <div className="space-y-1.5">
-                                <span className="text-sm font-semibold text-[var(--beheer-text-muted)]">Stack trace:</span>
-                                <pre className="text-sm text-[var(--theme-error)]/70 font-mono leading-relaxed overflow-x-auto p-3 bg-[var(--theme-error)]/5 rounded-xl border border-[var(--theme-error)]/10 custom-scrollbar">
+                                <span className="text-sm font-semibold text-(--beheer-text-muted)">Stack trace:</span>
+                                <pre className="text-sm text-(--theme-error)/70 font-mono leading-relaxed overflow-x-auto p-3 bg-(--theme-error)/5 rounded-xl border border-(--theme-error)/10 custom-scrollbar">
                                     {stack}
                                 </pre>
                             </div>
                         )}
                         {changes && changes.length > 0 && (
                             <div className="space-y-2">
-                                <span className="text-sm font-semibold text-[var(--beheer-text-muted)]">Wijzigingen:</span>
+                                <span className="text-sm font-semibold text-(--beheer-text-muted)">Wijzigingen:</span>
                                 <div className="space-y-1">
                                     {changes.map((change, idx) => (
-                                        <div key={idx} className="flex flex-col gap-0.5 p-2 bg-[var(--beheer-card-bg)] rounded-xl border border-[var(--beheer-border)]/20">
-                                            <span className="text-sm font-semibold text-[var(--beheer-text)]">{change.field}</span>
+                                        <div key={idx} className="flex flex-col gap-0.5 p-2 bg-(--beheer-card-bg) rounded-xl border border-(--beheer-border)/20">
+                                            <span className="text-sm font-semibold text-(--beheer-text)">{change.field}</span>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm text-[var(--beheer-text-muted)] truncate max-w-[150px]">{String(change.old ?? 'leeg')}</span>
-                                                <svg className="h-3 w-3 text-[var(--beheer-text-muted)]/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <span className="text-sm text-(--beheer-text-muted) truncate max-w-[150px]">{String(change.old ?? 'leeg')}</span>
+                                                <svg className="h-3 w-3 text-(--beheer-text-muted)/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
                                                 </svg>
-                                                <span className="text-sm font-semibold text-[var(--beheer-active)] truncate max-w-[150px]">{String(change.new ?? 'leeg')}</span>
+                                                <span className="text-sm font-semibold text-(--beheer-active) truncate max-w-[150px]">{String(change.new ?? 'leeg')}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -196,15 +196,15 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
     const items = Array.from(itemMap.values());
 
     return (
-        <div className="bg-[var(--beheer-card-bg)] rounded-[var(--beheer-radius)] border border-[var(--beheer-border)] overflow-hidden shadow-sm">
+        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-sm">
             <div className="max-h-[30rem] overflow-y-auto custom-scrollbar">
                 {items.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center p-20 text-[var(--beheer-text-muted)]">
+                    <div className="flex flex-col items-center justify-center p-20 text-(--beheer-text-muted)">
                         <Users className="h-12 w-12 mb-4 opacity-20" />
                         <p className="text-base font-semibold text-center">Geen resultaten gevonden voor dit filter.</p>
                     </div>
                 ) : (
-                    <div className="divide-y divide-[var(--beheer-border)]/10">{items}</div>
+                    <div className="divide-y divide-(--beheer-border)/10">{items}</div>
                 )}
             </div>
         </div>

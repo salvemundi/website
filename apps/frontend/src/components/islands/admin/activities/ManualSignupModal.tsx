@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { FormEvent } from 'react';
+import type { SyntheticEvent } from 'react';
 import { X, Loader2, User, UserPlus, XCircle, CheckCircle } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { createManualSignupAction } from '@/server/actions/admin/aanmeldingen.actions';
@@ -50,7 +50,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
         setSelectedMember(user);
     };
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = async (e: SyntheticEvent) => {
         e.preventDefault();
         setError(null);
         setIsLoading(true);
@@ -97,38 +97,38 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
     if (!mounted || !isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 isolate">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6 isolate">
             <div
                 className="absolute inset-0 bg-slate-950/60 backdrop-blur-xl animate-in fade-in duration-300"
                 onClick={onClose}
             />
 
             <div
-                className="bg-[var(--beheer-card-bg)] w-full max-w-xl rounded-[2rem] shadow-[var(--shadow-card-elevated)] ring-1 ring-white/10 overflow-hidden flex flex-col max-h-[90vh] relative z-10 border border-[var(--beheer-border)] animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 duration-300 ease-out"
+                className="bg-(--beheer-card-bg) w-full max-w-xl rounded-4xl shadow-(--shadow-card-elevated) ring-1 ring-white/10 overflow-hidden flex flex-col max-h-[90vh] relative z-10 border border-(--beheer-border) animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 duration-300 ease-out"
             >
-                <div className="px-8 py-6 border-b border-[var(--beheer-border)] flex justify-between items-center bg-[var(--beheer-card-soft)]/80 relative">
-                    <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-[var(--beheer-accent)]/30 to-transparent" />
-                    <h2 className="text-[10px] font-semibold text-[var(--beheer-text)] tracking-[0.2em] flex items-center gap-3">
-                        <div className="bg-[var(--beheer-accent)] text-white p-2.5 rounded-2xl shadow-[var(--shadow-glow)]">
+                <div className="px-8 py-6 border-b border-(--beheer-border) flex justify-between items-center bg-(--beheer-card-soft)/80 relative">
+                    <div className="absolute inset-x-0 -bottom-px h-px bg-linear-to-r from-transparent via-(--beheer-accent)/30 to-transparent" />
+                    <h2 className="text-[10px] font-semibold text-(--beheer-text) tracking-[0.2em] flex items-center gap-3">
+                        <div className="bg-(--beheer-accent) text-white p-2.5 rounded-2xl shadow-(--shadow-glow)">
                             <UserPlus className="h-4 w-4" />
                         </div>
                         Handmatig Inschrijven
                     </h2>
                     <button
                         onClick={onClose}
-                        className="text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-bg)] p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border border-transparent hover:border-[var(--beheer-border)]"
+                        className="text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg) p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border border-transparent hover:border-(--beheer-border)"
                     >
                         <X className="h-5 w-5" />
                     </button>
                 </div>
 
-                <div className="px-8 py-4 bg-[var(--beheer-card-bg)]">
-                    <div className="flex bg-[var(--beheer-card-soft)] p-1.5 rounded-2xl border border-[var(--beheer-border)] gap-1">
+                <div className="px-8 py-4 bg-(--beheer-card-bg)">
+                    <div className="flex bg-(--beheer-card-soft) p-1.5 rounded-2xl border border-(--beheer-border) gap-1">
                         <button
                             type="button"
                             className={`flex-1 py-2.5 text-[10px] font-semibold tracking-widest rounded-xl transition-all flex justify-center items-center gap-2.5 ${activeTab === 'member'
-                                ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-md border border-[var(--beheer-border)]'
-                                : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-bg)]/40'
+                                ? 'bg-(--beheer-card-bg) text-(--beheer-accent) shadow-md border border-(--beheer-border)'
+                                : 'text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg)/40'
                                 }`}
                             onClick={() => setActiveTab('member')}
                         >
@@ -138,8 +138,8 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                         <button
                             type="button"
                             className={`flex-1 py-2.5 text-[10px] font-semibold tracking-widest rounded-xl transition-all flex justify-center items-center gap-2.5 ${activeTab === 'guest'
-                                ? 'bg-[var(--beheer-card-bg)] text-[var(--beheer-accent)] shadow-md border border-[var(--beheer-border)]'
-                                : 'text-[var(--beheer-text-muted)] hover:text-[var(--beheer-text)] hover:bg-[var(--beheer-card-bg)]/40'
+                                ? 'bg-(--beheer-card-bg) text-(--beheer-accent) shadow-md border border-(--beheer-border)'
+                                : 'text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg)/40'
                                 }`}
                             onClick={() => setActiveTab('guest')}
                         >
@@ -181,11 +181,11 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                             />
                         )}
 
-                        <div className="flex gap-4 pt-8 mt-4 border-t border-[var(--beheer-border)]">
+                        <div className="flex gap-4 pt-8 mt-4 border-t border-(--beheer-border)">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="flex-1 h-14 rounded-2xl font-semibold tracking-widest text-[10px] border border-[var(--beheer-border)] text-[var(--beheer-text)] hover:bg-[var(--beheer-card-soft)] transition-all active:scale-[0.98] cursor-pointer"
+                                className="flex-1 h-14 rounded-2xl font-semibold tracking-widest text-[10px] border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-all active:scale-[0.98] cursor-pointer"
                                 disabled={isLoading}
                             >
                                 Annuleren
@@ -193,7 +193,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                             <button
                                 type="submit"
                                 disabled={isLoading || (activeTab === 'member' && !selectedMember)}
-                                className="flex-[1.5] h-14 rounded-2xl font-semibold tracking-widest text-[10px] bg-[var(--beheer-accent)] text-white shadow-[var(--shadow-glow)] hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3 border border-white/10 group"
+                                className="flex-[1.5] h-14 rounded-2xl font-semibold tracking-widest text-[10px] bg-(--beheer-accent) text-white shadow-(--shadow-glow) hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3 border border-white/10 group"
                             >
                                 {isLoading ? (
                                     <Loader2 className="h-5 w-5 animate-spin" />

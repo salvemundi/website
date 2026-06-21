@@ -97,19 +97,19 @@ export function WhySalveMundiSection() {
                     {pijlers.map((pijler) => (
                         <div
                             key={pijler.titel}
-                            className="group relative squircle-lg bg-[var(--bg-card)] dark:border dark:border-white/10 p-8 shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+                            className="group relative squircle-lg bg-(--bg-card) dark:border dark:border-white/10 p-8 shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
                         >
                             {/* Flex container for Icon + Title */}
                             <div className="flex items-center gap-3.5 mb-4">
-                                <div className="shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-purple-300)]/10 dark:bg-transparent text-[var(--color-purple-300)] group-hover:bg-gradient-theme group-hover:text-[var(--text-main)] transition-all duration-300">
+                                <div className="shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-purple-300/10 dark:bg-transparent text-purple-300 group-hover:bg-gradient-theme group-hover:text-(--text-main) transition-all duration-300">
                                     {pijler.icon}
                                 </div>
-                                <h3 className="text-xl font-bold text-[var(--text-main)]">
+                                <h3 className="text-xl font-bold text-(--text-main)">
                                     {pijler.titel}
                                 </h3>
                             </div>
 
-                            <p className="text-[var(--text-muted)] leading-relaxed">
+                            <p className="text-(--text-muted) leading-relaxed">
                                 {pijler.beschrijving}
                             </p>
                         </div>

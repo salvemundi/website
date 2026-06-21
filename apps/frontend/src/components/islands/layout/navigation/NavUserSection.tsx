@@ -33,7 +33,7 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
             {showAdmin && (
                 <Link
                     href={ROUTES.ADMIN}
-                    className="flex items-center gap-2 squircle bg-[var(--color-purple-500)] text-[var(--color-white)] px-3 py-1.5 h-9 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0"
+                    className="flex items-center gap-2 squircle bg-purple-500 text-white px-3 py-1.5 h-9 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0"
                 >
                     <Shield className="h-4 w-4 shrink-0" />
                     <span className="hidden @[1200px]:inline">Beheer</span>
@@ -43,13 +43,13 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
             {isAuthenticated ? (
                 <Link
                     href={ROUTES.ACCOUNT}
-                    className="flex items-center gap-2 squircle px-3 py-1.5 h-9 text-sm font-medium text-[var(--text-main)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0"
+                    className="flex items-center gap-2 squircle px-3 py-1.5 h-9 text-sm font-medium text-(--text-main) shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0"
                 >
-                    <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0 bg-[var(--color-purple-50)] dark:bg-white/10 flex items-center justify-center">
+                    <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0 bg-purple-50 dark:bg-white/10 flex items-center justify-center">
                         {user.avatar ? (
                             <Image src={getImageUrl(user.avatar)} alt={user.name || 'Profiel'} fill className="object-cover" priority unoptimized />
                         ) : (
-                            <User className="h-3.5 w-3.5 text-[var(--color-purple-600)]" />
+                            <User className="h-3.5 w-3.5 text-purple-600" />
                         )}
                     </div>
                     <span className="hidden @[1200px]:inline">Mijn profiel</span>
@@ -62,7 +62,7 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                             callbackURL: searchParams.get('callbackURL') || ROUTES.MEMBERSHIP
                         });
                     }}
-                    className="flex cursor-pointer items-center justify-center gap-2 squircle font-semibold px-4 py-1.5 h-9 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg bg-[var(--color-purple-50)] text-[var(--color-purple-700)] shrink-0"
+                    className="flex cursor-pointer items-center justify-center gap-2 squircle font-semibold px-4 py-1.5 h-9 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg bg-purple-50 text-purple-700 shrink-0"
                 >
                     Inloggen
                 </button>

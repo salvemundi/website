@@ -35,9 +35,9 @@ export default function AddLeaderForm({
     };
 
     return (
-        <div className="p-3 bg-[var(--bg-main)]/50 border border-[var(--border-color)]/30 rounded-xl space-y-3">
+        <div className="p-3 bg-(--bg-main)/50 border border-(--border-color)/30 rounded-xl space-y-3">
             <div className="space-y-1">
-                <label className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                <label className="text-[9px] font-bold text-(--text-muted) uppercase tracking-wider">
                     Kies leider type
                 </label>
                 <select
@@ -56,7 +56,7 @@ export default function AddLeaderForm({
 
             {leaderType === 'signup' ? (
                 <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                    <label className="text-[9px] font-bold text-(--text-muted) uppercase tracking-wider">
                         Kies deelnemer
                     </label>
                     <select
@@ -81,7 +81,7 @@ export default function AddLeaderForm({
                 </div>
             ) : (
                 <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                    <label className="text-[9px] font-bold text-(--text-muted) uppercase tracking-wider">
                         Naam leider
                     </label>
                     <input
@@ -89,7 +89,7 @@ export default function AddLeaderForm({
                         placeholder="Vul naam in..."
                         value={leaderName}
                         onChange={(e) => setLeaderName(e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-[var(--bg-card)] border border-[var(--border-color)]/30 rounded-lg text-xs font-semibold text-[var(--text-main)] focus:ring-2 focus:ring-[var(--theme-purple)]/10 focus:border-[var(--theme-purple)] focus:outline-none"
+                        className="w-full px-2.5 py-1.5 bg-(--bg-card) border border-(--border-color)/30 rounded-lg text-xs font-semibold text-(--text-main) focus:ring-2 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) focus:outline-none"
                     />
                 </div>
             )}
@@ -98,7 +98,7 @@ export default function AddLeaderForm({
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-2.5 py-1.5 bg-[var(--bg-card)] hover:bg-[var(--bg-main)] border border-[var(--border-color)]/30 rounded-lg text-[10px] font-bold text-[var(--text-muted)] transition-all cursor-pointer"
+                    className="px-2.5 py-1.5 bg-(--bg-card) hover:bg-(--bg-main) border border-(--border-color)/30 rounded-lg text-[10px] font-bold text-(--text-muted) transition-all cursor-pointer"
                 >
                     Annuleren
                 </button>
@@ -106,7 +106,7 @@ export default function AddLeaderForm({
                     type="button"
                     onClick={handleAdd}
                     disabled={leaderType === 'signup' ? !leaderSignupId : !leaderName.trim()}
-                    className="px-3 py-1.5 bg-[var(--theme-purple)] text-white hover:opacity-90 rounded-lg text-[10px] font-bold transition-all disabled:opacity-50 cursor-pointer"
+                    className="px-3 py-1.5 bg-(--theme-purple) text-white hover:opacity-90 rounded-lg text-[10px] font-bold transition-all disabled:opacity-50 cursor-pointer"
                 >
                     Toevoegen
                 </button>
