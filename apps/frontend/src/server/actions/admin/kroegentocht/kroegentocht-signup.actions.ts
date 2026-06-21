@@ -26,7 +26,7 @@ export async function getPubCrawlSignups(eventId: number) {
     await requireKroegAdmin();
     try {
         const sqlSignups = await fetchPubCrawlSignupsDb(eventId);
-        const openSignupIds = sqlSignups.filter(s => s.payment_status === 'open').map(s => s.id);
+        const openSignupIds = sqlSignups.filter(s => s.payment_status === 'open' && s.id !== undefined).map(s => Number(s.id));
 
         if (openSignupIds.length > 0) {
             try {

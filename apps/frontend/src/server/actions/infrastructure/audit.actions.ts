@@ -19,7 +19,7 @@ import { sanitizePayload } from "@/server/utils/log-sanitizer";
 type ActionResponse<T> = { success: true; data: T } | { success: false; error: string };
 type LogsResponse = { success: true; data: SystemLog[]; totalCount: number } | { success: false; error: string };
 
-interface DbFeatureFlag {
+interface FeatureFlag {
     id: number;
     name: string;
     is_active: boolean;
@@ -176,8 +176,8 @@ export async function getAuditSettingsAction(): Promise<ActionResponse<{ manual_
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const { rows } = await query<DbFeatureFlag>('SELECT is_active FROM feature_flags WHERE name = $1 LIMIT 1', ['manual_approval']);
-        const flag = rows[0] as DbFeatureFlag | undefined;
+        const { rows } = await query<FeatureFlag>('SELECT is_active FROM feature_flags WHERE name = $1 LIMIT 1', ['manual_approval']);
+        const flag = rows[0] as FeatureFlag | undefined;
         return { success: true, data: { manual_approval: !!flag?.is_active } };
     } catch (error: unknown) {
         safeConsoleError('[audit.actions][getAuditSettingsAction] Failed to fetch audit settings:', error);
@@ -190,7 +190,7 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const { rows } = await query<DbFeatureFlag>('SELECT id FROM feature_flags WHERE name = $1 LIMIT 1', ['manual_approval']);
+        const { rows } = await query<FeatureFlag>('SELECT id FROM feature_flags WHERE name = $1 LIMIT 1', ['manual_approval']);
         const flagId = rows[0]?.id;
 
         if (flagId) {

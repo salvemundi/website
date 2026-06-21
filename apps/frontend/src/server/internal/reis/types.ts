@@ -1,9 +1,9 @@
 
 export type QueryParam = string | number | boolean | object | null | undefined;
 
-export type DbRow = { [key: string]: unknown };
+export type Row = { [key: string]: unknown };
 
-export interface RawTripSignupRow extends DbRow {
+export interface RawTripSignupRow extends Row {
     id: number;
     trip_id: number;
     email: string;
@@ -17,7 +17,7 @@ export interface RawTripSignupRow extends DbRow {
     status?: string | null;
 }
 
-export interface RawTripActivityRow extends DbRow {
+export interface RawTripActivityRow extends Row {
     id: number;
     trip_id: number;
     name: string;
@@ -27,7 +27,7 @@ export interface RawTripActivityRow extends DbRow {
     max_selections?: string | number | null;
 }
 
-export interface RawTripRow extends DbRow {
+export interface RawTripRow extends Row {
     id: number;
     name: string;
     max_participants?: string | number | null;
@@ -43,7 +43,7 @@ export interface RawTripRow extends DbRow {
     registration_start_date?: string | Date | null;
 }
 
-export interface RawTripSignupActivityRow extends DbRow {
+export interface RawTripSignupActivityRow extends Row {
     id: number;
     trip_signup_id: number;
     trip_activity_id: number;

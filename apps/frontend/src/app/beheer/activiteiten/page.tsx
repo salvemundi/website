@@ -9,7 +9,7 @@ import { getPermissions } from '@/shared/lib/permissions';
 import { safeConsoleError } from '@/server/utils/logger';
 import { type EnrichedUser } from '@/types/auth';
 import { type AdminActivity } from "@salvemundi/validations";
-import { type DbCommittee } from '@salvemundi/validations/directus/schema';
+import { type Committee } from '@salvemundi/validations/directus/schema';
 
 export const metadata: Metadata = {
     title: 'Beheer Activiteiten | SV Salve Mundi'
@@ -44,9 +44,9 @@ export default async function AdminActiviteitenPage() {
         >
             <AdminActivitiesIsland
                 initialEvents={events}
-                committees={committees as unknown as DbCommittee[]}
+                committees={committees as unknown as Committee[]}
                 userId={session?.user.id}
-                userCommittees={userCommittees as unknown as DbCommittee[]}
+                userCommittees={userCommittees as unknown as Committee[]}
                 permissions={permissions}
             />
         </AdminPageShell>

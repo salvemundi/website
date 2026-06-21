@@ -17,7 +17,7 @@ import {
 import { fetchUserProfileByEmailDb } from '@/server/internal/user-db.utils';
 import { safeConsoleError } from '@/server/utils/logger';
 
-interface DbFeatureFlagRow {
+interface FeatureFlagRow {
     is_active: boolean;
     message: string | null;
 }
@@ -28,7 +28,7 @@ interface ParticipantCountRow {
 
 export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
     try {
-        const { rows } = await query<DbFeatureFlagRow>('SELECT is_active, message FROM feature_flags WHERE name = $1 LIMIT 1', ['trip_registration']);
+        const { rows } = await query<FeatureFlagRow>('SELECT is_active, message FROM feature_flags WHERE name = $1 LIMIT 1', ['trip_registration']);
 
         if (rows.length === 0) return null;
         const flag = rows[0];

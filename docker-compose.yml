@@ -48,7 +48,8 @@ services:
     env_file:
       - .env.${ENV_NAME}
     ports:
-      - "127.0.0.1:${FINANCE_PORT:-3001}:3001"
+      # Binds only to the VPN IP so all Netbird users can access this service securely without exposing it to the public internet
+      - "${VPN_IP}:${FINANCE_PORT:-3001}:3001"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - MOLLIE_API_KEY=${MOLLIE_API_KEY}
@@ -90,7 +91,8 @@ services:
     env_file:
       - .env.${ENV_NAME}
     ports:
-      - "127.0.0.1:${SYNC_PORT:-3002}:3002"
+      # Binds only to the VPN IP so all Netbird users can access this service securely without exposing it to the public internet
+      - "${VPN_IP}:${SYNC_PORT:-3002}:3002"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
@@ -136,7 +138,8 @@ services:
     env_file:
       - .env.${ENV_NAME}
     ports:
-      - "127.0.0.1:${MAIL_PORT:-3003}:3003"
+      # Binds only to the VPN IP so all Netbird users can access this service securely without exposing it to the public internet
+      - "${VPN_IP}:${MAIL_PORT:-3003}:3003"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_MAIL_CLIENT_ID=${AZURE_WEBSITEV7_MAIL_CLIENT_ID}
@@ -179,7 +182,8 @@ services:
     env_file:
       - .env.${ENV_NAME}
     ports:
-      - "127.0.0.1:${MANAGEMENT_PORT:-3004}:3004"
+      # Binds only to the VPN IP so all Netbird users can access this service securely without exposing it to the public internet
+      - "${VPN_IP}:${MANAGEMENT_PORT:-3004}:3004"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_WEBSITEV7_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}

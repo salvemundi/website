@@ -60,7 +60,7 @@ export class RegistrationService {
 
             log.info(`[RegistrationService] Direct SQL update success for ${targetCollection} ${registrationId}`);
 
-            await DirectusRetryService.queueUpdate(redis, targetCollection as string, registrationId, updateData);
+            await DirectusRetryService.queueUpdate(redis, targetCollection, registrationId, updateData);
             log.info(`[RegistrationService] Queued Directus update for ${targetCollection} ${registrationId}`);
         } catch (error) {
             log.error(error, `[RegistrationService] Failed to update registration ${registrationId}`);

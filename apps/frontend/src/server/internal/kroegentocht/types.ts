@@ -5,7 +5,7 @@ import {
 export { type EnrichedPubCrawlSignup };
 
 // --- Database Row Interfaces to enforce 'No ANY' ---
-export interface DbPubCrawlEventRow {
+export interface PubCrawlEventRow {
     id: number;
     name: string;
     date: string | Date | null;
@@ -14,7 +14,7 @@ export interface DbPubCrawlEventRow {
     groups?: string[] | unknown;
 }
 
-export interface DbPubCrawlSignupRow {
+export interface PubCrawlSignupRow {
     id: number;
     pub_crawl_event_id: number;
     name: string;
@@ -29,7 +29,7 @@ export interface DbPubCrawlSignupRow {
     group_name?: string | null;
 }
 
-export interface DbPubCrawlTicketRow {
+export interface PubCrawlTicketRow {
     id: number;
     signup_id: number;
     name: string;
@@ -39,7 +39,7 @@ export interface DbPubCrawlTicketRow {
     checked_in_at?: string | Date | null;
 }
 
-export interface JoinedSignupRow extends DbPubCrawlSignupRow {
+export interface JoinedSignupRow extends PubCrawlSignupRow {
     event_name: string;
     event_date: string | Date | null;
     event_description: string | null;

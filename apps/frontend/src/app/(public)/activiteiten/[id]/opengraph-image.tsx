@@ -67,7 +67,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
                     width: showRightColumn ? '60%' : '100%',
                     position: 'relative',
                 }}>
-                    <p style={{ fontSize: 22, fontWeight: 700, color: '#4a2344', textTransform: 'uppercase', letterSpacing: 4, marginBottom: 16 }}>
+                    <p style={{ fontSize: 22, fontWeight: 700, color: '#5A3761', textTransform: 'uppercase', letterSpacing: 4, marginBottom: 16 }}>
                         Activiteit
                     </p>
                     <h1 style={{ fontSize: 84, fontWeight: 900, color: '#212529', marginBottom: 32, lineHeight: 1.1, letterSpacing: -2 }}>
@@ -77,12 +77,12 @@ export default async function Image({ params }: { params: Promise<{ id: string }
                     {/* Metadata Row */}
                     <div style={{ display: 'flex', gap: 16, marginBottom: 32 }}>
                         <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#f8f9fa', padding: '12px 24px', borderRadius: 100, border: '1px solid #f1f3f5' }}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a2344" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 12 }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                            <span style={{ fontSize: 22, fontWeight: 700, color: '#4a2344' }}>{dateStr} {timeStr}</span>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5A3761" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 12 }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                            <span style={{ fontSize: 22, fontWeight: 700, color: '#5A3761' }}>{dateStr} {timeStr}</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#f8f9fa', padding: '12px 24px', borderRadius: 100, border: '1px solid #f1f3f5' }}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a2344" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 12 }}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></svg>
-                            <span style={{ fontSize: 22, fontWeight: 700, color: '#4a2344' }}>{price}</span>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5A3761" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 12 }}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></svg>
+                            <span style={{ fontSize: 22, fontWeight: 700, color: '#5A3761' }}>{price}</span>
                         </div>
                     </div>
 
@@ -94,10 +94,10 @@ export default async function Image({ params }: { params: Promise<{ id: string }
 
                     {/* Logo bottom-left */}
                     <div style={{ position: 'absolute', bottom: 40, left: 80, display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 32, height: 32, backgroundColor: '#4a2344', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: 32, height: 32, backgroundColor: '#5A3761', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <span style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>S</span>
                         </div>
-                        <span style={{ fontSize: 20, fontWeight: 700, color: '#4a2344', letterSpacing: -1 }}>SALVE MUNDI</span>
+                        <span style={{ fontSize: 20, fontWeight: 700, color: '#5A3761', letterSpacing: -1 }}>SALVE MUNDI</span>
                     </div>
                 </div>
 

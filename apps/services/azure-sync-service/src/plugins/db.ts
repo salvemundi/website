@@ -1,12 +1,13 @@
 import { Kysely, PostgresDialect, type Generated } from 'kysely';
 import pg from 'pg';
-import { type DirectusSchema } from '@salvemundi/validations';
+import { Directus } from '@salvemundi/validations';
+import { type DirectusUser } from '@directus/sdk';
 import { safeConsoleError } from '../utils/logger.js';
 
 const { Pool } = pg;
 
 export interface Database {
-    directus_users: DirectusSchema['directus_users'][number];
+    directus_users: Directus.Schema['directus_users'] & DirectusUser;
     system_logs: {
         id: Generated<number>;
         type: string;

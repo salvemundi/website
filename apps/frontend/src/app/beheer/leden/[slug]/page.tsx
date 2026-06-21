@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
@@ -5,16 +6,14 @@ import LedenDetailIsland, { type Member, type CommitteeMembership, type Signup }
 import { getSystemDirectus } from '@/lib/directus';
 import { readUsers, readItems } from '@directus/sdk';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-
-// Correct Directus SDK imports
 import { type EnrichedUser } from '@/types/auth';
 import { type Committee } from '@/shared/lib/permissions';
 import {
-    type DbDirectusUser,
-    type DbCommitteeMember,
-    type DbEventSignup,
-    type DbCommittee as DbCommitteeSchema
-} from '@salvemundi/validations/directus/schema';
+    type DirectusUser,
+    type CommitteeMember,
+    type EventSignup,
+    type Committee as DirectusCommittee
+} from '@salvemundi/validations';
 import { safeConsoleError } from '@/server/utils/logger';
 
 interface AzureUserGroupsResponse {
@@ -22,11 +21,14 @@ interface AzureUserGroupsResponse {
     groups?: { id: string }[];
 }
 
+export const metadata: Metadata = {
+    title: 'Lid Detail | SV Salve Mundi'
+};
+
 export default async function LidDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const resolvedParams = await params;
     const decodedSlug = decodeURIComponent(resolvedParams.slug);
 
-    // NUCLEAR SSR: All access and permission checks must happen before flushing the shell
     const session = await getEnrichedSession();
     if (!session) return <AdminUnauthorized title="Lid Detail" />;
 
@@ -46,9 +48,13 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
         );
     }
 
+    let memberData: DirectusUser | undefined;
+    let signups: EventSignup[] = [];
+    let userCommittees: CommitteeMember[] = [];
+    let allCommittees: DirectusCommittee[] = [];
+
     try {
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(decodedSlug);
-        let memberData: DbDirectusUser | undefined;
 
         if (isUuid) {
             const result = await getSystemDirectus().request(
@@ -57,8 +63,8 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                     fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id'],
                     limit: 1
                 })
-            ) as DbDirectusUser[];
-            memberData = result[0];
+            ) as Partial<DirectusUser>[];
+            memberData = result[0] as DirectusUser;
         } else {
             const memberResult = await getSystemDirectus().request(
                 readUsers({
@@ -71,15 +77,14 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                     fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id'],
                     limit: 100
                 })
-            ) as DbDirectusUser[];
+            ) as Partial<DirectusUser>[];
 
             if (memberResult.length > 0) {
-                // Find exact match by comparing the normalized prefix (dots converted to dashes)
                 memberData = memberResult.find((u) => {
                     const emailPrefix = (u.email || '').split('@')[0].toLowerCase();
                     const normalizedPrefix = emailPrefix.replace(/\./g, '-');
                     return normalizedPrefix === decodedSlug.toLowerCase();
-                });
+                }) as DirectusUser | undefined;
             }
         }
 
@@ -95,29 +100,27 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                     fields: ['id', 'is_leader', { committee_id: ['id', 'name', 'email', 'azure_group_id', 'is_visible'] }],
                     limit: -1
                 })
-            ) as Promise<DbCommitteeMember[]>,
+            ) as unknown as Promise<CommitteeMember[]>,
             getSystemDirectus().request(
                 readItems('event_signups', {
                     filter: { participant_email: { _eq: memberData.email } },
                     fields: ['id', 'payment_status', { event_id: ['id', 'name', 'event_date'] }],
                     limit: -1
                 })
-            ) as Promise<DbEventSignup[]>,
+            ) as Promise<EventSignup[]>,
             getSystemDirectus().request(
                 readItems('committees', {
                     fields: ['id', 'name', 'azure_group_id', 'is_visible'],
                     sort: ['name'],
                     limit: -1
                 })
-            ) as Promise<DbCommitteeSchema[]>
+            ) as Promise<DirectusCommittee[]>
         ]);
 
-        const signups = signupsResult.status === 'fulfilled' ? signupsResult.value : [];
+        signups = signupsResult.status === 'fulfilled' ? signupsResult.value : [];
+        userCommittees = userCommitteesResult.status === 'fulfilled' ? userCommitteesResult.value : [];
+        allCommittees = allCommitteesResult.status === 'fulfilled' ? allCommitteesResult.value : [];
 
-        let userCommittees = userCommitteesResult.status === 'fulfilled' ? userCommitteesResult.value : [];
-        const allCommittees = allCommitteesResult.status === 'fulfilled' ? allCommitteesResult.value : [];
-
-        // Hardcoded invisible Azure groups (Teams & Groups)
         const HARDCODED_AZURE_GROUPS = [
             { name: "AdviesRaad | Salve Mundi", id: "d30a8bfc-7cb6-4619-ac59-fcb307bbe6d4" },
             { name: "BHV", id: "314044d2-bafe-43c7-99f3-c8824dbcbef0" },
@@ -136,7 +139,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
             try {
                 const mgmtRes = await fetch(`${process.env.AZURE_MANAGEMENT_SERVICE_URL}/api/users/${encodeURIComponent(memberData.entra_id)}/groups`, {
                     headers: { 'Authorization': `Bearer ${internalToken}` },
-                    next: { revalidate: 0 } // No caching to ensure Admin sees live data
+                    next: { revalidate: 0 }
                 });
 
                 if (mgmtRes.ok) {
@@ -146,17 +149,17 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                         const matchedGroups = HARDCODED_AZURE_GROUPS.filter(hg => userAzureGroupIds.includes(hg.id.toLowerCase()));
 
                         const fakeMemberships = matchedGroups.map(match => ({
-                            id: `azure-mock-${match.id}`, // temporary distinct ID
+                            id: `azure-mock-${match.id}`,
                             is_leader: false,
                             committee_id: {
                                 id: match.id,
                                 name: match.name,
                                 azure_group_id: match.id,
-                                is_visible: false // Ensures it goes to the "Teams & Groepen" blue card
+                                is_visible: false
                             }
                         }));
 
-                        userCommittees = [...userCommittees, ...fakeMemberships as unknown as DbCommitteeMember[]];
+                        userCommittees = [...userCommittees, ...fakeMemberships as unknown as CommitteeMember[]];
                     }
                 }
             } catch (error) {
@@ -164,25 +167,6 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
             }
         }
 
-        return (
-            <AdminPageShell
-                title="Lid Detail"
-                backHref="/beheer/leden"
-            >
-                <LedenDetailIsland
-                    member={memberData as unknown as Member}
-                    initialMemberships={userCommittees as unknown as CommitteeMembership[]}
-                    signups={signups as unknown as Signup[]}
-                    allCommittees={allCommittees.map(c => ({
-                        id: String(c.id),
-                        name: c.name || '',
-                        is_visible: !!c.is_visible,
-                        azure_group_id: c.azure_group_id
-                    }))}
-                    isAdmin={hasPriv}
-                />
-            </AdminPageShell>
-        );
     } catch (error: unknown) {
         if (
             error &&
@@ -196,6 +180,25 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
         safeConsoleError("[LidDetailPage][LidDetailPage] Error loading member:", error);
         throw error;
     }
+
+
+    return (
+        <AdminPageShell
+            title="Lid Detail"
+            backHref="/beheer/leden"
+        >
+            <LedenDetailIsland
+                member={memberData as unknown as Member}
+                initialMemberships={userCommittees as unknown as CommitteeMembership[]}
+                signups={signups as unknown as Signup[]}
+                allCommittees={allCommittees.map(c => ({
+                    id: String(c.id),
+                    name: c.name || '',
+                    is_visible: !!c.is_visible,
+                    azure_group_id: c.azure_group_id
+                }))}
+                isAdmin={hasPriv}
+            />
+        </AdminPageShell>
+    );
 }
-
-

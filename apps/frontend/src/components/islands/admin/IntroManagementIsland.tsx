@@ -15,7 +15,7 @@ import {
     upsertIntroPlanning,
     deleteIntroPlanning
 } from '@/server/actions/admin/admin-intro.actions';
-import { type DbIntroSignup as IntroSignupRow, type DbIntroParentSignup as IntroParentRow } from '@salvemundi/validations/directus/schema';
+import { type IntroSignup as IntroSignupRow, type IntroParentSignup as IntroParentRow } from '@salvemundi/validations/directus/schema';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { downloadCSV } from '@/lib/utils/export';
@@ -59,7 +59,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
     const filteredSignups = useMemo(() => {
         if (!searchQuery) return signups;
         const q = searchQuery.toLowerCase();
-        return signups.filter(s => `${s.first_name} ${s.last_name}`.toLowerCase().includes(q) || s.email.toLowerCase().includes(q));
+        return signups.filter(s => `${s.first_name} ${s.last_name}`.toLowerCase().includes(q) || (s.email || '').toLowerCase().includes(q));
     }, [signups, searchQuery]);
 
     const filteredParents = useMemo(() => {

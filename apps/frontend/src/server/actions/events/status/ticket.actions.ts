@@ -6,7 +6,7 @@ import { fetchUserEventSignupsDb } from '@/server/internal/event-db.utils';
 import { fetchUserPubCrawlSignupsDb } from '@/server/internal/kroegentocht-db.utils';
 import { safeConsoleError } from '@/server/utils/logger';
 
-interface DbTripSignupRow {
+interface TripSignupRow {
     id: number;
     status: string;
     created_at: string | null;
@@ -40,7 +40,7 @@ export async function getMyTickets() {
             `, [email])
         ]);
 
-        const tripSignups = tripSignupsResult.rows as DbTripSignupRow[];
+        const tripSignups = tripSignupsResult.rows as TripSignupRow[];
 
         const formattedPubCrawl = pubCrawlSignups.map(s => ({
             ...s,

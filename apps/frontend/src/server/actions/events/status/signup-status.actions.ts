@@ -7,7 +7,7 @@ import { fetchEventSignupByIdDb } from '@/server/internal/event-db.utils';
 import { fetchPubCrawlSignupByIdDb } from '@/server/internal/kroegentocht-db.utils';
 import { fetchTripSignupByIdDb } from '@/server/internal/reis-db.utils';
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteit-utils';
-import { type DbPubCrawlSignup } from '@salvemundi/validations/directus/schema';
+import { type PubCrawlSignup } from '@salvemundi/validations/directus/schema';
 import { type PaymentStatus, type SignupStatusResult } from './types';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -20,7 +20,7 @@ interface FinanceStatusResponse {
     pub_crawl_signup?: number | string;
 }
 
-interface DbTransaction {
+interface Transaction {
     payment_status?: PaymentStatus;
     product_type?: string;
     registration?: number | string;
@@ -72,7 +72,7 @@ export async function getSignupStatus(
             const krotoSignup = await fetchPubCrawlSignupByIdDb(signupId);
             if (krotoSignup) {
                 const status = krotoSignup.payment_status !== 'open' ? krotoSignup.payment_status : paymentStatus;
-                return { status: status as PaymentStatus, signup: krotoSignup as unknown as DbPubCrawlSignup };
+                return { status: status as PaymentStatus, signup: krotoSignup as unknown as PubCrawlSignup };
             }
 
             const tripSignup = await fetchTripSignupByIdDb(signupId);
@@ -112,7 +112,7 @@ export async function getSignupStatus(
             );
 
             if (transRes.rows.length > 0) {
-                const trans = transRes.rows[0] as DbTransaction;
+                const trans = transRes.rows[0] as Transaction;
                 return {
                     status: (trans.payment_status || 'open') as PaymentStatus,
                     isMembership: trans.product_type === 'membership',
@@ -150,7 +150,7 @@ export async function getSignupStatus(
             if (krotoSignup) {
                 const isOwner = user?.id && krotoSignup.directus_relations === user.id;
                 if (isAdmin || isOwner) {
-                    return { status: (krotoSignup.payment_status as PaymentStatus), signup: krotoSignup as unknown as DbPubCrawlSignup };
+                    return { status: (krotoSignup.payment_status as PaymentStatus), signup: krotoSignup as unknown as PubCrawlSignup };
                 }
                 return { status: 'unauthorized' };
             }

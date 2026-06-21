@@ -17,13 +17,13 @@ function cleanCommitteeName(name: string): string {
 }
 
 import { type AdminActivity } from '@salvemundi/validations/schema/admin.zod';
-import { type DbCommittee } from '@salvemundi/validations/directus/schema';
+import { type Committee } from '@salvemundi/validations/directus/schema';
 
 interface Props {
     initialEvents?: AdminActivity[];
-    committees?: DbCommittee[];
+    committees?: Committee[];
     userId?: string;
-    userCommittees?: DbCommittee[];
+    userCommittees?: Committee[];
     permissions?: UserPermissions;
 }
 

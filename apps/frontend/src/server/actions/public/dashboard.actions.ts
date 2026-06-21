@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { getSystemDirectus } from "@/lib/directus";
 import { readUsers } from "@directus/sdk";
-import { type DbDirectusUser as DirectusUser } from "@salvemundi/validations/directus/schema";
+import { type DirectusUser } from '@salvemundi/validations';
 import { query } from "@/lib/database";
 import { USER_BASIC_FIELDS } from "@salvemundi/validations/directus/fields";
 import {
@@ -22,7 +22,7 @@ import { getPermissions, type UserPermissions } from '@/shared/lib/permissions';
 import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";
 import { safeConsoleError } from '@/server/utils/logger';
 
-interface DbTopStickerRow {
+interface TopStickerRow {
     id: string;
     first_name: string | null;
     last_name: string | null;
@@ -150,7 +150,7 @@ export async function getTopStickers(): Promise<TopSticker[]> {
             ORDER BY count DESC
             LIMIT 3
         `;
-        const { rows } = await query<DbTopStickerRow>(sql);
+        const { rows } = await query<TopStickerRow>(sql);
 
         const result = rows.map(r => ({
             id: String(r.id),

@@ -30,31 +30,24 @@ export default async function HomePage() {
 async function HomeContent() {
     await connection();
 
+    let session: Awaited<ReturnType<typeof getEnrichedSession>> | null = null;
+    let banners: Awaited<ReturnType<typeof getHeroBanners>> = [];
+    let heroActivities: Awaited<ReturnType<typeof getUpcomingActiviteiten>> = [];
+    let activities: Awaited<ReturnType<typeof getUpcomingActiviteiten>> = [];
+    let sponsors: Awaited<ReturnType<typeof getSponsors>> = [];
+
     try {
-        const session = await getEnrichedSession().catch((error) => {
+        session = await getEnrichedSession().catch((error) => {
             safeConsoleError('[HomePage][HomeContent] Kon sessie niet ophalen:', error);
             return null;
         });
 
-        const [banners, heroActivities, activities, sponsors] = await Promise.all([
+        [banners, heroActivities, activities, sponsors] = await Promise.all([
             getHeroBanners(),
             getUpcomingActiviteiten(1),
             getUpcomingActiviteiten(4),
             getSponsors(),
         ]);
-
-        const user = session?.user ?? null;
-
-        return (
-            <>
-                <HeroIsland banners={banners} activiteiten={heroActivities} initialSession={session} />
-                <EventsSection activities={activities} />
-                <WhySalveMundiSection />
-                <JoinSectionIsland serverUser={user} />
-                <SponsorsSection sponsors={sponsors} />
-                <PwaInstallIsland />
-            </>
-        );
     } catch (error) {
         safeConsoleError('[HomePage][HomeContent] Critical data fetch error:', error);
         
@@ -67,4 +60,17 @@ async function HomeContent() {
         
         throw new Error(errorMessage);
     }
+
+    const user = session?.user ?? null;
+
+    return (
+        <>
+            <HeroIsland banners={banners} activiteiten={heroActivities} initialSession={session} />
+            <EventsSection activities={activities} />
+            <WhySalveMundiSection />
+            <JoinSectionIsland serverUser={user} />
+            <SponsorsSection sponsors={sponsors} />
+            <PwaInstallIsland />
+        </>
+    );
 }

@@ -2,7 +2,7 @@
 
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
-import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
+import { type EventSignup } from '@salvemundi/validations/directus/schema';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type EnrichedUser } from '@/types/auth';
 import { revalidateTag } from 'next/cache';
@@ -151,7 +151,7 @@ export async function signupForActivity(data: EventSignupForm) {
 
         const qrToken = `r-${parsed.data.event_id}-${crypto.randomUUID()}`;
 
-        const payload: Partial<DbEventSignup> = {
+        const payload: Partial<EventSignup> = {
             event_id: parsed.data.event_id,
             participant_name: parsed.data.name,
             participant_email: parsed.data.email,

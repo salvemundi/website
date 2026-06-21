@@ -1,6 +1,6 @@
 import { query } from '@/lib/database';
 import { type PubCrawlEvent } from '@salvemundi/validations/schema/pub-crawl.zod';
-import { type DbPubCrawlEventRow } from './types';
+import { type PubCrawlEventRow } from './types';
 
 interface GroupConfig {
     name: string;
@@ -46,7 +46,7 @@ export async function fetchPubCrawlEventsDb(): Promise<PubCrawlEvent[]> {
     );
 
     const { toLocalISOString } = await import('@/lib/utils/date-utils');
-    return (res.rows as (DbPubCrawlEventRow & { groups?: unknown })[]).map((raw) => {
+    return (res.rows as (PubCrawlEventRow & { groups?: unknown })[]).map((raw) => {
         const groups = normalizeGroups(raw.groups);
         return {
             ...raw,
@@ -68,7 +68,7 @@ export async function fetchPubCrawlEventByIdDb(id: number): Promise<PubCrawlEven
     );
 
     if (res.rowCount === 0) return null;
-    const raw = res.rows[0] as DbPubCrawlEventRow & { groups?: unknown };
+    const raw = res.rows[0] as PubCrawlEventRow & { groups?: unknown };
     const { toLocalISOString } = await import('@/lib/utils/date-utils');
     
     const groups = normalizeGroups(raw.groups);

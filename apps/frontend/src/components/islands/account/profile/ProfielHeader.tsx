@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Star } from 'lucide-react';
 import { Tile } from './ProfielUI';
 import MediaAsset from '@/components/ui/media/MediaAsset';
@@ -31,19 +31,17 @@ interface ProfielHeaderProps {
 }
 
 export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderProps) {
-    const displayName = useMemo(() => {
-        const isCommitteeMember = Array.isArray(user.committees) && user.committees.length > 0;
+    const isCommitteeMember = Array.isArray(user.committees) && user.committees.length > 0;
+    const [random] = useState(() => (isCommitteeMember ? Math.floor(Math.random() * 500) : -1));
 
-        if (isCommitteeMember) {
-            const random = Math.floor(Math.random() * 500);
-            if (random === 0) {
-                return "Vouw een Bak!";
-            }
+    const displayName = useMemo(() => {
+        if (isCommitteeMember && random === 0) {
+            return "Vouw een Bak!";
         }
 
         const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
         return fullName || "Niet ingesteld";
-    }, [user.first_name, user.last_name, user.committees]);
+    }, [user.first_name, user.last_name, isCommitteeMember, random]);
 
     return (
         <Tile className="h-fit">
@@ -63,7 +61,7 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                                     className="h-full w-full object-cover"
                                 />
                             ) : (
-                                <div className="h-full w-full bg-purple-50 border border-purple-100 flex items-center justify-center">
+                                <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-brand-primary to-brand-secondary flex items-center justify-center shrink-0">
                                     <span className="text-4xl font-bold text-purple-300">
                                         {user.first_name?.[0] || '?'}
                                     </span>
@@ -109,7 +107,7 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                             <p className="text-[10px] text-licht-paars dark:text-geel font-black uppercase tracking-wider mb-3 text-center">
                                 Mijn Commissies
                             </p>
-                            <div className="flex flex-wrap gap-2 justify-center">
+                            <div className="font-semibold text-lg wrap-break-word">
                                 {user.committees.map((committee) => (
                                     <span
                                         key={committee.id}

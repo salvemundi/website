@@ -20,9 +20,7 @@ import { getSystemDirectus } from '@/lib/directus';
 import { readItems } from '@directus/sdk';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import {
-    type DbPubCrawlEvent,
-    type DbTrip,
-    type DbHeroBanner
+    type Schema
 } from '@salvemundi/validations';
 import { getActivitiesInternal } from "@/server/queries/admin-event.queries";
 import { getUpcomingTrips } from "@/server/actions/events/reis.actions";
@@ -35,9 +33,9 @@ export const getHeroBanners = async (): Promise<HeroBanner[]> => {
         limit: 10
     }));
 
-    const mappedData = rawData.map((item: DbHeroBanner) => ({
-        id: item.id ?? '',
-        title: item.title ?? '',
+    const mappedData = rawData.map((item) => ({
+        id: item.id,
+        title: item.title,
         subtitle: null,
         afbeelding_id: item.image ?? null,
         status: 'published',
@@ -62,6 +60,7 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
         client.request(readItems('pub_crawl_events', {
             fields: [...PUB_CRAWL_EVENT_FIELDS],
             filter: {
+                // @ts-expect-error - Directus SDK limits _gte to strict datetime strings
                 date: { _gte: today }
             },
             sort: ['date'],
@@ -82,12 +81,12 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
 
     const mappedPubCrawl = disabledRoutes.includes('/kroegentocht')
         ? []
-        : (pubCrawlEvents as DbPubCrawlEvent[]).map((item) => ({
+        : (pubCrawlEvents as unknown as Schema['pub_crawl_events']).map((item) => ({
             id: `kroeg-${item.id}`,
-            titel: item.name ?? '',
+            titel: item.name,
             beschrijving: item.description ?? null,
             locatie: 'Diverse locaties',
-            datum_start: toLocalISOString(item.date, true) ?? toLocalISOString(now, true) ?? new Date().toISOString(),
+            datum_start: item.date ? (toLocalISOString(item.date, true) ?? new Date().toISOString()) : new Date().toISOString(),
             datum_eind: null,
             afbeelding_id: item.image ?? null,
             status: 'published',
@@ -105,7 +104,7 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
 
     const mappedTrips = disabledRoutes.includes('/reis')
         ? []
-        : (tripEvents as DbTrip[]).map((item) => ({
+        : (tripEvents as unknown as Schema['trips']).map((item) => ({
             id: `trip-${item.id}`,
             titel: item.name ?? '',
             beschrijving: item.description ?? null,

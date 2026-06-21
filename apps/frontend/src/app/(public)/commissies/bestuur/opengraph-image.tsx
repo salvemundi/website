@@ -1,41 +1,15 @@
 // OG-image route voor de Bestuur pagina
-import { ImageResponse } from 'next/og';
+import { generateGradientOGImage } from '@/lib/utils/og-utils';
 
-// runtime switched to nodejs for database compatibility
 export const alt = 'Bestuur - Salve Mundi';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-export default function Image() {
-    return new ImageResponse(
-        (
-            <div
-                style={{
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #5e2b52 0%, #a4539b 100%)',
-                    color: '#ffffff',
-                    fontFamily: 'sans-serif',
-                    padding: '60px' }}
-            >
-                <p style={{ fontSize: 24, opacity: 0.75, marginBottom: 16, letterSpacing: 4 }}>
-                    BESTUUR
-                </p>
-                <h1 style={{ fontSize: 72, fontWeight: 800, margin: 0, textAlign: 'center' }}>
-                    Het Bestuur van Salve Mundi
-                </h1>
-                <p style={{ fontSize: 28, opacity: 0.85, marginTop: 24, textAlign: 'center', maxWidth: 800 }}>
-                    Maak kennis met de mensen die de vereniging draaiende houden en het beleid bepalen.
-                </p>
-                <p style={{ fontSize: 20, opacity: 0.6, marginTop: 48 }}>
-                    Salve Mundi – Studievereniging ICT
-                </p>
-            </div>
-        ),
-        { ...size },
-    );
+export default async function Image() {
+    return generateGradientOGImage({
+        title: 'Het Bestuur van Salve Mundi',
+        subtitle: 'Maak kennis met de mensen die de vereniging draaiende houden en het beleid bepalen.',
+        category: 'Bestuur'
+    });
 }
+

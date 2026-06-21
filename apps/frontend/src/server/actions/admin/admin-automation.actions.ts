@@ -15,7 +15,7 @@ export type AutomationSetting = {
 
 const AUTOMATION_FLAGS = ['mail_expiry_check', 'mail_event_reminders', 'auto_sync_nightly'];
 
-interface DbFeatureFlag {
+interface FeatureFlag {
     name: string;
     route_match: string;
     is_active: boolean;
@@ -27,7 +27,7 @@ export async function getSystemAutomationSettings(): Promise<{ success: boolean;
     if (!isAuthorized || !isSuperAdmin(user?.committees)) throw new Error('Geen toegang: Alleen voor ICT en Bestuur.');
 
     try {
-        const { rows } = await query<DbFeatureFlag>(
+        const { rows } = await query<FeatureFlag>(
             "SELECT name, route_match, is_active, message FROM feature_flags WHERE route_match = ANY($1)",
             [AUTOMATION_FLAGS]
         );

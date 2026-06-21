@@ -138,7 +138,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                         transactions_id: transactionDbId
                     })
                     .execute();
-                fastify.log.info(`[FINANCE] Linked transaction ${transactionDbId} to pub_crawl_signup ${registrationId}`);
+                fastify.log.info(`[payment.routes][create] Linked transaction ${transactionDbId} to pub_crawl_signup ${registrationId}`);
             }
 
             return { checkoutUrl: payment._links.checkout?.href, mollie_id: payment.id, access_token: accessToken };

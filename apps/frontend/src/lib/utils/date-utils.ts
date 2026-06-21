@@ -58,3 +58,18 @@ export function toISODate(dateInput: Date | string | null | undefined): string {
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
+
+/**
+ * Formats a date to a short Dutch format (e.g. 15 okt. 24).
+ */
+export function formatShortDate(date: Date | string | null | undefined): string {
+    if (!date) return '-';
+    const d = date instanceof Date ? date : new Date(date);
+    if (isNaN(d.getTime())) return '-';
+
+    return new Intl.DateTimeFormat('nl-NL', {
+        day: 'numeric',
+        month: 'short',
+        year: '2-digit'
+    }).format(d);
+}

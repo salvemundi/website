@@ -19,7 +19,7 @@ import { fetchUserPubCrawlSignupsDb } from '@/server/internal/kroegentocht-db.ut
 import { safeConsoleError } from '@/server/utils/logger';
 import { type z } from 'zod';
 
-interface DbTransactionRow {
+interface TransactionRow {
     id: string;
     user_id: string | null;
     email: string | null;
@@ -31,25 +31,22 @@ interface DbTransactionRow {
     [key: string]: unknown;
 }
 
-interface DbWhatsAppGroupRow {
+interface WhatsAppGroupRow {
     id: number;
     name: string;
     invite_link: string;
     is_active: boolean;
 }
 
-function safeParseArray<T>(schema: z.ZodType<T, z.ZodTypeDef, unknown>, data: unknown[], context: string): T[] {
+function safeParseArray<T>(schema: z.Schema<T>, data: unknown[], context: string): T[] {
     const parsed = schema.array().safeParse(data);
     if (parsed.success) return parsed.data;
 
-    safeConsoleError(`[profiel.actions.ts][safeParseArray] ${context} - Validation failed, attempting recovery:`, parsed.error);
-
-    return data.map(item => {
-        const itemParsed = schema.safeParse(item);
-        if (itemParsed.success) return itemParsed.data;
-        safeConsoleError(`[profiel.actions.ts][safeParseArray] ${context} - Skipping invalid item:`, itemParsed.error);
-        return null;
-    }).filter((item): item is T => item !== null);
+    safeConsoleError(`[Profiel Actions][safeParseArray][${context}] Data miste verplichte velden:`, {
+        issues: parsed.error.issues,
+        receivedData: data
+    });
+    return [];
 }
 
 const isValidRelation = (val: unknown): val is { id: unknown } => {
@@ -64,7 +61,7 @@ export async function getUserEventSignups(): Promise<EventSignup[]> {
     if (!email) return [];
 
     const registrations = await fetchUserEventSignupsDb(email);
-    const validRegistrations = registrations.filter(r => r.id !== null);
+    const validRegistrations = registrations;
     return safeParseArray(eventSignupSchema, validRegistrations, 'ProfielActions:EventSignups');
 }
 
@@ -86,7 +83,7 @@ export async function getUserTransactions(): Promise<Transaction[]> {
     const targetUserId = user?.id;
     if (!targetUserId) return [];
 
-    const res = await query<DbTransactionRow>(
+    const res = await query<TransactionRow>(
         `SELECT * FROM transactions 
          WHERE user_id = $1 OR email = $2
          ORDER BY created_at DESC`,
@@ -110,7 +107,7 @@ export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
     const session = await getEnrichedSession();
     if (!session?.user) return [];
 
-    const res = await query<DbWhatsAppGroupRow>(
+    const res = await query<WhatsAppGroupRow>(
         `SELECT id, name, invite_link, is_active 
          FROM whatsapp_groups 
          WHERE is_active = true 

@@ -13,3 +13,4 @@ export default async function Image() {
         description: 'Ontdek veilige plekken en hulpbronnen voor studenten.',
         category: 'Support' });
 }
+

@@ -212,7 +212,7 @@ export async function deleteTrip(id: number) {
     }
 }
 
-interface DbFeatureFlag {
+interface FeatureFlag {
     id: number;
     name: string;
     is_active: boolean;
@@ -226,9 +226,9 @@ export async function toggleReisVisibility(): Promise<{ success: boolean; show?:
     try {
         const sql = 'SELECT id, is_active FROM feature_flags WHERE name = $1 LIMIT 1';
         const { rows } = await query(sql, [flagName]);
-        const flagRows = rows as DbFeatureFlag[];
+        const flagRows = rows as FeatureFlag[];
 
-        const flag = flagRows[0] as DbFeatureFlag | undefined;
+        const flag = flagRows[0] as FeatureFlag | undefined;
         const oldStatus = flag ? flag.is_active : true;
         const newStatus = !oldStatus;
 

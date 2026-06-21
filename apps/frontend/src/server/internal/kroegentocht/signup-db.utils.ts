@@ -2,8 +2,8 @@ import 'server-only';
 import { query } from '@/lib/database';
 import { type PubCrawlSignup, type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
 import {
-    type DbPubCrawlSignupRow,
-    type DbPubCrawlTicketRow,
+    type PubCrawlSignupRow,
+    type PubCrawlTicketRow,
     type JoinedSignupRow,
     type EnrichedPubCrawlSignup,
     type QueryParam
@@ -11,7 +11,7 @@ import {
 import { safeConsoleError } from '@/server/utils/logger';
 
 export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawlSignup & { participants: { name: string, initial: string }[] })[]> {
-    const signupRes = await query<DbPubCrawlSignupRow>(
+    const signupRes = await query<PubCrawlSignupRow>(
         `SELECT * FROM pub_crawl_signups WHERE pub_crawl_event_id = $1 ORDER BY id DESC LIMIT 1000`,
         [eventId]
     );
@@ -52,7 +52,7 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<Enric
     if (res.rowCount === 0) return null;
 
     const signup = res.rows[0];
-    const ticketRes = await query<DbPubCrawlTicketRow>(
+    const ticketRes = await query<PubCrawlTicketRow>(
         `SELECT * FROM pub_crawl_tickets WHERE signup_id = $1 ORDER BY id ASC`,
         [signupId]
     );
@@ -99,30 +99,25 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<Enric
 }
 
 export async function fetchUserPubCrawlSignupsDb(email: string): Promise<EnrichedPubCrawlSignup[]> {
-    try {
-        const res = await query<JoinedSignupRow>(
-            `SELECT s.*, e.name as event_name, e.date as event_date, e.description as event_description, e.image as event_image
-             FROM pub_crawl_signups s
-             JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
-             WHERE LOWER(s.email) = LOWER($1)
-             ORDER BY s.created_at DESC`,
-            [email]
-        );
-        const { toLocalISOString } = await import('@/lib/utils/date-utils');
-        return res.rows.map(row => ({
-            ...row,
-            pub_crawl_event_id: {
-                id: row.pub_crawl_event_id,
-                name: row.event_name,
-                date: toLocalISOString(row.event_date) ?? undefined,
-                description: row.event_description ?? undefined,
-                image: row.event_image ?? undefined
-            }
-        })) as unknown as EnrichedPubCrawlSignup[];
-    } catch (error) {
-        safeConsoleError('[PubCrawlUtils][fetchUserPubCrawlSignupsDb]', error);
-        return [];
-    }
+    const res = await query<JoinedSignupRow>(
+        `SELECT s.*, e.name as event_name, e.date as event_date, e.description as event_description, e.image as event_image
+         FROM pub_crawl_signups s
+         JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
+         WHERE LOWER(s.email) = LOWER($1)
+         ORDER BY s.created_at DESC`,
+        [email]
+    );
+    const { toLocalISOString } = await import('@/lib/utils/date-utils');
+    return res.rows.map(row => ({
+        ...row,
+        pub_crawl_event_id: {
+            id: row.pub_crawl_event_id,
+            name: row.event_name,
+            date: toLocalISOString(row.event_date) ?? undefined,
+            description: row.event_description ?? undefined,
+            image: row.event_image ?? undefined
+        }
+    })) as unknown as EnrichedPubCrawlSignup[];
 }
 
 export async function createPubCrawlSignupDb(data: {
@@ -135,31 +130,26 @@ export async function createPubCrawlSignupDb(data: {
     payment_status?: string;
     directus_relations?: string | null;
 }): Promise<number> {
-    try {
-        const res = await query<{ id: number }>(
-            `INSERT INTO pub_crawl_signups 
-             (name, email, association, amount_tickets, name_initials, pub_crawl_event_id, payment_status, directus_relations, created_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
-             RETURNING id`,
-            [
-                data.name,
-                data.email,
-                data.association ?? null,
-                data.amount_tickets,
-                data.name_initials ?? null,
-                data.pub_crawl_event_id,
-                data.payment_status ?? 'open',
-                data.directus_relations ?? null,
-            ]
-        );
+    const res = await query<{ id: number }>(
+        `INSERT INTO pub_crawl_signups 
+         (name, email, association, amount_tickets, name_initials, pub_crawl_event_id, payment_status, directus_relations, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+         RETURNING id`,
+        [
+            data.name,
+            data.email,
+            data.association ?? null,
+            data.amount_tickets,
+            data.name_initials ?? null,
+            data.pub_crawl_event_id,
+            data.payment_status ?? 'open',
+            data.directus_relations ?? null,
+        ]
+    );
 
-        const id = res.rows[0]?.id;
-        if (!id) throw new Error('Insert failed');
-        return id;
-    } catch (error) {
-        safeConsoleError('[PubCrawlUtils][createPubCrawlSignupDb]', error);
-        throw error;
-    }
+    const id = res.rows[0]?.id;
+    if (!id) throw new Error('Insert failed');
+    return id;
 }
 
 export async function updatePubCrawlSignupDb(id: number, data: Partial<PubCrawlSignup>): Promise<void> {
@@ -169,22 +159,12 @@ export async function updatePubCrawlSignupDb(id: number, data: Partial<PubCrawlS
     const setClauses = keys.map((k, i) => `${k} = $${i + 2}`).join(', ');
     const values = Object.values(data) as QueryParam[];
 
-    try {
-        await query<never>(
-            `UPDATE pub_crawl_signups SET ${setClauses} WHERE id = $1`,
-            [id, ...values]
-        );
-    } catch (error) {
-        safeConsoleError('[PubCrawlUtils][updatePubCrawlSignupDb]', error);
-        throw error;
-    }
+    await query<never>(
+        `UPDATE pub_crawl_signups SET ${setClauses} WHERE id = $1`,
+        [id, ...values]
+    );
 }
 
 export async function deletePubCrawlSignupDb(id: number): Promise<void> {
-    try {
-        await query<never>(`DELETE FROM pub_crawl_signups WHERE id = $1`, [id]);
-    } catch (error) {
-        safeConsoleError('[PubCrawlUtils][deletePubCrawlSignupDb]', error);
-        throw error;
-    }
+    await query<never>(`DELETE FROM pub_crawl_signups WHERE id = $1`, [id]);
 }

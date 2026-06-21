@@ -3,13 +3,14 @@
 import { FileText, CreditCard, Bus, AlertCircle } from 'lucide-react';
 import type { TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
 import { parseBoolean } from '@salvemundi/validations';
-import { toISODate } from '@/lib/utils/date-utils';
+import { toISODate, formatShortDate } from '@/lib/utils/date-utils';
 import {
     Input,
     Select,
     Textarea,
     Checkbox,
-    DateAndLabel
+    DateAndLabel,
+    PhoneAndLabel
 } from './TripSignupFormFields';
 
 interface StandardSignupFormProps {
@@ -20,13 +21,6 @@ interface StandardSignupFormProps {
     section?: 'all' | 'personal' | 'admin' | 'personal_basic' | 'personal_extended';
     compact?: boolean;
 }
-
-const formatShortDate = (d: Date) =>
-    new Intl.DateTimeFormat('nl-NL', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-    }).format(d);
 
 export default function StandardSignupForm({
     signup,
@@ -56,7 +50,7 @@ export default function StandardSignupForm({
                                 <Input label="Voornaam" name="first_name" defaultValue={initialData?.first_name || signup.first_name} required placeholder="Bijv. Jan" />
                                 <Input label="Achternaam" name="last_name" defaultValue={initialData?.last_name || signup.last_name} required placeholder="Bijv. de Vries" />
                                 <Input label="Email Adres" name="email" type="email" defaultValue={initialData?.email || signup.email} required className="md:col-span-2" placeholder="jan@voorbeeld.nl" />
-                                <Input label="Telefoonnummer" name="phone_number" defaultValue={initialData?.phone_number || signup.phone_number || ''} placeholder="+31 6 12345678" />
+                                <PhoneAndLabel label="Telefoonnummer" name="phone_number" defaultValue={initialData?.phone_number || signup.phone_number || ''} />
                                 <DateAndLabel label="Geboortedatum" name="date_of_birth" defaultValue={initialData?.date_of_birth || (signup.date_of_birth ? toISODate(signup.date_of_birth) : '')} />
                             </>
                         )}

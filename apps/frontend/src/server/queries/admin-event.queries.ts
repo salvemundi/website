@@ -2,10 +2,10 @@ import 'server-only';
 import { query } from '@/lib/database';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { activitiesSchema, type Activiteit } from '@salvemundi/validations/schema/activity.zod';
-import { type DbEventSignup } from '@salvemundi/validations/directus/schema';
+import { type EventSignup } from '@salvemundi/validations/directus/schema';
 import { safeConsoleError } from '@/server/utils/logger';
 
-interface DbEventRow {
+interface EventRow {
     id: string | number;
     name: string | null;
     description: string | null;
@@ -32,7 +32,7 @@ interface DbEventRow {
     signup_count?: string | number;
 }
 
-const mapRowToActiviteitData = (item: DbEventRow) => {
+const mapRowToActiviteitData = (item: EventRow) => {
     const safeISO = (d: string | Date | null | undefined, includeTime = false) => {
         return toLocalISOString(d, includeTime);
     };
@@ -63,7 +63,7 @@ const mapRowToActiviteitData = (item: DbEventRow) => {
     };
 };
 
-const mapRowToAdminActivityData = (item: DbEventRow) => {
+const mapRowToAdminActivityData = (item: EventRow) => {
     const safeISO = (d: string | Date | null | undefined, includeTime = false) => {
         return toLocalISOString(d, includeTime);
     };
@@ -105,7 +105,7 @@ export async function getActivitiesInternal(onlyPublished = true): Promise<Activ
     `;
     const { rows } = await query(sql);
 
-    const mappedData = (rows as DbEventRow[]).map(mapRowToActiviteitData);
+    const mappedData = (rows as EventRow[]).map(mapRowToActiviteitData);
 
     const parsed = activitiesSchema.safeParse(mappedData);
     if (!parsed.success) {
@@ -127,7 +127,7 @@ export async function getActivityByIdInternal(id: string): Promise<Activiteit | 
     `;
     const { rows } = await query(sql, [id]);
 
-    const item = (rows as DbEventRow[])[0] as DbEventRow | undefined;
+    const item = (rows as EventRow[])[0] as EventRow | undefined;
     if (!item) return null;
 
     const mapped = mapRowToActiviteitData(item);
@@ -153,7 +153,7 @@ export async function getActivityBySlugInternal(slug: string): Promise<Activitei
     }) || null;
 }
 
-export async function getActivitySignupsInternal(eventId: string): Promise<DbEventSignup[]> {
+export async function getActivitySignupsInternal(eventId: string): Promise<EventSignup[]> {
     const sql = `
         SELECT 
             es.*, 
@@ -171,7 +171,7 @@ export async function getActivitySignupsInternal(eventId: string): Promise<DbEve
         ...r,
         id: r.id !== null && r.id !== undefined ? Number(r.id) : null,
         is_member: Boolean(r.calculated_is_member)
-    } as DbEventSignup));
+    } as EventSignup));
 }
 
 export async function getActivitiesWithSignupCountsInternal(search?: string, filter: 'all' | 'upcoming' | 'past' = 'all'): Promise<(Activiteit & { signup_count: number })[]> {
@@ -204,7 +204,7 @@ export async function getActivitiesWithSignupCountsInternal(search?: string, fil
 
     const { rows } = await query(sql, params);
 
-    return (rows as DbEventRow[]).map((r: DbEventRow) => {
+    return (rows as EventRow[]).map((r: EventRow) => {
         const mappedData = mapRowToAdminActivityData(r);
         return {
             ...mappedData,

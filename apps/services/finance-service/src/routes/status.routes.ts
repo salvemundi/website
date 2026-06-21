@@ -1,5 +1,5 @@
 import { safeConsoleError } from '../utils/logger.js';
-import { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
+import { type FastifyInstance } from 'fastify';
 import { getMollieClient } from '../services/mollie.service.js';
 import { type FinanceMolliePaymentMetadata } from '../services/payment.service.js';
 import { verifyInternalToken } from '../middleware/auth.js';
@@ -65,7 +65,7 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                             transaction.access_token || ''
                         );
 
-                        transaction.payment_status = livePayment.status;
+                        transaction.payment_status = livePayment.status as typeof transaction.payment_status;
                         (transaction as { updated_at?: string | null }).updated_at = new Date().toISOString();
                     }
                 } catch (mollieErr) {

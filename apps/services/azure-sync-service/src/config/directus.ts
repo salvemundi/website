@@ -1,7 +1,7 @@
 import { createDirectus, rest, staticToken, type DirectusClient, type RestClient, type StaticTokenClient } from '@directus/sdk';
-import { type DirectusSchema } from '@salvemundi/validations';
+import { Directus } from '@salvemundi/validations';
 
-let _directus: DirectusClient<DirectusSchema> & RestClient<DirectusSchema> & StaticTokenClient<DirectusSchema> | null = null;
+let _directus: DirectusClient<Directus.Schema> & RestClient<Directus.Schema> & StaticTokenClient<Directus.Schema> | null = null;
 
 export function getDirectusClient() {
     if (_directus) return _directus;
@@ -13,7 +13,7 @@ export function getDirectusClient() {
         throw new Error('Missing DIRECTUS_STATIC_TOKEN in environment variables');
     }
 
-    _directus = createDirectus<DirectusSchema>(url)
+    _directus = createDirectus<Directus.Schema>(url)
         .with(staticToken(token))
         .with(rest());
 

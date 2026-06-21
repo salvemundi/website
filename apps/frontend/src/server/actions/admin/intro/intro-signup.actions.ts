@@ -6,7 +6,7 @@ import { getIntroSignupsInternal, getIntroParentSignupsInternal } from '@/server
 import { getSystemDirectus } from "@/lib/directus";
 import { deleteItem, updateItem } from '@directus/sdk';
 import { AdminResource } from '@/shared/lib/permissions-config';
-import type { DbIntroSignup, DbIntroParentSignup } from '@salvemundi/validations/directus/schema';
+import type { IntroSignup, IntroParentSignup } from '@salvemundi/validations/directus/schema';
 import { requireAdminResource } from '@/server/auth/auth-utils';
 
 export async function checkIntroAdminAccess() {
@@ -42,10 +42,10 @@ async function genericUpdate(collection: string, id: number, data: { [key: strin
     }
 }
 
-export async function getIntroSignups(): Promise<DbIntroSignup[]> {
+export async function getIntroSignups(): Promise<IntroSignup[]> {
     await checkIntroAdminAccess();
     const data = await getIntroSignupsInternal();
-    return data as unknown as DbIntroSignup[];
+    return data as unknown as IntroSignup[];
 }
 
 export async function deleteIntroSignup(id: number): Promise<{ success: boolean; error?: string }> {
@@ -53,10 +53,10 @@ export async function deleteIntroSignup(id: number): Promise<{ success: boolean;
     return genericDelete('intro_signups', id);
 }
 
-export async function getIntroParentSignups(): Promise<DbIntroParentSignup[]> {
+export async function getIntroParentSignups(): Promise<IntroParentSignup[]> {
     await checkIntroAdminAccess();
     const data = await getIntroParentSignupsInternal();
-    return data as unknown as DbIntroParentSignup[];
+    return data as unknown as IntroParentSignup[];
 }
 
 export async function deleteIntroParentSignup(id: number): Promise<{ success: boolean; error?: string }> {

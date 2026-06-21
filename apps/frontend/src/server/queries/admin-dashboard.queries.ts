@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { EXCLUDED_EMAILS } from '@/shared/lib/constants/admin.constants';
 import { safeConsoleError } from '@/server/utils/logger';
 
-interface DbDashboardRow {
+interface DashboardRow {
     members?: unknown;
     events?: unknown;
     signups?: unknown;
@@ -16,11 +16,11 @@ interface DbDashboardRow {
     stickers_recent?: unknown;
 }
 
-interface DbCountRow {
+interface CountRow {
     count?: unknown;
 }
 
-interface DbRecentActivityRow {
+interface RecentActivityRow {
     id: string | number;
     name?: unknown;
     event_date?: unknown;
@@ -48,7 +48,7 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
         `;
 
         const { rows: basicRows } = await query(basicSql, [today, lastWeek]);
-        const b = basicRows[0] as DbDashboardRow;
+        const b = basicRows[0] as DashboardRow;
 
         const pcSql = `
             SELECT COUNT(*) as count 
@@ -61,7 +61,7 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
             )
         `;
         const { rows: pcRows } = await query(pcSql, [now.toISOString()]);
-        const pcRow = (pcRows as DbCountRow[])[0];
+        const pcRow = (pcRows as CountRow[])[0];
 
         const tripSql = `
             SELECT COUNT(*) as count 
@@ -74,7 +74,7 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
             )
         `;
         const { rows: tripRows } = await query(tripSql, [now.toISOString()]);
-        const tripRow = (tripRows as DbCountRow[])[0];
+        const tripRow = (tripRows as CountRow[])[0];
 
         const totalStickers = Number(b.stickers_total || 0);
         const recentStickers = Number(b.stickers_recent || 0);
@@ -123,7 +123,7 @@ export async function getRecentActivitiesInternal(): Promise<RecentActivity[]> {
         `;
         const { rows } = await query(sql);
 
-        const mapped = (rows as DbRecentActivityRow[]).map(r => ({
+        const mapped = (rows as RecentActivityRow[]).map(r => ({
             id: Number(r.id),
             name: typeof r.name === 'string' ? r.name : '',
             event_date: (typeof r.event_date === 'string' || r.event_date instanceof Date) ? new Date(r.event_date as string | Date).toISOString() : null,

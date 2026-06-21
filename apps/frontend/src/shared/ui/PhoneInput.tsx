@@ -28,14 +28,15 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
                 {
                     mask: '+{31} 6 00000000',
                     startsWith: '+316',
-                    lazy: true,
+                    lazy: false,
                 } as unknown as RegExp,
                 {
                     mask: /^\+?[0-9\s\-()]{0,16}$/,
                 }
             ]}
-            lazy={true}
-            placeholder="+31 6 12345678"
+            lazy={false}
+            placeholderChar="x"
+            placeholder="+31 6 xxxxxxxx"
             className={`form-input ${error ? 'border-theme-error ring-1 ring-theme-error' : ''} ${className}`}
             type="tel"
             inputMode="tel"

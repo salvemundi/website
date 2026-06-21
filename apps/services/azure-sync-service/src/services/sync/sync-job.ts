@@ -30,13 +30,13 @@ export class SyncJob {
             if (Date.now() - lastHeartbeat < 300000) return;
         }
 
-        if (!options.silent) logInfo(`[SYNC] [${jobId}] Starting BULK synchronization job...`);
+        if (!options.silent) logInfo(`[sync-job.ts][run] [${jobId}] Starting BULK synchronization job...`);
         await redis.del(SYNC_ABORT_KEY);
 
         try {
             const token = await TokenService.getAccessToken(redis);
 
-            if (!options.silent) logInfo(`[SYNC] [${jobId}] Step 1: Fetching users & group data...`);
+            if (!options.silent) logInfo(`[sync-job.ts][run] [${jobId}] Step 1: Fetching users & group data...`);
             const [azureUsers, { committees, committeeCache, committeeByIdCache }, { allLeden, userCacheByEntra }, { membershipCache }] = await Promise.all([
                 GraphService.getAllUsers(token),
                 SyncCache.getCommittees(),
@@ -116,7 +116,7 @@ export class SyncJob {
             }
 
             const azureUserIds = new Set(azureUsers.map(u => u.id));
-            for (const dUser of allLeden) {
+            for (const dUser of allLeden as unknown as Array<{ email: string | null; entra_id?: string | null }>) {
                 if (dUser.entra_id && !azureUserIds.has(dUser.entra_id)) {
                     status.warningCount++;
                     status.warnings.push({ email: (dUser.email || 'Onbekend').toLowerCase(), message: 'Niet gevonden in Azure AD.' });
@@ -127,7 +127,7 @@ export class SyncJob {
             await persistSyncStatus(redis, status);
             await this.logSummary(jobId, status);
         } catch (error) {
-            safeConsoleError(`[SYNC] [${jobId}] Fatal error:`, error);
+            safeConsoleError(`[sync-job.ts][run] [${jobId}] Fatal error:`, error);
             const s = await getSyncStatus(redis);
             s.active = false; s.status = 'failed'; s.endTime = new Date().toISOString();
             s.fatalError = { message: error instanceof Error ? error.message : String(error) };
@@ -224,7 +224,7 @@ export class SyncJob {
                 .execute();
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
-            safeConsoleError(`[SyncJob][logSummary] Error while cleaning up old logs:`, message);
+            safeConsoleError(`[sync-job.ts][logSummary] Error while cleaning up old logs:`, message);
         }
     }
 }

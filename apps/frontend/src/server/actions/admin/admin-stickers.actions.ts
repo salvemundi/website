@@ -10,7 +10,7 @@ import { type EnrichedUser } from "@/types/auth";
 import { query } from '@/lib/database';
 import { safeConsoleError } from '@/server/utils/logger';
 
-interface DbStickerRow {
+interface StickerRow {
     id: string | number;
     latitude: string | number;
     longitude: string | number;
@@ -56,7 +56,7 @@ export async function getStickers() {
             LEFT JOIN directus_users u ON s.user_created = u.id
             ORDER BY s.date_created DESC
         `;
-        const { rows } = await query<DbStickerRow>(sql);
+        const { rows } = await query<StickerRow>(sql);
 
         return rows.map((s) => ({
             id: Number(s.id),

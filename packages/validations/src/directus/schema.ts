@@ -1,697 +1,741 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
-/**
- * Directus Schema for Salve Mundi V7.
- */
+import type { DirectusUser, DirectusFile } from "@directus/sdk"
 
-export interface DbBoard {
-    id: number | null;
-    user_created?: string | null;
-    date_created?: string | null;
-    user_updated?: string | null;
-    date_updated?: string | null;
-    image?: string | null;
-    naam?: string | null;
-    year?: string | null;
-    members?: unknown;
+export interface Schema {
+  Board: Board[];
+  Board_Members: BoardMember[];
+  Stickers: Sticker[];
+  club_members: ClubMember[];
+  clubs: Club[];
+  committee_members: CommitteeMember[];
+  committees: Committee[];
+  contacts: Contact[];
+  coupons: Coupon[];
+  directus_comments: DirectusComment[];
+  documents: Document[];
+  event_signups: EventSignup[];
+  events: Event[];
+  events_directus_users: EventDirectusUser[];
+  events_members: EventMember[];
+  feature_flags: FeatureFlag[];
+  hero_banners: HeroBanner[];
+  hero_banners_files: HeroBannerFile[];
+  intro_blog_gallery: IntroBlogGallery[];
+  intro_blog_likes: IntroBlogLike[];
+  intro_blogs: IntroBlog[];
+  intro_parent_signups: IntroParentSignup[];
+  intro_planning: IntroPlanning[];
+  intro_planning_signups: IntroPlanningSignup[];
+  intro_signups: IntroSignup[];
+  jobs: Job[];
+  permissions: Permission[];
+  pub_crawl_events: PubCrawlEvent[];
+  pub_crawl_signups: PubCrawlSignup[];
+  pub_crawl_signups_transactions: PubCrawlSignupTransaction[];
+  pub_crawl_tickets: PubCrawlTicket[];
+  push_notification: PushNotification[];
+  role_permissions: RolePermission[];
+  roles: Role[];
+  safe_havens: SafeHaven[];
+  sponsors: Sponsor[];
+  system_logs: SystemLog[];
+  transactions: Transaction[];
+  trip_activities: TripActivity[];
+  trip_signup_activities: TripSignupActivity[];
+  trip_signups: TripSignup[];
+  trips: Trip[];
+  whatsapp_groups: WhatsappGroup[];
+  directus_fields: CustomDirectusField;
+  directus_settings: CustomDirectusSettings;
+  directus_users: CustomDirectusUser;
+  directus_versions: CustomDirectusVersion;
+  auth_accounts: AuthAccount[];
+  auth_sessions: AuthSession[];
+  membership_history: MembershipHistory[];
+  verification: Verification[];
 }
 
-export interface DbBoardMember {
-    id: number | null;
-    date_created?: string | null;
-    date_updated?: string | null;
-    board_id?: number | null;
-    functie?: string | null;
-    user_id?: string | null;
-    name?: string | null;
+export interface Board {
+  id: number;
+  user_created: string | DirectusUser<Schema> | null;
+  date_created: string | "datetime" | null;
+  user_updated: string | DirectusUser<Schema> | null;
+  date_updated: string | "datetime" | null;
+  image: string | DirectusFile<Schema> | null;
+  naam: string | null;
+  year: string | null;
+  members: number[] | BoardMember[];
 }
 
-export interface DbSticker {
-    id: number | null;
-    user_created?: string | null;
-    date_created?: string | null;
-    user_updated?: string | null;
-    date_updated?: string | null;
-    location_name?: string | null;
-    address?: string | null;
-    latitude?: number | null;
-    longitude?: number | null;
-    description?: string | null;
-    country?: string | null;
-    city?: string | null;
-    image?: string | null;
+export interface BoardMember {
+  id: number;
+  date_created: string | "datetime" | null;
+  date_updated: string | "datetime" | null;
+  board_id: number | Board | null;
+  functie: string | null;
+  user_id: string | DirectusUser<Schema> | null;
+  name: string | null;
 }
 
-export interface DbClubMember {
-    club_id?: number | null;
-    is_visible?: boolean | null;
-    is_leader?: boolean | null;
-    id: number | null;
+export interface Sticker {
+  id: number;
+  user_created: string | DirectusUser<Schema> | null;
+  date_created: string | "datetime" | null;
+  user_updated: string | DirectusUser<Schema> | null;
+  date_updated: string | "datetime" | null;
+  location_name: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  description: string | null;
+  country: string | null;
+  city: string | null;
+  image: string | DirectusFile<Schema> | null;
+  status: string | null;
 }
 
-export interface DbClub {
-    id: number | null;
-    name?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    whatsapp_link?: string | null;
-    discord_link?: string | null;
-    website_link?: string | null;
-    description?: string | null;
-    image?: string | null;
+export interface ClubMember {
+  club_id: number;
+  is_visible: boolean;
+  is_leader: boolean;
+  id: number;
 }
 
-export interface DbCommitteeMember {
-    id: number | null;
-    committee_id?: number | null;
-    user_id?: string | null;
-    is_visible?: boolean | null;
-    is_leader?: boolean | null;
+export interface Club {
+  id: number;
+  name: string;
+  created_at: string | "datetime";
+  updated_at: string | "datetime" | null;
+  whatsapp_link: string | null;
+  discord_link: string | null;
+  website_link: string | null;
+  description: string | null;
+  image: string | DirectusFile<Schema> | null;
 }
 
-export interface DbCommittee {
-    id: number | null;
-    name?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    image?: string | null;
-    is_visible?: boolean | null;
-    short_description?: string | null;
-    description?: string | null;
-    email?: string | null;
-    commissie_token?: string | null;
-    azure_group_id?: string | null;
+export interface CommitteeMember {
+  id: number;
+  committee_id: number | Committee;
+  user_id: string | DirectusUser<Schema> | null;
+  is_visible: boolean;
+  is_leader: boolean;
 }
 
-export interface DbContact {
-    id: number | null;
-    title?: string | null;
-    name?: string | null;
-    email?: string | null;
-    phone_number?: string | null;
-    description?: string | null;
-    is_active?: boolean | null;
-    display_order?: number | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    image?: string | null;
+export interface Committee {
+  id: number;
+  name: string;
+  created_at: string | "datetime";
+  updated_at: string | "datetime" | null;
+  image: string | DirectusFile<Schema> | null;
+  is_visible: boolean | null;
+  short_description: string | null;
+  description: string | null;
+  email: string | null;
+  commissie_token: string | null;
+  azure_group_id: string | null;
 }
 
-export interface DbCoupon {
-    id: number | null;
-    coupon_code?: string | null;
-    discount_type?: string | null;
-    usage_limit?: number | null;
-    usage_count?: number | null;
-    is_active?: boolean | null;
-    valid_from?: string | null;
-    valid_until?: string | null;
-    discount_value?: number | null;
-    date_created?: string | null;
+export interface Contact {
+  id: number;
+  title: string;
+  name: string;
+  email: string;
+  phone_number: string | null;
+  description: string | null;
+  is_active: boolean;
+  display_order: number;
+  created_at: string | "datetime";
+  updated_at: string | "datetime" | null;
+  image: string | DirectusFile<Schema> | null;
 }
 
-export interface DbDocument {
-    id: number | null;
-    title?: string | null;
-    description?: string | null;
-    category?: string | null;
-    is_active?: boolean | null;
-    display_order?: number | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    file?: string | null;
+export interface Coupon {
+  id: number;
+  coupon_code: string | null;
+  discount_type: "fixed" | "percentage" | null;
+  usage_limit: number | null;
+  usage_count: number;
+  is_active: boolean | null;
+  valid_from: string | "datetime" | null;
+  valid_until: string | "datetime" | null;
+  discount_value: number | null;
+  date_created: string | "datetime" | null;
 }
 
-export interface DbEventSignup {
-    id: number | null;
-    event_id?: number | DbEvent | null;
-    submission_file_url?: string | null;
-    created_at?: string | null;
-    qr_token?: string | null;
-    checked_in?: boolean | null;
-    checked_in_at?: string | null;
-    participant_name?: string | null;
-    participant_email?: string | null;
-    participant_phone?: string | null;
-    payment_status?: string | null;
-    directus_relations?: string | null;
-    is_member?: boolean | null;
+export interface DirectusComment {
+  id: string;
+  collection: string;
+  item: string;
+  comment: string;
+  date_created: string | "datetime" | null;
+  date_updated: string | "datetime" | null;
+  user_created: string | null;
+  user_updated: string | null;
 }
 
-export interface DbEvent {
-    id: number | null;
-    name?: string | null;
-    event_date?: string | null;
-    description?: string | null;
-    short_description?: string | null;
-    description_logged_in?: string | null;
-    price_members?: number | null;
-    price_non_members?: number | null;
-    max_sign_ups?: number | null;
-    only_members?: boolean | null;
-    one_sign_up_max?: boolean | null;
-    committee_id?: number | DbCommittee | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    image?: string | null;
-    contact?: string | null;
-    event_time?: string | null;
-    location?: string | null;
-    event_time_end?: string | null;
-    registration_deadline?: string | null;
-    status?: string | null;
-    publish_date?: string | null;
-    event_date_end?: string | null;
-    custom_url?: string | null;
-    attendance_officers?: unknown;
-    signups?: unknown;
+export interface Document {
+  id: number;
+  title: string;
+  description: string | null;
+  category: string | null;
+  is_active: boolean;
+  display_order: number;
+  created_at: string | "datetime";
+  updated_at: string | "datetime" | null;
+  file: string | DirectusFile<Schema> | null;
 }
 
-export interface DbEventsDirectusUser {
-    id: number | null;
-    events_id?: number | null;
-    directus_users_id?: string | null;
+export interface EventSignup {
+  event_id: number | Event;
+  submission_file_url: string | null;
+  created_at: string | "datetime";
+  id: number;
+  qr_token: string | null;
+  checked_in: boolean | null;
+  checked_in_at: string | "datetime" | null;
+  participant_name: string | null;
+  participant_email: string | null;
+  participant_phone: string | null;
+  payment_status: "open" | "paid" | "failed" | null;
+  directus_relations: string | DirectusUser<Schema> | null;
+  is_member: boolean | null;
 }
 
-export interface DbEventsMember {
-    id: number | null;
-    events_id?: number | null;
+export interface Event {
+  id: number;
+  name: string;
+  event_date: string | "datetime";
+  description: string | null;
+  description_logged_in: string | null;
+  price_members: number;
+  price_non_members: number;
+  max_sign_ups: number | null;
+  only_members: boolean;
+  one_sign_up_max: boolean;
+  committee_id: number | null;
+  created_at: string | "datetime";
+  updated_at: string | "datetime" | null;
+  image: string | DirectusFile<Schema> | null;
+  contact: string | null;
+  event_time: string | "datetime" | null;
+  location: string | null;
+  event_time_end: string | "datetime" | null;
+  registration_deadline: string | "datetime" | null;
+  status: string | null;
+  publish_date: string | "datetime" | null;
+  event_date_end: string | "datetime" | null;
+  custom_url: string | null;
+  short_description: string | null;
+  attendance_officers: number[] | EventDirectusUser[];
+  signups: number[] | EventSignup[];
 }
 
-export interface DbFeatureFlag {
-    id: string | null;
-    name?: string | null;
-    route_match?: string | null;
-    is_active?: boolean | null;
-    message?: string | null;
+export interface EventDirectusUser {
+  id: number;
+  events_id: number | Event | null;
+  directus_users_id: string | DirectusUser<Schema> | null;
 }
 
-export interface DbHeroBanner {
-    id: number | null;
-    user_created?: string | null;
-    date_created?: string | null;
-    image?: string | null;
-    sort?: number | null;
-    title?: string | null;
+export interface EventMember {
+  id: number;
+  events_id: number | Event | null;
 }
 
-export interface DbHeroBannersFile {
-    id: number | null;
-    hero_banners_id?: number | null;
-    directus_files_id?: string | null;
+export interface FeatureFlag {
+  id: string;
+  name: string;
+  route_match: string;
+  is_active: boolean;
+  message: string | null;
 }
 
-export interface DbIntro {
+export interface HeroBanner {
+  id: number;
+  user_created: string | DirectusUser<Schema> | null;
+  date_created: string | "datetime" | null;
+  image: string | DirectusFile<Schema> | null;
+  sort: number | null;
+  title: string | null;
 }
 
-export interface DbIntroBlogGallery {
-    id: number | null;
-    intro_blog_id?: number | null;
-    directus_files_id?: string | null;
-    sort?: number | null;
-    caption?: string | null;
-    created_at?: string | null;
+export interface HeroBannerFile {
+  id: number;
+  hero_banners_id: number | null;
+  directus_files_id: string | null;
 }
 
-export interface DbIntroBlogLike {
-    id: number | null;
-    blog?: number | null;
-    user_id?: string | null;
-    created_at?: string | null;
-    ip_address?: unknown;
-    user_agent?: string | null;
+export interface IntroBlogGallery {
+  id: number;
+  intro_blog_id: number;
+  directus_files_id: string;
+  sort: number | null;
+  caption: string | null;
+  created_at: string | "datetime" | null;
 }
 
-export interface DbIntroBlog {
-    id: number | null;
-    status?: string | null;
-    sort?: number | null;
-    user_created?: string | null;
-    user_updated?: string | null;
-    title?: string | null;
-    slug?: string | null;
-    content?: string | null;
-    excerpt?: string | null;
-    image?: string | null;
-    is_published?: boolean | null;
-    blog_type?: string | null;
-    meta_title?: string | null;
-    meta_description?: string | null;
-    views_count?: number | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    likes?: string | null;
-    date_updated?: string | null;
+export interface IntroBlogLike {
+  id: number;
+  blog: number;
+  user_id: string;
+  created_at: string | "datetime";
+  ip_address: unknown | null;
+  user_agent: string | null;
 }
 
-export interface DbIntroParentSignup {
-    id: number;
-    status?: string | null;
-    user_created?: string | null;
-    user_updated?: string | null;
-    user_id?: string | null;
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone_number: string;
-    motivation: string;
-    previous_experience?: string | null;
-    availability?: unknown;
-    approved?: boolean | null;
-    approved_by?: string | null;
-    approved_at?: string | null;
-    notes?: string | null;
-    created_at?: string | null;
+export interface IntroBlog {
+  id: number;
+  status: string | null;
+  sort: number | null;
+  user_created: string | null;
+  user_updated: string | null;
+  title: string;
+  slug: string | null;
+  content: string;
+  excerpt: string | null;
+  image: string | null;
+  is_published: boolean | null;
+  blog_type: "update" | "event" | "pictures" | "announcement" | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  views_count: number | null;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+  likes: string | null;
+  date_updated: string | "datetime" | null;
 }
 
-export interface DbIntroPlanning {
-    id: number | null;
-    status?: string | null;
-    sort?: number | null;
-    user_created?: string | null;
-    date_created?: string | null;
-    user_updated?: string | null;
-    date_updated?: string | null;
-    day?: string | null;
-    date?: string | null;
-    time_start?: string | null;
-    time_end?: string | null;
-    title?: string | null;
-    description?: string | null;
-    location?: string | null;
-    sort_order?: number | null;
-    color?: string | null;
-    capacity?: number | null;
-    signup_required?: boolean | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    icon?: string | null;
-    is_mandatory?: string | null;
+export interface IntroParentSignup {
+  id: number;
+  status: string | null;
+  user_created: string | null;
+  user_updated: string | null;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  motivation: string;
+  previous_experience: string | null;
+  availability: unknown;
+  approved: boolean | null;
+  approved_by: string | null;
+  approved_at: string | "datetime" | null;
+  notes: string | null;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+  date_updated: string | "datetime" | null;
 }
 
-export interface DbIntroPlanningSignup {
-    id: number | null;
-    intro_planning_id?: number | null;
-    intro_signup_id?: number | null;
-    user_id?: string | null;
-    status?: string | null;
-    attended?: boolean | null;
-    attended_at?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
+export interface IntroPlanning {
+  id: number;
+  status: string | null;
+  sort: number | null;
+  user_created: string | null;
+  date_created: string | "datetime" | null;
+  user_updated: string | null;
+  date_updated: string | "datetime" | null;
+  day: string;
+  date: string | "datetime";
+  time_start: string | "datetime";
+  time_end: string | "datetime" | null;
+  title: string;
+  description: string | null;
+  location: string | null;
+  sort_order: number;
+  color: string | null;
+  capacity: number | null;
+  signup_required: boolean | null;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+  icon: string | null;
+  is_mandatory: string | null;
 }
 
-export interface DbIntroSignup {
-    id: number;
-    first_name: string;
-    middle_name?: string | null;
-    last_name: string;
-    date_of_birth?: string | null;
-    email: string;
-    phone_number?: string | null;
-    favorite_gif?: string | null;
-    created_at?: string | null;
-    status?: string | null;
-    approved?: boolean | null;
+export interface IntroPlanningSignup {
+  id: number;
+  intro_planning_id: number;
+  intro_signup_id: number | null;
+  user_id: string | null;
+  status: string | null;
+  attended: boolean | null;
+  attended_at: string | "datetime" | null;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+  date_updated: string | "datetime" | null;
 }
 
-export interface DbJob {
-    job_id: number | null;
-    name?: string | null;
-    description?: string | null;
-    pay?: number | null;
-    location?: string | null;
-    created_at?: string | null;
-    skills?: string | null;
-    profile_description?: string | null;
+export interface IntroSignup {
+  id: number;
+  first_name: string | null;
+  middle_name: string | null;
+  last_name: string | null;
+  date_of_birth: string | null;
+  email: string | null;
+  phone_number: string | null;
+  favorite_gif: string | null;
+  created_at: string | "datetime" | null;
+  status: string | null;
+  approved: boolean | null;
 }
 
-export interface DbKroegentocht {
+export interface Job {
+  job_id: number;
+  name: string;
+  description: string | null;
+  pay: number | null;
+  location: string;
+  created_at: string | "datetime";
+  skills: string | null;
+  profile_description: string | null;
 }
 
-export interface DbPermission {
-    id: number | null;
-    name?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
+export interface Permission {
+  id: number;
+  name: string;
+  created_at: string | "datetime";
+  updated_at: string | "datetime" | null;
 }
 
-export interface DbPubCrawlEvent {
-    id: number | null;
-    name?: string | null;
-    email?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    image?: string | null;
-    date?: string | null;
-    description?: string | null;
-    pub_crawl_signups?: unknown;
-    // Ephemeral fields hardcoded in frontend per user request
-    price?: number;
-    max_tickets_per_person?: number;
-    whatsapp_community_url?: string | null;
-    groups?: string[] | null;
+export interface PubCrawlEvent {
+  id: number;
+  name: string;
+  email: string | null;
+  created_at: string | "datetime";
+  updated_at: string | "datetime" | null;
+  image: string | DirectusFile<Schema> | null;
+  date: string | "datetime" | null;
+  description: string | null;
+  whatsapp_community_url: string | null;
+  groups: unknown | null;
+  pub_crawl_signups: number[] | PubCrawlSignup[];
 }
 
-export interface DbPubCrawlSignup {
-    id: number | null;
-    association?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    pub_crawl_event_id?: number | DbPubCrawlEvent | null;
-    email?: string | null;
-    name?: string | null;
-    amount_tickets?: number | null;
-    payment_status?: string | null;
-    name_initials?: string | null;
-    directus_relations?: string | null;
-    // Relation to associated tickets for this signup
-    tickets?: DbPubCrawlTicket[] | null;
-    transactions?: unknown;
-    group_name?: string | null;
+export interface PubCrawlSignup {
+  id: number;
+  association: string | null;
+  created_at: string | "datetime";
+  updated_at: string | "datetime" | null;
+  pub_crawl_event_id: number | PubCrawlEvent | null;
+  email: string | null;
+  name: string | null;
+  amount_tickets: number | null;
+  payment_status: string | null;
+  name_initials: string | null;
+  directus_relations: string | DirectusUser<Schema> | null;
+  is_member: boolean | null;
+  group_name: string | null;
+  transactions: number[] | PubCrawlSignupTransaction[];
 }
 
-export interface DbPubCrawlSignupsTransaction {
-    id: number | null;
-    pub_crawl_signups_id?: number | null;
-    transactions_id?: number | null;
+export interface PubCrawlSignupTransaction {
+  id: number;
+  pub_crawl_signups_id: number | PubCrawlSignup | null;
+  transactions_id: number | Transaction | null;
 }
 
-export interface DbPubCrawlTicket {
-    id: unknown;
-    signup_id?: number | null;
-    name?: string | null;
-    initial?: string | null;
-    qr_token?: string | null;
-    checked_in?: boolean | null;
-    checked_in_at?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
+export interface PubCrawlTicket {
+  id: number;
+  signup_id: number | PubCrawlSignup | null;
+  name: string | null;
+  initial: string | null;
+  qr_token: string | null;
+  checked_in: boolean | null;
+  checked_in_at: string | "datetime" | null;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
 }
 
-export interface DbPushNotification {
-    id: number | null;
-    created_at?: string | null;
-    endpoint?: string | null;
-    user_id?: string | null;
-    keys?: unknown;
-    user_agent?: string | null;
-    last_used?: string | null;
+export interface PushNotification {
+  id: number;
+  created_at: string | "datetime" | null;
+  endpoint: string | null;
+  user_id: string | DirectusUser<Schema> | null;
+  keys: unknown | null;
+  user_agent: string | null;
+  last_used: string | "datetime" | null;
 }
 
-export interface DbRolePermission {
-    id: number | null;
-    role_id?: number | null;
-    permission_id?: number | null;
+export interface RolePermission {
+  id: number;
+  role_id: number;
+  permission_id: number;
 }
 
-export interface DbRole {
-    id: number | null;
-    name?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
+export interface Role {
+  id: number;
+  name: string;
+  created_at: string | "datetime";
+  updated_at: string | "datetime" | null;
 }
 
-export interface DbSafeHaven {
-    id: number | null;
-    contact_name?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    phone_number?: string | null;
-    image?: string | null;
-    user_id?: string | null;
-    email?: string | null;
+export interface SafeHaven {
+  id: number;
+  contact_name: string;
+  created_at: string | "datetime";
+  updated_at: string | "datetime" | null;
+  phone_number: string | null;
+  image: string | DirectusFile<Schema> | null;
+  user_id: string | DirectusUser<Schema> | null;
+  email: string | null;
 }
 
-export interface DbSetting {
+export interface Sponsor {
+  sponsor_id: number;
+  website_url: string | null;
+  image: string | DirectusFile<Schema> | null;
+  dark_bg: boolean | null;
 }
 
-export interface DbSponsor {
-    sponsor_id: number | null;
-    website_url?: string | null;
-    image?: string | null;
-    dark_bg?: boolean | null;
+export interface SystemLog {
+  id: string;
+  type: string;
+  status: string;
+  payload: unknown | null;
+  created_at: string | "datetime" | null;
+  acknowledged_at: string | "datetime" | null;
 }
 
-export interface DbSystemLog {
-    id: string | null;
-    type?: string | null;
-    status?: string | null;
-    payload?: unknown;
-    created_at?: string | null;
+export interface Transaction {
+  id: number;
+  user_id: string | null;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+  transaction_id: string | null;
+  product_name: string | null;
+  email: string | null;
+  amount: number | null;
+  payment_status: "open" | "paid" | "failed" | "canceled" | "expired" | null;
+  registration: number | EventSignup | null;
+  environment: "development" | "production" | null;
+  approval_status: "auto_approved" | "pending" | "approved" | "rejected" | null;
+  approved_by: string | DirectusUser<Schema> | null;
+  approved_at: string | "datetime" | null;
+  first_name: string | null;
+  last_name: string | null;
+  pub_crawl_signup: number | PubCrawlSignup | null;
+  trip_signup: number | TripSignup | null;
+  coupon_code: string | null;
+  product_type: "membership_new" | "membership_renewal" | "event" | "pub_crawl" | "trip" | string;
+  mollie_id: string;
+  access_token: string | null;
+  pub_crawl_signups: number[] | PubCrawlSignupTransaction[];
 }
 
-export interface DbTransaction {
-    id: number | null;
-    user_id?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    transaction_id?: string | null;
-    // Unique identifier from Mollie API for webhook processing and status lookups
-    mollie_id?: string | null;
-    product_name?: string | null;
-    email?: string | null;
-    amount?: number | null;
-    payment_status?: string | null;
-    registration?: number | DbEventSignup | null;
-    environment?: string | null;
-    approval_status?: string | null;
-    approved_by?: string | null;
-    approved_at?: string | null;
-    first_name?: string | null;
-    last_name?: string | null;
-    pub_crawl_signup?: number | DbPubCrawlSignup | null;
-    trip_signup?: number | DbTripSignup | null;
-    coupon_code?: string | null;
-    product_type?: 'event_signup' | 'pub_crawl_signup' | 'membership' | 'trip_signup' | (string & {}) | null;
-    pub_crawl_signups?: unknown;
-    access_token?: string | null;
+export interface TripActivity {
+  id: number;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+  trip_id: number | Trip | null;
+  name: string | null;
+  description: string | null;
+  price: number | null;
+  image: string | DirectusFile<Schema> | null;
+  max_participants: number | null;
+  is_active: boolean | null;
+  display_order: number | null;
+  options: unknown | null;
+  max_selections: number | null;
 }
 
-export interface DbTripActivitie {
-    id: number | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    trip_id?: number | null;
-    name?: string | null;
-    description?: string | null;
-    price?: number | null;
-    image?: string | null;
-    max_participants?: number | null;
-    is_active?: boolean | null;
-    display_order?: number | null;
-    options?: unknown;
-    max_selections?: number | null;
+export interface TripSignupActivity {
+  id: number;
+  created_at: string | "datetime" | null;
+  trip_signup_id: number | TripSignup | null;
+  trip_activity_id: number | TripActivity | null;
+  selected_options: unknown | null;
 }
 
-export interface DbTripSignupActivitie {
-    id: number | null;
-    created_at?: string | null;
-    trip_signup_id?: number | null;
-    trip_activity_id?: number | null;
-    selected_options?: unknown;
+export interface TripSignup {
+  id: number;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+  trip_id: number | Trip | null;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  phone_number: string | null;
+  date_of_birth: string | "datetime" | null;
+  id_document: string | null;
+  allergies: string | null;
+  special_notes: string | null;
+  willing_to_drive: boolean | null;
+  role: string | null;
+  status: string | null;
+  deposit_paid: boolean | null;
+  deposit_paid_at: string | "datetime" | null;
+  full_payment_paid: boolean | null;
+  full_payment_paid_at: string | "datetime" | null;
+  terms_accepted: boolean | null;
+  deposit_email_sent: boolean | null;
+  final_email_sent: boolean | null;
+  document_number: string | null;
+  directus_relations: string | null;
+  access_token: string | null;
+  document_expiry_date: string | "datetime" | null;
+  extra_luggage: boolean | null;
 }
 
-export interface DbTripSignup {
-    id: number | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    trip_id?: number | DbTrip | null;
-    first_name?: string | null;
-    last_name?: string | null;
-    email?: string | null;
-    phone_number?: string | null;
-    date_of_birth?: string | null;
-    id_document?: string | null;
-    allergies?: string | null;
-    special_notes?: string | null;
-    willing_to_drive?: boolean | null;
-    role?: string | null;
-    status?: string | null;
-    deposit_paid?: boolean | null;
-    deposit_paid_at?: string | null;
-    full_payment_paid?: boolean | null;
-    full_payment_paid_at?: string | null;
-    terms_accepted?: boolean | null;
-    deposit_email_sent?: boolean | null;
-    final_email_sent?: boolean | null;
-    document_number?: string | null;
-    directus_relations?: string | null;
-    access_token?: string | null;
+export interface Trip {
+  id: number;
+  status: string | null;
+  name: string | null;
+  description: string | null;
+  image: string | DirectusFile<Schema> | null;
+  registration_open: boolean | null;
+  max_participants: number | null;
+  base_price: number | null;
+  crew_discount: number | null;
+  deposit_amount: number | null;
+  is_bus_trip: boolean | null;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+  start_date: string | "datetime" | null;
+  end_date: string | "datetime" | null;
+  registration_start_date: string | "datetime" | null;
+  max_crew: number | null;
+  allow_final_payments: boolean | null;
 }
 
-export interface DbTrip {
-    id: number | null;
-    status?: string | null;
-    name?: string | null;
-    description?: string | null;
-    image?: string | null;
-    event_date?: string | null;
-    registration_open?: boolean | null;
-    max_participants?: number | null;
-    base_price?: number | null;
-    crew_discount?: number | null;
-    deposit_amount?: number | null;
-    is_bus_trip?: boolean | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-    start_date?: string | null;
-    end_date?: string | null;
-    registration_start_date?: string | null;
-    max_crew?: number | null;
-    allow_final_payments?: boolean | null;
+export interface WhatsappGroup {
+  id: number;
+  name: string;
+  description: string | null;
+  invite_link: string;
+  is_active: boolean | null;
+  requires_membership: boolean | null;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
 }
 
-export interface DbTripsRei {
+export interface CustomDirectusField {
+  searchable: boolean;
 }
 
-export interface DbWhatsappGroup {
-    id: number | null;
-    name?: string | null;
-    description?: string | null;
-    invite_link?: string | null;
-    is_active?: boolean | null;
-    requires_membership?: boolean | null;
-    created_at?: string | null;
-    updated_at?: string | null;
+export interface CustomDirectusSettings {
+  visual_editor_urls: unknown | null;
+  project_id: string | null;
+  mcp_enabled: boolean;
+  mcp_allow_deletes: boolean;
+  mcp_prompts_collection: string | null;
+  mcp_system_prompt_enabled: boolean;
+  mcp_system_prompt: string | null;
+  project_owner: string | null;
+  project_usage: string | null;
+  org_name: string | null;
+  product_updates: boolean | null;
+  project_status: string | null;
+  ai_openai_api_key: string | null;
+  ai_anthropic_api_key: string | null;
+  ai_system_prompt: string | null;
 }
 
-export interface DbAuthAccount {
-    id: string | null;
-    accountId?: string | null;
-    providerId?: string | null;
-    userId?: string | null;
-    accessToken?: string | null;
-    refreshToken?: string | null;
-    idToken?: string | null;
-    accessTokenExpiresAt?: string | null;
-    refreshTokenExpiresAt?: string | null;
-    scope?: string | null;
-    password?: string | null;
-    createdAt?: string | null;
-    updatedAt?: string | null;
+export interface CustomDirectusUser {
+  text_direction: string;
+  entra_id: string | null;
+  fontys_email: string | null;
+  phone_number: string | null;
+  membership_status: string | null;
+  membership_expiry: string | "datetime" | null;
+  minecraft_username: string | null;
+  photo_etag: string | null;
+  date_of_birth: string | "datetime" | null;
+  admin_access: boolean | null;
+  originele_betaaldatum: string | "datetime" | null;
+  emailverified: boolean | null;
+  image: string | null;
+  name: string | null;
+  createdat: string | "datetime" | null;
+  updatedat: string | "datetime" | null;
+  events: string[] | EventDirectusUser[];
 }
 
-export interface DbAuthSession {
-    id: string | null;
-    expiresAt?: string | null;
-    token?: string | null;
-    createdAt?: string | null;
-    updatedAt?: string | null;
-    ipAddress?: string | null;
-    userAgent?: string | null;
-    userId?: string | null;
+export interface CustomDirectusVersion {
+  delta: unknown | null;
 }
 
-export interface DbMembershipHistory {
-    id: string | null;
-    user_id?: string | null;
-    previous_status?: string | null;
-    new_status?: string | null;
-    changed_at?: string | null;
+export interface AuthAccount {
+  id: string;
+  accountId: string;
+  providerId: string;
+  userId: string;
+  accessToken: string | null;
+  refreshToken: string | null;
+  idToken: string | null;
+  accessTokenExpiresAt: string | "datetime" | null;
+  refreshTokenExpiresAt: string | "datetime" | null;
+  scope: string | null;
+  password: string | null;
+  createdAt: string | "datetime";
+  updatedAt: string | "datetime";
 }
 
-export interface DbVerification {
-    id: string | null;
-    identifier?: string | null;
-    value?: string | null;
-    expiresAt?: string | null;
-    createdAt?: string | null;
-    updatedAt?: string | null;
+export interface AuthSession {
+  id: string;
+  expiresAt: string | "datetime";
+  token: string;
+  createdAt: string | "datetime";
+  updatedAt: string | "datetime";
+  ipAddress: string | null;
+  userAgent: string | null;
+  userId: string;
 }
 
-export interface DbDirectusUser {
-    id: string | null;
-    first_name?: string | null;
-    last_name?: string | null;
-    email?: string | null;
-    password?: string | null;
-    location?: string | null;
-    title?: string | null;
-    description?: string | null;
-    tags?: unknown;
-    avatar?: string | null;
-    language?: string | null;
-    tfa_secret?: string | null;
-    status?: string | null;
-    role?: string | null;
-    token?: string | null;
-    last_access?: string | null;
-    last_page?: string | null;
-    provider?: string | null;
-    external_identifier?: string | null;
-    auth_data?: unknown;
-    email_notifications?: boolean | null;
-    appearance?: string | null;
-    theme_dark?: string | null;
-    theme_light?: string | null;
-    theme_light_overrides?: unknown;
-    theme_dark_overrides?: unknown;
-    text_direction?: string | null;
-    entra_id?: string | null;
-    fontys_email?: string | null;
-    phone_number?: string | null;
-    membership_status?: string | null;
-    membership_expiry?: string | null;
-    minecraft_username?: string | null;
-    photo_etag?: string | null;
-    date_of_birth?: string | null;
-    admin_access?: boolean | null;
-    lidmaatschap_verloopdatum?: string | null;
-    originele_betaaldatum?: string | null;
-    // M2M relation to committees via committee_members
-    committees?: unknown[] | null;
+export interface MembershipHistory {
+  id: string;
+  user_id: string | null;
+  previous_status: string | null;
+  new_status: string | null;
+  changed_at: string | "datetime" | null;
 }
 
-export interface DirectusSchema {
-    Board: DbBoard[];
-    Board_Members: DbBoardMember[];
-    Stickers: DbSticker[];
-    club_members: DbClubMember[];
-    clubs: DbClub[];
-    committee_members: DbCommitteeMember[];
-    committees: DbCommittee[];
-    contacts: DbContact[];
-    coupons: DbCoupon[];
-    documents: DbDocument[];
-    event_signups: DbEventSignup[];
-    events: DbEvent[];
-    events_directus_users: DbEventsDirectusUser[];
-    events_members: DbEventsMember[];
-    feature_flags: DbFeatureFlag[];
-    hero_banners: DbHeroBanner[];
-    hero_banners_files: DbHeroBannersFile[];
-    intro: DbIntro[];
-    intro_blog_gallery: DbIntroBlogGallery[];
-    intro_blog_likes: DbIntroBlogLike[];
-    intro_blogs: DbIntroBlog[];
-    intro_parent_signups: DbIntroParentSignup[];
-    intro_planning: DbIntroPlanning[];
-    intro_planning_signups: DbIntroPlanningSignup[];
-    intro_signups: DbIntroSignup[];
-    jobs: DbJob[];
-    kroegentocht: DbKroegentocht[];
-    permissions: DbPermission[];
-    pub_crawl_events: DbPubCrawlEvent[];
-    pub_crawl_signups: DbPubCrawlSignup[];
-    pub_crawl_signups_transactions: DbPubCrawlSignupsTransaction[];
-    pub_crawl_tickets: DbPubCrawlTicket[];
-    push_notification: DbPushNotification[];
-    role_permissions: DbRolePermission[];
-    roles: DbRole[];
-    safe_havens: DbSafeHaven[];
-    settings: DbSetting[];
-    sponsors: DbSponsor[];
-    system_logs: DbSystemLog[];
-    transactions: DbTransaction[];
-    trip_activities: DbTripActivitie[];
-    trip_signup_activities: DbTripSignupActivitie[];
-    trip_signups: DbTripSignup[];
-    trips: DbTrip[];
-    trips_reis: DbTripsRei[];
-    whatsapp_groups: DbWhatsappGroup[];
-    auth_accounts: DbAuthAccount[];
-    auth_sessions: DbAuthSession[];
-    membership_history: DbMembershipHistory[];
-    verification: DbVerification[];
-    directus_users: DbDirectusUser[];
+export interface Verification {
+  id: string;
+  identifier: string;
+  value: string;
+  expiresAt: string | "datetime";
+  createdAt: string | "datetime" | null;
+  updatedAt: string | "datetime" | null;
+}
+
+// GeoJSON Types
+
+export interface GeoJSONPoint {
+  type: "Point";
+  coordinates: [number, number];
+}
+
+export interface GeoJSONLineString {
+  type: "LineString";
+  coordinates: Array<[number, number]>;
+}
+
+export interface GeoJSONPolygon {
+  type: "Polygon";
+  coordinates: Array<Array<[number, number]>>;
+}
+
+export interface GeoJSONMultiPoint {
+  type: "MultiPoint";
+  coordinates: Array<[number, number]>;
+}
+
+export interface GeoJSONMultiLineString {
+  type: "MultiLineString";
+  coordinates: Array<Array<[number, number]>>;
+}
+
+export interface GeoJSONMultiPolygon {
+  type: "MultiPolygon";
+  coordinates: Array<Array<Array<[number, number]>>>;
+}
+
+export interface GeoJSONGeometryCollection {
+  type: "GeometryCollection";
+  geometries: Array<
+    | GeoJSONPoint
+    | GeoJSONLineString
+    | GeoJSONPolygon
+    | GeoJSONMultiPoint
+    | GeoJSONMultiLineString
+    | GeoJSONMultiPolygon
+  >;
 }

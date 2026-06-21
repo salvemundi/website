@@ -12,10 +12,11 @@ const compat = new FlatCompat({
 import securityPlugin from "eslint-plugin-security";
 import unusedImports from "eslint-plugin-unused-imports";
 import eslintComments from "eslint-plugin-eslint-comments";
+import nextConfig from "eslint-config-next";
 
 const eslintConfig = [
     { ignores: [".next/", "node_modules/", "dist/"] },
-    ...compat.extends("next/core-web-vitals", "next/typescript"),
+    ...nextConfig,
     securityPlugin.configs.recommended,
     {
         languageOptions: {
@@ -116,7 +117,13 @@ const eslintConfig = [
                     "selector": "JSXIdentifier[name='Suspense']",
                     "message": "Zero-Skeleton rendering: `<Suspense>` is strictly forbidden. Await data directly at the component/page level to ensure atomic page loads without intermediate loading states."
                 }
-            ]
+            ],
+
+            // ==========================================
+            // 7. REACT COMPILER EXCEPTIONS
+            // ==========================================
+            "react-hooks/set-state-in-effect": "off",
+            "react-hooks/incompatible-library": "off"
         }
     },
     // ---- UITZONDERINGEN (Tenzij het echt niet anders kan) ----
