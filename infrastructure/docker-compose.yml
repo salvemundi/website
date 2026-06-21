@@ -1,6 +1,6 @@
 services:
   v7-core-db:
-    image: postgres:16.6-alpine
+    image: postgres:16-alpine
     container_name: v7-core-db
     restart: always
     env_file:
@@ -25,7 +25,7 @@ services:
       - shared-network
 
   v7-core-redis:
-    image: redis:7.4-alpine
+    image: redis:7-alpine
     container_name: v7-core-redis
     restart: always
     env_file:
@@ -44,7 +44,7 @@ services:
       - shared-network
 
   v7-core-directus:
-    image: directus/directus:11.1.1
+    image: directus/directus:11
     container_name: v7-core-directus
     restart: always
     env_file:
