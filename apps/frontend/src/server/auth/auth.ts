@@ -45,7 +45,18 @@ export const auth = betterAuth({
     debug: true,
     database: pool,
     secret: authEnv.BETTER_AUTH_SECRET,
-    baseURL: authEnv.BETTER_AUTH_URL,
+    baseURL: authEnv.BETTER_AUTH_TRUSTED_ORIGINS
+        ? {
+            allowedHosts: authEnv.BETTER_AUTH_TRUSTED_ORIGINS.split(',').map(o => {
+                try {
+                    return new URL(o).host;
+                } catch {
+                    return o;
+                }
+            }),
+            fallback: authEnv.BETTER_AUTH_URL
+          }
+        : authEnv.BETTER_AUTH_URL,
     trustedOrigins: authEnv.BETTER_AUTH_TRUSTED_ORIGINS
         ? authEnv.BETTER_AUTH_TRUSTED_ORIGINS.split(',')
         : [authEnv.BETTER_AUTH_URL],
