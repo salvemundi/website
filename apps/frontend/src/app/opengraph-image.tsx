@@ -1,4 +1,3 @@
-// OG-image route voor de homepage
 import { generateGradientOGImage } from '@/lib/utils/og-utils';
 
 export const alt = 'Salve Mundi - Studievereniging ICT';

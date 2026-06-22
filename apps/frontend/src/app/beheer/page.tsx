@@ -20,7 +20,6 @@ export const metadata = {
     title: 'Beheer Dashboard | SV Salve Mundi' };
 
 export default async function BeheerPage() {
-    // NUCLEAR SSR: All access and permission checks must happen before flushing the shell
     const access = await checkAdminAccess().catch(() => null);
     if (!access || !access.user || !access.isAuthorized) {
         return (
@@ -34,7 +33,6 @@ export default async function BeheerPage() {
         );
     }
 
-    // Fetch all dashboard data concurrently
     const [
         permissions,
         stats,
@@ -49,7 +47,6 @@ export default async function BeheerPage() {
         getTopStickers()
     ]);
     
-    // Permission-aware dashboard layout
     const allPermissions = [
         permissions.canAccessIntro,
         permissions.canAccessReis,

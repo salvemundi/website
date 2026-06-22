@@ -8,14 +8,7 @@
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
-        "baseUrl": ".",
-        "paths": {
-            "@salvemundi/validations": [
-                "../../packages/validations/src/index.ts"
-            ]
-        },
-        "ignoreDeprecations": "6.0"
+        "forceConsistentCasingInFileNames": true
     },
     "include": [
         "src/**/*"

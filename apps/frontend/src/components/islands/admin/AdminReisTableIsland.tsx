@@ -141,6 +141,7 @@ export default function AdminReisTableIsland({
                     roleFilter={roleFilter}
                     onRoleChange={setRoleFilter}
                     onDownloadCSV={downloadCSVExport}
+                    tripId={trip.id}
                 />
 
                 <ReisTable

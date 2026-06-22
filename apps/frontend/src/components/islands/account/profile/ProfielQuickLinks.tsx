@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { ChevronRight, CreditCard, MessageCircle, Shield } from 'lucide-react';
 import { Tile, QuickLink } from './ProfielUI';
 

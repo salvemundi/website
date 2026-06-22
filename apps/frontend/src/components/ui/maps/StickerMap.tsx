@@ -246,7 +246,7 @@ export default function StickerMap({
                                 </div>
 
                                 {popupInfo.description && (
-                                    <p className="text-xs sm:text-sm text-(--text-subtle) leading-relaxed bg-(--bg-main)/50 p-3 rounded-2xl border border-(--border-color)/10 break-words">
+                                    <p className="text-xs sm:text-sm text-(--text-subtle) leading-relaxed bg-(--bg-main)/50 p-3 rounded-2xl border border-(--border-color)/10 wrap-break-word">
                                         {popupInfo.description}
                                     </p>
                                 )}
@@ -266,7 +266,7 @@ export default function StickerMap({
                                             <button
                                                 type="button"
                                                 onClick={() => setShowImage(true)}
-                                                className="w-full py-2.5 bg-gradient-to-r from-(--theme-purple) to-(--theme-purple-dark) text-white rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-[9px] sm:text-[10px]"
+                                                className="w-full py-2.5 bg-linear-to-r from-(--theme-purple) to-(--theme-purple-dark) text-white rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-[9px] sm:text-[10px]"
                                             >
                                                 <Camera className="h-3.5 w-3.5" />
                                                 Bekijk Foto Bewijs

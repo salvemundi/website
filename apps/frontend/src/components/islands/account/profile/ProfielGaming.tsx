@@ -61,7 +61,7 @@ export default function ProfielGaming({
                         </div>
                         </form>
                     ) : (
-                        <p className="break-words font-bold text-purple-700 dark:text-white text-sm min-w-0 flex-1">
+                        <p className="wrap-break-word font-bold text-purple-700 dark:text-white text-sm min-w-0 flex-1">
                             {formatForBreak(user.minecraft_username) || "Niet ingesteld"}
                         </p>
                     )}

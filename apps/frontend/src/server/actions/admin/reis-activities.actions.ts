@@ -1,5 +1,7 @@
 'use server';
 
+import { z } from 'zod';
+
 import { revalidateTag, revalidatePath } from 'next/cache';
 import {
     tripActivitySchema
@@ -8,7 +10,6 @@ import { getSystemDirectus } from '@/lib/directus';
 import {
     updateItem,
     deleteItem,
-    createItem
 } from '@directus/sdk';
 import { requireAdminResource } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
@@ -22,14 +23,17 @@ import { safeConsoleError } from '@/server/utils/logger';
 export async function createTripActivity(formData: FormData) {
     await requireAdminResource(AdminResource.Reis);
 
+    const maxParticipantsRaw = formData.get('max_participants') as string;
+    const maxSelectionsRaw = formData.get('max_selections') as string;
+
     const rawData = {
         name: formData.get('name') as string,
         description: formData.get('description') as string,
         price: formData.get('price') === '' ? null : parseFloat(formData.get('price') as string),
         is_active: formData.get('is_active') === 'on' || formData.get('is_active') === 'true',
-        display_order: formData.get('display_order') === '' ? null : parseInt(formData.get('display_order') as string),
-        max_participants: formData.get('max_participants') === '' ? null : parseInt(formData.get('max_participants') as string),
-        max_selections: formData.get('max_selections') === '' ? null : parseInt(formData.get('max_selections') as string),
+        display_order: formData.get('display_order') === '' ? 0 : parseInt(formData.get('display_order') as string),
+        ...(maxParticipantsRaw && maxParticipantsRaw !== '' ? { max_participants: parseInt(maxParticipantsRaw) } : {}),
+        ...(maxSelectionsRaw && maxSelectionsRaw !== '' ? { max_selections: parseInt(maxSelectionsRaw) } : {}),
         trip_id: formData.get('trip_id') === '' ? null : parseInt(formData.get('trip_id') as string),
         options: (() => {
             try {
@@ -42,9 +46,11 @@ export async function createTripActivity(formData: FormData) {
 
     const validated = tripActivitySchema.omit({ id: true }).safeParse(rawData);
     if (!validated.success) {
+        safeConsoleError('[reis-activities.actions.ts][createTripActivity] Validation failed:', z.flattenError(validated.error).fieldErrors);
+        safeConsoleError('[reis-activities.actions.ts][createTripActivity] Raw data:', rawData);
         return {
             error: "Sommige velden zijn niet correct ingevuld. Controleer het formulier.",
-            fieldErrors: validated.error.flatten().fieldErrors,
+            fieldErrors: z.flattenError(validated.error).fieldErrors,
             success: false,
             initialData: rawData
         };
@@ -54,8 +60,9 @@ export async function createTripActivity(formData: FormData) {
         const newId = await createTripActivityDb(validated.data);
         if (!newId) throw new Error('Database insert failed');
 
-        getSystemDirectus().request(createItem('trip_activities', validated.data)).catch((error) => {
-            safeConsoleError(`[reis-activities.actions.ts][createTripActivity] Failed to create trip activity ${newId}:`, error);
+        // Shadow Write (Directus)
+        getSystemDirectus().request(updateItem('trip_activities', newId, validated.data)).catch((error) => {
+            safeConsoleError(`[reis-activities.actions.ts][createTripActivity] Directus shadow write failed for ${newId}:`, error);
         });
 
         revalidateTag('trip_activities', 'max');
@@ -78,14 +85,17 @@ export async function updateTripActivity(formData: FormData) {
     const id = parseInt(formData.get('id') as string);
     if (!id) throw new Error('Geen ID gevonden voor update');
 
+    const maxParticipantsRaw = formData.get('max_participants') as string;
+    const maxSelectionsRaw = formData.get('max_selections') as string;
+
     const rawData = {
         name: formData.get('name') as string,
         description: formData.get('description') as string,
         price: formData.get('price') === '' ? null : parseFloat(formData.get('price') as string),
         is_active: formData.get('is_active') === 'on' || formData.get('is_active') === 'true',
-        display_order: formData.get('display_order') === '' ? null : parseInt(formData.get('display_order') as string),
-        max_participants: formData.get('max_participants') === '' ? null : parseInt(formData.get('max_participants') as string),
-        max_selections: formData.get('max_selections') === '' ? null : parseInt(formData.get('max_selections') as string),
+        display_order: formData.get('display_order') === '' ? 0 : parseInt(formData.get('display_order') as string),
+        ...(maxParticipantsRaw && maxParticipantsRaw !== '' ? { max_participants: parseInt(maxParticipantsRaw) } : {}),
+        ...(maxSelectionsRaw && maxSelectionsRaw !== '' ? { max_selections: parseInt(maxSelectionsRaw) } : {}),
         trip_id: formData.get('trip_id') === '' ? null : parseInt(formData.get('trip_id') as string),
         options: (() => {
             try {
@@ -101,7 +111,7 @@ export async function updateTripActivity(formData: FormData) {
     if (!validated.success) {
         return {
             error: "Sommige velden zijn niet correct ingevuld. Controleer het formulier.",
-            fieldErrors: validated.error.flatten().fieldErrors,
+            fieldErrors: z.flattenError(validated.error).fieldErrors,
             success: false,
             initialData: rawData
         };

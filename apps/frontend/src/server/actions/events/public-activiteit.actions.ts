@@ -1,5 +1,7 @@
 'use server';
 
+import { z } from 'zod';
+
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
 import { type EventSignup } from '@salvemundi/validations/directus/schema';
@@ -108,7 +110,7 @@ export async function signupForActivity(data: EventSignupForm) {
 
     const parsed = eventSignupFormSchema.safeParse(data);
     if (!parsed.success) {
-        return { success: false, errors: parsed.error.flatten().fieldErrors };
+        return { success: false, errors: z.flattenError(parsed.error).fieldErrors };
     }
 
     if (parsed.data.website) {

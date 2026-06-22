@@ -1,5 +1,7 @@
 'use server';
 
+import { z } from 'zod';
+
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getSystemDirectus } from "@/lib/directus";
 import {
@@ -84,7 +86,7 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
     if (!validated.success) {
         return {
             error: "Sommige velden zijn niet correct ingevuld. Controleer het formulier.",
-            fieldErrors: validated.error.flatten().fieldErrors,
+            fieldErrors: z.flattenError(validated.error).fieldErrors,
             success: false,
             initialData: rawData
         };
@@ -188,7 +190,7 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
         if (!validated.success) {
             return {
                 error: "Sommige velden zijn niet correct ingevuld. Controleer het formulier.",
-                fieldErrors: validated.error.flatten().fieldErrors,
+                fieldErrors: z.flattenError(validated.error).fieldErrors,
                 success: false,
                 initialData: rawData
             };

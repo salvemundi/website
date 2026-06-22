@@ -1,5 +1,7 @@
 'use server';
 
+import { z } from 'zod';
+
 import {
     signupSchema,
     validateCouponSchema,
@@ -61,7 +63,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     const parsed = signupSchema.safeParse(formData);
 
     if (!parsed.success) {
-        return { success: false, errors: parsed.error.flatten().fieldErrors };
+        return { success: false, errors: z.flattenError(parsed.error).fieldErrors };
     }
 
     const { success } = await rateLimit('membership-signup', 3, 300);

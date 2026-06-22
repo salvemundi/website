@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
-import { Mail, Settings2, Plane, LayoutDashboard } from 'lucide-react';
+import { Settings2, Plane, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -129,22 +129,13 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
                             activeTripId={activeTripId as number}
                         />
 
-                        <div className="flex items-center gap-1.5">
-                            <Link
-                                href="/beheer/reis/mail"
-                                className="flex items-center justify-center gap-2 px-4 py-2 bg-bg-card border border-border-color text-text-main rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm"
-                            >
-                                <Mail className="h-3.5 w-3.5" />
-                                <span className="hidden sm:inline">Mailen</span>
-                            </Link>
-                            <Link
-                                href="/beheer/reis/instellingen"
-                                className="flex items-center justify-center gap-2 px-4 py-2 bg-bg-card border border-border-color text-text-main rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm"
-                            >
-                                <Settings2 className="h-3.5 w-3.5" />
-                                <span className="hidden sm:inline">Instellingen</span>
-                            </Link>
-                        </div>
+                        <Link
+                            href="/beheer/reis/instellingen"
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-bg-card border border-border-color text-text-main rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm"
+                        >
+                            <Settings2 className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">Instellingen</span>
+                        </Link>
 
                         <ReisVisibilityToggle initialVisible={_reisSettings.show} />
                     </div>
