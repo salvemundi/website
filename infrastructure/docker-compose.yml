@@ -25,7 +25,7 @@ services:
       - shared-network
 
   v7-core-redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: v7-core-redis
     restart: always
     env_file:
