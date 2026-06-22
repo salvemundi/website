@@ -175,7 +175,7 @@ export async function updateTripSignup(prevState: unknown, formData: FormData) {
 
     const validated = tripSignupSchema.partial().safeParse(data);
     if (!validated.success) {
-        return { success: false, error: 'Sommige velden zijn niet correct ingevuld. Controleer het formulier.', fieldErrors: validated.error.flatten().fieldErrors, initialData: rawData };
+        return { success: false, error: 'Sommige velden zijn niet correct ingevuld. Controleer het formulier.', fieldErrors: z.flattenError(validated.error).fieldErrors, initialData: rawData };
     }
 
     try {

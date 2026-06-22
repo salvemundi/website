@@ -27,7 +27,7 @@ export function Tile({
                                 </div>
                             )}
                             {title && (
-                                <h2 className="min-w-0 break-words whitespace-normal text-xl sm:text-2xl font-bold text-purple-700 dark:text-white">
+                                <h2 className="min-w-0 wrap-break-word whitespace-normal text-xl sm:text-2xl font-bold text-purple-700 dark:text-white">
                                     {title}
                                 </h2>
                             )}

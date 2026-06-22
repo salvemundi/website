@@ -1,5 +1,7 @@
 'use server';
 
+import { z } from 'zod';
+
 import 'server-only';
 import { revalidatePath } from "next/cache";
 import {
@@ -39,7 +41,7 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
 
     const validated = introBlogSchema.safeParse(sanitized);
     if (!validated.success) {
-        const fieldErrors = validated.error.flatten().fieldErrors;
+        const fieldErrors = z.flattenError(validated.error).fieldErrors;
         return {
             success: false,
             error: `Validatie mislukt: ${Object.keys(fieldErrors).join(', ')}`,

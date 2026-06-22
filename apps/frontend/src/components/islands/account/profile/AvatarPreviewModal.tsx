@@ -10,9 +10,6 @@ interface AvatarPreviewModalProps {
     onCancel: () => void;
 }
 
-/**
- * Modal voor het bevestigen van een nieuwe profielfoto.
- */
 export default function AvatarPreviewModal({ 
     preview, 
     isPending, 
@@ -20,7 +17,7 @@ export default function AvatarPreviewModal({
     onCancel 
 }: AvatarPreviewModalProps) {
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
             <div className="bg-(--bg-card) squircle-xl p-8 max-w-sm w-full shadow-2xl border border-white/10 flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
                 <h3 className="text-2xl font-black text-white mb-6">Nieuwe profielfoto</h3>
                 

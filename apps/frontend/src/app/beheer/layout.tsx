@@ -10,10 +10,8 @@ interface BeheerLayoutProps {
 export default async function BeheerLayout({ children }: BeheerLayoutProps) {
     await connection();
     
-    // NUCLEAR SSR: Use centralized checkAdminAccess which handles committee enrichment
     const { user, isAuthorized } = await checkAdminAccess();
     
-    // Deep RBAC: Controleer of de gebruiker geautoriseerd is (minimaal één commissie of ICT/Admin).
     if (!isAuthorized || !user) {
         notFound();
     }

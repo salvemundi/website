@@ -6,8 +6,6 @@ import { readItems } from '@directus/sdk';
 import { notFound } from 'next/navigation';
 import { getTripSignupActivitiesAction } from '@/server/actions/admin/reis-signups.actions';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import Link from 'next/link';
-import { Ticket } from 'lucide-react';
 import { safeConsoleError } from '@/server/utils/logger';
 
 interface PageProps {
@@ -98,23 +96,6 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
             title={`Reis Activiteiten — ${activeTrip.name}`}
             subtitle="Beheer activiteiten en inschrijvingen per activiteit"
             backHref="/beheer/reis"
-            actions={
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-4 bg-(--beheer-card-soft) px-4 py-2 rounded-2xl border border-(--beheer-border)/50 shadow-sm mr-2">
-                        <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-(--beheer-text-muted) leading-none mb-1">Activiteiten</span>
-                            <span className="text-sm font-bold text-(--beheer-accent) leading-none">{activities.length}</span>
-                        </div>
-                    </div>
-                    <Link
-                        href={`/beheer/reis?tripId=${activeTripId}`}
-                        className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-xl text-[11px] font-semibold hover:border-(--beheer-accent)/50 transition-all shadow-sm"
-                    >
-                        <Ticket className="h-3.5 w-3.5 text-(--beheer-accent)" />
-                        Dashboard
-                    </Link>
-                </div>
-            }
         >
             <ReisActiviteitenIsland
                 initialTrips={trips}

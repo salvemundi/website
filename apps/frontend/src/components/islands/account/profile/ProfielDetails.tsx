@@ -83,7 +83,7 @@ export default function ProfielDetails({
                         <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-300">
                             <Mail className="h-5 w-5" />
                         </div>
-                        <p className="font-bold text-purple-700 dark:text-white break-words text-xs sm:text-sm leading-tight min-w-0 flex-1">
+                        <p className="font-bold text-purple-700 dark:text-white wrap-break-word text-xs sm:text-sm leading-tight min-w-0 flex-1">
                             {formatForBreak(user.email) || 'Geen email'}
                         </p>
                     </div>
@@ -100,7 +100,7 @@ export default function ProfielDetails({
                             <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-300">
                                 <Mail className="h-5 w-5" />
                             </div>
-                            <p className="font-bold text-purple-700 dark:text-white break-words text-xs sm:text-sm leading-tight min-w-0 flex-1">
+                            <p className="font-bold text-purple-700 dark:text-white wrap-break-word text-xs sm:text-sm leading-tight min-w-0 flex-1">
                                 {formatForBreak(user.fontys_email)}
                             </p>
                         </div>

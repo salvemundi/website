@@ -11,7 +11,6 @@ import AdminToast from '@/components/ui/admin/AdminToast';
 
 import { useAdminToast } from '@/hooks/use-admin-toast';
 
-// Reuse sub-components from Phase 2
 import TripActivityCard from './reis/TripActivityCard';
 import TripActivityForm from './reis/TripActivityForm';
 import TripActivitySignupsModal, { type Signup } from './reis/TripActivitySignupsModal';
@@ -131,7 +130,6 @@ export default function ReisActiviteitenIsland({
 
 
 
-                {/* Form Section */}
                 {editingActivity && (
                     <TripActivityForm
                         activity={editingActivity}
@@ -141,7 +139,6 @@ export default function ReisActiviteitenIsland({
                     />
                 )}
 
-                {/* List View */}
                 {activities.length === 0 && !editingActivity ? (
                     <div className="py-24 text-center bg-(--beheer-card-bg) rounded-3xl border-2 border-dashed border-(--beheer-border)/20">
                         <Layers className="h-12 w-12 text-(--beheer-text-muted) mx-auto mb-4 opacity-10" />
@@ -165,7 +162,6 @@ export default function ReisActiviteitenIsland({
                     )
                 )}
 
-                {/* Signups Modal */}
                 {viewingSignupsId && (
                     <TripActivitySignupsModal
                         activityName={activities.find(a => a.id === viewingSignupsId)?.name || ''}

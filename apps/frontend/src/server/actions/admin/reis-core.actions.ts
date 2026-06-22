@@ -1,5 +1,7 @@
 'use server';
 
+import { z } from 'zod';
+
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { query } from '@/lib/database';
 import { getSystemDirectus } from '@/lib/directus';
@@ -81,7 +83,7 @@ export async function createTrip(prevState: unknown, formData: FormData) {
             return {
                 success: false,
                 error: 'Sommige velden zijn niet correct ingevuld.',
-                fieldErrors: validated.error.flatten().fieldErrors,
+                fieldErrors: z.flattenError(validated.error).fieldErrors,
                 initialData: rawData
             };
         }
@@ -151,7 +153,7 @@ export async function updateTrip(prevState: unknown, formData: FormData) {
             return {
                 success: false,
                 error: 'Sommige velden zijn niet correct ingevuld.',
-                fieldErrors: validated.error.flatten().fieldErrors,
+                fieldErrors: z.flattenError(validated.error).fieldErrors,
                 initialData: rawData
             };
         }

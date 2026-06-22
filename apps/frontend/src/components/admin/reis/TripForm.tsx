@@ -261,11 +261,16 @@ export default function TripForm({
                                 <h2 className="text-[10px] font-semibold tracking-widest text-(--beheer-text)">Financiën</h2>
                             </div>
                             <div className="p-6 space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <label htmlFor="base_price" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Totale Prijs (€) *</label>
                                         <input type="number" id="base_price" name="base_price" step="0.01" min="0" className={`beheer-input ${formErrors.base_price ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={(state?.initialData?.base_price as number) || editingTrip?.base_price} />
                                         {formErrors.base_price && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.base_price[0]}</p>}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="crew_discount" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Crewkorting (€)</label>
+                                        <input type="number" id="crew_discount" name="crew_discount" step="0.01" min="0" className={`beheer-input ${formErrors.crew_discount ? 'border-red-500' : ''}`} placeholder="20.00" defaultValue={(state?.initialData?.crew_discount as number) || editingTrip?.crew_discount} />
+                                        {formErrors.crew_discount && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.crew_discount[0]}</p>}
                                     </div>
                                     <div>
                                         <label htmlFor="deposit_amount" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Aanbetaling (€) *</label>

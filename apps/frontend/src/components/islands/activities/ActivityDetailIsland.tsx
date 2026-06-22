@@ -41,7 +41,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                         priority
                         className="object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-(--bg-main) via-(--bg-main)/40 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-(--bg-main) via-(--bg-main)/40 to-transparent" />
                     <div className="absolute inset-x-0 bottom-0 max-w-7xl mx-auto px-4 pb-12">
                         <div className="max-w-3xl space-y-4">
                             <span className="inline-block px-4 py-1.5 rounded-full bg-(--theme-purple) text-white text-[11px] font-black uppercase tracking-widest mb-4 shadow-xl border border-white/10">
@@ -146,7 +146,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                     <>
                                         <hr className="my-8 border-(--border-color)/50" />
                                         <div className="flex items-center gap-3 mb-6">
-                                            <div className="h-6 w-1.5 bg-amber-500 rounded-full shadow-[0_0_10px_theme(colors.amber.500)]" />
+                                            <div className="h-6 w-1.5 bg-amber-500 rounded-full shadow-[0_0_10px_var(--color-amber-500)]" />
                                             <h3 className="text-xl font-black text-amber-500/90 uppercase tracking-widest">
                                                 Extra Informatie (alleen ingelogd)
                                             </h3>

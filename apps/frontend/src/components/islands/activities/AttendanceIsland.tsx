@@ -160,7 +160,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
             </div>
 
             {scanning && (
-                <div className="fixed inset-0 z-[9999] bg-black/80 flex flex-col items-center justify-center p-4 isolate">
+                <div className="fixed inset-0 z-200 bg-black/80 flex flex-col items-center justify-center p-4 isolate">
                     <div id="reader" className="scanner-reader w-full max-w-md bg-(--bg-card) squircle-lg overflow-hidden shadow-2xl" />
                     <button
                         onClick={() => setScanning(false)}

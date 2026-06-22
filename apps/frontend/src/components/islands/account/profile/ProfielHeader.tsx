@@ -92,12 +92,12 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                 </div>
 
                 <div className="min-w-0 w-full">
-                    <h2 className="text-xl sm:text-2xl font-extrabold text-purple-700 dark:text-white break-words">
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-purple-700 dark:text-white wrap-break-word">
                         {displayName}
                     </h2>
 
                     <div className="mt-4 flex flex-wrap justify-center">
-                        <span className={`px-6 py-2 ${membershipStatus.color} ${membershipStatus.textColor} text-[11px] font-black uppercase tracking-wider rounded-full shadow-md transition-all text-center break-words max-w-full`}>
+                        <span className={`px-6 py-2 ${membershipStatus.color} ${membershipStatus.textColor} text-[11px] font-black uppercase tracking-wider rounded-full shadow-md transition-all text-center wrap-break-word max-w-full`}>
                             {membershipStatus.text || 'Gebruiker'}
                         </span>
                     </div>
@@ -114,7 +114,7 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                                         className="group relative inline-flex items-center gap-2 px-4 py-2 bg-licht-paars/10 dark:bg-white/5 border border-licht-paars/20 dark:border-white/10 rounded-full text-xs font-bold text-purple-700 dark:text-white shadow-sm max-w-full"
                                     >
                                         {committee.is_leader && !committee.name.toLowerCase().includes('bestuur') && (
-                                            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border-2 border-bg-card shadow-md flex items-center justify-center shrink-0">
+                                            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-linear-to-br from-yellow-400 to-yellow-600 border-2 border-bg-card shadow-md flex items-center justify-center shrink-0">
                                                 <Star className="h-2 w-2 text-white fill-current shrink-0" />
                                             </span>
                                         )}

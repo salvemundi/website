@@ -196,7 +196,7 @@ export default function ActivitiesProviderIsland({
 
             <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
                 {selectedDay && (
-                    <aside className="lg:w-96 xl:w-[28rem] space-y-6">
+                    <aside className="lg:w-96 xl:w-md space-y-6">
                         <DayDetails
                             selectedDay={selectedDay}
                             activities={events}

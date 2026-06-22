@@ -123,7 +123,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
 
             {mounted && createPortal(
                 selectedTicket && (
-                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 isolate">
+                    <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 isolate">
                         <div
                             onClick={handleCloseModal}
                             className="absolute inset-0 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300"

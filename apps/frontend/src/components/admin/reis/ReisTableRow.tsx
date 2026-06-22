@@ -42,7 +42,7 @@ export default function ReisTableRow({
         <div
             onClick={() => onSelect(signup)}
             className={`
-                relative bg-(--beheer-card-bg) border border-(--beheer-border)/60 rounded-[2rem] squircle-lg transition-all duration-300 cursor-pointer group flex flex-col
+                relative bg-(--beheer-card-bg) border border-(--beheer-border)/60 rounded-4xl squircle-lg transition-all duration-300 cursor-pointer group flex flex-col
                 ${isSelected ? 'shadow-2xl border-(--beheer-accent) ring-2 ring-(--beheer-accent)/20' : 'hover:shadow-lg hover:border-(--beheer-accent)/20 shadow-sm'}
             `}
         >
@@ -65,7 +65,7 @@ export default function ReisTableRow({
                         >
                             <Edit className="h-4 w-4" />
                         </button>
-                        <div className="w-[1px] h-4 bg-(--beheer-border)/20 mx-0.5" />
+                        <div className="w-px h-4 bg-(--beheer-border)/20 mx-0.5" />
                         <button
                             onClick={(e) => { e.stopPropagation(); onDelete(signup.id); }}
                             disabled={isDeleteLoading}
@@ -179,7 +179,7 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
 
             {isOpen && (
                 <div
-                    className="absolute bottom-full left-0 mb-2 w-full min-w-[160px] bg-(--beheer-card-bg) border border-(--beheer-border)/60 rounded-2xl shadow-2xl z-[100] overflow-hidden backdrop-blur-md animate-in fade-in zoom-in-95 slide-in-from-bottom-1 duration-150 ease-out"
+                    className="absolute bottom-full left-0 mb-2 w-full min-w-[160px] bg-(--beheer-card-bg) border border-(--beheer-border)/60 rounded-2xl shadow-2xl z-100 overflow-hidden backdrop-blur-md animate-in fade-in zoom-in-95 slide-in-from-bottom-1 duration-150 ease-out"
                 >
                     <div className="p-1.5 space-y-0.5">
                         {statuses.map((s) => (

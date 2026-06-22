@@ -136,7 +136,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
 
     const parsed = pubCrawlSignupSchema.safeParse(formData);
     if (!parsed.success) {
-        return { success: false, errors: parsed.error.flatten().fieldErrors };
+        return { success: false, errors: z.flattenError(parsed.error).fieldErrors };
     }
 
     if (parsed.data.website) {

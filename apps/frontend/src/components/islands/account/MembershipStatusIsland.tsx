@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useTransition } from 'react';
+import { useTransition } from 'react';
 import DeletionTimer from '@/components/ui/account/DeletionTimer';
 import { initiateMembershipPaymentAction } from '@/server/actions/profile/membership.actions';
 import type { SignupFormData } from '@salvemundi/validations/schema/membership.zod';
@@ -75,7 +75,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                         <p className="font-bold text-xl leading-tight dark:text-white">
                             {user.first_name} {user.last_name}
                         </p>
-                        <p className="opacity-60 dark:text-white/60 text-sm break-words font-medium">
+                        <p className="opacity-60 dark:text-white/60 text-sm wrap-break-word font-medium">
                             <span className="opacity-70">E-mailadres:</span> {user.email.split('').map((char, i) => (
                                 <span key={i}>
                                     {char}

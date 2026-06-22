@@ -1,5 +1,7 @@
 'use server';
 
+import { z } from 'zod';
+
 import {
     reisPaymentEnrichmentSchema
 } from '@salvemundi/validations/schema/reis.zod';
@@ -118,7 +120,7 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
 
         const validated = reisPaymentEnrichmentSchema.safeParse(data);
         if (!validated.success) {
-            return { success: false, error: 'Vul alle verplichte velden correct in.', fieldErrors: validated.error.flatten().fieldErrors };
+            return { success: false, error: 'Vul alle verplichte velden correct in.', fieldErrors: z.flattenError(validated.error).fieldErrors };
         }
 
         const { is_bus_trip: _, ...dbData } = validated.data;
