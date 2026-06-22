@@ -17,6 +17,7 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  NODE_OPTIONS: "--no-deprecation"
 
 jobs:
   prepare:
@@ -32,10 +33,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
+      - run: npm install -g pnpm@11.8.0
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter=@salvemundi/validations build
       - run: pnpm type-check
