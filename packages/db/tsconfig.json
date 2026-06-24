@@ -9,7 +9,8 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node"],
     "outDir": "dist",
+    "rootDir": "src",
     "declaration": true
   },
-  "include": ["src/**/*", "drizzle.config.ts"]
+  "include": ["src/**/*"]
 }
