@@ -38,6 +38,7 @@ jobs:
       - run: npm install -g pnpm@11.8.0
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter=@salvemundi/validations build
+      - run: pnpm --filter=@salvemundi/db build
       - run: pnpm type-check
       - run: pnpm -r lint
 
