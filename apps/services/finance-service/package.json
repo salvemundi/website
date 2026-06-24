@@ -11,11 +11,12 @@
   "dependencies": {
     "@directus/sdk": "^22.0.0",
     "@mollie/api-client": "^4.5.0",
+    "@salvemundi/db": "workspace:*",
     "@salvemundi/validations": "workspace:*",
+    "drizzle-orm": "0.45.2",
     "fastify": "5.8.5",
     "fastify-plugin": "^6.0.0",
     "ioredis": "^5.11.1",
-    "kysely": "0.29.2",
     "pg": "^8.22.0",
     "zod": "^4.4.3"
   },

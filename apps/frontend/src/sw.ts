@@ -5,7 +5,8 @@ import type { PrecacheEntry } from "@serwist/precaching";
 import { 
   Serwist, 
   NetworkFirst, 
-  CacheFirst, 
+  CacheFirst,
+  NetworkOnly,
   ExpirationPlugin, 
   CacheableResponsePlugin 
 } from "serwist";
@@ -43,7 +44,6 @@ const serwist = new Serwist({
           }),
         ] }) },
     {
-      // Cache local images with CacheFirst (Aggressive caching for static UI elements)
       matcher: ({ url }) => {
         return url.pathname.startsWith("/img/");
       },
@@ -57,6 +57,10 @@ const serwist = new Serwist({
             maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
           }),
         ] }) },
+    {
+      matcher: ({ request }) => request.method === 'POST',
+      handler: new NetworkOnly()
+    },
     ...defaultCache,
   ] });
 

@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { getSystemDirectus } from '@/lib/directus';
-import { updateItem, deleteItem, createItem } from '@directus/sdk';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { hasPermission } from '@/shared/lib/permissions';
 import { type EnrichedUser } from '@/types/auth';
@@ -19,19 +19,6 @@ async function checkAccess() {
     }
 
     return session;
-}
-
-interface DirectusCouponResponse {
-    id?: number | null;
-    coupon_code?: string | null;
-    discount_type?: string | null;
-    discount_value?: number | null;
-    usage_count?: number | null;
-    usage_limit?: number | null;
-    valid_from?: string | null;
-    valid_until?: string | null;
-    is_active?: boolean | null;
-    date_created?: string | null;
 }
 
 import { type Coupon } from '@/components/islands/admin/coupons/coupon-types';
@@ -69,20 +56,21 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
         }
     }
 
-    const payload: { [key: string]: unknown } = {
-        coupon_code: code.trim().toUpperCase(),
-        discount_type: discountType,
-        discount_value: discountValue,
-        is_active: isActive,
-        usage_count: 0,
-        usage_limit: usageLimit,
-        valid_from: validFrom || null,
-        valid_until: validUntil || null
-    };
-
-    await getEnrichedSession();
     try {
-        const item = (await getSystemDirectus().request(createItem('coupons', payload))) as unknown as DirectusCouponResponse;
+        const inserted = await db.insert(schema.coupons).values({
+            coupon_code: code.trim().toUpperCase(),
+            discount_type: discountType,
+            discount_value: discountValue,
+            is_active: isActive,
+            usage_count: 0,
+            usage_limit: usageLimit,
+            valid_from: validFrom || null,
+            valid_until: validUntil || null
+        }).returning();
+
+        if (inserted.length === 0) throw new Error('Insert returned no data');
+        const item = inserted[0];
+
         revalidatePath('/beheer/coupons');
 
         const newCoupon: Coupon = {
@@ -93,16 +81,15 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
             discount_value: Number(item.discount_value),
             usage_count: Number(item.usage_count),
             usage_limit: item.usage_limit ? Number(item.usage_limit) : null,
-            valid_from: item.valid_from || null,
-            valid_until: item.valid_until || null,
+            valid_from: item.valid_from ? new Date(item.valid_from).toISOString() : null,
+            valid_until: item.valid_until ? new Date(item.valid_until).toISOString() : null,
             is_active: !!item.is_active,
-            date_created: item.date_created || undefined
+            date_created: item.date_created ? new Date(item.date_created).toISOString() : undefined
         };
 
         return { success: true, data: newCoupon };
     } catch (error) {
         safeConsoleError(`[admin-coupons.actions.ts][createCoupon] Failed to create coupon`, error);
-        // Directus SDK errors might contain more info, but for simplicity:
         return { success: false, error: 'Aanmaken mislukt (controleer op unieke code of velden)' };
     }
 }
@@ -110,7 +97,7 @@ export async function createCoupon(formData: FormData): Promise<{ success: boole
 export async function deleteCoupon(id: number): Promise<{ success: boolean; error?: string }> {
     await checkAccess();
     try {
-        await getSystemDirectus().request(deleteItem('coupons', id));
+        await db.delete(schema.coupons).where(eq(schema.coupons.id, id));
         revalidatePath('/beheer/coupons');
         return { success: true };
     } catch (error) {
@@ -122,7 +109,7 @@ export async function deleteCoupon(id: number): Promise<{ success: boolean; erro
 export async function toggleCouponActive(id: number, currentActive: boolean): Promise<{ success: boolean; error?: string }> {
     await checkAccess();
     try {
-        await getSystemDirectus().request(updateItem('coupons', id, { is_active: !currentActive }));
+        await db.update(schema.coupons).set({ is_active: !currentActive }).where(eq(schema.coupons.id, id));
         revalidatePath('/beheer/coupons');
         return { success: true };
     } catch (error) {

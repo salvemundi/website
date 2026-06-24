@@ -1,4 +1,5 @@
 import { db } from '../../plugins/db.js';
+import { schema, eq } from '@salvemundi/db';
 import { type AzureUser } from '../graph.service.js';
 import { type SyncContext, GROUP_ACTIVE_LID, GROUP_EXPIRED_LID } from './sync-types.js';
 import { ManagementService } from '../management.service.js';
@@ -46,13 +47,12 @@ export class SyncLifecycle {
 
             if (currentStatus !== desiredStatus) {
                 await db
-                    .updateTable('directus_users')
+                    .update(schema.directus_users)
                     .set({
                         membership_status: desiredStatus,
                         status: 'active'
                     })
-                    .where('id', '=', String(dUser.id))
-                    .execute();
+                    .where(eq(schema.directus_users.id, String(dUser.id)));
                 changes.push({ field: 'membership_status', old: currentStatus, new: desiredStatus });
                 const userEntry = {
                     email: (aUser.mail || aUser.userPrincipalName || 'onbekend').toLowerCase(),

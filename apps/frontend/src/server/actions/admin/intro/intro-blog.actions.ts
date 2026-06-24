@@ -9,10 +9,10 @@ import {
     type IntroBlog
 } from '@salvemundi/validations/schema/intro.zod';
 import { getIntroBlogsInternal } from '@/server/queries/admin-intro.queries';
-import { getSystemDirectus } from "@/lib/directus";
-import { updateItem, createItem } from '@directus/sdk';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 import { toLocalISOString } from '@/lib/utils/date-utils';
-import { checkIntroAdminAccess, genericDelete } from './intro-signup.actions';
+import { checkIntroAdminAccess } from './intro-signup.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 
 interface DirectusBlogRow {
@@ -59,9 +59,11 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
         };
 
         if (id) {
-            result = await getSystemDirectus().request(updateItem('intro_blogs', id, sanitizedPayload)) as unknown as DirectusBlogRow;
+            const updated = await db.update(schema.intro_blogs).set(sanitizedPayload).where(eq(schema.intro_blogs.id, id)).returning();
+            result = updated[0] as unknown as DirectusBlogRow;
         } else {
-            result = await getSystemDirectus().request(createItem('intro_blogs', sanitizedPayload)) as unknown as DirectusBlogRow;
+            const inserted = await db.insert(schema.intro_blogs).values(sanitizedPayload).returning();
+            result = inserted[0] as unknown as DirectusBlogRow;
         }
         revalidatePath('/beheer/intro');
 
@@ -86,5 +88,11 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
 
 export async function deleteIntroBlog(id: number): Promise<{ success: boolean; error?: string }> {
     await checkIntroAdminAccess();
-    return genericDelete('intro_blogs', id);
+    try {
+        await db.delete(schema.intro_blogs).where(eq(schema.intro_blogs.id, id));
+        revalidatePath('/beheer/intro');
+        return { success: true };
+    } catch {
+        return { success: false, error: 'Verwijderen mislukt' };
+    }
 }

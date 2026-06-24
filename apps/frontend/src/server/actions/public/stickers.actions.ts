@@ -6,6 +6,7 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { stickerPublicSchema } from "@salvemundi/validations";
 
 import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
 import { z } from 'zod';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -86,8 +87,8 @@ export async function createStickerPublic(data: unknown) {
     }
 
     const { rateLimit } = await import('@/server/utils/ratelimit');
-    const { success } = await rateLimit('sticker-create', 5, 300);
-    if (!success) {
+    const { success: rateLimitSuccess } = await rateLimit('sticker-create', 5, 300);
+    if (!rateLimitSuccess) {
         throw new Error('Te veel stickers geplaatst. Probeer het later opnieuw.');
     }
 
@@ -103,14 +104,12 @@ export async function createStickerPublic(data: unknown) {
     };
 
     try {
-        const { getSystemDirectus } = await import("@/lib/directus");
-        const { createItem } = await import("@directus/sdk");
-        const result = await getSystemDirectus().request(createItem('Stickers', payload));
-
+        const inserted = await db.insert(schema.Stickers).values(payload).returning();
+        
         revalidatePath('/beheer/stickers');
         revalidatePath('/stickers');
         revalidateTag('stickers', 'max');
-        return { success: true, data: result };
+        return { success: true, data: inserted[0] };
     } catch (error) {
         safeConsoleError(`[stickers.actions.ts][createStickerPublic] Error while creating sticker:`, error);
         return { success: false, error: 'Kon sticker niet opslaan.' };
@@ -129,14 +128,24 @@ export async function uploadFileAction(formData: FormData): Promise<{ success: t
         throw new Error('Te veel bestanden geüpload. Probeer het later opnieuw.');
     }
     try {
-        const { getSystemDirectus } = await import("@/lib/directus");
-        const { uploadFiles } = await import("@directus/sdk");
-        const directus = getSystemDirectus();
-        const result = (await directus.request(uploadFiles(formData))) as unknown;
-        const fileObj = Array.isArray(result) ? (result as unknown[])[0] : result;
-        const fileId = (fileObj && typeof fileObj === 'object' && 'id' in fileObj) ? String((fileObj as { id: unknown }).id) : null;
+        const token = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
+        const res = await fetch(`${process.env.DIRECTUS_URL}/files`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        if (!res.ok) {
+            throw new Error(`Upload failed: ${await res.text()}`);
+        }
+
+        const json = await res.json() as { data?: { id?: string } };
+        const fileId = json.data?.id;
+
         if (!fileId) {
-            return { success: false, error: 'Foto upload mislukt op de server.' };
+            return { success: false, error: 'Foto upload mislukt op de server (geen ID teruggekregen).' };
         }
         return { success: true, data: fileId };
     } catch (error) {

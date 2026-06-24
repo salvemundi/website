@@ -1,4 +1,6 @@
-'use server';
+import 'server-only';
+import { unstable_cache } from 'next/cache';
+import { db } from '@salvemundi/db';
 
 import {
     heroBannersSchema,
@@ -10,14 +12,7 @@ import {
     activitiesSchema,
     type Activiteit
 } from '@salvemundi/validations';
-import {
-    HERO_BANNER_FIELDS,
-    PUB_CRAWL_EVENT_FIELDS,
-    SPONSOR_FIELDS
-} from '@salvemundi/validations';
 
-import { getSystemDirectus } from '@/lib/directus';
-import { readItems } from '@directus/sdk';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import {
     type Schema
@@ -26,12 +21,11 @@ import { getActivitiesInternal } from "@/server/queries/admin-event.queries";
 import { getUpcomingTrips } from "@/server/actions/events/reis.actions";
 import { getDisabledRoutes } from '@/lib/config/feature-flags';
 
-
-export const getHeroBanners = async (): Promise<HeroBanner[]> => {
-    const rawData = await getSystemDirectus().request(readItems('hero_banners', {
-        fields: [...HERO_BANNER_FIELDS],
-        limit: 10
-    }));
+export const getHeroBanners = unstable_cache(async (): Promise<HeroBanner[]> => {
+    const rawData = await db.query.hero_banners.findMany({
+        limit: 10,
+        orderBy: (banners, { asc }) => [asc(banners.sort)]
+    });
 
     const mappedData = rawData.map((item) => ({
         id: item.id,
@@ -48,24 +42,19 @@ export const getHeroBanners = async (): Promise<HeroBanner[]> => {
     }
 
     return parsed.data;
-};
+}, ['hero_banners_cache'], { tags: ['hero_banners'], revalidate: 3600 });
 
-export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> => {
-    const client = getSystemDirectus();
+export const getUpcomingActiviteiten = unstable_cache(async (limit: number = 4): Promise<Activiteit[]> => {
     const now = new Date();
     const today = toLocalISOString(now) ?? new Date().toISOString();
 
     const [regularEvents, pubCrawlEvents, tripEvents, disabledRoutes] = await Promise.all([
         getActivitiesInternal(true),
-        client.request(readItems('pub_crawl_events', {
-            fields: [...PUB_CRAWL_EVENT_FIELDS],
-            filter: {
-                // @ts-expect-error - Directus SDK limits _gte to strict datetime strings
-                date: { _gte: today }
-            },
-            sort: ['date'],
+        db.query.pub_crawl_events.findMany({
+            where: (events, { gte }) => gte(events.date, today),
+            orderBy: (events, { asc }) => [asc(events.date)],
             limit: limit
-        })),
+        }),
         getUpcomingTrips(),
         getDisabledRoutes()
     ]);
@@ -81,9 +70,9 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
 
     const mappedPubCrawl = disabledRoutes.includes('/kroegentocht')
         ? []
-        : (pubCrawlEvents as unknown as Schema['pub_crawl_events']).map((item) => ({
+        : pubCrawlEvents.map((item) => ({
             id: `kroeg-${item.id}`,
-            titel: item.name,
+            titel: item.name || '',
             beschrijving: item.description ?? null,
             locatie: 'Diverse locaties',
             datum_start: item.date ? (toLocalISOString(item.date, true) ?? new Date().toISOString()) : new Date().toISOString(),
@@ -94,7 +83,7 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
             price_non_members: 1,
             only_members: false,
             registration_deadline: null,
-            contact: item.email ?? null,
+            contact: item.email,
             event_time: null,
             event_time_end: null,
             custom_url: '/kroegentocht',
@@ -139,14 +128,12 @@ export const getUpcomingActiviteiten = async (limit = 4): Promise<Activiteit[]> 
     }
 
     return parsed.data;
-};
+}, ['upcoming_activities_cache'], { tags: ['events', 'pub_crawl_events', 'trips'], revalidate: 3600 });
 
-export const getSponsors = async (): Promise<Sponsor[]> => {
-    const rawData = await getSystemDirectus().request(readItems('sponsors', {
-        fields: [...SPONSOR_FIELDS],
-        sort: ['sponsor_id'],
-        limit: -1
-    }));
+export const getSponsors = unstable_cache(async (): Promise<Sponsor[]> => {
+    const rawData = await db.query.sponsors.findMany({
+        orderBy: (sponsors, { asc }) => [asc(sponsors.sponsor_id)]
+    });
 
     const parsed = sponsorsSchema.safeParse(rawData);
     if (!parsed.success) {
@@ -154,4 +141,4 @@ export const getSponsors = async (): Promise<Sponsor[]> => {
     }
 
     return parsed.data;
-};
+}, ['sponsors_cache'], { tags: ['sponsors'], revalidate: 3600 });

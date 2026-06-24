@@ -41,22 +41,18 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
             type="tel"
             inputMode="tel"
             autoComplete="off"
-            onInput={(e) => {
-                const input = e.target as HTMLInputElement;
-                let val = input.value;
-
-                val = val.replace(/[^\d+\s\-()]/g, '');
-
-                // Auto-conversion to E.164 international format
-                if (val.startsWith('0')) {
-                    val = '+31' + val.substring(1);
-                } else if (val.startsWith('31') && !val.startsWith('+31')) {
-                    val = '+' + val;
-                } else if (val.length > 0 && !val.startsWith('+')) {
-                    val = '+' + val;
+            prepare={(appended: string, masked: { value: string }) => {
+                let val = appended;
+                if (masked.value === '') {
+                    if (val.startsWith('0')) {
+                        val = '+31' + val.substring(1);
+                    } else if (val.startsWith('31')) {
+                        val = '+' + val;
+                    } else if (val.length > 0 && val[0] >= '1' && val[0] <= '9') {
+                        val = '+' + val;
+                    }
                 }
-
-                input.value = val;
+                return val;
             }}
             onAccept={(acceptedValue: string) => {
                 props.onChange?.({ target: { value: acceptedValue, name: props.name ?? '' } } as unknown as React.ChangeEvent<HTMLInputElement>);

@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReisDeelnemerDetailIsland from '@/components/islands/admin/ReisDeelnemerDetailIsland';
-import { getSystemDirectus } from '@/lib/directus';
-import { readItems } from '@directus/sdk';
+import { getTrips, getTripActivities } from '@/server/queries/admin-reis.queries';
 import { Trip, TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
 import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/admin/reis-signups.actions';
 import { safeConsoleError } from '@/server/utils/logger';
+import { db, schema } from "@salvemundi/db";
+import { eq } from "drizzle-orm";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -21,15 +22,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const signupId = parseInt(id);
 
     try {
-        const signup = await getSystemDirectus().request(readItems('trip_signups', {
-            filter: { id: { _eq: signupId } },
-            fields: ['first_name', 'last_name'],
-            limit: 1
-        }));
+        const signup = await db.query.trip_signups.findFirst({
+            where: eq(schema.trip_signups.id, signupId),
+            columns: { first_name: true, last_name: true }
+        });
 
-        if (signup[0]) {
+        if (signup) {
             return {
-                title: `Deelnemer: ${signup[0].first_name} ${signup[0].last_name} | SV Salve Mundi`
+                title: `Deelnemer: ${signup.first_name} ${signup.last_name} | SV Salve Mundi`
             };
         }
     } catch (error) {
@@ -53,15 +53,8 @@ export default async function DeelnemerDetailPage({ params }: PageProps) {
         : (signup.trip_id as number);
 
     const [trips, activities, signupActivities] = await Promise.all([
-        getSystemDirectus().request(readItems('trips', {
-            fields: ['id', 'name', 'start_date', 'max_participants', 'base_price', 'crew_discount', 'deposit_amount'],
-            sort: ['-start_date']
-        })),
-        getSystemDirectus().request(readItems('trip_activities', {
-            filter: { trip_id: { _eq: tripId } },
-            fields: ['id', 'name', 'price', 'display_order', 'is_active', 'trip_id'],
-            sort: ['display_order']
-        })),
+        getTrips(),
+        getTripActivities(tripId),
         getTripSignupActivitiesAction(tripId)
     ]);
 

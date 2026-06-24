@@ -4,8 +4,6 @@ import { z } from 'zod';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { query } from '@/lib/database';
-import { getSystemDirectus } from '@/lib/directus';
-import { uploadFiles, updateItem, deleteItem } from '@directus/sdk';
 import { requireAdminResource } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { getRedis } from '@/server/auth/redis-client';
@@ -21,10 +19,6 @@ import { tripSchema } from '@salvemundi/validations/schema/admin-reis.zod';
 import { safeConsoleError } from '@/server/utils/logger';
 import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
 
-interface DirectusFile {
-    id: string;
-}
-
 async function handleImageUpload(formData: FormData): Promise<string | null> {
     const file = formData.get('image_file') as File | null;
     if (!file || file.size === 0) return null;
@@ -33,10 +27,21 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
     uploadFormData.append('file', file);
 
     try {
-        const client = getSystemDirectus();
-        const response = (await client.request(uploadFiles(uploadFormData))) as unknown as DirectusFile | DirectusFile[];
-        const fileObj = (Array.isArray(response) ? response[0] : response) as DirectusFile | undefined;
-        return fileObj?.id || null;
+        const token = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
+        const res = await fetch(`${process.env.DIRECTUS_URL}/files`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            body: uploadFormData
+        });
+
+        if (!res.ok) {
+            throw new Error(`Upload failed: ${await res.text()}`);
+        }
+
+        const json = await res.json() as { data?: { id?: string } };
+        return json.data?.id || null;
     } catch (error) {
         safeConsoleError('[reis-core.actions.ts][handleImageUpload] Upload failed:', error);
         return null;
@@ -90,11 +95,6 @@ export async function createTrip(prevState: unknown, formData: FormData) {
 
         const newId = await createTripDb(validated.data);
         if (!newId) throw new Error('Database insert failed');
-
-        // Shadow Write (Directus)
-        getSystemDirectus().request(updateItem('trips', newId, validated.data)).catch(err => {
-            safeConsoleError(`[reis-core.actions.ts][createTrip] Directus shadow write failed for ${newId}:`, err);
-        });
 
         await logAdminAction('admin_trip_created', 'SUCCESS', {
             context: 'reis',
@@ -161,11 +161,6 @@ export async function updateTrip(prevState: unknown, formData: FormData) {
         const success = await updateTripDb(id, validated.data);
         if (!success) throw new Error('Database update failed');
 
-        // Shadow Write (Directus)
-        getSystemDirectus().request(updateItem('trips', id, validated.data)).catch(err => {
-            safeConsoleError(`[reis-core.actions.ts][updateTrip] Directus shadow write failed for ${id}:`, err);
-        });
-
         await logAdminAction('admin_trip_updated', 'SUCCESS', {
             context: 'reis',
             trip_id: id,
@@ -193,11 +188,6 @@ export async function deleteTrip(id: number) {
     await requireAdminResource(AdminResource.Reis);
     try {
         await deleteTripDb(id);
-
-        // Shadow Delete (Directus)
-        getSystemDirectus().request(deleteItem('trips', id)).catch(err => {
-            safeConsoleError(`[reis-core.actions.ts][deleteTrip] Directus shadow delete failed for ${id}:`, err);
-        });
 
         await logAdminAction('admin_trip_deleted', 'SUCCESS', {
             context: 'reis',

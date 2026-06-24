@@ -33,11 +33,20 @@ export async function getImpersonatedUser(testToken: string, pool: Pool): Promis
 
         if (!directusUrl) return null;
 
-        const { createDirectus, rest, staticToken, readMe } = await import("@directus/sdk");
-        const testClient = createDirectus(directusUrl).with(staticToken(testToken)).with(rest());
-        const rawImpUser = await testClient.request(readMe({ fields: ['id'] })) as { id: string } | null;
+        const response = await fetch(`${directusUrl}/users/me?fields=id`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${testToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-        if (!rawImpUser?.id) return null;
+        if (!response.ok) return null;
+
+        const json = await response.json() as { data: { id: string } };
+        const rawImpUser = json.data;
+
+        if (!rawImpUser.id) return null;
 
         const { rows: dbUsers } = await pool.query(
             `SELECT id, first_name, last_name, email, avatar, 

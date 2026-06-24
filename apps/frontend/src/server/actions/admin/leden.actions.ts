@@ -3,8 +3,6 @@
 import { z } from "zod";
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { revalidateTag, revalidatePath } from "next/cache";
-import { getSystemDirectus } from "@/lib/directus";
-import { updateUser } from "@directus/sdk";
 import { isMemberAdmin } from "@/lib/auth";
 import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -242,7 +240,9 @@ export async function renewMembershipAction(
         const { toLocalISOString } = await import("@/lib/utils/date-utils");
         const newExpiryStr = toLocalISOString(newExpiry) as string;
 
-        await getSystemDirectus().request(updateUser(directusUserId, { membership_expiry: newExpiryStr }));
+        const { db, schema } = await import('@salvemundi/db');
+        const { eq } = await import('drizzle-orm');
+        await db.update(schema.directus_users).set({ membership_expiry: newExpiryStr }).where(eq(schema.directus_users.id, directusUserId));
 
         if (user.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {
             // Update Entra ID custom security attributes (membershipExpiry)

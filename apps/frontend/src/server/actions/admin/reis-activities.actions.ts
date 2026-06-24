@@ -6,11 +6,6 @@ import { revalidateTag, revalidatePath } from 'next/cache';
 import {
     tripActivitySchema
 } from '@salvemundi/validations/schema/admin-reis.zod';
-import { getSystemDirectus } from '@/lib/directus';
-import {
-    updateItem,
-    deleteItem,
-} from '@directus/sdk';
 import { requireAdminResource } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
 import {
@@ -59,11 +54,6 @@ export async function createTripActivity(formData: FormData) {
     try {
         const newId = await createTripActivityDb(validated.data);
         if (!newId) throw new Error('Database insert failed');
-
-        // Shadow Write (Directus)
-        getSystemDirectus().request(updateItem('trip_activities', newId, validated.data)).catch((error) => {
-            safeConsoleError(`[reis-activities.actions.ts][createTripActivity] Directus shadow write failed for ${newId}:`, error);
-        });
 
         revalidateTag('trip_activities', 'max');
         revalidatePath('/beheer/reis');
@@ -121,10 +111,6 @@ export async function updateTripActivity(formData: FormData) {
         const success = await updateTripActivityDb(id, validated.data);
         if (!success) throw new Error('Database update failed');
 
-        getSystemDirectus().request(updateItem('trip_activities', id, validated.data)).catch((error) => {
-            safeConsoleError(`[reis-activities.actions.ts][updateTripActivity] Failed to update trip activity ${id}:`, error);
-        });
-
         revalidateTag('trip_activities', 'max');
         revalidatePath('/beheer/reis');
         revalidatePath('/beheer/reis/instellingen');
@@ -145,10 +131,6 @@ export async function deleteTripActivity(id: number) {
     try {
         const success = await deleteTripActivityDb(id);
         if (!success) throw new Error('Database delete failed');
-
-        getSystemDirectus().request(deleteItem('trip_activities', id)).catch((error) => {
-            safeConsoleError(`[reis-activities.actions.ts][deleteTripActivity] Failed to delete trip activity ${id}:`, error);
-        });
 
         revalidateTag('trip_activities', 'default');
         revalidatePath('/beheer/reis');

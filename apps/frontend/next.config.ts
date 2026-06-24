@@ -2,6 +2,15 @@ import type { NextConfig } from 'next';
 import withSerwistInit from '@serwist/next';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 
+process.env.SERWIST_SUPPRESS_TURBOPACK_WARNING = '1';
+
+interface CustomWebpackConfig {
+    resolve: {
+        fallback: Record<string, boolean>;
+        alias: Record<string, boolean | string>;
+    };
+}
+
 const nextConfig: NextConfig = {
     output: 'standalone',
     poweredByHeader: false,
@@ -84,10 +93,13 @@ const nextConfig: NextConfig = {
         ];
     },
     transpilePackages: ['better-auth'],
-    webpack: (config, { isServer }) => {
-        config.resolve.fallback = { ...config.resolve.fallback, fs: false, net: false, tls: false };
-        if (!isServer) { config.resolve.alias['core-js'] = false; }
-        return config;
+    webpack: (config: unknown, { isServer }: { isServer: boolean }) => {
+        const webpackConfig = config as CustomWebpackConfig;
+        webpackConfig.resolve.fallback = { ...webpackConfig.resolve.fallback, fs: false, net: false, tls: false };
+        if (!isServer) { 
+            webpackConfig.resolve.alias['core-js'] = false; 
+        }
+        return webpackConfig;
     },
 };
 
@@ -96,13 +108,9 @@ const withSerwist = withSerwistInit({
     swDest: 'public/sw.js',
     disable: process.env.NODE_ENV !== 'production',
     exclude: [
-        // Exclude source maps
         /\.map$/,
-        // Exclude Adobe Illustrator vector files
         /\.ai$/,
-        // Exclude all files in public/img/old/
         /\/img\/old\//,
-        // Exclude Next.js build manifests
         /react-loadable-manifest\.json$/,
         /build-manifest\.json$/,
         /middleware-manifest\.json$/,

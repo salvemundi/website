@@ -1,60 +1,26 @@
 import 'server-only';
-import { Pool, type QueryResult, type QueryResultRow } from 'pg';
-import { safeConsoleError, logWarn } from '@/server/utils/logger';
+import { db as drizzleDb, schema, client } from '@salvemundi/db';
+import { safeConsoleError } from '@/server/utils/logger';
+import { Pool } from 'pg';
 
-declare global {
-    var _pgPool: Pool | undefined;
-}
+export const db = drizzleDb;
+export { schema };
 
-const poolConfig = {
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: Number(process.env.DB_PORT),
-    max: 20,
-    idleTimeoutMillis: 30000
-};
+const connectionString = process.env.DATABASE_URL || 'postgres://directusadmin:StXmr5J6LefHRTEp1V4UkKF8wI0ZDcysaOWM2PCulzAQqYvji7bx9BNdgohGn3@100.77.182.130:5432/v7-core-db';
+export const pool = new Pool({ connectionString, max: 20 });
 
-if (!globalThis._pgPool) {
-    globalThis._pgPool = new Pool(poolConfig);
-    globalThis._pgPool.on('error', (error) => {
-        const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('[db.ts][anonymous] ', `Unexpected error on idle client: ${typedError.message}`);
-    });
-}
 
-export const pool = globalThis._pgPool;
-
-export async function query<R extends QueryResultRow = QueryResultRow>(text: string, params?: (string | number | boolean | null | undefined | object)[], retries = 2): Promise<QueryResult<R>> {
+export async function query<T = unknown>(text: string, params?: unknown[], retries = 2): Promise<{ rows: T[], rowCount: number }> {
     for (let i = 0; i <= retries; i++) {
         try {
-            const res = await pool.query(text, params);
-            return res;
+            const safeParams = (params ?? []) as unknown[];
+            const result = await client.unsafe(text, safeParams as never[]);
+            return { rows: result as unknown as T[], rowCount: result.count };
         } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : '';
-            const errorCode = (error as { code?: string }).code;
-            const isConnectionError = errorMessage.includes('Connection terminated unexpectedly') || errorCode === 'ECONNRESET';
-            if (isConnectionError && i < retries) {
-                logWarn('[db.ts][query] ', `Connection error, retrying... (${i + 1}/${retries})`);
-                await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
-                continue;
-            }
-            interface PgError {
-                detail?: string;
-                hint?: string;
-            }
-            const pgError = error as PgError;
-
-            safeConsoleError('[db.ts][query] ', `DB-Query Error: ${errorMessage} (Code: ${errorCode}). Query: ${text}. Detail: ${pgError.detail ?? ''}. Hint: ${pgError.hint ?? ''}`);
-
-            if (process.env.DB_USER === 'dummy') {
-                logWarn('[db.ts][query] ', 'Build-time DB connection failure detected. Returning empty result.');
-                return { rows: [], rowCount: 0, command: '', oid: 0, fields: [] };
-            }
-
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            safeConsoleError('[db.ts][query] ', `Query failed: ${errorMessage}`);
             throw error;
         }
     }
     throw new Error('db.ts][query] Unexpected end of function');
-}
+}

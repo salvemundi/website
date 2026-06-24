@@ -5,6 +5,7 @@ import { TRIP_SIGNUP_FIELDS, TRIP_FIELDS } from '@salvemundi/validations';
 import crypto from 'node:crypto';
 import { TripSignup, Trip } from '@salvemundi/validations/directus/schema';
 import { verifyInternalToken } from '../middleware/auth.js';
+import { schema } from '@salvemundi/db';
 
 interface TripPaymentRequest {
     signupId?: number;
@@ -201,7 +202,7 @@ export default async function tripRoutes(fastify: FastifyInstance) {
             });
 
             await fastify.db
-                .insertInto('transactions')
+                .insert(schema.transactions)
                 .values({
                     mollie_id: payment.id,
                     amount,
@@ -216,8 +217,7 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                     trip_signup: signupId,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
-                })
-                .execute();
+                });
 
             return { success: true, checkoutUrl: payment._links.checkout?.href };
         } catch (error: unknown) {

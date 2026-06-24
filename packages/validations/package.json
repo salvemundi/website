@@ -35,6 +35,7 @@
         "typegen": "directus-ts-typegen --output src/directus/schema.ts && node -e \"const fs=require('fs');fs.writeFileSync('src/directus/schema.ts',fs.readFileSync('src/directus/schema.ts','utf8').replace(/: \\\"datetime\\\"/g,': string | \\\"datetime\\\"'))\""
     },
     "dependencies": {
+        "drizzle-orm": "0.45.2",
         "zod": "^4.4.3"
     },
     "devDependencies": {

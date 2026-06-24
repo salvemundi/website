@@ -1,6 +1,5 @@
 import { type Redis } from 'ioredis';
-import { type Kysely } from 'kysely';
-import { type Database } from '../plugins/db.js';
+import { schema, eq, type db as dbType } from '@salvemundi/db';
 import { DirectusRetryService } from './directus-retry.service.js';
 import { type FastifyBaseLogger } from 'fastify';
 
@@ -10,7 +9,7 @@ export interface RegistrationUpdateMetadata {
     paymentType?: string;
 }
 
-const COLLECTION_MAP = new Map<string, keyof Database>([
+const COLLECTION_MAP = new Map<string, string>([
     ['event_signup', 'event_signups'],
     ['pub_crawl_signup', 'pub_crawl_signups'],
     ['trip_signup', 'trip_signups']
@@ -18,7 +17,7 @@ const COLLECTION_MAP = new Map<string, keyof Database>([
 
 export class RegistrationService {
     static async updateStatus(
-        db: Kysely<Database>,
+        db: typeof dbType,
         redis: Redis,
         metadata: RegistrationUpdateMetadata,
         log: FastifyBaseLogger
@@ -26,13 +25,13 @@ export class RegistrationService {
         const { registrationId, registrationType, paymentType } = metadata;
 
         if (!registrationId || !registrationType) {
-            log.warn({ registrationId, registrationType }, '[RegistrationService] Missing ID or Type for status update');
+            log.warn({ registrationId, registrationType }, '[registration.service.ts][updateStatus] Missing ID or Type for status update');
             return;
         }
 
         const targetCollection = COLLECTION_MAP.get(registrationType);
         if (!targetCollection) {
-            log.warn(`[RegistrationService] Unknown registration type: ${registrationType}`);
+            log.warn(`[registration.service.ts][updateStatus] Unknown registration type: ${registrationType}`);
             return;
         }
 
@@ -53,17 +52,31 @@ export class RegistrationService {
         }
 
         try {
-            await db.updateTable(targetCollection)
-                .set(updateData as never)
-                .where('id' as never, '=', Number(registrationId) as never)
-                .execute();
+            let schemaTable;
+            switch (targetCollection) {
+                case 'event_signups':
+                    schemaTable = schema.event_signups;
+                    break;
+                case 'pub_crawl_signups':
+                    schemaTable = schema.pub_crawl_signups;
+                    break;
+                case 'trip_signups':
+                    schemaTable = schema.trip_signups;
+                    break;
+                default:
+                    throw new Error(`Unknown collection: ${targetCollection}`);
+            }
 
-            log.info(`[RegistrationService] Direct SQL update success for ${targetCollection} ${registrationId}`);
+            await db.update(schemaTable)
+                .set(updateData)
+                .where(eq(schemaTable.id, Number(registrationId)));
+
+            log.info(`[registration.service.ts][updateStatus] Direct SQL update success for ${targetCollection} ${registrationId}`);
 
             await DirectusRetryService.queueUpdate(redis, targetCollection, registrationId, updateData);
-            log.info(`[RegistrationService] Queued Directus update for ${targetCollection} ${registrationId}`);
+            log.info(`[registration.service.ts][updateStatus] Queued Directus update for ${targetCollection} ${registrationId}`);
         } catch (error) {
-            log.error(error, `[RegistrationService] Failed to update registration ${registrationId}`);
+            log.error(error, `[registration.service.ts][updateStatus] Failed to update registration ${registrationId}`);
             throw error;
         }
     }

@@ -12,6 +12,8 @@ import {
 } from '@salvemundi/validations/schema/admin-reis.zod';
 import { type ReisPaymentEnrichment } from '@salvemundi/validations/schema/reis.zod';
 import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 import {
     fetchTripSignupByIdDb,
     fetchTripByIdDb,
@@ -125,18 +127,7 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
 
         const { is_bus_trip: _, ...dbData } = validated.data;
 
-        const fields = Object.keys(dbData);
-        const values = Object.values(dbData);
-        const setClause = fields.map((f, i) => `${f} = $${i + 2}`).join(', ');
-
-        await query(`UPDATE trip_signups SET ${setClause} WHERE id = $1`, [signupId, ...values]);
-
-        // Shadow Write (Directus)
-        const { getSystemDirectus } = await import('@/lib/directus');
-        const { updateItem } = await import('@directus/sdk');
-        getSystemDirectus().request(updateItem('trip_signups', signupId, dbData)).catch((error: unknown) => {
-            safeConsoleError(`[reis-payment.actions.ts][updateSignupDetails] Failed to update signup ${signupId}:`, error);
-        });
+        await db.update(schema.trip_signups).set(dbData).where(eq(schema.trip_signups.id, signupId));
 
         return { success: true };
     } catch (error: unknown) {
@@ -168,7 +159,7 @@ export async function syncSignupActivities(signupId: number, selections: { activ
         }
 
         try {
-            const currentRes = await query(
+            const currentRes = await query<{ id: string | number, trip_activity_id: string | number }>(
                 'SELECT id, trip_activity_id FROM trip_signup_activities WHERE trip_signup_id = $1',
                 [signupId]
             );

@@ -9,9 +9,9 @@ import {
     type IntroPlanningItem
 } from '@salvemundi/validations/schema/intro.zod';
 import { getIntroPlanningInternal } from '@/server/queries/admin-intro.queries';
-import { getSystemDirectus } from "@/lib/directus";
-import { updateItem, createItem } from '@directus/sdk';
-import { checkIntroAdminAccess, genericDelete } from './intro-signup.actions';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
+import { checkIntroAdminAccess } from './intro-signup.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 
 interface IntroPlanningDbResult {
@@ -49,7 +49,7 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
 
     const { id, date, ...rest } = validated.data;
 
-    let day = rest.day;
+    let day = rest.day || 'Onbekend';
     if (date) {
         try {
             const d = new Date(date);
@@ -61,18 +61,16 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
         }
     }
 
-    if (!day && date) {
-        day = 'Onbekend';
-    }
-
     const payload = { ...rest, date, day };
 
     try {
         let result: IntroPlanningDbResult;
         if (id) {
-            result = await getSystemDirectus().request(updateItem('intro_planning', id, payload)) as unknown as IntroPlanningDbResult;
+            const updated = await db.update(schema.intro_planning).set(payload).where(eq(schema.intro_planning.id, id)).returning();
+            result = updated[0] as unknown as IntroPlanningDbResult;
         } else {
-            result = await getSystemDirectus().request(createItem('intro_planning', payload)) as unknown as IntroPlanningDbResult;
+            const inserted = await db.insert(schema.intro_planning).values(payload).returning();
+            result = inserted[0] as unknown as IntroPlanningDbResult;
         }
         revalidatePath('/beheer/intro');
         return {
@@ -95,5 +93,11 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
 
 export async function deleteIntroPlanning(id: number): Promise<{ success: boolean; error?: string }> {
     await checkIntroAdminAccess();
-    return genericDelete('intro_planning', id);
+    try {
+        await db.delete(schema.intro_planning).where(eq(schema.intro_planning.id, id));
+        revalidatePath('/beheer/intro');
+        return { success: true };
+    } catch {
+        return { success: false, error: 'Verwijderen mislukt' };
+    }
 }

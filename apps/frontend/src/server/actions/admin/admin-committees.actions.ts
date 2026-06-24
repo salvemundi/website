@@ -3,9 +3,8 @@
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { revalidatePath } from "next/cache";
 import { isSuperAdmin } from '@/lib/auth';
-import { getSystemDirectus } from '@/lib/directus';
-import { updateItem, readUsers, createItem, deleteItem, readItems } from '@directus/sdk';
-import { USER_ID_FIELDS } from '@salvemundi/validations/directus/fields';
+import { db, schema } from '@salvemundi/db';
+import { eq, and } from 'drizzle-orm';
 import type { CommitteeMember } from '@/server/queries/admin-commissies.queries';
 import { getCommitteeMembers as getCommitteeMembersQuery } from '@/server/queries/admin-commissies.queries';
 import {
@@ -59,7 +58,9 @@ export async function updateCommitteeDetails(
     await checkAccess();
 
     try {
-        await getSystemDirectus().request(updateItem('committees', committeeId, validated.data.payload));
+        await db.update(schema.committees)
+            .set(validated.data.payload)
+            .where(eq(schema.committees.id, Number(committeeId)));
         revalidatePath(`/beheer/commissies/${committeeId}`);
         revalidatePath('/beheer/commissies');
         return { success: true };
@@ -80,13 +81,11 @@ export async function addCommitteeMember(
     }
     await checkAccess();
 
-    const users = await getSystemDirectus().request(readUsers({
-        filter: { email: { _eq: userEmail } },
-        fields: [...USER_ID_FIELDS],
-        limit: 1
-    }));
+    const user = await db.query.directus_users.findFirst({
+        where: eq(schema.directus_users.email, userEmail),
+        columns: { id: true, entra_id: true }
+    });
 
-    const user = users[0] as { id: string; entra_id?: string | null } | undefined;
     if (!user || !user.entra_id) {
         return { success: false, error: 'Gebruiker niet gevonden in het systeem (email onbekend of niet gesynchroniseerd)' };
     }
@@ -103,12 +102,12 @@ export async function addCommitteeMember(
     }
 
     try {
-        await getSystemDirectus().request(createItem('committee_members', {
+        await db.insert(schema.committee_members).values({
             user_id: user.id,
             committee_id: Number(committeeId),
             is_leader: false,
             is_visible: true
-        }));
+        });
         revalidatePath('/beheer/commissies');
     } catch (error: unknown) {
         safeConsoleError(`[admin-committees.actions.ts][addCommitteeMember] Failed to write local membership to Directus:`, error);
@@ -158,30 +157,22 @@ export async function removeCommitteeMember(
     }
 
     try {
-        const users = await getSystemDirectus().request(readUsers({
-            filter: { entra_id: { _eq: entraId } },
-            fields: ['id'],
-            limit: 1
-        }));
-        const user = users[0] as { id: string } | undefined;
+        const user = await db.query.directus_users.findFirst({
+            where: eq(schema.directus_users.entra_id, entraId),
+            columns: { id: true }
+        });
         if (user) {
-            const committees = await getSystemDirectus().request(readItems('committees', {
-                filter: { azure_group_id: { _eq: azureGroupId } },
-                fields: ['id'],
-                limit: 1
-            }));
-            const committee = committees[0] as unknown as { id: string | number } | undefined;
+            const committee = await db.query.committees.findFirst({
+                where: eq(schema.committees.azure_group_id, azureGroupId),
+                columns: { id: true }
+            });
             if (committee) {
-                const memberships = await getSystemDirectus().request(readItems('committee_members', {
-                    filter: {
-                        user_id: { _eq: user.id },
-                        committee_id: { _eq: Number(committee.id) }
-                    },
-                    fields: ['id']
-                })) as unknown as { id: number }[];
-                for (const m of memberships) {
-                    await getSystemDirectus().request(deleteItem('committee_members', m.id));
-                }
+                await db.delete(schema.committee_members).where(
+                    and(
+                        eq(schema.committee_members.user_id, user.id),
+                        eq(schema.committee_members.committee_id, committee.id)
+                    )
+                );
             }
         }
         revalidatePath('/beheer/commissies');
@@ -205,7 +196,9 @@ export async function toggleCommitteeLeader(
     await checkAccess();
 
     try {
-        await getSystemDirectus().request(updateItem('committee_members', membershipId, { is_leader: !currentIsLeader }));
+        await db.update(schema.committee_members)
+            .set({ is_leader: !currentIsLeader })
+            .where(eq(schema.committee_members.id, membershipId));
         revalidatePath('/beheer/commissies');
     } catch (error: unknown) {
         safeConsoleError(`[admin-committees.actions.ts][toggleCommitteeLeader] Failed to toggle leader for membership ${membershipId}:`, error);

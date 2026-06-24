@@ -1,8 +1,9 @@
-import { type FastifyInstance, type FastifyRequest, type FastifyReply } from 'fastify';
+import { type FastifyInstance } from 'fastify';
 import { type MolliePaymentMetadata } from '@salvemundi/validations';
 import { getMollieClient } from '../services/mollie.service.js';
 import crypto from 'node:crypto';
 import { verifyInternalToken } from '../middleware/auth.js';
+import { schema, eq } from '@salvemundi/db';
 
 const PRODUCT_TYPE_MAP = new Map<string, string>([
     ['pub_crawl_signup', 'Kroegentocht'],
@@ -58,7 +59,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 ? `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`
                 : undefined;
 
-            fastify.log.info(`[FINANCE] Creating Mollie payment with webhookUrl: ${webhookUrl || 'undefined'}`);
+            fastify.log.info(`[payments.routes.ts][paymentRoutes] Creating Mollie payment with webhookUrl: ${webhookUrl || 'undefined'}`);
 
             const accessToken = crypto.randomUUID();
             const separator = redirectUrl.includes('?') ? '&' : '?';
@@ -95,7 +96,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 productType = registrationType;
             }
 
-            const insertData: Record<string, unknown> = {
+            const insertData = {
                 mollie_id: payment.id,
                 amount: amount,
                 payment_status: 'open',
@@ -109,42 +110,41 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 coupon_code: couponCode || null,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
-            };
+            } as typeof schema.transactions.$inferInsert;
 
             if (registrationType === 'event_signup' || registrationType === 'membership') {
-                insertData['registration'] = Number(registrationId) || null;
+                insertData.registration = Number(registrationId) || null;
             } else if (registrationType === 'trip_signup') {
-                insertData['trip_signup'] = Number(registrationId) || null;
+                insertData.trip_signup = Number(registrationId) || null;
             } else if (registrationType === 'pub_crawl_signup') {
-                insertData['pub_crawl_signup'] = Number(registrationId) || null;
+                insertData.pub_crawl_signup = Number(registrationId) || null;
             }
 
             const dbResult = await fastify.db
-                .insertInto('transactions')
-                .values(insertData as never)
-                .returning('id')
-                .executeTakeFirst();
+                .insert(schema.transactions)
+                .values(insertData)
+                .returning({ id: schema.transactions.id })
+                .then((res: { id: number }[]) => res[0]);
 
-            const transactionDbId = dbResult?.id;
+            const transactionDbId = dbResult.id;
             if (!transactionDbId) {
                 throw new Error('Failed to retrieve inserted transaction ID');
             }
 
             if (registrationType === 'pub_crawl_signup' && registrationId) {
                 await fastify.db
-                    .insertInto('pub_crawl_signups_transactions')
+                    .insert(schema.pub_crawl_signups_transactions)
                     .values({
                         pub_crawl_signups_id: Number(registrationId),
                         transactions_id: transactionDbId
-                    })
-                    .execute();
-                fastify.log.info(`[payment.routes][create] Linked transaction ${transactionDbId} to pub_crawl_signup ${registrationId}`);
+                    });
+                fastify.log.info(`[payments.routes.ts][paymentRoutes] Linked transaction ${transactionDbId} to pub_crawl_signup ${registrationId}`);
             }
 
             return { checkoutUrl: payment._links.checkout?.href, mollie_id: payment.id, access_token: accessToken };
         } catch (error: unknown) {
             const err = error as { message?: string; code?: string; detail?: string };
-            fastify.log.error({ error, message: err.message, code: err.code, detail: err.detail }, '[FINANCE] Error creating payment');
+            fastify.log.error({ error, message: err.message, code: err.code, detail: err.detail }, '[payments.routes.ts][paymentRoutes] Error creating payment');
             return reply.status(500).send({ error: 'Failed to create payment', message: err.message || 'Unknown error' });
         }
     });
@@ -155,21 +155,20 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
 
         try {
             await fastify.db
-                .updateTable('transactions')
+                .update(schema.transactions)
                 .set({
                     approval_status: 'approved',
                     updated_at: new Date().toISOString()
                 })
-                .where('mollie_id', '=', mollieId)
-                .execute();
+                .where(eq(schema.transactions.mollie_id, mollieId));
 
-            const tx = await fastify.db
-                .selectFrom('transactions')
-                .selectAll()
-                .where('mollie_id', '=', mollieId)
-                .executeTakeFirst();
+            const tx = (await fastify.db
+                .select()
+                .from(schema.transactions)
+                .where(eq(schema.transactions.mollie_id, mollieId))
+                .limit(1))[0];
 
-            if (!tx || tx.payment_status !== 'paid') {
+            if (tx.payment_status !== 'paid') {
                 return reply.status(400).send({ error: 'Transaction not found or not paid yet' });
             }
 
@@ -197,12 +196,12 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             };
 
             await fastify.redis.xadd('v7:events', '*', 'payload', JSON.stringify(eventData));
-            fastify.log.info(`[FINANCE] Manually approved and published success event for ${mollieId}`);
+            fastify.log.info(`[payments.routes.ts][paymentRoutes] Manually approved and published success event for ${mollieId}`);
 
             return { success: true };
         } catch (error: unknown) {
             const err = error as Error;
-            fastify.log.error(error as Error, `[FINANCE] Approval failed for ${mollieId}`);
+            fastify.log.error(error as Error, `[payments.routes.ts][paymentRoutes] Approval failed for ${mollieId}`);
             return reply.status(500).send({ error: 'Approval failed', message: err.message });
         }
     });

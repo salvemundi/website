@@ -10,11 +10,8 @@ import { z } from 'zod';
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { unstable_cache as cacheTag } from 'next/cache';
-import { logAdminAction } from '@/server/actions/infrastructure/audit.actions'; 
-import { safeConsoleError } from '@/server/utils/logger';
 
-import { getSystemDirectus } from '@/lib/directus';
-import { createItem, updateItem, deleteItem } from '@directus/sdk';
+import { safeConsoleError } from '@/server/utils/logger';
 import {
     createPubCrawlSignupDb,
     deletePubCrawlSignupDb,
@@ -190,39 +187,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
         }
         await createPubCrawlTicketsDb(signupId, ticketsTable);
 
-        const syncPayload = {
-            id: signupId,
-            name: parsed.data.name,
-            email: parsed.data.email,
-            association: parsed.data.association,
-            amount_tickets: parsed.data.amount_tickets,
-            name_initials: parsed.data.name_initials,
-            pub_crawl_event_id: Number(parsed.data.pub_crawl_event_id),
-            payment_status: 'open',
-            directus_relations: userId || null
-        };
 
-        try {
-            await getSystemDirectus().request(createItem('pub_crawl_signups', syncPayload as { [key: string]: unknown }));
-        } catch (error) {
-            const errorMsg = error instanceof Error ? error.message : String(error);
-            if (errorMsg.includes('unique') || (typeof error === 'object' && error !== null && 'errors' in error && JSON.stringify(error.errors).includes('unique'))) {
-
-                try {
-                    await getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, syncPayload));
-                } catch {
-                    await deletePubCrawlTicketsBySignupIdDb(signupId);
-                    await deletePubCrawlSignupDb(signupId);
-                    return { success: false, error: 'Synchronisatie met CMS mislukt (collision fallback failed).' };
-                }
-            } else {
-
-                await deletePubCrawlTicketsBySignupIdDb(signupId);
-                await deletePubCrawlSignupDb(signupId);
-                await logAdminAction('system_kroegentocht_signup_rollback', 'ERROR', { context: 'kroegentocht', id: signupId, error: String(error), action: 'rollback_delete' });
-                return { success: false, error: 'Synchronisatie met CMS mislukt. Inschrijving niet voltooid.' };
-            }
-        }
 
         const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
         const paymentRes = await fetchWithTimeout(financeUrl, {
@@ -249,9 +214,6 @@ export async function initiateKroegentochtPayment(formData: unknown) {
         try {
             await deletePubCrawlTicketsBySignupIdDb(signupId);
             await deletePubCrawlSignupDb(signupId);
-            getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId)).catch((error) => {
-                safeConsoleError(`[kroegentocht.actions.ts][initiateKroegentochtPayment] Failed to delete signup ${signupId}:`, error);
-            });
         } catch (error: unknown) {
             safeConsoleError(`[kroegentocht.actions.ts][initiateKroegentochtPayment] Failed to delete signup ${signupId}:`, error);
         }

@@ -1,11 +1,10 @@
 'use server';
 
 import { z } from "zod";
-import { getSystemDirectus } from "@/lib/directus";
-import { readUsers } from "@directus/sdk";
-import { type DirectusUser } from '@salvemundi/validations';
+
+import { db, schema } from "@salvemundi/db";
+import { isNotNull } from "drizzle-orm";
 import { query } from "@/lib/database";
-import { USER_BASIC_FIELDS } from "@salvemundi/validations/directus/fields";
 import {
     type DashboardStats,
     type Birthday,
@@ -29,12 +28,7 @@ interface TopStickerRow {
     count: string | number;
 }
 
-interface BirthdayUserRow {
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-    date_of_birth: string | null;
-}
+
 
 export async function getDashboardPermissions(): Promise<UserPermissions & { isIct: boolean }> {
     const { isAuthorized, user, isIct } = await checkAdminAccess();
@@ -81,11 +75,15 @@ export async function getUpcomingBirthdays(): Promise<Birthday[]> {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) return [];
     try {
-        const users = await getSystemDirectus().request(readUsers({
-            fields: [...USER_BASIC_FIELDS, 'date_of_birth' as keyof DirectusUser],
-            filter: { date_of_birth: { _nnull: true } },
-            limit: -1
-        })) as unknown as BirthdayUserRow[];
+        const users = await db.query.directus_users.findMany({
+            where: isNotNull(schema.directus_users.date_of_birth),
+            columns: {
+                id: true,
+                first_name: true,
+                last_name: true,
+                date_of_birth: true
+            }
+        });
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);

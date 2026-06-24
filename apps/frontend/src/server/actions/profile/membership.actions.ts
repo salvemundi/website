@@ -122,11 +122,13 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
             })
         });
 
-        const data = await response.json() as { checkoutUrl?: string };
+        const data = await response.json() as { checkoutUrl?: string; error?: unknown; message?: string };
 
         if (response.ok && data.checkoutUrl) {
             return { success: true, checkoutUrl: data.checkoutUrl };
         }
+
+        safeConsoleError('[membership.actions.ts][initiateMembershipPaymentAction] ', `Finance service returned status ${response.status}: ${JSON.stringify(data)}`);
 
         if (couponClaimed && parsed.data.coupon) {
             await releaseCoupon(parsed.data.coupon);

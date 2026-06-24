@@ -1,18 +1,13 @@
 'use server';
 
-import { getSystemDirectus } from "@/lib/directus";
+import { db, schema } from "@salvemundi/db";
+import { eq } from "drizzle-orm";
 import { getAuthorizedUser, verifyActivityBOLA } from "@/server/actions/events/activiteiten/auth-check";
 import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
 import { deleteEventSignupDb, updateEventSignupDb } from "@/server/internal/event-db.utils";
 import { fetchEventSignupByTokenDb } from "@/server/internal/event-db.utils";
 import { safeConsoleError } from '@/server/utils/logger';
-import {
-    createItem,
-    deleteItem,
-    readUsers,
-    updateItem
-} from "@directus/sdk";
-import { createManualSignupSchema, deleteSignupSchema, toggleCheckInSchema, USER_BASIC_FIELDS, type UserBasic } from "@salvemundi/validations";
+import { createManualSignupSchema, deleteSignupSchema, toggleCheckInSchema, type UserBasic } from "@salvemundi/validations";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 const getNotificationUrl = () => process.env.INTERNAL_NOTIFICATION_API_URL || process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
@@ -63,7 +58,7 @@ export async function deleteSignupAction(signupId: number, eventId: string | num
         if (!success) throw new Error("Deletion from database failed");
 
         try {
-            await getSystemDirectus().request(deleteItem('event_signups', signupId));
+            await db.delete(schema.event_signups).where(eq(schema.event_signups.id, signupId));
         } catch (error) {
             await logAdminAction('system_event_signup_delete_failed', 'ERROR', { context: 'activiteit', event_id: eventId, id: signupId, error: String(error) });
             return { success: false, error: "CMS Synchronisatie mislukt. Aanmelding niet verwijderd." };
@@ -103,14 +98,22 @@ export async function searchMembersAction(query: string) {
     if (query.length < 2) return { success: true, data: [] };
 
     try {
-        const users = await getSystemDirectus().request(
-            readUsers({
-                search: query,
-                limit: 10,
-                fields: [...USER_BASIC_FIELDS]
-            })
-        );
-        return { success: true, data: users as unknown as UserBasic[] };
+        const users = await db.query.directus_users.findMany({
+            where: (users, { ilike, or }) => or(
+                ilike(users.first_name, `%${query}%`),
+                ilike(users.last_name, `%${query}%`),
+                ilike(users.email, `%${query}%`)
+            ),
+            limit: 10,
+            columns: {
+                id: true,
+                first_name: true,
+                last_name: true,
+                email: true,
+                avatar: true
+            }
+        });
+        return { success: true, data: users as UserBasic[] };
     } catch {
         return { success: false, error: "Search failed", data: [] as UserBasic[] };
     }
@@ -139,31 +142,25 @@ export async function createManualSignupAction(
     }
 
     try {
-        const payload: { [key: string]: unknown } = {
+        const payload = {
             event_id: eventId,
-            payment_status: 'paid'
+            payment_status: 'paid',
+            directus_relations: signupType === 'member' && memberData ? memberData.id : null,
+            participant_name: signupType === 'member' && memberData ? `${memberData.first_name} ${memberData.last_name || ''}`.trim() : (guestData?.name || ''),
+            participant_email: signupType === 'member' && memberData ? memberData.email : (guestData?.email || ''),
+            participant_phone: signupType === 'guest' ? (guestData?.phone || null) : null,
+            is_member: signupType === 'member',
         };
 
-        if (signupType === 'member') {
-            if (!memberData) throw new Error('Lid gegevens ontbreken');
-            payload.directus_relations = memberData.id;
-            payload.participant_name = `${memberData.first_name} ${memberData.last_name || ''}`.trim();
-            payload.participant_email = memberData.email;
-            payload.is_member = true;
-        } else {
-            if (!guestData) throw new Error('Gast gegevens ontbreken');
-            payload.participant_name = guestData.name;
-            payload.participant_email = guestData.email;
-            payload.participant_phone = guestData.phone || null;
-            payload.is_member = false;
-        }
-
         try {
-            const newItem = await getSystemDirectus().request(createItem('event_signups', payload)) as unknown as { id?: number } | null;
+            const inserted = await db.insert(schema.event_signups).values(payload).returning({
+                id: schema.event_signups.id
+            });
 
-            if (!newItem || !newItem.id) {
-                throw new Error('Geen ID teruggekregen van het CMS');
+            if (inserted.length === 0 || !inserted[0]) {
+                throw new Error('Geen ID teruggekregen van de database');
             }
+            const newItem = inserted[0];
 
             await logAdminAction('admin_event_signup_manual_created', 'SUCCESS', { context: 'activiteit', event_id: eventId, context_name: eventName, id: newItem.id, data: payload });
 
@@ -173,7 +170,7 @@ export async function createManualSignupAction(
             return { success: true };
         } catch (error) {
             const typedError = error instanceof Error ? error : new Error(String(error));
-            safeConsoleError('[aanmeldingen.actions.ts][createManualSignupAction] ', `Directus createItem failed (signup): ${typedError.message}`);
+            safeConsoleError('[aanmeldingen.actions.ts][createManualSignupAction] ', `Drizzle insert failed: ${typedError.message}`);
             await logAdminAction('system_activity_signup_failed', 'ERROR', {
                 context: 'activiteit',
                 event_id: eventId,
@@ -181,7 +178,7 @@ export async function createManualSignupAction(
                 error: typedError.message,
                 payload: payload
             });
-            return { success: false, error: 'Synchronisatie met CMS mislukt. Aanmelding niet opgeslagen.' };
+            return { success: false, error: 'Opslaan in database mislukt.' };
         }
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -213,7 +210,7 @@ export async function toggleCheckInAction(signupId: number, eventId: number, che
         if (!updated) throw new Error("Database update mislukt");
 
         try {
-            await getSystemDirectus().request(updateItem('event_signups', signupId, payload));
+            await db.update(schema.event_signups).set(payload).where(eq(schema.event_signups.id, signupId));
         } catch (error) {
             await updateEventSignupDb(signupId, { checked_in: !checkedIn, checked_in_at: !checkedIn ? new Date().toISOString() : null });
             await logAdminAction('system_event_signup_checkin_rollback', 'ERROR', { context: 'activiteit', event_id: eventId, id: signupId, error: String(error), action: 'rollback_restore' });

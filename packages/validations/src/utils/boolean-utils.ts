@@ -1,6 +1,6 @@
 /**
  * parseBoolean: Robustly converts various truthy/falsy values to a boolean.
- * Handles common form and database representations without needing 'as any' casts.
+ * Handles common form and database representations without needing '' casts.
  */
 export function parseBoolean(value: unknown): boolean {
     if (typeof value === 'boolean') return value;

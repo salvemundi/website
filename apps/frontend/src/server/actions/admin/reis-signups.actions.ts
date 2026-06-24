@@ -18,12 +18,8 @@ import {
     fetchSelectedSignupActivitiesDb,
     fetchTripByIdDb
 } from '@/server/internal/reis-db.utils';
-import { getSystemDirectus } from '@/lib/directus';
-import {
-    updateItem,
-    deleteItem,
-    createItem
-} from '@directus/sdk';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 import { normalizeDate } from '@/lib/utils/date-utils';
 import { safeConsoleError } from '@/server/utils/logger';
 import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
@@ -49,11 +45,6 @@ export async function updateSignupStatus(signupId: number, status: string) {
 
         const success = await updateTripSignupDb(signupId, { status });
         if (!success) throw new Error('Database update mislukt');
-
-        // Shadow Write (Directus)
-        getSystemDirectus().request(updateItem('trip_signups', signupId, { status })).catch((error) => {
-            safeConsoleError(`[reis-signups.actions.ts][updateSignupStatus] Failed to update trip signup ${signupId}:`, error);
-        });
 
         await logAdminAction('admin_trip_signup_status_updated', 'SUCCESS', {
             context: 'reis',
@@ -128,10 +119,6 @@ export async function deleteTripSignup(signupId: number) {
         const success = await deleteTripSignupDb(signupId);
         if (!success) throw new Error('Database delete mislukt');
 
-        getSystemDirectus().request(deleteItem('trip_signups', signupId)).catch((error) => {
-            safeConsoleError(`[reis-signups.actions.ts][deleteTripSignup] Failed to delete trip signup ${signupId}:`, error);
-        });
-
         await logAdminAction('admin_trip_signup_deleted', 'SUCCESS', {
             context: 'reis',
             signup_id: signupId
@@ -182,10 +169,6 @@ export async function updateTripSignup(prevState: unknown, formData: FormData) {
         const success = await updateTripSignupDb(id, validated.data);
         if (!success) throw new Error('Database update mislukt');
 
-        getSystemDirectus().request(updateItem('trip_signups', id, validated.data)).catch((error) => {
-            safeConsoleError(`[reis-signups.actions.ts][updateTripSignup] Failed to update trip signup ${id}:`, error);
-        });
-
         await logAdminAction('admin_trip_signup_updated', 'SUCCESS', {
             context: 'reis',
             signup_id: id,
@@ -224,8 +207,6 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
     await requireAdminResource(AdminResource.Reis);
 
     try {
-        const client = getSystemDirectus();
-
         const current = await getSignupActivities(signupId);
         const currentIds = current.map(a => {
             const actId = a.trip_activity_id as unknown;
@@ -248,16 +229,16 @@ export async function updateSignupActivities(signupId: number, activityIds: numb
 
         for (const item of toDelete) {
             if (item.id) {
-                await client.request(deleteItem('trip_signup_activities', item.id));
+                await db.delete(schema.trip_signup_activities).where(eq(schema.trip_signup_activities.id, item.id));
             }
         }
 
         const toAdd = activityIds.filter(id => !currentIds.includes(id));
         for (const activityId of toAdd) {
-            await client.request(createItem('trip_signup_activities', {
+            await db.insert(schema.trip_signup_activities).values({
                 trip_signup_id: signupId,
                 trip_activity_id: activityId
-            }));
+            });
         }
 
         await logAdminAction('admin_trip_signup_activities_updated', 'SUCCESS', {
@@ -283,3 +264,4 @@ export async function getTripSignupActivitiesAction(tripId: number) {
     await requireAdminResource(AdminResource.Reis);
     return await fetchTripSignupActivitiesDb(tripId);
 }
+

@@ -6,15 +6,10 @@ import {
     reisSignupFormSchema,
     type ReisSignupForm
 } from '@salvemundi/validations/schema/reis.zod';
-import { getSystemDirectus } from '@/lib/directus';
-import { createItem } from '@directus/sdk';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 import {
-    fetchUserSignupStatusDb,
-    insertTripSignupDb,
-    deleteTripSignupDb
+    insertTripSignupDb
 } from '@/server/internal/reis-db.utils';
 import { fetchUserCommitteesDb, type Committee } from '@/server/internal/user-db.utils';
 import { getRedis } from '@/server/auth/redis-client';
@@ -172,38 +167,18 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
             created_at: new Date().toISOString()
         };
 
-        const signupId = await insertTripSignupDb(payload);
-        if (!signupId) throw new Error('Database insert failed');
-
+        let signupId;
         try {
-            await getSystemDirectus().request(createItem('trip_signups', { ...payload, id: signupId }));
+            signupId = await insertTripSignupDb(payload);
         } catch (error: unknown) {
-            const errorObj = error as { errors?: { extensions?: { code?: string }, message?: string }[], message?: string };
-            const firstError = errorObj.errors?.[0];
-            const isUniqueError =
-                firstError?.extensions?.code === 'RECORD_NOT_UNIQUE' ||
-                firstError?.message?.toLowerCase().includes('unique') ||
-                (errorObj.message || '').toLowerCase().includes('unique');
-
-            if (isUniqueError) {
-                try {
-                    const existing = await fetchUserSignupStatusDb(userId || payload.email, tripId);
-                    const matchesTrip = existing && Number(existing.trip_id) === Number(payload.trip_id);
-                    const matchesUser = existing && userId && existing.directus_relations === userId;
-                    const matchesEmail = existing && !userId && existing.email === payload.email;
-
-                    if (matchesTrip && (matchesUser || matchesEmail)) {
-                        return { success: true };
-                    }
-                } catch (error: unknown) {
-                    safeConsoleError(`[reis-mutations.actions.ts][createTripSignup] Failed to fetch user signup status:`, error);
-                }
+            const typedError = error instanceof Error ? error : new Error(String(error));
+            if ((typedError as { code?: string }).code === '23505') {
+                return { success: true };
             }
-
-            await deleteTripSignupDb(signupId);
-            await logAdminAction('system_trip_signup_rollback', 'ERROR', { context: 'reis', trip_id: tripId, id: signupId, error: String(error), action: 'rollback_delete' });
-            return { success: false, message: 'Synchronisatie met CMS mislukt. Inschrijving niet voltooid.' };
+            throw error;
         }
+
+        if (!signupId) throw new Error('Database insert failed');
 
         revalidatePath('/reis');
         revalidatePath('/beheer/reis');

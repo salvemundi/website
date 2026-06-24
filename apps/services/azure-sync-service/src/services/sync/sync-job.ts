@@ -3,7 +3,7 @@ import { GraphService, type AzureUser } from '../graph.service.js';
 import { TokenService } from '../token.service.js';
 import { type Redis } from 'ioredis';
 import { db } from '../../plugins/db.js';
-import { sql } from 'kysely';
+import { schema, sql } from '@salvemundi/db';
 import {
     type SyncStatus, type SyncOptions, type SyncContext,
     SYNC_REDIS_KEY, SYNC_ABORT_KEY, GROUP_ACTIVE_LID,
@@ -204,7 +204,7 @@ export class SyncJob {
         }
 
         await db
-            .insertInto('system_logs')
+            .insert(schema.system_logs)
             .values({
                 type: 'system_sync_summary',
                 status: errors > 0 ? 'ERROR' : 'SUCCESS',
@@ -215,13 +215,9 @@ export class SyncJob {
                     moved_active_users: status.movedActiveUsers,
                     moved_expired_users: status.movedExpiredUsers,
                 })
-            })
-            .execute();
+            });
         try {
-            await db
-                .deleteFrom('system_logs')
-                .where('created_at', '<', sql<string>`NOW() - INTERVAL '90 days'`)
-                .execute();
+            await db.execute(sql`DELETE FROM system_logs WHERE created_at < NOW() - INTERVAL '90 days'`);
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             safeConsoleError(`[sync-job.ts][logSummary] Error while cleaning up old logs:`, message);

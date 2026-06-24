@@ -8,8 +8,8 @@ import {
     type IntroBlog
 } from '@salvemundi/validations/schema/intro.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { getSystemDirectus } from '@/lib/directus';
-import { readItems, createItem } from '@directus/sdk';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 import { query } from '@/lib/database';
 import { revalidatePath } from 'next/cache';
 import { normalizeDate } from '@/lib/utils/date-utils';
@@ -71,13 +71,11 @@ async function checkParentSignupInternal(): Promise<{ exists: boolean; record?: 
     if (!session?.user) return { exists: false };
 
     try {
-        const signups = await getSystemDirectus().request(
-            readItems('intro_parent_signups', {
-                filter: { user_id: { _eq: session.user.id } },
-                fields: ['id', 'user_id', 'email'],
-                limit: 1
-            })
-        ) as unknown as ParentSignupRecord[];
+        const signups = await db.query.intro_parent_signups.findMany({
+            where: eq(schema.intro_parent_signups.user_id, session.user.id),
+            columns: { id: true, user_id: true, email: true },
+            limit: 1
+        });
 
         if (signups.length > 0 && signups[0]) {
             return { exists: true, record: signups[0] };
@@ -85,7 +83,7 @@ async function checkParentSignupInternal(): Promise<{ exists: boolean; record?: 
 
         return { exists: false };
     } catch (error: unknown) {
-        safeConsoleError('[intro.actions.ts][checkParentSignupInternal] Directus check failed:', error);
+        safeConsoleError('[intro.actions.ts][checkParentSignupInternal] DB check failed:', error);
         throw error;
     }
 }
@@ -119,7 +117,7 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
     };
 
     try {
-        await getSystemDirectus().request(createItem('intro_signups', payload));
+        await db.insert(schema.intro_signups).values(payload);
     } catch (error: unknown) {
         safeConsoleError(`[intro.actions.ts][submitIntroSignup] Error while submitting intro signup:`, error);
         throw new Error('Er is een fout opgetreden bij je inschrijving');
@@ -213,7 +211,7 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
     };
 
     try {
-        await getSystemDirectus().request(createItem('intro_parent_signups', payload));
+        await db.insert(schema.intro_parent_signups).values(payload);
         revalidatePath('/beheer/intro');
         return { success: true };
     } catch (error: unknown) {

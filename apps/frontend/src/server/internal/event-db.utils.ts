@@ -30,7 +30,7 @@ interface JoinedEventSignupRow extends Omit<EventSignup, 'event_id'> {
 
 export async function deleteEventDb(id: number): Promise<boolean> {
     const { rowCount } = await query(`DELETE FROM events WHERE id = $1`, [id]);
-    return (rowCount ?? 0) > 0;
+    return (rowCount || 0) > 0;
 }
 
 export async function createEventSignupDb(data: Partial<EventSignup>): Promise<number | null> {
@@ -73,7 +73,7 @@ export async function updateEventSignupDb(id: number, data: Partial<EventSignup>
 
 export async function deleteEventSignupDb(id: number): Promise<boolean> {
     const { rowCount } = await query(`DELETE FROM event_signups WHERE id = $1`, [id]);
-    return (rowCount ?? 0) > 0;
+    return (rowCount || 0) > 0;
 }
 
 export async function fetchUserEventSignupsDb(email: string): Promise<EnrichedEventSignup[]> {

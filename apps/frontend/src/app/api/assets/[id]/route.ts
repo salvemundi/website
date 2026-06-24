@@ -1,11 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { fetchWithRetry } from '@/lib/directus/directus';
 import { logInternalError } from '@/server/utils/logger';
 
 export const runtime = 'nodejs';
 
-const assetIdSchema = z.string().uuid();
+const assetIdSchema = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+
+async function fetchWithRetry(url: string, options: RequestInit, retries = 3): Promise<Response> {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const res = await fetch(url, options);
+            if (res.ok || res.status < 500) return res;
+        } catch (error) {
+            if (i === retries - 1) throw error;
+        }
+        await new Promise(resolve => setTimeout(resolve, 500 * Math.pow(2, i)));
+    }
+    throw new Error('Fetch failed after retries');
+}
 
 export async function GET(
     request: NextRequest,

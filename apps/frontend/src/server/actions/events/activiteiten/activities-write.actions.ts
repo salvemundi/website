@@ -3,14 +3,8 @@
 import { z } from 'zod';
 
 import { revalidateTag, revalidatePath } from "next/cache";
-import { getSystemDirectus } from "@/lib/directus";
-import {
-    readItems,
-    createItem,
-    updateItem,
-    deleteItem,
-    uploadFiles
-} from "@directus/sdk";
+import { db, schema } from "@salvemundi/db";
+import { eq } from "drizzle-orm";
 import {
     activityAdminSchema
 } from "@salvemundi/validations";
@@ -29,13 +23,6 @@ export async function deleteActivity(eventId: number) {
     try {
         const success = await deleteEventDb(eventId);
         if (!success) throw new Error("Deletion from database failed");
-
-        try {
-            await getSystemDirectus().request(deleteItem('events', eventId));
-        } catch (error) {
-            await logAdminAction('system_activity_delete_failed', 'ERROR', { context: 'activiteit', id: eventId, error: String(error) });
-            return { success: false, error: "CMS Synchronisatie mislukt. Activiteit is niet verwijderd." };
-        }
 
         await logAdminAction('admin_activity_deleted', 'SUCCESS', { context: 'activiteit', id: eventId });
 
@@ -69,8 +56,17 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
         const fileData = new FormData();
         fileData.append('file', imageFile);
         try {
-            const res = (await getSystemDirectus().request(uploadFiles(fileData))) as unknown as { id: string };
-            imageId = res.id;
+            const token = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
+            const res = await fetch(`${process.env.DIRECTUS_URL}/files`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                body: fileData
+            });
+            if (!res.ok) throw new Error(`Upload failed: ${await res.text()}`);
+            const data = await res.json() as { data: { id: string } };
+            imageId = data.data.id;
         } catch (error: unknown) {
             const typedError = error instanceof Error ? error : new Error(String(error));
             safeConsoleError('[activities-write.actions.ts][createActivityAction] ', `Failed to upload image: ${typedError.message}`);
@@ -107,23 +103,34 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
         };
     }
 
-    const directusPayload: { [key: string]: unknown } = {
-        ...data,
+    const insertPayload = {
+        name: data.name,
+        description: data.description,
+        short_description: data.short_description || null,
+        description_logged_in: data.description_logged_in || null,
+        event_date: data.event_date,
+        event_time: data.event_time || null,
+        event_date_end: data.event_date_end || null,
+        event_time_end: data.event_time_end || null,
+        location: data.location || null,
+        max_sign_ups: data.max_sign_ups || null,
+        price_members: data.price_members.toString(),
+        price_non_members: data.price_non_members.toString(),
+        registration_deadline: data.registration_deadline || null,
+        custom_url: data.custom_url || null,
+        committee_id: data.committee_id || null,
+        contact: data.contact || null,
+        only_members: data.only_members,
         status: data.status === 'scheduled' ? 'published' : data.status,
-        price_members: data.price_members,
-        price_non_members: data.price_non_members
+        publish_date: data.publish_date || null,
+        ...(imageId && { image: imageId }),
     };
 
-    if (imageId) directusPayload.image = imageId;
-
     try {
-        const newItem = (await getSystemDirectus().request(createItem('events', directusPayload))) as unknown as { id: number } | null | undefined;
+        const createdItems = await db.insert(schema.events).values(insertPayload).returning();
+        const newItem = createdItems[0];
 
-        if (!newItem || !newItem.id) {
-            throw new Error('Geen ID teruggekregen van het CMS');
-        }
-
-        await logAdminAction('admin_activity_created', 'SUCCESS', { context: 'activiteit', context_name: data.name, id: newItem.id, data: directusPayload });
+        await logAdminAction('admin_activity_created', 'SUCCESS', { context: 'activiteit', context_name: data.name, id: newItem.id, data: insertPayload });
 
         revalidateTag('events', 'max');
         revalidatePath('/beheer/activiteiten');
@@ -133,14 +140,14 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
         return { success: true, id: newItem.id };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('[activities-write.actions.ts][createActivityAction] ', `Directus createItem failed: ${typedError.message}`);
+        safeConsoleError('[activities-write.actions.ts][createActivityAction] ', `Drizzle createItem failed: ${typedError.message}`);
         await logAdminAction('system_activity_create_failed', 'ERROR', {
             context: 'activiteit',
             context_name: data.name,
             error: typedError.message,
-            payload: directusPayload
+            payload: insertPayload
         });
-        return { success: false, error: 'Synchronisatie met CMS mislukt. Activiteit is niet aangemaakt.', initialData: rawData };
+        return { success: false, error: 'Activiteit is niet aangemaakt.', initialData: rawData };
     }
 }
 
@@ -152,14 +159,12 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
     }
 
     try {
-        const existing = (await getSystemDirectus().request(readItems('events', {
-            fields: ['*'],
-            filter: { id: { _eq: eventId } },
-            limit: 1
-        }))) as unknown[] | null | undefined;
+        const existing = await db.query.events.findFirst({
+            where: eq(schema.events.id, eventId)
+        });
 
-        if (!existing || existing.length === 0) return { error: "Activity not found", success: false };
-        const oldData = existing[0] as unknown as { [key: string]: unknown };
+        if (!existing) return { error: "Activity not found", success: false };
+        const oldData = existing as unknown as { [key: string]: unknown };
 
         const imageFile = formData.get('imageFile') as File | null;
         let imageId: string | null | undefined = undefined;
@@ -175,8 +180,17 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
 
             const fileData = new FormData();
             fileData.append('file', imageFile);
-            const res = await getSystemDirectus().request(uploadFiles(fileData));
-            imageId = res.id;
+            const token = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
+            const res = await fetch(`${process.env.DIRECTUS_URL}/files`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                body: fileData
+            });
+            if (!res.ok) throw new Error(`Upload failed: ${await res.text()}`);
+            const data = await res.json() as { data: { id: string } };
+            imageId = data.data.id;
         } else if (removeImage) {
             imageId = null;
         }
@@ -213,17 +227,33 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
             }
         }
 
-        const directusPayload: { [key: string]: unknown } = {
-            ...data,
-            status: data.status === 'scheduled' ? 'published' : data.status
+        const updatePayload = {
+            name: data.name,
+            event_date: data.event_date,
+            description: data.description || null,
+            description_logged_in: data.description_logged_in || null,
+            price_members: data.price_members.toString(),
+            price_non_members: data.price_non_members.toString(),
+            max_sign_ups: data.max_sign_ups || null,
+            only_members: data.only_members,
+            committee_id: data.committee_id || null,
+            contact: data.contact || null,
+            event_time: data.event_time || null,
+            location: data.location || null,
+            event_time_end: data.event_time_end || null,
+            registration_deadline: data.registration_deadline || null,
+            publish_date: data.publish_date || null,
+            event_date_end: data.event_date_end || null,
+            custom_url: data.custom_url || null,
+            short_description: data.short_description || null,
+            status: data.status === 'scheduled' ? 'published' : data.status,
+            ...(imageId !== undefined && { image: imageId }),
         };
 
-        if (imageId !== undefined) directusPayload.image = imageId;
-
         try {
-            await getSystemDirectus().request(updateItem('events', eventId, directusPayload));
+            await db.update(schema.events).set(updatePayload).where(eq(schema.events.id, eventId));
 
-            await logAdminAction('admin_activity_updated', 'SUCCESS', { context: 'activiteit', context_name: data.name, id: eventId, data: directusPayload });
+            await logAdminAction('admin_activity_updated', 'SUCCESS', { context: 'activiteit', context_name: data.name, id: eventId, data: updatePayload });
 
             revalidateTag('events', 'max');
             revalidateTag(`event_${eventId}`, 'max');
@@ -234,13 +264,13 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
             return { success: true };
         } catch (error) {
             const typedError = error instanceof Error ? error : new Error(String(error));
-            safeConsoleError('[activities-write.actions.ts][updateActivityAction] ', `Directus updateItem failed: ${typedError.message}`);
+            safeConsoleError('[activities-write.actions.ts][updateActivityAction] ', `Drizzle updateItem failed: ${typedError.message}`);
             await logAdminAction('system_activity_update_failed', 'ERROR', {
                 context: 'activiteit',
                 id: eventId,
                 error: typedError.message
             });
-            return { success: false, error: 'Synchronisatie met CMS mislukt. Wijzigingen zijn niet opgeslagen.' };
+            return { success: false, error: 'Wijzigingen zijn niet opgeslagen.' };
         }
     } catch {
         return { error: 'Internal server error', success: false };

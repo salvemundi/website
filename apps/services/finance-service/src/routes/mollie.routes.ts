@@ -3,6 +3,7 @@ import { type MolliePaymentMetadata } from '@salvemundi/validations';
 import { timingSafeCompare } from '@salvemundi/validations/security';
 import { getMollieClient } from '../services/mollie.service.js';
 import { PaymentService } from '../services/payment.service.js';
+import { schema, eq } from '@salvemundi/db';
 
 async function verifyMollieWebhook(request: FastifyRequest<{ Querystring: { token?: string } }>, reply: FastifyReply) {
     const webhookSecret = process.env.MOLLIE_WEBHOOK_SECRET;
@@ -47,10 +48,11 @@ export default async function mollieRoutes(fastify: FastifyInstance) {
             const metadata = payment.metadata as MolliePaymentMetadata;
 
             const txResult = await fastify.db
-                .selectFrom('transactions')
-                .select('access_token')
-                .where('mollie_id', '=', id)
-                .executeTakeFirst();
+                .select({ access_token: schema.transactions.access_token })
+                .from(schema.transactions)
+                .where(eq(schema.transactions.mollie_id, id))
+                .limit(1)
+                .then((res: any[]) => res[0]);
             const accessToken = txResult?.access_token || '';
 
             await PaymentService.finalizePayment(

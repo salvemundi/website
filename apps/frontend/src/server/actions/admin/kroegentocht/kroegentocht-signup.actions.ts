@@ -5,13 +5,7 @@ import { revalidateTag, unstable_noStore as noStore } from 'next/cache';
 import {
     type PubCrawlSignup
 } from '@salvemundi/validations/schema/pub-crawl.zod';
-import { getSystemDirectus } from "@/lib/directus";
 import { query } from '@/lib/database';
-import {
-    readItems,
-    updateItem,
-    deleteItem
-} from '@directus/sdk';
 import {
     fetchPubCrawlSignupsDb,
     fetchPubCrawlSignupByIdDb,
@@ -26,34 +20,6 @@ export async function getPubCrawlSignups(eventId: number) {
     await requireKroegAdmin();
     try {
         const sqlSignups = await fetchPubCrawlSignupsDb(eventId);
-        const openSignupIds = sqlSignups.filter(s => s.payment_status === 'open' && s.id !== undefined).map(s => Number(s.id));
-
-        if (openSignupIds.length > 0) {
-            try {
-                const directusItems = await getSystemDirectus().request(readItems('pub_crawl_signups', {
-                    filter: { id: { _in: openSignupIds } },
-                    fields: ['id', 'payment_status']
-                })) as unknown as { id: number; payment_status: string }[];
-
-                const directusStatusMap = new Map<number, string>(directusItems.map((item) => [item.id, item.payment_status]));
-
-                for (const signup of sqlSignups) {
-                    if (!signup.id) continue;
-                    const latestStatus = directusStatusMap.get(Number(signup.id));
-                    if (latestStatus && latestStatus !== signup.payment_status) {
-                        (signup as { [key: string]: unknown }).payment_status = latestStatus;
-                        updatePubCrawlSignupDb(Number(signup.id), { payment_status: latestStatus as 'open' | 'paid' | 'failed' | 'canceled' | 'expired' }).catch((syncError) => {
-                            const typedSyncError = syncError instanceof Error ? syncError : new Error(String(syncError));
-                            safeConsoleError('[kroegentocht-signup.actions.ts][getPubCrawlSignups] ', `Failed to update signup payment status: ${typedSyncError.message}`);
-                        });
-                    }
-                }
-            } catch (syncCheckError) {
-                const typedSyncCheckError = syncCheckError instanceof Error ? syncCheckError : new Error(String(syncCheckError));
-                safeConsoleError('[kroegentocht-signup.actions.ts][getPubCrawlSignups] ', `Directus sync check failed: ${typedSyncCheckError.message}`);
-            }
-        }
-
         return sqlSignups;
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
@@ -79,11 +45,6 @@ export async function deletePubCrawlSignup(id: number, eventId: number) {
         await deletePubCrawlSignupDb(id);
         revalidateTag(`signups-${eventId}`, 'max');
 
-        getSystemDirectus().request(deleteItem('pub_crawl_signups', id)).catch((deleteError) => {
-            const typedDeleteError = deleteError instanceof Error ? deleteError : new Error(String(deleteError));
-            safeConsoleError('[kroegentocht-signup.actions.ts][deletePubCrawlSignup] ', `Failed to delete signup ${id}: ${typedDeleteError.message}`);
-        });
-
         return { success: true };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
@@ -108,11 +69,6 @@ export async function updatePubCrawlSignup(id: number, eventId: number, data: Pa
         await updatePubCrawlSignupDb(id, filteredData);
         revalidateTag(`signups-${eventId}`, 'max');
 
-        getSystemDirectus().request(updateItem('pub_crawl_signups', id, filteredData)).catch((updateError) => {
-            const typedUpdateError = updateError instanceof Error ? updateError : new Error(String(updateError));
-            safeConsoleError('[kroegentocht-signup.actions.ts][updatePubCrawlSignup] ', `Failed to update signup ${id}: ${typedUpdateError.message}`);
-        });
-
         return { success: true };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
@@ -132,14 +88,6 @@ export async function togglePubCrawlTicketCheckIn(ticketId: number, currentStatu
             [newStatus, now, ticketId]
         );
 
-        getSystemDirectus().request(updateItem('pub_crawl_tickets', ticketId, {
-            checked_in: newStatus,
-            checked_in_at: now
-        })).catch((ticketError) => {
-            const typedTicketError = ticketError instanceof Error ? ticketError : new Error(String(ticketError));
-            safeConsoleError('[kroegentocht-signup.actions.ts][togglePubCrawlTicketCheckIn] ', `Failed to update ticket ${ticketId}: ${typedTicketError.message}`);
-        });
-
         revalidateTag(`signups-${eventId}`, 'max');
         return { success: true, newStatus };
     } catch (error: unknown) {
@@ -156,24 +104,10 @@ export async function updatePubCrawlTickets(signupId: number, eventId: number, t
 
         for (const ticket of tickets) {
             await updatePubCrawlTicketDb(ticket.id, { name: ticket.name, initial: ticket.initial });
-            getSystemDirectus().request(updateItem('pub_crawl_tickets', ticket.id, {
-                name: ticket.name,
-                initial: ticket.initial
-            })).catch((ticketError) => {
-                const typedTicketError = ticketError instanceof Error ? ticketError : new Error(String(ticketError));
-                safeConsoleError('[kroegentocht-signup.actions.ts][updatePubCrawlTickets] ', `Failed to update ticket ${ticket.id}: ${typedTicketError.message}`);
-            });
         }
 
         const nameInitials = JSON.stringify(tickets.map(t => ({ name: t.name, initial: t.initial })));
         await updatePubCrawlSignupDb(signupId, { name_initials: nameInitials });
-
-        getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, {
-            name_initials: nameInitials
-        })).catch((signupError) => {
-            const typedSignupError = signupError instanceof Error ? signupError : new Error(String(signupError));
-            safeConsoleError('[kroegentocht-signup.actions.ts][updatePubCrawlTickets] ', `Failed to update signup ${signupId}: ${typedSignupError.message}`);
-        });
 
         revalidateTag(`signups-${eventId}`, 'max');
         return { success: true };
@@ -188,10 +122,6 @@ export async function deletePubCrawlTicket(ticketId: number, signupId: number, e
     await requireKroegAdmin();
     try {
         await query('DELETE FROM pub_crawl_tickets WHERE id = $1', [ticketId]);
-        getSystemDirectus().request(deleteItem('pub_crawl_tickets', ticketId)).catch((ticketError) => {
-            const typedTicketError = ticketError instanceof Error ? ticketError : new Error(String(ticketError));
-            safeConsoleError('[kroegentocht-signup.actions.ts][deletePubCrawlTicket] ', `Failed to delete ticket ${ticketId}: ${typedTicketError.message}`);
-        });
 
         const { rows: remainingTickets } = await query<{ name: string | null; initial: string | null }>(
             'SELECT name, initial FROM pub_crawl_tickets WHERE signup_id = $1 ORDER BY id ASC',
@@ -205,14 +135,6 @@ export async function deletePubCrawlTicket(ticketId: number, signupId: number, e
             'UPDATE pub_crawl_signups SET amount_tickets = $1, name_initials = $2 WHERE id = $3',
             [amountTickets, nameInitials, signupId]
         );
-
-        getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, {
-            amount_tickets: amountTickets,
-            name_initials: nameInitials
-        })).catch((signupError) => {
-            const typedSignupError = signupError instanceof Error ? signupError : new Error(String(signupError));
-            safeConsoleError('[kroegentocht-signup.actions.ts][deletePubCrawlTicket] ', `Failed to update signup ${signupId}: ${typedSignupError.message}`);
-        });
 
         revalidateTag(`signups-${eventId}`, 'max');
         return { success: true };
@@ -284,9 +206,6 @@ export async function savePubCrawlGroupsAssignment(eventId: number, assignments:
         const { updatePubCrawlSignupDb } = await import('@/server/internal/kroegentocht-db.utils');
         for (const item of assignments) {
             await updatePubCrawlSignupDb(item.signupId, { group_name: item.groupName });
-            getSystemDirectus().request(updateItem('pub_crawl_signups', item.signupId, {
-                group_name: item.groupName
-            })).catch(() => {});
         }
         revalidateTag(`signups-${eventId}`, 'max');
         return { success: true };

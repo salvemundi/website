@@ -9,8 +9,6 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type EnrichedUser } from '@/types/auth';
 import { revalidateTag } from 'next/cache';
 
-import { getSystemDirectus } from '@/lib/directus';
-import { deleteItem } from '@directus/sdk';
 import {
     getActivitiesInternal,
     getActivityByIdInternal,
@@ -194,10 +192,6 @@ export async function signupForActivity(data: EventSignupForm) {
 
             try {
                 await deleteEventSignupDb(signupId);
-                getSystemDirectus().request(deleteItem('event_signups', signupId)).catch((deleteError: unknown) => {
-                    const typedDeleteError = deleteError instanceof Error ? deleteError : new Error(String(deleteError));
-                    safeConsoleError('[public-activiteit.actions.ts][signupForActivity] ', `Failed to delete signup ${signupId}: ${typedDeleteError.message}`);
-                });
             } catch (deleteError: unknown) {
                 const typedDeleteError = deleteError instanceof Error ? deleteError : new Error(String(deleteError));
                 safeConsoleError('[public-activiteit.actions.ts][signupForActivity] ', `Failed to delete signup ${signupId}: ${typedDeleteError.message}`);
