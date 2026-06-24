@@ -153,10 +153,8 @@ jobs:
           set -e
           cd /opt/salve-mundi-v7
 
-          # 1. Login to Registry
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-          # 2. Omgevingsdetectie
           ENV_NAME="acc"
           FRONTEND_PORT="3000"
           FINANCE_PORT="13001"
@@ -172,16 +170,15 @@ jobs:
             MANAGEMENT_PORT="3004"
           fi
 
-          # 3. Maak .env.${ENV_NAME} leeg
           echo "# Auto-generated V7 App Environment" > .env.${ENV_NAME}
 
-          # 4. Schrijf alle secrets naar het .env bestand
           cat >> .env.${ENV_NAME} << 'EOF'
           MOLLIE_API_KEY="${{ secrets.MOLLIE_API_KEY }}"
           MOLLIE_WEBHOOK_SECRET="${{ secrets.MOLLIE_WEBHOOK_SECRET }}"
           DB_USER="${{ secrets.DB_USER }}"
           DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
           DB_NAME="${{ secrets.DB_NAME }}"
+          DB_PORT="${{ secrets.DB_PORT }}"
           DIRECTUS_KEY="${{ secrets.DIRECTUS_KEY }}"
           DIRECTUS_SECRET="${{ secrets.DIRECTUS_SECRET }}"
           INTERNAL_SERVICE_TOKEN="${{ secrets.INTERNAL_SERVICE_TOKEN }}"
@@ -203,7 +200,6 @@ jobs:
           VPN_IP="${{ secrets.VPS_IP }}"
           EOF
 
-          # 5. Voeg de afgeleide en overige variabelen toe
           echo "IMAGE_TAG=${{ needs.prepare.outputs.tag }}" >> .env.${ENV_NAME}
           echo "PUBLIC_URL=${{ vars.PUBLIC_URL }}" >> .env.${ENV_NAME}
           echo "BETTER_AUTH_URL=${{ vars.BETTER_AUTH_URL }}" >> .env.${ENV_NAME}
@@ -216,10 +212,8 @@ jobs:
           echo "FINANCE_PORT=${FINANCE_PORT}" >> .env.${ENV_NAME}
           echo "ENV_NAME=${ENV_NAME}" >> .env.${ENV_NAME}
 
-          # FIX: Next.js standalone dwingen om extern bereikbaar te zijn binnen de Docker bridge (voor proxy-afhandeling)
           echo "HOSTNAME=0.0.0.0" >> .env.${ENV_NAME}
 
-          # DYNAMISCH INJECTEREN VAN DE TESTBANK (ALLEEN VOOR ACC)
           if [ "$ENV_NAME" = "acc" ]; then
             echo "MOLLIE_TEST_ISSUER=lsvb_test" >> .env.${ENV_NAME}
             echo "[DEPLOY] Mollie Test Simulator ingeschakeld voor Acceptance"
@@ -249,7 +243,6 @@ jobs:
             echo "REDIS_URL=redis://v7-core-redis:6379${REDIS_DB_SUFFIX}" >> .env.${ENV_NAME}
           fi
 
-          # 6. Pull en restart
           docker compose --env-file .env.${ENV_NAME} pull
           docker compose --env-file .env.${ENV_NAME} up -d --remove-orphans
           docker image prune -af

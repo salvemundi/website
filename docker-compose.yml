@@ -28,6 +28,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - DB_HOST=v7-core-db
+      - DB_PORT=${DB_PORT}
       - REDIS_URL=${REDIS_URL}
       - NEXT_APP_INTERNAL_URL=http://localhost:3000
       - TRUST_PROXY=true
@@ -48,12 +49,11 @@ services:
     env_file:
       - .env.${ENV_NAME}
     ports:
-      # Binds only to the VPN IP so all Netbird users can access this service securely without exposing it to the public internet
       - "${VPN_IP}:${FINANCE_PORT:-3001}:3001"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - MOLLIE_API_KEY=${MOLLIE_API_KEY}
-      - DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@v7-core-db:5432/${DB_NAME}
+      - DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@v7-core-db:${DB_PORT}/${DB_NAME}
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - DIRECTUS_SERVICE_URL=${INTERNAL_DIRECTUS_URL}
       - REDIS_URL=${REDIS_URL}
@@ -91,7 +91,6 @@ services:
     env_file:
       - .env.${ENV_NAME}
     ports:
-      # Binds only to the VPN IP so all Netbird users can access this service securely without exposing it to the public internet
       - "${VPN_IP}:${SYNC_PORT:-3002}:3002"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
@@ -107,7 +106,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - DB_HOST=v7-core-db
-      - DB_PORT=5432
+      - DB_PORT=${DB_PORT}
       - AZURE_ACTIVE_LID_GROUP_ID=${AZURE_ACTIVE_LID_GROUP_ID:-2e17c12a-28d6-49ae-981a-8b5b8d88db8a}
       - AZURE_EXPIRED_LID_GROUP_ID=${AZURE_EXPIRED_LID_GROUP_ID:-98c1d807-613a-4a23-9618-3f8821d35fe9}
       - TZ=Europe/Amsterdam
@@ -138,7 +137,6 @@ services:
     env_file:
       - .env.${ENV_NAME}
     ports:
-      # Binds only to the VPN IP so all Netbird users can access this service securely without exposing it to the public internet
       - "${VPN_IP}:${MAIL_PORT:-3003}:3003"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
@@ -154,6 +152,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - DB_HOST=v7-core-db
+      - DB_PORT=${DB_PORT}
       - TZ=Europe/Amsterdam
     healthcheck:
       test:
@@ -182,7 +181,6 @@ services:
     env_file:
       - .env.${ENV_NAME}
     ports:
-      # Binds only to the VPN IP so all Netbird users can access this service securely without exposing it to the public internet
       - "${VPN_IP}:${MANAGEMENT_PORT:-3004}:3004"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}

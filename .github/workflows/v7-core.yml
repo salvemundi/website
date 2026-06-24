@@ -7,8 +7,8 @@ on:
       - main
       - acceptance
     paths:
-      - 'infrastructure/**'
-      - '.github/workflows/v7-core.yml'
+      - "infrastructure/**"
+      - ".github/workflows/v7-core.yml"
 
 permissions:
   contents: read
@@ -65,14 +65,12 @@ jobs:
           set -e
           cd /opt/salve-mundi-v7/infra
 
-          # Expliciete .env generatie
           echo "# Auto-generated V7 Core Environment" > .env
 
           echo "PUBLIC_URL=https://${{ env.DOMAIN }}" >> .env
           echo "CORS_ORIGIN=https://${{ env.DOMAIN }},https://${{ env.ACC_DOMAIN }}" >> .env
           echo "INTERNAL_DIRECTUS_URL=http://v7-core-directus:8055" >> .env
 
-          # Combine redirects
           COMBINED_REDIRECTS="${{ env.DOMAIN }},${{ env.ACC_DOMAIN }}"
           DIRECTUS_ALLOWED_REDIRECTS="${{ secrets.DIRECTUS_ALLOWED_REDIRECTS }}"
           if [ ! -z "$DIRECTUS_ALLOWED_REDIRECTS" ]; then
@@ -85,6 +83,7 @@ jobs:
           DB_USER="${{ secrets.DB_USER }}"
           DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
           DB_NAME="${{ secrets.DB_NAME }}"
+          DB_PORT="${{ secrets.DB_PORT }}"
           DIRECTUS_KEY="${{ secrets.DIRECTUS_KEY }}"
           DIRECTUS_SECRET="${{ secrets.DIRECTUS_SECRET }}"
           AZURE_WEBSITEV7_TENANT_ID="${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}"
@@ -94,13 +93,10 @@ jobs:
           REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"
           EOF
 
-          # Start de infra
           docker network create salve-mundi-v7-shared || true
-          # Force fresh RedisInsight state to ensure new config is loaded
-          # Note: This clears UI history but guarantees the injected connection works
           docker compose -p v7-core stop v7-core-redisinsight || true
           docker volume rm v7-core_v7_core_redisinsight_data || true
 
           docker compose -p v7-core up -d --remove-orphans
           echo "--- Core Infrastructure Deployed to ${{ env.DOMAIN }} ---"
-          ENDSSH
+          ENDSSH

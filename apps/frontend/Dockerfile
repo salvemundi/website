@@ -1,13 +1,10 @@
-# 1. Base Stage
 FROM node:26-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN npm install -g pnpm@11.8.0
 WORKDIR /app
 
-# 2. Builder Stage
 FROM base AS builder
-# Copy only necessary files for installation to leverage cache
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
 COPY patches ./patches
 COPY apps/frontend/package.json ./apps/frontend/
@@ -16,15 +13,15 @@ COPY apps/services/azure-sync-service/package.json ./apps/services/azure-sync-se
 COPY apps/services/mail-service/package.json ./apps/services/mail-service/
 COPY apps/services/azure-management-service/package.json ./apps/services/azure-management-service/
 COPY packages/validations/package.json ./packages/validations/
+COPY packages/db/package.json ./packages/db/
 
-# Install dependencies (including devDeps)
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
 
-# Build shared validations first
 COPY packages/validations ./packages/validations
 RUN pnpm --filter=@salvemundi/validations build
 
-# Build the frontend
+COPY packages/db ./packages/db
+
 COPY apps/frontend ./apps/frontend
 RUN BETTER_AUTH_SECRET=dummy_secret_at_least_32_characters_long_v7_salve_mundi \
     BETTER_AUTH_URL=http://localhost:3000 \
@@ -39,7 +36,6 @@ RUN BETTER_AUTH_SECRET=dummy_secret_at_least_32_characters_long_v7_salve_mundi \
     DB_HOST=localhost \
     pnpm --filter=@salvemundi/frontend build
 
-# 3. Runner Stage
 FROM node:26-alpine AS runner
 WORKDIR /app
 RUN chown node:node /app
@@ -49,9 +45,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN apk add --no-cache tzdata
 ENV TZ=Europe/Amsterdam
 
-# Copy standalone output from builder
-# Next.js standalone includes all necessary node_modules (including workspace dependencies)
-# Ensure public directory exists before copying to avoid build failure
 RUN mkdir -p apps/frontend/public && chown -R node:node apps/frontend/public
 COPY --from=builder --chown=node:node /app/apps/frontend/public ./apps/frontend/public
 COPY --from=builder --chown=node:node /app/apps/frontend/.next/standalone ./
@@ -62,5 +55,4 @@ USER node
 EXPOSE 3000
 ENV PORT=3000
 
-# Next.js standalone entry point
 CMD ["node", "apps/frontend/server.js"]
