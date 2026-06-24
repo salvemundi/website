@@ -9,7 +9,7 @@ const dbHost = process.env.VPN_IP || process.env.DB_HOST;
 const dbPort = process.env.DB_PORT;
 const dbName = process.env.DB_NAME;
 
-const connectionString = process.env.DATABASE_URL || (dbUser && dbPassword && dbHost && dbPort && dbName ? `postgres://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}` : undefined);
+const connectionString = process.env.DATABASE_URL || (dbUser && dbPassword && dbHost && dbPort && dbName ? `postgres://${encodeURIComponent(dbUser)}:${encodeURIComponent(dbPassword)}@${dbHost}:${dbPort}/${dbName}` : undefined);
 
 if (!connectionString) {
     throw new Error('Database connection configuration is incomplete');
