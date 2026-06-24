@@ -1,12 +1,11 @@
 import 'server-only';
-import { query } from '@/lib/database';
+import { db, schema } from "@salvemundi/db";
+import { desc, asc } from 'drizzle-orm';
 import {
     type IntroBlog,
     type IntroPlanningItem,
     introBlogSchema,
-    introPlanningSchema,
-    introSignupDbSchema,
-    introParentSignupDbSchema
+    introPlanningSchema
 } from '@salvemundi/validations/schema/intro.zod';
 import { z } from 'zod';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -29,15 +28,11 @@ interface IntroPlanningRow {
 
 export async function getIntroSignupsInternal() {
     try {
-        const sql = 'SELECT * FROM intro_signups ORDER BY id DESC LIMIT 1000';
-        const { rows } = await query(sql);
-
-        const parsed = z.array(introSignupDbSchema).safeParse(rows);
-        if (!parsed.success) {
-            safeConsoleError('[admin-intro.queries.ts][getIntroSignupsInternal] validation failed:', parsed.error);
-            return rows as z.infer<typeof introSignupDbSchema>[];
-        }
-        return parsed.data;
+        return await db
+            .select()
+            .from(schema.intro_signups)
+            .orderBy(desc(schema.intro_signups.id))
+            .limit(1000);
     } catch (error) {
         safeConsoleError('[admin-intro.queries.ts][getIntroSignupsInternal] failed:', error);
         throw new Error('Kon aanmeldingen niet ophalen');
@@ -46,15 +41,11 @@ export async function getIntroSignupsInternal() {
 
 export async function getIntroParentSignupsInternal() {
     try {
-        const sql = 'SELECT * FROM intro_parent_signups ORDER BY id DESC LIMIT 1000';
-        const { rows } = await query(sql);
-
-        const parsed = z.array(introParentSignupDbSchema).safeParse(rows);
-        if (!parsed.success) {
-            safeConsoleError('[admin-intro.queries.ts][getIntroParentSignupsInternal] validation failed:', parsed.error);
-            return rows as z.infer<typeof introParentSignupDbSchema>[];
-        }
-        return parsed.data;
+        return await db
+            .select()
+            .from(schema.intro_parent_signups)
+            .orderBy(desc(schema.intro_parent_signups.id))
+            .limit(1000);
     } catch (error) {
         safeConsoleError('[admin-intro.queries.ts][getIntroParentSignupsInternal] failed:', error);
         throw new Error('Kon ouder-aanmeldingen niet ophalen');
@@ -63,8 +54,11 @@ export async function getIntroParentSignupsInternal() {
 
 export async function getIntroBlogsInternal(): Promise<IntroBlog[]> {
     try {
-        const sql = 'SELECT * FROM intro_blogs ORDER BY id DESC LIMIT 200';
-        const { rows } = await query(sql);
+        const rows = await db
+            .select()
+            .from(schema.intro_blogs)
+            .orderBy(desc(schema.intro_blogs.id))
+            .limit(200);
 
         const mapped = (rows as IntroBlogRow[]).map(i => ({
             id: Number(i.id),
@@ -88,8 +82,11 @@ export async function getIntroBlogsInternal(): Promise<IntroBlog[]> {
 
 export async function getIntroPlanningInternal(): Promise<IntroPlanningItem[]> {
     try {
-        const sql = 'SELECT * FROM intro_planning ORDER BY date ASC, time_start ASC LIMIT 200';
-        const { rows } = await query(sql);
+        const rows = await db
+            .select()
+            .from(schema.intro_planning)
+            .orderBy(asc(schema.intro_planning.date), asc(schema.intro_planning.time_start))
+            .limit(200);
 
         const toStr = (v: unknown): string => {
             if (typeof v === 'string') return v;
@@ -98,7 +95,7 @@ export async function getIntroPlanningInternal(): Promise<IntroPlanningItem[]> {
         };
         const toTimeStr = (v: unknown): string => {
             if (typeof v === 'string') return v;
-            if (v instanceof Date) return v.toTimeString().split(' ')[0]; // "HH:MM:SS"
+            if (v instanceof Date) return v.toTimeString().split(' ')[0];
             return '';
         };
 

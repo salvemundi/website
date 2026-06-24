@@ -21,6 +21,7 @@ COPY packages/validations ./packages/validations
 RUN pnpm --filter=@salvemundi/validations build
 
 COPY packages/db ./packages/db
+RUN pnpm --filter=@salvemundi/db build
 
 COPY apps/services/finance-service ./apps/services/finance-service
 RUN pnpm --filter=@salvemundi/finance-service build

@@ -21,6 +21,7 @@ COPY packages/validations ./packages/validations
 RUN pnpm --filter=@salvemundi/validations build
 
 COPY packages/db ./packages/db
+RUN pnpm --filter=@salvemundi/db build
 
 COPY apps/frontend ./apps/frontend
 RUN BETTER_AUTH_SECRET=dummy_secret_at_least_32_characters_long_v7_salve_mundi \
