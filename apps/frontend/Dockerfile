@@ -32,6 +32,7 @@ RUN BETTER_AUTH_SECRET=dummy_secret_at_least_32_characters_long_v7_salve_mundi \
     DIRECTUS_STATIC_TOKEN=dummy_token \
     DB_USER=dummy \
     DB_PASSWORD=dummy \
+    DB_PORT=0000 \
     DB_NAME=dummy \
     DB_HOST=localhost \
     pnpm --filter=@salvemundi/frontend build
