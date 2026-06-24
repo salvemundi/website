@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { defineConfig } from 'drizzle-kit';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';

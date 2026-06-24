@@ -96,7 +96,6 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                         </thead>
                         <tbody className="divide-y divide-(--beheer-border)/10">
                             {filtered.map(p => {
-                                console.log("Parent keys:", Object.keys(p), "created_at waarde:", p.date_created, p.created_at);
                                 const isExpanded = expandedRows.includes(p.id);
                                 return (
                                     <Fragment key={p.id}>
