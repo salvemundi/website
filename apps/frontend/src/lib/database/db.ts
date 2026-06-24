@@ -6,9 +6,15 @@ import { Pool } from 'pg';
 export const db = drizzleDb;
 export { schema };
 
-const connectionString = process.env.DATABASE_URL || 'postgres://directusadmin:StXmr5J6LefHRTEp1V4UkKF8wI0ZDcysaOWM2PCulzAQqYvji7bx9BNdgohGn3@100.77.182.130:5432/v7-core-db';
-export const pool = new Pool({ connectionString, max: 20 });
+const dbUser = process.env.DB_USER;
+const dbPassword = process.env.DB_PASSWORD;
+const dbHost = process.env.DB_HOST;
+const dbPort = process.env.DB_PORT;
+const dbName = process.env.DB_NAME;
 
+const connectionString = process.env.DATABASE_URL || (dbUser && dbPassword && dbHost && dbName ? `postgres://${encodeURIComponent(dbUser)}:${encodeURIComponent(dbPassword)}@${dbHost}:${dbPort}/${dbName}` : undefined);
+
+export const pool = new Pool({ connectionString, max: 20 });
 
 export async function query<T = unknown>(text: string, params?: unknown[], retries = 2): Promise<{ rows: T[], rowCount: number }> {
     for (let i = 0; i <= retries; i++) {
@@ -18,9 +24,9 @@ export async function query<T = unknown>(text: string, params?: unknown[], retri
             return { rows: result as unknown as T[], rowCount: result.count };
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : String(error);
-            safeConsoleError('[db.ts][query] ', `Query failed: ${errorMessage}`);
+            safeConsoleError('[db.ts][query]', `Query failed: ${errorMessage}`);
             throw error;
         }
     }
     throw new Error('db.ts][query] Unexpected end of function');
-}
+}
