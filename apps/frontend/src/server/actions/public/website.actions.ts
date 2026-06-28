@@ -24,8 +24,8 @@ export async function getDocumenten(): Promise<Document[]> {
             file: doc.file,
             is_active: doc.is_active,
             display_order: doc.display_order,
-            date_created: doc.created_at ? new Date(doc.created_at).toISOString() : null,
-            date_updated: doc.updated_at ? new Date(doc.updated_at).toISOString() : null,
+            created_at: doc.created_at ? new Date(doc.created_at).toISOString() : new Date().toISOString(),
+            updated_at: doc.updated_at ? new Date(doc.updated_at).toISOString() : null,
         }));
 
         const parsed = documentenSchema.safeParse(mappedData);

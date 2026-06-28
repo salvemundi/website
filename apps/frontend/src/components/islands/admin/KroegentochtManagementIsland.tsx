@@ -26,6 +26,7 @@ import { safeConsoleError } from '@/server/utils/logger';
 
 interface ExtendedSignup extends PubCrawlSignup {
     participants?: { name: string; initial: string }[];
+    created_at: string;
 }
 
 interface KroegentochtManagementIslandProps {
@@ -219,7 +220,7 @@ export default function KroegentochtManagementIsland({
                                         void handleDeleteSignup(id);
                                     }}
                                     onEdit={(id) => router.push(`/beheer/kroegentocht/deelnemer/${id}`)}
-                                    eventGroups={selectedEvent.groups || []}
+                                    eventGroups={((selectedEvent.groups || []) as unknown[])}
                                     onUpdateGroup={handleUpdateGroup}
                                     onRefresh={handleRefresh}
                                 />
@@ -238,3 +239,6 @@ export default function KroegentochtManagementIsland({
         </>
     );
 }
+
+
+

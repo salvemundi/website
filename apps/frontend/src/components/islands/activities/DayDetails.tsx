@@ -16,7 +16,7 @@ interface DayDetailsProps {
 }
 
 export default function DayDetails({ selectedDay, activities, onClose, onEventClick }: DayDetailsProps) {
-    const dayEvents = activities.filter(event => isSameDay(new Date(event.datum_start), selectedDay));
+    const dayEvents = activities.filter(event => isSameDay(new Date(event.event_date), selectedDay));
 
     return (
         <div className="rounded-3xl bg-(--bg-card) dark:border dark:border-white/10 p-6 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -46,19 +46,19 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
                             className="group cursor-pointer rounded-xl bg-(--bg-soft) p-3 transition hover:ring-2 hover:ring-inset hover:ring-(--theme-purple)/30"
                         >
                             <h4 className="font-semibold text-(--theme-purple) dark:text-(--text-main) group-hover:text-(--theme-purple-light)">
-                                {event.titel}
+                                {event.name}
                             </h4>
                             <div className="mt-2 flex items-center gap-3 text-xs text-(--text-muted)">
                                 <div className="flex items-center gap-1">
                                     <Clock className="h-3 w-3" />
                                     <span>
-                                        {new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit' }).format(new Date(event.datum_start))}
+                                        {new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit' }).format(new Date(event.event_date))}
                                     </span>
                                 </div>
-                                {event.locatie && (
+                                {event.location && (
                                     <div className="flex items-center gap-1">
                                         <MapPin className="h-3 w-3" />
-                                        <span className="truncate max-w-[120px]">{event.locatie}</span>
+                                        <span className="truncate max-w-[120px]">{event.location}</span>
                                     </div>
                                 )}
                             </div>

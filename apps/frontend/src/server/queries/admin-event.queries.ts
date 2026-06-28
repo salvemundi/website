@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return */
 import 'server-only';
 import { query } from '@/lib/database';
 import { toLocalISOString } from '@/lib/utils/date-utils';
@@ -32,22 +33,23 @@ interface EventRow {
     signup_count?: string | number;
 }
 
-const mapRowToActiviteitData = (item: EventRow) => {
+const mapRowToActiviteitData = (item: any) => {
     const safeISO = (d: string | Date | null | undefined, includeTime = false) => {
         return toLocalISOString(d, includeTime);
     };
 
     return {
-        id: String(item.id),
-        titel: item.name ?? '',
-        beschrijving: item.description ?? null,
-        locatie: item.location ?? null,
-        datum_start: safeISO(item.event_date) || toLocalISOString(new Date()),
-        datum_eind: safeISO(item.event_date_end),
+        ...item,
+        id: Number(item.id),
+        name: item.name ?? '',
+        description: item.description ?? null,
+        location: item.location ?? null,
+        event_date: safeISO(item.event_date) || toLocalISOString(new Date()),
+        event_date_end: safeISO(item.event_date_end),
         afbeelding_id: item.image ? { id: item.image, type: item.image_type ?? undefined } : null,
         status: item.status ?? undefined,
-        price_members: item.price_members !== null ? Number(item.price_members) : 0,
-        price_non_members: item.price_non_members !== null ? Number(item.price_non_members) : 0,
+        price_members: item.price_members !== null ? String(item.price_members) : '0',
+        price_non_members: item.price_non_members !== null ? String(item.price_non_members) : '0',
         max_sign_ups: item.max_sign_ups !== null ? Number(item.max_sign_ups) : null,
         only_members: item.only_members ?? false,
         registration_deadline: safeISO(item.registration_deadline),
@@ -59,24 +61,30 @@ const mapRowToActiviteitData = (item: EventRow) => {
         short_description: item.short_description ?? null,
         description_logged_in: item.description_logged_in || null,
         publish_date: safeISO(item.publish_date),
-        custom_url: item.custom_url || null
+        custom_url: item.custom_url || null,
+        one_sign_up_max: item.one_sign_up_max ?? false,
+        created_at: safeISO(item.created_at) || null,
+        updated_at: safeISO(item.updated_at) || null,
+        image: item.image ?? null
     };
 };
 
-const mapRowToAdminActivityData = (item: EventRow) => {
+const mapRowToAdminActivityData = (rawItem: any) => {
+    const item = rawItem as any;
     const safeISO = (d: string | Date | null | undefined, includeTime = false) => {
         return toLocalISOString(d, includeTime);
     };
 
     return {
-        id: item.id,
+        ...item,
+        id: Number(item.id),
         name: item.name ?? '',
         event_date: safeISO(item.event_date) || toLocalISOString(new Date()),
         event_date_end: safeISO(item.event_date_end),
         description: item.description ?? null,
         location: item.location ?? null,
-        price_members: item.price_members !== null ? Number(item.price_members) : 0,
-        price_non_members: item.price_non_members !== null ? Number(item.price_non_members) : 0,
+        price_members: item.price_members !== null ? String(item.price_members) : '0',
+        price_non_members: item.price_non_members !== null ? String(item.price_non_members) : '0',
         max_sign_ups: item.max_sign_ups !== null ? Number(item.max_sign_ups) : null,
         only_members: item.only_members ?? false,
         registration_deadline: safeISO(item.registration_deadline),
@@ -90,7 +98,10 @@ const mapRowToAdminActivityData = (item: EventRow) => {
         publish_date: safeISO(item.publish_date),
         custom_url: item.custom_url || null,
         status: item.status || 'draft',
-        image: item.image ? { id: item.image, type: item.image_type ?? undefined } : null,
+        one_sign_up_max: item.one_sign_up_max ?? false,
+        created_at: safeISO(item.created_at) || null,
+        updated_at: safeISO(item.updated_at) || null,
+        image: item.image ?? null
     };
 };
 
@@ -145,11 +156,11 @@ export async function getActivityBySlugInternal(slug: string): Promise<Activitei
     const activities = await getActivitiesInternal(false);
 
     return activities.find(a => {
-        const genSlug = slugify(a.titel);
-        const dateStr = a.datum_start.split('T')[0];
+        const genSlug = slugify(a.name);
+        const dateStr = a.event_date.split('T')[0];
         const genSlugWithDate = `${genSlug}-${dateStr}`;
 
-        return genSlug === slug || genSlugWithDate === slug || a.id === slug;
+        return genSlug === slug || genSlugWithDate === slug || a.id.toString() === slug;
     }) || null;
 }
 

@@ -18,8 +18,9 @@ import {
     type Schema
 } from '@salvemundi/validations';
 import { getActivitiesInternal } from "@/server/queries/admin-event.queries";
-import { getUpcomingTrips } from "@/server/actions/events/reis.actions";
+import { getUpcomingTrips } from "@/server/actions/events/trip.actions";
 import { getDisabledRoutes } from '@/lib/config/feature-flags';
+import { safeConsoleError } from '@/server/utils/logger';
 
 export const getHeroBanners = unstable_cache(async (): Promise<HeroBanner[]> => {
     const rawData = await db.query.hero_banners.findMany({
@@ -28,8 +29,7 @@ export const getHeroBanners = unstable_cache(async (): Promise<HeroBanner[]> => 
     });
 
     const mappedData = rawData.map((item) => ({
-        id: item.id,
-        title: item.title,
+        ...item,
         subtitle: null,
         afbeelding_id: item.image ?? null,
         status: 'published',
@@ -64,7 +64,7 @@ export const getUpcomingActiviteiten = unstable_cache(async (limit: number = 4):
         .map((item) => {
             return {
                 ...item,
-                category: item.committee_name || undefined,
+                category: (item.committee_name as string | null | undefined) || undefined,
             };
         });
 
@@ -72,15 +72,24 @@ export const getUpcomingActiviteiten = unstable_cache(async (limit: number = 4):
         ? []
         : pubCrawlEvents.map((item) => ({
             id: `kroeg-${item.id}`,
-            titel: item.name || '',
-            beschrijving: item.description ?? null,
-            locatie: 'Diverse locaties',
-            datum_start: item.date ? (toLocalISOString(item.date, true) ?? new Date().toISOString()) : new Date().toISOString(),
-            datum_eind: null,
+            name: item.name || '',
+            description: item.description ?? null,
+            description_logged_in: null,
+            max_sign_ups: null,
+            one_sign_up_max: false,
+            committee_id: null,
+            created_at: new Date().toISOString(),
+            updated_at: null,
+            image: item.image ?? null,
+            publish_date: null,
+            short_description: null,
+            location: 'Diverse locaties',
+            event_date: item.date ? (toLocalISOString(item.date, true) ?? new Date().toISOString()) : new Date().toISOString(),
+            event_date_end: null,
             afbeelding_id: item.image ?? null,
             status: 'published',
-            price_members: 1,
-            price_non_members: 1,
+            price_members: '1.00',
+            price_non_members: '1.00',
             only_members: false,
             registration_deadline: null,
             contact: item.email,
@@ -95,15 +104,24 @@ export const getUpcomingActiviteiten = unstable_cache(async (limit: number = 4):
         ? []
         : (tripEvents as unknown as Schema['trips']).map((item) => ({
             id: `trip-${item.id}`,
-            titel: item.name ?? '',
-            beschrijving: item.description ?? null,
-            locatie: 'Studiereis',
-            datum_start: toLocalISOString(item.start_date, true) ?? toLocalISOString(now, true) ?? new Date().toISOString(),
-            datum_eind: toLocalISOString(item.end_date, true),
+            name: item.name ?? '',
+            description: item.description ?? null,
+            description_logged_in: null,
+            max_sign_ups: null,
+            one_sign_up_max: false,
+            committee_id: null,
+            created_at: new Date().toISOString(),
+            updated_at: null,
+            image: item.image ?? null,
+            publish_date: null,
+            short_description: null,
+            location: 'Studiereis',
+            event_date: toLocalISOString(item.start_date, true) ?? toLocalISOString(now, true) ?? new Date().toISOString(),
+            event_date_end: toLocalISOString(item.end_date, true),
             afbeelding_id: item.image ?? null,
             status: 'published',
-            price_members: item.base_price ?? 0,
-            price_non_members: item.base_price ?? 0,
+            price_members: item.base_price ? String(item.base_price) : '0.00',
+            price_non_members: item.base_price ? String(item.base_price) : '0.00',
             only_members: true,
             registration_deadline: item.registration_start_date ?? null,
             contact: 'Reiscommissie',
@@ -115,15 +133,16 @@ export const getUpcomingActiviteiten = unstable_cache(async (limit: number = 4):
         }));
 
     const allEvents = [...mappedRegular, ...mappedPubCrawl, ...mappedTrips]
-        .sort((a, b) => new Date(a.datum_start).getTime() - new Date(b.datum_start).getTime())
+        .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
         .filter(event => {
-            const date = new Date(event.datum_start);
+            const date = new Date(event.event_date);
             return date >= new Date(new Date().setHours(0, 0, 0, 0));
         })
         .slice(0, limit);
 
     const parsed = activitiesSchema.safeParse(allEvents);
     if (!parsed.success) {
+        safeConsoleError('[home.actions.ts][getUpcomingActiviteiten] Validation failed', JSON.stringify(parsed.error.issues, null, 2));
         throw new Error(`[home.actions.ts][getUpcomingActiviteiten] Validation failed: ${parsed.error.message}`);
     }
 

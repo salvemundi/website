@@ -79,6 +79,10 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<Enric
             qr_token: t.qr_token,
             checked_in: !!t.checked_in,
             checked_in_at: t.checked_in_at ? String(t.checked_in_at) : null,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+            created_at: (t as any).created_at ? String((t as any).created_at) : null,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+            updated_at: (t as any).updated_at ? String((t as any).updated_at) : null,
             name: p?.name || t.name,
             initial: p?.initial || t.initial
         };
@@ -168,3 +172,5 @@ export async function updatePubCrawlSignupDb(id: number, data: Partial<PubCrawlS
 export async function deletePubCrawlSignupDb(id: number): Promise<void> {
     await query<never>(`DELETE FROM pub_crawl_signups WHERE id = $1`, [id]);
 }
+
+

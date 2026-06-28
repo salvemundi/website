@@ -53,7 +53,7 @@ export default function EventForm({ event }: EventFormProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
-    const normalizedEventGroups = (event?.groups || []).map((g: unknown): GroupConfig => {
+    const normalizedEventGroups = ((event?.groups || []) as unknown[]).map((g: unknown): GroupConfig => {
         if (typeof g === 'string') return { name: g, leaders: [] };
         const obj = g && typeof g === 'object' ? (g as { name?: unknown; leaders?: unknown }) : {};
         return {
@@ -377,3 +377,6 @@ export default function EventForm({ event }: EventFormProps) {
         </>
     );
 }
+
+
+

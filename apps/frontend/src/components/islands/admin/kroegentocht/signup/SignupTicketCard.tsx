@@ -1,6 +1,6 @@
 'use client';
 
-import { Edit2, Trash2, X, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Pen, Trash, X, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
 
 interface SignupTicketCardProps {
@@ -41,7 +41,7 @@ export default function SignupTicketCard({
                                 className="p-1 text-(--text-muted) hover:text-(--theme-purple)"
                                 title="Naam aanpassen"
                             >
-                                <Edit2 className="h-3 w-3" />
+                                <Pen className="h-3 w-3" />
                             </button>
                             <button
                                 type="button"
@@ -49,7 +49,7 @@ export default function SignupTicketCard({
                                 className="p-1 text-(--text-muted) hover:text-red-500"
                                 title="Ticket verwijderen"
                             >
-                                <Trash2 className="h-3 w-3" />
+                                <Trash className="h-3 w-3" />
                             </button>
                         </div>
                     ) : (

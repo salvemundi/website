@@ -1,7 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
 import ActiveLink from '@/components/ui/ActiveLink';
-import { Instagram, Facebook, Linkedin } from 'lucide-react';
+import { SiInstagram, SiFacebook, SiTiktok } from 'react-icons/si';
+import { FaLinkedin } from 'react-icons/fa';
 import { ROUTES } from '@/lib/config/routes';
 import type { Committee } from '@salvemundi/validations/schema/committees.zod';
 import type { Document } from '@salvemundi/validations/schema/website.zod';
@@ -15,7 +16,6 @@ interface FooterIslandProps {
     initialSession?: ExtendedSession | null;
 }
 
-// Zorgt voor een eenduidige presentatie van commissienamen door redundante achtervoegsels te verwijderen.
 function cleanCommitteeName(name: string): string {
     return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim();
 }
@@ -42,14 +42,11 @@ const LINK_CLS =
 
 const MUTED_CLS = 'text-purple-800 dark:text-(--text-light)';
 
-// ─── Component ────────────────────────────────────────────────────────────────
 const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRoutes = [], committees, initialSession }) => {
     const isAuthenticated = !!initialSession?.user;
 
-    // Asset-links conform V7 (server-side proxy)
     const assetUrl = '/api/assets';
 
-    // Navigatielinks conform de V7 Frontend Routes & Server Actions documentatie
     const allPageLinks = [
         { label: 'Home', href: ROUTES.HOME },
         { label: 'Intro', href: ROUTES.INTRO },
@@ -63,7 +60,6 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
         { label: 'Reis', href: ROUTES.TRIP },
     ];
 
-    // Filter links die op een Feature Flag staan
     const pageLinks = allPageLinks.filter(link => !disabledRoutes.includes(link.href));
 
     const sortedCommittees = [...committees].sort((a, b) => {
@@ -76,16 +72,13 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
     });
 
     return (
-        <footer className="relative overflow-hidden bg-gradient-theme">
-            {/* Decoratieve achtergrond-blob links */}
+        <footer className="relative overflow-hidden bg-bg-card dark:bg-gradient-theme border-t border-border-color/20">
             <div className="absolute -left-10 top-10 h-64 w-64 rounded-full bg-purple-200/10 blur-3xl" />
-            {/* Decoratieve achtergrond-blob rechts */}
             <div className="absolute -right-10 bottom-10 h-64 w-64 rounded-full bg-purple-100/10 blur-3xl" />
 
-            <div className="relative mx-auto max-w-screen-xl px-4 pt-6 sm:px-6 lg:px-8 lg:pt-8 pb-safe-4">
+            <div className="relative mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8 lg:pt-8 pb-safe-4">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
 
-                    {/* ── Kolom 1: Informatie ── */}
                     <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <h3 className={HEADING_CLS}>Informatie</h3>
                         <ul className={`space-y-2 text-sm ${MUTED_CLS}`}>
@@ -108,7 +101,6 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                         </ul>
                     </div>
 
-                    {/* ── Kolom 2: Pagina's ── */}
                     <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <h3 className={HEADING_CLS}>Pagina&apos;s</h3>
                         <ul className="grid grid-cols-2 md:grid-cols-1 gap-x-8 gap-y-2 text-sm w-full max-w-fit mx-auto md:mx-0 md:max-w-none">
@@ -122,12 +114,10 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                         </ul>
                     </div>
 
-                    {/* ── Kolom 3: Commissies ── */}
                     <div className="lg:col-span-2 flex flex-col items-center md:items-start">
                         <h3 className={`${HEADING_CLS} text-center w-full`}>Commissies</h3>
 
                         <div className="flex gap-x-12 gap-y-2 text-sm  ">
-                            {/* Linkerkolom (eerste 6) */}
                             <div className="flex flex-col gap-y-2 text-left">
                                 {sortedCommittees.slice(0, 6).map((committee) => {
                                     const cleaned = cleanCommitteeName(committee.name);
@@ -142,7 +132,6 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 })}
                             </div>
 
-                            {/* Rechterkolom (volgende 6) */}
                             <div className="flex flex-col gap-y-2 text-left">
                                 {sortedCommittees.slice(6, 12).map((committee) => {
                                     const cleaned = cleanCommitteeName(committee.name);
@@ -158,7 +147,6 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                             </div>
                         </div>
 
-                        {/* Alle bekijken link gecentreerd eronder */}
                         <div className="mt-6 text-center lg:text-center">
                             <ActiveLink href={ROUTES.COMMITTEES} className={`${LINK_CLS} font-bold text-purple-500`} activeClassName="bg-purple-500/10 text-purple-700">
                                 Alle commissies bekijken
@@ -166,7 +154,6 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                         </div>
                     </div>
 
-                    {/* ── Kolom 4: Contact & Social ── */}
                     <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <h3 className={HEADING_CLS}>Contact</h3>
                         <ul className="space-y-2 text-sm mb-6">
@@ -183,7 +170,6 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 </a>
                             </li>
 
-                            {/* WhatsApp-link: uitsluitend zichtbaar voor ingelogde leden */}
                             {isAuthenticated && (
                                 <li>
                                     <a
@@ -214,7 +200,6 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
 
                         <h3 className={HEADING_CLS}>Social Media</h3>
                         <div className="flex justify-center md:justify-start gap-3">
-                            {/* Social-icons: white/10 bg werkt op zowel lichte als donkere footer */}
                             <a
                                 href="https://www.instagram.com/sv.salvemundi/"
                                 target="_blank"
@@ -227,7 +212,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 }
                                 aria-label="Instagram"
                             >
-                                <Instagram className="h-5 w-5" />
+                                <SiInstagram className="h-5 w-5" />
                             </a>
                             <a
                                 href="https://www.facebook.com/sv.salvemundi/?locale=nl_NL"
@@ -241,7 +226,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 }
                                 aria-label="Facebook"
                             >
-                                <Facebook className="h-5 w-5" />
+                                <SiFacebook className="h-5 w-5" />
                             </a>
                             <a
                                 href="https://nl.linkedin.com/company/salve-mundi"
@@ -255,7 +240,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 }
                                 aria-label="LinkedIn"
                             >
-                                <Linkedin className="h-5 w-5" />
+                                <FaLinkedin className="h-5 w-5" />
                             </a>
                             <a
                                 href="https://www.tiktok.com/@salve.mundi"
@@ -269,18 +254,15 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 }
                                 aria-label="TikTok"
                             >
-                                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current">
-                                    <path d="M19.52 6.2c-1.2-.88-2.03-2.2-2.27-3.72h-3.1v14.62c0 1.46-1.18 2.64-2.64 2.64a2.64 2.64 0 0 1 0-5.28c.17 0 .34.02.5.05V11.3a6 6 0 1 0 0 11.95 5.97 5.97 0 0 0 5.98-5.98V9.13a8.93 8.93 0 0 0 4.12 1.03V7.02a5.93 5.93 0 0 1-2.59-.83Z" />
-                                </svg>
+                                <SiTiktok className="h-5 w-5" />
                             </a>
                         </div>
                     </div>
                 </div>
 
-                {/* Copyright */}
                 <div className="mt-4 text-center">
                     <p className={`text-sm ${MUTED_CLS}`}>
-                        Copyright &copy; 2026 Salve Mundi &mdash; alle rechten voorbehouden.{' '}
+                        Copyright © 2026 Salve Mundi — alle rechten voorbehouden.{' '}
                         <a
                             href="https://github.com/salvemundi/website"
                             target="_blank"

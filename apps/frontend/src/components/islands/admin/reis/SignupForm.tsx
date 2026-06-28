@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import type { TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
+import type { TripSignup } from '@salvemundi/validations/schema/admin-trip.zod';
 import CockpitSignupForm from './CockpitSignupForm';
 import StandardSignupForm from './StandardSignupForm';
 

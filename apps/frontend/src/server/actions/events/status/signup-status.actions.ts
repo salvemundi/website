@@ -5,7 +5,7 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { query } from '@/lib/database';
 import { fetchEventSignupByIdDb } from '@/server/internal/event-db.utils';
 import { fetchPubCrawlSignupByIdDb } from '@/server/internal/kroegentocht-db.utils';
-import { fetchTripSignupByIdDb } from '@/server/internal/reis-db.utils';
+import { fetchTripSignupByIdDb } from '@/server/internal/trip-db.utils';
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteit-utils';
 import { type PubCrawlSignup } from '@salvemundi/validations/directus/schema';
 import { type PaymentStatus, type SignupStatusResult } from './types';

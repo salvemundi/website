@@ -34,7 +34,7 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
     await checkIntroAdminAccess();
 
     const sanitized = Object.fromEntries(
-        Object.entries(item).map(([k, v]) => [k, (v as unknown) === null ? undefined : v])
+        Object.entries(item).map(([key, value]) => [key, (value as unknown) === null ? undefined : value])
     );
 
     const validated = introPlanningSchema.safeParse(sanitized);
@@ -81,8 +81,8 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
                 title: result.title || '',
                 description: result.description || '',
                 day: result.day || '',
-                location: result.location || undefined
-            }
+                location: result.location || null
+            } as IntroPlanningItem
         };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Onbekende fout';

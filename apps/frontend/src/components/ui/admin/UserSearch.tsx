@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, Loader2, Check, User, X } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { searchMembersAction } from '@/server/actions/admin/aanmeldingen.actions';
-import { type UserBasic } from '@/server/internal/user-db.utils';
+import { type UserBasic } from '@salvemundi/validations';
 import { cn } from '@/lib/utils/cn';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -91,7 +91,7 @@ export default function UserSearch({
                     placeholder={placeholder}
                     disabled={disabled}
                     autoFocus={autoFocus}
-                    className="beheer-input !pl-11 pr-12 py-4 text-xs font-semibold placeholder:text-text-muted placeholder:opacity-40 focus:ring-4 focus:ring-theme-purple/10"
+                    className="beheer-input pl-11! pr-12 py-4 text-xs font-semibold placeholder:text-text-muted placeholder:opacity-40 focus:ring-4 focus:ring-theme-purple/10"
                     autoComplete="off"
                 />
 
@@ -112,8 +112,8 @@ export default function UserSearch({
             </div>
 
             {isOpen && (query.length >= 2) && (
-                <div className="absolute z-[100] mt-3 w-full bg-bg-card border border-border-color rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 backdrop-blur-xl">
-                    <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-theme-purple/30 to-transparent" />
+                <div className="absolute z-100 mt-3 w-full bg-bg-card border border-border-color rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 backdrop-blur-xl">
+                    <div className="absolute inset-x-0 -top-px h-px bg-linear-to-r from-transparent via-theme-purple/30 to-transparent" />
 
                     {results.length > 0 ? (
                         <div className="max-h-72 overflow-y-auto custom-scrollbar p-2">

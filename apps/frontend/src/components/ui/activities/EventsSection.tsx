@@ -56,7 +56,7 @@ export function EventsSection({ activities = [], count = 4 }: EventsSectionProps
                             <EventCard 
                                 key={activity.id}
                                 activity={activity} 
-                                href={activity.custom_url || `/activiteiten/${slugify(activity.titel || '')}`} 
+                                href={activity.custom_url || `/activiteiten/${slugify(activity.name || '')}`} 
                             />
                         ))
                     )}

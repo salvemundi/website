@@ -8,12 +8,12 @@ import {
     Loader2,
     Euro,
     List,
-    Trash2
+    Trash
 } from 'lucide-react';
 import { Field, inputClass } from './TripTabComponents';
 import { type ActivityOption } from '@/lib/reis';
 
-import { type TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
+import { type TripActivity } from '@salvemundi/validations/schema/admin-trip.zod';
 
 
 interface Props {
@@ -167,7 +167,7 @@ export default function TripActivityForm({ activity, onSave, onCancel, pending }
                                     />
                                 </div>
                                 <button type="button" onClick={() => removeOption(idx)} className="p-4 text-(--beheer-inactive) hover:bg-red-500/10 hover:text-red-500 rounded-2xl transition-all active:scale-90 bg-(--beheer-card-soft)">
-                                    <Trash2 className="h-5 w-5" />
+                                    <Trash className="h-5 w-5" />
                                 </button>
                             </div>
                         ))}

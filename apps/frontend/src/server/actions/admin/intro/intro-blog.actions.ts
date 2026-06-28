@@ -36,7 +36,7 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
     await checkIntroAdminAccess();
 
     const sanitized = Object.fromEntries(
-        Object.entries(blog).map(([k, v]) => [k, v === null ? undefined : v])
+        Object.entries(blog).map(([key, value]) => [key, value === null ? undefined : value])
     );
 
     const validated = introBlogSchema.safeParse(sanitized);
@@ -75,10 +75,10 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
                 content: result.content || '',
                 blog_type: (result.blog_type || 'update') as IntroBlog['blog_type'],
                 is_published: !!result.is_published,
-                created_at: result.created_at ? toLocalISOString(result.created_at, true) ?? undefined : undefined,
+                created_at: result.created_at ? toLocalISOString(result.created_at, true) ?? null : null,
                 slug: result.slug || '',
                 excerpt: result.excerpt || ''
-            }
+            } as IntroBlog
         };
     } catch (error: unknown) {
         safeConsoleError('[intro-blog.actions.ts][upsertIntroBlog] Failed to upsert blog:', error);

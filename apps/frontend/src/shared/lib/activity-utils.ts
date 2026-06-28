@@ -52,15 +52,15 @@ export const formatTime = (timeStr?: string | null): string | null => {
 
 export function formatActivityDateTime(
     activity: {
-        datum_start: string;
-        datum_eind?: string | null;
+        event_date: string;
+        event_date_end?: string | null;
         event_time?: string | null;
         event_time_end?: string | null;
     },
     variant: 'list' | 'grid' | 'detail'
 ): { displayDate: string; timeRange: string | null } {
-    const date = activity.datum_start;
-    const endDate = activity.datum_eind;
+    const date = activity.event_date;
+    const endDate = activity.event_date_end;
     const startTime = activity.event_time;
     const endTime = activity.event_time_end;
 

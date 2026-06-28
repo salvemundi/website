@@ -10,7 +10,7 @@ import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
 import { safeConsoleError } from '@/server/utils/logger';
 import { type EnrichedUser } from '@/types/auth';
 import { type AdminActivity } from "@salvemundi/validations";
-import { type Committee } from '@/shared/lib/permissions';
+import { type Committee } from '@salvemundi/validations';
 
 export const metadata: Metadata = {
     title: 'Activiteit Bewerken | SV Salve Mundi'
@@ -54,13 +54,13 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
 
     const event = {
         ...eventData,
-        name: eventData.titel,
-        description: eventData.beschrijving,
+        name: eventData.name,
+        description: eventData.description,
         short_description: eventData.short_description,
-        event_date: eventData.datum_start,
-        event_date_end: eventData.datum_eind,
-        location: eventData.locatie,
-        image: eventData.afbeelding_id,
+        event_date: eventData.event_date,
+        event_date_end: eventData.event_date_end,
+        location: eventData.location,
+        image: eventData.image,
         price_members: eventData.price_members,
         price_non_members: eventData.price_non_members,
         max_sign_ups: eventData.max_sign_ups,

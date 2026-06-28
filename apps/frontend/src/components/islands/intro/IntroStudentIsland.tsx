@@ -67,10 +67,12 @@ export const IntroStudentIsland = ({ className = '' }: IntroStudentIslandProps) 
 
     if (submitted) {
         return (
-            <div className="bg-gradient-theme squircle-lg p-6 lg:p-8 text-center shadow-lg">
-                <CheckCircle2 className="w-12 h-12 lg:w-16 lg:h-16 text-white mx-auto mb-4" />
-                <h2 className="text-2xl lg:text-3xl font-bold text-purple-100 mb-4">Bedankt!</h2>
-                <p className="text-white text-base lg:text-lg">We hebben je inschrijving ontvangen.</p>
+            <div className="bg-bg-card dark:bg-gradient-theme border border-border-color squircle-lg p-6 lg:p-8 text-center shadow-lg">
+                <div className="w-16 h-16 lg:w-20 lg:h-20 bg-purple-100 dark:bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle2 className="w-8 h-8 lg:w-10 lg:h-10 text-brand-primary dark:text-white" />
+                </div>
+                <h2 className="text-2xl lg:text-3xl font-bold text-text-main dark:text-white mb-4">Bedankt!</h2>
+                <p className="text-text-muted dark:text-white/80 text-base lg:text-lg">We hebben je inschrijving ontvangen.</p>
             </div>
         );
     }

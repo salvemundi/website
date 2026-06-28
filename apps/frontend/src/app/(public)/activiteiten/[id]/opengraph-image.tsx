@@ -11,7 +11,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
     const { id } = await params;
     const activity = await getActivityBySlug(id);
 
-    const title = activity?.titel || 'Activiteit';
+    const title = activity?.name || 'Activiteit';
     
     // We only display the short_description (TL;DR) on the OG image preview, avoiding the long announcement text
     const description = activity?.short_description || '';
@@ -20,23 +20,20 @@ export default async function Image({ params }: { params: Promise<{ id: string }
     const priceVal = activity?.price_non_members;
     const priceMem = activity?.price_members;
     let price = 'Gratis';
-    if (priceVal !== null && priceVal !== undefined && Number(priceVal) > 0) {
-        if (priceMem !== null && priceMem !== undefined && Number(priceMem) > 0 && priceMem !== priceVal) {
+    if (priceVal !== undefined && Number(priceVal) > 0) {
+        if (priceMem !== undefined && Number(priceMem) > 0 && priceMem !== priceVal) {
             price = `v.a. €${priceMem}`;
         } else {
             price = `€${priceVal}`;
         }
-    } else if (priceMem !== null && priceMem !== undefined && Number(priceMem) > 0) {
+    } else if (priceMem !== undefined && Number(priceMem) > 0) {
         price = `v.a. €${priceMem}`;
     }
 
-    const dateStr = activity?.datum_start ? new Date(activity.datum_start).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' }) : 'Binnenkort';
-    const timeStr = activity?.datum_start ? new Date(activity.datum_start).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : '';
+    const dateStr = activity?.event_date ? new Date(activity.event_date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' }) : 'Binnenkort';
+    const timeStr = activity?.event_date ? new Date(activity.event_date).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : '';
 
-    // Handle banner image
-    const imageId = typeof activity?.afbeelding_id === 'string'
-        ? activity.afbeelding_id
-        : activity?.afbeelding_id?.id;
+    const imageId = activity?.image;
 
     const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.INTERNAL_DIRECTUS_URL;
     const token = process.env.DIRECTUS_STATIC_TOKEN;

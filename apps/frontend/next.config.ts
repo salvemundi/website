@@ -92,7 +92,6 @@ const nextConfig: NextConfig = {
             { source: '/profiel/lidmaatschap', destination: '/lidmaatschap', permanent: true },
         ];
     },
-    transpilePackages: ['better-auth'],
     webpack: (config: unknown, { isServer }: { isServer: boolean }) => {
         const webpackConfig = config as CustomWebpackConfig;
         webpackConfig.resolve.fallback = { ...webpackConfig.resolve.fallback, fs: false, net: false, tls: false };

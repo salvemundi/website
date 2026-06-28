@@ -1,11 +1,11 @@
-import { getReisSiteSettings, getUpcomingTrips, getUserTripSignup, getTripParticipantsCount, getCurrentUserProfileAction } from '@/server/actions/events/reis.actions';
+import { getReisSiteSettings, getUpcomingTrips, getUserTripSignup, getTripParticipantsCount, getCurrentUserProfileAction } from '@/server/actions/events/trip.actions';
 import { getDocumenten } from '@/server/actions/public/website.actions';
-import { ReisFormIsland } from '@/components/islands/reis/ReisFormIsland';
-import { ReisInfoIsland } from '@/components/islands/reis/ReisInfoIsland';
+import { TripFormIsland } from '@/components/islands/reis/TripFormIsland';
+import { TripInfoIsland } from '@/components/islands/reis/TripInfoIsland';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { connection } from 'next/server';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
-import type { ReisTripSignup } from '@salvemundi/validations/schema/reis.zod';
+import type { ReisTripSignup } from '@salvemundi/validations/schema/trip.zod';
 import type { EnrichedUser } from '@/types/auth';
 import { formatDate } from '@/shared/lib/utils/date';
 
@@ -73,8 +73,8 @@ export default async function ReisPage() {
 
     const reisvoorwaardenDoc = documents.find(
         doc => doc.category?.toLowerCase() === 'reis' || 
-               doc.title?.toLowerCase().includes('reisvoorwaarde') ||
-               doc.title?.toLowerCase().includes('reisvoorwaarden')
+               doc.title.toLowerCase().includes('reisvoorwaarde') ||
+               doc.title.toLowerCase().includes('reisvoorwaarden')
     );
     const termsFileUrl = reisvoorwaardenDoc?.file ? `/api/assets/${reisvoorwaardenDoc.file}` : null;
 
@@ -83,7 +83,7 @@ export default async function ReisPage() {
             <h1 className="sr-only">Reis</h1>
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 lg:pt-16 pb-16 sm:pb-24 lg:pb-32">
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
-                    <ReisFormIsland
+                    <TripFormIsland
                         nextTrip={nextTrip}
                         userSignup={userSignup}
                         canSignUp={canSignUp}
@@ -92,7 +92,7 @@ export default async function ReisPage() {
                         initialUser={currentUserProfile}
                         termsFileUrl={termsFileUrl}
                     />
-                    <ReisInfoIsland nextTrip={nextTrip} />
+                    <TripInfoIsland nextTrip={nextTrip} />
                 </div>
             </div>
         </PublicPageShell>

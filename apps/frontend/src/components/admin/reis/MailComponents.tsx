@@ -16,7 +16,7 @@ export function Card({ title, icon, children }: { title: string, icon: React.Rea
     );
 }
 
-export function FilterField({ label, value, onChange, children }: { label: string, value: string, onChange: (v: string) => void, children: React.ReactNode }) {
+export function FilterField({ label, value, onChange, children }: { label: string, value: string, onChange: (fieldValue: string) => void, children: React.ReactNode }) {
     return (
         <div className="space-y-2">
             <label className="text-[10px] font-semibold uppercase tracking-widest text-(--beheer-text-muted) ml-1 opacity-60">{label}</label>

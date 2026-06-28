@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import ReisDeelnemerDetailIsland from '@/components/islands/admin/ReisDeelnemerDetailIsland';
-import { getTrips, getTripActivities } from '@/server/queries/admin-reis.queries';
-import { Trip, TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
-import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/admin/reis-signups.actions';
+import TripParticipantDetailIsland from '@/components/islands/admin/TripParticipantDetailIsland';
+import { getTrips, getTripActivities } from '@/server/queries/admin-trip.queries';
+import { Trip, TripActivity } from '@salvemundi/validations/schema/admin-trip.zod';
+import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/admin/trip-signups.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 import { db, schema } from "@salvemundi/db";
 import { eq } from "drizzle-orm";
@@ -67,7 +67,7 @@ export default async function DeelnemerDetailPage({ params }: PageProps) {
 
     return (
         <div className="w-full">
-            <ReisDeelnemerDetailIsland
+            <TripParticipantDetailIsland
                 initialSignup={signup}
                 trips={trips as unknown as Trip[]}
                 allActivities={activities as unknown as TripActivity[]}

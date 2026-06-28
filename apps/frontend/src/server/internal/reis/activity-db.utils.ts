@@ -1,7 +1,7 @@
 import 'server-only';
 import { query } from '@/lib/database';
 import { buildUpdateQuery } from '@/lib/database/query-builder';
-import { TripActivity as TripActivity } from '@salvemundi/validations/directus/schema';
+import { TripActivity } from '@salvemundi/validations/schema/admin-trip.zod';
 import { RawTripActivityRow, QueryParam } from './types';
 
 export async function fetchTripActivitiesByTripIdDb(tripId: number): Promise<TripActivity[]> {

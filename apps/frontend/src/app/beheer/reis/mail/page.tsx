@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import ReisMailIsland from '@/components/islands/admin/ReisMailIsland';
+import TripMailIsland from '@/components/islands/admin/TripMailIsland';
 import { notFound } from 'next/navigation';
 
 import { Trip, TripSignup } from '@salvemundi/validations';
@@ -81,7 +81,7 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
                 </div>
             }
         >
-            <ReisMailIsland
+            <TripMailIsland
                 trips={trips}
                 initialSignups={signups}
                 initialSelectedTripId={activeTripId}

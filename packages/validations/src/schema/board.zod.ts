@@ -1,24 +1,20 @@
 import { z } from 'zod';
+import { selectBoardSchema, selectBoardMembersSchema, selectDirectusUsersSchema } from './db.zod.js';
 
-export const boardMemberSchema = z.object({
-    id: z.number(),
-    board_id: z.number().optional(),
-    functie: z.string().nullable(),
-    user_id: z.object({
-        id: z.string(),
-        first_name: z.string().nullable(),
-        last_name: z.string().nullable(),
-        avatar: z.string().nullable(),
-        title: z.string().nullable(),
+export const boardMemberSchema = selectBoardMembersSchema.extend({
+    id: z.coerce.number(),
+    board_id: z.coerce.number().optional(),
+    user_id: selectDirectusUsersSchema.pick({
+        id: true,
+        first_name: true,
+        last_name: true,
+        avatar: true,
+        title: true,
     }).nullable().optional(),
-    name: z.string().nullable(),
 });
 
-export const boardSchema = z.object({
-    id: z.number(),
-    image: z.string().nullable(),
-    naam: z.string().nullable(),
-    year: z.string().nullable(),
+export const boardSchema = selectBoardSchema.extend({
+    id: z.coerce.number(),
     members: z.array(boardMemberSchema).optional(),
 });
 

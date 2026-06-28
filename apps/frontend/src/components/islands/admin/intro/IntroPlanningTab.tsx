@@ -6,7 +6,7 @@ import {
     X,
     Save,
     Edit,
-    Trash2,
+    Trash,
     List,
     LayoutGrid,
     Calendar
@@ -152,7 +152,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                     title="Bewerken"
                                 />
                                 <ActionButton
-                                    icon={Trash2}
+                                    icon={Trash}
                                     onClick={() => {
                                         if (item.id !== undefined) {
                                             void onDelete(item.id);
@@ -181,19 +181,19 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                     return acc;
                 }, new Map<string, IntroPlanningItem[]>());
 
-                const sorted = Array.from(byDay.keys()).sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+                const sorted = Array.from(byDay.keys()).sort((a, b) => dayOrder.indexOf(a as string) - dayOrder.indexOf(b as string));
                 return (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {sorted.map(day => (
-                            <div key={day} className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 shadow-sm">
-                                <h3 className="font-semibold text-(--beheer-accent) text-xs mb-6 capitalize pb-3 border-b border-(--beheer-border)">{day}</h3>
+                            <div key={day as string} className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 shadow-sm">
+                                <h3 className="font-semibold text-(--beheer-accent) text-xs mb-6 capitalize pb-3 border-b border-(--beheer-border)">{day as string}</h3>
                                 <div className="space-y-3">
-                                    {(byDay.get(day) || []).sort((a, b) => (a.time_start || '').localeCompare(b.time_start || '')).map(item => (
-                                        <div key={item.id} className="group bg-(--beheer-card-soft) rounded-xl p-4 border border-transparent hover:border-(--beheer-accent)/20 transition-all">
+                                    {(byDay.get(day) || []).sort((a, b) => (String(a.time_start || '')).localeCompare(String(b.time_start || ''))).map(item => (
+                                        <div key={item.id as string | number} className="group bg-(--beheer-card-soft) rounded-xl p-4 border border-transparent hover:border-(--beheer-accent)/20 transition-all">
                                             <div className="flex items-start justify-between gap-2">
                                                 <div>
-                                                    <p className="font-semibold text-sm text-(--beheer-text) mb-1">{item.title}</p>
-                                                    <p className="text-xs font-medium text-(--beheer-text-muted) opacity-70">{item.time_start}{item.time_end ? ` - ${item.time_end}` : ''}</p>
+                                                    <p className="font-semibold text-sm text-(--beheer-text) mb-1">{item.title as React.ReactNode}</p>
+                                                    <p className="text-xs font-medium text-(--beheer-text-muted) opacity-70">{item.time_start ? String(item.time_start) : ''}{item.time_end ? ` - ${String(item.time_end)}` : ''}</p>
                                                 </div>
                                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <ActionButton
@@ -202,7 +202,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                                         title="Bewerken"
                                                     />
                                                     <ActionButton
-                                                        icon={Trash2}
+                                                        icon={Trash}
                                                         onClick={() => {
                                                             if (item.id !== undefined) {
                                                                 void onDelete(item.id);

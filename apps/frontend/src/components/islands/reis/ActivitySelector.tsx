@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Check, Compass } from 'lucide-react';
-import type { TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
+import type { TripActivity } from '@salvemundi/validations/schema/admin-trip.zod';
 
 export interface SelectedActivity {
     activityId: number;
@@ -91,7 +91,7 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
                                 </div>
 
                                 <button
-                                    onClick={() => handleToggleActivity(activity.id)}
+                                    onClick={() => handleToggleActivity(activity.id as number)}
                                     className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 whitespace-nowrap ${
                                         isSelected
                                         ? 'bg-theme-purple text-white shadow-md'
@@ -124,7 +124,7 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
                                             return (
                                                 <button
                                                     key={optId}
-                                                    onClick={() => handleOptionToggle(activity.id, optId, activity.max_selections || 0)}
+                                                    onClick={() => handleOptionToggle(activity.id as number, optId, activity.max_selections || 0)}
                                                     className={`flex items-center justify-between p-3 rounded-xl border text-sm font-medium transition-all ${
                                                         isOptSelected
                                                         ? 'bg-white/10 border-theme-purple/50 text-white'
@@ -163,3 +163,6 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
         </div>
     );
 }
+
+
+

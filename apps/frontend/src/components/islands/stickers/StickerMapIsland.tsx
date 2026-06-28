@@ -18,8 +18,10 @@ import AddStickerModal from './map/AddStickerModal';
 import { type EnrichedUser } from '@/types/auth';
 import { type StickerPublic } from '@salvemundi/validations';
 
+type MapSticker = Omit<StickerPublic, 'user_updated' | 'date_updated' | 'address' | 'status'>;
+
 interface StickerMapIslandProps {
-    initialStickers: StickerPublic[];
+    initialStickers: MapSticker[];
     user: EnrichedUser | null;
     className?: string;
 }
@@ -36,98 +38,8 @@ interface DirectusStickerResponse {
     date_created?: string | null;
 }
 
-interface NominatimAddress {
-    city?: string;
-    town?: string;
-    village?: string;
-    suburb?: string;
-    country?: string;
-}
-
-interface NominatimResponse {
-    address?: NominatimAddress;
-}
-
-const MAX_STICKER_IMAGE_DIMENSION = 1600;
-const STICKER_IMAGE_QUALITY = 0.8;
-const STICKER_IMAGE_SIZE_THRESHOLD = 900 * 1024;
-
-async function readFileAsDataUrl(file: File): Promise<string> {
-    return await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error('Kon afbeeldingsvoorbeeld niet laden.'));
-        reader.readAsDataURL(file);
-    });
-}
-
-async function loadImageForCompression(file: File): Promise<{ width: number; height: number; cleanup: () => void; drawSource: CanvasImageSource }> {
-    if ('createImageBitmap' in window) {
-        const bitmap = await window.createImageBitmap(file);
-        return {
-            width: bitmap.width,
-            height: bitmap.height,
-            drawSource: bitmap,
-            cleanup: () => bitmap.close()
-        };
-    }
-
-    const objectUrl = URL.createObjectURL(file);
-    const image = new Image();
-    image.decoding = 'async';
-
-    await new Promise<void>((resolve, reject) => {
-        image.onload = () => resolve();
-        image.onerror = () => reject(new Error('Kon afbeelding niet laden voor compressie.'));
-        image.src = objectUrl;
-    });
-
-    return {
-        width: image.naturalWidth,
-        height: image.naturalHeight,
-        drawSource: image,
-        cleanup: () => URL.revokeObjectURL(objectUrl)
-    };
-}
-
-async function compressStickerImage(file: File): Promise<File> {
-    if (!file.type.startsWith('image/')) return file;
-    if (file.size <= STICKER_IMAGE_SIZE_THRESHOLD) return file;
-
-    try {
-        const image = await loadImageForCompression(file);
-        const scale = Math.min(1, MAX_STICKER_IMAGE_DIMENSION / Math.max(image.width, image.height));
-        const targetWidth = Math.max(1, Math.round(image.width * scale));
-        const targetHeight = Math.max(1, Math.round(image.height * scale));
-
-        const canvas = document.createElement('canvas');
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
-
-        const context = canvas.getContext('2d');
-        if (!context) {
-            image.cleanup();
-            return file;
-        }
-
-        context.drawImage(image.drawSource, 0, 0, targetWidth, targetHeight);
-        image.cleanup();
-
-        const blob = await new Promise<Blob | null>((resolve) => {
-            canvas.toBlob(resolve, 'image/jpeg', STICKER_IMAGE_QUALITY);
-        });
-
-        if (!blob) return file;
-
-        const baseName = file.name.replace(/\.[^.]+$/, '') || 'sticker-photo';
-        return new File([blob], `${baseName}.jpg`, {
-            type: 'image/jpeg',
-            lastModified: Date.now()
-        });
-    } catch {
-        return file;
-    }
-}
+import { compressStickerImage, readFileAsDataUrl } from '@/shared/lib/utils/image-compression';
+import { reverseGeocode } from '@/shared/lib/utils/geolocation';
 
 export default function StickerMapIsland({
     initialStickers,
@@ -218,28 +130,13 @@ export default function StickerMapIsland({
                     const { latitude, longitude } = position.coords;
                     setSelectedLocation({ lat: latitude, lng: longitude });
 
-                    let city = '';
-                    let country = '';
-
-                    try {
-                        const response = await fetch(
-                            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`,
-                            { headers: { 'User-Agent': 'SalveMundi-Website' } }
-                        );
-                        if (response.ok) {
-                            const geoData = (await response.json()) as NominatimResponse;
-                            const addr = geoData.address || {};
-                            city = addr.city || addr.town || addr.village || addr.suburb || '';
-                            country = addr.country || '';
-                        }
-                    } catch (_geoErr) {
-                    }
+                    const { city: reverseCity, country: reverseCountry } = await reverseGeocode(latitude, longitude);
 
                     setFormData({
-                        location_name: city,
+                        location_name: reverseCity,
                         description: '',
-                        city,
-                        country,
+                        city: reverseCity,
+                        country: reverseCountry,
                         image: null
                     });
                     setImagePreview(null);
@@ -292,22 +189,10 @@ export default function StickerMapIsland({
                 void (async () => {
                     const { latitude, longitude } = position.coords;
                     
-                    let city = 'Onbekende Stad';
-                    let country = 'Onbekend Land';
-
-                    try {
-                        const response = await fetch(
-                            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`,
-                            { headers: { 'User-Agent': 'SalveMundi-Website' } }
-                        );
-                        if (response.ok) {
-                            const geoData = (await response.json()) as NominatimResponse;
-                            const addr = geoData.address || {};
-                            city = addr.city || addr.town || addr.village || addr.suburb || city;
-                            country = addr.country || country;
-                        }
-                    } catch (_geoErr) {
-                    }
+                    const { city: reverseCity, country: reverseCountry } = await reverseGeocode(latitude, longitude);
+                    
+                    const city = reverseCity || 'Onbekende Stad';
+                    const country = reverseCountry || 'Onbekend Land';
 
                     startTransition(async () => {
                         try {
@@ -339,13 +224,14 @@ export default function StickerMapIsland({
 
                             const userCreatedInfo = user ? {
                                 id: user.id,
-                                first_name: user.first_name,
-                                last_name: user.last_name,
-                                avatar: user.avatar
+                                email: user.email,
+                                first_name: user.first_name || null,
+                                last_name: user.last_name || null,
+                                avatar: user.avatar || null
                             } : null;
 
                             const responseData = response.data as unknown as DirectusStickerResponse;
-                            const stickerToAppend: StickerPublic = {
+                            const stickerToAppend: MapSticker = {
                                 id: Number(responseData.id),
                                 latitude: Number(responseData.latitude),
                                 longitude: Number(responseData.longitude),
@@ -358,7 +244,7 @@ export default function StickerMapIsland({
                                 user_created: userCreatedInfo
                             };
 
-                            setStickers((prev: StickerPublic[]) => [stickerToAppend, ...prev]);
+                            setStickers((prev: MapSticker[]) => [stickerToAppend, ...prev]);
                             showToast('Sticker succesvol geplaatst!', 'success');
                         } catch (err: unknown) {
                             const errMsg = err instanceof Error ? err.message : 'Fout bij automatisch plaatsen.';
@@ -445,13 +331,14 @@ export default function StickerMapIsland({
 
                 const userCreatedInfo = user ? {
                     id: user.id,
-                    first_name: user.first_name,
-                    last_name: user.last_name,
-                    avatar: user.avatar
+                    email: user.email,
+                    first_name: user.first_name || null,
+                    last_name: user.last_name || null,
+                    avatar: user.avatar || null
                 } : null;
 
                 const responseData = response.data as unknown as DirectusStickerResponse;
-                const stickerToAppend: StickerPublic = {
+                const stickerToAppend: MapSticker = {
                     id: Number(responseData.id),
                     latitude: Number(responseData.latitude),
                     longitude: Number(responseData.longitude),
@@ -464,7 +351,7 @@ export default function StickerMapIsland({
                     user_created: userCreatedInfo
                 };
 
-                setStickers((prev: StickerPublic[]) => [stickerToAppend, ...prev]);
+                setStickers((prev: MapSticker[]) => [stickerToAppend, ...prev]);
                 setShowAddModal(false);
                 setSelectedLocation(null);
                 setFormData({ location_name: '', description: '', city: '', country: '', image: null });
@@ -493,14 +380,14 @@ export default function StickerMapIsland({
     return (
         <div className="flex flex-col h-full gap-4 sm:gap-6">
             <div className="hidden md:block shrink-0">
-                <StickerStats stickers={stickers} />
+                <StickerStats stickers={stickers as unknown as StickerPublic[]} />
             </div>
 
             <div className="relative group flex-1 min-h-0">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-orange-500/5 blur-3xl -z-10" />
+                <div className="absolute inset-0 bg-linear-to-r from-purple-500/5 to-orange-500/5 blur-3xl -z-10" />
 
                 <StickerMap
-                    stickers={stickers}
+                    stickers={stickers as unknown as StickerPublic[]}
                     user={user}
                     selectedLocation={selectedLocation}
                     filterCountry={filterCountry}
@@ -510,7 +397,7 @@ export default function StickerMapIsland({
                 />
 
                 {/* Floating Controls */}
-                <div className="absolute inset-x-0 top-4 z-[90] px-4 pointer-events-none md:inset-auto md:top-4 md:left-4 md:right-auto md:w-80 md:px-0 md:bottom-auto">
+                <div className="absolute inset-x-0 top-4 z-90 px-4 pointer-events-none md:inset-auto md:top-4 md:left-4 md:right-auto md:w-80 md:px-0 md:bottom-auto">
                     <div className="flex items-center gap-3 md:hidden pointer-events-auto">
                         <button
                             type="button"
@@ -545,7 +432,7 @@ export default function StickerMapIsland({
                     </div>
                 </div>
 
-                <div className="absolute inset-x-4 bottom-4 z-[90] md:hidden pointer-events-none">
+                <div className="absolute inset-x-4 bottom-4 z-90 md:hidden pointer-events-none">
                     <div className="pointer-events-auto w-full">
                         <StickerActionPanel
                             user={user}
@@ -558,14 +445,14 @@ export default function StickerMapIsland({
             </div>
 
             {(showMobileFilters || showMobileStats) && (
-                <div className="fixed inset-0 z-[210] md:hidden">
+                <div className="fixed inset-0 z-210 md:hidden">
                     <button
                         type="button"
                         className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
                         onClick={closeMobileOverlays}
                         aria-label="Sluit overlay"
                     />
-                    <div className="absolute inset-x-0 bottom-0 max-h-[78dvh] overflow-y-auto rounded-t-[2rem] border-t border-white/10 bg-bg-main shadow-[0_-20px_60px_rgba(0,0,0,0.35)]">
+                    <div className="absolute inset-x-0 bottom-0 max-h-[78dvh] overflow-y-auto rounded-t-4xl border-t border-white/10 bg-bg-main shadow-[0_-20px_60px_rgba(0,0,0,0.35)]">
                         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border-color/10 bg-bg-main/95 px-4 py-4 backdrop-blur-md">
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">
@@ -594,7 +481,7 @@ export default function StickerMapIsland({
                                     setFilterCity={setFilterCity}
                                 />
                             ) : (
-                                <StickerStats stickers={stickers} />
+                                <StickerStats stickers={stickers as unknown as StickerPublic[]} />
                             )}
                         </div>
                     </div>

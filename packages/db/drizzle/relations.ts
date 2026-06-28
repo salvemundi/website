@@ -1,0 +1,857 @@
+import { relations } from "drizzle-orm/relations";
+import { clubs, clubMembers, directusFiles, stickers, directusUsers, board, boardMembers, contacts, directusPolicies, directusAccess, directusRoles, committees, directusComments, directusDashboards, directusFolders, directusCollections, directusFlows, directusPanels, directusPermissions, directusPresets, directusActivity, directusRevisions, directusVersions, directusShares, directusNotifications, directusOperations, documents, events, eventSignups, eventsDirectusUsers, introBlogs, introBlogLikes, eventsMembers, heroBanners, introBlogGallery, pubCrawlEvents, membershipHistory, pubCrawlSignups, pubCrawlSignupsTransactions, transactions, pushNotification, introPlanning, pubCrawlTickets, introParentSignups, trips, tripSignups, tripActivities, tripSignupActivities, safeHavens, sponsors, directusSessions, permissions, rolePermissions, roles, authAccounts, authSessions, committeeMembers, introPlanningSignups, introSignups, directusDeployments, directusDeploymentProjects, directusSettings, directusDeploymentRuns } from "./schema";
+
+export const clubMembersRelations = relations(clubMembers, ({one}) => ({
+	club: one(clubs, {
+		fields: [clubMembers.clubId],
+		references: [clubs.id]
+	}),
+}));
+
+export const clubsRelations = relations(clubs, ({one, many}) => ({
+	clubMembers: many(clubMembers),
+	directusFile: one(directusFiles, {
+		fields: [clubs.image],
+		references: [directusFiles.id]
+	}),
+}));
+
+export const stickersRelations = relations(stickers, ({one}) => ({
+	directusFile: one(directusFiles, {
+		fields: [stickers.image],
+		references: [directusFiles.id]
+	}),
+	directusUser_userCreated: one(directusUsers, {
+		fields: [stickers.userCreated],
+		references: [directusUsers.id],
+		relationName: "stickers_userCreated_directusUsers_id"
+	}),
+	directusUser_userUpdated: one(directusUsers, {
+		fields: [stickers.userUpdated],
+		references: [directusUsers.id],
+		relationName: "stickers_userUpdated_directusUsers_id"
+	}),
+}));
+
+export const directusFilesRelations = relations(directusFiles, ({one, many}) => ({
+	stickers: many(stickers),
+	boards: many(board),
+	contacts: many(contacts),
+	committees: many(committees),
+	directusFolder: one(directusFolders, {
+		fields: [directusFiles.folder],
+		references: [directusFolders.id]
+	}),
+	directusUser_modifiedBy: one(directusUsers, {
+		fields: [directusFiles.modifiedBy],
+		references: [directusUsers.id],
+		relationName: "directusFiles_modifiedBy_directusUsers_id"
+	}),
+	directusUser_uploadedBy: one(directusUsers, {
+		fields: [directusFiles.uploadedBy],
+		references: [directusUsers.id],
+		relationName: "directusFiles_uploadedBy_directusUsers_id"
+	}),
+	documents: many(documents),
+	events: many(events),
+	introBlogs: many(introBlogs),
+	heroBanners: many(heroBanners),
+	introBlogGalleries: many(introBlogGallery),
+	pubCrawlEvents: many(pubCrawlEvents),
+	trips: many(trips),
+	tripActivities: many(tripActivities),
+	safeHavens: many(safeHavens),
+	sponsors: many(sponsors),
+	clubs: many(clubs),
+	directusSettings_projectLogo: many(directusSettings, {
+		relationName: "directusSettings_projectLogo_directusFiles_id"
+	}),
+	directusSettings_publicBackground: many(directusSettings, {
+		relationName: "directusSettings_publicBackground_directusFiles_id"
+	}),
+	directusSettings_publicFavicon: many(directusSettings, {
+		relationName: "directusSettings_publicFavicon_directusFiles_id"
+	}),
+	directusSettings_publicForeground: many(directusSettings, {
+		relationName: "directusSettings_publicForeground_directusFiles_id"
+	}),
+}));
+
+export const directusUsersRelations = relations(directusUsers, ({one, many}) => ({
+	stickers_userCreated: many(stickers, {
+		relationName: "stickers_userCreated_directusUsers_id"
+	}),
+	stickers_userUpdated: many(stickers, {
+		relationName: "stickers_userUpdated_directusUsers_id"
+	}),
+	boards_userCreated: many(board, {
+		relationName: "board_userCreated_directusUsers_id"
+	}),
+	boards_userUpdated: many(board, {
+		relationName: "board_userUpdated_directusUsers_id"
+	}),
+	boardMembers: many(boardMembers),
+	directusAccesses: many(directusAccess),
+	directusComments_userCreated: many(directusComments, {
+		relationName: "directusComments_userCreated_directusUsers_id"
+	}),
+	directusComments_userUpdated: many(directusComments, {
+		relationName: "directusComments_userUpdated_directusUsers_id"
+	}),
+	directusDashboards: many(directusDashboards),
+	directusFiles_modifiedBy: many(directusFiles, {
+		relationName: "directusFiles_modifiedBy_directusUsers_id"
+	}),
+	directusFiles_uploadedBy: many(directusFiles, {
+		relationName: "directusFiles_uploadedBy_directusUsers_id"
+	}),
+	directusFlows: many(directusFlows),
+	directusPanels: many(directusPanels),
+	directusPresets: many(directusPresets),
+	directusShares: many(directusShares),
+	directusNotifications_recipient: many(directusNotifications, {
+		relationName: "directusNotifications_recipient_directusUsers_id"
+	}),
+	directusNotifications_sender: many(directusNotifications, {
+		relationName: "directusNotifications_sender_directusUsers_id"
+	}),
+	directusOperations: many(directusOperations),
+	directusVersions_userCreated: many(directusVersions, {
+		relationName: "directusVersions_userCreated_directusUsers_id"
+	}),
+	directusVersions_userUpdated: many(directusVersions, {
+		relationName: "directusVersions_userUpdated_directusUsers_id"
+	}),
+	eventSignups: many(eventSignups),
+	eventsDirectusUsers: many(eventsDirectusUsers),
+	introBlogLikes: many(introBlogLikes),
+	introBlogs_userCreated: many(introBlogs, {
+		relationName: "introBlogs_userCreated_directusUsers_id"
+	}),
+	introBlogs_userUpdated: many(introBlogs, {
+		relationName: "introBlogs_userUpdated_directusUsers_id"
+	}),
+	heroBanners: many(heroBanners),
+	membershipHistories: many(membershipHistory),
+	pushNotifications: many(pushNotification),
+	pubCrawlSignups: many(pubCrawlSignups),
+	introPlannings_userCreated: many(introPlanning, {
+		relationName: "introPlanning_userCreated_directusUsers_id"
+	}),
+	introPlannings_userUpdated: many(introPlanning, {
+		relationName: "introPlanning_userUpdated_directusUsers_id"
+	}),
+	introParentSignups_approvedBy: many(introParentSignups, {
+		relationName: "introParentSignups_approvedBy_directusUsers_id"
+	}),
+	introParentSignups_userCreated: many(introParentSignups, {
+		relationName: "introParentSignups_userCreated_directusUsers_id"
+	}),
+	introParentSignups_userId: many(introParentSignups, {
+		relationName: "introParentSignups_userId_directusUsers_id"
+	}),
+	introParentSignups_userUpdated: many(introParentSignups, {
+		relationName: "introParentSignups_userUpdated_directusUsers_id"
+	}),
+	tripSignups: many(tripSignups),
+	safeHavens: many(safeHavens),
+	directusSessions: many(directusSessions),
+	authAccounts: many(authAccounts),
+	authSessions: many(authSessions),
+	committeeMembers: many(committeeMembers),
+	transactions_userId: many(transactions, {
+		relationName: "transactions_userId_directusUsers_id"
+	}),
+	transactions_approvedBy: many(transactions, {
+		relationName: "transactions_approvedBy_directusUsers_id"
+	}),
+	introPlanningSignups: many(introPlanningSignups),
+	directusRole: one(directusRoles, {
+		fields: [directusUsers.role],
+		references: [directusRoles.id]
+	}),
+	directusDeployments: many(directusDeployments),
+	directusDeploymentProjects: many(directusDeploymentProjects),
+	directusDeploymentRuns: many(directusDeploymentRuns),
+}));
+
+export const boardRelations = relations(board, ({one, many}) => ({
+	directusFile: one(directusFiles, {
+		fields: [board.image],
+		references: [directusFiles.id]
+	}),
+	directusUser_userCreated: one(directusUsers, {
+		fields: [board.userCreated],
+		references: [directusUsers.id],
+		relationName: "board_userCreated_directusUsers_id"
+	}),
+	directusUser_userUpdated: one(directusUsers, {
+		fields: [board.userUpdated],
+		references: [directusUsers.id],
+		relationName: "board_userUpdated_directusUsers_id"
+	}),
+	boardMembers: many(boardMembers),
+}));
+
+export const boardMembersRelations = relations(boardMembers, ({one}) => ({
+	board: one(board, {
+		fields: [boardMembers.boardId],
+		references: [board.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [boardMembers.userId],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const contactsRelations = relations(contacts, ({one}) => ({
+	directusFile: one(directusFiles, {
+		fields: [contacts.image],
+		references: [directusFiles.id]
+	}),
+}));
+
+export const directusAccessRelations = relations(directusAccess, ({one}) => ({
+	directusPolicy: one(directusPolicies, {
+		fields: [directusAccess.policy],
+		references: [directusPolicies.id]
+	}),
+	directusRole: one(directusRoles, {
+		fields: [directusAccess.role],
+		references: [directusRoles.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [directusAccess.user],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const directusPoliciesRelations = relations(directusPolicies, ({many}) => ({
+	directusAccesses: many(directusAccess),
+	directusPermissions: many(directusPermissions),
+}));
+
+export const directusRolesRelations = relations(directusRoles, ({one, many}) => ({
+	directusAccesses: many(directusAccess),
+	directusPresets: many(directusPresets),
+	directusRole: one(directusRoles, {
+		fields: [directusRoles.parent],
+		references: [directusRoles.id],
+		relationName: "directusRoles_parent_directusRoles_id"
+	}),
+	directusRoles: many(directusRoles, {
+		relationName: "directusRoles_parent_directusRoles_id"
+	}),
+	directusShares: many(directusShares),
+	directusUsers: many(directusUsers),
+	directusSettings: many(directusSettings),
+}));
+
+export const committeesRelations = relations(committees, ({one, many}) => ({
+	directusFile: one(directusFiles, {
+		fields: [committees.image],
+		references: [directusFiles.id]
+	}),
+	events: many(events),
+	committeeMembers: many(committeeMembers),
+}));
+
+export const directusCommentsRelations = relations(directusComments, ({one}) => ({
+	directusUser_userCreated: one(directusUsers, {
+		fields: [directusComments.userCreated],
+		references: [directusUsers.id],
+		relationName: "directusComments_userCreated_directusUsers_id"
+	}),
+	directusUser_userUpdated: one(directusUsers, {
+		fields: [directusComments.userUpdated],
+		references: [directusUsers.id],
+		relationName: "directusComments_userUpdated_directusUsers_id"
+	}),
+}));
+
+export const directusDashboardsRelations = relations(directusDashboards, ({one, many}) => ({
+	directusUser: one(directusUsers, {
+		fields: [directusDashboards.userCreated],
+		references: [directusUsers.id]
+	}),
+	directusPanels: many(directusPanels),
+}));
+
+export const directusFoldersRelations = relations(directusFolders, ({one, many}) => ({
+	directusFolder: one(directusFolders, {
+		fields: [directusFolders.parent],
+		references: [directusFolders.id],
+		relationName: "directusFolders_parent_directusFolders_id"
+	}),
+	directusFolders: many(directusFolders, {
+		relationName: "directusFolders_parent_directusFolders_id"
+	}),
+	directusFiles: many(directusFiles),
+	directusSettings: many(directusSettings),
+}));
+
+export const directusCollectionsRelations = relations(directusCollections, ({one, many}) => ({
+	directusCollection: one(directusCollections, {
+		fields: [directusCollections.group],
+		references: [directusCollections.collection],
+		relationName: "directusCollections_group_directusCollections_collection"
+	}),
+	directusCollections: many(directusCollections, {
+		relationName: "directusCollections_group_directusCollections_collection"
+	}),
+	directusShares: many(directusShares),
+	directusVersions: many(directusVersions),
+}));
+
+export const directusFlowsRelations = relations(directusFlows, ({one, many}) => ({
+	directusUser: one(directusUsers, {
+		fields: [directusFlows.userCreated],
+		references: [directusUsers.id]
+	}),
+	directusOperations: many(directusOperations),
+}));
+
+export const directusPanelsRelations = relations(directusPanels, ({one}) => ({
+	directusDashboard: one(directusDashboards, {
+		fields: [directusPanels.dashboard],
+		references: [directusDashboards.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [directusPanels.userCreated],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const directusPermissionsRelations = relations(directusPermissions, ({one}) => ({
+	directusPolicy: one(directusPolicies, {
+		fields: [directusPermissions.policy],
+		references: [directusPolicies.id]
+	}),
+}));
+
+export const directusPresetsRelations = relations(directusPresets, ({one}) => ({
+	directusRole: one(directusRoles, {
+		fields: [directusPresets.role],
+		references: [directusRoles.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [directusPresets.user],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const directusRevisionsRelations = relations(directusRevisions, ({one, many}) => ({
+	directusActivity: one(directusActivity, {
+		fields: [directusRevisions.activity],
+		references: [directusActivity.id]
+	}),
+	directusRevision: one(directusRevisions, {
+		fields: [directusRevisions.parent],
+		references: [directusRevisions.id],
+		relationName: "directusRevisions_parent_directusRevisions_id"
+	}),
+	directusRevisions: many(directusRevisions, {
+		relationName: "directusRevisions_parent_directusRevisions_id"
+	}),
+	directusVersion: one(directusVersions, {
+		fields: [directusRevisions.version],
+		references: [directusVersions.id]
+	}),
+}));
+
+export const directusActivityRelations = relations(directusActivity, ({many}) => ({
+	directusRevisions: many(directusRevisions),
+}));
+
+export const directusVersionsRelations = relations(directusVersions, ({one, many}) => ({
+	directusRevisions: many(directusRevisions),
+	directusCollection: one(directusCollections, {
+		fields: [directusVersions.collection],
+		references: [directusCollections.collection]
+	}),
+	directusUser_userCreated: one(directusUsers, {
+		fields: [directusVersions.userCreated],
+		references: [directusUsers.id],
+		relationName: "directusVersions_userCreated_directusUsers_id"
+	}),
+	directusUser_userUpdated: one(directusUsers, {
+		fields: [directusVersions.userUpdated],
+		references: [directusUsers.id],
+		relationName: "directusVersions_userUpdated_directusUsers_id"
+	}),
+}));
+
+export const directusSharesRelations = relations(directusShares, ({one, many}) => ({
+	directusCollection: one(directusCollections, {
+		fields: [directusShares.collection],
+		references: [directusCollections.collection]
+	}),
+	directusRole: one(directusRoles, {
+		fields: [directusShares.role],
+		references: [directusRoles.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [directusShares.userCreated],
+		references: [directusUsers.id]
+	}),
+	directusSessions: many(directusSessions),
+}));
+
+export const directusNotificationsRelations = relations(directusNotifications, ({one}) => ({
+	directusUser_recipient: one(directusUsers, {
+		fields: [directusNotifications.recipient],
+		references: [directusUsers.id],
+		relationName: "directusNotifications_recipient_directusUsers_id"
+	}),
+	directusUser_sender: one(directusUsers, {
+		fields: [directusNotifications.sender],
+		references: [directusUsers.id],
+		relationName: "directusNotifications_sender_directusUsers_id"
+	}),
+}));
+
+export const directusOperationsRelations = relations(directusOperations, ({one, many}) => ({
+	directusFlow: one(directusFlows, {
+		fields: [directusOperations.flow],
+		references: [directusFlows.id]
+	}),
+	directusOperation_reject: one(directusOperations, {
+		fields: [directusOperations.reject],
+		references: [directusOperations.id],
+		relationName: "directusOperations_reject_directusOperations_id"
+	}),
+	directusOperations_reject: many(directusOperations, {
+		relationName: "directusOperations_reject_directusOperations_id"
+	}),
+	directusOperation_resolve: one(directusOperations, {
+		fields: [directusOperations.resolve],
+		references: [directusOperations.id],
+		relationName: "directusOperations_resolve_directusOperations_id"
+	}),
+	directusOperations_resolve: many(directusOperations, {
+		relationName: "directusOperations_resolve_directusOperations_id"
+	}),
+	directusUser: one(directusUsers, {
+		fields: [directusOperations.userCreated],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const documentsRelations = relations(documents, ({one}) => ({
+	directusFile: one(directusFiles, {
+		fields: [documents.file],
+		references: [directusFiles.id]
+	}),
+}));
+
+export const eventsRelations = relations(events, ({one, many}) => ({
+	committee: one(committees, {
+		fields: [events.committeeId],
+		references: [committees.id]
+	}),
+	directusFile: one(directusFiles, {
+		fields: [events.image],
+		references: [directusFiles.id]
+	}),
+	eventSignups: many(eventSignups),
+	eventsDirectusUsers: many(eventsDirectusUsers),
+	eventsMembers: many(eventsMembers),
+}));
+
+export const eventSignupsRelations = relations(eventSignups, ({one, many}) => ({
+	directusUser: one(directusUsers, {
+		fields: [eventSignups.directusRelations],
+		references: [directusUsers.id]
+	}),
+	event: one(events, {
+		fields: [eventSignups.eventId],
+		references: [events.id]
+	}),
+	transactions: many(transactions),
+}));
+
+export const eventsDirectusUsersRelations = relations(eventsDirectusUsers, ({one}) => ({
+	directusUser: one(directusUsers, {
+		fields: [eventsDirectusUsers.directusUsersId],
+		references: [directusUsers.id]
+	}),
+	event: one(events, {
+		fields: [eventsDirectusUsers.eventsId],
+		references: [events.id]
+	}),
+}));
+
+export const introBlogLikesRelations = relations(introBlogLikes, ({one}) => ({
+	introBlog: one(introBlogs, {
+		fields: [introBlogLikes.blog],
+		references: [introBlogs.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [introBlogLikes.userId],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const introBlogsRelations = relations(introBlogs, ({one, many}) => ({
+	introBlogLikes: many(introBlogLikes),
+	directusFile: one(directusFiles, {
+		fields: [introBlogs.image],
+		references: [directusFiles.id]
+	}),
+	directusUser_userCreated: one(directusUsers, {
+		fields: [introBlogs.userCreated],
+		references: [directusUsers.id],
+		relationName: "introBlogs_userCreated_directusUsers_id"
+	}),
+	directusUser_userUpdated: one(directusUsers, {
+		fields: [introBlogs.userUpdated],
+		references: [directusUsers.id],
+		relationName: "introBlogs_userUpdated_directusUsers_id"
+	}),
+	introBlogGalleries: many(introBlogGallery),
+}));
+
+export const eventsMembersRelations = relations(eventsMembers, ({one}) => ({
+	event: one(events, {
+		fields: [eventsMembers.eventsId],
+		references: [events.id]
+	}),
+}));
+
+export const heroBannersRelations = relations(heroBanners, ({one}) => ({
+	directusFile: one(directusFiles, {
+		fields: [heroBanners.image],
+		references: [directusFiles.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [heroBanners.userCreated],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const introBlogGalleryRelations = relations(introBlogGallery, ({one}) => ({
+	directusFile: one(directusFiles, {
+		fields: [introBlogGallery.directusFilesId],
+		references: [directusFiles.id]
+	}),
+	introBlog: one(introBlogs, {
+		fields: [introBlogGallery.introBlogId],
+		references: [introBlogs.id]
+	}),
+}));
+
+export const pubCrawlEventsRelations = relations(pubCrawlEvents, ({one, many}) => ({
+	directusFile: one(directusFiles, {
+		fields: [pubCrawlEvents.image],
+		references: [directusFiles.id]
+	}),
+	pubCrawlSignups: many(pubCrawlSignups),
+}));
+
+export const membershipHistoryRelations = relations(membershipHistory, ({one}) => ({
+	directusUser: one(directusUsers, {
+		fields: [membershipHistory.userId],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const pubCrawlSignupsTransactionsRelations = relations(pubCrawlSignupsTransactions, ({one}) => ({
+	pubCrawlSignup: one(pubCrawlSignups, {
+		fields: [pubCrawlSignupsTransactions.pubCrawlSignupsId],
+		references: [pubCrawlSignups.id]
+	}),
+	transaction: one(transactions, {
+		fields: [pubCrawlSignupsTransactions.transactionsId],
+		references: [transactions.id]
+	}),
+}));
+
+export const pubCrawlSignupsRelations = relations(pubCrawlSignups, ({one, many}) => ({
+	pubCrawlSignupsTransactions: many(pubCrawlSignupsTransactions),
+	directusUser: one(directusUsers, {
+		fields: [pubCrawlSignups.directusRelations],
+		references: [directusUsers.id]
+	}),
+	pubCrawlEvent: one(pubCrawlEvents, {
+		fields: [pubCrawlSignups.pubCrawlEventId],
+		references: [pubCrawlEvents.id]
+	}),
+	pubCrawlTickets: many(pubCrawlTickets),
+	transactions: many(transactions),
+}));
+
+export const transactionsRelations = relations(transactions, ({one, many}) => ({
+	pubCrawlSignupsTransactions: many(pubCrawlSignupsTransactions),
+	directusUser_userId: one(directusUsers, {
+		fields: [transactions.userId],
+		references: [directusUsers.id],
+		relationName: "transactions_userId_directusUsers_id"
+	}),
+	directusUser_approvedBy: one(directusUsers, {
+		fields: [transactions.approvedBy],
+		references: [directusUsers.id],
+		relationName: "transactions_approvedBy_directusUsers_id"
+	}),
+	pubCrawlSignup: one(pubCrawlSignups, {
+		fields: [transactions.pubCrawlSignup],
+		references: [pubCrawlSignups.id]
+	}),
+	eventSignup: one(eventSignups, {
+		fields: [transactions.registration],
+		references: [eventSignups.id]
+	}),
+	tripSignup: one(tripSignups, {
+		fields: [transactions.tripSignup],
+		references: [tripSignups.id]
+	}),
+}));
+
+export const pushNotificationRelations = relations(pushNotification, ({one}) => ({
+	directusUser: one(directusUsers, {
+		fields: [pushNotification.userId],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const introPlanningRelations = relations(introPlanning, ({one, many}) => ({
+	directusUser_userCreated: one(directusUsers, {
+		fields: [introPlanning.userCreated],
+		references: [directusUsers.id],
+		relationName: "introPlanning_userCreated_directusUsers_id"
+	}),
+	directusUser_userUpdated: one(directusUsers, {
+		fields: [introPlanning.userUpdated],
+		references: [directusUsers.id],
+		relationName: "introPlanning_userUpdated_directusUsers_id"
+	}),
+	introPlanningSignups: many(introPlanningSignups),
+}));
+
+export const pubCrawlTicketsRelations = relations(pubCrawlTickets, ({one}) => ({
+	pubCrawlSignup: one(pubCrawlSignups, {
+		fields: [pubCrawlTickets.signupId],
+		references: [pubCrawlSignups.id]
+	}),
+}));
+
+export const introParentSignupsRelations = relations(introParentSignups, ({one}) => ({
+	directusUser_approvedBy: one(directusUsers, {
+		fields: [introParentSignups.approvedBy],
+		references: [directusUsers.id],
+		relationName: "introParentSignups_approvedBy_directusUsers_id"
+	}),
+	directusUser_userCreated: one(directusUsers, {
+		fields: [introParentSignups.userCreated],
+		references: [directusUsers.id],
+		relationName: "introParentSignups_userCreated_directusUsers_id"
+	}),
+	directusUser_userId: one(directusUsers, {
+		fields: [introParentSignups.userId],
+		references: [directusUsers.id],
+		relationName: "introParentSignups_userId_directusUsers_id"
+	}),
+	directusUser_userUpdated: one(directusUsers, {
+		fields: [introParentSignups.userUpdated],
+		references: [directusUsers.id],
+		relationName: "introParentSignups_userUpdated_directusUsers_id"
+	}),
+}));
+
+export const tripsRelations = relations(trips, ({one, many}) => ({
+	directusFile: one(directusFiles, {
+		fields: [trips.image],
+		references: [directusFiles.id]
+	}),
+	tripSignups: many(tripSignups),
+	tripActivities: many(tripActivities),
+}));
+
+export const tripSignupsRelations = relations(tripSignups, ({one, many}) => ({
+	directusUser: one(directusUsers, {
+		fields: [tripSignups.directusRelations],
+		references: [directusUsers.id]
+	}),
+	trip: one(trips, {
+		fields: [tripSignups.tripId],
+		references: [trips.id]
+	}),
+	tripSignupActivities: many(tripSignupActivities),
+	transactions: many(transactions),
+}));
+
+export const tripActivitiesRelations = relations(tripActivities, ({one, many}) => ({
+	directusFile: one(directusFiles, {
+		fields: [tripActivities.image],
+		references: [directusFiles.id]
+	}),
+	trip: one(trips, {
+		fields: [tripActivities.tripId],
+		references: [trips.id]
+	}),
+	tripSignupActivities: many(tripSignupActivities),
+}));
+
+export const tripSignupActivitiesRelations = relations(tripSignupActivities, ({one}) => ({
+	tripActivity: one(tripActivities, {
+		fields: [tripSignupActivities.tripActivityId],
+		references: [tripActivities.id]
+	}),
+	tripSignup: one(tripSignups, {
+		fields: [tripSignupActivities.tripSignupId],
+		references: [tripSignups.id]
+	}),
+}));
+
+export const safeHavensRelations = relations(safeHavens, ({one}) => ({
+	directusFile: one(directusFiles, {
+		fields: [safeHavens.image],
+		references: [directusFiles.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [safeHavens.userId],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const sponsorsRelations = relations(sponsors, ({one}) => ({
+	directusFile: one(directusFiles, {
+		fields: [sponsors.image],
+		references: [directusFiles.id]
+	}),
+}));
+
+export const directusSessionsRelations = relations(directusSessions, ({one}) => ({
+	directusShare: one(directusShares, {
+		fields: [directusSessions.share],
+		references: [directusShares.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [directusSessions.user],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const rolePermissionsRelations = relations(rolePermissions, ({one}) => ({
+	permission: one(permissions, {
+		fields: [rolePermissions.permissionId],
+		references: [permissions.id]
+	}),
+	role: one(roles, {
+		fields: [rolePermissions.roleId],
+		references: [roles.id]
+	}),
+}));
+
+export const permissionsRelations = relations(permissions, ({many}) => ({
+	rolePermissions: many(rolePermissions),
+}));
+
+export const rolesRelations = relations(roles, ({many}) => ({
+	rolePermissions: many(rolePermissions),
+}));
+
+export const authAccountsRelations = relations(authAccounts, ({one}) => ({
+	directusUser: one(directusUsers, {
+		fields: [authAccounts.userId],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const authSessionsRelations = relations(authSessions, ({one}) => ({
+	directusUser: one(directusUsers, {
+		fields: [authSessions.userId],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const committeeMembersRelations = relations(committeeMembers, ({one}) => ({
+	committee: one(committees, {
+		fields: [committeeMembers.committeeId],
+		references: [committees.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [committeeMembers.userId],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const introPlanningSignupsRelations = relations(introPlanningSignups, ({one}) => ({
+	introPlanning: one(introPlanning, {
+		fields: [introPlanningSignups.introPlanningId],
+		references: [introPlanning.id]
+	}),
+	introSignup: one(introSignups, {
+		fields: [introPlanningSignups.introSignupId],
+		references: [introSignups.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [introPlanningSignups.userId],
+		references: [directusUsers.id]
+	}),
+}));
+
+export const introSignupsRelations = relations(introSignups, ({many}) => ({
+	introPlanningSignups: many(introPlanningSignups),
+}));
+
+export const directusDeploymentsRelations = relations(directusDeployments, ({one, many}) => ({
+	directusUser: one(directusUsers, {
+		fields: [directusDeployments.userCreated],
+		references: [directusUsers.id]
+	}),
+	directusDeploymentProjects: many(directusDeploymentProjects),
+}));
+
+export const directusDeploymentProjectsRelations = relations(directusDeploymentProjects, ({one, many}) => ({
+	directusDeployment: one(directusDeployments, {
+		fields: [directusDeploymentProjects.deployment],
+		references: [directusDeployments.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [directusDeploymentProjects.userCreated],
+		references: [directusUsers.id]
+	}),
+	directusDeploymentRuns: many(directusDeploymentRuns),
+}));
+
+export const directusSettingsRelations = relations(directusSettings, ({one}) => ({
+	directusFile_projectLogo: one(directusFiles, {
+		fields: [directusSettings.projectLogo],
+		references: [directusFiles.id],
+		relationName: "directusSettings_projectLogo_directusFiles_id"
+	}),
+	directusFile_publicBackground: one(directusFiles, {
+		fields: [directusSettings.publicBackground],
+		references: [directusFiles.id],
+		relationName: "directusSettings_publicBackground_directusFiles_id"
+	}),
+	directusFile_publicFavicon: one(directusFiles, {
+		fields: [directusSettings.publicFavicon],
+		references: [directusFiles.id],
+		relationName: "directusSettings_publicFavicon_directusFiles_id"
+	}),
+	directusFile_publicForeground: one(directusFiles, {
+		fields: [directusSettings.publicForeground],
+		references: [directusFiles.id],
+		relationName: "directusSettings_publicForeground_directusFiles_id"
+	}),
+	directusRole: one(directusRoles, {
+		fields: [directusSettings.publicRegistrationRole],
+		references: [directusRoles.id]
+	}),
+	directusFolder: one(directusFolders, {
+		fields: [directusSettings.storageDefaultFolder],
+		references: [directusFolders.id]
+	}),
+}));
+
+export const directusDeploymentRunsRelations = relations(directusDeploymentRuns, ({one}) => ({
+	directusDeploymentProject: one(directusDeploymentProjects, {
+		fields: [directusDeploymentRuns.project],
+		references: [directusDeploymentProjects.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [directusDeploymentRuns.userCreated],
+		references: [directusUsers.id]
+	}),
+}));

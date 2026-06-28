@@ -6,9 +6,9 @@ import { TickItem } from './MailComponents';
 interface MailEditorProps {
     emailType: 'custom' | 'deposit_request' | 'final_request';
     subject: string;
-    setSubject: (v: string) => void;
+    setSubject: (subjectText: string) => void;
     message: string;
-    setMessage: (v: string) => void;
+    setMessage: (messageText: string) => void;
     sending: boolean;
     onSend: () => void;
     filteredCount: number;

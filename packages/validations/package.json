@@ -32,16 +32,21 @@
         "build": "tsc",
         "type-check": "tsc --noEmit",
         "lint": "eslint .",
-        "typegen": "directus-ts-typegen --output src/directus/schema.ts && node -e \"const fs=require('fs');fs.writeFileSync('src/directus/schema.ts',fs.readFileSync('src/directus/schema.ts','utf8').replace(/: \\\"datetime\\\"/g,': string | \\\"datetime\\\"'))\""
+        "typegen": "node scripts/typegen.mjs",
+        "generate:zod": "node scripts/generate-zod.mjs"
     },
     "dependencies": {
-        "drizzle-orm": "0.45.2",
+        "@salvemundi/db": "workspace:*",
         "drizzle-zod": "^0.8.3",
         "zod": "^4.4.3"
+    },
+    "peerDependencies": {
+        "drizzle-orm": "0.45.2"
     },
     "devDependencies": {
         "@directus/sdk": "^22.0.0",
         "@types/node": "^26.0.0",
+        "drizzle-orm": "0.45.2",
         "directus-ts-typegen": "^0.6.0",
         "eslint": "^9.39.4",
         "typescript": "6.0.3"

@@ -22,8 +22,8 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
 
     const { displayDate, timeRange } = formatActivityDateTime(
         {
-            datum_start: activity?.datum_start || '',
-            datum_eind: activity?.datum_eind,
+            event_date: activity?.event_date || '',
+            event_date_end: activity?.event_date_end,
             event_time: activity?.event_time,
             event_time_end: activity?.event_time_end
         },
@@ -36,7 +36,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                 <div className="relative h-[45vh] min-h-[400px] w-full overflow-hidden bg-(--bg-soft)">
                     <MediaAsset
                         asset={activity.afbeelding_id}
-                        alt={activity.titel}
+                        alt={activity.name}
                         fill
                         priority
                         className="object-cover"
@@ -48,7 +48,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                 {activity.committee_name || 'Algemene Activiteit'}
                             </span>
                             <h1 className="text-4xl md:text-7xl font-black text-text-main drop-shadow-sm tracking-tight leading-tight">
-                                {activity.titel}
+                                {activity.name}
                             </h1>
                         </div>
                     </div>
@@ -59,7 +59,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                         {activity?.committee_name || 'Algemene Activiteit'}
                     </span>
                     <h1 className="text-4xl md:text-7xl font-black text-text-main tracking-tight leading-tight">
-                        {activity?.titel}
+                        {activity?.name}
                     </h1>
                 </div>
             )}
@@ -86,7 +86,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                 </div>
                             </div>
 
-                            {activity?.locatie && (
+                            {activity?.location && (
                                 <div className="squircle bg-(--bg-card) border border-(--border-color) p-6 shadow-lg shadow-(--theme-purple)/5 flex items-center gap-4 transition-all hover:border-(--theme-purple)/30 group">
                                     <div className="h-14 w-14 squircle bg-(--theme-purple)/5 flex items-center justify-center text-(--theme-purple) group-hover:scale-110 transition-transform shrink-0">
                                         <MapPin className="h-7 w-7" />
@@ -94,7 +94,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                     <div className="flex-1 min-w-0">
                                         <p className="text-[10px] uppercase font-black text-text-muted tracking-[0.2em] mb-1">Locatie</p>
                                         <p className="text-base font-bold text-(--text-main)">
-                                            {activity.locatie}
+                                            {activity.location}
                                         </p>
                                     </div>
                                 </div>
@@ -141,7 +141,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                 </h2>
                             </div>
                             <div className="prose prose-purple max-w-none text-(--text-main) font-medium leading-relaxed">
-                                <SafeMarkdown content={activity?.beschrijving || 'Geen beschrijving beschikbaar.'} />
+                                <SafeMarkdown content={activity?.description || 'Geen beschrijving beschikbaar.'} />
                                 {isLoggedIn && activity?.description_logged_in && (
                                     <>
                                         <hr className="my-8 border-(--border-color)/50" />

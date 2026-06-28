@@ -14,7 +14,7 @@ import {
     Loader2
 } from 'lucide-react';
 import type { Committee, CommitteeMember } from '@/server/queries/admin-commissies.queries';
-import { type UserBasic } from '@/server/internal/user-db.utils';
+import { type UserBasic } from '@salvemundi/validations';
 import UserSearch from '@/components/ui/admin/UserSearch';
 
 interface Props {
@@ -25,9 +25,9 @@ interface Props {
     editingDetail: boolean;
     onToggleEditing: () => void;
     editShortDesc: string;
-    onShortDescChange: (v: string) => void;
+    onShortDescChange: (descValue: string) => void;
     editDesc: string;
-    onDescChange: (v: string) => void;
+    onDescChange: (descValue: string) => void;
     onSaveDetail: () => void;
     savingDetail: boolean;
     onAddMember: (user: UserBasic) => void;

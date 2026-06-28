@@ -22,7 +22,7 @@ interface ActiviteitCardProps {
     endTime?: string | null;
     location?: string | null;
     title?: string;
-    price?: number;
+    price?: number | string;
     isPast?: boolean;
     onSignup?: (data: { title: string; date?: string; description: string; price: number }) => void;
     onShowDetails?: () => void;
@@ -91,7 +91,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
             return;
         }
 
-        onSignup?.({ title, date, description, price: price || 0 });
+        onSignup?.({ title, date, description, price: Number(price) || 0 });
     };
 
     const safePrice = (Number(price) || 0).toFixed(2);
@@ -105,8 +105,8 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
 
     const { displayDate, timeRange } = formatActivityDateTime(
         {
-            datum_start: date || '',
-            datum_eind: endDate,
+            event_date: date || '',
+            event_date_end: endDate,
             event_time: startTime,
             event_time_end: endTime
         },

@@ -10,22 +10,6 @@ import {
 import { z } from 'zod';
 import { safeConsoleError } from '@/server/utils/logger';
 
-interface IntroBlogRow {
-    id: string | number;
-    title?: unknown;
-    content?: unknown;
-    blog_type?: unknown;
-    is_published?: unknown;
-}
-
-interface IntroPlanningRow {
-    id: string | number;
-    date?: unknown;
-    time_start?: unknown;
-    title?: unknown;
-    description?: unknown;
-}
-
 export async function getIntroSignupsInternal() {
     try {
         return await db
@@ -60,7 +44,8 @@ export async function getIntroBlogsInternal(): Promise<IntroBlog[]> {
             .orderBy(desc(schema.intro_blogs.id))
             .limit(200);
 
-        const mapped = (rows as IntroBlogRow[]).map(i => ({
+        const mapped = rows.map(i => ({
+            ...i,
             id: Number(i.id),
             title: typeof i.title === 'string' ? i.title : '',
             content: typeof i.content === 'string' ? i.content : '',
@@ -88,23 +73,25 @@ export async function getIntroPlanningInternal(): Promise<IntroPlanningItem[]> {
             .orderBy(asc(schema.intro_planning.date), asc(schema.intro_planning.time_start))
             .limit(200);
 
-        const toStr = (v: unknown): string => {
-            if (typeof v === 'string') return v;
-            if (v instanceof Date) return v.toISOString().split('T')[0];
+        const toStr = (value: unknown): string => {
+            if (typeof value === 'string') return value;
+            if (value instanceof Date) return value.toISOString().split('T')[0];
             return '';
         };
-        const toTimeStr = (v: unknown): string => {
-            if (typeof v === 'string') return v;
-            if (v instanceof Date) return v.toTimeString().split(' ')[0];
+        const toTimeStr = (value: unknown): string => {
+            if (typeof value === 'string') return value;
+            if (value instanceof Date) return value.toTimeString().split(' ')[0];
             return '';
         };
 
-        const mapped = (rows as IntroPlanningRow[]).map(i => ({
+        const mapped = rows.map(i => ({
+            ...i,
             id: Number(i.id),
             date: toStr(i.date),
             time_start: toTimeStr(i.time_start),
             title: typeof i.title === 'string' ? i.title : '',
-            description: typeof i.description === 'string' ? i.description : ''
+            description: typeof i.description === 'string' ? i.description : '',
+            is_mandatory: typeof i.is_mandatory === 'string' ? i.is_mandatory : ''
         }));
 
         const parsed = z.array(introPlanningSchema).safeParse(mapped);

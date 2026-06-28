@@ -5,15 +5,15 @@
 
 // Pijlerkaart definitie — icoon als inline SVG (stroke="currentColor")
 interface Pijler {
-    titel: string;
-    beschrijving: string;
+    name: string;
+    description: string;
     icon: React.ReactNode;
 }
 
 const pijlers: Pijler[] = [
     {
-        titel: 'Gezelligheid',
-        beschrijving:
+        name: 'Gezelligheid',
+        description:
             'Van gezellig chillen in onze eigen ruimte tot onvergetelijke feesten en weekendjes weg bij Salve Mundi. Bouw vriendschappen die een leven lang meegaan.',
         icon: (
             <svg
@@ -34,8 +34,8 @@ const pijlers: Pijler[] = [
         )
     },
     {
-        titel: 'Studie',
-        beschrijving:
+        name: 'Studie',
+        description:
             'Samen sta je sterker. We organiseren bijlessen, workshops en bedrijfsbezoeken om jou te helpen excelleren in je studie en carrière.',
         icon: (
             <svg
@@ -57,8 +57,8 @@ const pijlers: Pijler[] = [
         )
     },
     {
-        titel: 'Ontwikkeling',
-        beschrijving:
+        name: 'Ontwikkeling',
+        description:
             'Boost je CV door actief te worden in een van onze commissies. Leer organiseren, besturen en samenwerken in een professionele omgeving.',
         icon: (
             <svg
@@ -96,7 +96,7 @@ export function WhySalveMundiSection() {
                 <div className="grid gap-8 md:grid-cols-3">
                     {pijlers.map((pijler) => (
                         <div
-                            key={pijler.titel}
+                            key={pijler.name}
                             className="group relative squircle-lg bg-(--bg-card) dark:border dark:border-white/10 p-8 shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
                         >
                             {/* Flex container for Icon + Title */}
@@ -105,12 +105,12 @@ export function WhySalveMundiSection() {
                                     {pijler.icon}
                                 </div>
                                 <h3 className="text-xl font-bold text-(--text-main)">
-                                    {pijler.titel}
+                                    {pijler.name}
                                 </h3>
                             </div>
 
                             <p className="text-(--text-muted) leading-relaxed">
-                                {pijler.beschrijving}
+                                {pijler.description}
                             </p>
                         </div>
                     ))}

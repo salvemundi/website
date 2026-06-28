@@ -100,7 +100,7 @@ export class PaymentService {
                     const flags = await directus.request(readItems('feature_flags', {
                         filter: { name: { _eq: 'manual_approval' } },
                         fields: ['is_active']
-                    })) as FeatureFlag[];
+                    })) as unknown as { is_active: boolean }[];
                     manualApproval = flags[0]?.is_active ?? false;
                 } catch (authErr) {
                     fastify.log.error({ err: authErr }, `[payment-service][manual-approval] Failed to check manual_approval flag: ${authErr instanceof Error ? authErr.message : String(authErr)}`);

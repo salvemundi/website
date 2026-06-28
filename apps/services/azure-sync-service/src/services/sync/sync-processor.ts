@@ -148,23 +148,26 @@ export class SyncProcessor {
                 const committee = ctx.committeeByIdCache?.get(Number(committeeId));
                 const committeeName = committee?.name || `ID ${committeeId}`;
 
-                const existing = currentMemberships.find((m) => Number(m.committee_id.id) === Number(committeeId));
+                const existing = currentMemberships.find((m) => {
+                    const cId = (m.committee_id as any)?.id ?? m.committee_id;
+                    return Number(cId) === Number(committeeId);
+                });
 
                 if (!existing) {
                     await DirectusService.addMemberToCommittee(currentUser.id, committeeId, isLeader);
                     changes.push({ field: 'Commissie', old: 'Geen', new: `Toegevoegd aan ${committeeName}${isLeader ? ' (Leider)' : ''}` });
-                } else if (existing.is_leader !== isLeader) {
+                } else if ((existing.is_leader as unknown as boolean) !== isLeader) {
                     await DirectusService.updateCommitteeMember(Number(existing.id), { is_leader: isLeader });
                     changes.push({
                         field: `${committeeName} status`,
-                        old: existing.is_leader ? 'Leider' : 'Lid',
+                        old: (existing.is_leader as unknown as boolean) ? 'Leider' : 'Lid',
                         new: isLeader ? 'Leider' : 'Lid'
                     });
                 }
             }
 
             for (const current of currentMemberships) {
-                const committeeIdNum = Number(current.committee_id.id);
+                const committeeIdNum = Number((current.committee_id as any)?.id ?? current.committee_id);
 
                 if (!azureMemberships.has(committeeIdNum)) {
                     const committee = ctx.committeeByIdCache?.get(committeeIdNum);

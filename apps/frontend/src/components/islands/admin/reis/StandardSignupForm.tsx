@@ -1,7 +1,7 @@
 'use client';
 
 import { FileText, CreditCard, Bus, AlertCircle } from 'lucide-react';
-import type { TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
+import type { TripSignup } from '@salvemundi/validations/schema/admin-trip.zod';
 import { parseBoolean } from '@salvemundi/validations';
 import { toISODate, formatShortDate } from '@/lib/utils/date-utils';
 import {

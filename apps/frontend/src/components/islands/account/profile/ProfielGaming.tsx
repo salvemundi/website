@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Gamepad2, Edit2, Save, Loader2 } from 'lucide-react';
+import { Gamepad2, Pen, Save, Loader2 } from 'lucide-react';
 import { Tile, formatForBreak } from './ProfielUI';
 
 import { UseFormRegister, UseFormHandleSubmit, FieldErrors } from 'react-hook-form';
@@ -40,7 +40,7 @@ export default function ProfielGaming({
                     </p>
                     {!isEditingMinecraft && (
                         <button onClick={() => setIsEditingMinecraft(true)} className="text-text-muted hover:text-purple-500 p-1 rounded-md transition-colors">
-                            <Edit2 className="h-3.5 w-3.5" />
+                            <Pen className="h-3.5 w-3.5" />
                         </button>
                     )}
                 </div>

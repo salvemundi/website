@@ -4,7 +4,7 @@ import { buildUpdateQuery } from '@/lib/database/query-builder';
 import {
     reisTripSignupSchema,
     type ReisTripSignup
-} from '@salvemundi/validations/schema/reis.zod';
+} from '@salvemundi/validations/schema/trip.zod';
 import { z } from 'zod';
 import { TripSignup as TripSignup, TripSignupActivity as TripSignupActivity } from '@salvemundi/validations/directus/schema';
 import { RawTripSignupRow, RawTripSignupActivityRow, QueryParam } from './types';

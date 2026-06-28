@@ -1,6 +1,6 @@
-import ReisInstellingenIsland from '@/components/islands/admin/ReisInstellingenIsland';
-import { getReisSiteSettings } from '@/server/actions/events/reis.actions';
-import { getTrips } from '@/server/queries/admin-reis.queries';
+import TripSettingsIsland from '@/components/islands/admin/TripSettingsIsland';
+import { getReisSiteSettings } from '@/server/actions/events/trip.actions';
+import { getTrips } from '@/server/queries/admin-trip.queries';
 import { tripSchema, type Trip } from '@salvemundi/validations';
 
 export const metadata = {
@@ -17,7 +17,7 @@ export default async function ReisInstellingenPage() {
 
     return (
         <div className="w-full">
-            <ReisInstellingenIsland
+            <TripSettingsIsland
                 initialTrips={trips as Trip[]}
                 initialSettings={{
                     show: settings?.show ?? false

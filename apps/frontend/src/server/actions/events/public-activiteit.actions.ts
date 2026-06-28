@@ -135,7 +135,8 @@ export async function signupForActivity(data: EventSignupForm) {
 
         const user = session?.user as unknown as EnrichedUser | undefined;
         const isMember = user ? user.membership_status === 'active' : false;
-        const price = (isMember ? activity.price_members : activity.price_non_members) ?? 0;
+        const priceRaw = (isMember ? activity.price_members : activity.price_non_members);
+        const price = Number(priceRaw);
 
         const { query } = await import('@/lib/database');
         const existingCheck = await query(
@@ -174,7 +175,7 @@ export async function signupForActivity(data: EventSignupForm) {
                 headers: getInternalHeaders(),
                 body: JSON.stringify({
                     amount: price,
-                    description: `Signup: ${activity.titel}`,
+                    description: `Signup: ${activity.name}`,
                     registrationId: signupId,
                     registrationType: 'event_signup',
                     email: parsed.data.email,
@@ -208,8 +209,8 @@ export async function signupForActivity(data: EventSignupForm) {
                 timestamp: new Date().toISOString(),
                 email: parsed.data.email,
                 name: parsed.data.name,
-                eventName: activity.titel,
-                eventDate: activity.datum_start,
+                eventName: activity.name,
+                eventDate: activity.event_date,
                 signupId: signupId,
                 qrToken: qrToken,
                 accessToken: qrToken
@@ -233,3 +234,5 @@ export async function signupForActivity(data: EventSignupForm) {
         return { success: false, error: 'Er is een fout opgetreden bij die inschrijving.' };
     }
 }
+
+

@@ -150,7 +150,7 @@ export async function distributePubCrawlSignups(eventId: number) {
     try {
         const { getPubCrawlEvent } = await import('./kroegentocht-event.actions');
         const event = await getPubCrawlEvent(eventId);
-        const eventGroups = event.groups || [];
+        const eventGroups = ((event.groups || []) as unknown[]);
         const groups: string[] = eventGroups.map((g: unknown): string => {
             if (typeof g === 'string') return g;
             if (g && typeof g === 'object' && 'name' in g) {
@@ -215,3 +215,6 @@ export async function savePubCrawlGroupsAssignment(eventId: number, assignments:
         throw typedError;
     }
 }
+
+
+

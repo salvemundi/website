@@ -45,7 +45,7 @@ export default function ActivitiesProviderIsland({
         if (!showPastActivities) {
             filtered = filtered.filter(event => {
                 return !isEventPast(
-                    event.datum_eind || event.datum_start,
+                    event.event_date_end || event.event_date,
                     event.event_time_end || event.event_time,
                     !!event.event_time_end,
                     now
@@ -55,13 +55,13 @@ export default function ActivitiesProviderIsland({
 
         return filtered.sort((a, b) => {
             const isAPast = isEventPast(
-                a.datum_eind || a.datum_start,
+                a.event_date_end || a.event_date,
                 a.event_time_end || a.event_time,
                 !!a.event_time_end,
                 now
             );
             const isBPast = isEventPast(
-                b.datum_eind || b.datum_start,
+                b.event_date_end || b.event_date,
                 b.event_time_end || b.event_time,
                 !!b.event_time_end,
                 now
@@ -70,7 +70,7 @@ export default function ActivitiesProviderIsland({
             if (isAPast !== isBPast) return isAPast ? 1 : -1;
 
             const getEventTime = (event: Activiteit) => {
-                const date = event.datum_start;
+                const date = event.event_date;
                 return (event.event_time && date.length <= 10)
                     ? new Date(`${date}T${event.event_time}`).getTime()
                     : new Date(date).getTime();
@@ -93,7 +93,7 @@ export default function ActivitiesProviderIsland({
             router.push(act.custom_url);
             return;
         }
-        const slug = slugify(activity.titel || '');
+        const slug = slugify(activity.name || '');
         router.push(`/activiteiten/${slug}`);
     }, [router]);
 
@@ -103,7 +103,7 @@ export default function ActivitiesProviderIsland({
 
         if (status === 'success' && eventId) {
             const event = events.find(e => e.id.toString() === eventId.toString());
-            const slug = event ? slugify(event.titel || '') : eventId;
+            const slug = event ? slugify(event.name || '') : eventId;
             router.replace(`/activiteiten/${slug}`);
         }
     }, [searchParams, router, events]);

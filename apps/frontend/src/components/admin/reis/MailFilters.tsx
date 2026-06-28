@@ -1,7 +1,7 @@
 'use client';
 
 import { Layout, Filter, Search, Users } from 'lucide-react';
-import type { Trip, TripSignup } from '@salvemundi/validations/schema/admin-reis.zod';
+import type { Trip, TripSignup } from '@salvemundi/validations/schema/admin-trip.zod';
 import { Card, FilterField } from './MailComponents';
 
 interface MailFiltersProps {
@@ -9,13 +9,13 @@ interface MailFiltersProps {
     selectedTripId: number;
     onTripChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     filterStatus: string;
-    setFilterStatus: (v: string) => void;
+    setFilterStatus: (status: string) => void;
     filterRole: string;
-    setFilterRole: (v: string) => void;
+    setFilterRole: (role: string) => void;
     filterPayment: string;
-    setFilterPayment: (v: string) => void;
+    setFilterPayment: (paymentStatus: string) => void;
     searchTerm: string;
-    setSearchTerm: (v: string) => void;
+    setSearchTerm: (term: string) => void;
     filteredCount: number;
     filteredRecipients: TripSignup[];
 }

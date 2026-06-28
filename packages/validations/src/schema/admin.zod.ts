@@ -1,24 +1,13 @@
 import { z } from 'zod';
+import { insertEventsSchema, selectDirectusUsersSchema, selectCommitteeMembersSchema, selectEventSignupsSchema } from './db.zod.js';
 
-// Admin Activity schemas
-
-export const AdminActivitySchema = z.object({
+export const AdminActivitySchema = insertEventsSchema.extend({
     id: z.coerce.number(),
-    name: z.string(),
-    event_date: z.string(),
-    event_date_end: z.string().optional().nullable(),
-    description: z.string().optional().nullable(),
-    description_logged_in: z.string().optional().nullable(),
-    location: z.string().optional().nullable(),
     max_sign_ups: z.coerce.number().optional().nullable(),
     price_members: z.coerce.number().optional().nullable(),
     price_non_members: z.coerce.number().optional().nullable(),
-    registration_deadline: z.string().optional().nullable(),
-    contact: z.string().optional().nullable(),
-    event_time: z.string().optional().nullable(),
-    event_time_end: z.string().optional().nullable(),
     only_members: z.coerce.boolean().optional().default(false),
-    custom_url: z.string().optional().nullable(),
+    committee_id: z.coerce.number().optional().nullable(),
     image: z.union([
         z.string(),
         z.object({
@@ -26,34 +15,31 @@ export const AdminActivitySchema = z.object({
             type: z.string().nullable().optional()
         })
     ]).optional().nullable(),
-    committee_id: z.coerce.number().optional().nullable(),
     committee_name: z.string().optional().nullable(),
+    signup_count: z.coerce.number().optional().default(0),
     status: z.enum(['published', 'draft', 'archived', 'scheduled']).optional().nullable(),
-    publish_date: z.string().optional().nullable(),
-    signup_count: z.coerce.number().optional().default(0)
 });
 
 export type AdminActivity = z.infer<typeof AdminActivitySchema>;
 
-// Admin Member schemas (detailed view)
-export const AdminMemberSchema = z.object({
-    id: z.string(),
-    first_name: z.string().nullable().optional(),
-    last_name: z.string().nullable().optional(),
+export const AdminMemberSchema = selectDirectusUsersSchema.pick({
+    id: true,
+    first_name: true,
+    last_name: true,
+    date_of_birth: true,
+    membership_expiry: true,
+    status: true,
+    phone_number: true,
+    avatar: true,
+    entra_id: true,
+}).extend({
     email: z.string().email(),
-    date_of_birth: z.string().nullable().optional(),
-    membership_expiry: z.string().nullable().optional(),
-    status: z.string().nullable().optional(),
-    phone_number: z.string().nullable().optional(),
-    avatar: z.string().nullable().optional(),
-    entra_id: z.string().nullable().optional(),
 });
 
 export type AdminMember = z.infer<typeof AdminMemberSchema>;
 
-export const CommitteeMembershipSchema = z.object({
+export const CommitteeMembershipSchema = selectCommitteeMembersSchema.extend({
     id: z.coerce.string(),
-    is_leader: z.boolean(),
     committee_id: z.object({
         id: z.coerce.string(),
         name: z.string(),
@@ -64,10 +50,8 @@ export const CommitteeMembershipSchema = z.object({
 
 export type CommitteeMembership = z.infer<typeof CommitteeMembershipSchema>;
 
-export const AdminSignupSchema = z.object({
+export const AdminSignupSchema = selectEventSignupsSchema.extend({
     id: z.coerce.number(),
-    payment_status: z.string().optional().nullable(),
-    created_at: z.string(),
     event_id: z.object({
         id: z.coerce.string(),
         name: z.string(),

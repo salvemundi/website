@@ -28,9 +28,8 @@
       "@/*": [
         "./src/*"
       ],
-      "@salvemundi/db": [
-        "../../packages/db/src/index.ts"
-      ]
+      "drizzle-orm": ["../../node_modules/drizzle-orm"],
+      "drizzle-orm/*": ["../../node_modules/drizzle-orm/*"]
     }
   },
   "include": [

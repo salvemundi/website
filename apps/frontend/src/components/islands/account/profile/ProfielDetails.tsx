@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail, Phone, Calendar, Edit2, Save, Loader2, LogOut } from 'lucide-react';
+import { Mail, Phone, Calendar, Pen, Save, Loader2, LogOut } from 'lucide-react';
 import { Tile, formatForBreak } from './ProfielUI';
 import { formatDate } from '@/shared/lib/utils/date';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
@@ -114,7 +114,7 @@ export default function ProfielDetails({
                         </p>
                         {!isEditingPhoneNumber && (
                             <button onClick={() => setIsEditingPhoneNumber(true)} className="text-text-muted hover:text-purple-500 p-1 rounded-md transition-colors">
-                                <Edit2 className="h-3.5 w-3.5" />
+                                <Pen className="h-3.5 w-3.5" />
                             </button>
                         )}
                     </div>

@@ -10,7 +10,6 @@ export interface Schema {
   committees: Committee[];
   contacts: Contact[];
   coupons: Coupon[];
-  directus_comments: DirectusComment[];
   documents: Document[];
   event_signups: EventSignup[];
   events: Event[];
@@ -44,10 +43,8 @@ export interface Schema {
   trip_signups: TripSignup[];
   trips: Trip[];
   whatsapp_groups: WhatsappGroup[];
-  directus_fields: CustomDirectusField;
-  directus_settings: CustomDirectusSettings;
   directus_users: CustomDirectusUser;
-  directus_versions: CustomDirectusVersion;
+  directus_deployments: CustomDirectusDeployment;
   auth_accounts: AuthAccount[];
   auth_sessions: AuthSession[];
   membership_history: MembershipHistory[];
@@ -159,17 +156,6 @@ export interface Coupon {
   valid_until: string | "datetime" | null;
   discount_value: number | null;
   date_created: string | "datetime" | null;
-}
-
-export interface DirectusComment {
-  id: string;
-  collection: string;
-  item: string;
-  comment: string;
-  date_created: string | "datetime" | null;
-  date_updated: string | "datetime" | null;
-  user_created: string | null;
-  user_updated: string | null;
 }
 
 export interface Document {
@@ -398,7 +384,7 @@ export interface Permission {
 export interface PubCrawlEvent {
   id: number;
   name: string;
-  email: string | null;
+  email: string;
   created_at: string | "datetime";
   updated_at: string | "datetime" | null;
   image: string | DirectusFile<Schema> | null;
@@ -532,7 +518,7 @@ export interface TripActivity {
   max_participants: number | null;
   is_active: boolean | null;
   display_order: number | null;
-  options: unknown | null;
+  options: Array<{ name: string; price: number }> | null;
   max_selections: number | null;
 }
 
@@ -606,28 +592,6 @@ export interface WhatsappGroup {
   updated_at: string | "datetime" | null;
 }
 
-export interface CustomDirectusField {
-  searchable: boolean;
-}
-
-export interface CustomDirectusSettings {
-  visual_editor_urls: unknown | null;
-  project_id: string | null;
-  mcp_enabled: boolean;
-  mcp_allow_deletes: boolean;
-  mcp_prompts_collection: string | null;
-  mcp_system_prompt_enabled: boolean;
-  mcp_system_prompt: string | null;
-  project_owner: string | null;
-  project_usage: string | null;
-  org_name: string | null;
-  product_updates: boolean | null;
-  project_status: string | null;
-  ai_openai_api_key: string | null;
-  ai_anthropic_api_key: string | null;
-  ai_system_prompt: string | null;
-}
-
 export interface CustomDirectusUser {
   text_direction: string;
   entra_id: string | null;
@@ -648,8 +612,8 @@ export interface CustomDirectusUser {
   events: string[] | EventDirectusUser[];
 }
 
-export interface CustomDirectusVersion {
-  delta: unknown | null;
+export interface CustomDirectusDeployment {
+  webhook_secret: string | null;
 }
 
 export interface AuthAccount {

@@ -102,7 +102,7 @@ export default function AddStickerModal({
                             <div className="flex items-center gap-3">
                                 <div className="text-sm text-(--text-main)">
                                     {selectedLocation ? (
-                                        <span>Geselecteerde locatie: {selectedLocation.lat.toFixed(5)}, {selectedLocation.lng.toFixed(5)}</span>
+                                        <span>Geselecteerde location: {selectedLocation.lat.toFixed(5)}, {selectedLocation.lng.toFixed(5)}</span>
                                     ) : (
                                         <span>Geen locatie geselecteerd</span>
                                     )}

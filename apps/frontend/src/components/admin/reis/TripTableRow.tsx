@@ -1,0 +1,209 @@
+'use client';
+
+import { Loader2, Edit, Trash, ChevronDown, Bus, Briefcase, CheckCircle2, Clock, XCircle, List } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import type { TripSignup, TripSignupActivity } from '@salvemundi/validations/schema/admin-trip.zod';
+
+interface TripTableRowProps {
+    signup: TripSignup;
+    isSelected: boolean;
+    onSelect: (signup: TripSignup, edit?: boolean) => void;
+    statusBadge: { label: string; color: string };
+    paymentStatus: { label: string; color: string };
+    isStatusLoading: boolean;
+    isDeleteLoading: boolean;
+    sendingEmailType: string | null;
+    onStatusChange: (id: number, status: string) => void;
+    onDelete: (id: number) => void;
+    onResendEmail: (id: number, type: 'deposit' | 'final') => void;
+    activities: TripSignupActivity[];
+    allowFinalPayments: boolean;
+    isBusTrip?: boolean;
+}
+
+export default function TripTableRow({
+    signup,
+    isSelected,
+    onSelect,
+    statusBadge: _statusBadge,
+    paymentStatus,
+    isStatusLoading,
+    isDeleteLoading,
+    sendingEmailType: _sendingEmailType,
+    onStatusChange,
+    onDelete,
+    onResendEmail: _onResendEmail,
+    activities: _activities,
+    allowFinalPayments: _allowFinalPayments,
+    isBusTrip = false
+}: TripTableRowProps) {
+
+    return (
+        <div
+            onClick={() => onSelect(signup)}
+            className={`
+                relative bg-(--beheer-card-bg) border border-(--beheer-border)/60 rounded-4xl squircle-lg transition-all duration-300 cursor-pointer group flex flex-col
+                ${isSelected ? 'shadow-2xl border-(--beheer-accent) ring-2 ring-(--beheer-accent)/20' : 'hover:shadow-lg hover:border-(--beheer-accent)/20 shadow-sm'}
+            `}
+        >
+            <div className="p-4 flex flex-col h-full">
+                <div className="flex justify-between items-start mb-3">
+                    <div className="min-w-0 pr-2">
+                        <div className="text-xs font-semibold text-(--beheer-accent) mb-0.5 opacity-70">
+                            {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
+                        </div>
+                        <div className="text-lg font-semibold text-(--beheer-text) leading-tight group-hover:text-(--beheer-accent) transition-colors line-clamp-2 min-h-[2.8rem] flex items-center">
+                            {signup.first_name} {signup.last_name}
+                        </div>
+                    </div>
+
+                    <div className="flex items-center bg-(--bg-main)/50 p-1 rounded-xl border border-(--beheer-border)/20 shadow-inner shrink-0">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onSelect(signup, true); }}
+                            className="p-2 text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-white/5 rounded-lg transition-all"
+                            title="Bewerken"
+                        >
+                            <Edit className="h-4 w-4" />
+                        </button>
+                        <div className="w-px h-4 bg-(--beheer-border)/20 mx-0.5" />
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onDelete(signup.id); }}
+                            disabled={isDeleteLoading}
+                            className="p-2 text-(--beheer-text-muted) hover:text-red-400 hover:bg-red-400/5 rounded-lg transition-all disabled:opacity-50"
+                            title="Verwijderen"
+                        >
+                            {isDeleteLoading ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Trash className="h-4 w-4" />
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="space-y-1.5 mb-4 px-1">
+                    <div className="text-[11px] font-medium text-(--beheer-text-muted) truncate opacity-80">
+                        {signup.email}
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <div className="text-[10px] font-semibold text-(--beheer-text-muted) tabular-nums opacity-60">
+                            {signup.date_of_birth
+                                ? new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(signup.date_of_birth))
+                                : '-'}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            {isBusTrip && signup.willing_to_drive && (
+                                <div className="flex items-center gap-1 text-[9px] font-semibold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-md border border-emerald-500/20" title="Chauffeur">
+                                    <Bus className="h-2.5 w-2.5" />
+                                    <span>Chauffeur</span>
+                                </div>
+                            )}
+                            {!isBusTrip && signup.extra_luggage && (
+                                <div className="flex items-center gap-1 text-[9px] font-semibold text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded-md border border-blue-500/20" title="Extra Koffer">
+                                    <Briefcase className="h-2.5 w-2.5" />
+                                    <span>+1 Koffer</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-auto pt-3 border-t border-(--beheer-border)/10 flex flex-wrap items-center justify-between gap-y-2 gap-x-3">
+                    <div className="flex-1 min-w-[120px]">
+                        {isStatusLoading ? (
+                            <div className="flex items-center justify-center py-2">
+                                <Loader2 className="h-5 w-5 animate-spin text-(--beheer-accent)" />
+                            </div>
+                        ) : (
+                            <StatusDropdown
+                                currentStatus={signup.status || 'registered'}
+                                onChange={(val) => onStatusChange(signup.id, val)}
+                            />
+                        )}
+                    </div>
+
+                    <div className="shrink-0 flex items-center justify-end ml-auto">
+                        <span className={`px-2 py-1 text-[10px] font-semibold rounded-lg border-2 shadow-sm whitespace-nowrap ${paymentStatus.color}`}>
+                            {paymentStatus.label}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, onChange: (val: string) => void }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const statuses = [
+        { value: 'registered', label: 'Geregistreerd', icon: Clock, color: 'text-blue-400 bg-blue-400/10' },
+        { value: 'confirmed', label: 'Bevestigd', icon: CheckCircle2, color: 'text-emerald-400 bg-emerald-400/10' },
+        { value: 'waitlist', label: 'Wachtlijst', icon: List, color: 'text-orange-400 bg-orange-400/10' },
+        { value: 'cancelled', label: 'Geannuleerd', icon: XCircle, color: 'text-red-400 bg-red-400/10' }
+    ];
+
+    const current = statuses.find(s => s.value === currentStatus) || statuses[0];
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isOpen]);
+
+    return (
+        <div className="relative" ref={dropdownRef}>
+            <button
+                onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
+                className={`
+                    w-full flex items-center justify-between px-3 py-2 rounded-xl border-2 transition-all duration-300
+                    ${isOpen ? 'border-(--beheer-accent) shadow-lg scale-[1.02] bg-(--beheer-card-bg)' : 'border-(--beheer-border)/40 hover:border-(--beheer-accent)/30'}
+                `}
+            >
+                <div className="flex items-center gap-2">
+                    <current.icon className={`h-3 w-3 ${current.color.split(' ')[0]}`} />
+                    <span className="text-[10px] font-semibold text-(--beheer-text)">
+                        {current.label}
+                    </span>
+                </div>
+                <ChevronDown className={`h-3 w-3 text-(--beheer-text-muted) transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isOpen && (
+                <div
+                    className="absolute bottom-full left-0 mb-2 w-full min-w-[160px] bg-(--beheer-card-bg) border border-(--beheer-border)/60 rounded-2xl shadow-2xl z-100 overflow-hidden backdrop-blur-md animate-in fade-in zoom-in-95 slide-in-from-bottom-1 duration-150 ease-out"
+                >
+                    <div className="p-1.5 space-y-0.5">
+                        {statuses.map((s) => (
+                            <button
+                                key={s.value}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onChange(s.value);
+                                    setIsOpen(false);
+                                }}
+                                className={`
+                                    w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all text-left
+                                    ${currentStatus === s.value
+                                        ? 'bg-(--beheer-accent)/10 text-(--beheer-accent)'
+                                        : 'hover:bg-white/5 text-(--beheer-text-muted) hover:text-(--beheer-text)'}
+                                `}
+                            >
+                                <s.icon className={`h-3.5 w-3.5 ${currentStatus === s.value ? 'text-(--beheer-accent)' : s.color.split(' ')[0]}`} />
+                                <span className="text-[11px] font-semibold">{s.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

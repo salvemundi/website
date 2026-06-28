@@ -5,7 +5,7 @@ import { getImageUrl } from '@/lib/utils/image-utils';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import {
     Search,
-    Trash2,
+    Trash,
     User,
     MapPin,
     Globe,
@@ -17,8 +17,10 @@ import { formatDate } from '@/shared/lib/utils/date';
 
 import { type StickerPublic } from '@salvemundi/validations';
 
+type AdminSticker = Omit<StickerPublic, 'user_updated' | 'date_updated'>;
+
 interface StickersTableProps {
-    stickers: StickerPublic[];
+    stickers: AdminSticker[];
     onDelete: (id: number) => void;
     onApprove: (id: number) => void;
 }
@@ -37,7 +39,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
             : '';
 
         return (
-            s.location_name.toLowerCase().includes(search) ||
+            (s.location_name || '').toLowerCase().includes(search) ||
             s.city?.toLowerCase().includes(search) ||
             s.country?.toLowerCase().includes(search) ||
             userFullName.includes(search)
@@ -151,7 +153,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                                 className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm"
                                                 title="Verwijderen"
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <Trash className="h-4 w-4" />
                                             </button>
                                         </div>
                                     </td>

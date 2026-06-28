@@ -33,7 +33,8 @@ export async function getStickers() {
                         id: true,
                         first_name: true,
                         last_name: true,
-                        avatar: true
+                        avatar: true,
+                        email: true
                     }
                 }
             },
@@ -56,7 +57,8 @@ export async function getStickers() {
                 id: s.directus_user_user_created.id,
                 first_name: s.directus_user_user_created.first_name,
                 last_name: s.directus_user_user_created.last_name,
-                avatar: s.directus_user_user_created.avatar
+                avatar: s.directus_user_user_created.avatar,
+                email: s.directus_user_user_created.email
             } : null
         }));
     } catch (error: unknown) {

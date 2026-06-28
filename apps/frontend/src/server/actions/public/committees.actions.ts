@@ -38,6 +38,7 @@ export async function getCommittees(): Promise<Committee[]> {
                     json_agg(
                         json_build_object(
                             'id', cm.id,
+                            'committee_id', cm.committee_id,
                             'is_visible', cm.is_visible,
                             'is_leader', cm.is_leader,
                             'user_id', json_build_object(
@@ -82,6 +83,7 @@ export async function getCommitteeBySlug(slug: string): Promise<Committee | null
                     json_agg(
                         json_build_object(
                             'id', cm.id,
+                            'committee_id', cm.committee_id,
                             'is_visible', cm.is_visible,
                             'is_leader', cm.is_leader,
                             'user_id', json_build_object(

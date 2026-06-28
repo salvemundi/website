@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
-import { getTripSignupByToken } from '@/server/actions/events/reis-payment.actions';
+import { getTripSignupByToken } from '@/server/actions/events/trip-payment.actions';
 import TripPaymentFlowIsland from '@/components/islands/reis/TripPaymentFlowIsland';
 import { TripAccessDenied, TripWaitlisted } from '@/components/ui/reis/TripPaymentStates';
 

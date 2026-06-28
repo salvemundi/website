@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         : 'Bekijk deze activiteit en schrijf je in bij Salve Mundi.';
 
     return {
-        title: `${activity.titel} | Salve Mundi`,
+        title: `${activity.name} | Salve Mundi`,
         description: cleanMetaDescription
     };
 }
@@ -56,14 +56,14 @@ async function ActivityContent({ params, searchParams }: PageProps) {
 
     if (!activity) notFound();
 
-    const isEventPast = new Date(activity.datum_start) < new Date();
+    const isEventPast = new Date(activity.event_date) < new Date();
     const isDeadlinePassed = activity.registration_deadline
         ? new Date(activity.registration_deadline) < new Date()
         : false;
 
     const user = session?.user as MembershipUserData | undefined;
     const isMember = user?.membership_status === 'active';
-    const price = isMember ? (activity.price_members ?? 0) : (activity.price_non_members ?? 0);
+    const price = isMember ? activity.price_members : activity.price_non_members;
 
     let verifiedPaymentStatus: 'paid' | 'open' | 'failed' | 'canceled' | null = null;
     let qrToken: string | undefined = undefined;
@@ -98,12 +98,12 @@ async function ActivityContent({ params, searchParams }: PageProps) {
             <ActivityDetailIsland activity={activity} isLoggedIn={!!session?.user}>
                 <EventSignupIsland
                     eventId={Number(activity.id)}
-                    price={price}
-                    eventDate={activity.datum_start}
-                    description={activity.beschrijving || ''}
+                    price={Number(price)}
+                    eventDate={activity.event_date}
+                    description={activity.description || ''}
                     isPast={isEventPast}
                     isDeadlinePassed={isDeadlinePassed}
-                    eventName={activity.titel}
+                    eventName={activity.name}
                     initialUser={session?.user || null}
                     verifiedPaymentStatus={verifiedPaymentStatus}
                     initialQrToken={qrToken}
