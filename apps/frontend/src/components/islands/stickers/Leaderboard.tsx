@@ -6,7 +6,6 @@ type StickerCreator = {
     id?: string | number;
     first_name?: string | null;
     last_name?: string | null;
-    email?: string | null;
     avatar?: string | null;
 };
 
@@ -21,7 +20,7 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
     for (const s of stickers) {
         const u = s.user_created as StickerCreator | null | undefined;
         const uid = u?.id ? String(u.id) : 'unknown';
-        const name = u ? ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || u.email || uid : 'Unknown';
+        const name = u ? ((u.first_name || '') + ' ' + (u.last_name || '')).trim() || uid : 'Unknown';
 
         const current = counts.get(uid) || { id: uid, name, avatar: u?.avatar ?? null, count: 0 };
         current.count += 1;

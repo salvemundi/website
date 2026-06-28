@@ -6,7 +6,6 @@ export const stickerUserSchema = selectDirectusUsersSchema.pick({
     first_name: true,
     last_name: true,
     avatar: true,
-    email: true,
 });
 
 export const stickerSchema = selectStickersSchema.extend({

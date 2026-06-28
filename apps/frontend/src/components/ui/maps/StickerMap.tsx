@@ -60,7 +60,7 @@ export default function StickerMap({
                 if (filterUserId && sticker.user_created?.id !== filterUserId) return false;
                 if (filterUser) {
                     const u = sticker.user_created;
-                    const searchText = u ? `${u.first_name || ''} ${u.last_name || ''} ${u.email || ''}`.toLowerCase() : '';
+                    const searchText = u ? `${u.first_name || ''} ${u.last_name || ''}`.toLowerCase() : '';
                     if (!searchText.includes(filterUser.toLowerCase())) return false;
                 }
                 return true;
