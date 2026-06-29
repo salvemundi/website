@@ -6,9 +6,6 @@ import { eq } from 'drizzle-orm';
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteit-utils';
 import { safeConsoleError } from '@/server/utils/logger';
 
-/**
- * Re-initiates the payment process for an existing signup.
- */
 export async function retryActivityPayment(signupId: number) {
     const session = await getEnrichedSession();
     if (!session) {
@@ -57,7 +54,7 @@ export async function retryActivityPayment(signupId: number) {
             return { success: false, error: "Deze activiteit is gratis." };
         }
 
-        const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
+        const financeUrl = `${getFinanceServiceUrl()}/api/finance/create`;
         const paymentRes = await fetchWithTimeout(financeUrl, {
             method: 'POST',
             headers: getInternalHeaders(),

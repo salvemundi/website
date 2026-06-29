@@ -10,6 +10,7 @@ import DayDetails from "./DayDetails";
 import EventList from "./EventList";
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { slugify } from "@/shared/lib/utils/slug";
+import { getActivityUrl } from "@/shared/lib/utils/activity";
 import { isEventPast } from "@/shared/lib/utils/date";
 import { cn } from "@/lib/utils/cn";
 
@@ -88,13 +89,7 @@ export default function ActivitiesProviderIsland({
     }, [events, showPastActivities, serverTime]);
 
     const handleShowDetails = useCallback((activity: Activiteit) => {
-        const act = activity as Activiteit & { custom_url?: string };
-        if (act.custom_url) {
-            router.push(act.custom_url);
-            return;
-        }
-        const slug = slugify(activity.name || '');
-        router.push(`/activiteiten/${slug}`);
+        router.push(getActivityUrl({ name: activity.name || '', custom_url: activity.custom_url }));
     }, [router]);
 
     useEffect(() => {

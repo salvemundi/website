@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import FlipClock from './FlipClock';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
-import { slugify } from '@/shared/lib/utils/slug';
+import { getActivityUrl } from '@/shared/lib/utils/activity';
 
 interface ActivitiesBannerIslandProps {
     events: Activiteit[];
@@ -33,7 +33,6 @@ export default function ActivitiesBannerIsland({ events, serverTime }: Activitie
     if (!upcomingEvent) return null;
 
     const datePart = upcomingEvent.event_date.split('T')[0];
-
     return (
         <div className="relative w-full flex justify-center py-4">
             <FlipClock
@@ -42,7 +41,7 @@ export default function ActivitiesBannerIsland({ events, serverTime }: Activitie
                     : upcomingEvent.event_date
                 }
                 title={upcomingEvent.name}
-                href={(upcomingEvent as Activiteit & { custom_url?: string }).custom_url || `/activiteiten/${slugify(upcomingEvent.name)}`}
+                href={getActivityUrl({ name: upcomingEvent.name || '', custom_url: upcomingEvent.custom_url })}
                 serverTime={serverTime}
             />
         </div>

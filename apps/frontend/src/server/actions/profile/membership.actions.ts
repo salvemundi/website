@@ -100,7 +100,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
         }
     }
 
-    const url = `${getFinanceServiceUrl()}/api/payments/create`;
+    const url = `${getFinanceServiceUrl()}/api/finance/create`;
 
     try {
         const response = await fetch(url, {

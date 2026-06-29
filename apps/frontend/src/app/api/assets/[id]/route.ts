@@ -30,7 +30,7 @@ export async function GET(
         return new NextResponse('Invalid Asset ID', { status: 400 });
     }
 
-    const directusUrl = process.env.DIRECTUS_SERVICE_URL;
+    const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
     const token = process.env.DIRECTUS_STATIC_TOKEN;
 
     if (!token) {
@@ -48,7 +48,10 @@ export async function GET(
 
         if (!res.ok) {
             logInternalError(`[route.ts][GET] Asset Route Error: ${res.status}`, { id });
-            return new Response(null, { status: res.status });
+            return new Response(`Asset fetch failed with status: ${res.status}`, {
+                status: res.status,
+                headers: { 'Content-Type': 'text/plain' }
+            });
         }
 
         const contentType = res.headers.get('content-type') || 'application/octet-stream';
@@ -64,6 +67,9 @@ export async function GET(
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         logInternalError(`[route.ts][GET] Critical asset fetch error: ${errorMessage}`, { id });
-        return new Response(null, { status: 500 });
+        return new Response(`Critical asset fetch error: ${errorMessage}`, {
+            status: 500,
+            headers: { 'Content-Type': 'text/plain' }
+        });
     }
 }

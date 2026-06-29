@@ -3,6 +3,7 @@ import MediaAsset from '@/components/ui/media/MediaAsset';
 import { Info, Calendar as CalendarIcon, MapPin, Euro, Link as LinkIcon, Upload, X, Eye, Check } from 'lucide-react';
 import { AdminDatepicker } from '@/components/ui/forms/AdminDatepicker';
 import { AdminTimepicker } from '@/components/ui/forms/AdminTimepicker';
+import { AdminDatetimepicker } from '@/components/ui/forms/AdminDatetimepicker';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { ActivityAdmin } from '@salvemundi/validations';
 
@@ -150,8 +151,8 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
 
     const handleStartDateChange = (date: Date | null) => {
         setStartDate(date);
-        if (date && endDate && endDate < date) {
-            setEndDate(null);
+        if (date && (!endDate || endDate < date)) {
+            setEndDate(new Date(date));
         }
     };
 
@@ -171,87 +172,81 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                 <h2 className="text-base font-semibold text-(--beheer-text)">Planning & locatie</h2>
             </div>
             <div className="p-6 space-y-6 flex-1 flex flex-col">
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                    <div>
-                        <label htmlFor="event_date" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Startdatum *</label>
-                        <input type="hidden" name="event_date" value={startDate ? toISODateString(startDate) : ''} />
-                        <AdminDatepicker
-                            value={startDate}
-                            onChange={handleStartDateChange}
-                            className={formErrors?.event_date ? 'border-red-500' : ''}
-                        />
-                        {formErrors?.event_date && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.event_date[0]}</p>}
-                    </div>
-                    <div>
-                        <label htmlFor="event_time" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Starttijd</label>
-                        <AdminTimepicker
-                            id="event_time"
-                            name="event_time"
-                            value={startTime}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                setStartTime(val);
-                                if (isSameDay && endTime && endTime < val) {
-                                    setEndTime('');
-                                }
-                            }}
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="event_time_end" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Eindtijd</label>
-                        <AdminTimepicker
-                            id="event_time_end"
-                            name="event_time_end"
-                            value={endTime}
-                            min={minEndTime}
-                            onChange={(e) => setEndTime(e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="event_date_end" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Einddatum</label>
-                        <input type="hidden" name="event_date_end" value={endDate ? toISODateString(endDate) : ''} />
-                        <AdminDatepicker
-                            value={endDate}
-                            onChange={handleEndDateChange}
-                            minDate={startDate || undefined}
-                            className={formErrors?.event_date_end ? 'border-red-500' : ''}
-                        />
-                        {formErrors?.event_date_end && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.event_date_end[0]}</p>}
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label htmlFor="location" className="block text-base font-semibold text-(--beheer-text-muted) mb-2 flex items-center gap-2">
-                            <MapPin className="h-3 w-3" /> Locatie
-                        </label>
-                        <input type="text" id="location" name="location" defaultValue={toInputSafe(initialData?.location)} className="beheer-input" placeholder="Bijv. Fontys R10" />
-                    </div>
-                    <div>
-                        <label htmlFor="registration_deadline" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Inschrijfdeadline</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-(--beheer-text-muted) opacity-60">
-                                <svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 10h16m-8-3V4M7 7V4m10 3V4M5 20h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Zm3-7h.01v.01H8V13Zm4 0h.01v.01H12V13Zm4 0h.01v.01H16V13Zm-8 4h.01v.01H8V17Zm4 0h.01v.01H12V17Zm4 0h.01v.01H16V17Z"/>
-                                </svg>
-                            </div>
-                            <input
-                                type="datetime-local"
-                                id="registration_deadline"
-                                name="registration_deadline"
-                                defaultValue={formatDateTime(initialData?.registration_deadline)}
-                                max={registrationDeadlineMax}
-                                onClick={(e) => e.currentTarget.showPicker()}
-                                suppressHydrationWarning
-                                className={`beheer-input pl-9 pr-3 ${formErrors?.registration_deadline ? 'border-red-500' : ''}`}
+                <div className="space-y-6">
+                    <div className="flex items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                            <label htmlFor="event_date" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Startdatum *</label>
+                            <input type="hidden" name="event_date" value={startDate ? toISODateString(startDate) : ''} />
+                            <AdminDatepicker
+                                value={startDate}
+                                onChange={handleStartDateChange}
+                                className={formErrors?.event_date ? 'border-red-500' : ''}
+                            />
+                            {formErrors?.event_date && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.event_date[0]}</p>}
+                        </div>
+                        <div className="w-28 sm:w-32 shrink-0">
+                            <label htmlFor="event_time" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Starttijd</label>
+                            <AdminTimepicker
+                                id="event_time"
+                                name="event_time"
+                                value={startTime}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setStartTime(val);
+                                    if (isSameDay && endTime && endTime < val) {
+                                        setEndTime('');
+                                    }
+                                }}
                             />
                         </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                            <label htmlFor="event_date_end" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Einddatum</label>
+                            <input type="hidden" name="event_date_end" value={endDate ? toISODateString(endDate) : ''} />
+                            <AdminDatepicker
+                                value={endDate}
+                                onChange={handleEndDateChange}
+                                minDate={startDate || undefined}
+                                className={formErrors?.event_date_end ? 'border-red-500' : ''}
+                            />
+                            {formErrors?.event_date_end && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.event_date_end[0]}</p>}
+                        </div>
+                        <div className="w-28 sm:w-32 shrink-0">
+                            <label htmlFor="event_time_end" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Eindtijd</label>
+                            <AdminTimepicker
+                                id="event_time_end"
+                                name="event_time_end"
+                                value={endTime}
+                                min={minEndTime}
+                                onChange={(e) => setEndTime(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <AdminDatetimepicker
+                            id="registration_deadline"
+                            name="registration_deadline"
+                            dateLabel="Inschrijfdeadline"
+                            defaultValue={formatDateTime(initialData?.registration_deadline)}
+                            max={registrationDeadlineMax}
+                            error={!!formErrors?.registration_deadline}
+                        />
                         {formErrors?.registration_deadline && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.registration_deadline[0]}</p>}
                     </div>
                 </div>
 
-                <div className="pt-4 mt-auto">
-                    <label htmlFor="custom_url" className="block text-base font-semibold text-(--beheer-text-muted) mb-2 flex items-center gap-2">
+                <div className="pt-4 border-t border-(--beheer-border)/50 mt-auto">
+                    <label htmlFor="location" className="flex items-center gap-2 text-base font-semibold text-(--beheer-text-muted) mb-2">
+                        <MapPin className="h-3 w-3" /> Locatie
+                    </label>
+                    <input type="text" id="location" name="location" defaultValue={toInputSafe(initialData?.location)} className="beheer-input" placeholder="Bijv. Fontys R10" />
+                </div>
+
+                <div className="pt-2">
+                    <label htmlFor="custom_url" className="flex items-center gap-2 text-base font-semibold text-(--beheer-text-muted) mb-2">
                         <LinkIcon className="h-3 w-3" /> Custom redirect URL
                     </label>
                     <input type="text" id="custom_url" name="custom_url" defaultValue={toInputSafe(initialData?.custom_url)} className="beheer-input" placeholder="bijv. https://forms.gle/..." />
@@ -346,7 +341,7 @@ export function CapacityCostsSection({
 }
 
 export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, fileInputRef, onFileChange }: {
-    imagePreview: string | null,
+    imagePreview: { id: string; type?: string | null } | null,
     onUploadClick: () => void,
     onRemoveClick: () => void,
     fileInputRef: React.RefObject<HTMLInputElement | null>,
@@ -367,7 +362,7 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
                     </div>
                 ) : (
                     <div className="relative group overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft)/50 h-[160px] flex items-center justify-center">
-                        <MediaAsset asset={imagePreview} alt="Preview" fill objectFit="contain" className="object-contain transition-transform duration-700" />
+                        <MediaAsset asset={imagePreview} alt="Preview" fill sizes="(max-width: 768px) 100vw, 800px" objectFit="contain" className="object-contain transition-transform duration-700" />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                             <button type="button" onClick={onUploadClick} className="bg-white text-slate-900 p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-4 w-4" /></button>
                             <button type="button" onClick={onRemoveClick} className="bg-red-500 text-white p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-4 w-4" /></button>
@@ -414,13 +409,9 @@ export function StatusSection({ status, onStatusChange, initialData }: { status:
                         <span className="text-base font-semibold text-(--beheer-text-muted) group-hover:text-(--beheer-text) transition-colors">Inplannen</span>
                         {status === 'scheduled' && (
                             <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
-                                <input
-                                    type="datetime-local"
+                                <AdminDatetimepicker
                                     name="publish_date"
                                     defaultValue={formatDateTime(initialData?.publish_date)}
-                                    onClick={(e) => e.currentTarget.showPicker()}
-                                    suppressHydrationWarning
-                                    className="beheer-input text-sm py-2"
                                 />
                             </div>
                         )}

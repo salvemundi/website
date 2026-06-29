@@ -13,6 +13,14 @@ export const activitySchema = selectEventsSchema.extend({
         id: z.string(),
         type: z.string().optional()
     }).nullable().optional(),
+    image: z.union([
+        z.string(),
+        z.object({
+            id: z.string(),
+            type: z.string().nullable().optional()
+        })
+    ]).optional().nullable(),
+    image_type: z.string().nullable().optional(),
     signup_count: z.number().optional()
 });
 export type Activiteit = z.infer<typeof activitySchema>;
@@ -77,6 +85,7 @@ export const activityAdminSchema = insertEventsSchema.extend({
     only_members: z.union([z.boolean(), z.string()]).optional().transform(onlyMembersValue => onlyMembersValue === true || onlyMembersValue === 'on' || onlyMembersValue === 'true'),
     status: z.enum(['published', 'draft', 'scheduled']).optional().default('published'),
     publish_date: z.string().nullable().optional().transform(publishDateString => publishDateString === '' ? null : publishDateString),
+    image_type: z.string().nullable().optional(),
 }).refine((data: { event_date?: string | null, event_time?: string | null, event_date_end?: string | null, event_time_end?: string | null }) => {
     if (data.event_date) {
         const startTimeStr = data.event_time ? `T${String(data.event_time)}` : 'T00:00';

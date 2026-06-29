@@ -49,15 +49,16 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
         if (imageFile.size > 5 * 1024 * 1024) {
             return { success: false, error: "Afbeelding is te groot (max 5MB)." };
         }
-        if (!imageFile.type.startsWith('image/')) {
-            return { success: false, error: "Alleen afbeeldingen zijn toegestaan." };
+        if (!imageFile.type.startsWith('image/') && !imageFile.type.startsWith('video/')) {
+            return { success: false, error: "Alleen afbeeldingen of video's zijn toegestaan." };
         }
 
         const fileData = new FormData();
         fileData.append('file', imageFile);
         try {
-            const token = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
-            const res = await fetch(`${process.env.DIRECTUS_URL}/files`, {
+            const token = process.env.DIRECTUS_STATIC_TOKEN;
+            const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
+            const res = await fetch(`${directusUrl}/files`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -173,14 +174,15 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
             if (imageFile.size > 5 * 1024 * 1024) {
                 return { success: false, error: "Afbeelding is te groot (max 5MB)." };
             }
-            if (!imageFile.type.startsWith('image/')) {
-                return { success: false, error: "Alleen afbeeldingen zijn toegestaan." };
+            if (!imageFile.type.startsWith('image/') && !imageFile.type.startsWith('video/')) {
+                return { success: false, error: "Alleen afbeeldingen of video's zijn toegestaan." };
             }
 
             const fileData = new FormData();
             fileData.append('file', imageFile);
-            const token = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
-            const res = await fetch(`${process.env.DIRECTUS_URL}/files`, {
+            const token = process.env.DIRECTUS_STATIC_TOKEN;
+            const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
+            const res = await fetch(`${directusUrl}/files`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -273,7 +275,9 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
             });
             return { success: false, error: 'Wijzigingen zijn niet opgeslagen.' };
         }
-    } catch {
-        return { error: 'Internal server error', success: false };
+    } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : 'Internal server error';
+        safeConsoleError('[activities-write.actions.ts][updateActivityAction] ', `Outer catch error: ${msg}`);
+        return { error: msg, success: false };
     }
 }

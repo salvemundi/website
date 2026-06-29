@@ -28,8 +28,9 @@ async function handleImageUpload(formData: FormData): Promise<string | null> {
     uploadFormData.append('file', file);
 
     try {
-        const token = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
-        const res = await fetch(`${process.env.DIRECTUS_URL}/files`, {
+        const token = process.env.DIRECTUS_STATIC_TOKEN;
+        const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
+        const res = await fetch(`${directusUrl}/files`, {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${token}`

@@ -194,7 +194,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
 
 
 
-        const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
+        const financeUrl = `${getFinanceServiceUrl()}/api/finance/create`;
         const paymentRes = await fetchWithTimeout(financeUrl, {
             method: 'POST',
             headers: getInternalHeaders(),

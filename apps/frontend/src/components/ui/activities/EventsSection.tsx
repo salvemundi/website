@@ -4,17 +4,13 @@ import { ChevronRight, Calendar } from 'lucide-react';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { EventCard } from './EventCard';
 
-import { slugify } from '@/shared/lib/utils/slug';
+import { getActivityUrl } from '@/shared/lib/utils/activity';
 
 interface EventsSectionProps {
     activities?: Activiteit[];
     count?: number;
 }
 
-/**
- * UI Component voor de activiteiten-sectie op de homepagina.
- * V7.12 Industrial SSR: Clean architecture, no loading logic.
- */
 export function EventsSection({ activities = [], count = 4 }: EventsSectionProps) {
     const displayActivities = activities.slice(0, count);
     const hasActivities = displayActivities.length > 0;
@@ -56,7 +52,7 @@ export function EventsSection({ activities = [], count = 4 }: EventsSectionProps
                             <EventCard 
                                 key={activity.id}
                                 activity={activity} 
-                                href={activity.custom_url || `/activiteiten/${slugify(activity.name || '')}`} 
+                                href={getActivityUrl({ name: activity.name || '', custom_url: activity.custom_url })} 
                             />
                         ))
                     )}

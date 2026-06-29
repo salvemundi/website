@@ -31,6 +31,7 @@ async function proxy(request: NextRequest) {
             script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com ${origin.includes('localhost') ? "'unsafe-eval'" : ""};
             style-src 'self' 'unsafe-inline';
             img-src 'self' blob: data: ${directusUrl} https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com;
+            media-src 'self' blob: data: ${directusUrl};
             font-src 'self' data:;
             connect-src 'self' ${directusUrl} https://login.microsoftonline.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://nominatim.openstreetmap.org https://cloudflareinsights.com;
             frame-src 'self' https://login.microsoftonline.com;

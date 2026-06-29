@@ -5,7 +5,7 @@ import * as relations from './relations.js';
 
 const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
-const dbHost = process.env.VPN_IP || process.env.DB_HOST;
+const dbHost = process.env.DB_HOST || process.env.VPN_IP;
 const dbPort = process.env.DB_PORT;
 const dbName = process.env.DB_NAME;
 
@@ -15,7 +15,16 @@ if (!connectionString) {
     throw new Error('Database connection configuration is incomplete');
 }
 
-const client = postgres(connectionString, { prepare: false });
+const globalForDb = globalThis as unknown as {
+    conn: postgres.Sql | undefined;
+};
+
+const client = globalForDb.conn ?? postgres(connectionString, { 
+    prepare: false, 
+    max: process.env.NODE_ENV === 'production' ? 10 : 2 
+});
+if (process.env.NODE_ENV !== 'production') globalForDb.conn = client;
+
 export const fullSchema = { ...schema, ...relations };
 export const db = drizzle(client, { schema: fullSchema });
 

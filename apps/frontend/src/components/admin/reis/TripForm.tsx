@@ -7,6 +7,7 @@ import { getImageUrl } from '@/lib/utils/image-utils';
 import TripFormSidebar from './TripFormSidebar';
 import { createTrip, updateTrip } from '@/server/actions/admin/trip-core.actions';
 import { AdminDatepicker } from '@/components/ui/forms/AdminDatepicker';
+import { AdminDatetimepicker } from '@/components/ui/forms/AdminDatetimepicker';
 
 const toISODateString = (date: Date | null): string => {
     if (!date) return '';
@@ -242,11 +243,9 @@ export default function TripForm({
                                     </div>
                                     <div>
                                         <label htmlFor="registration_start_date" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Auto-open Datum</label>
-                                        <input
-                                            type="datetime-local"
+                                        <AdminDatetimepicker
                                             id="registration_start_date"
                                             name="registration_start_date"
-                                            className="beheer-input"
                                             defaultValue={(state?.initialData?.registration_start_date as string) || toLocalISO(editingTrip?.registration_start_date)}
                                         />
                                     </div>

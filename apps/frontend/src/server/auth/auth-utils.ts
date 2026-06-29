@@ -52,9 +52,13 @@ export async function getEnrichedSession(): Promise<{ user: EnrichedUser; sessio
         return null;
     } catch (error) {
         const stack = error instanceof Error ? error.stack : new Error().stack;
+        const errObj = error as Record<string, unknown>;
         safeConsoleError('[auth-utils.ts][getEnrichedSession] Critical failure', {
             message: error instanceof Error ? error.message : String(error),
             stack,
+            cause: errObj.cause,
+            body: errObj.body,
+            status: errObj.status,
             errorObject: error
         });
         throw error;

@@ -9,7 +9,7 @@ import dynamic from 'next/dynamic';
 
 const HeroCarousel = dynamic(() => import('./HeroCarousel').then(mod => mod.HeroCarousel));
 
-import { slugify } from '@/shared/lib/utils/slug';
+import { getActivityUrl } from '@/shared/lib/utils/activity';
 import { type ExtendedSession } from '@/types/auth';
 
 interface HeroIslandProps {
@@ -87,7 +87,7 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
                                             </div>
                                         </Link>
                                     ) : nextEvent ? (
-                                        <Link href={nextEvent.custom_url || `/activiteiten/${slugify(nextEvent.name)}`} className="block w-full transition-transform hover:scale-[1.02] group/event">
+                                        <Link href={getActivityUrl({ name: nextEvent.name || '', custom_url: nextEvent.custom_url })} className="block w-full transition-transform hover:scale-[1.02] group/event">
                                             <div className="w-full rounded-2xl sm:rounded-3xl bg-(--bg-card) dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 h-full">
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] text-purple-300/60 dark:text-white/60">Volgende activiteit</p>

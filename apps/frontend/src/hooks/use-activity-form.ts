@@ -1,5 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
-import { getImageUrl } from '@/lib/utils/image-utils';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 export type ActivityStatus = 'published' | 'draft' | 'scheduled';
 
@@ -11,10 +10,6 @@ interface UseActivityFormProps {
     committees?: { id: number; name: string; email?: string | null }[];
 }
 
-/**
- * Hook voor gedeelde logica in de Activiteit beheer formulieren.
- * Beheert afbeeldingen, status, en commissie-email logica.
- */
 export function useActivityForm({
     initialStatus = 'published',
     initialOnlyMembers = false,
@@ -28,7 +23,9 @@ export function useActivityForm({
     
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [removeExistingImage, setRemoveExistingImage] = useState(false);
-    const [imagePreview, setImagePreview] = useState<string | null>(getImageUrl(initialImage));
+    const [imagePreview, setImagePreview] = useState<{ id: string; type?: string | null } | null>(
+        initialImage ? (typeof initialImage === 'string' ? { id: initialImage } : initialImage) : null
+    );
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -36,12 +33,26 @@ export function useActivityForm({
         const file = e.target.files?.[0];
         if (file) {
             setImageFile(file);
-            setRemoveExistingImage(false);
-            const reader = new FileReader();
-            reader.onloadend = () => setImagePreview(reader.result as string);
-            reader.readAsDataURL(file);
+            let fileType = file.type;
+            if (file.name) {
+                const ext = file.name.toLowerCase().split('.').pop();
+                if (['mp4', 'webm', 'ogg', 'mov'].includes(ext || '')) {
+                    fileType = `video/${ext === 'mov' ? 'quicktime' : ext}`;
+                }
+            }
+            
+            const objectUrl = URL.createObjectURL(file);
+            setImagePreview({ id: objectUrl, type: fileType });
         }
     }, []);
+
+    useEffect(() => {
+        return () => {
+            if (imagePreview && imagePreview.id && imagePreview.id.startsWith('blob:')) {
+                URL.revokeObjectURL(imagePreview.id);
+            }
+        };
+    }, [imagePreview]);
 
     const handleRemoveImage = useCallback(() => {
         setImageFile(null);
@@ -52,7 +63,6 @@ export function useActivityForm({
     const handleCommitteeChange = useCallback((committeeId: string) => {
         const committee = committees.find(c => String(c.id) === committeeId);
         
-        // Alleen invullen als het veld leeg is, de algemene email is, OF als de huidige waarde een commissie-email is
         const isCurrentEmailACommitteeEmail = 
             !contactEmail || 
             contactEmail === 'info@salvemundi.nl' || 

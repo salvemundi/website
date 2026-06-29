@@ -23,7 +23,7 @@ interface RawImpersonationDbUser {
 export async function getImpersonatedUser(testToken: string, _pool: Pool): Promise<ExtendedUser | null> {
     try {
         const redis = await getRedis();
-        const directusUrl = process.env.DIRECTUS_SERVICE_URL;
+        const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
         const cacheKey = `impersonation:${testToken}`;
 
         const cachedImp = await redis.get(cacheKey);

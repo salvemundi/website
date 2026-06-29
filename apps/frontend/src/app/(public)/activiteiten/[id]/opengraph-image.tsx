@@ -35,7 +35,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
 
     const imageId = activity?.image;
 
-    const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.INTERNAL_DIRECTUS_URL;
+    const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
     const token = process.env.DIRECTUS_STATIC_TOKEN;
     const imageUrl = imageId && directusUrl && token
         ? `${directusUrl.replace(/\/$/, '')}/assets/${imageId}?access_token=${token}`

@@ -179,10 +179,11 @@ export async function signupForActivity(data: EventSignupForm) {
         revalidateTag(`event_signups_${parsed.data.event_id}`, 'max');
 
         if (price > 0) {
-            const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
+            const financeUrl = `${getFinanceServiceUrl()}/api/finance/create`;
             const paymentRes = await fetchWithTimeout(financeUrl, {
                 method: 'POST',
                 headers: getInternalHeaders(),
+                timeout: 10000,
                 body: JSON.stringify({
                     amount: price,
                     description: `Signup: ${activity.name}`,
@@ -200,6 +201,8 @@ export async function signupForActivity(data: EventSignupForm) {
             if (paymentRes.ok && paymentData.checkoutUrl) {
                 return { success: true, checkoutUrl: paymentData.checkoutUrl };
             }
+
+            safeConsoleError('[public-activiteit.actions.ts][signupForActivity] ', `Payment creation failed. Status: ${paymentRes.status}, Response: ${JSON.stringify(paymentData)}`);
 
             try {
                 await deleteEventSignupDb(signupId);
@@ -240,6 +243,8 @@ export async function signupForActivity(data: EventSignupForm) {
         if ((typedError as { code?: string }).code === '23505') {
             return { success: false, error: 'U bent al aangemeld voor deze activiteit.' };
         }
+
+        safeConsoleError('[public-activiteit.actions.ts][signupForActivity] ', `Unexpected error: ${typedError.message} - ${String(error)}`);
 
         return { success: false, error: 'Er is een fout opgetreden bij die inschrijving.' };
     }

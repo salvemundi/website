@@ -18,7 +18,7 @@ export async function setImpersonateToken(token: string) {
     }
 
     try {
-        const directusUrl = process.env.DIRECTUS_SERVICE_URL;
+        const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
         if (!directusUrl) {
             return { success: false, error: "Directus service URL is niet geconfigureerd." };
         }

@@ -37,43 +37,8 @@ const mapRowToActiviteitData = (item: any) => {
         one_sign_up_max: item.one_sign_up_max ?? false,
         created_at: safeISO(item.created_at) || null,
         updated_at: safeISO(item.updated_at) || null,
-        image: item.image ?? null
-    };
-};
-
-const mapRowToAdminActivityData = (rawItem: any) => {
-    const item = rawItem as any;
-    const safeISO = (d: string | Date | null | undefined, includeTime = false) => {
-        return toLocalISOString(d, includeTime);
-    };
-
-    return {
-        ...item,
-        id: Number(item.id),
-        name: item.name ?? '',
-        event_date: safeISO(item.event_date) || toLocalISOString(new Date()),
-        event_date_end: safeISO(item.event_date_end),
-        description: item.description ?? null,
-        location: item.location ?? null,
-        price_members: item.price_members !== null ? String(item.price_members) : '0',
-        price_non_members: item.price_non_members !== null ? String(item.price_non_members) : '0',
-        max_sign_ups: item.max_sign_ups !== null ? Number(item.max_sign_ups) : null,
-        only_members: item.only_members ?? false,
-        registration_deadline: safeISO(item.registration_deadline),
-        contact: item.contact ?? null,
-        event_time: item.event_time ?? null,
-        event_time_end: item.event_time_end ?? null,
-        committee_id: item.committee_id ? Number(item.committee_id) : null,
-        committee_name: item.committee_name || null,
-        short_description: item.short_description ?? null,
-        description_logged_in: item.description_logged_in || null,
-        publish_date: safeISO(item.publish_date),
-        custom_url: item.custom_url || null,
-        status: item.status || 'draft',
-        one_sign_up_max: item.one_sign_up_max ?? false,
-        created_at: safeISO(item.created_at) || null,
-        updated_at: safeISO(item.updated_at) || null,
-        image: item.image ?? null
+        image: item.image ? (item.image_type ? { id: item.image, type: item.image_type } : item.image) : null,
+        image_type: item.image_type ?? null
     };
 };
 
@@ -230,7 +195,7 @@ export async function getActivitiesWithSignupCountsInternal(search?: string, fil
             committee_name: r.committee_name,
             image_type: r.image_type
         };
-        const mappedData = mapRowToAdminActivityData(flatRow);
+        const mappedData = mapRowToActiviteitData(flatRow);
         return {
             ...mappedData,
             signup_count: Number(r.signup_count || 0)

@@ -119,7 +119,7 @@ export async function approveSignupAction(id: string, type: string) {
 
     try {
         const internalToken = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
-        const res = await fetch(`${process.env.FINANCE_SERVICE_URL}/api/payments/approve`, {
+        const res = await fetch(`${process.env.FINANCE_SERVICE_URL}/api/finance/approve`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
