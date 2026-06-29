@@ -1,6 +1,8 @@
 'use server';
 
 import { z } from 'zod';
+import { db, schema } from '@salvemundi/db';
+import { eq, or, type SQL } from 'drizzle-orm';
 
 import {
     signupSchema,
@@ -12,7 +14,6 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type EnrichedUser } from '@/types/auth';
 import { revalidateTag } from 'next/cache';
 import { rateLimit } from '@/server/utils/ratelimit';
-import { query } from '@/lib/database';
 import { getExpandedEnv } from '@/server/utils/env';
 import { getValidCoupon, claimCoupon, releaseCoupon } from '@/server/utils/coupon.utils';
 import { normalizeDate } from '@/lib/utils/date-utils';
@@ -152,14 +153,23 @@ export async function getTransactionStatusAction(transactionId: string) {
     }
 
     try {
-        const { rows } = await query(
-            `SELECT payment_status, user_id FROM transactions 
-             WHERE id::text = $1 
-                OR mollie_id::text = $1 
-                OR access_token::text = $1 
-             LIMIT 1`,
-            [parsed.data.id]
-        );
+        const idStr = parsed.data.id;
+        const idNum = Number(idStr);
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idStr);
+
+        const conditions: SQL[] = [];
+        if (!isNaN(idNum)) {
+            conditions.push(eq(schema.transactions.id, idNum));
+        }
+        conditions.push(eq(schema.transactions.mollie_id, idStr));
+        if (isUuid) {
+            conditions.push(eq(schema.transactions.access_token, idStr));
+        }
+
+        const rows = await db.select({
+            payment_status: schema.transactions.payment_status,
+            user_id: schema.transactions.user_id
+        }).from(schema.transactions).where(or(...conditions)).limit(1);
 
         if (rows.length === 0) return { status: 'error' };
         const transaction = rows[0] as { payment_status: string; user_id: string | null };

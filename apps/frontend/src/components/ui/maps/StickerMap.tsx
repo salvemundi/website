@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Map, { Marker, Popup, NavigationControl, GeolocateControl } from 'react-map-gl/maplibre';
-import maplibregl from 'maplibre-gl'; // Toegevoegd voor de factory-fix
+import maplibregl from 'maplibre-gl';
 import { MapPin, Camera, X } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { formatDate } from '@/shared/lib/utils/date';

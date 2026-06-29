@@ -5,7 +5,8 @@ import { revalidateTag, unstable_noStore as noStore } from 'next/cache';
 import {
     type PubCrawlSignup
 } from '@salvemundi/validations/schema/pub-crawl.zod';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 import {
     fetchPubCrawlSignupsDb,
     fetchPubCrawlSignupByIdDb,
@@ -83,10 +84,10 @@ export async function togglePubCrawlTicketCheckIn(ticketId: number, currentStatu
     const now = newStatus ? new Date().toISOString() : null;
 
     try {
-        await query(
-            'UPDATE pub_crawl_tickets SET checked_in = $1, checked_in_at = $2 WHERE id = $3',
-            [newStatus, now, ticketId]
-        );
+        await db.update(schema.pub_crawl_tickets).set({
+            checked_in: newStatus,
+            checked_in_at: now
+        }).where(eq(schema.pub_crawl_tickets.id, BigInt(ticketId)));
 
         revalidateTag(`signups-${eventId}`, 'max');
         return { success: true, newStatus };
@@ -121,20 +122,21 @@ export async function updatePubCrawlTickets(signupId: number, eventId: number, t
 export async function deletePubCrawlTicket(ticketId: number, signupId: number, eventId: number) {
     await requireKroegAdmin();
     try {
-        await query('DELETE FROM pub_crawl_tickets WHERE id = $1', [ticketId]);
+        await db.delete(schema.pub_crawl_tickets).where(eq(schema.pub_crawl_tickets.id, BigInt(ticketId)));
 
-        const { rows: remainingTickets } = await query<{ name: string | null; initial: string | null }>(
-            'SELECT name, initial FROM pub_crawl_tickets WHERE signup_id = $1 ORDER BY id ASC',
-            [signupId]
-        );
+        const remainingTickets = await db.select({
+            name: schema.pub_crawl_tickets.name,
+            initial: schema.pub_crawl_tickets.initial
+        }).from(schema.pub_crawl_tickets)
+        .where(eq(schema.pub_crawl_tickets.signup_id, signupId));
 
         const amountTickets = remainingTickets.length;
         const nameInitials = JSON.stringify(remainingTickets.map(t => ({ name: t.name, initial: t.initial })));
 
-        await query(
-            'UPDATE pub_crawl_signups SET amount_tickets = $1, name_initials = $2 WHERE id = $3',
-            [amountTickets, nameInitials, signupId]
-        );
+        await db.update(schema.pub_crawl_signups).set({
+            amount_tickets: amountTickets,
+            name_initials: nameInitials
+        }).where(eq(schema.pub_crawl_signups.id, signupId));
 
         revalidateTag(`signups-${eventId}`, 'max');
         return { success: true };

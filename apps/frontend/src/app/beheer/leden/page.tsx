@@ -6,7 +6,8 @@ import LedenOverzichtIsland, { type Member } from '@/components/islands/admin/le
 import { isMemberAdmin } from '@/lib/auth';
 import { EXCLUDED_EMAILS } from '@/shared/lib/constants/admin.constants';
 import { type EnrichedUser } from '@/types/auth';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { isNotNull, notInArray, and, asc } from 'drizzle-orm';
 
 
 export const metadata = {
@@ -31,14 +32,22 @@ export default async function LedenBeheerPage() {
     let members: Member[] = [];
     let totalCount = 0;
 
-    const excludedList = EXCLUDED_EMAILS.map((_, i) => `$${i + 1}`).join(', ');
-    const sql = `
-        SELECT id, first_name, last_name, email, membership_expiry, status
-        FROM directus_users
-        WHERE email IS NOT NULL AND email NOT IN (${excludedList})
-        ORDER BY last_name ASC, first_name ASC
-    `;
-    const { rows } = await query(sql, EXCLUDED_EMAILS);
+    const rows = await db.select({
+        id: schema.directus_users.id,
+        first_name: schema.directus_users.first_name,
+        last_name: schema.directus_users.last_name,
+        email: schema.directus_users.email,
+        membership_expiry: schema.directus_users.membership_expiry,
+        status: schema.directus_users.status
+    })
+    .from(schema.directus_users)
+    .where(
+        and(
+            isNotNull(schema.directus_users.email),
+            notInArray(schema.directus_users.email, EXCLUDED_EMAILS)
+        )
+    )
+    .orderBy(asc(schema.directus_users.last_name), asc(schema.directus_users.first_name));
 
     members = rows as unknown as Member[];
     totalCount = rows.length;

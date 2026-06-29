@@ -9,16 +9,10 @@ import {
 } from '@salvemundi/validations/schema/intro.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { db, schema } from '@salvemundi/db';
-import { eq } from 'drizzle-orm';
-import { query } from '@/lib/database';
+import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { normalizeDate } from '@/lib/utils/date-utils';
 import { safeConsoleError } from '@/server/utils/logger';
-
-interface IntroFeatureFlagRow {
-    is_active: boolean;
-    message: string | null;
-}
 
 interface ParentSignupRecord {
     id: number;
@@ -39,7 +33,12 @@ const getServiceHeaders = (): HeadersInit => {
 
 export async function getIntroSettings() {
     try {
-        const { rows } = await query<IntroFeatureFlagRow>('SELECT is_active, message FROM feature_flags WHERE route_match = $1 LIMIT 1', ['/intro']);
+        const rows = await db.select({
+            is_active: schema.feature_flags.is_active,
+            message: schema.feature_flags.message
+        }).from(schema.feature_flags)
+        .where(eq(schema.feature_flags.route_match, '/intro'))
+        .limit(1);
 
         if (rows.length === 0) {
             return {
@@ -143,9 +142,21 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
 
 export async function getIntroBlogsPublic(): Promise<IntroBlog[]> {
     try {
-        const sql = 'SELECT id, title, content, slug, excerpt, image, is_published, created_at, updated_at FROM intro_blogs WHERE is_published = true ORDER BY id DESC LIMIT 6';
-        const { rows } = await query<IntroBlog>(sql);
-        return rows;
+        const rows = await db.select({
+            id: schema.intro_blogs.id,
+            title: schema.intro_blogs.title,
+            content: schema.intro_blogs.content,
+            slug: schema.intro_blogs.slug,
+            excerpt: schema.intro_blogs.excerpt,
+            image: schema.intro_blogs.image,
+            is_published: schema.intro_blogs.is_published,
+            created_at: schema.intro_blogs.created_at,
+            updated_at: schema.intro_blogs.updated_at
+        }).from(schema.intro_blogs)
+        .where(eq(schema.intro_blogs.is_published, true))
+        .orderBy(desc(schema.intro_blogs.id))
+        .limit(6);
+        return rows as unknown as IntroBlog[];
     } catch (error: unknown) {
         safeConsoleError(`[intro.actions.ts][getIntroBlogsPublic] Error while fetching intro blogs:`, error);
         throw new Error('Er is een fout opgetreden bij het ophalen van de intro blogs');
@@ -154,9 +165,20 @@ export async function getIntroBlogsPublic(): Promise<IntroBlog[]> {
 
 export async function getAllIntroBlogsPublic(): Promise<IntroBlog[]> {
     try {
-        const sql = 'SELECT id, title, content, slug, excerpt, image, is_published, created_at, updated_at FROM intro_blogs WHERE is_published = true ORDER BY id DESC';
-        const { rows } = await query<IntroBlog>(sql);
-        return rows;
+        const rows = await db.select({
+            id: schema.intro_blogs.id,
+            title: schema.intro_blogs.title,
+            content: schema.intro_blogs.content,
+            slug: schema.intro_blogs.slug,
+            excerpt: schema.intro_blogs.excerpt,
+            image: schema.intro_blogs.image,
+            is_published: schema.intro_blogs.is_published,
+            created_at: schema.intro_blogs.created_at,
+            updated_at: schema.intro_blogs.updated_at
+        }).from(schema.intro_blogs)
+        .where(eq(schema.intro_blogs.is_published, true))
+        .orderBy(desc(schema.intro_blogs.id));
+        return rows as unknown as IntroBlog[];
     } catch (error: unknown) {
         safeConsoleError(`[intro.actions.ts][getAllIntroBlogsPublic] Error while fetching all intro blogs:`, error);
         throw new Error('Er is een fout opgetreden bij het ophalen van de intro blogs');
@@ -165,9 +187,24 @@ export async function getAllIntroBlogsPublic(): Promise<IntroBlog[]> {
 
 export async function getIntroBlogBySlug(slug: string): Promise<IntroBlog | null> {
     try {
-        const sql = 'SELECT id, title, content, slug, excerpt, image, is_published, created_at, updated_at FROM intro_blogs WHERE slug = $1 AND is_published = true LIMIT 1';
-        const { rows } = await query<IntroBlog>(sql, [slug]);
-        return rows[0] ?? null;
+        const { and } = await import('drizzle-orm');
+        const rows = await db.select({
+            id: schema.intro_blogs.id,
+            title: schema.intro_blogs.title,
+            content: schema.intro_blogs.content,
+            slug: schema.intro_blogs.slug,
+            excerpt: schema.intro_blogs.excerpt,
+            image: schema.intro_blogs.image,
+            is_published: schema.intro_blogs.is_published,
+            created_at: schema.intro_blogs.created_at,
+            updated_at: schema.intro_blogs.updated_at
+        }).from(schema.intro_blogs)
+        .where(and(
+            eq(schema.intro_blogs.slug, slug),
+            eq(schema.intro_blogs.is_published, true)
+        ))
+        .limit(1);
+        return rows.length > 0 ? (rows[0] as unknown as IntroBlog) : null;
     } catch (error: unknown) {
         safeConsoleError(`[intro.actions.ts][getIntroBlogBySlug] Error while fetching intro blog by slug:`, error);
         throw new Error('Er is een fout opgetreden bij het ophalen van de intro blog');

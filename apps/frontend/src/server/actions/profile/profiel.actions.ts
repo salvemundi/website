@@ -13,30 +13,12 @@ import {
     type EnrichedPubCrawlSignup
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq, or, desc } from 'drizzle-orm';
 import { fetchUserEventSignupsDb } from '@/server/internal/event-db.utils';
 import { fetchUserPubCrawlSignupsDb } from '@/server/internal/kroegentocht-db.utils';
 import { safeConsoleError } from '@/server/utils/logger';
 import { type z } from 'zod';
-
-interface TransactionRow {
-    id: string;
-    user_id: string | null;
-    email: string | null;
-    created_at: string | Date;
-    date_created: string | Date;
-    registration: unknown;
-    pub_crawl_signup: unknown;
-    trip_signup: unknown;
-    [key: string]: unknown;
-}
-
-interface WhatsAppGroupRow {
-    id: number;
-    name: string;
-    invite_link: string;
-    is_active: boolean;
-}
 
 function safeParseArray<T>(schema: z.Schema<T>, data: unknown[], context: string): T[] {
     const parsed = schema.array().safeParse(data);
@@ -83,18 +65,20 @@ export async function getUserTransactions(): Promise<Transaction[]> {
     const targetUserId = user?.id;
     if (!targetUserId) return [];
 
-    const res = await query<TransactionRow>(
-        `SELECT * FROM transactions 
-         WHERE user_id = $1 OR email = $2
-         ORDER BY created_at DESC`,
-        [targetUserId, user.email]
-    );
+    const res = await db.select().from(schema.transactions)
+        .where(
+            or(
+                eq(schema.transactions.user_id, targetUserId),
+                eq(schema.transactions.email, user.email)
+            )
+        )
+        .orderBy(desc(schema.transactions.created_at));
 
     const { toLocalISOString } = await import('@/lib/utils/date-utils');
-    const mappedRows = res.rows.map(r => ({
+    const mappedRows = res.map(r => ({
         ...r,
         created_at: toLocalISOString(r.created_at),
-        date_created: toLocalISOString(r.date_created),
+        date_created: toLocalISOString(r.created_at),
         registration: isValidRelation(r.registration) ? r.registration : null,
         pub_crawl_signup: isValidRelation(r.pub_crawl_signup) ? r.pub_crawl_signup : null,
         trip_signup: isValidRelation(r.trip_signup) ? r.trip_signup : null
@@ -107,12 +91,13 @@ export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
     const session = await getEnrichedSession();
     if (!session?.user) return [];
 
-    const res = await query<WhatsAppGroupRow>(
-        `SELECT id, name, invite_link, is_active 
-         FROM whatsapp_groups 
-         WHERE is_active = true 
-         ORDER BY id ASC`
-    );
+    const rows = await db.select({
+        id: schema.whatsapp_groups.id,
+        name: schema.whatsapp_groups.name,
+        invite_link: schema.whatsapp_groups.invite_link,
+        is_active: schema.whatsapp_groups.is_active
+    }).from(schema.whatsapp_groups)
+    .where(eq(schema.whatsapp_groups.is_active, true));
 
-    return safeParseArray(whatsappGroupSchema, res.rows, 'ProfielActions:WhatsAppGroups');
+    return safeParseArray(whatsappGroupSchema, rows, 'ProfielActions:WhatsAppGroups');
 }

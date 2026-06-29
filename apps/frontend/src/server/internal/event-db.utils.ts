@@ -1,9 +1,7 @@
 import 'server-only';
-import { query } from '@/lib/database';
-import { buildUpdateQuery } from '@/lib/database/query-builder';
+import { db, schema } from '@salvemundi/db';
+import { eq, sql, desc } from 'drizzle-orm';
 import { type EventSignup } from '@salvemundi/validations/directus/schema';
-
-type QueryParam = string | number | boolean | object | null | undefined;
 
 export type EnrichedEvent = {
     id: number;
@@ -19,141 +17,134 @@ export type EnrichedEventSignup = EventSignup & {
     event_id: EnrichedEvent;
 };
 
-interface JoinedEventSignupRow extends Omit<EventSignup, 'event_id'> {
-    event_id: number;
-    event_name: string;
-    event_date: string | Date | null;
-    description: string | null;
-    image: string | null;
-    contact: string | null;
-}
-
 export async function deleteEventDb(id: number): Promise<boolean> {
-    const { rowCount } = await query(`DELETE FROM events WHERE id = $1`, [id]);
-    return (rowCount || 0) > 0;
+    const result = await db.delete(schema.events).where(eq(schema.events.id, id));
+    return result.count > 0;
 }
 
 export async function createEventSignupDb(data: Partial<EventSignup>): Promise<number | null> {
-    const sql = `
-        INSERT INTO event_signups (
-            event_id, participant_name, participant_email, participant_phone,
-            payment_status, qr_token, directus_relations, checked_in, checked_in_at,
-            is_member
-        ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
-        ) RETURNING id
-    `;
+    const eventIdNum = typeof data.event_id === 'object' && 'id' in data.event_id ? (data.event_id as { id: number }).id : (data.event_id as number);
+    const result = await db.insert(schema.event_signups).values({
+        event_id: eventIdNum as number,
+        participant_name: data.participant_name || null,
+        participant_email: data.participant_email || null,
+        participant_phone: data.participant_phone || null,
+        payment_status: data.payment_status || 'open',
+        qr_token: data.qr_token || null,
+        directus_relations: typeof data.directus_relations === 'object' && data.directus_relations !== null && 'id' in data.directus_relations ? String((data.directus_relations as { id: unknown }).id) : (data.directus_relations as string | undefined) || null,
+        checked_in: !!data.checked_in,
+        checked_in_at: data.checked_in_at || null,
+        is_member: !!data.is_member
+    }).returning({ id: schema.event_signups.id });
 
-    const params: QueryParam[] = [
-        data.event_id,
-        data.participant_name || null,
-        data.participant_email || null,
-        data.participant_phone || null,
-        data.payment_status || 'open',
-        data.qr_token || null,
-        data.directus_relations || null,
-        !!data.checked_in,
-        data.checked_in_at || null,
-        !!data.is_member
-    ];
-
-    const { rows } = await query<{ id: number }>(sql, params);
-    return rows[0]?.id ?? null;
+    return result[0]?.id ?? null;
 }
 
 export async function updateEventSignupDb(id: number, data: Partial<EventSignup>): Promise<boolean> {
-    const allowedFields = ['payment_status', 'checked_in', 'checked_in_at', 'participant_name', 'participant_email', 'participant_phone', 'is_member'];
-    const builder = buildUpdateQuery('event_signups', id, data, allowedFields);
+    const updateData: Partial<EventSignup> = {};
+    if (data.payment_status !== undefined) updateData.payment_status = data.payment_status;
+    if (data.checked_in !== undefined) updateData.checked_in = data.checked_in;
+    if (data.checked_in_at !== undefined) updateData.checked_in_at = data.checked_in_at;
+    if (data.participant_name !== undefined) updateData.participant_name = data.participant_name;
+    if (data.participant_email !== undefined) updateData.participant_email = data.participant_email;
+    if (data.participant_phone !== undefined) updateData.participant_phone = data.participant_phone;
+    if (data.is_member !== undefined) updateData.is_member = data.is_member;
 
-    if (!builder) return true;
+    if (Object.keys(updateData).length === 0) return true;
 
-    const { rows } = await query(builder.sql, builder.params as QueryParam[]);
-    return rows.length > 0;
+    const result = await db.update(schema.event_signups)
+        .set(updateData as NonNullable<unknown>)
+        .where(eq(schema.event_signups.id, id));
+        
+    return result.count > 0;
 }
 
 export async function deleteEventSignupDb(id: number): Promise<boolean> {
-    const { rowCount } = await query(`DELETE FROM event_signups WHERE id = $1`, [id]);
-    return (rowCount || 0) > 0;
+    const result = await db.delete(schema.event_signups).where(eq(schema.event_signups.id, id));
+    return result.count > 0;
 }
 
 export async function fetchUserEventSignupsDb(email: string): Promise<EnrichedEventSignup[]> {
-    const sql = `
-        SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact
-        FROM event_signups es
-        JOIN events e ON es.event_id = e.id
-        WHERE LOWER(es.participant_email) = LOWER($1)
-        ORDER BY e.event_date DESC
-    `;
-    const { rows } = await query<JoinedEventSignupRow>(sql, [email]);
+    const rows = await db.select({
+        signup: schema.event_signups,
+        event: schema.events
+    })
+    .from(schema.event_signups)
+    .innerJoin(schema.events, eq(schema.event_signups.event_id, schema.events.id))
+    .where(sql`LOWER(${schema.event_signups.participant_email}) = LOWER(${email})`)
+    .orderBy(desc(schema.events.event_date));
+
     const { toLocalISOString } = await import('@/lib/utils/date-utils');
 
     return rows.map((row) => ({
-        ...row,
-        created_at: toLocalISOString(row.created_at),
-        checked_in_at: toLocalISOString(row.checked_in_at),
+        ...row.signup,
+        created_at: toLocalISOString(row.signup.created_at),
+        checked_in_at: toLocalISOString(row.signup.checked_in_at),
         event_id: {
-            id: row.event_id,
-            name: row.event_name,
-            event_date: toLocalISOString(row.event_date) ?? undefined,
-            description: row.description ?? undefined,
-            image: row.image ?? undefined,
-            contact: row.contact ?? undefined
+            id: row.event.id,
+            name: row.event.name,
+            event_date: toLocalISOString(row.event.event_date) ?? undefined,
+            description: row.event.description ?? undefined,
+            image: row.event.image ?? undefined,
+            contact: row.event.contact ?? undefined
         }
     })) as unknown as EnrichedEventSignup[];
 }
 
 export async function fetchEventSignupByIdDb(id: number): Promise<EnrichedEventSignup | null> {
-    const sql = `
-        SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact
-        FROM event_signups es
-        JOIN events e ON es.event_id = e.id
-        WHERE es.id = $1
-        LIMIT 1
-    `;
-    const { rows } = await query<JoinedEventSignupRow>(sql, [id]);
+    const rows = await db.select({
+        signup: schema.event_signups,
+        event: schema.events
+    })
+    .from(schema.event_signups)
+    .innerJoin(schema.events, eq(schema.event_signups.event_id, schema.events.id))
+    .where(eq(schema.event_signups.id, id))
+    .limit(1);
+
     if (rows.length === 0) return null;
 
     const row = rows[0];
     const { toLocalISOString } = await import('@/lib/utils/date-utils');
     return {
-        ...row,
-        created_at: toLocalISOString(row.created_at),
-        checked_in_at: toLocalISOString(row.checked_in_at),
+        ...row.signup,
+        created_at: toLocalISOString(row.signup.created_at),
+        checked_in_at: toLocalISOString(row.signup.checked_in_at),
         event_id: {
-            id: row.event_id,
-            name: row.event_name,
-            event_date: toLocalISOString(row.event_date) ?? undefined,
-            description: row.description ?? undefined,
-            image: row.image ?? undefined,
-            contact: row.contact ?? undefined
+            id: row.event.id,
+            name: row.event.name,
+            event_date: toLocalISOString(row.event.event_date) ?? undefined,
+            description: row.event.description ?? undefined,
+            image: row.event.image ?? undefined,
+            contact: row.event.contact ?? undefined
         }
     } as unknown as EnrichedEventSignup;
 }
 
 export async function fetchEventSignupByTokenDb(token: string): Promise<EnrichedEventSignup | null> {
-    const sql = `
-        SELECT es.*, e.name as event_name, e.event_date, e.description, e.image, e.contact
-        FROM event_signups es
-        JOIN events e ON es.event_id = e.id
-        WHERE es.qr_token = $1
-        LIMIT 1
-    `;
-    const { rows } = await query<JoinedEventSignupRow>(sql, [token]);
+    const rows = await db.select({
+        signup: schema.event_signups,
+        event: schema.events
+    })
+    .from(schema.event_signups)
+    .innerJoin(schema.events, eq(schema.event_signups.event_id, schema.events.id))
+    .where(eq(schema.event_signups.qr_token, token))
+    .limit(1);
+
     if (rows.length === 0) return null;
 
     const row = rows[0];
     const { toLocalISOString } = await import('@/lib/utils/date-utils');
     return {
-        ...row,
-        created_at: toLocalISOString(row.created_at),
-        checked_in_at: toLocalISOString(row.checked_in_at),
+        ...row.signup,
+        created_at: toLocalISOString(row.signup.created_at),
+        checked_in_at: toLocalISOString(row.signup.checked_in_at),
         event_id: {
-            id: row.event_id,
-            name: row.event_name,
-            event_date: toLocalISOString(row.event_date) ?? undefined,
-            description: row.description ?? undefined,
-            image: row.image ?? undefined,
-            contact: row.contact ?? undefined
+            id: row.event.id,
+            name: row.event.name,
+            event_date: toLocalISOString(row.event.event_date) ?? undefined,
+            description: row.event.description ?? undefined,
+            image: row.event.image ?? undefined,
+            contact: row.event.contact ?? undefined
         }
     } as unknown as EnrichedEventSignup;
 }

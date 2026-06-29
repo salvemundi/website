@@ -3,8 +3,7 @@
 import { z } from "zod";
 
 import { db, schema } from "@salvemundi/db";
-import { isNotNull } from "drizzle-orm";
-import { query } from "@/lib/database";
+import { isNotNull, eq, desc, sql } from "drizzle-orm";
 import {
     type DashboardStats,
     type Birthday,
@@ -21,12 +20,7 @@ import { getPermissions, type UserPermissions } from '@/shared/lib/permissions';
 import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";
 import { safeConsoleError } from '@/server/utils/logger';
 
-interface TopStickerRow {
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-    count: string | number;
-}
+
 
 
 
@@ -136,19 +130,17 @@ export async function getTopStickers(): Promise<TopSticker[]> {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) return [];
     try {
-        const sql = `
-            SELECT 
-                u.id, 
-                u.first_name, 
-                u.last_name, 
-                COUNT(s.id) as count
-            FROM "Stickers" s
-            JOIN directus_users u ON s.user_created = u.id
-            GROUP BY u.id, u.first_name, u.last_name
-            ORDER BY count DESC
-            LIMIT 3
-        `;
-        const { rows } = await query<TopStickerRow>(sql);
+        const rows = await db.select({
+            id: schema.directus_users.id,
+            first_name: schema.directus_users.first_name,
+            last_name: schema.directus_users.last_name,
+            count: sql<number>`COUNT(${schema.Stickers.id})`
+        })
+        .from(schema.Stickers)
+        .innerJoin(schema.directus_users, eq(schema.Stickers.user_created, schema.directus_users.id))
+        .groupBy(schema.directus_users.id, schema.directus_users.first_name, schema.directus_users.last_name)
+        .orderBy(desc(sql`COUNT(${schema.Stickers.id})`))
+        .limit(3);
 
         const result = rows.map(r => ({
             id: String(r.id),

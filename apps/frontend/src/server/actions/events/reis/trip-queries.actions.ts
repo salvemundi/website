@@ -7,7 +7,8 @@ import {
     type ReisTrip,
     type ReisTripSignup
 } from '@salvemundi/validations/schema/trip.zod';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq, inArray, count } from 'drizzle-orm';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import {
     fetchUserSignupStatusDb,
@@ -17,18 +18,14 @@ import {
 import { fetchUserProfileByEmailDb } from '@/server/internal/user-db.utils';
 import { safeConsoleError } from '@/server/utils/logger';
 
-interface FeatureFlagRow {
-    is_active: boolean;
-    message: string | null;
-}
-
-interface ParticipantCountRow {
-    count: number;
-}
-
 export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
     try {
-        const { rows } = await query<FeatureFlagRow>('SELECT is_active, message FROM feature_flags WHERE name = $1 LIMIT 1', ['trip_registration']);
+        const rows = await db.select({
+            is_active: schema.feature_flags.is_active,
+            message: schema.feature_flags.message
+        }).from(schema.feature_flags)
+        .where(eq(schema.feature_flags.name, 'trip_registration'))
+        .limit(1);
 
         if (rows.length === 0) return null;
         const flag = rows[0];
@@ -91,10 +88,15 @@ export async function getUpcomingTrips(): Promise<ReisTrip[]> {
 
 export async function getTripParticipantsCount(tripId: number): Promise<number> {
     try {
-        const { rows } = await query<ParticipantCountRow>(
-            `SELECT COUNT(*)::int as count FROM trip_signups 
-             WHERE trip_id = $1 AND status IN ('registered', 'confirmed')`,
-            [tripId]
+        const { and } = await import('drizzle-orm');
+        const rows = await db.select({
+            count: count()
+        }).from(schema.trip_signups)
+        .where(
+            and(
+                eq(schema.trip_signups.trip_id, tripId),
+                inArray(schema.trip_signups.status, ['registered', 'confirmed'])
+            )
         );
         return rows[0]?.count ?? 0;
     } catch (error: unknown) {

@@ -1,22 +1,14 @@
 import 'server-only';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq, desc, asc, ilike } from 'drizzle-orm';
 import { type PubCrawlSignup, type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
-import {
-    type PubCrawlSignupRow,
-    type PubCrawlTicketRow,
-    type JoinedSignupRow,
-    type EnrichedPubCrawlSignup,
-    type QueryParam
-} from './types';
+import { type EnrichedPubCrawlSignup } from './types';
 import { safeConsoleError } from '@/server/utils/logger';
 
 export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawlSignup & { participants: { name: string, initial: string }[] })[]> {
-    const signupRes = await query<PubCrawlSignupRow>(
-        `SELECT * FROM pub_crawl_signups WHERE pub_crawl_event_id = $1 ORDER BY id DESC LIMIT 1000`,
-        [eventId]
-    );
+    const rows = await db.select().from(schema.pub_crawl_signups).where(eq(schema.pub_crawl_signups.pub_crawl_event_id, eventId)).orderBy(desc(schema.pub_crawl_signups.id)).limit(1000);
 
-    return signupRes.rows.map(raw => {
+    return rows.map(raw => {
         let participants: { name: string, initial: string }[] = [];
 
         if (raw.name_initials) {
@@ -29,33 +21,34 @@ export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawl
                 } catch (error) {
                     safeConsoleError('[signup-db.utils.ts][fetchPubCrawlSignupsDb] JSON parse error', error);
                 }
+            } else if (typeof raw.name_initials === 'object') {
+                participants = [(raw.name_initials as { name: string, initial: string })];
             }
         }
 
         return {
             ...raw,
+            id: Number(raw.id),
             participants
         };
     }) as unknown as (PubCrawlSignup & { participants: { name: string, initial: string }[] })[];
 }
 
 export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<EnrichedPubCrawlSignup | null> {
-    const res = await query<JoinedSignupRow>(
-        `SELECT s.*, e.name as event_name, e.date as event_date, e.description as event_description, e.image as event_image
-         FROM pub_crawl_signups s
-         JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
-         WHERE s.id = $1 
-         LIMIT 1`,
-        [signupId]
-    );
+    const rows = await db.select({
+        s: schema.pub_crawl_signups,
+        e: schema.pub_crawl_events
+    }).from(schema.pub_crawl_signups)
+      .innerJoin(schema.pub_crawl_events, eq(schema.pub_crawl_signups.pub_crawl_event_id, schema.pub_crawl_events.id))
+      .where(eq(schema.pub_crawl_signups.id, signupId))
+      .limit(1);
 
-    if (res.rowCount === 0) return null;
+    if (rows.length === 0) return null;
 
-    const signup = res.rows[0];
-    const ticketRes = await query<PubCrawlTicketRow>(
-        `SELECT * FROM pub_crawl_tickets WHERE signup_id = $1 ORDER BY id ASC`,
-        [signupId]
-    );
+    const signup = rows[0].s;
+    const event = rows[0].e;
+    
+    const ticketRows = await db.select().from(schema.pub_crawl_tickets).where(eq(schema.pub_crawl_tickets.signup_id, Number(signup.id))).orderBy(asc(schema.pub_crawl_tickets.id));
 
     let participants: { name: string, initial: string }[] = [];
     if (signup.name_initials) {
@@ -68,58 +61,60 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<Enric
             } catch (error) {
                 safeConsoleError('[signup-db.utils.ts][fetchPubCrawlSignupByIdDb] Error parsing name_initials:', error);
             }
+        } else if (typeof signup.name_initials === 'object') {
+            participants = [(signup.name_initials as { name: string, initial: string })];
         }
     }
 
-    const tickets: PubCrawlTicket[] = ticketRes.rows.map((t, i) => {
+    const tickets: PubCrawlTicket[] = ticketRows.map((t, i) => {
         const p = participants.find((_, idx) => idx === i);
         return {
-            id: t.id,
-            signup_id: t.signup_id,
-            qr_token: t.qr_token,
+            id: Number(t.id),
+            signup_id: t.signup_id ?? 0,
+            qr_token: t.qr_token || '',
             checked_in: !!t.checked_in,
             checked_in_at: t.checked_in_at ? String(t.checked_in_at) : null,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-            created_at: (t as any).created_at ? String((t as any).created_at) : null,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-            updated_at: (t as any).updated_at ? String((t as any).updated_at) : null,
-            name: p?.name || t.name,
-            initial: p?.initial || t.initial
+            created_at: t.created_at ? String(t.created_at) : null,
+            updated_at: t.updated_at ? String(t.updated_at) : null,
+            name: p?.name || t.name || '',
+            initial: p?.initial || t.initial || ''
         };
     });
 
     const { toLocalISOString } = await import('@/lib/utils/date-utils');
     return {
         ...signup,
+        id: Number(signup.id),
         pub_crawl_event_id: {
-            id: signup.pub_crawl_event_id,
-            name: signup.event_name,
-            date: toLocalISOString(signup.event_date) ?? undefined,
-            description: signup.event_description ?? undefined,
-            image: signup.event_image ?? undefined
+            id: event.id,
+            name: event.name,
+            date: event.date ? toLocalISOString(event.date) : undefined,
+            description: event.description ?? undefined,
+            image: event.image ?? undefined
         },
         tickets
     } as unknown as EnrichedPubCrawlSignup;
 }
 
 export async function fetchUserPubCrawlSignupsDb(email: string): Promise<EnrichedPubCrawlSignup[]> {
-    const res = await query<JoinedSignupRow>(
-        `SELECT s.*, e.name as event_name, e.date as event_date, e.description as event_description, e.image as event_image
-         FROM pub_crawl_signups s
-         JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
-         WHERE LOWER(s.email) = LOWER($1)
-         ORDER BY s.created_at DESC`,
-        [email]
-    );
+    const rows = await db.select({
+        s: schema.pub_crawl_signups,
+        e: schema.pub_crawl_events
+    }).from(schema.pub_crawl_signups)
+      .innerJoin(schema.pub_crawl_events, eq(schema.pub_crawl_signups.pub_crawl_event_id, schema.pub_crawl_events.id))
+      .where(ilike(schema.pub_crawl_signups.email, email))
+      .orderBy(desc(schema.pub_crawl_signups.created_at));
+
     const { toLocalISOString } = await import('@/lib/utils/date-utils');
-    return res.rows.map(row => ({
-        ...row,
+    return rows.map(row => ({
+        ...row.s,
+        id: Number(row.s.id),
         pub_crawl_event_id: {
-            id: row.pub_crawl_event_id,
-            name: row.event_name,
-            date: toLocalISOString(row.event_date) ?? undefined,
-            description: row.event_description ?? undefined,
-            image: row.event_image ?? undefined
+            id: row.e.id,
+            name: row.e.name,
+            date: row.e.date ? toLocalISOString(row.e.date) : undefined,
+            description: row.e.description ?? undefined,
+            image: row.e.image ?? undefined
         }
     })) as unknown as EnrichedPubCrawlSignup[];
 }
@@ -134,43 +129,24 @@ export async function createPubCrawlSignupDb(data: {
     payment_status?: string;
     directus_relations?: string | null;
 }): Promise<number> {
-    const res = await query<{ id: number }>(
-        `INSERT INTO pub_crawl_signups 
-         (name, email, association, amount_tickets, name_initials, pub_crawl_event_id, payment_status, directus_relations, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
-         RETURNING id`,
-        [
-            data.name,
-            data.email,
-            data.association ?? null,
-            data.amount_tickets,
-            data.name_initials ?? null,
-            data.pub_crawl_event_id,
-            data.payment_status ?? 'open',
-            data.directus_relations ?? null,
-        ]
-    );
+    const result = await db.insert(schema.pub_crawl_signups).values({
+        ...data,
+        name_initials: data.name_initials ?? null,
+        created_at: new Date().toISOString()
+    }).returning({ id: schema.pub_crawl_signups.id });
 
-    const id = res.rows[0]?.id;
+    const id = result[0]?.id;
     if (!id) throw new Error('Insert failed');
-    return id;
+    return Number(id);
 }
 
 export async function updatePubCrawlSignupDb(id: number, data: Partial<PubCrawlSignup>): Promise<void> {
-    const keys = Object.keys(data);
-    if (keys.length === 0) return;
-
-    const setClauses = keys.map((k, i) => `${k} = $${i + 2}`).join(', ');
-    const values = Object.values(data) as QueryParam[];
-
-    await query<never>(
-        `UPDATE pub_crawl_signups SET ${setClauses} WHERE id = $1`,
-        [id, ...values]
-    );
+    if (Object.keys(data).length === 0) return;
+    await db.update(schema.pub_crawl_signups).set(data as NonNullable<unknown>).where(eq(schema.pub_crawl_signups.id, id));
 }
 
 export async function deletePubCrawlSignupDb(id: number): Promise<void> {
-    await query<never>(`DELETE FROM pub_crawl_signups WHERE id = $1`, [id]);
+    await db.delete(schema.pub_crawl_signups).where(eq(schema.pub_crawl_signups.id, id));
 }
 
 

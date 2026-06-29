@@ -3,7 +3,8 @@
 import { z } from 'zod';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 import { requireAdminResource } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { getRedis } from '@/server/auth/redis-client';
@@ -204,8 +205,8 @@ export async function deleteTrip(id: number) {
     }
 }
 
-interface FeatureFlag {
-    id: number;
+interface _FeatureFlag {
+    id: string;
     name: string;
     is_active: boolean;
     route_match: string;
@@ -216,19 +217,24 @@ export async function toggleReisVisibility(): Promise<{ success: boolean; show?:
     const flagName = 'trip_registration';
 
     try {
-        const sql = 'SELECT id, is_active FROM feature_flags WHERE name = $1 LIMIT 1';
-        const { rows } = await query(sql, [flagName]);
-        const flagRows = rows as FeatureFlag[];
+        const rows = await db.select({
+            id: schema.feature_flags.id,
+            is_active: schema.feature_flags.is_active
+        }).from(schema.feature_flags)
+        .where(eq(schema.feature_flags.name, flagName))
+        .limit(1);
 
-        const flag = flagRows[0] as FeatureFlag | undefined;
-        const oldStatus = flag ? flag.is_active : true;
+        const oldStatus = rows.length > 0 ? rows[0].is_active : true;
         const newStatus = !oldStatus;
 
-        if (flag) {
-            await query('UPDATE feature_flags SET is_active = $1 WHERE id = $2', [newStatus, flag.id]);
+        if (rows.length > 0) {
+            await db.update(schema.feature_flags).set({ is_active: newStatus }).where(eq(schema.feature_flags.id, rows[0].id));
         } else {
-            await query('INSERT INTO feature_flags (name, route_match, is_active) VALUES ($1, $2, $3)',
-                [flagName, '/reis', newStatus]);
+            await db.insert(schema.feature_flags).values({
+                name: flagName,
+                route_match: '/reis',
+                is_active: newStatus
+            });
         }
 
         await logAdminAction('admin_trip_visibility_toggled', 'SUCCESS', {

@@ -1,22 +1,11 @@
 'use server';
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq, desc, ilike } from 'drizzle-orm';
 import { fetchUserEventSignupsDb } from '@/server/internal/event-db.utils';
 import { fetchUserPubCrawlSignupsDb } from '@/server/internal/kroegentocht-db.utils';
 import { safeConsoleError } from '@/server/utils/logger';
-
-interface TripSignupRow {
-    id: number;
-    status: string;
-    created_at: string | null;
-    first_name: string | null;
-    last_name: string | null;
-    qr_token: string | null;
-    trip_id: number | null;
-    trip_name: string | null;
-    trip_event_date: string | null;
-}
 
 /**
  * Fetches the tickets (signups) for the current logged-in user.
@@ -27,20 +16,27 @@ export async function getMyTickets() {
     const email = session.user.email;
 
     try {
-        const [eventSignups, pubCrawlSignups, tripSignupsResult] = await Promise.all([
+        const [eventSignups, pubCrawlSignups, tripSignupRows] = await Promise.all([
             fetchUserEventSignupsDb(email),
             fetchUserPubCrawlSignupsDb(email),
-            query(`
-                SELECT ts.id, ts.status, ts.created_at, ts.first_name, ts.last_name, ts.access_token as qr_token,
-                       t.id as trip_id, t.name as trip_name, t.start_date as trip_event_date
-                FROM trip_signups ts
-                LEFT JOIN trips t ON ts.trip_id = t.id
-                WHERE LOWER(ts.email) = LOWER($1)
-                ORDER BY ts.created_at DESC
-            `, [email])
+            db.select({
+                id: schema.trip_signups.id,
+                status: schema.trip_signups.status,
+                created_at: schema.trip_signups.created_at,
+                first_name: schema.trip_signups.first_name,
+                last_name: schema.trip_signups.last_name,
+                qr_token: schema.trip_signups.access_token,
+                trip_id: schema.trips.id,
+                trip_name: schema.trips.name,
+                trip_event_date: schema.trips.start_date
+            })
+            .from(schema.trip_signups)
+            .leftJoin(schema.trips, eq(schema.trip_signups.trip_id, schema.trips.id))
+            .where(ilike(schema.trip_signups.email, email))
+            .orderBy(desc(schema.trip_signups.created_at))
         ]);
 
-        const tripSignups = tripSignupsResult.rows as TripSignupRow[];
+        const tripSignups = tripSignupRows;
 
         const formattedPubCrawl = pubCrawlSignups.map(s => ({
             ...s,

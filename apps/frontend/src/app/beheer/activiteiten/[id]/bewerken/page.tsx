@@ -4,7 +4,8 @@ import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
 import ActiviteitBewerkenIsland from '@/components/islands/admin/activities/ActiviteitBewerkenIsland';
 import { getActivityByIdInternal } from '@/server/queries/admin-event.queries';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -47,7 +48,12 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
 
     const [eventData, allCommittees] = await Promise.all([
         getActivityByIdInternal(id),
-        query('SELECT id, name, email FROM committees WHERE is_visible = true').then(res => res.rows as { id: number; name: string; email: string }[])
+        db.select({
+            id: schema.committees.id,
+            name: schema.committees.name,
+            email: schema.committees.email
+        }).from(schema.committees).where(eq(schema.committees.is_visible, true))
+        .then(rows => rows as { id: number; name: string; email: string }[])
     ]);
 
     if (!eventData) return notFound();

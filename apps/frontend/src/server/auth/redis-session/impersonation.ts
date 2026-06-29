@@ -20,7 +20,7 @@ interface RawImpersonationDbUser {
     role: string | null;
 }
 
-export async function getImpersonatedUser(testToken: string, pool: Pool): Promise<ExtendedUser | null> {
+export async function getImpersonatedUser(testToken: string, _pool: Pool): Promise<ExtendedUser | null> {
     try {
         const redis = await getRedis();
         const directusUrl = process.env.DIRECTUS_SERVICE_URL;
@@ -48,22 +48,36 @@ export async function getImpersonatedUser(testToken: string, pool: Pool): Promis
 
         if (!rawImpUser.id) return null;
 
-        const { rows: dbUsers } = await pool.query(
-            `SELECT id, first_name, last_name, email, avatar, 
-                    membership_status, membership_expiry, phone_number, 
-                    date_of_birth, minecraft_username, admin_access, role
-             FROM directus_users WHERE id = $1 LIMIT 1`,
-            [rawImpUser.id]
-        );
+        const { db, schema } = await import("@salvemundi/db");
+        const { eq } = await import("drizzle-orm");
+
+        const dbUsers = await db.select({
+            id: schema.directus_users.id,
+            first_name: schema.directus_users.first_name,
+            last_name: schema.directus_users.last_name,
+            email: schema.directus_users.email,
+            avatar: schema.directus_users.avatar,
+            membership_status: schema.directus_users.membership_status,
+            membership_expiry: schema.directus_users.membership_expiry,
+            phone_number: schema.directus_users.phone_number,
+            date_of_birth: schema.directus_users.date_of_birth,
+            minecraft_username: schema.directus_users.minecraft_username,
+            admin_access: schema.directus_users.admin_access,
+            role: schema.directus_users.role
+        }).from(schema.directus_users).where(eq(schema.directus_users.id, rawImpUser.id)).limit(1);
 
         if (dbUsers.length === 0) return null;
 
         const dbUser = dbUsers[0] as RawImpersonationDbUser;
-        const { rows: impCommittees } = await pool.query(
-            `SELECT c.id, c.name, c.azure_group_id, m.is_leader FROM committee_members m 
-             JOIN committees c ON m.committee_id = c.id WHERE m.user_id = $1`,
-            [dbUser.id]
-        );
+        const impCommittees = await db.select({
+            id: schema.committees.id,
+            name: schema.committees.name,
+            azure_group_id: schema.committees.azure_group_id,
+            is_leader: schema.committee_members.is_leader
+        })
+        .from(schema.committee_members)
+        .innerJoin(schema.committees, eq(schema.committee_members.committee_id, schema.committees.id))
+        .where(eq(schema.committee_members.user_id, dbUser.id));
 
         const typedCommittees = impCommittees as unknown as Committee[];
         const perms = getPermissions(typedCommittees);

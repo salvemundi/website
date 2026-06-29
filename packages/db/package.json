@@ -15,7 +15,8 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
+    "type-check": "tsc --noEmit",
     "generate": "drizzle-kit generate",
     "pull": "drizzle-kit pull"
   },
@@ -29,6 +30,7 @@
     "@types/node": "^26.0.0",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
+    "tsup": "^8.5.1",
     "typescript": "^5.4.5"
   }
 }

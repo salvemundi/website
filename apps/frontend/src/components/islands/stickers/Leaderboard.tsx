@@ -71,9 +71,9 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                                         `} />
                                         <div className={`
                                             relative w-12 h-12 md:w-16 md:h-16 rounded-full border-2 flex items-center justify-center text-white font-semibold text-base md:text-lg overflow-hidden
-                                            ${isGold ? 'border-yellow-400 bg-gradient-to-br from-yellow-300 to-yellow-600 scale-110' :
-                                                isSilver ? 'border-slate-300 bg-gradient-to-br from-slate-200 to-slate-400' :
-                                                    'border-orange-400 bg-gradient-to-br from-orange-300 to-orange-500'}
+                                            ${isGold ? 'border-yellow-400 bg-linear-to-br from-yellow-300 to-yellow-600 scale-110' :
+                                                isSilver ? 'border-slate-300 bg-linear-to-br from-slate-200 to-slate-400' :
+                                                    'border-orange-400 bg-linear-to-br from-orange-300 to-orange-500'}
                                             ${isMe ? 'ring-2 ring-white ring-offset-2' : ''}
                                         `}>
                                             {user.name ? user.name.split(' ').map(x => x[0]).slice(0, 2).join('') : '#'}
@@ -97,9 +97,9 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                                     </div>
                                     <div className={`
                                         mt-2 w-full rounded-t-lg flex items-center justify-center font-bold text-white text-xs
-                                        ${isGold ? 'h-16 md:h-20 bg-gradient-to-t from-yellow-500 to-yellow-400' :
-                                            isSilver ? 'h-12 md:h-16 bg-gradient-to-t from-slate-400 to-slate-300' :
-                                                'h-8 md:h-12 bg-gradient-to-t from-orange-500 to-orange-400'}
+                                        ${isGold ? 'h-16 md:h-20 bg-linear-to-t from-yellow-500 to-yellow-400' :
+                                            isSilver ? 'h-12 md:h-16 bg-linear-to-t from-slate-400 to-slate-300' :
+                                                'h-8 md:h-12 bg-linear-to-t from-orange-500 to-orange-400'}
                                     `}>
                                         {isGold ? '1' : isSilver ? '2' : '3'}
                                     </div>

@@ -7,7 +7,7 @@ import {
     type PubCrawlEvent
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { db, schema } from '@salvemundi/db';
-import { eq } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import { fetchPubCrawlEventsDb } from '@/server/internal/kroegentocht-db.utils';
 import { requireAdminResource } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
@@ -73,17 +73,16 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
 
         // Save groups directly in PostgreSQL and update signup group names on rename/delete
         if (eventId && data.groups !== undefined) {
-            const { query } = await import('@/lib/database');
-            
             // 1. Fetch old groups if updating
             let oldGroups: { name: string; leaders?: unknown[] }[] = [];
             if (id) {
-                const res = await query<{ groups: unknown }>(
-                    'SELECT groups FROM pub_crawl_events WHERE id = $1',
-                    [Number(id)]
-                );
-                if (res.rows.length > 0 && res.rows[0].groups) {
-                    const rawGroups = res.rows[0].groups;
+                const oldEvent = await db.query.pub_crawl_events.findFirst({
+                    columns: { groups: true },
+                    where: eq(schema.pub_crawl_events.id, Number(id))
+                });
+                
+                if (oldEvent && oldEvent.groups) {
+                    const rawGroups = oldEvent.groups;
                     if (Array.isArray(rawGroups)) {
                         oldGroups = rawGroups.map(g => {
                             const obj = g && typeof g === 'object' ? (g as { name?: unknown; leaders?: unknown }) : {};
@@ -97,10 +96,9 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
             }
 
             // 2. Perform groups list update
-            await query(
-                'UPDATE pub_crawl_events SET groups = $1 WHERE id = $2',
-                [JSON.stringify(data.groups), Number(eventId)]
-            );
+            await db.update(schema.pub_crawl_events)
+                .set({ groups: data.groups })
+                .where(eq(schema.pub_crawl_events.id, Number(eventId)));
 
             // 3. Handle cascade updates for signups if there are old groups
             if (id && oldGroups.length > 0 && Array.isArray(data.groups)) {
@@ -133,23 +131,27 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
 
                 // Update signups for renamed groups
                 for (const [oldName, newName] of renames.entries()) {
-                    await query(
-                        `UPDATE pub_crawl_signups 
-                         SET group_name = $1 
-                         WHERE pub_crawl_event_id = $2 AND group_name = $3`,
-                        [newName, Number(eventId), oldName]
-                    );
+                    await db.update(schema.pub_crawl_signups)
+                        .set({ group_name: newName })
+                        .where(
+                            and(
+                                eq(schema.pub_crawl_signups.pub_crawl_event_id, Number(eventId)),
+                                eq(schema.pub_crawl_signups.group_name, oldName)
+                            )
+                        );
                 }
 
                 // Clear group_name for completely deleted groups
                 const completelyRemoved = removedNames.filter(name => !renames.has(name));
                 if (completelyRemoved.length > 0) {
-                    await query(
-                        `UPDATE pub_crawl_signups 
-                         SET group_name = NULL 
-                         WHERE pub_crawl_event_id = $1 AND group_name = ANY($2)`,
-                        [Number(eventId), completelyRemoved]
-                    );
+                    await db.update(schema.pub_crawl_signups)
+                        .set({ group_name: null })
+                        .where(
+                            and(
+                                eq(schema.pub_crawl_signups.pub_crawl_event_id, Number(eventId)),
+                                inArray(schema.pub_crawl_signups.group_name, completelyRemoved)
+                            )
+                        );
                 }
             }
         }
@@ -193,11 +195,7 @@ export async function uploadPubCrawlImage(formData: FormData) {
 export async function updatePubCrawlEventGroups(eventId: number, groups: unknown[]) {
     await requireKroegAdmin();
     try {
-        const { query } = await import('@/lib/database');
-        await query(
-            'UPDATE pub_crawl_events SET groups = $1 WHERE id = $2',
-            [JSON.stringify(groups), eventId]
-        );
+        await db.update(schema.pub_crawl_events).set({ groups: groups }).where(eq(schema.pub_crawl_events.id, eventId));
         revalidateTag('kroegentocht-events', 'max');
         revalidateTag('kroegentocht-event', 'max');
         revalidatePath('/beheer/kroegentocht');

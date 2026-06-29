@@ -6,6 +6,8 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { isMemberAdmin } from "@/lib/auth";
 import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
 import { safeConsoleError } from '@/server/utils/logger';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 
 const renewMembershipSchema = z.object({
     months: z.number().int().min(1).max(60)
@@ -14,16 +16,6 @@ const renewMembershipSchema = z.object({
 const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
 const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
-
-interface UserRow {
-    email: string | null;
-    first_name: string | null;
-    last_name: string | null;
-    phone_number: string | null;
-    date_of_birth: string | null;
-    membership_expiry: string | null;
-    entra_id: string | null;
-}
 
 async function checkAdminAccess() {
     const session = await getEnrichedSession();
@@ -74,9 +66,10 @@ export async function manageAzureMembershipAction(userId: string, azureGroupId: 
             }
         });
 
-        const { query: queryReval } = await import("@/lib/database");
-        const { rows: revalRows } = await queryReval<{ email: string | null }>('SELECT email FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId]);
-        const firstRevalRow = revalRows[0] as { email: string | null } | undefined;
+        const firstRevalRow = await db.query.directus_users.findFirst({
+            columns: { email: true },
+            where: eq(schema.directus_users.id, directusUserId)
+        });
         const emailSlug = firstRevalRow?.email?.split('@')[0]?.replace(/\./g, '-') ?? directusUserId;
         revalidatePath(`/beheer/leden/${encodeURIComponent(emailSlug)}`);
         revalidateTag(`user_${directusUserId}`, 'max');
@@ -160,12 +153,10 @@ export async function updateMemberProfileAction(
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const { query: queryUpdate } = await import("@/lib/database");
-        const { rows: updateRows } = await queryUpdate<{ email: string | null; entra_id: string | null }>(
-            'SELECT email, entra_id FROM directus_users WHERE id = $1 LIMIT 1',
-            [directusUserId]
-        );
-        const user = updateRows[0] as { email: string | null; entra_id: string | null } | undefined;
+        const user = await db.query.directus_users.findFirst({
+            columns: { email: true, entra_id: true },
+            where: eq(schema.directus_users.id, directusUserId)
+        });
         if (!user) return { success: false, error: 'Lid niet gevonden' };
 
         if (user.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {
@@ -225,10 +216,10 @@ export async function renewMembershipAction(
     }
 
     try {
-        const { query } = await import("@/lib/database");
-        const { rows } = await query<UserRow>('SELECT email, membership_expiry, entra_id, first_name, last_name, phone_number, date_of_birth FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId]);
-
-        const user = rows[0] as UserRow | undefined;
+        const user = await db.query.directus_users.findFirst({
+            columns: { email: true, membership_expiry: true, entra_id: true, first_name: true, last_name: true, phone_number: true, date_of_birth: true },
+            where: eq(schema.directus_users.id, directusUserId)
+        });
         if (!user) return { success: false, error: 'Kon lid niet ophalen' };
 
         const today = new Date();
@@ -240,8 +231,6 @@ export async function renewMembershipAction(
         const { toLocalISOString } = await import("@/lib/utils/date-utils");
         const newExpiryStr = toLocalISOString(newExpiry) as string;
 
-        const { db, schema } = await import('@salvemundi/db');
-        const { eq } = await import('drizzle-orm');
         await db.update(schema.directus_users).set({ membership_expiry: newExpiryStr }).where(eq(schema.directus_users.id, directusUserId));
 
         if (user.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {
@@ -260,10 +249,10 @@ export async function renewMembershipAction(
             });
 
             // Add user to active group
-            const { rows: committees } = await (await import("@/lib/database")).query<{ azure_group_id: string | null }>(
-                "SELECT azure_group_id FROM committees WHERE name = 'Leden_Actief_Lidmaatschap' LIMIT 1"
-            );
-            const firstCommittee = committees[0] as { azure_group_id: string | null } | undefined;
+            const firstCommittee = await db.query.committees.findFirst({
+                columns: { azure_group_id: true },
+                where: eq(schema.committees.name, 'Leden_Actief_Lidmaatschap')
+            });
             const activeGroupId = firstCommittee?.azure_group_id;
 
             if (activeGroupId) {
@@ -311,10 +300,10 @@ export async function provisionAzureAccountAction(directusUserId: string) {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const { query } = await import("@/lib/database");
-        const { rows } = await query<UserRow>('SELECT email, first_name, last_name, phone_number, date_of_birth FROM directus_users WHERE id = $1 LIMIT 1', [directusUserId]);
-
-        const user = rows[0] as UserRow | undefined;
+        const user = await db.query.directus_users.findFirst({
+            columns: { email: true, first_name: true, last_name: true, phone_number: true, date_of_birth: true },
+            where: eq(schema.directus_users.id, directusUserId)
+        });
         if (!user || !user.email) return { success: false, error: "Lid niet gevonden of geen e-mailadres." };
 
         const res = await fetch(`${AZURE_MGMT_URL}/api/provisioning/user`, {

@@ -11,7 +11,6 @@ import {
     tripSignupActivitySchema
 } from '@salvemundi/validations/schema/admin-trip.zod';
 import { type ReisPaymentEnrichment } from '@salvemundi/validations/schema/trip.zod';
-import { query } from '@/lib/database';
 import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
 import {
@@ -161,33 +160,34 @@ export async function syncSignupActivities(signupId: number, selections: { activ
         }
 
         try {
-            const currentRes = await query<{ id: string | number, trip_activity_id: string | number }>(
-                'SELECT id, trip_activity_id FROM trip_signup_activities WHERE trip_signup_id = $1',
-                [signupId]
-            );
-            const current = currentRes.rows;
+            const currentRows = await db.select({
+                id: schema.trip_signup_activities.id,
+                trip_activity_id: schema.trip_signup_activities.trip_activity_id
+            }).from(schema.trip_signup_activities)
+            .where(eq(schema.trip_signup_activities.trip_signup_id, signupId));
 
-            const toRemove = current
+            const toRemove = currentRows
                 .filter(c => !selections.find(s => s.activityId === Number(c.trip_activity_id)))
                 .map(c => Number(c.id));
 
-            // 2. Perform sync via SQL
+            // 2. Perform sync via Drizzle
             if (toRemove.length > 0) {
-                await query('DELETE FROM trip_signup_activities WHERE id = ANY($1::int[])', [toRemove]);
+                const { inArray } = await import('drizzle-orm');
+                await db.delete(schema.trip_signup_activities).where(inArray(schema.trip_signup_activities.id, toRemove));
             }
 
             for (const s of selections) {
-                const existing = current.find(c => Number(c.trip_activity_id) === s.activityId);
+                const existing = currentRows.find(c => Number(c.trip_activity_id) === s.activityId);
                 if (existing) {
-                    await query(
-                        'UPDATE trip_signup_activities SET selected_options = $1 WHERE id = $2',
-                        [JSON.stringify(s.options), existing.id]
-                    );
+                    await db.update(schema.trip_signup_activities)
+                        .set({ selected_options: s.options })
+                        .where(eq(schema.trip_signup_activities.id, existing.id));
                 } else {
-                    await query(
-                        'INSERT INTO trip_signup_activities (trip_signup_id, trip_activity_id, selected_options) VALUES ($1, $2, $3)',
-                        [signupId, s.activityId, JSON.stringify(s.options)]
-                    );
+                    await db.insert(schema.trip_signup_activities).values({
+                        trip_signup_id: signupId,
+                        trip_activity_id: s.activityId,
+                        selected_options: s.options
+                    });
                 }
             }
 

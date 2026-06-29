@@ -4,34 +4,34 @@ import 'server-only';
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 import { requireKroegAdmin } from './kroegentocht-event.actions';
 import { safeConsoleError } from '@/server/utils/logger';
-
-interface FeatureFlag {
-    id: number;
-    name: string;
-    is_active: boolean;
-    route_match: string;
-}
 
 export async function toggleKroegentochtVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
     await requireKroegAdmin();
     const route = '/kroegentocht';
 
     try {
-        const sql = 'SELECT id, is_active FROM feature_flags WHERE route_match = $1 LIMIT 1';
-        const { rows } = await query(sql, [route]);
+        const rows = await db.select({
+            id: schema.feature_flags.id,
+            is_active: schema.feature_flags.is_active
+        }).from(schema.feature_flags)
+        .where(eq(schema.feature_flags.route_match, route))
+        .limit(1);
 
-        const flag = rows[0] as FeatureFlag | undefined;
-        const oldStatus = flag ? !!flag.is_active : true;
+        const oldStatus = rows.length > 0 ? !!rows[0].is_active : true;
         const newStatus = !oldStatus;
 
-        if (flag) {
-            await query('UPDATE feature_flags SET is_active = $1 WHERE id = $2', [newStatus, flag.id]);
+        if (rows.length > 0) {
+            await db.update(schema.feature_flags).set({ is_active: newStatus }).where(eq(schema.feature_flags.id, rows[0].id));
         } else {
-            await query('INSERT INTO feature_flags (name, route_match, is_active) VALUES ($1, $2, $3)',
-                ['Kroegentocht Inschrijving', route, newStatus]);
+            await db.insert(schema.feature_flags).values({
+                name: 'Kroegentocht Inschrijving',
+                route_match: route,
+                is_active: newStatus
+            });
         }
 
         try {
@@ -64,7 +64,12 @@ export async function getKroegentochtSettings() {
     noStore();
     await requireKroegAdmin();
     try {
-        const { rows } = await query<FeatureFlag>('SELECT is_active FROM feature_flags WHERE route_match = $1 LIMIT 1', ['/kroegentocht']);
+        const rows = await db.select({
+            is_active: schema.feature_flags.is_active
+        }).from(schema.feature_flags)
+        .where(eq(schema.feature_flags.route_match, '/kroegentocht'))
+        .limit(1);
+
         const isVisible = rows.length > 0 ? !!rows[0].is_active : true;
         return { show: isVisible };
     } catch (error) {

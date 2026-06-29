@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import { revalidateTag, revalidatePath } from "next/cache";
 import { db, schema } from "@salvemundi/db";
-import { eq } from "drizzle-orm";
+import { eq, sql, and, ne } from "drizzle-orm";
 import {
     activityAdminSchema
 } from "@salvemundi/validations";
@@ -90,12 +90,11 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
 
     const data = validated.data;
 
-    const { query: dbQuery } = await import("@/lib/database");
-    const nameCheck = await dbQuery(
-        "SELECT id FROM events WHERE LOWER(name) = LOWER($1) LIMIT 1",
-        [data.name]
-    );
-    if (nameCheck.rows.length > 0) {
+    const nameCheck = await db.query.events.findFirst({
+        columns: { id: true },
+        where: eq(sql`LOWER(${schema.events.name})`, data.name.toLowerCase())
+    });
+    if (nameCheck) {
         return {
             success: false,
             error: `Er bestaat al een activiteit met de naam "${data.name}". Kies een unieke naam.`,
@@ -214,12 +213,14 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
 
         const oldName = oldData.name as string | undefined;
         if (data.name.toLowerCase() !== oldName?.toLowerCase()) {
-            const { query: dbQuery } = await import("@/lib/database");
-            const nameCheck = await dbQuery(
-                "SELECT id FROM events WHERE LOWER(name) = LOWER($1) AND id != $2 LIMIT 1",
-                [data.name, eventId]
-            );
-            if (nameCheck.rows.length > 0) {
+            const nameCheck = await db.query.events.findFirst({
+                columns: { id: true },
+                where: and(
+                    eq(sql`LOWER(${schema.events.name})`, data.name.toLowerCase()),
+                    ne(schema.events.id, eventId)
+                )
+            });
+            if (nameCheck) {
                 return {
                     success: false,
                     error: `Er bestaat al een andere activiteit met de naam "${data.name}".`

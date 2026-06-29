@@ -1,21 +1,10 @@
 'use server';
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteit-utils';
 import { safeConsoleError } from '@/server/utils/logger';
-
-interface EventSignupWithEvent {
-    id: number;
-    event_id: number;
-    participant_email: string;
-    participant_name: string;
-    participant_phone: string;
-    payment_status: string;
-    event_name: string;
-    price_members: number | null;
-    price_non_members: number | null;
-}
 
 /**
  * Re-initiates the payment process for an existing signup.
@@ -28,19 +17,27 @@ export async function retryActivityPayment(signupId: number) {
     const currentUser = session.user;
 
     try {
-        const signupRes = await query(
-            `SELECT es.*, e.name as event_name, e.price_members, e.price_non_members 
-             FROM event_signups es 
-             JOIN events e ON es.event_id = e.id 
-             WHERE es.id = $1`,
-            [signupId]
-        );
+        const rows = await db.select({
+            id: schema.event_signups.id,
+            event_id: schema.event_signups.event_id,
+            participant_email: schema.event_signups.participant_email,
+            participant_name: schema.event_signups.participant_name,
+            participant_phone: schema.event_signups.participant_phone,
+            payment_status: schema.event_signups.payment_status,
+            event_name: schema.events.name,
+            price_members: schema.events.price_members,
+            price_non_members: schema.events.price_non_members
+        })
+        .from(schema.event_signups)
+        .innerJoin(schema.events, eq(schema.event_signups.event_id, schema.events.id))
+        .where(eq(schema.event_signups.id, signupId))
+        .limit(1);
 
-        if (signupRes.rows.length === 0) {
+        if (rows.length === 0) {
             return { success: false, error: "Aanmelding niet gevonden." };
         }
 
-        const signup = signupRes.rows[0] as EventSignupWithEvent;
+        const signup = rows[0];
 
         const isAdmin = currentUser.role === 'admin' || currentUser.role === '06e78cf9-f9c3-4f9e-a86d-1907de634567' || currentUser.isICT;
         const isParticipant = currentUser.email === signup.participant_email;
@@ -54,7 +51,7 @@ export async function retryActivityPayment(signupId: number) {
         }
 
         const isMember = currentUser.membership_status === 'active';
-        const price = (isMember ? signup.price_members : signup.price_non_members) ?? 0;
+        const price = Number(isMember ? signup.price_members : signup.price_non_members) || 0;
 
         if (price <= 0) {
             return { success: false, error: "Deze activiteit is gratis." };
