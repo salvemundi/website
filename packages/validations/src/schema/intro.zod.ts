@@ -33,14 +33,22 @@ export const introSignupDbSchema = selectIntroSignupsSchema.extend({
 
 export type IntroSignupDb = z.infer<typeof introSignupDbSchema>;
 
-export const introParentSignupDbSchema = selectIntroParentSignupsSchema.extend({
+export const introParentSignupDbSchema = selectIntroParentSignupsSchema.omit({
+    date_updated: true,
+    user_created: true,
+    user_updated: true,
+}).extend({
     id: z.coerce.number(),
     email: z.string().email(),
 });
 
 export type IntroParentSignupDb = z.infer<typeof introParentSignupDbSchema>;
 
-export const introBlogSchema = selectIntroBlogsSchema.extend({
+export const introBlogSchema = selectIntroBlogsSchema.omit({
+    date_updated: true,
+    user_created: true,
+    user_updated: true,
+}).extend({
     id: z.coerce.number().optional(),
     title: z.string().min(1, 'Titel is verplicht'),
     content: z.string().min(1, 'Content is verplicht'),
@@ -51,7 +59,12 @@ export const introBlogSchema = selectIntroBlogsSchema.extend({
 
 export type IntroBlog = z.infer<typeof introBlogSchema>;
 
-export const introPlanningSchema = selectIntroPlanningSchema.extend({
+export const introPlanningSchema = selectIntroPlanningSchema.omit({
+    date_created: true,
+    date_updated: true,
+    user_created: true,
+    user_updated: true,
+}).extend({
     id: z.coerce.number().optional(),
     date: z.string().min(1, 'Datum is verplicht'),
     time_start: z.string().min(1, 'Starttijd is verplicht'),

@@ -23,13 +23,10 @@ async function fetchSafeHavensFromDirectus(isAuthenticated: boolean): Promise<Sa
 
         const mappedData = rows.map((item) => ({
             id: String(item.id),
-            naam: item.contact_name,
-            description: null,
+            contact_name: item.contact_name,
             email: ('email' in item ? item.email : null) ?? null,
-            telefoon: ('phone_number' in item ? item.phone_number : null) ?? null,
-            afbeelding_id: item.image,
-            status: 'published' as const,
-            sort: 0
+            phone_number: ('phone_number' in item ? item.phone_number : null) ?? null,
+            image: item.image
         }));
 
         const parsed = safeHavensSchema.safeParse(mappedData);

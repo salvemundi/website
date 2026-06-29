@@ -8,7 +8,10 @@ export const stickerUserSchema = selectDirectusUsersSchema.pick({
     avatar: true,
 });
 
-export const stickerSchema = selectStickersSchema.extend({
+export const stickerSchema = selectStickersSchema.omit({
+    user_updated: true,
+    date_updated: true,
+}).extend({
     id: z.coerce.number(),
     latitude: z.coerce.number(),
     longitude: z.coerce.number(),

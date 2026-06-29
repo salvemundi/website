@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import { selectHeroBannersSchema, selectSponsorsSchema } from './db.zod.js';
 
-export const heroBannerSchema = selectHeroBannersSchema.extend({
+export const heroBannerSchema = selectHeroBannersSchema.omit({
+    date_created: true,
+    user_created: true,
+}).extend({
     id: z.union([z.string(), z.number()]),
     afbeelding_id: z.union([
         z.string(),

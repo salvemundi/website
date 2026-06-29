@@ -55,7 +55,9 @@ export async function getPublicStickers() {
             first_name: row.u.first_name,
             last_name: row.u.last_name,
             avatar: row.u.avatar
-        } : null
+        } : null,
+        address: row.s.address || null,
+        status: row.s.status || null
     }));
 
     return stickerListSchema.parse(mapped);
