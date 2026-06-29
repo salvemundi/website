@@ -1,44 +1,30 @@
 import { z } from 'zod';
+import { selectEventsSchema, insertEventsSchema } from './db.zod.js';
 import { phoneNumberSchema } from './shared.zod.js';
 import { userBasicSchema } from './members.zod.js';
 
 const phoneRegex = /(?:\+31|0)[1-9][0-9\s-]{7,12}/;
 const noPhoneMessage = "Om privacyredenen (AVG) mogen er geen telefoonnummers in de tekst staan.";
 
-export const activitySchema = z.object({
+export const activitySchema = selectEventsSchema.extend({
     id: z.union([z.string(), z.number()]),
-    titel: z.string(),
-    beschrijving: z.string().nullable().optional(),
-    short_description: z.string().nullable().optional(),
-    description_logged_in: z.string().nullable().optional(),
-    datum_start: z.string(),
-    datum_eind: z.string().nullable().optional(),
-    event_time: z.string().nullable().optional(),
-    event_time_end: z.string().nullable().optional(),
-    time_end: z.string().nullable().optional(),
-    locatie: z.string().nullable().optional(),
-    afbeelding_id: z.union([
+    committee_name: z.string().nullable().optional(),
+    afbeelding_id: z.object({
+        id: z.string(),
+        type: z.string().optional()
+    }).nullable().optional(),
+    image: z.union([
         z.string(),
         z.object({
             id: z.string(),
             type: z.string().nullable().optional()
         })
-    ]).nullable().optional(),
-    max_sign_ups: z.coerce.number().nullable().optional(),
-    price_members: z.coerce.number().nullable().optional(),
-    price_non_members: z.coerce.number().nullable().optional(),
-    committee_id: z.number().nullable().optional(),
-    committee_name: z.string().nullable().optional(),
-    contact: z.string().nullable().optional(),
-    registration_deadline: z.string().nullable().optional(),
-    only_members: z.boolean().nullable().optional().default(false),
-    status: z.string().nullable().optional(),
-    publish_date: z.string().nullable().optional(),
-    custom_url: z.string().nullable().optional(),
+    ]).optional().nullable(),
+    image_type: z.string().nullable().optional(),
+    signup_count: z.number().optional()
 });
-
 export type Activiteit = z.infer<typeof activitySchema>;
-export type Activity = Activiteit; // Alias for compatibility
+export type Activity = Activiteit;
 
 export const activitiesSchema = z.array(activitySchema);
 
@@ -51,7 +37,7 @@ export const eventSignupFormSchema = z.object({
     name: z.string().min(1, 'Naam is verplicht'),
     email: z.string().email('Ongeldig e-mailadres'),
     phoneNumber: phoneNumberSchema,
-    website: z.string().optional(), // Honeypot
+    website: z.string().optional(),
 });
 
 export type EventSignupForm = z.infer<typeof eventSignupFormSchema>;
@@ -61,56 +47,53 @@ export const attendanceSchema = z.object({
     status: z.boolean(),
 });
 
-export const activityAdminSchema = z.object({
+export const activityAdminSchema = insertEventsSchema.extend({
     name: z.string().min(1, 'Naam is verplicht'),
-
     description: z.string()
         .min(1, 'Beschrijving is verplicht')
-        .refine((val) => !phoneRegex.test(val), { message: noPhoneMessage }),
-
-    short_description: z.string().nullable().optional().transform(v => v === '' ? null : v)
-        .refine((val) => !val || !phoneRegex.test(val), { message: noPhoneMessage }),
-
-    description_logged_in: z.string().nullable().optional().transform(v => v === '' ? null : v)
-        .refine((val) => !val || !phoneRegex.test(val), { message: noPhoneMessage }),
-
+        .refine((descriptionValue) => !phoneRegex.test(descriptionValue), { message: noPhoneMessage }),
+    short_description: z.string().nullable().optional().transform(shortDescription => shortDescription === '' ? null : shortDescription)
+        .refine((shortDescription) => !shortDescription || !phoneRegex.test(shortDescription), { message: noPhoneMessage }),
+    description_logged_in: z.string().nullable().optional().transform(descriptionValue => descriptionValue === '' ? null : descriptionValue)
+        .refine((descriptionValue) => !descriptionValue || !phoneRegex.test(descriptionValue), { message: noPhoneMessage }),
     event_date: z.string().min(1, 'Startdatum is verplicht'),
-    event_time: z.string().nullable().optional().transform(v => v === '' ? null : v),
-    event_date_end: z.string().nullable().optional().transform(v => v === '' ? null : v),
-    event_time_end: z.string().nullable().optional().transform(v => v === '' ? null : v),
-    location: z.string().nullable().optional().transform(v => v === '' ? null : v),
-    max_sign_ups: z.union([z.string(), z.number()]).nullable().optional().transform(v => {
-        if (v === '' || v === undefined) return null;
-        return typeof v === 'string' ? parseInt(v) : v;
-    }).refine((val) => val === null || val <= 1000, {
+    event_time: z.string().nullable().optional().transform(timeString => timeString === '' ? null : timeString),
+    event_date_end: z.string().nullable().optional().transform(dateString => dateString === '' ? null : dateString),
+    event_time_end: z.string().nullable().optional().transform(timeString => timeString === '' ? null : timeString),
+    location: z.string().nullable().optional().transform(locationString => locationString === '' ? null : locationString),
+    max_sign_ups: z.union([z.string(), z.number()]).nullable().optional().transform(maxSignups => {
+        if (maxSignups === '' || maxSignups === undefined) return null;
+        return typeof maxSignups === 'string' ? parseInt(maxSignups) : maxSignups;
+    }).refine((maxSignupsNumber) => maxSignupsNumber === null || maxSignupsNumber <= 1000, {
         message: "Maximum aantal deelnemers mag niet groter zijn dan 1000."
     }),
-    price_members: z.union([z.string(), z.number()]).nullable().optional().transform(v => {
-        if (v === '' || v === undefined || v === null) return 0;
-        return typeof v === 'string' ? parseFloat(v) : v;
+    price_members: z.union([z.string(), z.number()]).nullable().optional().transform(price => {
+        if (price === '' || price === undefined || price === null) return 0;
+        return typeof price === 'string' ? parseFloat(price) : price;
     }),
-    price_non_members: z.union([z.string(), z.number()]).nullable().optional().transform(v => {
-        if (v === '' || v === undefined || v === null) return 0;
-        return typeof v === 'string' ? parseFloat(v) : v;
+    price_non_members: z.union([z.string(), z.number()]).nullable().optional().transform(price => {
+        if (price === '' || price === undefined || price === null) return 0;
+        return typeof price === 'string' ? parseFloat(price) : price;
     }),
-    registration_deadline: z.string().nullable().optional().transform(v => v === '' ? null : v),
-    custom_url: z.string().nullable().optional().transform(v => v === '' ? null : v),
-    committee_id: z.union([z.string(), z.number()]).nullable().optional().transform(v => {
-        if (v === '' || v === undefined) return null;
-        return typeof v === 'string' ? parseInt(v) : v;
+    registration_deadline: z.string().nullable().optional().transform(deadlineString => deadlineString === '' ? null : deadlineString),
+    custom_url: z.string().nullable().optional().transform(urlString => urlString === '' ? null : urlString),
+    committee_id: z.union([z.string(), z.number()]).nullable().optional().transform(committeeId => {
+        if (committeeId === '' || committeeId === undefined) return null;
+        return typeof committeeId === 'string' ? parseInt(committeeId) : committeeId;
     }),
-    contact: z.string().nullable().optional().transform(v => v === '' ? null : v),
-    only_members: z.union([z.boolean(), z.string()]).optional().transform(v => v === true || v === 'on' || v === 'true'),
+    contact: z.string().nullable().optional().transform(contactString => contactString === '' ? null : contactString),
+    only_members: z.union([z.boolean(), z.string()]).optional().transform(onlyMembersValue => onlyMembersValue === true || onlyMembersValue === 'on' || onlyMembersValue === 'true'),
     status: z.enum(['published', 'draft', 'scheduled']).optional().default('published'),
-    publish_date: z.string().nullable().optional().transform(v => v === '' ? null : v),
-}).refine((data) => {
+    publish_date: z.string().nullable().optional().transform(publishDateString => publishDateString === '' ? null : publishDateString),
+    image_type: z.string().nullable().optional(),
+}).refine((data: { event_date?: string | null, event_time?: string | null, event_date_end?: string | null, event_time_end?: string | null }) => {
     if (data.event_date) {
-        const startTimeStr = data.event_time ? `T${data.event_time}` : 'T00:00';
-        const start = new Date(`${data.event_date}${startTimeStr}`);
+        const startTimeStr = data.event_time ? `T${String(data.event_time)}` : 'T00:00';
+        const start = new Date(`${String(data.event_date)}${startTimeStr}`);
 
         if (data.event_date_end) {
-            const endTimeStr = data.event_time_end ? `T${data.event_time_end}` : 'T23:59';
-            const end = new Date(`${data.event_date_end}${endTimeStr}`);
+            const endTimeStr = data.event_time_end ? `T${String(data.event_time_end)}` : 'T23:59';
+            const end = new Date(`${String(data.event_date_end)}${endTimeStr}`);
             return end >= start;
         }
     }
@@ -118,10 +101,10 @@ export const activityAdminSchema = z.object({
 }, {
     message: "Einddatum en -tijd moeten na de startdatum en -tijd liggen.",
     path: ["event_date_end"]
-}).refine((data) => {
+}).refine((data: { event_date?: string | null, event_time?: string | null, registration_deadline?: string | null }) => {
     if (data.event_date && data.registration_deadline) {
-        const startTimeStr = data.event_time ? `T${data.event_time}` : 'T00:00';
-        const start = new Date(`${data.event_date}${startTimeStr}`);
+        const startTimeStr = data.event_time ? `T${String(data.event_time)}` : 'T00:00';
+        const start = new Date(`${String(data.event_date)}${startTimeStr}`);
         const deadline = new Date(data.registration_deadline);
         return deadline <= start;
     }
@@ -133,9 +116,6 @@ export const activityAdminSchema = z.object({
 
 export type ActivityAdmin = z.infer<typeof activityAdminSchema>;
 
-/**
- * SERVER ACTION INPUT SCHEMAS
- */
 export const deleteSignupSchema = z.object({
     signupId: z.number(),
     eventId: z.union([z.string(), z.number()]),
@@ -160,6 +140,3 @@ export const toggleCheckInSchema = z.object({
     eventId: z.number(),
     checkedIn: z.boolean(),
 });
-
-
-

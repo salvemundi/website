@@ -40,8 +40,8 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
 
     const event: AdminEvent = {
         id: eventData.id,
-        name: eventData.titel,
-        price_members: eventData.price_members,
+        name: eventData.name,
+        price_members: Number(eventData.price_members),
         max_sign_ups: eventData.max_sign_ups
     };
 

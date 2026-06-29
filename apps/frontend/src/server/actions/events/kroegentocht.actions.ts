@@ -10,11 +10,8 @@ import { z } from 'zod';
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { unstable_cache as cacheTag } from 'next/cache';
-import { logAdminAction } from '@/server/actions/infrastructure/audit.actions'; 
-import { safeConsoleError } from '@/server/utils/logger';
 
-import { getSystemDirectus } from '@/lib/directus';
-import { createItem, updateItem, deleteItem } from '@directus/sdk';
+import { safeConsoleError } from '@/server/utils/logger';
 import {
     createPubCrawlSignupDb,
     deletePubCrawlSignupDb,
@@ -22,14 +19,10 @@ import {
     deletePubCrawlTicketsBySignupIdDb,
     fetchPubCrawlEventsDb
 } from '@/server/internal/kroegentocht-db.utils';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq, and, desc, or } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import crypto from 'crypto';
-
-interface RawKroegentochtTicketRow {
-    id: string;
-    signup_id: string;
-    event_name: string;
-}
 
 const getFinanceServiceUrl = () =>
     process.env.FINANCE_SERVICE_URL;
@@ -100,21 +93,30 @@ export async function getKroegentochtEvent() {
 
 export async function getKroegentochtTickets(email: string): Promise<PubCrawlTicket[]> {
     try {
-        const res = await query(
-            `SELECT t.*, e.name as event_name 
-             FROM pub_crawl_tickets t
-             JOIN pub_crawl_signups s ON t.signup_id = s.id
-             JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
-             WHERE s.email = $1 AND s.payment_status = 'paid'`,
-            [email]
+        const rows = await db.select({
+            id: schema.pub_crawl_tickets.id,
+            signup_id: schema.pub_crawl_tickets.signup_id,
+            name: schema.pub_crawl_tickets.name,
+            initial: schema.pub_crawl_tickets.initial,
+            qr_token: schema.pub_crawl_tickets.qr_token,
+            event_name: schema.pub_crawl_events.name
+        })
+        .from(schema.pub_crawl_tickets)
+        .innerJoin(schema.pub_crawl_signups, eq(schema.pub_crawl_tickets.signup_id, schema.pub_crawl_signups.id))
+        .innerJoin(schema.pub_crawl_events, eq(schema.pub_crawl_signups.pub_crawl_event_id, schema.pub_crawl_events.id))
+        .where(
+            and(
+                eq(schema.pub_crawl_signups.email, email),
+                eq(schema.pub_crawl_signups.payment_status, 'paid')
+            )
         );
 
-        const rows = res.rows as RawKroegentochtTicketRow[];
         const items = rows.map((t) => ({
             ...t,
+            id: String(t.id),
             signup_id: {
                 pub_crawl_event_id: {
-                    name: t.event_name
+                    name: t.event_name || ''
                 }
             }
         }));
@@ -190,41 +192,9 @@ export async function initiateKroegentochtPayment(formData: unknown) {
         }
         await createPubCrawlTicketsDb(signupId, ticketsTable);
 
-        const syncPayload = {
-            id: signupId,
-            name: parsed.data.name,
-            email: parsed.data.email,
-            association: parsed.data.association,
-            amount_tickets: parsed.data.amount_tickets,
-            name_initials: parsed.data.name_initials,
-            pub_crawl_event_id: Number(parsed.data.pub_crawl_event_id),
-            payment_status: 'open',
-            directus_relations: userId || null
-        };
 
-        try {
-            await getSystemDirectus().request(createItem('pub_crawl_signups', syncPayload as { [key: string]: unknown }));
-        } catch (error) {
-            const errorMsg = error instanceof Error ? error.message : String(error);
-            if (errorMsg.includes('unique') || (typeof error === 'object' && error !== null && 'errors' in error && JSON.stringify(error.errors).includes('unique'))) {
 
-                try {
-                    await getSystemDirectus().request(updateItem('pub_crawl_signups', signupId, syncPayload));
-                } catch {
-                    await deletePubCrawlTicketsBySignupIdDb(signupId);
-                    await deletePubCrawlSignupDb(signupId);
-                    return { success: false, error: 'Synchronisatie met CMS mislukt (collision fallback failed).' };
-                }
-            } else {
-
-                await deletePubCrawlTicketsBySignupIdDb(signupId);
-                await deletePubCrawlSignupDb(signupId);
-                await logAdminAction('system_kroegentocht_signup_rollback', 'ERROR', { context: 'kroegentocht', id: signupId, error: String(error), action: 'rollback_delete' });
-                return { success: false, error: 'Synchronisatie met CMS mislukt. Inschrijving niet voltooid.' };
-            }
-        }
-
-        const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
+        const financeUrl = `${getFinanceServiceUrl()}/api/finance/create`;
         const paymentRes = await fetchWithTimeout(financeUrl, {
             method: 'POST',
             headers: getInternalHeaders(),
@@ -249,9 +219,6 @@ export async function initiateKroegentochtPayment(formData: unknown) {
         try {
             await deletePubCrawlTicketsBySignupIdDb(signupId);
             await deletePubCrawlSignupDb(signupId);
-            getSystemDirectus().request(deleteItem('pub_crawl_signups', signupId)).catch((error) => {
-                safeConsoleError(`[kroegentocht.actions.ts][initiateKroegentochtPayment] Failed to delete signup ${signupId}:`, error);
-            });
         } catch (error: unknown) {
             safeConsoleError(`[kroegentocht.actions.ts][initiateKroegentochtPayment] Failed to delete signup ${signupId}:`, error);
         }
@@ -274,25 +241,33 @@ export async function getKroegentochtWhatsAppLink(
 
         const session = await getEnrichedSession();
         if (session?.user.id) {
-            const activeEvent = await query<{ id: number }>(
-                `SELECT id FROM pub_crawl_events ORDER BY date DESC LIMIT 1`
-            );
+            const activeEvents = await db.select({
+                id: schema.pub_crawl_events.id
+            }).from(schema.pub_crawl_events)
+            .orderBy(desc(schema.pub_crawl_events.date))
+            .limit(1);
 
-            if (activeEvent.rows.length > 0) {
-                const eventId = activeEvent.rows[0].id;
+            if (activeEvents.length > 0) {
+                const eventId = activeEvents[0].id;
 
-                const registration = await query<{ payment_status: string; whatsapp_community_url: string | null }>(
-                    `SELECT s.payment_status, e.whatsapp_community_url 
-                     FROM pub_crawl_signups s
-                     JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
-                     WHERE s.directus_relations = $1 AND s.pub_crawl_event_id = $2 AND s.payment_status = 'paid'
-                     LIMIT 1`,
-                    [session.user.id, eventId]
-                );
+                const registration = await db.select({
+                    payment_status: schema.pub_crawl_signups.payment_status,
+                    whatsapp_community_url: schema.pub_crawl_events.whatsapp_community_url
+                })
+                .from(schema.pub_crawl_signups)
+                .innerJoin(schema.pub_crawl_events, eq(schema.pub_crawl_signups.pub_crawl_event_id, schema.pub_crawl_events.id))
+                .where(
+                    and(
+                        eq(schema.pub_crawl_signups.directus_relations, session.user.id),
+                        eq(schema.pub_crawl_signups.pub_crawl_event_id, eventId),
+                        eq(schema.pub_crawl_signups.payment_status, 'paid')
+                    )
+                )
+                .limit(1);
 
-                if (registration.rows.length > 0) {
+                if (registration.length > 0) {
                     const validatedData = whatsAppUrlResponseSchema.parse({
-                        whatsapp_community_url: registration.rows[0].whatsapp_community_url
+                        whatsapp_community_url: registration[0].whatsapp_community_url
                     });
                     return {
                         success: true,
@@ -303,23 +278,35 @@ export async function getKroegentochtWhatsAppLink(
         }
 
         if (signupId && token) {
-            const guestCheck = await query<{ payment_status: string; whatsapp_community_url: string | null }>(
-                `SELECT s.payment_status, e.whatsapp_community_url 
-                 FROM pub_crawl_signups s
-                 JOIN pub_crawl_events e ON s.pub_crawl_event_id = e.id
-                 LEFT JOIN transactions t ON t.pub_crawl_signup = s.id
-                 LEFT JOIN pub_crawl_signups_transactions pst ON pst.pub_crawl_signups_id = s.id
-                 LEFT JOIN transactions t2 ON pst.transactions_id = t2.id
-                 WHERE s.id = $1 
-                   AND (t.access_token = $2 OR t.mollie_id = $2 OR t2.access_token = $2 OR t2.mollie_id = $2) 
-                   AND s.payment_status = 'paid'
-                 LIMIT 1`,
-                [signupId, token]
-            );
+            // This query involves a complex multi-table join with OR conditions on access_token/mollie_id
+            // across two different transaction join paths. Raw SQL is more appropriate here.
+            const t2 = alias(schema.transactions, 't2');
+            const guestCheck = await db.select({
+                payment_status: schema.pub_crawl_signups.payment_status,
+                whatsapp_community_url: schema.pub_crawl_events.whatsapp_community_url
+            })
+            .from(schema.pub_crawl_signups)
+            .innerJoin(schema.pub_crawl_events, eq(schema.pub_crawl_signups.pub_crawl_event_id, schema.pub_crawl_events.id))
+            .leftJoin(schema.transactions, eq(schema.transactions.pub_crawl_signup, schema.pub_crawl_signups.id))
+            .leftJoin(schema.pub_crawl_signups_transactions, eq(schema.pub_crawl_signups_transactions.pub_crawl_signups_id, schema.pub_crawl_signups.id))
+            .leftJoin(t2, eq(schema.pub_crawl_signups_transactions.transactions_id, t2.id))
+            .where(
+                and(
+                    eq(schema.pub_crawl_signups.id, signupId),
+                    eq(schema.pub_crawl_signups.payment_status, 'paid'),
+                    or(
+                        eq(schema.transactions.access_token, token),
+                        eq(schema.transactions.mollie_id, token),
+                        eq(t2.access_token, token),
+                        eq(t2.mollie_id, token)
+                    )
+                )
+            )
+            .limit(1);
 
-            if (guestCheck.rows.length > 0) {
+            if (guestCheck.length > 0) {
                 const validatedData = whatsAppUrlResponseSchema.parse({
-                    whatsapp_community_url: guestCheck.rows[0].whatsapp_community_url
+                    whatsapp_community_url: guestCheck[0].whatsapp_community_url
                 });
                 return {
                     success: true,

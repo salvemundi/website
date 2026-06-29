@@ -197,7 +197,7 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
 
     return (
         <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-sm">
-            <div className="max-h-[30rem] overflow-y-auto custom-scrollbar">
+            <div className="max-h-120 overflow-y-auto custom-scrollbar">
                 {items.length === 0 ? (
                     <div className="flex flex-col items-center justify-center p-20 text-(--beheer-text-muted)">
                         <Users className="h-12 w-12 mb-4 opacity-20" />

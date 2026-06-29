@@ -1,5 +1,4 @@
 import { type FastifyInstance } from 'fastify';
-import { sql } from 'kysely';
 import { createDirectus, rest, staticToken, readItems, readUser } from '@directus/sdk';
 import {
     PaymentSuccessEventSchema,
@@ -7,7 +6,7 @@ import {
     type MolliePaymentMetadata,
     type Directus
 } from '@salvemundi/validations';
-import { type Database } from '../plugins/db.js';
+import { schema, eq, sql } from '@salvemundi/db';
 import { RegistrationService } from './registration.service.js';
 import { AzureRetryService } from './azure-retry.service.js';
 import { CacheInvalidationService } from './cache-invalidation.js';
@@ -37,10 +36,20 @@ export class PaymentService {
         accessToken: string
     ) {
         const transaction = await fastify.db
-            .selectFrom('transactions')
-            .select(['payment_status', 'approval_status', 'user_id', 'email', 'first_name', 'last_name', 'product_type', 'coupon_code'])
-            .where('mollie_id', '=', paymentId)
-            .executeTakeFirst();
+            .select({
+                payment_status: schema.transactions.payment_status,
+                approval_status: schema.transactions.approval_status,
+                user_id: schema.transactions.user_id,
+                email: schema.transactions.email,
+                first_name: schema.transactions.first_name,
+                last_name: schema.transactions.last_name,
+                product_type: schema.transactions.product_type,
+                coupon_code: schema.transactions.coupon_code
+            })
+            .from(schema.transactions)
+            .where(eq(schema.transactions.mollie_id, paymentId))
+            .limit(1)
+            .then((res: any[]) => res[0]);
 
         if (!transaction) {
             fastify.log.warn(`[payment-service][payment] Attempted to finalize non-existent transaction: ${paymentId}`);
@@ -51,13 +60,12 @@ export class PaymentService {
 
         if (oldStatus !== newStatus) {
             await fastify.db
-                .updateTable('transactions')
+                .update(schema.transactions)
                 .set({
-                    payment_status: newStatus as Database['transactions']['payment_status'],
+                    payment_status: newStatus ,
                     updated_at: new Date().toISOString()
                 })
-                .where('mollie_id', '=', paymentId)
-                .execute();
+                .where(eq(schema.transactions.mollie_id, paymentId));
 
             fastify.log.info(`[FINANCE] Updated payment status for ${paymentId}: ${oldStatus} -> ${newStatus}`);
 
@@ -66,7 +74,7 @@ export class PaymentService {
                 !['failed', 'canceled', 'expired'].includes(oldStatus || '') &&
                 transaction.coupon_code) {
                 try {
-                    await sql`UPDATE coupons SET usage_count = GREATEST(0, usage_count - 1) WHERE UPPER(coupon_code) = UPPER(${transaction.coupon_code})`.execute(fastify.db);
+                    await fastify.db.execute(sql`UPDATE coupons SET usage_count = GREATEST(0, usage_count - 1) WHERE UPPER(coupon_code) = UPPER(${transaction.coupon_code})`);
                     fastify.log.info(`[payment-service][coupon] Released coupon ${transaction.coupon_code} for failed/canceled/expired payment ${paymentId}`);
                 } catch (couponErr) {
                     fastify.log.error({ err: couponErr }, `[payment-service][coupon] Failed to release coupon ${transaction.coupon_code} for payment ${paymentId}`);
@@ -92,7 +100,7 @@ export class PaymentService {
                     const flags = await directus.request(readItems('feature_flags', {
                         filter: { name: { _eq: 'manual_approval' } },
                         fields: ['is_active']
-                    })) as FeatureFlag[];
+                    })) as unknown as { is_active: boolean }[];
                     manualApproval = flags[0]?.is_active ?? false;
                 } catch (authErr) {
                     fastify.log.error({ err: authErr }, `[payment-service][manual-approval] Failed to check manual_approval flag: ${authErr instanceof Error ? authErr.message : String(authErr)}`);
@@ -100,12 +108,11 @@ export class PaymentService {
 
                 approvalStatus = (isContribution && manualApproval) ? 'pending' : 'approved';
                 await fastify.db
-                    .updateTable('transactions')
+                    .update(schema.transactions)
                     .set({
-                        approval_status: approvalStatus as Database['transactions']['approval_status']
+                        approval_status: approvalStatus 
                     })
-                    .where('mollie_id', '=', paymentId)
-                    .execute();
+                    .where(eq(schema.transactions.mollie_id, paymentId));
             }
 
             if (approvalStatus === 'approved') {
@@ -135,16 +142,15 @@ export class PaymentService {
             userId?: string | null;
             accessToken?: string | null;
             isContribution: boolean;
-            transaction: Pick<
-                Database['transactions'],
-                | 'payment_status'
-                | 'approval_status'
-                | 'user_id'
-                | 'email'
-                | 'first_name'
-                | 'last_name'
-                | 'product_type'
-            >;
+            transaction: {
+                payment_status: string | null;
+                approval_status: string | null;
+                user_id: string | null;
+                email: string | null;
+                first_name: string | null;
+                last_name: string | null;
+                product_type: string | null;
+            };
         }
     ) {
         const { paymentId, metadata, registrationId, registrationType, userId, accessToken, isContribution, transaction } = context;
@@ -170,10 +176,11 @@ export class PaymentService {
         if (registrationId && registrationType === 'event_signup') {
             try {
                 const qrResult = await fastify.db
-                    .selectFrom('event_signups')
-                    .select('qr_token')
-                    .where('id', '=', Number(registrationId))
-                    .executeTakeFirst();
+                    .select({ qr_token: schema.event_signups.qr_token })
+                    .from(schema.event_signups)
+                    .where(eq(schema.event_signups.id, Number(registrationId)))
+                    .limit(1)
+                    .then((res: any[]) => res[0]);
                 qrToken = qrResult?.qr_token || undefined;
             } catch (qrErr) {
                 fastify.log.error({ err: qrErr }, `[payment-service][qr] Failed to fetch QR token for registration ${registrationId}`);

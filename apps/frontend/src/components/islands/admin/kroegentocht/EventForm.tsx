@@ -53,7 +53,7 @@ export default function EventForm({ event }: EventFormProps) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
-    const normalizedEventGroups = (event?.groups || []).map((g: unknown): GroupConfig => {
+    const normalizedEventGroups = ((event?.groups || []) as unknown[]).map((g: unknown): GroupConfig => {
         if (typeof g === 'string') return { name: g, leaders: [] };
         const obj = g && typeof g === 'object' ? (g as { name?: unknown; leaders?: unknown }) : {};
         return {
@@ -97,8 +97,14 @@ export default function EventForm({ event }: EventFormProps) {
             uploadData.append('file', file);
 
             try {
-                const result = await uploadPubCrawlImage(uploadData);
-                setFormData(prev => ({ ...prev, image: result.id }));
+                const result: unknown = await uploadPubCrawlImage(uploadData);
+                if (result && typeof result === 'object') {
+                    const obj = result as { data?: { id?: string }; id?: string };
+                    const fileId = obj.data?.id ?? obj.id;
+                    if (typeof fileId === 'string') {
+                        setFormData(prev => ({ ...prev, image: fileId }));
+                    }
+                }
                 showToast('Afbeelding succesvol geüpload', 'success');
             } catch (error) {
                 safeConsoleError('[EventForm.tsx][EventForm] Upload mislukt', error);
@@ -371,3 +377,6 @@ export default function EventForm({ event }: EventFormProps) {
         </>
     );
 }
+
+
+

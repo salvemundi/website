@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getTripSignupByToken } from '@/server/actions/events/reis-payment.actions';
+import { getTripSignupByToken } from '@/server/actions/events/trip-payment.actions';
 import TripPaymentFlowIsland from '@/components/islands/reis/TripPaymentFlowIsland';
 import { TripAccessDenied, TripWaitlisted, TripAlreadyPaid } from '@/components/ui/reis/TripPaymentStates';
 
@@ -32,7 +32,7 @@ export default async function RestbetalingPage({ searchParams }: PageProps) {
     }
 
     if (signup.full_payment_paid) {
-        return <TripAlreadyPaid tripName={trip.name} />;
+        return <TripAlreadyPaid tripName={trip.name || "deze reis"} />;
     }
 
     return (

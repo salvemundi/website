@@ -1,11 +1,9 @@
 'use server';
 
 import { z } from "zod";
-import { getSystemDirectus } from "@/lib/directus";
-import { readUsers } from "@directus/sdk";
-import { type DirectusUser } from '@salvemundi/validations';
-import { query } from "@/lib/database";
-import { USER_BASIC_FIELDS } from "@salvemundi/validations/directus/fields";
+
+import { db, schema } from "@salvemundi/db";
+import { isNotNull, eq, desc, sql } from "drizzle-orm";
 import {
     type DashboardStats,
     type Birthday,
@@ -22,19 +20,9 @@ import { getPermissions, type UserPermissions } from '@/shared/lib/permissions';
 import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";
 import { safeConsoleError } from '@/server/utils/logger';
 
-interface TopStickerRow {
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-    count: string | number;
-}
 
-interface BirthdayUserRow {
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-    date_of_birth: string | null;
-}
+
+
 
 export async function getDashboardPermissions(): Promise<UserPermissions & { isIct: boolean }> {
     const { isAuthorized, user, isIct } = await checkAdminAccess();
@@ -81,11 +69,15 @@ export async function getUpcomingBirthdays(): Promise<Birthday[]> {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) return [];
     try {
-        const users = await getSystemDirectus().request(readUsers({
-            fields: [...USER_BASIC_FIELDS, 'date_of_birth' as keyof DirectusUser],
-            filter: { date_of_birth: { _nnull: true } },
-            limit: -1
-        })) as unknown as BirthdayUserRow[];
+        const users = await db.query.directus_users.findMany({
+            where: isNotNull(schema.directus_users.date_of_birth),
+            columns: {
+                id: true,
+                first_name: true,
+                last_name: true,
+                date_of_birth: true
+            }
+        });
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -138,19 +130,17 @@ export async function getTopStickers(): Promise<TopSticker[]> {
     const { isAuthorized } = await checkAdminAccess();
     if (!isAuthorized) return [];
     try {
-        const sql = `
-            SELECT 
-                u.id, 
-                u.first_name, 
-                u.last_name, 
-                COUNT(s.id) as count
-            FROM "Stickers" s
-            JOIN directus_users u ON s.user_created = u.id
-            GROUP BY u.id, u.first_name, u.last_name
-            ORDER BY count DESC
-            LIMIT 3
-        `;
-        const { rows } = await query<TopStickerRow>(sql);
+        const rows = await db.select({
+            id: schema.directus_users.id,
+            first_name: schema.directus_users.first_name,
+            last_name: schema.directus_users.last_name,
+            count: sql<number>`COUNT(${schema.Stickers.id})`
+        })
+        .from(schema.Stickers)
+        .innerJoin(schema.directus_users, eq(schema.Stickers.user_created, schema.directus_users.id))
+        .groupBy(schema.directus_users.id, schema.directus_users.first_name, schema.directus_users.last_name)
+        .orderBy(desc(sql`COUNT(${schema.Stickers.id})`))
+        .limit(3);
 
         const result = rows.map(r => ({
             id: String(r.id),

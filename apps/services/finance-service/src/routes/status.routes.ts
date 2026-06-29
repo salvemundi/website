@@ -21,29 +21,29 @@ export default async function statusRoutes(fastify: FastifyInstance) {
         }
 
         try {
+            const { schema, eq, desc } = await import('@salvemundi/db');
             const transactions = await fastify.db
-                .selectFrom('transactions')
-                .select([
-                    'mollie_id',
-                    'payment_status',
-                    'amount',
-                    'product_type',
-                    'registration',
-                    'trip_signup',
-                    'pub_crawl_signup',
-                    'created_at',
-                    'updated_at',
-                    'access_token'
-                ])
-                .where('access_token', '=', id)
-                .orderBy('created_at', 'desc')
-                .execute();
+                .select({
+                    mollie_id: schema.transactions.mollie_id,
+                    payment_status: schema.transactions.payment_status,
+                    amount: schema.transactions.amount,
+                    product_type: schema.transactions.product_type,
+                    registration: schema.transactions.registration,
+                    trip_signup: schema.transactions.trip_signup,
+                    pub_crawl_signup: schema.transactions.pub_crawl_signup,
+                    created_at: schema.transactions.created_at,
+                    updated_at: schema.transactions.updated_at,
+                    access_token: schema.transactions.access_token
+                })
+                .from(schema.transactions)
+                .where(eq(schema.transactions.access_token, id))
+                .orderBy(desc(schema.transactions.created_at));
 
             if (transactions.length === 0) {
                 return reply.status(404).send({ error: 'Transaction not found' });
             }
 
-            const transaction = transactions.find(t => t.payment_status === 'paid') || transactions[0];
+            const transaction = transactions.find((t: any) => t.payment_status === 'paid') || transactions[0];
 
             const dbStatus = String(transaction.payment_status);
             const mollieId = transaction.mollie_id;

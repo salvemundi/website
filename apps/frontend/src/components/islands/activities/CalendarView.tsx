@@ -55,8 +55,8 @@ export default function CalendarView({
 
     const getEventsForDay = (day: Date) => {
         return events.filter(event => {
-            const start = new Date(event.datum_start);
-            const end = event.datum_eind ? new Date(event.datum_eind) : start;
+            const start = new Date(event.event_date);
+            const end = event.event_date_end ? new Date(event.event_date_end) : start;
 
             const d = new Date(day.getFullYear(), day.getMonth(), day.getDate()).getTime();
             const s = new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
@@ -144,10 +144,10 @@ export default function CalendarView({
                                             onEventClick(event);
                                         }}
                                         className="w-full text-left text-[10px] p-1.5 rounded-lg bg-(--theme-purple)/10 hover:bg-(--theme-purple)/20 text-(--theme-purple) font-bold truncate transition-all hover:scale-[1.02] border border-transparent hover:border-(--theme-purple)/20"
-                                        title={`${event.event_time ? event.event_time.split(':').slice(0, 2).join(':') : '00:00'} - ${event.titel}`}
+                                        title={`${event.event_time ? event.event_time.split(':').slice(0, 2).join(':') : '00:00'} - ${event.name}`}
                                     >
                                         <span className="opacity-60 mr-1.5 font-black">{event.event_time ? event.event_time.split(':').slice(0, 2).join(':') : '00:00'}</span>
-                                        {event.titel}
+                                        {event.name}
                                     </button>
                                 ))}
                             </div>

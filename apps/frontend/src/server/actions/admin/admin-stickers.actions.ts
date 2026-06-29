@@ -4,29 +4,10 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { revalidateTag, revalidatePath } from "next/cache";
 import { logAdminAction } from "@/server/actions/infrastructure/audit.actions";
 import { isSuperAdmin } from "@/lib/auth";
-import { getSystemDirectus } from "@/lib/directus";
-import { deleteItem, updateItem } from "@directus/sdk";
 import { type EnrichedUser } from "@/types/auth";
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 import { safeConsoleError } from '@/server/utils/logger';
-
-interface StickerRow {
-    id: string | number;
-    latitude: string | number;
-    longitude: string | number;
-    location_name: string | null;
-    status: string | null;
-    description: string | null;
-    image: string | null;
-    city: string | null;
-    country: string | null;
-    address: string | null;
-    date_created: string | Date;
-    user_id: string | null;
-    first_name: string | null;
-    last_name: string | null;
-    avatar: string | null;
-}
 
 async function requireStickerAdmin() {
     const session = await getEnrichedSession();
@@ -45,18 +26,20 @@ export async function getStickers() {
     await requireStickerAdmin();
 
     try {
-        const sql = `
-            SELECT 
-                s.*,
-                u.id as user_id,
-                u.first_name,
-                u.last_name,
-                u.avatar
-            FROM "Stickers" s
-            LEFT JOIN directus_users u ON s.user_created = u.id
-            ORDER BY s.date_created DESC
-        `;
-        const { rows } = await query<StickerRow>(sql);
+        const rows = await db.query.Stickers.findMany({
+            with: {
+                directus_user_user_created: {
+                    columns: {
+                        id: true,
+                        first_name: true,
+                        last_name: true,
+                        avatar: true,
+                        email: true
+                    }
+                }
+            },
+            orderBy: (stickers, { desc }) => [desc(stickers.date_created)]
+        });
 
         return rows.map((s) => ({
             id: Number(s.id),
@@ -69,12 +52,13 @@ export async function getStickers() {
             city: s.city || null,
             country: s.country || null,
             address: s.address || null,
-            date_created: s.date_created instanceof Date ? s.date_created.toISOString() : s.date_created,
-            user_created: s.user_id ? {
-                id: s.user_id,
-                first_name: s.first_name,
-                last_name: s.last_name,
-                avatar: s.avatar
+            date_created: s.date_created ? String(s.date_created) : undefined,
+            user_created: s.directus_user_user_created ? {
+                id: s.directus_user_user_created.id,
+                first_name: s.directus_user_user_created.first_name,
+                last_name: s.directus_user_user_created.last_name,
+                avatar: s.directus_user_user_created.avatar,
+                email: s.directus_user_user_created.email
             } : null
         }));
     } catch (error: unknown) {
@@ -87,7 +71,7 @@ export async function deleteSticker(id: number) {
     await requireStickerAdmin();
 
     try {
-        await getSystemDirectus().request(deleteItem('Stickers', id));
+        await db.delete(schema.Stickers).where(eq(schema.Stickers.id, id));
         revalidatePath('/beheer/stickers');
         revalidatePath('/stickers');
         revalidateTag('stickers', 'max');
@@ -105,11 +89,11 @@ export async function updateSticker(id: number, data: Partial<{ [key: string]: u
     await requireStickerAdmin();
 
     try {
-        const updated = await getSystemDirectus().request(updateItem('Stickers', id, data));
+        const updated = await db.update(schema.Stickers).set(data).where(eq(schema.Stickers.id, id)).returning();
         revalidatePath('/beheer/stickers');
         revalidatePath('/stickers');
         revalidateTag('stickers', 'max');
-        return updated;
+        return updated[0];
     } catch (error: unknown) {
         safeConsoleError(`[admin-stickers.actions.ts][updateSticker] Failed to update sticker ${id}:`, error);
         throw new Error('Could not update sticker');

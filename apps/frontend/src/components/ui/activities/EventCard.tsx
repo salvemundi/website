@@ -24,7 +24,7 @@ export const EventCard: React.FC<EventCardProps> = ({
     href = "#"
 }) => {
     // Gebruik props of activity
-    const displayTitle = title || activity?.titel;
+    const displayTitle = title || activity?.name;
 
     const rawCategory = category || (activity as (Activiteit & { category?: string }) | undefined)?.category || (activity as (Activiteit & { committee_name?: string }) | undefined)?.committee_name;
     const cleanCategory = (name?: string) => {
@@ -33,7 +33,7 @@ export const EventCard: React.FC<EventCardProps> = ({
     };
     const displayCategory = cleanCategory(rawCategory);
 
-    const displayDate = date || formatDateRange(activity?.datum_start, activity?.datum_eind);
+    const displayDate = date || formatDateRange(activity?.event_date, activity?.event_date_end);
 
     return (
         <Link

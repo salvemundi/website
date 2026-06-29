@@ -8,7 +8,7 @@ import {
     Download,
     ChevronDown,
     Edit,
-    Trash2,
+    Trash,
     UserCheck,
     Eye,
     Users,
@@ -147,7 +147,7 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                                                         title="Bewerken"
                                                     />
                                                     <ActionButton
-                                                        icon={Trash2}
+                                                        icon={Trash}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             void onDelete(s.id);

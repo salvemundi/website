@@ -30,7 +30,7 @@ interface Props {
 export default function TripActivitySignupsModal({ activityName, options, signups, loading, onClose }: Props) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md">
-            <div className="bg-(--beheer-card-bg)/90 backdrop-blur-xl w-full max-w-4xl rounded-[2rem] shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-(--beheer-border)/50 flex flex-col max-h-[90vh]">
+            <div className="bg-(--beheer-card-bg)/90 backdrop-blur-xl w-full max-w-4xl rounded-4xl shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-(--beheer-border)/50 flex flex-col max-h-[90vh]">
                 <div className="p-8 border-b border-(--beheer-border) flex items-center justify-between">
                     <div className="space-y-1">
                         <h2 className="text-xl font-semibold text-(--beheer-text) tracking-tight flex items-center gap-3">
@@ -83,7 +83,7 @@ export default function TripActivitySignupsModal({ activityName, options, signup
                                                     const rawSelected = parseSelectedOptions(s.selected_options);
                                                     const metaOptions = parseActivityOptions(options);
                                                     const selectedIds = Object.entries(rawSelected)
-                                                        .filter(([, v]) => v)
+                                                        .filter(([, isSelected]) => isSelected)
                                                         .map(([id]) => id);
                                                     if (selectedIds.length === 0) {
                                                         return <span className="text-(--beheer-text-muted) italic text-[10px] opacity-40">Geen opties</span>;

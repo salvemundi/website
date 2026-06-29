@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { selectDirectusUsersSchema } from './db.zod.js';
 
 export const memberSchema = z.object({
     id: z.string().uuid(),
@@ -13,13 +14,13 @@ export const memberUpdateSchema = memberSchema.partial();
 export type Member = z.infer<typeof memberSchema>;
 export type MemberUpdate = z.infer<typeof memberUpdateSchema>;
 
-export const userBasicSchema = z.object({
-    id: z.string(),
-    first_name: z.string().nullable().optional(),
-    last_name: z.string().nullable().optional(),
-    email: z.string().email(),
-    avatar: z.string().nullable().optional(),
-    membership_status: z.string().nullable().optional(),
+export const userBasicSchema = selectDirectusUsersSchema.pick({
+    id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    avatar: true,
+    membership_status: true,
 });
 
 export type UserBasic = z.infer<typeof userBasicSchema>;

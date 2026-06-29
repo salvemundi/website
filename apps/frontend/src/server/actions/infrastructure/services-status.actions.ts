@@ -132,7 +132,7 @@ export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
         let latency: number | undefined = undefined;
 
         try {
-            const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.NEXT_PUBLIC_DIRECTUS_URL || '';
+            const directusUrl = process.env.INTERNAL_DIRECTUS_URL || '';
             if (!directusUrl) throw new Error('Directus URL not configured');
 
             const healthUrl = directusUrl.endsWith('/') ? `${directusUrl}server/health` : `${directusUrl}/server/health`;

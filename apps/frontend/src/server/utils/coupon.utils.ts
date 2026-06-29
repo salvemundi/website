@@ -1,5 +1,6 @@
 import 'server-only';
-import { query } from '@/lib/database/db';
+import { db, schema } from '@/lib/database/db';
+import { eq, and, or, isNull, sql } from 'drizzle-orm';
 import { safeConsoleError } from '@/server/utils/logger';
 
 export interface CouponData {
@@ -25,23 +26,21 @@ export async function getValidCoupon(code: string): Promise<CouponValidationResu
     }
 
     try {
-        const sql = `
-            SELECT 
-                id,
-                discount_type, 
-                discount_value, 
-                usage_count, 
-                usage_limit, 
-                valid_from, 
-                valid_until, 
-                is_active
-            FROM coupons
-            WHERE UPPER(coupon_code) = UPPER($1)
-            LIMIT 1
-        `;
+        const rows = await db.select({
+            id: schema.coupons.id,
+            discount_type: schema.coupons.discount_type,
+            discount_value: schema.coupons.discount_value,
+            usage_count: schema.coupons.usage_count,
+            usage_limit: schema.coupons.usage_limit,
+            valid_from: schema.coupons.valid_from,
+            valid_until: schema.coupons.valid_until,
+            is_active: schema.coupons.is_active
+        })
+        .from(schema.coupons)
+        .where(sql`UPPER(${schema.coupons.coupon_code}) = UPPER(${code.trim()})`)
+        .limit(1);
 
-        const result = await query<CouponData>(sql, [code.trim()]);
-        const coupon = result.rows[0] as CouponData | undefined;
+        const coupon = rows[0] as unknown as CouponData | undefined;
 
         if (!coupon) {
             return { valid: false, error: 'Coupon code niet gevonden' };
@@ -82,27 +81,29 @@ export async function claimCoupon(code: string): Promise<CouponValidationResult>
     }
 
     try {
-        const sql = `
-            UPDATE coupons 
-            SET usage_count = usage_count + 1 
-            WHERE UPPER(coupon_code) = UPPER($1)
-              AND is_active = true
-              AND (valid_from IS NULL OR valid_from <= NOW())
-              AND (valid_until IS NULL OR valid_until >= NOW())
-              AND (usage_limit IS NULL OR usage_count < usage_limit)
-            RETURNING 
-                id,
-                discount_type, 
-                discount_value, 
-                usage_count, 
-                usage_limit, 
-                valid_from, 
-                valid_until, 
-                is_active
-        `;
+        const rows = await db.update(schema.coupons)
+            .set({ usage_count: sql`${schema.coupons.usage_count} + 1` })
+            .where(
+                and(
+                    sql`UPPER(${schema.coupons.coupon_code}) = UPPER(${code.trim()})`,
+                    eq(schema.coupons.is_active, true),
+                    or(isNull(schema.coupons.valid_from), sql`${schema.coupons.valid_from} <= NOW()`),
+                    or(isNull(schema.coupons.valid_until), sql`${schema.coupons.valid_until} >= NOW()`),
+                    or(isNull(schema.coupons.usage_limit), sql`${schema.coupons.usage_count} < ${schema.coupons.usage_limit}`)
+                )
+            )
+            .returning({
+                id: schema.coupons.id,
+                discount_type: schema.coupons.discount_type,
+                discount_value: schema.coupons.discount_value,
+                usage_count: schema.coupons.usage_count,
+                usage_limit: schema.coupons.usage_limit,
+                valid_from: schema.coupons.valid_from,
+                valid_until: schema.coupons.valid_until,
+                is_active: schema.coupons.is_active
+            });
 
-        const result = await query<CouponData>(sql, [code.trim()]);
-        const coupon = result.rows[0] as CouponData | undefined;
+        const coupon = rows[0] as unknown as CouponData | undefined;
 
         if (!coupon) {
             const checkResult = await getValidCoupon(code);
@@ -126,12 +127,9 @@ export async function claimCoupon(code: string): Promise<CouponValidationResult>
 export async function releaseCoupon(code: string): Promise<void> {
     if (!code || typeof code !== 'string') return;
     try {
-        const sql = `
-            UPDATE coupons 
-            SET usage_count = GREATEST(0, usage_count - 1)
-            WHERE UPPER(coupon_code) = UPPER($1)
-        `;
-        await query(sql, [code.trim()]);
+        await db.update(schema.coupons)
+            .set({ usage_count: sql`GREATEST(0, ${schema.coupons.usage_count} - 1)` })
+            .where(sql`UPPER(${schema.coupons.coupon_code}) = UPPER(${code.trim()})`);
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
         safeConsoleError('[coupon.utils.ts][releaseCoupon] ', `Database error during coupon releasing: ${typedError.message}`);

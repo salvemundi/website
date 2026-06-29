@@ -1,9 +1,6 @@
 'use server';
 import { safeConsoleError, logWarn } from '@/server/utils/logger';
 import { revalidateTag, revalidatePath } from "next/cache";
-import { getSystemDirectus } from "@/lib/directus";
-import { readUsers } from "@directus/sdk";
-import { USER_FULL_FIELDS } from "@salvemundi/validations";
 import { checkSyncAccess, AZURE_SYNC_URL, INTERNAL_TOKEN } from "@/server/actions/infrastructure/azure-sync/sync-access";
 
 interface SyncServiceErrorResponse {
@@ -91,14 +88,15 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
 
     let targetUser: DirectusUserRow | undefined;
     try {
-        const users = await getSystemDirectus().request(readUsers({
-            filter: { entra_id: { _eq: userId } },
-            fields: USER_FULL_FIELDS
-        }));
-        targetUser = (users as unknown as DirectusUserRow[])[0] as DirectusUserRow | undefined;
+        const { db, schema } = await import('@salvemundi/db');
+        const { eq } = await import('drizzle-orm');
+        const user = await db.query.directus_users.findFirst({
+            where: eq(schema.directus_users.entra_id, userId)
+        });
+        targetUser = user as unknown as DirectusUserRow | undefined;
     } catch (error: unknown) {
-        safeConsoleError(`[sync-tasks.actions.ts][triggerUserSyncAction] Directus lookup failed for user ${userId}`, error);
-        return { success: false, error: "Kon de gebruiker niet ophalen uit Directus." };
+        safeConsoleError(`[sync-tasks.actions.ts][triggerUserSyncAction] Drizzle lookup failed for user ${userId}`, error);
+        return { success: false, error: "Kon de gebruiker niet ophalen uit de database." };
     }
 
     const entraId = typeof targetUser?.entra_id === 'string' ? targetUser.entra_id : null;

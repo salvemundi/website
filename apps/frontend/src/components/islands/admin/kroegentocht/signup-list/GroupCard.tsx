@@ -13,7 +13,7 @@ interface Participant {
 
 interface ExtendedSignup extends PubCrawlSignup {
     participants?: Participant[];
-    created_at?: string | Date;
+    created_at: string;
 }
 
 interface GroupLeader {

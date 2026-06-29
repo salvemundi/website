@@ -1,9 +1,9 @@
 'use client';
 
-import { Edit2, Trash2, Calendar, Users, Euro, Loader2 } from 'lucide-react';
+import { Pen, Trash, Calendar, Users, Euro, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { getImageUrl } from '@/lib/utils/image-utils';
-import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
+import type { Trip } from '@salvemundi/validations/schema/admin-trip.zod';
 import { FallbackLogo } from '@/components/ui/media/FallbackLogo';
 
 interface TripCardProps {
@@ -52,7 +52,7 @@ export default function TripCard({ trip, onEdit, onDelete, isDeleting }: TripCar
                             return (
                                 <Image
                                     src={imgUrl}
-                                    alt={trip.name}
+                                    alt={trip.name || 'Trip'}
                                     fill
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                     className="object-contain transition-transform duration-700"
@@ -90,7 +90,7 @@ export default function TripCard({ trip, onEdit, onDelete, isDeleting }: TripCar
                         onClick={onEdit}
                         className="flex items-center justify-center gap-2 px-4 py-3 bg-(--bg-main) hover:bg-(--beheer-border)/10 text-(--beheer-text) rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ring-1 ring-(--beheer-border)/50"
                     >
-                        <Edit2 className="h-3.5 w-3.5" />
+                        <Pen className="h-3.5 w-3.5" />
                         Bewerken
                     </button>
                     <button
@@ -98,7 +98,7 @@ export default function TripCard({ trip, onEdit, onDelete, isDeleting }: TripCar
                         disabled={isDeleting}
                         className="flex items-center justify-center gap-2 px-4 py-3 bg-(--beheer-inactive)/5 hover:bg-(--beheer-inactive)/10 text-(--beheer-inactive) rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ring-1 ring-(--beheer-inactive)/20"
                     >
-                        {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                        {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash className="h-3.5 w-3.5" />}
                         Wissen
                     </button>
                 </div>

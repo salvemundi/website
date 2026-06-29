@@ -4,7 +4,8 @@ import 'server-only';
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 import { checkIntroAdminAccess } from './intro-signup.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -13,18 +14,24 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
     const route = '/intro';
 
     try {
-        const sql = 'SELECT id, is_active FROM feature_flags WHERE route_match = $1 LIMIT 1';
-        const { rows } = await query(sql, [route]);
+        const rows = await db.select({
+            id: schema.feature_flags.id,
+            is_active: schema.feature_flags.is_active
+        }).from(schema.feature_flags)
+        .where(eq(schema.feature_flags.route_match, route))
+        .limit(1);
 
-        const flag = rows[0] as { id: number; is_active: boolean } | undefined;
-        const oldStatus = flag ? !!flag.is_active : true;
+        const oldStatus = rows.length > 0 ? !!rows[0].is_active : true;
         const newStatus = !oldStatus;
 
-        if (flag) {
-            await query('UPDATE feature_flags SET is_active = $1 WHERE id = $2', [newStatus, flag.id]);
+        if (rows.length > 0) {
+            await db.update(schema.feature_flags).set({ is_active: newStatus }).where(eq(schema.feature_flags.id, rows[0].id));
         } else {
-            await query('INSERT INTO feature_flags (name, route_match, is_active) VALUES ($1, $2, $3)',
-                ['Intro Inschrijving', route, newStatus]);
+            await db.insert(schema.feature_flags).values({
+                name: 'Intro Inschrijving',
+                route_match: route,
+                is_active: newStatus
+            });
         }
 
         try {

@@ -32,7 +32,7 @@ export const CommitteeCard = ({
             isLeader: m.is_leader
         }));
 
-    const hasHistory = committee.has_history ?? false;
+    const hasHistory = (committee as Committee & { has_history?: boolean }).has_history ?? false;
     const hasImage = !!committee.image;
     const imageUrl = getImageUrl(committee.image);
 
@@ -42,7 +42,7 @@ export const CommitteeCard = ({
             className={`group flex h-full flex-col overflow-hidden squircle-lg bg-bg-card dark:border dark:border-white/10 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl 
                 ${isBestuur ? 'ring-4 ring-purple-500/20 shadow-purple-500/10' : ''}`}
         >
-            <div className={`relative w-full overflow-hidden bg-gradient-to-br from-purple-500/20 to-purple-900/40 ${isBestuur ? 'h-61 sm:h-72 md:h-80' : 'h-61'}`}>
+            <div className={`relative w-full overflow-hidden bg-linear-to-br from-purple-500/20 to-purple-900/40 ${isBestuur ? 'h-61 sm:h-72 md:h-80' : 'h-61'}`}>
                 {hasImage && isBestuur && (
                     <Image
                         src={imageUrl}
@@ -81,7 +81,7 @@ export const CommitteeCard = ({
                         priority={index < 4}
                     />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
 
                 {isBestuur && (
                     <div className="absolute right-4 top-4 rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-purple-700 shadow-lg">
@@ -93,7 +93,7 @@ export const CommitteeCard = ({
             <div className="flex flex-1 flex-col p-6 sm:p-8">
                 <div className="flex items-start justify-between gap-4 mb-4">
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-xl md:text-2xl lg:text-xl xl:text-2xl font-black tracking-tight text-theme-purple group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors break-words hyphens-auto">
+                        <h3 className="text-xl md:text-2xl lg:text-xl xl:text-2xl font-black tracking-tight text-theme-purple group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors wrap-break-word hyphens-auto">
                             {cleanedName || 'Commissie'}
                         </h3>
 
@@ -139,3 +139,4 @@ export const CommitteeCard = ({
         </NextLink>
     );
 };
+

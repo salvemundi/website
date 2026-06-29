@@ -1,7 +1,6 @@
 import 'server-only';
-import { getSystemDirectus } from '@/lib/directus';
-import { readItems } from '@directus/sdk';
-import { COUPON_FIELDS } from '@salvemundi/validations/directus/fields';
+import { db, schema } from '@salvemundi/db';
+import { desc } from 'drizzle-orm';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { hasPermission } from '@/shared/lib/permissions';
@@ -34,39 +33,22 @@ async function checkAccess() {
     return session;
 }
 
-interface CouponRow {
-    id: string | number;
-    coupon_code?: unknown;
-    discount_type?: unknown;
-    discount_value?: unknown;
-    usage_count?: unknown;
-    usage_limit?: unknown;
-    valid_from?: unknown;
-    valid_until?: unknown;
-    is_active?: unknown;
-    date_created?: unknown;
-}
-
 export async function getCoupons(): Promise<Coupon[]> {
     await checkAccess();
     try {
-        const items = await getSystemDirectus().request(readItems('coupons', {
-            sort: ['-id'],
-            limit: -1,
-            fields: [...COUPON_FIELDS]
-        }));
+        const items = await db.select().from(schema.coupons).orderBy(desc(schema.coupons.id));
 
-        return (items as unknown as CouponRow[]).map(i => ({
+        return items.map(i => ({
             id: Number(i.id),
-            coupon_code: typeof i.coupon_code === 'string' ? i.coupon_code : '',
-            discount_type: (typeof i.discount_type === 'string' ? i.discount_type : 'percentage') as 'fixed' | 'percentage',
-            discount_value: i.discount_value !== null && i.discount_value !== undefined ? Number(i.discount_value) : 0,
-            usage_count: i.usage_count !== null && i.usage_count !== undefined ? Number(i.usage_count) : 0,
-            usage_limit: i.usage_limit !== null && i.usage_limit !== undefined ? Number(i.usage_limit) : null,
-            valid_from: typeof i.valid_from === 'string' ? i.valid_from : null,
-            valid_until: typeof i.valid_until === 'string' ? i.valid_until : null,
+            coupon_code: i.coupon_code || '',
+            discount_type: i.discount_type as 'fixed' | 'percentage',
+            discount_value: i.discount_value !== null ? Number(i.discount_value) : 0,
+            usage_count: Number(i.usage_count),
+            usage_limit: i.usage_limit !== null ? Number(i.usage_limit) : null,
+            valid_from: i.valid_from ? new Date(i.valid_from).toISOString() : null,
+            valid_until: i.valid_until ? new Date(i.valid_until).toISOString() : null,
             is_active: !!i.is_active,
-            date_created: typeof i.date_created === 'string' ? i.date_created : undefined
+            date_created: i.date_created ? new Date(i.date_created).toISOString() : undefined
         }));
     } catch (error) {
         safeConsoleError('[admin-coupon.queries.ts][getCoupons] error while fetching coupons:', error);
@@ -77,22 +59,30 @@ export async function getCoupons(): Promise<Coupon[]> {
 export async function createCoupon(couponData: { coupon_code: string; discount_type: 'fixed' | 'percentage'; discount_value: number; usage_limit: number | null; valid_from: string | null; valid_until: string | null; is_active: boolean; }): Promise<Coupon> {
     try {
         await checkAccess();
-        const { createItem } = await import('@directus/sdk');
-        const item = await getSystemDirectus().request(createItem('coupons', couponData));
+        const inserted = await db.insert(schema.coupons).values({
+            coupon_code: couponData.coupon_code,
+            discount_type: couponData.discount_type,
+            discount_value: couponData.discount_value,
+            usage_limit: couponData.usage_limit,
+            valid_from: couponData.valid_from,
+            valid_until: couponData.valid_until,
+            is_active: couponData.is_active
+        }).returning();
 
-        const i = item as unknown as CouponRow;
+        if (inserted.length === 0) throw new Error('Failed to insert coupon');
+        const i = inserted[0];
 
         return {
             id: Number(i.id),
-            coupon_code: typeof i.coupon_code === 'string' ? i.coupon_code : '',
-            discount_type: (typeof i.discount_type === 'string' ? i.discount_type : 'percentage') as 'fixed' | 'percentage',
-            discount_value: i.discount_value !== null && i.discount_value !== undefined ? Number(i.discount_value) : 0,
-            usage_count: i.usage_count !== null && i.usage_count !== undefined ? Number(i.usage_count) : 0,
-            usage_limit: i.usage_limit !== null && i.usage_limit !== undefined ? Number(i.usage_limit) : null,
-            valid_from: typeof i.valid_from === 'string' ? i.valid_from : null,
-            valid_until: typeof i.valid_until === 'string' ? i.valid_until : null,
+            coupon_code: i.coupon_code || '',
+            discount_type: i.discount_type as 'fixed' | 'percentage',
+            discount_value: i.discount_value !== null ? Number(i.discount_value) : 0,
+            usage_count: Number(i.usage_count),
+            usage_limit: i.usage_limit !== null ? Number(i.usage_limit) : null,
+            valid_from: i.valid_from ? new Date(i.valid_from).toISOString() : null,
+            valid_until: i.valid_until ? new Date(i.valid_until).toISOString() : null,
             is_active: !!i.is_active,
-            date_created: typeof i.date_created === 'string' ? i.date_created : undefined
+            date_created: i.date_created ? new Date(i.date_created).toISOString() : undefined
         };
     } catch (error) {
         safeConsoleError('[admin-coupon.queries.ts][createCoupon] error while creating coupon:', error);

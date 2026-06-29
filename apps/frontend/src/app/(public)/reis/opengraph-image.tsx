@@ -1,6 +1,6 @@
 // OG-image route voor de reispagina
 import { generateEventOGImage } from '@/lib/utils/og-utils';
-import { getUpcomingTrips } from '@/server/actions/events/reis.actions';
+import { getUpcomingTrips } from '@/server/actions/events/trip.actions';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

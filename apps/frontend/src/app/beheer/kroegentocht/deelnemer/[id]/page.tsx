@@ -28,7 +28,7 @@ export default async function DeelnemerPage({ params }: DeelnemerPageProps) {
 
     // Fetch event details to get the groups configuration
     const event = await getPubCrawlEvent(Number(signup.pub_crawl_event_id.id)).catch(() => null);
-    const rawGroups = event?.groups || [];
+    const rawGroups = (event?.groups || []) as unknown[];
     const eventGroups = Array.isArray(rawGroups)
         ? rawGroups.map((g: unknown): string => {
             if (typeof g === 'string') return g;

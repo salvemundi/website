@@ -1,6 +1,7 @@
-import { query } from '@/lib/database';
+import 'server-only';
+import { db, schema } from '@salvemundi/db';
+import { eq, desc } from 'drizzle-orm';
 import { type PubCrawlEvent } from '@salvemundi/validations/schema/pub-crawl.zod';
-import { type PubCrawlEventRow } from './types';
 
 interface GroupConfig {
     name: string;
@@ -40,17 +41,14 @@ function normalizeGroups(rawGroups: unknown): GroupConfig[] {
  * Fetches all pub crawl events.
  */
 export async function fetchPubCrawlEventsDb(): Promise<PubCrawlEvent[]> {
-    const res = await query(
-        `SELECT * FROM pub_crawl_events ORDER BY date DESC LIMIT 100`,
-        []
-    );
+    const rows = await db.select().from(schema.pub_crawl_events).orderBy(desc(schema.pub_crawl_events.date)).limit(100);
 
     const { toLocalISOString } = await import('@/lib/utils/date-utils');
-    return (res.rows as (PubCrawlEventRow & { groups?: unknown })[]).map((raw) => {
+    return rows.map((raw) => {
         const groups = normalizeGroups(raw.groups);
         return {
             ...raw,
-            date: toLocalISOString(raw.date) ?? undefined,
+            date: raw.date ? toLocalISOString(raw.date) : undefined,
             price: 1,
             max_tickets_per_person: 10,
             groups
@@ -62,20 +60,17 @@ export async function fetchPubCrawlEventsDb(): Promise<PubCrawlEvent[]> {
  * Fetches a single pub crawl event by ID directly from PostgreSQL.
  */
 export async function fetchPubCrawlEventByIdDb(id: number): Promise<PubCrawlEvent | null> {
-    const res = await query(
-        `SELECT * FROM pub_crawl_events WHERE id = $1 LIMIT 1`,
-        [id]
-    );
+    const rows = await db.select().from(schema.pub_crawl_events).where(eq(schema.pub_crawl_events.id, id)).limit(1);
 
-    if (res.rowCount === 0) return null;
-    const raw = res.rows[0] as PubCrawlEventRow & { groups?: unknown };
+    if (rows.length === 0) return null;
+    const raw = rows[0];
     const { toLocalISOString } = await import('@/lib/utils/date-utils');
     
     const groups = normalizeGroups(raw.groups);
 
     return {
         ...raw,
-        date: toLocalISOString(raw.date) ?? undefined,
+        date: raw.date ? toLocalISOString(raw.date) : undefined,
         price: 1,
         max_tickets_per_person: 10,
         groups

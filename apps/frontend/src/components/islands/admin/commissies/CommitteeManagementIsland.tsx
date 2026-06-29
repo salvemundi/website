@@ -16,7 +16,7 @@ import CommitteeSidebar from './CommitteeSidebar';
 import CommitteeDetail from './CommitteeDetail';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import type { UserBasic } from '@/server/internal/user-db.utils';
+import { type UserBasic } from '@salvemundi/validations';
 
 const STANDARD_COMMITTEES = [
     'feestcommissie', 'mediacommissie', 'introcommissie', 'kascommissie',

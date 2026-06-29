@@ -1,6 +1,8 @@
 import 'server-only';
 import { z } from 'zod';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq, and, desc, sql, or, ilike, notIlike, inArray, notInArray } from 'drizzle-orm';
+import { unionAll } from 'drizzle-orm/pg-core';
 import { type PendingSignup } from '@salvemundi/validations/schema/audit.zod';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -14,55 +16,39 @@ const SystemLogSchema = z.object({
 });
 export type SystemLog = z.infer<typeof SystemLogSchema>;
 
-interface TransactionRow {
-    mollie_id: string;
-    created_at: string | Date;
-    email: string;
-    first_name: string;
-    last_name: string;
-    product_name: string;
-    amount: string | null;
-    payment_status: string;
-    approval_status: string;
-    user_id: string | null;
-}
-
-interface SystemLogRow {
-    id: string;
-    type: string;
-    status: string;
-    payload: string | { [key: string]: unknown };
-    created_at: string | Date;
-    acknowledged_at: string | Date | null;
-}
-
-interface CountRow {
-    total: number;
-}
-
 export async function getPendingSignupsInternal(): Promise<PendingSignup[]> {
     try {
-        const membershipSql = `
-            SELECT mollie_id, created_at, email, first_name, last_name, product_name, amount, payment_status, approval_status, user_id
-            FROM transactions
-            WHERE product_type = 'membership'
-            AND payment_status = 'paid'
-            AND approval_status = 'pending'
-            ORDER BY created_at DESC
-        `;
-        const { rows } = await query(membershipSql);
-        const memberships = rows as TransactionRow[];
+        const rows = await db.select({
+            mollie_id: schema.transactions.mollie_id,
+            created_at: schema.transactions.created_at,
+            email: schema.transactions.email,
+            first_name: schema.transactions.first_name,
+            last_name: schema.transactions.last_name,
+            product_name: schema.transactions.product_name,
+            amount: schema.transactions.amount,
+            payment_status: schema.transactions.payment_status,
+            approval_status: schema.transactions.approval_status,
+            user_id: schema.transactions.user_id
+        }).from(schema.transactions)
+        .where(
+            and(
+                eq(schema.transactions.product_type, 'membership'),
+                eq(schema.transactions.payment_status, 'paid'),
+                eq(schema.transactions.approval_status, 'pending')
+            )
+        )
+        .orderBy(desc(schema.transactions.created_at));
 
-        const result: PendingSignup[] = memberships.map((s: TransactionRow) => ({
-            id: s.mollie_id,
-            created_at: s.created_at instanceof Date ? s.created_at.toISOString() : String(s.created_at),
-            email: s.email,
-            first_name: s.first_name,
-            last_name: s.last_name,
-            product_name: s.product_name,
-            amount: parseFloat(s.amount ?? '0'),
+        const result: PendingSignup[] = rows.map((s) => ({
+            id: s.mollie_id || '',
+            created_at: s.created_at ? String(s.created_at) : new Date().toISOString(),
+            email: s.email || '',
+            first_name: s.first_name || '',
+            last_name: s.last_name || '',
+            product_name: s.product_name || '',
+            amount: Number(s.amount ?? 0),
             approval_status: 'pending' as const,
-            payment_status: s.payment_status,
+            payment_status: s.payment_status || 'paid',
             type: s.user_id ? 'membership_renewal' as const : 'membership_new' as const
         }));
 
@@ -92,20 +78,16 @@ export async function getSystemLogsInternal(limit: number = 50, source: 'admin' 
             'sticker_deleted'
         ];
 
-        const filter = source === 'admin'
-            ? `WHERE type LIKE 'admin_%' OR type = ANY($1)`
-            : `WHERE type NOT LIKE 'admin_%' AND NOT (type = ANY($1))`;
-
-        const logsFilter = source === 'admin'
-            ? `WHERE type LIKE 'admin_%' OR type = ANY($2)`
-            : `WHERE type NOT LIKE 'admin_%' AND NOT (type = ANY($2))`;
+        const filterCond = source === 'admin'
+            ? or(ilike(schema.system_logs.type, 'admin_%'), inArray(schema.system_logs.type, legacyAdminTypes))
+            : and(notIlike(schema.system_logs.type, 'admin_%'), notInArray(schema.system_logs.type, legacyAdminTypes));
 
         const [logsResult, countResult] = await Promise.all([
-            query(`SELECT * FROM system_logs ${logsFilter} ORDER BY created_at DESC LIMIT $1`, [limit, legacyAdminTypes]),
-            query(`SELECT COUNT(*)::int AS total FROM system_logs ${filter}`, [legacyAdminTypes])
+            db.select().from(schema.system_logs).where(filterCond).orderBy(desc(schema.system_logs.created_at)).limit(limit),
+            db.select({ total: sql<number>`COUNT(*)` }).from(schema.system_logs).where(filterCond)
         ]);
 
-        const logs: SystemLog[] = (logsResult.rows as SystemLogRow[]).map((r: SystemLogRow) => {
+        const logs: SystemLog[] = logsResult.map(r => {
             let parsedPayload: z.infer<typeof SystemLogSchema>['payload'] = {};
 
             if (typeof r.payload === 'string') {
@@ -123,14 +105,13 @@ export async function getSystemLogsInternal(limit: number = 50, source: 'admin' 
                 id: r.id,
                 type: r.type,
                 status: r.status,
-                created_at: r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at),
-                acknowledged_at: r.acknowledged_at ? (r.acknowledged_at instanceof Date ? r.acknowledged_at.toISOString() : String(r.acknowledged_at)) : null,
+                created_at: r.created_at,
+                acknowledged_at: r.acknowledged_at || null,
                 payload: parsedPayload
             });
         });
 
-        const countRows = countResult.rows as CountRow[];
-        const totalCount = countRows[0]?.total ?? 0;
+        const totalCount = Number(countResult[0]?.total ?? 0);
 
         return { logs, totalCount };
     } catch (error: unknown) {
@@ -146,21 +127,21 @@ export async function insertSystemLogInternal(data: {
     payload: unknown
 }): Promise<void> {
     try {
-        let payloadStr = JSON.stringify(data.payload);
-
-        if (payloadStr.length > 20000) {
-            payloadStr = JSON.stringify({
+        let payload = data.payload;
+        if (JSON.stringify(payload).length > 20000) {
+            payload = {
                 error: 'Payload truncated due to size limit',
                 original_type: data.type,
                 truncated: true
-            });
+            };
         }
 
-        const sql = `
-            INSERT INTO system_logs (type, status, payload, created_at)
-            VALUES ($1, $2, $3, NOW())
-        `;
-        await query(sql, [data.type, data.status, payloadStr]);
+        await db.insert(schema.system_logs).values({
+            type: data.type,
+            status: data.status,
+            payload: payload,
+            created_at: sql`NOW()`.mapWith(String)
+        });
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
         safeConsoleError('[audit.queries.ts][insertSystemLogInternal] ', `Failed to insert system log: ${typedError.message}`);
@@ -169,16 +150,27 @@ export async function insertSystemLogInternal(data: {
 
 export async function getIdNameLookupInternal(): Promise<Record<string, string>> {
     try {
-        const sql = `
-            SELECT 'committee_' || id::text AS key, name FROM committees
-            UNION ALL
-            SELECT 'event_' || id::text AS key, name FROM events
-            UNION ALL
-            SELECT 'trip_' || id::text AS key, name FROM trips
-            UNION ALL
-            SELECT 'user_' || id::text AS key, COALESCE(NULLIF(TRIM(COALESCE(first_name, '') || ' ' || COALESCE(last_name, '')), ''), email)::text AS name FROM directus_users
-        `;
-        const { rows } = await query(sql);
+        const committeesQ = db.select({
+            key: sql<string>`'committee_' || ${schema.committees.id}::text`,
+            name: sql<string>`COALESCE(${schema.committees.name}, '')`
+        }).from(schema.committees);
+
+        const eventsQ = db.select({
+            key: sql<string>`'event_' || ${schema.events.id}::text`,
+            name: sql<string>`COALESCE(${schema.events.name}, '')`
+        }).from(schema.events);
+
+        const tripsQ = db.select({
+            key: sql<string>`'trip_' || ${schema.trips.id}::text`,
+            name: sql<string>`COALESCE(${schema.trips.name}, '')`
+        }).from(schema.trips);
+
+        const usersQ = db.select({
+            key: sql<string>`'user_' || ${schema.directus_users.id}::text`,
+            name: sql<string>`COALESCE(NULLIF(TRIM(COALESCE(${schema.directus_users.first_name}, '') || ' ' || COALESCE(${schema.directus_users.last_name}, '')), ''), ${schema.directus_users.email})::text`
+        }).from(schema.directus_users);
+
+        const rows = await unionAll(committeesQ, eventsQ, tripsQ, usersQ);
         const lookup: Record<string, string> = {};
         for (const row of rows as { key: string; name: string }[]) {
             lookup[row.key] = row.name;

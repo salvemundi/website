@@ -3,7 +3,8 @@ import { safeConsoleError, logWarn } from '@/server/utils/logger';
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { isSuperAdmin } from "@/lib/auth";
 import { type Committee } from "@/shared/lib/permissions";
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq, sql } from 'drizzle-orm';
 import {
     getPendingSignupsInternal,
     getSystemLogsInternal,
@@ -18,13 +19,6 @@ import { sanitizePayload } from "@/server/utils/log-sanitizer";
 
 type ActionResponse<T> = { success: true; data: T } | { success: false; error: string };
 type LogsResponse = { success: true; data: SystemLog[]; totalCount: number } | { success: false; error: string };
-
-interface FeatureFlag {
-    id: number;
-    name: string;
-    is_active: boolean;
-    route_match: string;
-}
 
 interface QueueStatusData {
     queues: {
@@ -125,7 +119,7 @@ export async function approveSignupAction(id: string, type: string) {
 
     try {
         const internalToken = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
-        const res = await fetch(`${process.env.FINANCE_SERVICE_URL}/api/payments/approve`, {
+        const res = await fetch(`${process.env.FINANCE_SERVICE_URL}/api/finance/approve`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -155,7 +149,9 @@ export async function rejectSignupAction(id: string, type: string) {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        await query('UPDATE transactions SET approval_status = $1 WHERE mollie_id = $2', ['rejected', id]);
+        await db.update(schema.transactions)
+            .set({ approval_status: 'rejected' })
+            .where(eq(schema.transactions.mollie_id, id));
 
         await logAdminAction('admin_signup_rejected', 'SUCCESS', {
             context: 'lidmaatschap',
@@ -176,9 +172,12 @@ export async function getAuditSettingsAction(): Promise<ActionResponse<{ manual_
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const { rows } = await query<FeatureFlag>('SELECT is_active FROM feature_flags WHERE name = $1 LIMIT 1', ['manual_approval']);
-        const flag = rows[0] as FeatureFlag | undefined;
-        return { success: true, data: { manual_approval: !!flag?.is_active } };
+        const rows = await db.select({
+            is_active: schema.feature_flags.is_active
+        }).from(schema.feature_flags)
+        .where(eq(schema.feature_flags.name, 'manual_approval'))
+        .limit(1);
+        return { success: true, data: { manual_approval: rows.length > 0 ? !!rows[0].is_active : false } };
     } catch (error: unknown) {
         safeConsoleError('[audit.actions.ts][getAuditSettingsAction] Failed to fetch audit settings:', error);
         return { success: true, data: { manual_approval: false } };
@@ -190,14 +189,20 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const { rows } = await query<FeatureFlag>('SELECT id FROM feature_flags WHERE name = $1 LIMIT 1', ['manual_approval']);
-        const flagId = rows[0]?.id;
+        const rows = await db.select({
+            id: schema.feature_flags.id
+        }).from(schema.feature_flags)
+        .where(eq(schema.feature_flags.name, 'manual_approval'))
+        .limit(1);
 
-        if (flagId) {
-            await query('UPDATE feature_flags SET is_active = $1 WHERE id = $2', [manualApproval, flagId]);
+        if (rows.length > 0) {
+            await db.update(schema.feature_flags).set({ is_active: manualApproval }).where(eq(schema.feature_flags.id, rows[0].id));
         } else {
-            await query('INSERT INTO feature_flags (name, is_active, route_match) VALUES ($1, $2, $3)',
-                ['manual_approval', manualApproval, 'SYSTEM']);
+            await db.insert(schema.feature_flags).values({
+                name: 'manual_approval',
+                is_active: manualApproval,
+                route_match: 'SYSTEM'
+            });
         }
 
         await logAdminAction('admin_settings_change', 'SUCCESS', {
@@ -283,7 +288,9 @@ export async function acknowledgeSystemLogAction(logId: string) {
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        await query('UPDATE system_logs SET acknowledged_at = NOW() WHERE id = $1', [logId]);
+        await db.update(schema.system_logs)
+            .set({ acknowledged_at: sql`NOW()` })
+            .where(eq(schema.system_logs.id, logId));
         revalidatePath('/beheer/logging');
         return { success: true };
     } catch (error: unknown) {

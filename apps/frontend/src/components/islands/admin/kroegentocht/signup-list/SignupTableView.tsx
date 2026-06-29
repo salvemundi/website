@@ -1,6 +1,6 @@
 'use client';
 
-import { Edit, Mail, Trash2 } from 'lucide-react';
+import { Edit, Mail, Trash } from 'lucide-react';
 import GroupSelectDropdown from './GroupSelectDropdown';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
@@ -11,7 +11,7 @@ interface Participant {
 
 interface ExtendedSignup extends PubCrawlSignup {
     participants?: Participant[];
-    created_at?: string | Date;
+    created_at: string;
 }
 
 interface GroupLeader {
@@ -140,7 +140,7 @@ export default function SignupTableView({
                                                         className="p-1.5 rounded-md hover:bg-red-500/10 text-(--text-muted) hover:text-red-500 transition-all cursor-pointer"
                                                         title="Inschrijving verwijderen"
                                                     >
-                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                        <Trash className="h-3.5 w-3.5" />
                                                     </button>
                                                 </div>
                                             </div>

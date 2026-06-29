@@ -42,7 +42,11 @@ export async function getRedis() {
         });
 
         redisClient.on('error', (error: Error) => {
-            safeConsoleError('[redis-client.ts][getRedis] Error event:', error);
+            safeConsoleError('[redis-client.ts][getRedis] Error event:', error.message);
+        });
+        
+        redisClient.on('connect', () => {
+            // Redis connected successfully
         });
 
         isConnecting = false;

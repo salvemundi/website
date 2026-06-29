@@ -7,7 +7,7 @@ import {
     Plus, 
     Loader2, 
     Award, 
-    Trash2, 
+    Trash, 
     CalendarPlus, 
     RefreshCw 
 } from 'lucide-react';
@@ -156,7 +156,7 @@ export default function MemberAdminTab({
                                             disabled={isActionInProgress === `remove-${m.committee_id.azure_group_id}`}
                                             className="p-2 text-(--beheer-text-muted) hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer disabled:opacity-50"
                                         >
-                                            {isActionInProgress === `remove-${m.committee_id.azure_group_id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                            {isActionInProgress === `remove-${m.committee_id.azure_group_id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash className="h-4 w-4" />}
                                         </button>
                                     </div>
                                 );

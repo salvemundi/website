@@ -4,13 +4,14 @@ import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
 import ActiviteitBewerkenIsland from '@/components/islands/admin/activities/ActiviteitBewerkenIsland';
 import { getActivityByIdInternal } from '@/server/queries/admin-event.queries';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
 import { safeConsoleError } from '@/server/utils/logger';
 import { type EnrichedUser } from '@/types/auth';
 import { type AdminActivity } from "@salvemundi/validations";
-import { type Committee } from '@/shared/lib/permissions';
+import { type Committee } from '@salvemundi/validations';
 
 export const metadata: Metadata = {
     title: 'Activiteit Bewerken | SV Salve Mundi'
@@ -47,20 +48,25 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
 
     const [eventData, allCommittees] = await Promise.all([
         getActivityByIdInternal(id),
-        query('SELECT id, name, email FROM committees WHERE is_visible = true').then(res => res.rows as { id: number; name: string; email: string }[])
+        db.select({
+            id: schema.committees.id,
+            name: schema.committees.name,
+            email: schema.committees.email
+        }).from(schema.committees).where(eq(schema.committees.is_visible, true))
+        .then(rows => rows as { id: number; name: string; email: string }[])
     ]);
 
     if (!eventData) return notFound();
 
     const event = {
         ...eventData,
-        name: eventData.titel,
-        description: eventData.beschrijving,
+        name: eventData.name,
+        description: eventData.description,
         short_description: eventData.short_description,
-        event_date: eventData.datum_start,
-        event_date_end: eventData.datum_eind,
-        location: eventData.locatie,
-        image: eventData.afbeelding_id,
+        event_date: eventData.event_date,
+        event_date_end: eventData.event_date_end,
+        location: eventData.location,
+        image: eventData.image,
         price_members: eventData.price_members,
         price_non_members: eventData.price_non_members,
         max_sign_ups: eventData.max_sign_ups,

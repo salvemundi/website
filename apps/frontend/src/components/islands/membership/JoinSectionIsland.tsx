@@ -37,13 +37,13 @@ export const JoinSectionIsland: React.FC<JoinSectionIslandProps> = ({
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Link
                         href="/lidmaatschap"
-                        className="inline-flex items-center justify-center gap-2 squircle bg-gradient-theme px-8 py-4 text-base font-semibold text-purple-700 dark:text-white shadow-xl transition hover:scale-105"
+                        className="inline-flex items-center justify-center gap-2 squircle bg-brand-primary dark:bg-gradient-theme px-8 py-4 text-base font-semibold text-white shadow-xl transition hover:scale-105"
                     >
                         {buttonText}
                     </Link>
                     <Link
                         href="/contact"
-                        className="inline-flex items-center justify-center gap-2 squircle bg-transparent px-8 py-4 text-base font-semibold text-purple-300 transition hover:bg-(--bg-card) hover:scale-105"
+                        className="inline-flex items-center justify-center gap-2 squircle bg-purple-100 dark:bg-transparent px-8 py-4 text-base font-semibold text-brand-primary dark:text-purple-300 transition hover:bg-purple-200 dark:hover:bg-(--bg-card) hover:scale-105"
                     >
                         Neem contact op
                     </Link>

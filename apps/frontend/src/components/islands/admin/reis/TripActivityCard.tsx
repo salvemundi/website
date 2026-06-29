@@ -3,13 +3,13 @@
 import React from 'react';
 import { 
     Users, 
-    Edit2, 
-    Trash2, 
+    Pen, 
+    Trash, 
     LayoutGrid 
 } from 'lucide-react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 
-import { type TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
+import { type TripActivity } from '@salvemundi/validations/schema/admin-trip.zod';
 
 interface Props {
     activity: TripActivity;
@@ -42,7 +42,7 @@ export default function TripActivityCard({ activity, onEdit, onDelete, onViewSig
                 </div>
                 
                 {activity.description && (
-                    <p className="text-xs text-(--beheer-text-muted) mt-1 mb-6 line-clamp-2 min-h-[2.5rem] font-medium leading-relaxed">{activity.description}</p>
+                    <p className="text-xs text-(--beheer-text-muted) mt-1 mb-6 line-clamp-2 min-h-10 font-medium leading-relaxed">{activity.description}</p>
                 )}
 
                 <div className="flex justify-between items-end mt-auto mb-8">
@@ -80,17 +80,17 @@ export default function TripActivityCard({ activity, onEdit, onDelete, onViewSig
                             onClick={() => onEdit(activity)}
                             className="flex-1 px-4 py-3 rounded-xl border border-(--beheer-border) font-semibold text-[10px] text-(--beheer-text) hover:border-(--beheer-accent) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/5 transition-all flex items-center justify-center gap-2 active:scale-95"
                         >
-                            <Edit2 className="h-3.5 w-3.5" /> Bewerken
+                            <Pen className="h-3.5 w-3.5" /> Bewerken
                         </button>
                         <button 
-                            onClick={() => onDelete(activity.id)}
+                            onClick={() => onDelete(activity.id as number)}
                             className="p-3 rounded-xl border border-(--beheer-border) text-(--beheer-text-muted) hover:text-red-500 hover:border-red-500/20 hover:bg-red-500/5 transition-all flex items-center justify-center active:scale-95"
                         >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash className="h-4 w-4" />
                         </button>
                     </div>
                     <button 
-                        onClick={() => onViewSignups(activity.id)}
+                        onClick={() => onViewSignups(activity.id as number)}
                         className="w-full h-11 bg-(--beheer-accent)/5 hover:bg-(--beheer-accent)/10 text-(--beheer-accent) rounded-xl font-semibold text-[10px] transition-all flex items-center justify-center gap-2 border border-(--beheer-accent)/10 active:scale-95"
                     >
                         <Users className="h-3.5 w-3.5" /> Inschrijvingen
@@ -100,3 +100,5 @@ export default function TripActivityCard({ activity, onEdit, onDelete, onViewSig
         </div>
     );
 }
+
+

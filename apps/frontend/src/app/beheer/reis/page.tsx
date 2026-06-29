@@ -6,15 +6,15 @@ import { notFound } from 'next/navigation';
 
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import AdminTripSwitcher from '@/components/ui/admin/AdminTripSwitcher';
-import AdminReisTableIsland from '@/components/islands/admin/AdminReisTableIsland';
-import ReisVisibilityToggle from '@/components/islands/admin/reis/ReisVisibilityToggle';
+import AdminTripTableIsland from '@/components/islands/admin/AdminTripTableIsland';
+import TripVisibilityToggle from '@/components/islands/admin/reis/TripVisibilityToggle';
 
-import { getReisSiteSettings } from '@/server/actions/events/reis.actions';
+import { getReisSiteSettings } from '@/server/actions/events/trip.actions';
 import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
-import { getAdminTrips, getAdminTripById } from '@/server/actions/admin/reis-core.actions';
-import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/admin/reis-signups.actions';
-import { getTripActivities } from '@/server/queries/admin-reis.queries';
-import { groupActivitiesBySignup } from '@/server/utils/reis-mapping';
+import { getAdminTrips, getAdminTripById } from '@/server/actions/admin/trip-core.actions';
+import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/admin/trip-signups.actions';
+import { getTripActivities } from '@/server/queries/admin-trip.queries';
+import { groupActivitiesBySignup } from '@/server/utils/trip-mapping';
 
 import {
     tripSchema,
@@ -73,7 +73,6 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
         );
     }
 
-    // 3. Determine active trip
     const activeTripId = tripIdParam ? Number(tripIdParam) : trips[0].id;
     const activeTrip = trips.find((t) => t.id === activeTripId);
 
@@ -81,22 +80,18 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
         notFound();
     }
 
-    // 4. Fetch trip-specific data concurrently (Nuclear SSR)
     const [sRes, saRes, activitiesRes] = await Promise.all([
         getTripSignups(activeTrip.id as number),
         getTripSignupActivitiesAction(activeTrip.id as number),
         getTripActivities(activeTrip.id as number)
     ]);
 
-    // Validation - Throwing here is desired if data is corrupt
     const signups = tripSignupSchema.array().parse(sRes);
     const allSignupSelections = tripSignupActivitySchema.array().parse(saRes);
     const allTripActivities = tripActivitySchema.array().parse(activitiesRes);
 
-    // 5. Group activities for the island
     const activitiesMap = groupActivitiesBySignup(signups, allSignupSelections);
 
-    // 6. Detailed Stats (Old Logic preserved, New Styling applied)
     const stats = {
         total: signups.filter((s) => s.status !== 'cancelled').length,
         confirmed: signups.filter((s) => s.status === 'confirmed').length,
@@ -107,7 +102,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
 
     return (
         <AdminPageShell
-            title={activeTrip.name}
+            title={activeTrip.name ?? 'Reis'}
             backHref="/beheer"
             actions={
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
@@ -137,13 +132,13 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
                             <span className="hidden sm:inline">Instellingen</span>
                         </Link>
 
-                        <ReisVisibilityToggle initialVisible={_reisSettings.show} />
+                        <TripVisibilityToggle initialVisible={_reisSettings.show} />
                     </div>
                 </div>
             }
         >
             <div className="pb-8">
-                <AdminReisTableIsland
+                <AdminTripTableIsland
                     trip={activeTrip}
                     initialSignups={signups}
                     initialSignupActivities={activitiesMap}

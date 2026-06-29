@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useActionState } from 'react';
 import { CalendarIcon, Euro, Info } from 'lucide-react';
-import type { Trip } from '@salvemundi/validations/schema/admin-reis.zod';
+import type { Trip } from '@salvemundi/validations/schema/admin-trip.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import TripFormSidebar from './TripFormSidebar';
-import { createTrip, updateTrip } from '@/server/actions/admin/reis-core.actions';
+import { createTrip, updateTrip } from '@/server/actions/admin/trip-core.actions';
 import { AdminDatepicker } from '@/components/ui/forms/AdminDatepicker';
+import { AdminDatetimepicker } from '@/components/ui/forms/AdminDatetimepicker';
 
 const toISODateString = (date: Date | null): string => {
     if (!date) return '';
@@ -185,7 +186,7 @@ export default function TripForm({
                                         autoComplete="off"
                                         className={`beheer-input ${formErrors.name ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
                                         placeholder="Bijv. Skiereis 2025"
-                                        defaultValue={(state?.initialData?.name as string) || editingTrip?.name}
+                                        defaultValue={(state?.initialData?.name as string | undefined) ?? editingTrip?.name ?? undefined}
                                     />
                                     {formErrors.name && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.name[0]}</p>}
                                 </div>
@@ -198,7 +199,7 @@ export default function TripForm({
                                         rows={4}
                                         className={`beheer-input ${formErrors.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
                                         placeholder="Wat gaan we beleven op deze reis?"
-                                        defaultValue={(state?.initialData?.description as string) || editingTrip?.description || ''}
+                                        defaultValue={(state?.initialData?.description as string | undefined) ?? editingTrip?.description ?? undefined}
                                     />
                                     {formErrors.description && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.description[0]}</p>}
                                 </div>
@@ -237,16 +238,14 @@ export default function TripForm({
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-(--beheer-border)/30">
                                     <div>
                                         <label htmlFor="max_participants" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Max. Deelnemers *</label>
-                                        <input type="number" id="max_participants" name="max_participants" min="0" className={`beheer-input ${formErrors.max_participants ? 'border-red-500' : ''}`} placeholder="Bijv. 50" defaultValue={(state?.initialData?.max_participants as number) || editingTrip?.max_participants} />
+                                        <input type="number" id="max_participants" name="max_participants" min="0" className={`beheer-input ${formErrors.max_participants ? 'border-red-500' : ''}`} placeholder="Bijv. 50" defaultValue={(state?.initialData?.max_participants as number | undefined) ?? editingTrip?.max_participants ?? undefined} />
                                         {formErrors.max_participants && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.max_participants[0]}</p>}
                                     </div>
                                     <div>
                                         <label htmlFor="registration_start_date" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Auto-open Datum</label>
-                                        <input
-                                            type="datetime-local"
+                                        <AdminDatetimepicker
                                             id="registration_start_date"
                                             name="registration_start_date"
-                                            className="beheer-input"
                                             defaultValue={(state?.initialData?.registration_start_date as string) || toLocalISO(editingTrip?.registration_start_date)}
                                         />
                                     </div>
@@ -264,17 +263,17 @@ export default function TripForm({
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <label htmlFor="base_price" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Totale Prijs (€) *</label>
-                                        <input type="number" id="base_price" name="base_price" step="0.01" min="0" className={`beheer-input ${formErrors.base_price ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={(state?.initialData?.base_price as number) || editingTrip?.base_price} />
+                                        <input type="number" id="base_price" name="base_price" step="0.01" min="0" className={`beheer-input ${formErrors.base_price ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={(state?.initialData?.base_price as number | undefined) ?? editingTrip?.base_price ?? undefined} />
                                         {formErrors.base_price && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.base_price[0]}</p>}
                                     </div>
                                     <div>
                                         <label htmlFor="crew_discount" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Crewkorting (€)</label>
-                                        <input type="number" id="crew_discount" name="crew_discount" step="0.01" min="0" className={`beheer-input ${formErrors.crew_discount ? 'border-red-500' : ''}`} placeholder="20.00" defaultValue={(state?.initialData?.crew_discount as number) || editingTrip?.crew_discount} />
+                                        <input type="number" id="crew_discount" name="crew_discount" step="0.01" min="0" className={`beheer-input ${formErrors.crew_discount ? 'border-red-500' : ''}`} placeholder="20.00" defaultValue={(state?.initialData?.crew_discount as number | undefined) ?? editingTrip?.crew_discount ?? undefined} />
                                         {formErrors.crew_discount && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.crew_discount[0]}</p>}
                                     </div>
                                     <div>
                                         <label htmlFor="deposit_amount" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Aanbetaling (€) *</label>
-                                        <input type="number" id="deposit_amount" name="deposit_amount" step="0.01" min="0" className={`beheer-input ${formErrors.deposit_amount ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={(state?.initialData?.deposit_amount as number) || editingTrip?.deposit_amount} />
+                                        <input type="number" id="deposit_amount" name="deposit_amount" step="0.01" min="0" className={`beheer-input ${formErrors.deposit_amount ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={(state?.initialData?.deposit_amount as number | undefined) ?? editingTrip?.deposit_amount ?? undefined} />
                                         {formErrors.deposit_amount && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.deposit_amount[0]}</p>}
                                     </div>
                                 </div>
@@ -303,3 +302,8 @@ export default function TripForm({
         </div>
     );
 }
+
+
+
+
+

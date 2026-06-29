@@ -6,7 +6,7 @@ services:
     env_file:
       - ../.env.acc
     ports:
-      - "${INTERNAL_SERVER_IP:-127.0.0.1}:5432:5432"
+      - "${INTERNAL_SERVER_IP:-127.0.0.1}:${DB_PORT}:5432"
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -60,7 +60,8 @@ services:
       v7-core-redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8055/server/health || exit 1"]
+      test:
+        ["CMD-SHELL", "wget -qO- http://127.0.0.1:8055/server/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -68,9 +69,9 @@ services:
     environment:
       KEY: ${DIRECTUS_KEY}
       SECRET: ${DIRECTUS_SECRET}
-      DB_CLIENT: 'pg'
+      DB_CLIENT: "pg"
       DB_HOST: v7-core-db
-      DB_PORT: '5432'
+      DB_PORT: ${DB_PORT}
       DB_DATABASE: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}

@@ -1,60 +1,46 @@
 import 'server-only';
-import { Pool, type QueryResult, type QueryResultRow } from 'pg';
-import { safeConsoleError, logWarn } from '@/server/utils/logger';
+import { db as drizzleDb, schema } from '@salvemundi/db';
+import { Pool } from 'pg';
+import { safeConsoleError } from '@/server/utils/logger';
 
-declare global {
-    var _pgPool: Pool | undefined;
-}
+export const db = drizzleDb;
+export { schema };
 
-const poolConfig = {
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: Number(process.env.DB_PORT),
-    max: 20,
-    idleTimeoutMillis: 30000
+const dbUser = process.env.DB_USER;
+const dbPassword = process.env.DB_PASSWORD;
+const dbHost = process.env.DB_HOST;
+const dbPort = process.env.DB_PORT;
+const dbName = process.env.DB_NAME;
+
+const connectionString = process.env.DATABASE_URL || (dbUser && dbPassword && dbHost && dbName ? `postgres://${encodeURIComponent(dbUser)}:${encodeURIComponent(dbPassword)}@${dbHost}:${dbPort}/${dbName}` : undefined);
+
+const globalForPool = globalThis as unknown as {
+    pool: Pool | undefined;
 };
 
-if (!globalThis._pgPool) {
-    globalThis._pgPool = new Pool(poolConfig);
-    globalThis._pgPool.on('error', (error) => {
-        const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('[db.ts][anonymous] ', `Unexpected error on idle client: ${typedError.message}`);
+export const pool = globalForPool.pool ?? new Pool({ 
+    connectionString, 
+    max: process.env.NODE_ENV === 'production' ? 20 : 2 
+});
+
+if (!globalForPool.pool) {
+    pool.on('error', (err: Error) => {
+        safeConsoleError('[db.ts][pg Pool Error] Unexpected error on idle client', err);
     });
-}
 
-export const pool = globalThis._pgPool;
-
-export async function query<R extends QueryResultRow = QueryResultRow>(text: string, params?: (string | number | boolean | null | undefined | object)[], retries = 2): Promise<QueryResult<R>> {
-    for (let i = 0; i <= retries; i++) {
-        try {
-            const res = await pool.query(text, params);
-            return res;
-        } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : '';
-            const errorCode = (error as { code?: string }).code;
-            const isConnectionError = errorMessage.includes('Connection terminated unexpectedly') || errorCode === 'ECONNRESET';
-            if (isConnectionError && i < retries) {
-                logWarn('[db.ts][query] ', `Connection error, retrying... (${i + 1}/${retries})`);
-                await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
-                continue;
-            }
-            interface PgError {
-                detail?: string;
-                hint?: string;
-            }
-            const pgError = error as PgError;
-
-            safeConsoleError('[db.ts][query] ', `DB-Query Error: ${errorMessage} (Code: ${errorCode}). Query: ${text}. Detail: ${pgError.detail ?? ''}. Hint: ${pgError.hint ?? ''}`);
-
-            if (process.env.DB_USER === 'dummy') {
-                logWarn('[db.ts][query] ', 'Build-time DB connection failure detected. Returning empty result.');
-                return { rows: [], rowCount: 0, command: '', oid: 0, fields: [] };
-            }
-
-            throw error;
+    const originalQuery = pool.query.bind(pool);
+    pool.query = (function(this: Pool, ...args: unknown[]) {
+        const res = (originalQuery as (...args: unknown[]) => unknown)(...args);
+        if (res && typeof res === 'object' && 'catch' in res && typeof (res as { catch: unknown }).catch === 'function') {
+            return (res as Promise<unknown>).catch((err: unknown) => {
+                const errMsg = err instanceof Error ? err.message : String(err);
+                safeConsoleError(`[db.ts][pg Pool Query Error] SQL Error: ${errMsg}`, { query: args[0], error: err });
+                throw err instanceof Error ? err : new Error(String(err));
+            });
         }
-    }
-    throw new Error('db.ts][query] Unexpected end of function');
+        return res;
+    }) as unknown as Pool['query'];
 }
+
+if (process.env.NODE_ENV !== 'production') globalForPool.pool = pool;
+

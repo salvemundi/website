@@ -32,18 +32,18 @@ export default function EventList({ events, onEventClick, variant = 'list', serv
                     <ActiviteitCard
                         key={event.id}
                         id={event.id}
-                        title={event.titel}
-                        description={stripHtml(event.beschrijving || '')}
+                        title={event.name}
+                        description={stripHtml(event.description || '')}
                         short_description={event.short_description}
-                        date={event.datum_start}
-                        endDate={event.datum_eind ?? undefined}
+                        date={event.event_date}
+                        endDate={event.event_date_end ?? undefined}
                         startTime={event.event_time ?? undefined}
                         endTime={event.event_time_end ?? undefined}
-                        location={event.locatie ?? undefined}
-                        price={user && (user as unknown as MembershipUserData).membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
+                        location={event.location ?? undefined}
+                        price={user && (user as unknown as MembershipUserData).membership_status === 'active' ? event.price_members : event.price_non_members}
                         image={event.afbeelding_id ?? undefined}
                         isPast={isEventPast(
-                            event.datum_eind || event.datum_start,
+                            event.event_date_end || event.event_date,
                             event.event_time_end || event.event_time,
                             !!event.event_time_end,
                             serverTime ? new Date(serverTime) : undefined
@@ -54,7 +54,7 @@ export default function EventList({ events, onEventClick, variant = 'list', serv
                         committeeName={event.committee_name ?? undefined}
                         contact={event.contact ?? undefined}
                         registrationDeadline={event.registration_deadline ?? undefined}
-                        onlyMembers={event.only_members ?? undefined}
+                        onlyMembers={event.only_members}
                         onShowDetails={() => onEventClick(event)}
                         onSignup={() => onEventClick(event)}
                     />
@@ -69,18 +69,18 @@ export default function EventList({ events, onEventClick, variant = 'list', serv
                 <ActiviteitCard
                     key={event.id}
                     id={event.id}
-                    title={event.titel}
-                    description={stripHtml(event.beschrijving || '')}
+                    title={event.name}
+                    description={stripHtml(event.description || '')}
                     short_description={event.short_description}
-                    date={event.datum_start}
-                    endDate={event.datum_eind ?? undefined}
+                    date={event.event_date}
+                    endDate={event.event_date_end ?? undefined}
                     startTime={event.event_time ?? undefined}
                     endTime={event.event_time_end ?? undefined}
-                    location={event.locatie ?? undefined}
-                    price={user && (user as unknown as MembershipUserData).membership_status === 'active' ? (event.price_members ?? undefined) : (event.price_non_members ?? undefined)}
+                    location={event.location ?? undefined}
+                    price={user && (user as unknown as MembershipUserData).membership_status === 'active' ? event.price_members : event.price_non_members}
                     image={event.afbeelding_id ?? undefined}
                     isPast={isEventPast(
-                        event.datum_eind || event.datum_start,
+                        event.event_date_end || event.event_date,
                         event.event_time_end || event.event_time,
                         !!event.event_time_end,
                         serverTime ? new Date(serverTime) : undefined
@@ -91,7 +91,7 @@ export default function EventList({ events, onEventClick, variant = 'list', serv
                     committeeName={event.committee_name ?? undefined}
                     contact={event.contact ?? undefined}
                     registrationDeadline={event.registration_deadline ?? undefined}
-                    onlyMembers={event.only_members ?? undefined}
+                    onlyMembers={event.only_members}
                     onShowDetails={() => onEventClick(event)}
                     onSignup={() => onEventClick(event)}
                 />

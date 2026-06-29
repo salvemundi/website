@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Check, Save, Trash2, Key, Loader2, Shield } from 'lucide-react';
+import { Check, Save, Trash, Key, Loader2, Shield } from 'lucide-react';
 import { setImpersonateToken, clearImpersonateToken } from '@/server/actions/admin/impersonation.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -101,7 +101,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                                 disabled={isPending}
                                 className="flex items-center gap-2 px-4 py-2 bg-(--beheer-inactive)/10 text-(--beheer-inactive) border border-(--beheer-inactive)/20 rounded-(--beheer-radius) text-base font-semibold hover:bg-(--beheer-inactive) hover:text-white transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                             >
-                                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash className="h-4 w-4" />}
                                 <span className="hidden md:inline">Stop Testen</span>
                             </button>
                         )}

@@ -111,12 +111,12 @@ export default async function IntroPage() {
                     <div className="flex-1 w-full flex flex-col">
                         {user ? (
                             isAlreadyParent ? (
-                                <div className="bg-gradient-theme squircle-xl p-10 shadow-xl text-center flex flex-col items-center justify-center min-h-[300px] flex-1">
-                                    <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-6">
-                                        <CheckCircle2 className="w-10 h-10 text-white" />
+                                <div className="bg-bg-card dark:bg-gradient-theme border border-border-color squircle-xl p-10 shadow-xl text-center flex flex-col items-center justify-center min-h-[300px] flex-1">
+                                    <div className="w-20 h-20 bg-purple-100 dark:bg-white/20 rounded-full flex items-center justify-center mb-6">
+                                        <CheckCircle2 className="w-10 h-10 text-brand-primary dark:text-white" />
                                     </div>
-                                    <h3 className="text-3xl font-black text-white mb-4 tracking-tight">Aangemeld!</h3>
-                                    <p className="text-white/80 font-medium max-w-sm">
+                                    <h3 className="text-3xl font-black text-text-main dark:text-white mb-4 tracking-tight">Aangemeld!</h3>
+                                    <p className="text-text-muted dark:text-white/80 font-medium max-w-sm">
                                         Bedankt! Je inschrijving als Intro Ouder is ontvangen. We nemen snel contact met je op.
                                     </p>
                                 </div>

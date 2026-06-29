@@ -28,7 +28,7 @@ export async function checkAdminAccess() {
     const safeHeaders = new Headers();
     try {
         const h = await headers();
-        h.forEach((v, k) => safeHeaders.set(k, v));
+        h.forEach((headerValue, headerKey) => safeHeaders.set(headerKey, headerValue));
     } catch (error) {
         safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Failed to fetch headers:`, error);
         return { isAuthorized: false, user: null, isIct: false, impersonation: null };
@@ -70,7 +70,7 @@ export async function checkAdminAccess() {
         const impersonatedBy = (session as { impersonatedBy?: ImpersonationInfo }).impersonatedBy || null;
 
         const perms = getPermissions(user.committees || []);
-        const isAuthorized = Object.values(perms).some(v => v === true);
+        const isAuthorized = Object.values(perms).some(permValue => permValue === true);
         const isIct = perms.isICT || false;
 
         return {

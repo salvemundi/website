@@ -11,8 +11,8 @@ interface SafeHavenCardProps {
 }
 
 export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
-    const imageUrl = safeHaven?.afbeelding_id
-        ? getImageUrl(safeHaven.afbeelding_id, { width: 200, height: 200, fit: 'cover' })
+    const imageUrl = safeHaven?.image
+        ? getImageUrl(safeHaven.image, { width: 200, height: 200, fit: 'cover' })
         : null;
 
     return (
@@ -24,7 +24,7 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                     {imageUrl ? (
                         <Image
                             src={imageUrl}
-                            alt={safeHaven?.naam || 'Safe Haven'}
+                            alt={safeHaven?.contact_name || 'Safe Haven'}
                             fill
                             unoptimized
                             className="object-cover"
@@ -33,14 +33,14 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                         <>
                             <Image
                                 src={BRAND_CONFIG.logoFallbackLight}
-                                alt={safeHaven?.naam || 'Safe Haven'}
+                                alt={safeHaven?.contact_name || 'Safe Haven'}
                                 fill
                                 unoptimized
                                 className="object-cover dark:hidden"
                             />
                             <Image
                                 src={BRAND_CONFIG.logoFallbackDark}
-                                alt={safeHaven?.naam || 'Safe Haven'}
+                                alt={safeHaven?.contact_name || 'Safe Haven'}
                                 fill
                                 unoptimized
                                 className="object-cover hidden dark:block"
@@ -50,7 +50,7 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                 </div>
                 <div className="min-w-0 flex-1">
                     <h3 className="text-lg sm:text-xl font-bold text-theme-purple truncate">
-                        {safeHaven?.naam || ''}
+                        {safeHaven?.contact_name || ''}
                     </h3>
                     <p className="text-sm font-semibold text-purple-500">
                         Safe Haven
@@ -58,25 +58,17 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                 </div>
             </div>
 
-            {safeHaven?.beschrijving && (
-                <div className="mt-4 flex-1">
-                    <p className="text-sm text-text-muted leading-relaxed line-clamp-4">
-                        {safeHaven.beschrijving}
-                    </p>
-                </div>
-            )}
-
             <div className="mt-5 space-y-2">
-                {safeHaven?.email || safeHaven?.telefoon ? (
+                {safeHaven?.email || safeHaven?.phone_number ? (
                     <>
                         <ObfuscatedEmail
                             email={safeHaven.email || ''}
                             className="flex items-center gap-3 rounded-xl bg-bg-card border border-border-color p-3 text-sm font-medium text-text-main hover:border-purple-300 transition-colors w-full shadow-sm"
                         />
-                        {safeHaven.telefoon && (
+                        {safeHaven.phone_number && (
                             <div className="flex items-center gap-3 rounded-xl bg-bg-card border border-border-color p-3 text-sm font-medium text-text-main shadow-sm">
                                 <Phone className="h-4 w-4 text-purple-400" />
-                                <span>{safeHaven.telefoon}</span>
+                                <span>{safeHaven.phone_number}</span>
                             </div>
                         )}
                     </>

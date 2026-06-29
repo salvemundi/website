@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Map, { Marker, Popup, NavigationControl, GeolocateControl } from 'react-map-gl/maplibre';
-import maplibregl from 'maplibre-gl'; // Toegevoegd voor de factory-fix
+import maplibregl from 'maplibre-gl';
 import { MapPin, Camera, X } from 'lucide-react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { formatDate } from '@/shared/lib/utils/date';
@@ -60,7 +60,7 @@ export default function StickerMap({
                 if (filterUserId && sticker.user_created?.id !== filterUserId) return false;
                 if (filterUser) {
                     const u = sticker.user_created;
-                    const searchText = u ? `${u.first_name || ''} ${u.last_name || ''} ${u.email || ''}`.toLowerCase() : '';
+                    const searchText = u ? `${u.first_name || ''} ${u.last_name || ''}`.toLowerCase() : '';
                     if (!searchText.includes(filterUser.toLowerCase())) return false;
                 }
                 return true;

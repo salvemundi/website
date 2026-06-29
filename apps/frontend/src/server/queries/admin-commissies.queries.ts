@@ -1,6 +1,7 @@
 'use server';
 import 'server-only';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq, isNotNull, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { committeeSchema } from '@salvemundi/validations';
 
@@ -21,8 +22,7 @@ export type Committee = z.infer<typeof committeeSchema>;
 export type CommitteeMember = z.infer<typeof adminCommitteeMemberSchema>;
 
 export async function getCommittees(): Promise<Committee[]> {
-    
-    const { rows } = await query('SELECT * FROM committees ORDER BY name ASC');
+    const rows = await db.select().from(schema.committees).orderBy(schema.committees.name);
     
     // Validate each row against the schema
     return rows.map(i => {
@@ -33,33 +33,21 @@ export async function getCommittees(): Promise<Committee[]> {
     });
 }
 
-interface RawMemberRow {
-    directus_membership_id: number;
-    is_leader: boolean;
-    user_id: string;
-    entra_id: string | null;
-    first_name: string | null;
-    last_name: string | null;
-    email: string;
-}
-
 export async function getCommitteeMembers(committeeId: string): Promise<CommitteeMember[]> {
-    const sql = `
-        SELECT 
-            cm.id as directus_membership_id,
-            cm.is_leader,
-            u.id as user_id,
-            u.entra_id,
-            u.first_name,
-            u.last_name,
-            u.email
-        FROM committee_members cm
-        INNER JOIN directus_users u ON cm.user_id = u.id
-        WHERE cm.committee_id = $1
-    `;
-    const { rows } = await query(sql, [committeeId]);
+    const rows = await db.select({
+        directus_membership_id: schema.committee_members.id,
+        is_leader: schema.committee_members.is_leader,
+        user_id: schema.directus_users.id,
+        entra_id: schema.directus_users.entra_id,
+        first_name: schema.directus_users.first_name,
+        last_name: schema.directus_users.last_name,
+        email: schema.directus_users.email
+    })
+    .from(schema.committee_members)
+    .innerJoin(schema.directus_users, eq(schema.committee_members.user_id, schema.directus_users.id))
+    .where(eq(schema.committee_members.committee_id, Number(committeeId)));
 
-    return (rows as RawMemberRow[]).map((r) => adminCommitteeMemberSchema.parse({
+    return rows.map((r) => adminCommitteeMemberSchema.parse({
         directusMembershipId: r.directus_membership_id,
         entraId: r.entra_id || r.user_id,
         displayName: `${r.first_name || ''} ${r.last_name || ''}`.trim() || r.email,
@@ -68,9 +56,11 @@ export async function getCommitteeMembers(committeeId: string): Promise<Committe
 }
 
 export async function countUniqueCommitteeMembers(): Promise<number> {
+    const result = await db.select({
+        count: sql<number>`count(distinct ${schema.committee_members.user_id})`
+    })
+    .from(schema.committee_members)
+    .where(isNotNull(schema.committee_members.user_id));
     
-    const { rows } = await query('SELECT COUNT(DISTINCT user_id) as count FROM committee_members WHERE user_id IS NOT NULL');
-    return Number(rows[0]?.count || 0);
+    return Number(result[0]?.count || 0);
 }
-
-

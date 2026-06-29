@@ -4,6 +4,7 @@ import { Save, X, Eye } from 'lucide-react';
 import type { IntroBlog } from '@salvemundi/validations/schema/intro.zod';
 import { Button, Field, inputClass } from './IntroTabComponents';
 import { toLocalISOString } from '@/lib/utils/date-utils';
+import { AdminDatetimepicker } from '@/components/ui/forms/AdminDatetimepicker';
 
 interface Props {
     blog: Partial<IntroBlog>;
@@ -89,11 +90,9 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                     </Field>
 
                     <Field label="Datum (Publicatie)">
-                        <input
-                            type="datetime-local"
+                        <AdminDatetimepicker
                             value={toLocalISOString(data.created_at, true)?.slice(0, 16) || ''}
                             onChange={e => onChange({ ...data, created_at: e.target.value })}
-                            className={inputClass}
                         />
                     </Field>
 

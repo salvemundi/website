@@ -9,8 +9,6 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type EnrichedUser } from '@/types/auth';
 import { revalidateTag } from 'next/cache';
 
-import { getSystemDirectus } from '@/lib/directus';
-import { deleteItem } from '@directus/sdk';
 import {
     getActivitiesInternal,
     getActivityByIdInternal,
@@ -64,33 +62,38 @@ export async function getActivityBySlug(slug: string): Promise<Activiteit | null
 
 export async function checkUserSignupStatus(eventId: number, email: string, userId?: string | null) {
     try {
-        const { query } = await import('@/lib/database');
-        const { z } = await import('zod');
+        const { db, schema } = await import('@salvemundi/db');
+        const { eq, and, or, ilike, ne, desc, isNotNull } = await import('drizzle-orm');
 
-        const res = await query(
-            `SELECT id, qr_token, payment_status FROM event_signups 
-             WHERE event_id = $1 
-             AND (LOWER(participant_email) = LOWER($2) OR (directus_relations IS NOT NULL AND directus_relations = $3))
-             AND payment_status != 'failed' 
-             ORDER BY created_at DESC LIMIT 1`,
-            [eventId, email, userId || null]
-        );
+        const rows = await db.select({
+            id: schema.event_signups.id,
+            qr_token: schema.event_signups.qr_token,
+            payment_status: schema.event_signups.payment_status
+        }).from(schema.event_signups)
+        .where(
+            and(
+                eq(schema.event_signups.event_id, eventId),
+                or(
+                    ilike(schema.event_signups.participant_email, email),
+                    and(
+                        isNotNull(schema.event_signups.directus_relations),
+                        eq(schema.event_signups.directus_relations, userId || '')
+                    )
+                ),
+                ne(schema.event_signups.payment_status, 'failed')
+            )
+        )
+        .orderBy(desc(schema.event_signups.created_at))
+        .limit(1);
 
-        if (res.rows.length > 0) {
-            const row = res.rows[0];
-            const schema = z.object({
-                id: z.number(),
-                qr_token: z.string(),
-                payment_status: z.string()
-            });
-
-            const parsed = schema.parse(row);
+        if (rows.length > 0) {
+            const row = rows[0];
 
             return {
                 isSignedUp: true,
-                id: parsed.id,
-                qrToken: parsed.qr_token,
-                paymentStatus: parsed.payment_status
+                id: row.id,
+                qrToken: row.qr_token || '',
+                paymentStatus: row.payment_status || 'open'
             };
         }
         return { isSignedUp: false };
@@ -137,17 +140,23 @@ export async function signupForActivity(data: EventSignupForm) {
 
         const user = session?.user as unknown as EnrichedUser | undefined;
         const isMember = user ? user.membership_status === 'active' : false;
-        const price = (isMember ? activity.price_members : activity.price_non_members) ?? 0;
+        const priceRaw = (isMember ? activity.price_members : activity.price_non_members);
+        const price = Number(priceRaw);
 
-        const { query } = await import('@/lib/database');
-        const existingCheck = await query(
-            `SELECT id FROM event_signups 
-             WHERE event_id = $1 AND LOWER(participant_email) = LOWER($2)
-             AND payment_status != 'failed' LIMIT 1`,
-            [parsed.data.event_id, parsed.data.email]
-        );
+        const { db, schema } = await import('@salvemundi/db');
+        const { eq, and, ilike, ne } = await import('drizzle-orm');
 
-        if (existingCheck.rows.length > 0) {
+        const rows = await db.select({
+            id: schema.event_signups.id
+        }).from(schema.event_signups).where(
+            and(
+                eq(schema.event_signups.event_id, parsed.data.event_id),
+                ilike(schema.event_signups.participant_email, parsed.data.email),
+                ne(schema.event_signups.payment_status, 'failed')
+            )
+        ).limit(1);
+
+        if (rows.length > 0) {
             return { success: false, error: 'U bent al aangemeld voor deze activiteit.' };
         }
 
@@ -170,13 +179,14 @@ export async function signupForActivity(data: EventSignupForm) {
         revalidateTag(`event_signups_${parsed.data.event_id}`, 'max');
 
         if (price > 0) {
-            const financeUrl = `${getFinanceServiceUrl()}/api/payments/create`;
+            const financeUrl = `${getFinanceServiceUrl()}/api/finance/create`;
             const paymentRes = await fetchWithTimeout(financeUrl, {
                 method: 'POST',
                 headers: getInternalHeaders(),
+                timeout: 10000,
                 body: JSON.stringify({
                     amount: price,
-                    description: `Signup: ${activity.titel}`,
+                    description: `Signup: ${activity.name}`,
                     registrationId: signupId,
                     registrationType: 'event_signup',
                     email: parsed.data.email,
@@ -192,12 +202,10 @@ export async function signupForActivity(data: EventSignupForm) {
                 return { success: true, checkoutUrl: paymentData.checkoutUrl };
             }
 
+            safeConsoleError('[public-activiteit.actions.ts][signupForActivity] ', `Payment creation failed. Status: ${paymentRes.status}, Response: ${JSON.stringify(paymentData)}`);
+
             try {
                 await deleteEventSignupDb(signupId);
-                getSystemDirectus().request(deleteItem('event_signups', signupId)).catch((deleteError: unknown) => {
-                    const typedDeleteError = deleteError instanceof Error ? deleteError : new Error(String(deleteError));
-                    safeConsoleError('[public-activiteit.actions.ts][signupForActivity] ', `Failed to delete signup ${signupId}: ${typedDeleteError.message}`);
-                });
             } catch (deleteError: unknown) {
                 const typedDeleteError = deleteError instanceof Error ? deleteError : new Error(String(deleteError));
                 safeConsoleError('[public-activiteit.actions.ts][signupForActivity] ', `Failed to delete signup ${signupId}: ${typedDeleteError.message}`);
@@ -214,8 +222,8 @@ export async function signupForActivity(data: EventSignupForm) {
                 timestamp: new Date().toISOString(),
                 email: parsed.data.email,
                 name: parsed.data.name,
-                eventName: activity.titel,
-                eventDate: activity.datum_start,
+                eventName: activity.name,
+                eventDate: activity.event_date,
                 signupId: signupId,
                 qrToken: qrToken,
                 accessToken: qrToken
@@ -236,6 +244,10 @@ export async function signupForActivity(data: EventSignupForm) {
             return { success: false, error: 'U bent al aangemeld voor deze activiteit.' };
         }
 
+        safeConsoleError('[public-activiteit.actions.ts][signupForActivity] ', `Unexpected error: ${typedError.message} - ${String(error)}`);
+
         return { success: false, error: 'Er is een fout opgetreden bij die inschrijving.' };
     }
 }
+
+

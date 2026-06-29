@@ -1,13 +1,11 @@
 import { z } from 'zod';
+import { selectHeroBannersSchema, selectSponsorsSchema } from './db.zod.js';
 
-// ─── Hero Banners ─────────────────────────────────────────────────────────────
-// Valideert records uit de 'hero_banners' collectie in Directus.
-// Kolommen zijn strict snake_case conform de Datamodel ERD.
-export const heroBannerSchema = z.object({
+export const heroBannerSchema = selectHeroBannersSchema.omit({
+    date_created: true,
+    user_created: true,
+}).extend({
     id: z.union([z.string(), z.number()]),
-    title: z.string(),
-    subtitle: z.string().nullable().optional(),
-    // UUID van het achtergrondplaatje binnen Directus Files
     afbeelding_id: z.union([
         z.string(),
         z.object({
@@ -16,20 +14,13 @@ export const heroBannerSchema = z.object({
         })
     ]).nullable().optional(),
     status: z.enum(['draft', 'published', 'archived']).optional(),
-    display_order: z.number().int().default(0),
+    display_order: z.coerce.number().int().default(0),
 });
 
 export const heroBannersSchema = z.array(heroBannerSchema);
 
 export type HeroBanner = z.infer<typeof heroBannerSchema>;
 
-// ─── Activiteiten ─────────────────────────────────────────────────────────────
-// Verwijderd: Gebruik @salvemundi/validations/schema/activity.zod voor Activiteit-gebaseerde validatie.
-
-// ─── Sponsors ─────────────────────────────────────────────────────────────────
-// Valideert records uit de 'sponsors' collectie in Directus.
-// `dark_bg` kan als boolean, integer (0/1) of string binnenkomen vanuit Directus;
-// z.preprocess normaliseert dit naar een echte boolean.
 const normalizeBool = (val: unknown): boolean => {
     if (val === true || val === 1) return true;
     if (typeof val === 'string') {
@@ -39,9 +30,8 @@ const normalizeBool = (val: unknown): boolean => {
     return false;
 };
 
-export const sponsorSchema = z.object({
-    sponsor_id: z.number().int(),
-    // `image` kan een UUID-string zijn of een object met een `id` veld
+export const sponsorSchema = selectSponsorsSchema.extend({
+    sponsor_id: z.coerce.number().int(),
     image: z
         .union([
             z.string(),
@@ -49,7 +39,6 @@ export const sponsorSchema = z.object({
         ])
         .nullable()
         .optional(),
-    website_url: z.string().nullable().optional(),
     dark_bg: z.preprocess(normalizeBool, z.boolean()).default(false),
 });
 

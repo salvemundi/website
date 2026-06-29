@@ -10,17 +10,17 @@ import {
     type TripSignup,
     type TripActivity,
     type TripSignupActivity
-} from '@salvemundi/validations/schema/admin-reis.zod';
+} from '@salvemundi/validations/schema/admin-trip.zod';
 import {
     reisPaymentEnrichmentSchema,
     type ReisPaymentEnrichment
-} from '@salvemundi/validations/schema/reis.zod';
+} from '@salvemundi/validations/schema/trip.zod';
 import ActivitySelector from './ActivitySelector';
 import {
     updateSignupDetails,
     syncSignupActivities,
     initiateTripPaymentAction
-} from '@/server/actions/events/reis-payment.actions';
+} from '@/server/actions/events/trip-payment.actions';
 import { calculateTripPricing, type ActivitySelection } from '@/lib/reis/pricing';
 import { NameConfirmModal } from './shared/NameConfirmModal';
 import { EnrichmentForm } from './payment/EnrichmentForm';

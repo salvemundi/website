@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Utensils, Save, Loader2, Check } from 'lucide-react';
-import type { TripActivity } from '@salvemundi/validations/schema/admin-reis.zod';
+import type { TripActivity } from '@salvemundi/validations/schema/admin-trip.zod';
 
 interface SignupActivitiesProps {
     allActivities: TripActivity[];
@@ -46,12 +46,12 @@ export default function SignupActivities({
                     </div>
                 ) : (
                     allActivities.map((activity) => {
-                        const isSelected = selectedActivities.includes(activity.id);
+                        const isSelected = selectedActivities.includes(activity.id as number);
                         return (
                             <button
                                 key={activity.id}
                                 type="button"
-                                onClick={() => onToggleActivity(activity.id)}
+                                onClick={() => onToggleActivity(activity.id as number)}
                                 className={`w-full group relative flex items-center justify-between p-3 rounded-xl border transition-all duration-300 ${
                                     isSelected 
                                     ? 'bg-(--beheer-accent)/10 border-(--beheer-accent)/30 shadow-sm' 
@@ -100,3 +100,5 @@ export default function SignupActivities({
         </div>
     );
 }
+
+

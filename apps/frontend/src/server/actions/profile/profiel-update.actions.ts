@@ -3,8 +3,8 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { updateProfileSchema } from '@salvemundi/validations/schema/profiel.zod';
-import { getSystemDirectus } from '@/lib/directus';
-import { updateUser } from '@directus/sdk';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 import { triggerUserSyncAction } from '@/server/actions/infrastructure/azure-sync/sync-tasks.actions';
 import { clearSessionCache } from '@/server/auth/session-utils';
 import { getAuthorizedUser } from '@/server/actions/events/activiteiten/auth-check';
@@ -79,7 +79,7 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
             });
         }
 
-        const directusData: { [key: string]: unknown } = {};
+        const directusData: { minecraft_username?: string | null; phone_number?: string | null } = {};
         if (parsed.data.minecraft_username !== undefined) {
             directusData.minecraft_username = parsed.data.minecraft_username;
         }
@@ -90,7 +90,9 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
         }
 
         if (Object.keys(directusData).length > 0) {
-            await getSystemDirectus().request(updateUser(user.id, directusData));
+            await db.update(schema.directus_users)
+                .set(directusData)
+                .where(eq(schema.directus_users.id, user.id));
         }
 
         await clearSessionCache();

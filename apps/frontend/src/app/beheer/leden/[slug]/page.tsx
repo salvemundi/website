@@ -3,8 +3,6 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
 import LedenDetailIsland, { type Member, type CommitteeMembership, type Signup } from '@/components/islands/admin/leden/LedenDetailIsland';
-import { getSystemDirectus } from '@/lib/directus';
-import { readUsers, readItems } from '@directus/sdk';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { type EnrichedUser } from '@/types/auth';
 import { type Committee } from '@/shared/lib/permissions';
@@ -15,6 +13,8 @@ import {
     type Committee as DirectusCommittee
 } from '@salvemundi/validations';
 import { safeConsoleError } from '@/server/utils/logger';
+import { db, schema } from "@salvemundi/db";
+import { eq } from "drizzle-orm";
 
 interface AzureUserGroupsResponse {
     success: boolean;
@@ -57,34 +57,29 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(decodedSlug);
 
         if (isUuid) {
-            const result = await getSystemDirectus().request(
-                readUsers({
-                    filter: { id: { _eq: decodedSlug } },
-                    fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id'],
-                    limit: 1
-                })
-            ) as Partial<DirectusUser>[];
-            memberData = result[0] as DirectusUser;
+            // Updated Drizzle Syntax for Relational API
+            const result = await db.query.directus_users.findFirst({
+                where: (users, { eq }) => eq(users.id, decodedSlug),
+                columns: { id: true, first_name: true, last_name: true, email: true, date_of_birth: true, membership_expiry: true, status: true, phone_number: true, avatar: true, entra_id: true }
+            });
+            if (result) memberData = result as unknown as DirectusUser;
         } else {
-            const memberResult = await getSystemDirectus().request(
-                readUsers({
-                    filter: {
-                        _or: [
-                            { email: { _istarts_with: decodedSlug + '@' } },
-                            { email: { _istarts_with: decodedSlug.replace(/-/g, '.') + '@' } }
-                        ]
-                    },
-                    fields: ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 'membership_expiry', 'status', 'phone_number', 'avatar', 'entra_id'],
-                    limit: 100
-                })
-            ) as Partial<DirectusUser>[];
+            // Updated Drizzle Syntax for Relational API
+            const memberResult = await db.query.directus_users.findMany({
+                where: (users, { or, ilike }) => or(
+                    ilike(users.email, `${decodedSlug}@%`),
+                    ilike(users.email, `${decodedSlug.replace(/-/g, '.')}@%`)
+                ),
+                columns: { id: true, first_name: true, last_name: true, email: true, date_of_birth: true, membership_expiry: true, status: true, phone_number: true, avatar: true, entra_id: true },
+                limit: 100
+            });
 
             if (memberResult.length > 0) {
                 memberData = memberResult.find((u) => {
                     const emailPrefix = (u.email || '').split('@')[0].toLowerCase();
                     const normalizedPrefix = emailPrefix.replace(/\./g, '-');
                     return normalizedPrefix === decodedSlug.toLowerCase();
-                }) as DirectusUser | undefined;
+                }) as unknown as DirectusUser | undefined;
             }
         }
 
@@ -92,34 +87,43 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
         if (memberData.status === 'rejected') return notFound();
 
         const id = memberData.id;
+        const memberEmail = memberData.email || '';
 
         const [userCommitteesResult, signupsResult, allCommitteesResult] = await Promise.allSettled([
-            getSystemDirectus().request(
-                readItems('committee_members', {
-                    filter: { user_id: { _eq: id } },
-                    fields: ['id', 'is_leader', { committee_id: ['id', 'name', 'email', 'azure_group_id', 'is_visible'] }],
-                    limit: -1
-                })
-            ) as unknown as Promise<CommitteeMember[]>,
-            getSystemDirectus().request(
-                readItems('event_signups', {
-                    filter: { participant_email: { _eq: memberData.email } },
-                    fields: ['id', 'payment_status', { event_id: ['id', 'name', 'event_date'] }],
-                    limit: -1
-                })
-            ) as Promise<EventSignup[]>,
-            getSystemDirectus().request(
-                readItems('committees', {
-                    fields: ['id', 'name', 'azure_group_id', 'is_visible'],
-                    sort: ['name'],
-                    limit: -1
-                })
-            ) as Promise<DirectusCommittee[]>
+            db.select({
+                id: schema.committee_members.id,
+                is_leader: schema.committee_members.is_leader,
+                committee_id: {
+                    id: schema.committees.id,
+                    name: schema.committees.name,
+                    email: schema.committees.email,
+                    azure_group_id: schema.committees.azure_group_id,
+                    is_visible: schema.committees.is_visible
+                }
+            }).from(schema.committee_members)
+            .innerJoin(schema.committees, eq(schema.committee_members.committee_id, schema.committees.id))
+            .where(eq(schema.committee_members.user_id, id)),
+            
+            db.select({
+                id: schema.event_signups.id,
+                payment_status: schema.event_signups.payment_status,
+                event_id: {
+                    id: schema.events.id,
+                    name: schema.events.name,
+                    event_date: schema.events.event_date
+                }
+            }).from(schema.event_signups)
+            .innerJoin(schema.events, eq(schema.event_signups.event_id, schema.events.id))
+            .where(eq(schema.event_signups.participant_email, memberEmail)),
+
+            db.query.committees.findMany({
+                columns: { id: true, name: true, azure_group_id: true, is_visible: true }
+            })
         ]);
 
-        signups = signupsResult.status === 'fulfilled' ? signupsResult.value : [];
-        userCommittees = userCommitteesResult.status === 'fulfilled' ? userCommitteesResult.value : [];
-        allCommittees = allCommitteesResult.status === 'fulfilled' ? allCommitteesResult.value : [];
+        signups = signupsResult.status === 'fulfilled' ? signupsResult.value as unknown as EventSignup[] : [];
+        userCommittees = userCommitteesResult.status === 'fulfilled' ? userCommitteesResult.value as unknown as CommitteeMember[] : [];
+        allCommittees = allCommitteesResult.status === 'fulfilled' ? allCommitteesResult.value as unknown as DirectusCommittee[] : [];
 
         const HARDCODED_AZURE_GROUPS = [
             { name: "AdviesRaad | Salve Mundi", id: "d30a8bfc-7cb6-4619-ac59-fcb307bbe6d4" },

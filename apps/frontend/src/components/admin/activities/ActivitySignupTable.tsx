@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail, Clock, Trash2, CheckCircle2, Circle, Loader2 } from 'lucide-react';
+import { Mail, Clock, Trash, CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { type Signup } from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
 import {
     getSignupName,
@@ -129,7 +129,7 @@ export default function ActivitySignupTable({
                                             {isRowDeleting ? (
                                                 <Loader2 className="h-5 w-5 animate-spin" />
                                             ) : (
-                                                <Trash2 className="h-5 w-5" />
+                                                <Trash className="h-5 w-5" />
                                             )}
                                         </button>
                                     )}

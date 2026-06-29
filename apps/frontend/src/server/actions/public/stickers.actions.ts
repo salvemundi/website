@@ -5,7 +5,8 @@ import { revalidateTag, revalidatePath } from "next/cache";
 
 import { stickerPublicSchema } from "@salvemundi/validations";
 
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq, desc } from 'drizzle-orm';
 import { z } from 'zod';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -21,58 +22,42 @@ const stickerCreateSchema = z.object({
     image: z.string().nullable().optional(),
 });
 
-interface RawStickerDbRow {
-    id: string | number;
-    latitude: string | number;
-    longitude: string | number;
-    location_name?: string | null;
-    description?: string | null;
-    city?: string | null;
-    country?: string | null;
-    image?: string | null;
-    date_created?: string | Date | null;
-    status: string;
-    user_created?: string | null;
-    user_id?: string | null;
-    first_name?: string | null;
-    last_name?: string | null;
-    avatar?: string | null;
-}
-
 export async function getPublicStickers() {
     const session = await getEnrichedSession();
     const isLoggedIn = !!session?.user;
 
-    const sql = `
-        SELECT 
-            s.*,
-            u.id as user_id,
-            u.first_name,
-            u.last_name,
-            u.avatar
-        FROM "Stickers" s
-        LEFT JOIN directus_users u ON s.user_created = u.id
-        WHERE s.status = 'published'
-        ORDER BY s.date_created DESC
-    `;
-    const { rows } = await query(sql);
+    const rows = await db.select({
+        s: schema.Stickers,
+        u: {
+            id: schema.directus_users.id,
+            first_name: schema.directus_users.first_name,
+            last_name: schema.directus_users.last_name,
+            avatar: schema.directus_users.avatar
+        }
+    })
+    .from(schema.Stickers)
+    .leftJoin(schema.directus_users, eq(schema.Stickers.user_created, schema.directus_users.id))
+    .where(eq(schema.Stickers.status, 'published'))
+    .orderBy(desc(schema.Stickers.date_created));
 
-    const mapped = (rows as RawStickerDbRow[]).map((row) => ({
-        id: Number(row.id),
-        latitude: Number(row.latitude),
-        longitude: Number(row.longitude),
-        location_name: row.location_name || '',
-        description: row.description || '',
-        city: row.city || '',
-        country: row.country || '',
-        image: row.image || null,
-        date_created: row.date_created instanceof Date ? row.date_created.toISOString() : (row.date_created || ''),
-        user_created: (isLoggedIn && row.user_id) ? {
-            id: row.user_id,
-            first_name: row.first_name,
-            last_name: row.last_name,
-            avatar: row.avatar
-        } : null
+    const mapped = rows.map((row) => ({
+        id: Number(row.s.id),
+        latitude: Number(row.s.latitude),
+        longitude: Number(row.s.longitude),
+        location_name: row.s.location_name || '',
+        description: row.s.description || '',
+        city: row.s.city || '',
+        country: row.s.country || '',
+        image: row.s.image || null,
+        date_created: row.s.date_created ? String(row.s.date_created) : '',
+        user_created: (isLoggedIn && row.u && row.u.id) ? {
+            id: row.u.id,
+            first_name: row.u.first_name,
+            last_name: row.u.last_name,
+            avatar: row.u.avatar
+        } : null,
+        address: row.s.address || null,
+        status: row.s.status || null
     }));
 
     return stickerListSchema.parse(mapped);
@@ -86,8 +71,8 @@ export async function createStickerPublic(data: unknown) {
     }
 
     const { rateLimit } = await import('@/server/utils/ratelimit');
-    const { success } = await rateLimit('sticker-create', 5, 300);
-    if (!success) {
+    const { success: rateLimitSuccess } = await rateLimit('sticker-create', 5, 300);
+    if (!rateLimitSuccess) {
         throw new Error('Te veel stickers geplaatst. Probeer het later opnieuw.');
     }
 
@@ -103,14 +88,12 @@ export async function createStickerPublic(data: unknown) {
     };
 
     try {
-        const { getSystemDirectus } = await import("@/lib/directus");
-        const { createItem } = await import("@directus/sdk");
-        const result = await getSystemDirectus().request(createItem('Stickers', payload));
-
+        const inserted = await db.insert(schema.Stickers).values(payload).returning();
+        
         revalidatePath('/beheer/stickers');
         revalidatePath('/stickers');
         revalidateTag('stickers', 'max');
-        return { success: true, data: result };
+        return { success: true, data: inserted[0] };
     } catch (error) {
         safeConsoleError(`[stickers.actions.ts][createStickerPublic] Error while creating sticker:`, error);
         return { success: false, error: 'Kon sticker niet opslaan.' };
@@ -129,14 +112,25 @@ export async function uploadFileAction(formData: FormData): Promise<{ success: t
         throw new Error('Te veel bestanden geüpload. Probeer het later opnieuw.');
     }
     try {
-        const { getSystemDirectus } = await import("@/lib/directus");
-        const { uploadFiles } = await import("@directus/sdk");
-        const directus = getSystemDirectus();
-        const result = (await directus.request(uploadFiles(formData))) as unknown;
-        const fileObj = Array.isArray(result) ? (result as unknown[])[0] : result;
-        const fileId = (fileObj && typeof fileObj === 'object' && 'id' in fileObj) ? String((fileObj as { id: unknown }).id) : null;
+        const token = process.env.DIRECTUS_STATIC_TOKEN;
+        const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
+        const res = await fetch(`${directusUrl}/files`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        if (!res.ok) {
+            throw new Error(`Upload failed: ${await res.text()}`);
+        }
+
+        const json = await res.json() as { data?: { id?: string } };
+        const fileId = json.data?.id;
+
         if (!fileId) {
-            return { success: false, error: 'Foto upload mislukt op de server.' };
+            return { success: false, error: 'Foto upload mislukt op de server (geen ID teruggekregen).' };
         }
         return { success: true, data: fileId };
     } catch (error) {

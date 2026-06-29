@@ -2,34 +2,31 @@
 
 import { safeHavensSchema, type SafeHaven } from '@salvemundi/validations/schema/safe-havens.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
 import { safeConsoleError } from '@/server/utils/logger';
-
-interface SafeHavenRow {
-    id: string;
-    contact_name: string;
-    image: string | null;
-    email?: string | null;
-    phone_number?: string | null;
-}
 
 async function fetchSafeHavensFromDirectus(isAuthenticated: boolean): Promise<SafeHaven[]> {
     try {
-        const queryText = isAuthenticated
-            ? 'SELECT id, contact_name, email, phone_number, image FROM safe_havens LIMIT 10'
-            : 'SELECT id, contact_name, image FROM safe_havens LIMIT 10';
-
-        const { rows } = await query<SafeHavenRow>(queryText, []);
+        const rows = isAuthenticated
+            ? await db.select({
+                id: schema.safe_havens.id,
+                contact_name: schema.safe_havens.contact_name,
+                email: schema.safe_havens.email,
+                phone_number: schema.safe_havens.phone_number,
+                image: schema.safe_havens.image
+            }).from(schema.safe_havens).limit(10)
+            : await db.select({
+                id: schema.safe_havens.id,
+                contact_name: schema.safe_havens.contact_name,
+                image: schema.safe_havens.image
+            }).from(schema.safe_havens).limit(10);
 
         const mappedData = rows.map((item) => ({
-            id: item.id,
-            naam: item.contact_name,
-            beschrijving: null,
-            email: item.email ?? null,
-            telefoon: item.phone_number ?? null,
-            afbeelding_id: item.image,
-            status: 'published' as const,
-            sort: 0
+            id: String(item.id),
+            contact_name: item.contact_name,
+            email: ('email' in item ? item.email : null) ?? null,
+            phone_number: ('phone_number' in item ? item.phone_number : null) ?? null,
+            image: item.image
         }));
 
         const parsed = safeHavensSchema.safeParse(mappedData);

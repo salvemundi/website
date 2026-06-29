@@ -1,6 +1,7 @@
 'use server';
 
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq, inArray, not } from 'drizzle-orm';
 import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 import { revalidatePath } from 'next/cache';
 import { isSuperAdmin } from '@/lib/auth/auth-utils';
@@ -15,29 +16,27 @@ export type AutomationSetting = {
 
 const AUTOMATION_FLAGS = ['mail_expiry_check', 'mail_event_reminders', 'auto_sync_nightly'];
 
-interface FeatureFlag {
-    name: string;
-    route_match: string;
-    is_active: boolean;
-    message: string | null;
-}
-
 export async function getSystemAutomationSettings(): Promise<{ success: boolean; settings?: AutomationSetting[]; error?: string }> {
     const { isAuthorized, user } = await checkAdminAccess();
     if (!isAuthorized || !isSuperAdmin(user?.committees)) throw new Error('Geen toegang: Alleen voor ICT en Bestuur.');
 
     try {
-        const { rows } = await query<FeatureFlag>(
-            "SELECT name, route_match, is_active, message FROM feature_flags WHERE route_match = ANY($1)",
-            [AUTOMATION_FLAGS]
-        );
+        const rows = await db.select({
+            name: schema.feature_flags.name,
+            route_match: schema.feature_flags.route_match,
+            is_active: schema.feature_flags.is_active,
+            message: schema.feature_flags.message
+        }).from(schema.feature_flags)
+        .where(inArray(schema.feature_flags.route_match, AUTOMATION_FLAGS));
 
         const foundFlags = rows.map((r) => r.route_match);
         if (!foundFlags.includes('auto_sync_nightly')) {
-            await query(
-                "INSERT INTO feature_flags (name, route_match, is_active, message) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING",
-                ['Nachtelijke Azure Sync', 'auto_sync_nightly', false, 'Synchroniseert elke nacht om 03:00 alle Azure leden en groepen.']
-            );
+            await db.insert(schema.feature_flags).values({
+                name: 'Nachtelijke Azure Sync',
+                route_match: 'auto_sync_nightly',
+                is_active: false,
+                message: 'Synchroniseert elke nacht om 03:00 alle Azure leden en groepen.'
+            }).onConflictDoNothing();
             rows.push({
                 name: 'Nachtelijke Azure Sync',
                 route_match: 'auto_sync_nightly',
@@ -67,10 +66,9 @@ export async function toggleAutomationSetting(key: string) {
     if (!isAuthorized || !isSuperAdmin(user?.committees)) throw new Error('Geen toegang: Alleen voor ICT en Bestuur.');
 
     try {
-        await query(
-            "UPDATE feature_flags SET is_active = NOT is_active WHERE route_match = $1",
-            [key]
-        );
+        await db.update(schema.feature_flags)
+            .set({ is_active: not(schema.feature_flags.is_active) })
+            .where(eq(schema.feature_flags.route_match, key));
 
         revalidatePath('/beheer/services');
         revalidatePath('/beheer/mail');
@@ -78,4 +76,4 @@ export async function toggleAutomationSetting(key: string) {
     } catch {
         return { success: false, error: 'Bijwerken instelling mislukt' };
     }
-}
+}

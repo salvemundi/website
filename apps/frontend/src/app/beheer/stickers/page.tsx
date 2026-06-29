@@ -40,7 +40,7 @@ export default async function StickersAdminPage() {
                 </div>
             }
         >
-            <StickerManagementIsland initialStickers={stickers} />
+            <StickerManagementIsland initialStickers={stickers as unknown as React.ComponentProps<typeof StickerManagementIsland>['initialStickers']} />
         </AdminPageShell>
     );
 }

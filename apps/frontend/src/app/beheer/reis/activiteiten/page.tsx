@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import ReisActiviteitenIsland from '@/components/islands/admin/ReisActiviteitenIsland';
-import { getTrips, getTripActivities } from '@/server/queries/admin-reis.queries';
-import { getSystemDirectus } from '@/lib/directus';
-import { readItems } from '@directus/sdk';
+import TripActivitiesIsland from '@/components/islands/admin/TripActivitiesIsland';
+import { getTrips, getTripActivities } from '@/server/queries/admin-trip.queries';
 import { notFound } from 'next/navigation';
-import { getTripSignupActivitiesAction } from '@/server/actions/admin/reis-signups.actions';
+import { getTripSignupActivitiesAction } from '@/server/actions/admin/trip-signups.actions';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { safeConsoleError } from '@/server/utils/logger';
+import { db, schema } from "@salvemundi/db";
+import { eq } from "drizzle-orm";
 
 interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -28,13 +28,12 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 
     if (tripIdParam) {
         try {
-            const trip = await getSystemDirectus().request(readItems('trips', {
-                filter: { id: { _eq: Number(tripIdParam) } },
-                fields: ['name'],
-                limit: 1
-            }));
-            if (trip[0]) {
-                title = `${trip[0].name} - Activiteiten | SV Salve Mundi`;
+            const trip = await db.query.trips.findFirst({
+                where: eq(schema.trips.id, Number(tripIdParam)),
+                columns: { name: true }
+            });
+            if (trip && trip.name) {
+                title = `${trip.name} - Activiteiten | SV Salve Mundi`;
             }
         } catch (error) {
             safeConsoleError('[page.tsx][generateMetadata] ', error);
@@ -97,7 +96,7 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
             subtitle="Beheer activiteiten en inschrijvingen per activiteit"
             backHref="/beheer/reis"
         >
-            <ReisActiviteitenIsland
+            <TripActivitiesIsland
                 initialTrips={trips}
                 initialActivities={activities}
                 initialSelectedTripId={activeTripId}

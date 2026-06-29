@@ -7,7 +7,7 @@ import {
     Download,
     ChevronDown,
     Edit,
-    Trash2,
+    Trash,
     UserCheck,
     Heart,
     Save,
@@ -132,7 +132,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                                                         title="Bewerken"
                                                     />
                                                     <ActionButton
-                                                        icon={Trash2}
+                                                        icon={Trash}
                                                         onClick={(e) => { e.stopPropagation(); void onDelete(p.id); }}
                                                         variant="danger"
                                                         disabled={deletingId === p.id}

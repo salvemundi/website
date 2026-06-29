@@ -13,6 +13,7 @@
     "@fastify/multipart": "^10.0.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "@salvemundi/validations": "workspace:*",
+    "drizzle-orm": "0.45.2",
     "fastify": "5.8.5",
     "fastify-plugin": "^6.0.0",
     "ioredis": "^5.11.1",

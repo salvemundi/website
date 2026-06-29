@@ -102,6 +102,7 @@ export const AdminDatepicker = React.forwardRef<React.ElementRef<typeof Datepick
     labelClearButton = "Wissen",
     weekStart = 1,
     onClick,
+    defaultValue: _defaultValue,
     ...props
 }, ref) => {
     return (
@@ -118,7 +119,9 @@ export const AdminDatepicker = React.forwardRef<React.ElementRef<typeof Datepick
                 if (onClick) onClick(e);
             }}
             icon={undefined}
+            label={props.label || ""}
             {...props}
+            value={props.value === null ? undefined : props.value}
         />
     );
 });

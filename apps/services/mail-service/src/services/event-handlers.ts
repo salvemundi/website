@@ -3,7 +3,7 @@ import { type Redis } from 'ioredis';
 import { MailWorkerService } from './mail-worker.js';
 import { PaymentSuccessEventSchema, ActivitySignupEventSchema } from '@salvemundi/validations';
 import QRCode from 'qrcode';
-import { db } from './db.js';
+import { db, schema, eq } from './db.js';
 import { z } from 'zod';
 
 interface LocalPaymentSuccessEvent {
@@ -178,11 +178,12 @@ export class EventHandlers {
     public static async getPubCrawlWhatsAppLink(signupId: number): Promise<string | null> {
         try {
             const data = await db
-                .selectFrom('pub_crawl_signups as s')
-                .innerJoin('pub_crawl_events as e', 's.pub_crawl_event_id', 'e.id')
-                .select('e.whatsapp_community_url')
-                .where('s.id', '=', signupId)
-                .executeTakeFirst();
+                .select({ whatsapp_community_url: schema.pub_crawl_events.whatsapp_community_url })
+                .from(schema.pub_crawl_signups)
+                .innerJoin(schema.pub_crawl_events, eq(schema.pub_crawl_signups.pub_crawl_event_id, schema.pub_crawl_events.id))
+                .where(eq(schema.pub_crawl_signups.id, signupId))
+                .limit(1)
+                .then(res => res[0]);
 
             if (!data) return null;
 
@@ -224,10 +225,14 @@ export class EventHandlers {
     private static async fetchPubCrawlTicketsDb(signupId: string | number, expectedCount: number) {
         for (let i = 0; i < 5; i++) {
             const tickets = await db
-                .selectFrom('pub_crawl_tickets')
-                .select(['id', 'name', 'initial', 'qr_token'])
-                .where('signup_id', '=', Number(signupId))
-                .execute();
+                .select({
+                    id: schema.pub_crawl_tickets.id,
+                    name: schema.pub_crawl_tickets.name,
+                    initial: schema.pub_crawl_tickets.initial,
+                    qr_token: schema.pub_crawl_tickets.qr_token
+                })
+                .from(schema.pub_crawl_tickets)
+                .where(eq(schema.pub_crawl_tickets.signup_id, Number(signupId)));
             if (tickets.length >= expectedCount) return tickets;
             await new Promise(r => setTimeout(r, 1000));
         }

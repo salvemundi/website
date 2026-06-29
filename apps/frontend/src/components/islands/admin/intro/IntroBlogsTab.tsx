@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { 
     Plus, 
     Edit, 
-    Trash2, 
+    Trash, 
     FileText,
     ChevronDown
 } from 'lucide-react';
@@ -36,7 +36,7 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
         setEditingId(blogId);
         // Sanitize: convert nulls to undefined to avoid Zod validation issues
         const sanitized = Object.fromEntries(
-            Object.entries(blog).map(([k, v]) => [k, v === null ? undefined : v])
+            Object.entries(blog).map(([key, value]) => [key, value === null ? undefined : value])
         );
         setEditData(sanitized);
         if (!expandedRows.includes(blogId)) setExpandedRows(prev => [...prev, blogId]);
@@ -150,7 +150,7 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                                                     title="Bewerken" 
                                                 />
                                                 <ActionButton 
-                                                    icon={Trash2} 
+                                                    icon={Trash} 
                                                     onClick={(e) => { e.stopPropagation(); void onDelete(blogId); }} 
                                                     variant="danger"
                                                     disabled={deletingId === blog.id}

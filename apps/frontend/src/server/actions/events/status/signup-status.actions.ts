@@ -2,10 +2,11 @@
 
 import { unstable_noStore as noStore } from 'next/cache';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq, or, type SQL } from 'drizzle-orm';
 import { fetchEventSignupByIdDb } from '@/server/internal/event-db.utils';
 import { fetchPubCrawlSignupByIdDb } from '@/server/internal/kroegentocht-db.utils';
-import { fetchTripSignupByIdDb } from '@/server/internal/reis-db.utils';
+import { fetchTripSignupByIdDb } from '@/server/internal/trip-db.utils';
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteit-utils';
 import { type PubCrawlSignup } from '@salvemundi/validations/directus/schema';
 import { type PaymentStatus, type SignupStatusResult } from './types';
@@ -15,14 +16,6 @@ interface FinanceStatusResponse {
     payment_status?: PaymentStatus;
     product_type?: string;
     signup_id?: number | string;
-    registration?: number | string;
-    trip_signup?: number | string;
-    pub_crawl_signup?: number | string;
-}
-
-interface Transaction {
-    payment_status?: PaymentStatus;
-    product_type?: string;
     registration?: number | string;
     trip_signup?: number | string;
     pub_crawl_signup?: number | string;
@@ -101,22 +94,31 @@ export async function getSignupStatus(
                 };
             }
 
-            const transRes = await query(
-                `SELECT payment_status, product_type, registration 
-                 FROM transactions 
-                 WHERE access_token::text = $1 
-                    OR mollie_id::text = $1 
-                    OR registration::text = $2 
-                 LIMIT 1`,
-                [String(financeId), id ? String(id) : null]
-            );
+            const conditions: SQL[] = [
+                eq(schema.transactions.mollie_id, String(financeId))
+            ];
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(financeId));
+            if (isUuid) {
+                conditions.push(eq(schema.transactions.access_token, String(financeId)));
+            }
+            if (id && /^\d+$/.test(String(id))) {
+                conditions.push(eq(schema.transactions.registration, parseInt(String(id))));
+            }
 
-            if (transRes.rows.length > 0) {
-                const trans = transRes.rows[0] as Transaction;
+            const transRows = await db.select({
+                payment_status: schema.transactions.payment_status,
+                product_type: schema.transactions.product_type,
+                registration: schema.transactions.registration
+            }).from(schema.transactions)
+            .where(or(...conditions))
+            .limit(1);
+
+            if (transRows.length > 0) {
+                const trans = transRows[0];
                 return {
                     status: (trans.payment_status || 'open') as PaymentStatus,
                     isMembership: trans.product_type === 'membership',
-                    signup: { id: trans.registration || trans.trip_signup || trans.pub_crawl_signup || null }
+                    signup: { id: trans.registration || null }
                 };
             }
         }

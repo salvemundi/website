@@ -1,2 +1,2 @@
 export * from './pricing';
-export * from './reis-utils';
+export * from './trip-utils';

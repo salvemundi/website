@@ -3,7 +3,7 @@ import Fastify from 'fastify';
 import mailRoutes from './routes/mail.routes.js';
 import redisPlugin from './plugins/redis.js';
 import rateLimit from '@fastify/rate-limit';
-import { db } from './services/db.js';
+import { db, client } from './services/db.js';
 import { MailWorkerService } from './services/mail-worker.js';
 import { EventListenerService } from './services/event-listener.js';
 
@@ -45,7 +45,7 @@ fastify.register(async (instance) => {
 });
 
 fastify.addHook('onClose', async () => {
-    await db.destroy();
+    await client.end();
 });
 
 const start = async () => {

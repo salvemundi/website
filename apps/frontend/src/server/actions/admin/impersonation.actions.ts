@@ -2,7 +2,6 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { createDirectus, staticToken, rest, readMe } from "@directus/sdk";
 import { type DirectusUser } from '@salvemundi/validations';
 import { getRedis } from "@/server/auth/redis-client";
 import { isSuperAdmin } from "@/lib/auth/auth-utils";
@@ -19,21 +18,26 @@ export async function setImpersonateToken(token: string) {
     }
 
     try {
-        const directusUrl = process.env.DIRECTUS_SERVICE_URL;
+        const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
         if (!directusUrl) {
             return { success: false, error: "Directus service URL is niet geconfigureerd." };
         }
-        const testClient = createDirectus(directusUrl)
-            .with(staticToken(token))
-            .with(rest());
 
-        const targetUser = await testClient.request(readMe({
-            fields: ['id', 'first_name', 'last_name', 'email', 'avatar']
-        } as never)) as unknown as DirectusUser | null;
+        // Directe fetch in plaats van de mock client
+        const response = await fetch(`${directusUrl}/users/me?fields=id,first_name,last_name,email,avatar`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-        if (!targetUser) {
+        if (!response.ok) {
             return { success: false, error: "Token is ongeldig." };
         }
+
+        const json = await response.json() as { data: DirectusUser };
+        const targetUser = json.data;
 
         const cookieStore = await cookies();
         cookieStore.set(TEST_TOKEN_COOKIE, token, {

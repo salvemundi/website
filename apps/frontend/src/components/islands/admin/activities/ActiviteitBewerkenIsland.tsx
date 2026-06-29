@@ -2,7 +2,7 @@
 
 import { useState, useOptimistic, useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, Loader2, Trash2 } from 'lucide-react';
+import { Save, Loader2, Trash } from 'lucide-react';
 import { updateActivityAction, deleteActivity } from '@/server/actions/events/activiteiten/activities-write.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -150,7 +150,7 @@ export default function ActiviteitBewerkenIsland({
                                         disabled={isDeleting || optimisticSaving}
                                         className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all font-semibold text-base disabled:opacity-50 cursor-pointer active:scale-95 group border border-red-500/20"
                                     >
-                                        {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4 group-hover:scale-110 transition-transform" />}
+                                        {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash className="h-4 w-4 group-hover:scale-110 transition-transform" />}
                                         Activiteit verwijderen
                                     </button>
                                 </div>
@@ -177,3 +177,5 @@ export default function ActiviteitBewerkenIsland({
         </div>
     );
 }
+
+

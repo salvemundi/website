@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Loader2, CheckCircle2, XCircle, RefreshCw, ChevronRight } from 'lucide-react';
 
-import { getPaymentStatusAction } from '@/server/actions/events/reis-payment.actions';
+import { getPaymentStatusAction } from '@/server/actions/events/trip-payment.actions';
 
 interface PaymentStatusProps {
     mollieId: string;

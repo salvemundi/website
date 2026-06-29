@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import FlipClock from './FlipClock';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
-import { slugify } from '@/shared/lib/utils/slug';
+import { getActivityUrl } from '@/shared/lib/utils/activity';
 
 interface ActivitiesBannerIslandProps {
     events: Activiteit[];
@@ -17,10 +17,10 @@ export default function ActivitiesBannerIsland({ events, serverTime }: Activitie
         const now = serverTime ? new Date(serverTime) : new Date();
 
         const getEventTime = (e: Activiteit) => {
-            const datePart = e.datum_start.split('T')[0];
+            const datePart = e.event_date.split('T')[0];
             return e.event_time
                 ? new Date(`${datePart}T${e.event_time}`).getTime()
-                : new Date(e.datum_start).getTime();
+                : new Date(e.event_date).getTime();
         };
 
         const upcoming = [...events]
@@ -32,17 +32,16 @@ export default function ActivitiesBannerIsland({ events, serverTime }: Activitie
 
     if (!upcomingEvent) return null;
 
-    const datePart = upcomingEvent.datum_start.split('T')[0];
-
+    const datePart = upcomingEvent.event_date.split('T')[0];
     return (
         <div className="relative w-full flex justify-center py-4">
             <FlipClock
                 targetDate={upcomingEvent.event_time
                     ? `${datePart}T${upcomingEvent.event_time}`
-                    : upcomingEvent.datum_start
+                    : upcomingEvent.event_date
                 }
-                title={upcomingEvent.titel}
-                href={(upcomingEvent as Activiteit & { custom_url?: string }).custom_url || `/activiteiten/${slugify(upcomingEvent.titel)}`}
+                title={upcomingEvent.name}
+                href={getActivityUrl({ name: upcomingEvent.name || '', custom_url: upcomingEvent.custom_url })}
                 serverTime={serverTime}
             />
         </div>

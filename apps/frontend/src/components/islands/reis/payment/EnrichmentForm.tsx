@@ -12,8 +12,8 @@ import { DateInput } from '@/shared/ui/DateInput';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
-import { type ReisPaymentEnrichment } from '@salvemundi/validations/schema/reis.zod';
-import { type Trip } from '@salvemundi/validations/schema/admin-reis.zod';
+import { type ReisPaymentEnrichment } from '@salvemundi/validations/schema/trip.zod';
+import { type Trip } from '@salvemundi/validations/schema/admin-trip.zod';
 
 interface EnrichmentFormProps {
     trip: Trip;

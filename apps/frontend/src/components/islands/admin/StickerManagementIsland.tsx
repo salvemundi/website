@@ -12,8 +12,10 @@ import StickersTable from '@/components/admin/stickers/StickersTable';
 import { type StickerPublic } from '@salvemundi/validations';
 import { safeConsoleError } from '@/server/utils/logger';
 
+type AdminSticker = Omit<StickerPublic, 'user_updated' | 'date_updated'>;
+
 interface StickerManagementIslandProps {
-    initialStickers: StickerPublic[];
+    initialStickers: AdminSticker[];
 }
 
 export default function StickerManagementIsland({

@@ -1,5 +1,6 @@
 import 'server-only';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { type Committee } from '@/shared/lib/permissions';
@@ -41,48 +42,31 @@ export interface UserMetadata {
     entra_id: string | null;
 }
 
-interface RawUserRow {
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-    email: string;
-    avatar: string | null;
-    membership_status: string | null;
-    phone_number: string | null;
-    date_of_birth: string | Date | null;
-    entra_id: string | null;
-    membership_expiry: string | Date | null;
-    description: string | null;
-    location: string | null;
-    title: string | null;
-    tags: string[] | null;
-    admin_access: boolean | null;
-}
-
-interface RawUserMetadataRow {
-    membership_status: string | null;
-    membership_expiry: string | Date | null;
-    phone_number: string | null;
-    date_of_birth: string | Date | null;
-    minecraft_username: string | null;
-    entra_id: string | null;
-}
-
 export async function fetchUserProfileByEmailDb(email: string): Promise<UserProfile | null> {
-    const { rows } = await query<RawUserRow>(
-        `SELECT id, first_name, last_name, email, avatar, 
-                membership_status, phone_number, date_of_birth, 
-                entra_id, membership_expiry, description, 
-                location, title, tags, admin_access
-         FROM directus_users 
-         WHERE LOWER(email) = LOWER($1) 
-         LIMIT 1`,
-        [email]
-    );
+    const result = await db.select({
+        id: schema.directus_users.id,
+        first_name: schema.directus_users.first_name,
+        last_name: schema.directus_users.last_name,
+        email: schema.directus_users.email,
+        avatar: schema.directus_users.avatar,
+        membership_status: schema.directus_users.membership_status,
+        phone_number: schema.directus_users.phone_number,
+        date_of_birth: schema.directus_users.date_of_birth,
+        entra_id: schema.directus_users.entra_id,
+        membership_expiry: schema.directus_users.membership_expiry,
+        description: schema.directus_users.description,
+        location: schema.directus_users.location,
+        title: schema.directus_users.title,
+        tags: schema.directus_users.tags,
+        admin_access: schema.directus_users.admin_access,
+    })
+    .from(schema.directus_users)
+    .where(sql`LOWER(${schema.directus_users.email}) = LOWER(${email})`)
+    .limit(1);
 
-    if (rows.length === 0) return null;
+    if (result.length === 0) return null;
 
-    const raw = rows[0];
+    const raw = result[0];
     const parsed = userProfileSchema.safeParse({
         ...raw,
         date_of_birth: toLocalISOString(raw.date_of_birth),
@@ -98,25 +82,34 @@ export async function fetchUserProfileByEmailDb(email: string): Promise<UserProf
 
 export async function fetchUserCommitteesDb(userId: string): Promise<Committee[]> {
     if (!userId || userId === '') return [];
-    const { rows } = await query<Committee>(
-        `SELECT c.id, c.name, c.azure_group_id, cm.is_leader
-         FROM committees c
-         JOIN committee_members cm ON c.id = cm.committee_id
-         WHERE cm.user_id = $1`,
-        [userId]
-    );
-    return rows;
+    
+    const rows = await db.select({
+        id: schema.committees.id,
+        name: schema.committees.name,
+        azure_group_id: schema.committees.azure_group_id,
+        is_leader: schema.committee_members.is_leader
+    })
+    .from(schema.committees)
+    .innerJoin(schema.committee_members, eq(schema.committees.id, schema.committee_members.committee_id))
+    .where(eq(schema.committee_members.user_id, userId));
+    
+    return rows as Committee[];
 }
 
 export async function fetchUserMetadataDb(userId: string): Promise<UserMetadata | null> {
     if (!userId || userId === '') return null;
-    const { rows } = await query<RawUserMetadataRow>(
-        `SELECT membership_status, membership_expiry, phone_number, date_of_birth, minecraft_username, entra_id
-         FROM directus_users 
-         WHERE id = $1 
-         LIMIT 1`,
-        [userId]
-    );
+    
+    const rows = await db.select({
+        membership_status: schema.directus_users.membership_status,
+        membership_expiry: schema.directus_users.membership_expiry,
+        phone_number: schema.directus_users.phone_number,
+        date_of_birth: schema.directus_users.date_of_birth,
+        minecraft_username: schema.directus_users.minecraft_username,
+        entra_id: schema.directus_users.entra_id
+    })
+    .from(schema.directus_users)
+    .where(eq(schema.directus_users.id, userId))
+    .limit(1);
 
     if (rows.length === 0) return null;
 

@@ -39,13 +39,13 @@ export default async function AttendancePage({ params }: PageProps) {
         <div className="w-full">
             <AdminToolbar 
                 title="Aanwezigheid"
-                subtitle={`Beheer de aanwezigheid voor "${activity.titel}".`}
+                subtitle={`Beheer de aanwezigheid voor "${activity.name}".`}
                 backHref={`/beheer/activiteiten/${id}/aanmeldingen`}
             />
             <div className="admin-container py-8 pb-24">
                 <AttendanceIsland 
                     eventId={id} 
-                    eventName={activity.titel} 
+                    eventName={activity.name} 
                     initialSignups={mappedSignups} 
                 />
             </div>

@@ -3,7 +3,8 @@ import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
-import { query } from '@/lib/database';
+import { db, schema } from '@salvemundi/db';
+import { inArray, asc } from 'drizzle-orm';
 import { type EnrichedUser } from '@/types/auth';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -16,16 +17,28 @@ async function getCommitteesForUser(
 
     try {
         if (isPowerful) {
-            const { rows } = await query('SELECT id, name, email FROM committees ORDER BY name ASC');
+            const rows = await db.select({
+                id: schema.committees.id,
+                name: schema.committees.name,
+                email: schema.committees.email
+            })
+            .from(schema.committees)
+            .orderBy(asc(schema.committees.name));
             return rows as { id: number; name: string; email?: string | null }[];
         } else {
             if (memberships.length === 0) return [];
 
-            const committeeIds = memberships.map((m) => m.id).filter(Boolean);
+            const committeeIds = memberships.map((m) => Number(m.id)).filter(Boolean);
             if (committeeIds.length === 0) return [];
 
-            const placeholders = committeeIds.map((_, i) => `$${i + 1}`).join(', ');
-            const { rows } = await query(`SELECT id, name, email FROM committees WHERE id IN (${placeholders}) ORDER BY name ASC`, committeeIds);
+            const rows = await db.select({
+                id: schema.committees.id,
+                name: schema.committees.name,
+                email: schema.committees.email
+            })
+            .from(schema.committees)
+            .where(inArray(schema.committees.id, committeeIds))
+            .orderBy(asc(schema.committees.name));
             return rows as { id: number; name: string; email?: string | null }[];
         }
     } catch (error) {

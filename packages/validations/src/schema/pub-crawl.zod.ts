@@ -1,9 +1,7 @@
 import { z } from 'zod';
+import { selectPubCrawlEventsSchema, selectPubCrawlSignupsSchema, selectPubCrawlTicketsSchema } from './db.zod.js';
 
-/**
- * Schema voor een Kroegentocht Evenement (pub_crawl_events)
- */
-export const pubCrawlEventSchema = z.object({
+export const pubCrawlEventSchema = selectPubCrawlEventsSchema.extend({
     id: z.union([z.string(), z.number()]),
     name: z.string(),
     description: z.string().nullable().optional(),
@@ -12,29 +10,23 @@ export const pubCrawlEventSchema = z.object({
     date: z.coerce.string().nullable().optional(),
     show: z.boolean().nullable().optional().default(true), // Default to true if missing
     disabled_message: z.string().nullable().optional(),
-    price: z.number().optional().default(1),
-    max_tickets_per_person: z.number().optional().default(10),
+    price: z.coerce.number().optional().default(1),
+    max_tickets_per_person: z.coerce.number().optional().default(10),
     whatsapp_community_url: z.string().url().nullable().optional(),
-    groups: z.array(z.any()).optional().nullable(),
+    groups: z.any().optional().nullable(),
 });
 
-/**
- * Schema voor een individuele deelnemer (onderdeel van signup)
- */
 export const pubCrawlParticipantSchema = z.object({
     name: z.string().min(1, 'Naam is verplicht'),
     initial: z.string().length(1, 'Voorletter achternaam is één letter'),
 });
 
-/**
- * Schema voor een Kroegentocht Inschrijving (pub_crawl_signups)
- */
-export const pubCrawlSignupSchema = z.object({
+export const pubCrawlSignupSchema = selectPubCrawlSignupsSchema.extend({
     id: z.union([z.string(), z.number()]).optional(),
     name: z.string().min(1, 'Naam is verplicht'),
     email: z.string().email('Ongeldig e-mailadres'),
     association: z.string().min(1, 'Vereniging is verplicht'),
-    amount_tickets: z.number().min(1).max(10),
+    amount_tickets: z.coerce.number().min(1).max(10),
     pub_crawl_event_id: z.union([z.string(), z.number()]),
     name_initials: z.string(), // JSON string voor legacy compatibiliteit
     payment_status: z.enum(['open', 'paid', 'failed', 'canceled', 'expired']).default('open'),
@@ -43,10 +35,7 @@ export const pubCrawlSignupSchema = z.object({
     group_name: z.string().optional().nullable(),
 });
 
-/**
- * Schema voor een Kroegentocht Ticket (pub_crawl_tickets)
- */
-export const pubCrawlTicketSchema = z.object({
+export const pubCrawlTicketSchema = selectPubCrawlTicketsSchema.extend({
     id: z.union([z.string(), z.number()]),
     signup_id: z.union([z.string(), z.number()]),
     name: z.string(),
@@ -80,9 +69,6 @@ export type PubCrawlSignup = z.infer<typeof pubCrawlSignupSchema>;
 export type PubCrawlSignupForm = z.infer<typeof pubCrawlSignupFormSchema>;
 export type PubCrawlTicket = z.infer<typeof pubCrawlTicketSchema>;
 
-/**
- * Schema voor een verrijkte Kroegentocht Inschrijving (database-joined)
- */
 export const enrichedPubCrawlSignupSchema = pubCrawlSignupSchema.extend({
     pub_crawl_event_id: z.object({
         id: z.union([z.string(), z.number()]),
@@ -97,6 +83,4 @@ export const enrichedPubCrawlSignupSchema = pubCrawlSignupSchema.extend({
     created_at: z.union([z.string(), z.date()]).optional().nullable(),
     qr_token: z.string().optional().nullable(),
 });
-
 export type EnrichedPubCrawlSignup = z.infer<typeof enrichedPubCrawlSignupSchema>;
-

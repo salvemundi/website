@@ -6,6 +6,7 @@ packages:
 allowBuilds:
   '@parcel/watcher': false
   core-js-pure: false
+  es5-ext: false
   esbuild: false
   puppeteer: false
   sharp: false

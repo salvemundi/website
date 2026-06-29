@@ -63,9 +63,9 @@ export const IntroParentIsland = ({ initialPhone, className = '' }: IntroParentI
 
     if (submitted) {
         return (
-            <div className="bg-gradient-theme squircle-lg p-6 lg:p-8 shadow-lg text-center">
-                <h3 className="text-xl lg:text-2xl font-bold text-white mb-4">Je hebt je aangemeld als Intro Ouder</h3>
-                <p className="text-text-muted">
+            <div className="bg-bg-card dark:bg-gradient-theme border border-border-color squircle-lg p-6 lg:p-8 shadow-lg text-center">
+                <h3 className="text-xl lg:text-2xl font-bold text-text-main dark:text-white mb-4">Je hebt je aangemeld als Intro Ouder</h3>
+                <p className="text-text-muted dark:text-white/80">
                     Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.
                 </p>
             </div>

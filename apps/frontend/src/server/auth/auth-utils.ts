@@ -34,37 +34,33 @@ export async function requireAdminResource(resource: AdminResource) {
 
 export async function getEnrichedSession(): Promise<{ user: EnrichedUser; session: Session } | null> {
     try {
-        let h;
-        try {
-            h = await headers();
-        } catch (error) {
-            // Log de fout zodat 'error' gebruikt wordt en de linter niet klaagt
+        const h = await headers().catch((error) => {
             safeConsoleError('[auth-utils.ts][getEnrichedSession] Header retrieval failed', error);
             return null;
-        }
+        });
 
         if (!h) return null;
 
         const session = await auth.api.getSession({
             headers: h
-        }) as any;
+        });
 
         if (session && typeof session === 'object' && 'user' in session && 'session' in session) {
             return session as { user: EnrichedUser; session: Session };
         }
 
-        if (session && typeof session === 'object' && 'response' in session) {
-            return session.response as { user: EnrichedUser; session: Session };
-        }
-
         return null;
     } catch (error) {
         const stack = error instanceof Error ? error.stack : new Error().stack;
+        const errObj = error as Record<string, unknown>;
         safeConsoleError('[auth-utils.ts][getEnrichedSession] Critical failure', {
-                    message: error instanceof Error ? error.message : String(error),
-                    stack,
-                    errorObject: error
-                });
+            message: error instanceof Error ? error.message : String(error),
+            stack,
+            cause: errObj.cause,
+            body: errObj.body,
+            status: errObj.status,
+            errorObject: error
+        });
         throw error;
     }
 }

@@ -5,7 +5,7 @@ import {
     Percent, 
     CheckCircle, 
     XCircle, 
-    Trash2, 
+    Trash, 
     Loader2, 
     ToggleLeft, 
     ToggleRight 
@@ -134,7 +134,7 @@ export default function CouponRow({
                                 title="Verwijderen"
                                 className="p-3 text-(--beheer-text-muted) hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer"
                             >
-                                {isDeleting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 className="h-5 w-5" />}
+                                {isDeleting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash className="h-5 w-5" />}
                             </button>
                         </>
                     )}

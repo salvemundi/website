@@ -124,13 +124,17 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
             };
         }
 
-        const { rows: realCommittees } = await pool.query(
-            `SELECT c.id, c.name, c.azure_group_id, m.is_leader 
-             FROM committee_members m 
-             JOIN committees c ON m.committee_id = c.id 
-             WHERE m.user_id = $1`,
-            [userId]
-        );
+        const { db, schema } = await import("@salvemundi/db");
+        const { eq } = await import("drizzle-orm");
+        const realCommittees = await db.select({
+            id: schema.committees.id,
+            name: schema.committees.name,
+            azure_group_id: schema.committees.azure_group_id,
+            is_leader: schema.committee_members.is_leader
+        })
+        .from(schema.committee_members)
+        .innerJoin(schema.committees, eq(schema.committee_members.committee_id, schema.committees.id))
+        .where(eq(schema.committee_members.user_id, userId));
 
         const typedCommittees = realCommittees as unknown as Committee[];
         sessionWithUser.user.committees = typedCommittees;
