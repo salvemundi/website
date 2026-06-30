@@ -25,6 +25,8 @@ interface EventSignupIslandProps {
     verifiedPaymentStatus?: 'paid' | 'open' | 'failed' | 'canceled' | null;
     initialQrToken?: string;
     initialIsSignedUp?: boolean;
+    isMembersOnly?: boolean;
+    isMember?: boolean;
 }
 
 export default function EventSignupIsland({
@@ -38,7 +40,9 @@ export default function EventSignupIsland({
     verifiedPaymentStatus,
     initialQrToken,
     initialIsSignedUp = false,
-    id
+    id,
+    isMembersOnly = false,
+    isMember = false
 }: EventSignupIslandProps) {
     const user = initialUser;
 
@@ -127,6 +131,25 @@ export default function EventSignupIsland({
 
     if (isDeadlinePassed) {
         return <StatusDeadlinePassed />;
+    }
+
+    if (isMembersOnly && !isMember) {
+        return (
+            <div className="rounded-2xl border border-(--border-color) bg-(--bg-card) p-6 text-center shadow-card">
+                <h3 className="text-lg font-semibold text-(--text-main)">
+                    Exclusief voor leden
+                </h3>
+                <p className="mt-2 text-sm text-(--text-muted)">
+                    Deze activiteit is speciaal voor onze leden. Log in om je in te schrijven. Heb je nog geen account? Word dan lid en doe gezellig mee!
+                </p>
+                <a
+                    href="/lidmaatschap"
+                    className="mt-4 inline-block rounded-xl bg-(--theme-purple) px-6 py-3 text-sm font-bold text-white uppercase tracking-widest transition-opacity hover:opacity-90"
+                >
+                    Word lid van Salve Mundi
+                </a>
+            </div>
+        );
     }
 
     return (

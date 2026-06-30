@@ -79,15 +79,15 @@ export default function ActiviteitListCard({
                                 </span>
                             )}
                         </div>
-                        <h3 className="text-xl font-bold text-(--theme-purple)/90 leading-tight group-hover:text-(--theme-purple) transition-colors line-clamp-2 break-words" title={title}>
+                        <h3 className="text-xl font-bold text-(--theme-purple)/90 leading-tight group-hover:text-(--theme-purple) transition-colors line-clamp-2 wrap-break-word" title={title}>
                             {title}
                         </h3>
                         {short_description ? (
-                            <div className="hidden md:block text-(--text-muted) text-sm line-clamp-6 mt-2 leading-relaxed pr-4 break-words overflow-hidden">
-                                <SafeMarkdown content={short_description} className="!text-(--text-muted) prose-sm prose-p:my-1 prose-headings:my-1" />
+                            <div className="hidden md:block text-(--text-muted) text-sm line-clamp-6 mt-2 leading-relaxed pr-4 wrap-break-word overflow-hidden">
+                                <SafeMarkdown content={short_description} className="text-(--text-muted)! prose-sm prose-p:my-1 prose-headings:my-1" />
                             </div>
                         ) : description ? (
-                            <p className="hidden md:block text-(--text-muted) text-sm line-clamp-2 mt-2 leading-relaxed pr-4 break-words overflow-hidden">
+                            <p className="hidden md:block text-(--text-muted) text-sm line-clamp-2 mt-2 leading-relaxed pr-4 wrap-break-word overflow-hidden">
                                 {description}
                             </p>
                         ) : null}

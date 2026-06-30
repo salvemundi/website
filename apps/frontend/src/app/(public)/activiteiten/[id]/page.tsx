@@ -101,14 +101,16 @@ async function ActivityContent({ params, searchParams }: PageProps) {
                     price={Number(price)}
                     eventDate={activity.event_date}
                     description={activity.description || ''}
-                    isPast={isEventPast}
-                    isDeadlinePassed={isDeadlinePassed}
                     eventName={activity.name}
                     initialUser={session?.user || null}
                     verifiedPaymentStatus={verifiedPaymentStatus}
                     initialQrToken={qrToken}
                     initialIsSignedUp={isSignedUp}
                     id={signupId}
+                    isPast={isEventPast}
+                    isDeadlinePassed={isDeadlinePassed}
+                    isMembersOnly={!!activity.only_members}
+                    isMember={isMember}
                 />
             </ActivityDetailIsland>
         </>

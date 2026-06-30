@@ -97,11 +97,10 @@ export default function TripForm({
         setImageError(null);
 
         if (file) {
-            // Limiet instellen op 10MB (10 * 1024 * 1024 bytes)
             const maxSizeBytes = 10 * 1024 * 1024;
             if (file.size > maxSizeBytes) {
                 setImageError('De geselecteerde afbeelding is te groot (maximaal 10MB).');
-                e.target.value = ''; // Reset het input element
+                e.target.value = '';
                 return;
             }
 
@@ -124,7 +123,6 @@ export default function TripForm({
             return;
         }
 
-        // Vangnet: check alle bestanden binnen het formulier
         const formData = new FormData(e.currentTarget as HTMLFormElement);
         const file = formData.get('image_file') as File | null;
 

@@ -31,7 +31,37 @@ export function useActivityForm({
 
     const handleImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
+        if (!file) return;
+
+        if (file.size > 10 * 1024 * 1024 && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const scale = Math.min(1, 1920 / img.width);
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+                    const ctx = canvas.getContext('2d');
+                    ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
+                            setImageFile(compressedFile);
+                            setImagePreview({ id: URL.createObjectURL(compressedFile), type: 'image/jpeg' });
+                        }
+                    }, 'image/jpeg', 0.8);
+                };
+                img.src = event.target?.result as string;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            if (file.size > 10 * 1024 * 1024) {
+                alert("Video bestanden groter dan 10MB kunnen niet worden geüpload. Gebruik een kleiner bestand of een link.");
+                e.target.value = '';
+                return;
+            }
             setImageFile(file);
             let fileType = file.type;
             if (file.name) {
@@ -40,7 +70,6 @@ export function useActivityForm({
                     fileType = `video/${ext === 'mov' ? 'quicktime' : ext}`;
                 }
             }
-            
             const objectUrl = URL.createObjectURL(file);
             setImagePreview({ id: objectUrl, type: fileType });
         }

@@ -12,18 +12,18 @@ interface CustomWebpackConfig {
 }
 
 const nextConfig: NextConfig = {
-    output: 'standalone',
-    poweredByHeader: false,
-    cacheComponents: false,
-    productionBrowserSourceMaps: false,
     serverExternalPackages: ['isomorphic-dompurify', 'jsdom'],
     experimental: {
         serverSourceMaps: true,
         optimizePackageImports: ['lucide-react', 'maplibre-gl'],
         serverActions: {
-            bodySizeLimit: '50mb'
+            bodySizeLimit: '10mb'
         }
     },
+    output: 'standalone',
+    poweredByHeader: false,
+    cacheComponents: false,
+    productionBrowserSourceMaps: false,
     turbopack: {},
     staticPageGenerationTimeout: 60,
     logging: false,
