@@ -8,7 +8,8 @@ import { schema, eq } from '@salvemundi/db';
 const PRODUCT_TYPE_MAP = new Map<string, string>([
     ['pub_crawl_signup', 'Kroegentocht'],
     ['trip_signup', 'Reis'],
-    ['event_signup', 'Activiteit']
+    ['event_signup', 'Activiteit'],
+    ['webshop_preorder', 'Webshop']
 ]);
 
 export default async function paymentsRoutes(fastify: FastifyInstance) {
@@ -30,6 +31,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             userId?: string | null;
             redirectUrl: string;
             couponCode?: string | null;
+            paymentType?: string;
         }
     }>('/create', { preHandler: [verifyInternalToken] }, async (request, reply) => {
         const {
@@ -45,7 +47,8 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             isContribution,
             userId,
             redirectUrl,
-            couponCode
+            couponCode,
+            paymentType
         } = request.body;
 
         if (!amount || !description || !redirectUrl) {
@@ -118,6 +121,8 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 insertData.trip_signup = Number(registrationId) || null;
             } else if (registrationType === 'pub_crawl_signup') {
                 insertData.pub_crawl_signup = Number(registrationId) || null;
+            } else if (registrationType === 'webshop_preorder') {
+                insertData.webshop_preorder = Number(registrationId) || null;
             }
 
             const dbResult = await fastify.db

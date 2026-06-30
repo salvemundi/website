@@ -1051,6 +1051,7 @@ export const transactions = pgTable("transactions", {
 	last_name: varchar("last_name", { length: 255 }),
 	pub_crawl_signup: integer("pub_crawl_signup").references(() => pub_crawl_signups.id, { onDelete: "set null" } ),
 	trip_signup: integer("trip_signup").references(() => trip_signups.id, { onDelete: "set null" } ),
+	webshop_preorder: integer("webshop_preorder").references(() => webshop_preorders.id, { onDelete: "set null" } ),
 	coupon_code: varchar("coupon_code", { length: 255 }),
 	product_type: varchar("product_type", { length: 255 }).notNull(),
 	mollie_id: varchar("mollie_id", { length: 255 }).notNull(),
@@ -1244,4 +1245,113 @@ export const directus_deployment_runs = pgTable("directus_deployment_runs", {
 	url: varchar("url", { length: 255 }),
 	started_at: timestamp("started_at", { withTimezone: true, mode: 'string' }),
 	completed_at: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+});
+
+// --- Webshop preorder domain ---
+// NOTE: staged contract — these tables do not exist on the live database yet.
+// See packages/db/drizzle/webshop_preorder_staged.sql for the matching migration
+// to apply (or recreate as Directus collections) before this domain can run.
+
+export const webshop_drop_windows = pgTable("webshop_drop_windows", {
+	id: serial("id").primaryKey().notNull(),
+	name: varchar("name", { length: 255 }).notNull(),
+	status: varchar("status", { length: 50 }).default('draft'), // 'draft' | 'open' | 'closed'
+	opens_at: timestamp("opens_at", { withTimezone: true, mode: 'string' }),
+	closes_at: timestamp("closes_at", { withTimezone: true, mode: 'string' }).notNull(),
+	created_at: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updated_at: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+});
+
+export const webshop_products = pgTable("webshop_products", {
+	id: serial("id").primaryKey().notNull(),
+	drop_window_id: integer("drop_window_id").references(() => webshop_drop_windows.id, { onDelete: "set null" } ),
+	type: varchar("type", { length: 50 }).notNull().default('item'), // 'clothing' | 'item'
+	name: varchar("name", { length: 255 }).notNull(),
+	slug: varchar("slug", { length: 255 }).notNull(),
+	description: text("description"),
+	price: numeric("price", { precision: 10, scale: 5 }).notNull(),
+	deposit_amount: numeric("deposit_amount", { precision: 10, scale: 5 }).notNull(),
+	size_chart: jsonb("size_chart"),
+	is_active: boolean("is_active").default(true),
+	display_order: integer("display_order").default(0),
+	created_at: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updated_at: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+},
+(table) => {
+	return {
+		uq_webshop_products_slug: unique("uq_webshop_products_slug").on(table.slug),
+		idx_webshop_products_drop_window: index("idx_webshop_products_drop_window").on(table.drop_window_id),
+	}
+});
+
+export const webshop_product_media = pgTable("webshop_product_media", {
+	id: serial("id").primaryKey().notNull(),
+	product_id: integer("product_id").notNull().references(() => webshop_products.id, { onDelete: "cascade" } ),
+	asset: uuid("asset").notNull().references(() => directus_files.id, { onDelete: "cascade" } ),
+	display_order: integer("display_order").default(0),
+	created_at: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+},
+(table) => {
+	return {
+		idx_webshop_product_media_product: index("idx_webshop_product_media_product").on(table.product_id),
+	}
+});
+
+export const webshop_product_variants = pgTable("webshop_product_variants", {
+	id: serial("id").primaryKey().notNull(),
+	product_id: integer("product_id").notNull().references(() => webshop_products.id, { onDelete: "cascade" } ),
+	size: varchar("size", { length: 50 }),
+	color: varchar("color", { length: 50 }),
+	sku: varchar("sku", { length: 100 }),
+	is_active: boolean("is_active").default(true),
+	display_order: integer("display_order").default(0),
+},
+(table) => {
+	return {
+		idx_webshop_product_variants_product: index("idx_webshop_product_variants_product").on(table.product_id),
+	}
+});
+
+export const webshop_preorders = pgTable("webshop_preorders", {
+	id: serial("id").primaryKey().notNull(),
+	created_at: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updated_at: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	user_id: uuid("user_id").references(() => directus_users.id, { onDelete: "set null" } ),
+	drop_window_id: integer("drop_window_id").references(() => webshop_drop_windows.id, { onDelete: "set null" } ),
+	first_name: varchar("first_name", { length: 255 }).notNull(),
+	last_name: varchar("last_name", { length: 255 }).notNull(),
+	email: varchar("email", { length: 255 }).notNull(),
+	phone_number: varchar("phone_number", { length: 255 }),
+	status: varchar("status", { length: 50 }).default('awaiting_deposit'), // 'awaiting_deposit' | 'awaiting_final' | 'completed' | 'cancelled'
+	subtotal_amount: numeric("subtotal_amount", { precision: 10, scale: 5 }).notNull(),
+	deposit_amount: numeric("deposit_amount", { precision: 10, scale: 5 }).notNull(),
+	deposit_paid: boolean("deposit_paid").default(false),
+	deposit_paid_at: timestamp("deposit_paid_at", { mode: 'string' }),
+	final_payment_paid: boolean("final_payment_paid").default(false),
+	final_payment_paid_at: timestamp("final_payment_paid_at", { mode: 'string' }),
+	terms_accepted: boolean("terms_accepted").default(false),
+	pickup_notes: text("pickup_notes"),
+	access_token: varchar("access_token", { length: 255 }),
+},
+(table) => {
+	return {
+		idx_webshop_preorders_user: index("idx_webshop_preorders_user").on(table.user_id),
+		idx_webshop_preorders_drop_window: index("idx_webshop_preorders_drop_window").on(table.drop_window_id),
+	}
+});
+
+export const webshop_preorder_lines = pgTable("webshop_preorder_lines", {
+	id: serial("id").primaryKey().notNull(),
+	preorder_id: integer("preorder_id").notNull().references(() => webshop_preorders.id, { onDelete: "cascade" } ),
+	product_id: integer("product_id").references(() => webshop_products.id, { onDelete: "set null" } ),
+	variant_id: integer("variant_id").references(() => webshop_product_variants.id, { onDelete: "set null" } ),
+	quantity: integer("quantity").notNull().default(1),
+	unit_price: numeric("unit_price", { precision: 10, scale: 5 }).notNull(),
+	product_name_snapshot: varchar("product_name_snapshot", { length: 255 }),
+	variant_label_snapshot: varchar("variant_label_snapshot", { length: 255 }),
+},
+(table) => {
+	return {
+		idx_webshop_preorder_lines_preorder: index("idx_webshop_preorder_lines_preorder").on(table.preorder_id),
+	}
 });

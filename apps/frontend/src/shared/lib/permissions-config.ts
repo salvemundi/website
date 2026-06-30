@@ -16,7 +16,8 @@ export enum AdminResource {
     Users = 'admin:users',
     Kroegentocht = 'admin:kroegentocht',
     ActivitiesView = 'admin:activities:view',
-    ActivitiesEdit = 'admin:activities:edit'
+    ActivitiesEdit = 'admin:activities:edit',
+    Webshop = 'admin:webshop'
 }
 
 export interface PermissionRequirement {
@@ -81,5 +82,8 @@ export const RESOURCE_PERMISSIONS: Record<AdminResource, PermissionRequirement> 
     [AdminResource.ActivitiesEdit]: {
         allowedCommitteeIds: ALL_COMMITTEES,
         leaderOnly: true
+    },
+    [AdminResource.Webshop]: {
+        allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR]
     }
 };
