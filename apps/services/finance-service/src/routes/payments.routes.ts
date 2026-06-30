@@ -86,7 +86,8 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                     phoneNumber,
                     dateOfBirth,
                     isContribution,
-                    couponCode
+                    couponCode,
+                    paymentType
                 }
             });
 
