@@ -21,11 +21,6 @@ export interface AdminMedia {
     asset: string;
 }
 
-export interface AdminSizeChart {
-    headers: string[];
-    rows: { size: string; values: string[] }[];
-}
-
 export interface AdminProduct {
     id: number;
     drop_window_id: number | null;
@@ -35,7 +30,6 @@ export interface AdminProduct {
     description: string | null;
     price: string | null;
     deposit_amount: string | null;
-    size_chart: unknown;
     is_active: boolean | null;
     display_order: number | null;
     variants: AdminVariant[];

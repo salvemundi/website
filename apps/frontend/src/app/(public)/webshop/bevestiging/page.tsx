@@ -2,14 +2,14 @@ import type { Metadata } from 'next';
 import { CheckCircle2, Clock, XCircle } from 'lucide-react';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import BackButton from '@/components/ui/navigation/BackButton';
-import { getPreorderStatus } from '@/server/actions/public/webshop.actions';
+import { getPreorderStatus, syncPreorderPaymentStatus } from '@/server/actions/public/webshop.actions';
 
 export const metadata: Metadata = {
     title: 'Bestelstatus | Webshop | Salve Mundi'
 };
 
 interface PageProps {
-    searchParams: Promise<{ preorder?: string; token?: string }>;
+    searchParams: Promise<{ preorder?: string; token?: string; t?: string }>;
 }
 
 function ErrorCard({ title, message }: { title: string; message: string }) {
@@ -45,6 +45,10 @@ export default async function WebshopBevestigingPage({ searchParams }: PageProps
                 />
             </PublicPageShell>
         );
+    }
+
+    if (params.t) {
+        await syncPreorderPaymentStatus(params.t);
     }
 
     const result = await getPreorderStatus(preorderId, params.token);

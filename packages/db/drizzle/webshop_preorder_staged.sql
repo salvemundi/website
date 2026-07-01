@@ -1,10 +1,7 @@
--- STAGED MIGRATION — not part of the drizzle journal/_journal.json.
--- This file is NOT auto-applied by `pnpm db:sync` or any tooling in this repo.
--- It is the proposed contract for the webshop preorder domain (see packages/db/src/schema.ts
--- for the matching hand-written Drizzle definitions). Apply this against the real Postgres
--- instance (or recreate as equivalent Directus collections) before the webshop application
--- code can run end-to-end. Once applied, run `pnpm db:sync` from the repo root to pull the
--- real schema and replace the staged definitions with introspected ones.
+-- APPLIED — the equivalent collections/fields/relations were created live via the Directus
+-- API on 2026-07-01 and reconciled into packages/db/src/schema.ts against a real `pull`.
+-- This file is kept for reference only; it was never run directly and is not part of the
+-- drizzle journal/_journal.json.
 
 CREATE TABLE "webshop_drop_windows" (
 	"id" serial PRIMARY KEY NOT NULL,

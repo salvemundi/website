@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Lock, LogIn, ShieldAlert } from 'lucide-react';
 import { useAuthActions } from '@/features/auth/providers/auth-provider';
-import WebshopSizeChartTable from './WebshopSizeChartTable';
+import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
 import { formatDate } from '@/shared/lib/utils/date';
 import { type WebshopCatalogProduct } from '@salvemundi/validations/schema/webshop.zod';
 
@@ -38,7 +38,7 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
             </div>
 
             {product.description && (
-                <p className="text-(--text-muted) leading-relaxed whitespace-pre-line">{product.description}</p>
+                <SafeMarkdown content={product.description} className="text-(--text-muted)" />
             )}
 
             <div className="rounded-2xl border border-(--border-color) p-4 space-y-1">
@@ -55,10 +55,6 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
                     <span>€{remaining}</span>
                 </div>
             </div>
-
-            {product.type === 'clothing' && product.size_chart && (
-                <WebshopSizeChartTable sizeChart={product.size_chart} />
-            )}
 
             <div className="rounded-2xl bg-(--bg-soft) p-4 text-sm text-(--text-muted) space-y-1">
                 <p className="font-bold text-(--theme-purple)/80">Dit is een preorder drop</p>

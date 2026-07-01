@@ -142,16 +142,8 @@ export async function saveProduct(formData: FormData) {
 
     const idRaw = formData.get('id');
     const dropWindowIdRaw = formData.get('drop_window_id');
-    const sizeChartRaw = formData.get('size_chart_json');
     const variantsRaw = formData.get('variants_json');
     const mediaRaw = formData.get('media_json');
-
-    let sizeChart: unknown = null;
-    try {
-        sizeChart = sizeChartRaw ? JSON.parse(String(sizeChartRaw)) : null;
-    } catch {
-        return { success: false, error: 'Ongeldige maattabel.' };
-    }
 
     const rawData = {
         drop_window_id: dropWindowIdRaw ? Number(dropWindowIdRaw) : null,
@@ -161,7 +153,6 @@ export async function saveProduct(formData: FormData) {
         description: formData.get('description') || null,
         price: formData.get('price'),
         deposit_amount: formData.get('deposit_amount'),
-        size_chart: sizeChart,
         is_active: formData.get('is_active') === 'on' || formData.get('is_active') === 'true',
         display_order: formData.get('display_order') ? Number(formData.get('display_order')) : 0
     };

@@ -5,7 +5,6 @@ import {
     insertWebshopProductMediaSchema,
     insertWebshopProductVariantsSchema,
 } from './db.zod.js';
-import { webshopSizeChartSchema } from './webshop.zod.js';
 
 export const webshopDropWindowAdminSchema = insertWebshopDropWindowsSchema.extend({
     id: z.coerce.number().int().optional(),
@@ -25,7 +24,6 @@ export const webshopProductAdminSchema = insertWebshopProductsSchema.extend({
     description: z.preprocess((value) => (value === null || value === undefined) ? value : (value === '' ? null : String(value as string)), z.string().nullable().optional()),
     price: z.coerce.number().positive('Prijs moet groter dan 0 zijn'),
     deposit_amount: z.coerce.number().positive('Aanbetaling moet groter dan 0 zijn'),
-    size_chart: webshopSizeChartSchema.nullable().optional(),
     is_active: z.any().transform(value => !!value),
     display_order: z.coerce.number().int().nullable().optional(),
 }).superRefine((data, ctx) => {
@@ -34,14 +32,6 @@ export const webshopProductAdminSchema = insertWebshopProductsSchema.extend({
             code: z.ZodIssueCode.custom,
             message: 'Aanbetaling kan niet hoger zijn dan de prijs.',
             path: ['deposit_amount'],
-        });
-    }
-
-    if (data.type === 'item' && data.size_chart && data.size_chart.rows.length > 0) {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: 'Items hebben geen maattabel.',
-            path: ['size_chart'],
         });
     }
 });

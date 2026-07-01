@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import { ShoppingBag } from 'lucide-react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
@@ -8,17 +11,30 @@ interface WebshopProductCardProps {
 }
 
 export default function WebshopProductCard({ product }: WebshopProductCardProps) {
+    const [isHovering, setIsHovering] = useState(false);
     const cover = product.media.length > 0 ? product.media[0] : null;
+    const video = product.media.find(m => m.asset_type?.startsWith('video/')) ?? null;
     const price = Number(product.price).toFixed(2);
     const deposit = Number(product.deposit_amount).toFixed(2);
+
+    const showVideo = isHovering && video !== null;
 
     return (
         <Link
             href={`/webshop/${product.slug}`}
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
             className="group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-(--bg-card) dark:border dark:border-white/10 shadow-sm transition-all hover:shadow-md hover:-translate-y-1 no-underline"
         >
             <div className="relative w-full aspect-square overflow-hidden bg-(--bg-soft)">
-                {cover ? (
+                {showVideo ? (
+                    <MediaAsset
+                        asset={{ id: video.asset, type: video.asset_type }}
+                        alt={`${product.name} - video preview`}
+                        fill
+                        objectFit="cover"
+                    />
+                ) : cover ? (
                     <MediaAsset
                         asset={{ id: cover.asset, type: cover.asset_type }}
                         alt={product.name}

@@ -1248,14 +1248,13 @@ export const directus_deployment_runs = pgTable("directus_deployment_runs", {
 });
 
 // --- Webshop preorder domain ---
-// NOTE: staged contract — these tables do not exist on the live database yet.
-// See packages/db/drizzle/webshop_preorder_staged.sql for the matching migration
-// to apply (or recreate as Directus collections) before this domain can run.
+// Created live as Directus collections via the Directus API (collections + fields + relations),
+// matching packages/db/drizzle/webshop_preorder_staged.sql. Reconciled against a real `pull`.
 
 export const webshop_drop_windows = pgTable("webshop_drop_windows", {
 	id: serial("id").primaryKey().notNull(),
 	name: varchar("name", { length: 255 }).notNull(),
-	status: varchar("status", { length: 50 }).default('draft'), // 'draft' | 'open' | 'closed'
+	status: varchar("status", { length: 255 }).default('draft'), // 'draft' | 'open' | 'closed'
 	opens_at: timestamp("opens_at", { withTimezone: true, mode: 'string' }),
 	closes_at: timestamp("closes_at", { withTimezone: true, mode: 'string' }).notNull(),
 	created_at: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
@@ -1265,7 +1264,7 @@ export const webshop_drop_windows = pgTable("webshop_drop_windows", {
 export const webshop_products = pgTable("webshop_products", {
 	id: serial("id").primaryKey().notNull(),
 	drop_window_id: integer("drop_window_id").references(() => webshop_drop_windows.id, { onDelete: "set null" } ),
-	type: varchar("type", { length: 50 }).notNull().default('item'), // 'clothing' | 'item'
+	type: varchar("type", { length: 255 }).notNull().default('item'), // 'clothing' | 'item'
 	name: varchar("name", { length: 255 }).notNull(),
 	slug: varchar("slug", { length: 255 }).notNull(),
 	description: text("description"),
@@ -1300,9 +1299,9 @@ export const webshop_product_media = pgTable("webshop_product_media", {
 export const webshop_product_variants = pgTable("webshop_product_variants", {
 	id: serial("id").primaryKey().notNull(),
 	product_id: integer("product_id").notNull().references(() => webshop_products.id, { onDelete: "cascade" } ),
-	size: varchar("size", { length: 50 }),
-	color: varchar("color", { length: 50 }),
-	sku: varchar("sku", { length: 100 }),
+	size: varchar("size", { length: 255 }),
+	color: varchar("color", { length: 255 }),
+	sku: varchar("sku", { length: 255 }),
 	is_active: boolean("is_active").default(true),
 	display_order: integer("display_order").default(0),
 },
@@ -1322,13 +1321,13 @@ export const webshop_preorders = pgTable("webshop_preorders", {
 	last_name: varchar("last_name", { length: 255 }).notNull(),
 	email: varchar("email", { length: 255 }).notNull(),
 	phone_number: varchar("phone_number", { length: 255 }),
-	status: varchar("status", { length: 50 }).default('awaiting_deposit'), // 'awaiting_deposit' | 'awaiting_final' | 'completed' | 'cancelled'
+	status: varchar("status", { length: 255 }).default('awaiting_deposit'), // 'awaiting_deposit' | 'awaiting_final' | 'completed' | 'cancelled'
 	subtotal_amount: numeric("subtotal_amount", { precision: 10, scale: 5 }).notNull(),
 	deposit_amount: numeric("deposit_amount", { precision: 10, scale: 5 }).notNull(),
 	deposit_paid: boolean("deposit_paid").default(false),
-	deposit_paid_at: timestamp("deposit_paid_at", { mode: 'string' }),
+	deposit_paid_at: timestamp("deposit_paid_at", { withTimezone: true, mode: 'string' }),
 	final_payment_paid: boolean("final_payment_paid").default(false),
-	final_payment_paid_at: timestamp("final_payment_paid_at", { mode: 'string' }),
+	final_payment_paid_at: timestamp("final_payment_paid_at", { withTimezone: true, mode: 'string' }),
 	terms_accepted: boolean("terms_accepted").default(false),
 	pickup_notes: text("pickup_notes"),
 	access_token: varchar("access_token", { length: 255 }),

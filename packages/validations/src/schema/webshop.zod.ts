@@ -18,18 +18,8 @@ export type WebshopDropWindowStatus = z.infer<typeof webshopDropWindowStatusSche
 export const webshopPreorderStatusSchema = z.enum(['awaiting_deposit', 'awaiting_final', 'completed', 'cancelled']);
 export type WebshopPreorderStatus = z.infer<typeof webshopPreorderStatusSchema>;
 
-export const webshopSizeChartSchema = z.object({
-    headers: z.array(z.string()),
-    rows: z.array(z.object({
-        size: z.string(),
-        values: z.array(z.string()),
-    })),
-});
-export type WebshopSizeChart = z.infer<typeof webshopSizeChartSchema>;
-
 export const webshopProductSchema = selectWebshopProductsSchema.extend({
     type: webshopProductTypeSchema,
-    size_chart: webshopSizeChartSchema.nullable().optional(),
 });
 export type WebshopProduct = z.infer<typeof webshopProductSchema>;
 

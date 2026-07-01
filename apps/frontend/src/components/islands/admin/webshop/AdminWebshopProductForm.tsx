@@ -5,7 +5,7 @@ import { AlertCircle, Loader2, Plus, Save, Trash2, Upload } from 'lucide-react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { uploadWebshopMedia } from '@/server/actions/admin/admin-webshop-products.actions';
 import { safeConsoleError } from '@/server/utils/logger';
-import { type AdminDropWindow, type AdminProduct, type AdminSizeChart } from './webshop-admin-types';
+import { type AdminDropWindow, type AdminProduct } from './webshop-admin-types';
 
 interface Props {
     product?: AdminProduct | null;
@@ -42,9 +42,6 @@ export default function AdminWebshopProductForm({ product, dropWindows, onSave, 
     const [slug, setSlug] = useState(product?.slug || '');
     const [slugTouched, setSlugTouched] = useState(!!product);
     const [type, setType] = useState<'item' | 'clothing'>(product?.type === 'clothing' ? 'clothing' : 'item');
-
-    const initialSizeChart = (product?.size_chart as AdminSizeChart | null) || { headers: [], rows: [] };
-    const [sizeChart, setSizeChart] = useState<AdminSizeChart>(initialSizeChart);
 
     const [variants, setVariants] = useState<VariantDraft[]>(
         product?.variants.map(v => ({ size: v.size || '', color: v.color || '', sku: v.sku || '', is_active: v.is_active ?? true })) || []
@@ -87,27 +84,6 @@ export default function AdminWebshopProductForm({ product, dropWindows, onSave, 
         setVariants(prev => prev.map((v, i) => i === index ? { ...v, ...patch } : v));
     };
 
-    const addSizeColumn = () => {
-        const header = window.prompt('Naam van de kolom (bijv. Borstomvang)');
-        if (!header) return;
-        setSizeChart(prev => ({
-            headers: [...prev.headers, header],
-            rows: prev.rows.map(row => ({ ...row, values: [...row.values, ''] }))
-        }));
-    };
-    const removeSizeColumn = (colIndex: number) => {
-        setSizeChart(prev => ({
-            headers: prev.headers.filter((_, i) => i !== colIndex),
-            rows: prev.rows.map(row => ({ ...row, values: row.values.filter((_, i) => i !== colIndex) }))
-        }));
-    };
-    const addSizeRow = () => {
-        setSizeChart(prev => ({ ...prev, rows: [...prev.rows, { size: '', values: prev.headers.map(() => '') }] }));
-    };
-    const removeSizeRow = (rowIndex: number) => {
-        setSizeChart(prev => ({ ...prev, rows: prev.rows.filter((_, i) => i !== rowIndex) }));
-    };
-
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
@@ -116,7 +92,6 @@ export default function AdminWebshopProductForm({ product, dropWindows, onSave, 
         fd.set('slug', slug);
         fd.set('variants_json', JSON.stringify(type === 'clothing' ? variants : []));
         fd.set('media_json', JSON.stringify(media));
-        fd.set('size_chart_json', JSON.stringify(type === 'clothing' ? sizeChart : null));
         onSave(fd);
     };
 
@@ -195,7 +170,11 @@ export default function AdminWebshopProductForm({ product, dropWindows, onSave, 
 
             <div className="space-y-3">
                 <label className="text-xs font-semibold text-(--beheer-text-muted)">Beschrijving</label>
-                <textarea name="description" rows={3} defaultValue={product?.description || ''} className="w-full px-5 py-4 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all" />
+                <textarea name="description" rows={6} defaultValue={product?.description || ''} className="w-full px-5 py-4 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) font-mono text-sm focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all" />
+                <p className="text-xs text-(--beheer-text-muted)">
+                    Ondersteunt Markdown, inclusief tabellen. Bijv. voor een maattabel: <code>| Maat | Borstomvang |</code> op de eerste regel,
+                    <code> | --- | --- |</code> op de tweede, en dan per maat een regel <code>| M | 90-95cm |</code>.
+                </p>
             </div>
 
             <div className="flex items-center gap-4 p-2">
@@ -262,73 +241,6 @@ export default function AdminWebshopProductForm({ product, dropWindows, onSave, 
                             ))}
                             {variants.length === 0 && <p className="text-xs text-(--beheer-text-muted) italic">Nog geen varianten toegevoegd.</p>}
                         </div>
-                    </div>
-
-                    {/* Size chart */}
-                    <div className="space-y-3 pt-6 border-t border-(--beheer-border)">
-                        <div className="flex items-center justify-between">
-                            <label className="text-xs font-semibold text-(--beheer-text-muted)">Maattabel</label>
-                            <div className="flex gap-2">
-                                <button type="button" onClick={addSizeColumn} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--beheer-accent)/10 text-(--beheer-accent) text-xs font-semibold hover:bg-(--beheer-accent)/20 transition-all">
-                                    <Plus className="h-3.5 w-3.5" /> Kolom
-                                </button>
-                                <button type="button" onClick={addSizeRow} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--beheer-accent)/10 text-(--beheer-accent) text-xs font-semibold hover:bg-(--beheer-accent)/20 transition-all">
-                                    <Plus className="h-3.5 w-3.5" /> Maat
-                                </button>
-                            </div>
-                        </div>
-
-                        {sizeChart.headers.length > 0 && (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr>
-                                            <th className="px-2 py-2 text-left text-xs text-(--beheer-text-muted)">Maat</th>
-                                            {sizeChart.headers.map((header, colIndex) => (
-                                                <th key={colIndex} className="px-2 py-2 text-left text-xs text-(--beheer-text-muted)">
-                                                    <div className="flex items-center gap-1">
-                                                        {header}
-                                                        <button type="button" onClick={() => removeSizeColumn(colIndex)} className="text-red-500" aria-label="Verwijder kolom">
-                                                            <Trash2 className="h-3 w-3" />
-                                                        </button>
-                                                    </div>
-                                                </th>
-                                            ))}
-                                            <th />
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {sizeChart.rows.map((row, rowIndex) => (
-                                            <tr key={rowIndex}>
-                                                <td className="px-2 py-1">
-                                                    <input
-                                                        type="text"
-                                                        value={row.size}
-                                                        onChange={(e) => setSizeChart(prev => ({ ...prev, rows: prev.rows.map((r, i) => i === rowIndex ? { ...r, size: e.target.value } : r) }))}
-                                                        className="w-20 px-2 py-1.5 rounded-lg border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) text-sm"
-                                                    />
-                                                </td>
-                                                {row.values.map((value, colIndex) => (
-                                                    <td key={colIndex} className="px-2 py-1">
-                                                        <input
-                                                            type="text"
-                                                            value={value}
-                                                            onChange={(e) => setSizeChart(prev => ({ ...prev, rows: prev.rows.map((r, i) => i === rowIndex ? { ...r, values: r.values.map((v, vi) => vi === colIndex ? e.target.value : v) } : r) }))}
-                                                            className="w-24 px-2 py-1.5 rounded-lg border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) text-sm"
-                                                        />
-                                                    </td>
-                                                ))}
-                                                <td className="px-2 py-1">
-                                                    <button type="button" onClick={() => removeSizeRow(rowIndex)} className="p-1.5 rounded-lg text-red-500 hover:bg-red-500/10" aria-label="Verwijder maat">
-                                                        <Trash2 className="h-3.5 w-3.5" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
                     </div>
                 </>
             )}
