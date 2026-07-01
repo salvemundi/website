@@ -31,6 +31,7 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                     registration: schema.transactions.registration,
                     trip_signup: schema.transactions.trip_signup,
                     pub_crawl_signup: schema.transactions.pub_crawl_signup,
+                    webshop_preorder: schema.transactions.webshop_preorder,
                     created_at: schema.transactions.created_at,
                     updated_at: schema.transactions.updated_at,
                     access_token: schema.transactions.access_token
@@ -75,7 +76,7 @@ export default async function statusRoutes(fastify: FastifyInstance) {
 
             return {
                 ...transaction,
-                signup_id: transaction.registration || transaction.trip_signup || transaction.pub_crawl_signup
+                signup_id: transaction.registration || transaction.trip_signup || transaction.pub_crawl_signup || transaction.webshop_preorder
             };
         } catch (error) {
             safeConsoleError(`[status.routes.ts][statusRoutes] Error fetching status for ${id}:`, error);

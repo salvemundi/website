@@ -42,6 +42,7 @@ export async function getDashboardPermissions(): Promise<UserPermissions & { isI
             canAccessActivitiesView: false,
             canAccessActivitiesEdit: false,
             canAccessMail: false,
+            canAccessWebshop: false,
             isLeader: false,
             isICT: false,
             isAdmin: false,

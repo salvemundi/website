@@ -308,3 +308,27 @@ export const selectDirectusSettingsSchema = createSelectSchema(schema.directus_s
 export const insertDirectusDeploymentRunsSchema = createInsertSchema(schema.directus_deployment_runs);
 export const selectDirectusDeploymentRunsSchema = createSelectSchema(schema.directus_deployment_runs);
 
+// --- webshop_drop_windows ---
+export const insertWebshopDropWindowsSchema = createInsertSchema(schema.webshop_drop_windows);
+export const selectWebshopDropWindowsSchema = createSelectSchema(schema.webshop_drop_windows);
+
+// --- webshop_products ---
+export const insertWebshopProductsSchema = createInsertSchema(schema.webshop_products);
+export const selectWebshopProductsSchema = createSelectSchema(schema.webshop_products);
+
+// --- webshop_product_media ---
+export const insertWebshopProductMediaSchema = createInsertSchema(schema.webshop_product_media);
+export const selectWebshopProductMediaSchema = createSelectSchema(schema.webshop_product_media);
+
+// --- webshop_product_variants ---
+export const insertWebshopProductVariantsSchema = createInsertSchema(schema.webshop_product_variants);
+export const selectWebshopProductVariantsSchema = createSelectSchema(schema.webshop_product_variants);
+
+// --- webshop_preorders ---
+export const insertWebshopPreordersSchema = createInsertSchema(schema.webshop_preorders);
+export const selectWebshopPreordersSchema = createSelectSchema(schema.webshop_preorders);
+
+// --- webshop_preorder_lines ---
+export const insertWebshopPreorderLinesSchema = createInsertSchema(schema.webshop_preorder_lines);
+export const selectWebshopPreorderLinesSchema = createSelectSchema(schema.webshop_preorder_lines);
+

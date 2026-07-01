@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { clubs, clubMembers, directusFiles, stickers, directusUsers, board, boardMembers, contacts, directusPolicies, directusAccess, directusRoles, committees, directusComments, directusDashboards, directusFolders, directusCollections, directusFlows, directusPanels, directusPermissions, directusPresets, directusActivity, directusRevisions, directusVersions, directusShares, directusNotifications, directusOperations, documents, events, eventSignups, eventsDirectusUsers, introBlogs, introBlogLikes, eventsMembers, heroBanners, introBlogGallery, pubCrawlEvents, membershipHistory, pubCrawlSignups, pubCrawlSignupsTransactions, transactions, pushNotification, introPlanning, pubCrawlTickets, introParentSignups, trips, tripSignups, tripActivities, tripSignupActivities, safeHavens, sponsors, directusSessions, permissions, rolePermissions, roles, authAccounts, authSessions, committeeMembers, introPlanningSignups, introSignups, directusDeployments, directusDeploymentProjects, directusSettings, directusDeploymentRuns } from "./schema";
+import { clubs, clubMembers, directusFiles, stickers, directusUsers, board, boardMembers, contacts, directusPolicies, directusAccess, directusRoles, committees, directusComments, directusDashboards, directusFolders, directusCollections, directusFlows, directusPanels, directusPermissions, directusPresets, directusActivity, directusRevisions, directusVersions, directusShares, directusNotifications, directusOperations, documents, events, eventSignups, eventsDirectusUsers, introBlogs, introBlogLikes, eventsMembers, heroBanners, introBlogGallery, pubCrawlEvents, membershipHistory, pubCrawlSignups, pubCrawlSignupsTransactions, transactions, pushNotification, introPlanning, pubCrawlTickets, introParentSignups, trips, tripSignups, tripActivities, tripSignupActivities, safeHavens, sponsors, directusSessions, permissions, rolePermissions, roles, webshopPreorders, authAccounts, authSessions, committeeMembers, introPlanningSignups, introSignups, directusDeployments, webshopProducts, webshopProductMedia, directusDeploymentProjects, directusSettings, directusDeploymentRuns, webshopProductVariants, webshopDropWindows, webshopPreorderLines } from "./schema";
 
 export const clubMembersRelations = relations(clubMembers, ({one}) => ({
 	club: one(clubs, {
@@ -63,6 +63,7 @@ export const directusFilesRelations = relations(directusFiles, ({one, many}) => 
 	safeHavens: many(safeHavens),
 	sponsors: many(sponsors),
 	clubs: many(clubs),
+	webshopProductMedias: many(webshopProductMedia),
 	directusSettings_projectLogo: many(directusSettings, {
 		relationName: "directusSettings_projectLogo_directusFiles_id"
 	}),
@@ -156,15 +157,15 @@ export const directusUsersRelations = relations(directusUsers, ({one, many}) => 
 	tripSignups: many(tripSignups),
 	safeHavens: many(safeHavens),
 	directusSessions: many(directusSessions),
-	authAccounts: many(authAccounts),
-	authSessions: many(authSessions),
-	committeeMembers: many(committeeMembers),
 	transactions_userId: many(transactions, {
 		relationName: "transactions_userId_directusUsers_id"
 	}),
 	transactions_approvedBy: many(transactions, {
 		relationName: "transactions_approvedBy_directusUsers_id"
 	}),
+	authAccounts: many(authAccounts),
+	authSessions: many(authSessions),
+	committeeMembers: many(committeeMembers),
 	introPlanningSignups: many(introPlanningSignups),
 	directusRole: one(directusRoles, {
 		fields: [directusUsers.role],
@@ -173,6 +174,7 @@ export const directusUsersRelations = relations(directusUsers, ({one, many}) => 
 	directusDeployments: many(directusDeployments),
 	directusDeploymentProjects: many(directusDeploymentProjects),
 	directusDeploymentRuns: many(directusDeploymentRuns),
+	webshopPreorders: many(webshopPreorders),
 }));
 
 export const boardRelations = relations(board, ({one, many}) => ({
@@ -582,6 +584,10 @@ export const pubCrawlSignupsRelations = relations(pubCrawlSignups, ({one, many})
 
 export const transactionsRelations = relations(transactions, ({one, many}) => ({
 	pubCrawlSignupsTransactions: many(pubCrawlSignupsTransactions),
+	webshopPreorder: one(webshopPreorders, {
+		fields: [transactions.webshopPreorder],
+		references: [webshopPreorders.id]
+	}),
 	directusUser_userId: one(directusUsers, {
 		fields: [transactions.userId],
 		references: [directusUsers.id],
@@ -750,6 +756,19 @@ export const rolesRelations = relations(roles, ({many}) => ({
 	rolePermissions: many(rolePermissions),
 }));
 
+export const webshopPreordersRelations = relations(webshopPreorders, ({one, many}) => ({
+	transactions: many(transactions),
+	directusUser: one(directusUsers, {
+		fields: [webshopPreorders.userId],
+		references: [directusUsers.id]
+	}),
+	webshopDropWindow: one(webshopDropWindows, {
+		fields: [webshopPreorders.dropWindowId],
+		references: [webshopDropWindows.id]
+	}),
+	webshopPreorderLines: many(webshopPreorderLines),
+}));
+
 export const authAccountsRelations = relations(authAccounts, ({one}) => ({
 	directusUser: one(directusUsers, {
 		fields: [authAccounts.userId],
@@ -800,6 +819,27 @@ export const directusDeploymentsRelations = relations(directusDeployments, ({one
 		references: [directusUsers.id]
 	}),
 	directusDeploymentProjects: many(directusDeploymentProjects),
+}));
+
+export const webshopProductMediaRelations = relations(webshopProductMedia, ({one}) => ({
+	webshopProduct: one(webshopProducts, {
+		fields: [webshopProductMedia.productId],
+		references: [webshopProducts.id]
+	}),
+	directusFile: one(directusFiles, {
+		fields: [webshopProductMedia.asset],
+		references: [directusFiles.id]
+	}),
+}));
+
+export const webshopProductsRelations = relations(webshopProducts, ({one, many}) => ({
+	webshopProductMedias: many(webshopProductMedia),
+	webshopProductVariants: many(webshopProductVariants),
+	webshopDropWindow: one(webshopDropWindows, {
+		fields: [webshopProducts.dropWindowId],
+		references: [webshopDropWindows.id]
+	}),
+	webshopPreorderLines: many(webshopPreorderLines),
 }));
 
 export const directusDeploymentProjectsRelations = relations(directusDeploymentProjects, ({one, many}) => ({
@@ -853,5 +893,33 @@ export const directusDeploymentRunsRelations = relations(directusDeploymentRuns,
 	directusUser: one(directusUsers, {
 		fields: [directusDeploymentRuns.userCreated],
 		references: [directusUsers.id]
+	}),
+}));
+
+export const webshopProductVariantsRelations = relations(webshopProductVariants, ({one, many}) => ({
+	webshopProduct: one(webshopProducts, {
+		fields: [webshopProductVariants.productId],
+		references: [webshopProducts.id]
+	}),
+	webshopPreorderLines: many(webshopPreorderLines),
+}));
+
+export const webshopDropWindowsRelations = relations(webshopDropWindows, ({many}) => ({
+	webshopProducts: many(webshopProducts),
+	webshopPreorders: many(webshopPreorders),
+}));
+
+export const webshopPreorderLinesRelations = relations(webshopPreorderLines, ({one}) => ({
+	webshopPreorder: one(webshopPreorders, {
+		fields: [webshopPreorderLines.preorderId],
+		references: [webshopPreorders.id]
+	}),
+	webshopProduct: one(webshopProducts, {
+		fields: [webshopPreorderLines.productId],
+		references: [webshopProducts.id]
+	}),
+	webshopProductVariant: one(webshopProductVariants, {
+		fields: [webshopPreorderLines.variantId],
+		references: [webshopProductVariants.id]
 	}),
 }));

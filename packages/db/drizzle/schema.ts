@@ -1346,6 +1346,65 @@ export const rolePermissions = pgTable("role_permissions", {
 	unique("role_permissions_role_id_permission_id_key").on(table.roleId, table.permissionId),
 ]);
 
+export const transactions = pgTable("transactions", {
+	id: serial().primaryKey().notNull(),
+	userId: uuid("user_id"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	transactionId: varchar("transaction_id", { length: 255 }),
+	productName: varchar("product_name", { length: 255 }),
+	email: varchar({ length: 255 }),
+	amount: real(),
+	paymentStatus: varchar("payment_status", { length: 255 }).default('open'),
+	registration: integer(),
+	environment: varchar({ length: 255 }),
+	approvalStatus: varchar("approval_status", { length: 255 }).default('auto_approved'),
+	approvedBy: uuid("approved_by"),
+	approvedAt: timestamp("approved_at", { mode: 'string' }),
+	firstName: varchar("first_name", { length: 255 }),
+	lastName: varchar("last_name", { length: 255 }),
+	pubCrawlSignup: integer("pub_crawl_signup"),
+	tripSignup: integer("trip_signup"),
+	couponCode: varchar("coupon_code", { length: 255 }),
+	productType: varchar("product_type", { length: 255 }).notNull(),
+	mollieId: varchar("mollie_id", { length: 255 }).notNull(),
+	accessToken: uuid("access_token"),
+	webshopPreorder: integer("webshop_preorder"),
+}, (table) => [
+	index("idx_transactions_created_at").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("idx_transactions_user_id").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.webshopPreorder],
+			foreignColumns: [webshopPreorders.id],
+			name: "transactions_webshop_preorder_foreign"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [directusUsers.id],
+			name: "fk_transactions_user"
+		}).onDelete("set default"),
+	foreignKey({
+			columns: [table.approvedBy],
+			foreignColumns: [directusUsers.id],
+			name: "transactions_approved_by_foreign"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.pubCrawlSignup],
+			foreignColumns: [pubCrawlSignups.id],
+			name: "transactions_pub_crawl_signup_foreign"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.registration],
+			foreignColumns: [eventSignups.id],
+			name: "transactions_registration_foreign"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.tripSignup],
+			foreignColumns: [tripSignups.id],
+			name: "transactions_trip_signup_foreign"
+		}).onDelete("set null"),
+]);
+
 export const authAccounts = pgTable("auth_accounts", {
 	id: text().primaryKey().notNull(),
 	accountId: text().notNull(),
@@ -1421,59 +1480,6 @@ export const featureFlags = pgTable("feature_flags", {
 	isActive: boolean("is_active").default(false).notNull(),
 	message: text(),
 });
-
-export const transactions = pgTable("transactions", {
-	id: serial().primaryKey().notNull(),
-	userId: uuid("user_id"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	transactionId: varchar("transaction_id", { length: 255 }),
-	productName: varchar("product_name", { length: 255 }),
-	email: varchar({ length: 255 }),
-	amount: real(),
-	paymentStatus: varchar("payment_status", { length: 255 }).default('open'),
-	registration: integer(),
-	environment: varchar({ length: 255 }),
-	approvalStatus: varchar("approval_status", { length: 255 }).default('auto_approved'),
-	approvedBy: uuid("approved_by"),
-	approvedAt: timestamp("approved_at", { mode: 'string' }),
-	firstName: varchar("first_name", { length: 255 }),
-	lastName: varchar("last_name", { length: 255 }),
-	pubCrawlSignup: integer("pub_crawl_signup"),
-	tripSignup: integer("trip_signup"),
-	couponCode: varchar("coupon_code", { length: 255 }),
-	productType: varchar("product_type", { length: 255 }).notNull(),
-	mollieId: varchar("mollie_id", { length: 255 }).notNull(),
-	accessToken: uuid("access_token"),
-}, (table) => [
-	index("idx_transactions_created_at").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
-	index("idx_transactions_user_id").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [directusUsers.id],
-			name: "fk_transactions_user"
-		}).onDelete("set default"),
-	foreignKey({
-			columns: [table.approvedBy],
-			foreignColumns: [directusUsers.id],
-			name: "transactions_approved_by_foreign"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.pubCrawlSignup],
-			foreignColumns: [pubCrawlSignups.id],
-			name: "transactions_pub_crawl_signup_foreign"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.registration],
-			foreignColumns: [eventSignups.id],
-			name: "transactions_registration_foreign"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.tripSignup],
-			foreignColumns: [tripSignups.id],
-			name: "transactions_trip_signup_foreign"
-		}).onDelete("set null"),
-]);
 
 export const introPlanningSignups = pgTable("intro_planning_signups", {
 	id: serial().primaryKey().notNull(),
@@ -1581,6 +1587,25 @@ export const directusDeployments = pgTable("directus_deployments", {
 			name: "directus_deployments_user_created_foreign"
 		}).onDelete("set null"),
 	unique("directus_deployments_provider_unique").on(table.provider),
+]);
+
+export const webshopProductMedia = pgTable("webshop_product_media", {
+	id: serial().primaryKey().notNull(),
+	productId: integer("product_id").notNull(),
+	asset: uuid().notNull(),
+	displayOrder: integer("display_order").default(0),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [
+	foreignKey({
+			columns: [table.productId],
+			foreignColumns: [webshopProducts.id],
+			name: "webshop_product_media_product_id_foreign"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.asset],
+			foreignColumns: [directusFiles.id],
+			name: "webshop_product_media_asset_foreign"
+		}).onDelete("cascade"),
 ]);
 
 export const directusDeploymentProjects = pgTable("directus_deployment_projects", {
@@ -1720,5 +1745,114 @@ export const directusDeploymentRuns = pgTable("directus_deployment_runs", {
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
 			name: "directus_deployment_runs_user_created_foreign"
+		}).onDelete("set null"),
+]);
+
+export const webshopProductVariants = pgTable("webshop_product_variants", {
+	id: serial().primaryKey().notNull(),
+	productId: integer("product_id").notNull(),
+	size: varchar({ length: 255 }),
+	color: varchar({ length: 255 }),
+	sku: varchar({ length: 255 }),
+	isActive: boolean("is_active").default(true),
+	displayOrder: integer("display_order").default(0),
+}, (table) => [
+	foreignKey({
+			columns: [table.productId],
+			foreignColumns: [webshopProducts.id],
+			name: "webshop_product_variants_product_id_foreign"
+		}).onDelete("cascade"),
+]);
+
+export const webshopDropWindows = pgTable("webshop_drop_windows", {
+	id: serial().primaryKey().notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	status: varchar({ length: 255 }).default('draft'),
+	opensAt: timestamp("opens_at", { withTimezone: true, mode: 'string' }),
+	closesAt: timestamp("closes_at", { withTimezone: true, mode: 'string' }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const webshopProducts = pgTable("webshop_products", {
+	id: serial().primaryKey().notNull(),
+	dropWindowId: integer("drop_window_id"),
+	type: varchar({ length: 255 }).default('item').notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	slug: varchar({ length: 255 }).notNull(),
+	description: text(),
+	price: numeric({ precision: 10, scale:  5 }).notNull(),
+	depositAmount: numeric("deposit_amount", { precision: 10, scale:  5 }).notNull(),
+	sizeChart: json("size_chart"),
+	isActive: boolean("is_active").default(true),
+	displayOrder: integer("display_order").default(0),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [
+	foreignKey({
+			columns: [table.dropWindowId],
+			foreignColumns: [webshopDropWindows.id],
+			name: "webshop_products_drop_window_id_foreign"
+		}).onDelete("set null"),
+	unique("webshop_products_slug_unique").on(table.slug),
+]);
+
+export const webshopPreorders = pgTable("webshop_preorders", {
+	id: serial().primaryKey().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	userId: uuid("user_id"),
+	dropWindowId: integer("drop_window_id"),
+	firstName: varchar("first_name", { length: 255 }).notNull(),
+	lastName: varchar("last_name", { length: 255 }).notNull(),
+	email: varchar({ length: 255 }).notNull(),
+	phoneNumber: varchar("phone_number", { length: 255 }),
+	status: varchar({ length: 255 }).default('awaiting_deposit'),
+	subtotalAmount: numeric("subtotal_amount", { precision: 10, scale:  5 }).notNull(),
+	depositAmount: numeric("deposit_amount", { precision: 10, scale:  5 }).notNull(),
+	depositPaid: boolean("deposit_paid").default(false),
+	depositPaidAt: timestamp("deposit_paid_at", { withTimezone: true, mode: 'string' }),
+	finalPaymentPaid: boolean("final_payment_paid").default(false),
+	finalPaymentPaidAt: timestamp("final_payment_paid_at", { withTimezone: true, mode: 'string' }),
+	termsAccepted: boolean("terms_accepted").default(false),
+	pickupNotes: text("pickup_notes"),
+	accessToken: varchar("access_token", { length: 255 }),
+}, (table) => [
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [directusUsers.id],
+			name: "webshop_preorders_user_id_foreign"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.dropWindowId],
+			foreignColumns: [webshopDropWindows.id],
+			name: "webshop_preorders_drop_window_id_foreign"
+		}).onDelete("set null"),
+]);
+
+export const webshopPreorderLines = pgTable("webshop_preorder_lines", {
+	id: serial().primaryKey().notNull(),
+	preorderId: integer("preorder_id").notNull(),
+	productId: integer("product_id"),
+	variantId: integer("variant_id"),
+	quantity: integer().default(1).notNull(),
+	unitPrice: numeric("unit_price", { precision: 10, scale:  5 }).notNull(),
+	productNameSnapshot: varchar("product_name_snapshot", { length: 255 }),
+	variantLabelSnapshot: varchar("variant_label_snapshot", { length: 255 }),
+}, (table) => [
+	foreignKey({
+			columns: [table.preorderId],
+			foreignColumns: [webshopPreorders.id],
+			name: "webshop_preorder_lines_preorder_id_foreign"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.productId],
+			foreignColumns: [webshopProducts.id],
+			name: "webshop_preorder_lines_product_id_foreign"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.variantId],
+			foreignColumns: [webshopProductVariants.id],
+			name: "webshop_preorder_lines_variant_id_foreign"
 		}).onDelete("set null"),
 ]);

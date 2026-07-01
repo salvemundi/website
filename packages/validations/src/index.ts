@@ -15,6 +15,8 @@ export * from './schema/membership.zod.js';
 export * from './schema/pub-crawl.zod.js';
 export * from './schema/admin.zod.js';
 export * from './schema/stickers.zod.js';
+export * from './schema/webshop.zod.js';
+export * from './schema/admin-webshop.zod.js';
 export * from './schema/shared.zod.js';
 export * from './schema/events.zod.js';
 export * from './schema/audit.zod.js';
