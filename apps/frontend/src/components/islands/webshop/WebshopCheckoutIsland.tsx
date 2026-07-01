@@ -54,8 +54,8 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
     });
 
     const line = watch('lines.0');
-    const quantity = line?.quantity || 1;
-    const variantId = line?.variant_id ?? null;
+    const quantity = line.quantity || 1;
+    const variantId = line.variant_id ?? null;
 
     const unitPrice = Number(product.price);
     const unitDeposit = Number(product.deposit_amount);
@@ -179,7 +179,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                             >
                                 <Minus className="h-4 w-4" />
                             </button>
-                            <span className="w-10 text-center font-bold text-lg">{quantity}</span>
+                            <output aria-label="Huidig aantal" className="min-w-10 text-center font-bold text-lg">{quantity}</output>
                             <button
                                 type="button"
                                 onClick={() => setValue('lines.0.quantity', Math.min(MAX_QUANTITY, quantity + 1), { shouldValidate: true })}

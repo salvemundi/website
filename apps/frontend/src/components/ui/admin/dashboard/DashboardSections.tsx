@@ -13,7 +13,8 @@ import {
     Globe,
     Zap,
     Settings,
-    Layout
+    Layout,
+    ShoppingBag
 } from 'lucide-react';
 import {
     ActionCard
@@ -47,6 +48,7 @@ export function DashboardHub({
                 { title: "Intro", value: stats.introSignups, icon: <FileText />, href: "/beheer/intro", colorClass: "blue" as const, disabled: !permissions.canAccessIntro },
                 { title: "Reis", value: stats.reisSignups, icon: <Globe />, href: "/beheer/reis", colorClass: "teal" as const, disabled: !permissions.canAccessReis },
                 { title: "Kroegentocht", value: stats.pubCrawlSignups, icon: <Ticket />, href: "/beheer/kroegentocht", colorClass: "orange" as const, disabled: !permissions.canAccessKroegentocht },
+                { title: "Webshop", value: "Beheer", icon: <ShoppingBag />, href: "/beheer/webshop", colorClass: "purple" as const, disabled: !permissions.canAccessWebshop },
             ].filter(i => !i.disabled)
         },
         {

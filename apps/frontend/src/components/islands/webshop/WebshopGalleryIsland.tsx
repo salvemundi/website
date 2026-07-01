@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { ImageOff } from 'lucide-react';
 import { type WebshopProductMedia } from '@salvemundi/validations/schema/webshop.zod';
@@ -13,12 +13,26 @@ interface WebshopGalleryIslandProps {
 export default function WebshopGalleryIsland({ media, productName }: WebshopGalleryIslandProps) {
     const [activeIndex, setActiveIndex] = useState(0);
     const [lightboxOpen, setLightboxOpen] = useState(false);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
     useEffect(() => {
         if (!lightboxOpen) return;
 
+        previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+        closeButtonRef.current?.focus();
+
         const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setLightboxOpen(false);
+            if (e.key === 'Escape') {
+                setLightboxOpen(false);
+                return;
+            }
+
+            // The lightbox only contains a single focusable control, so keep focus pinned there.
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                closeButtonRef.current?.focus();
+            }
         };
 
         document.body.style.overflow = 'hidden';
@@ -26,6 +40,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
         return () => {
             document.body.style.overflow = '';
             window.removeEventListener('keydown', onKey);
+            previouslyFocusedRef.current?.focus();
         };
     }, [lightboxOpen]);
 
@@ -91,6 +106,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                     }}
                 >
                     <button
+                        ref={closeButtonRef}
                         onClick={() => setLightboxOpen(false)}
                         className="absolute top-4 right-4 z-50 p-2 rounded-full bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground backdrop-blur-sm transition-colors border border-border"
                         aria-label="Sluiten"

@@ -10,7 +10,7 @@ export default function WebshopSizeChartTable({ sizeChart }: WebshopSizeChartTab
     return (
         <div className="space-y-2">
             <h3 className="text-sm font-bold uppercase tracking-wider text-(--theme-purple)/60">Maattabel</h3>
-            <div className="overflow-x-auto rounded-2xl border border-(--border-color)">
+            <div className="overflow-x-auto rounded-2xl border border-(--border-color)" role="group" aria-label="Maattabel, scrol horizontaal voor meer kolommen op kleine schermen">
                 <table className="w-full min-w-[28rem] text-sm">
                     <thead>
                         <tr className="bg-(--bg-soft)">

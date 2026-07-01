@@ -182,19 +182,19 @@ export async function submitPreorderAndInitiatePayment(formData: WebshopPreorder
 export async function initiateFinalPayment(preorderId: number, token?: string) {
     try {
         const preorder = await fetchPreorderByIdDb(preorderId);
-        if (!preorder) return { success: false, error: 'Bestelling niet gevonden.' };
+        if (!preorder) return { success: false as const, error: 'Bestelling niet gevonden.' };
 
         const session = await getEnrichedSession();
         const isOwner = Boolean(session?.user.id && preorder.user_id === session.user.id);
         const hasValidToken = Boolean(token && preorder.access_token && token === preorder.access_token);
 
         if (!isOwner && !hasValidToken) {
-            return { success: false, error: 'Geen toegang tot deze bestelling.' };
+            return { success: false as const, error: 'Geen toegang tot deze bestelling.' };
         }
 
         return await buildFinancePaymentRequest(preorderId, 'final');
     } catch (error) {
         safeConsoleError('[webshop-checkout.actions.ts][initiateFinalPayment]', error);
-        return { success: false, error: 'Er is een onverwachte fout opgetreden.' };
+        return { success: false as const, error: 'Er is een onverwachte fout opgetreden.' };
     }
 }

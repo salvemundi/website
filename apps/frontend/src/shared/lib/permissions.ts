@@ -25,6 +25,7 @@ export interface UserPermissions {
     canAccessActivitiesView: boolean;
     canAccessActivitiesEdit: boolean;
     canAccessMail: boolean;
+    canAccessWebshop: boolean;
 }
 
 export function hasPermission(committees: Committee[] = [], resource: AdminResource): boolean {
@@ -63,5 +64,6 @@ export function getPermissions(committees: Committee[] = []): UserPermissions {
         canAccessActivitiesView: hasPermission(committees, AdminResource.ActivitiesView),
         canAccessActivitiesEdit: hasPermission(committees, AdminResource.ActivitiesEdit),
         canAccessMail: hasPermission(committees, AdminResource.Sync), // Proxying mail access to ICT/Sync for now
+        canAccessWebshop: hasPermission(committees, AdminResource.Webshop),
     };
 }
