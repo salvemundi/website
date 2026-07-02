@@ -52,7 +52,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
         );
     }
 
-    const active = media[activeIndex];
+    const active = media.at(activeIndex) ?? media[0];
 
     return (
         <div className="space-y-3">

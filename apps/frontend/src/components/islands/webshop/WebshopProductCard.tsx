@@ -53,7 +53,7 @@ export default function WebshopProductCard({ product }: WebshopProductCardProps)
             </div>
 
             <div className="p-5 space-y-2">
-                <h3 className="text-lg font-bold text-(--theme-purple)/90 leading-tight group-hover:text-(--theme-purple) transition-colors line-clamp-2 break-words">
+                <h3 className="text-lg font-bold text-(--theme-purple)/90 leading-tight group-hover:text-(--theme-purple) transition-colors line-clamp-2 wrap-break-word">
                     {product.name}
                 </h3>
                 <div className="flex items-center justify-between pt-2 border-t border-(--border-color)">
