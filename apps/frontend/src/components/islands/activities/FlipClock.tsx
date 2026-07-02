@@ -61,11 +61,14 @@ const FlipDigit: React.FC<{ digit: number }> = ({ digit }) => {
 };
 
 const FlipBlock: React.FC<{ value: number; label: string }> = ({ value, label }) => {
+    const digits = Math.max(value, 0).toString().padStart(2, '0').split('').map(Number);
+
     return (
         <div className="flex flex-col items-center gap-2">
             <div className="flex gap-0">
-                <FlipDigit digit={Math.floor(value / 10)} />
-                <FlipDigit digit={value % 10} />
+                {digits.map((digit, index) => (
+                    <FlipDigit key={index} digit={digit} />
+                ))}
             </div>
             <span className="text-[10px] sm:text-xs font-bold text-purple-600 dark:text-purple-400 opacity-70">
                 {label}
@@ -140,7 +143,6 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
 
     return (
         <div className="flex flex-col items-center">
-            {/* Veilige injectie: geen dangerouslySetInnerHTML, dus linter is tevreden */}
             <style>{flipStyles}</style>
 
             {title && (

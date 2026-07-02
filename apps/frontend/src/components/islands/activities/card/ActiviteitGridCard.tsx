@@ -70,7 +70,7 @@ export default function ActiviteitGridCard({
             </div>
 
             <div className="p-5 flex flex-col grow relative z-10 space-y-3">
-                <h3 className="text-xl font-bold text-(--theme-purple)/90 leading-tight group-hover:text-(--theme-purple) transition-colors line-clamp-2 break-words">
+                <h3 className="text-xl font-bold text-(--theme-purple)/90 leading-tight group-hover:text-(--theme-purple) transition-colors line-clamp-2 wrap-break-word">
                     {title}
                 </h3>
 
@@ -87,11 +87,11 @@ export default function ActiviteitGridCard({
                 </div>
 
                 {short_description ? (
-                    <div className="text-(--text-muted) text-sm line-clamp-5 leading-relaxed break-words overflow-hidden">
-                        <SafeMarkdown content={short_description} className="!text-(--text-muted) prose-sm prose-p:my-1 prose-headings:my-1" />
+                    <div className="text-(--text-muted) text-sm line-clamp-5 leading-relaxed wrap-break-word overflow-hidden">
+                        <SafeMarkdown content={short_description} className="text-(--text-muted)! prose-sm prose-p:my-1 prose-headings:my-1" />
                     </div>
                 ) : description ? (
-                    <p className="text-(--text-muted) text-sm line-clamp-3 leading-relaxed break-words overflow-hidden">
+                    <p className="text-(--text-muted) text-sm line-clamp-3 leading-relaxed wrap-break-word overflow-hidden">
                         {description}
                     </p>
                 ) : null}
@@ -106,10 +106,13 @@ export default function ActiviteitGridCard({
                         {!isPast && (
                             <button
                                 onClick={handleSignupClick}
-                                className={`${cannotSignUp ? 'bg-(--theme-purple)/10 text-(--theme-purple)/40 cursor-not-allowed' : 'bg-(--theme-purple) text-white shadow-lg shadow-(--theme-purple)/20 hover:scale-105'} p-2 rounded-full transition-all`}
-                                disabled={cannotSignUp}
+                                className={`p-2 rounded-full transition-all duration-200
+                                    ${cannotSignUp
+                                        ? 'bg-(--bg-soft) text-(--text-muted)'
+                                        : 'bg-(--theme-purple) text-white shadow-lg shadow-(--theme-purple)/20 hover:scale-105'
+                                    }`}
                                 title={alreadySignedUp ? 'Al aangemeld' : 'Aanmelden'}
-                            >
+>
                                 {alreadySignedUp ? (
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                         <polyline points="20 6 9 17 4 12" />

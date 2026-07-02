@@ -133,10 +133,13 @@ export default function ActiviteitListCard({
                     {!isPast && (
                         <button
                             onClick={handleSignupClick}
-                            className={`${cannotSignUp ? 'bg-purple-100 text-(--text-muted) cursor-not-allowed' : 'bg-(--theme-purple) text-white shadow-lg shadow-(--theme-purple)/30 hover:-translate-y-0.5 hover:shadow-xl'} px-4 py-2 text-sm font-semibold rounded-full transition-transform`}
-                            disabled={cannotSignUp}
+                            className={`px-4 py-2 text-sm font-semibold rounded-full transition-transform duration-200 
+                                ${cannotSignUp
+                                    ? 'bg-(--bg-soft) text-(--text-muted)'
+                                    : 'bg-(--theme-purple) text-white shadow-lg shadow-(--theme-purple)/30 hover:-translate-y-0.5 hover:shadow-xl'
+                                }`}
                         >
-                            {alreadySignedUp ? 'AL AANGEMELD' : isDeadlinePassed ? 'AANMELDING GESLOTEN' : 'AANMELDEN'}
+                            {alreadySignedUp ? 'Al Aangemeld' : isDeadlinePassed ? 'Aanmelding Gesloten' : 'Aanmelden'}
                         </button>
                     )}
                 </div>

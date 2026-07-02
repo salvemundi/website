@@ -146,8 +146,8 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                     <>
                                         <hr className="my-8 border-(--border-color)/50" />
                                         <div className="flex items-center gap-3 mb-6">
-                                            <div className="h-6 w-1.5 bg-amber-500 rounded-full shadow-[0_0_10px_var(--color-amber-500)]" />
-                                            <h3 className="text-xl font-black text-amber-500/90 uppercase tracking-widest">
+                                            <div className="h-6 w-1.5 bg-(--text-muted) rounded-full shadow-[0_0_10px_var(--color-text-muted)]" />
+                                            <h3 className="text-xl font-black text-(--text-muted)/90 uppercase tracking-widest">
                                                 Extra Informatie (alleen ingelogd)
                                             </h3>
                                         </div>

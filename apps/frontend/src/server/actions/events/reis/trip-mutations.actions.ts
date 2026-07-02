@@ -60,7 +60,6 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
     }
 
     const userId = session?.user.id;
-    // Logged in users: check for existing signup
     if (userId) {
         const existing = existingSignups.find(s => s.directus_relations === userId && s.status !== 'cancelled');
         if (existing) {

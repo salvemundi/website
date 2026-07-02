@@ -20,13 +20,13 @@ export default function StatusSignedUp({
     serverError
 }: StatusSignedUpProps) {
     return (
-        <div className={`h-full flex flex-col justify-center space-y-8 p-8 rounded-[2rem] bg-(--bg-card) border ${isPaidStatus ? 'border-success/30' : 'border-amber-500/30'} shadow-2xl transition-all duration-500`}>
+        <div className={`h-full flex flex-col justify-center space-y-8 p-8 rounded-4xl bg-(--bg-card) border ${isPaidStatus ? 'border-success/30' : 'border-(--text-muted)/30'} shadow-2xl transition-all duration-500`}>
             <div className="text-center space-y-4">
-                <div className={`w-20 h-20 ${isPaidStatus ? 'bg-success/10' : 'bg-amber-500/10'} rounded-full flex items-center justify-center mx-auto shadow-inner`}>
+                <div className={`w-20 h-20 ${isPaidStatus ? 'bg-success/10' : 'bg-(--text-muted)/10'} rounded-full flex items-center justify-center mx-auto shadow-inner`}>
                     {isPaidStatus ? (
                         <CheckCircle2 className="h-10 w-10 text-success" />
                     ) : (
-                        <CreditCard className="h-10 w-10 text-amber-500" />
+                        <CreditCard className="h-10 w-10 text-(--text-muted)" />
                     )}
                 </div>
                 <h3 className="text-3xl font-semibold text-(--text-main) leading-tight">
@@ -41,7 +41,7 @@ export default function StatusSignedUp({
                 {!isPaidStatus && (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <p className="text-[10px]  font-semibold text-amber-600 tracking-widest bg-amber-500/10 px-4 py-2.5 rounded-xl border border-amber-500/20 inline-block">
+                            <p className="text-[10px]  font-semibold text-(--text-muted) tracking-widest bg-(--bg-soft) px-4 py-2.5 rounded-xl border border-(--border-color)/20 inline-block">
                                 Wachten op bevestiging van betaling...
                             </p>
                             <p className="text-[11px] font-bold text-(--text-muted) opacity-70 max-w-xs mx-auto">
@@ -51,7 +51,7 @@ export default function StatusSignedUp({
 
                         <button
                             onClick={onRetry}
-                            className="w-full h-14 bg-amber-500 text-white font-semibold rounded-2xl shadow-lg shadow-amber-500/20 hover:shadow-xl hover:shadow-amber-500/40 hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-3  text-[10px] tracking-widest"
+                            className="w-full h-14 bg-(--theme-purple) text-white font-semibold rounded-2xl shadow-lg shadow-(--theme-purple)/20 hover:shadow-xl hover:shadow-(--theme-purple)/40 hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-3  text-[10px] tracking-widest"
                         >
                             <CreditCard className="h-4 w-4" />
                             <span>Betaal Nu</span>
