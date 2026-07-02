@@ -52,7 +52,10 @@ export default function AdminModal({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-500">
-            <div 
+            <div
+                role="dialog"
+                aria-modal="true"
+                aria-label={title}
                 className={`bg-bg-card/90 backdrop-blur-xl w-full ${maxWidthClasses.get(maxWidth)} squircle-lg shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-border-color/50 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500`}
                 onClick={(e) => e.stopPropagation()}
             >
@@ -68,8 +71,9 @@ export default function AdminModal({
                             </p>
                         )}
                     </div>
-                    <button 
-                        onClick={onClose} 
+                    <button
+                        onClick={onClose}
+                        aria-label="Sluiten"
                         className="p-4 bg-bg-soft hover:bg-bg-soft/80 text-text-muted hover:text-text-main transition-all squircle active:scale-90 group"
                     >
                         <X className="h-6 w-6" />

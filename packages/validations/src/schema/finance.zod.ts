@@ -21,6 +21,7 @@ export const molliePaymentMetadataSchema = z.object({
     isContribution: z.boolean().optional(),
     isNewMember: z.boolean().optional(),
     couponCode: z.string().optional().nullable(),
+    paymentType: z.string().optional(),
 });
 
 export type MollieWebhook = z.infer<typeof mollieWebhookSchema>;

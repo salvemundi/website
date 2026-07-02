@@ -14,3 +14,5 @@ export * from './pub-crawl.zod.js';
 export * from './intro.zod.js';
 export * from './admin.zod.js';
 export * from './stickers.zod.js';
+export * from './webshop.zod.js';
+export * from './admin-webshop.zod.js';
