@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 export default function CouponsLayout({ children }: { children: ReactNode }) {
     return (
         <AdminGuard 
-            permission="canAccessCoupons" 
+            feature="coupons" 
             title="Coupon Beheer" 
             description="Je hebt geen rechten om coupons te beheren. Alleen het Bestuur en ICT hebben deze rechten."
         >

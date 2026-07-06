@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 export default function LoggingLayout({ children }: { children: ReactNode }) {
     return (
         <AdminGuard 
-            permission="isICT" 
+            feature="logging" 
             title="Audit Logboek" 
             description="Deze systeemfunctie is exclusief gereserveerd voor de ICT-commissie."
         >

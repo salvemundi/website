@@ -4,13 +4,14 @@ import { unstable_noStore as noStore } from 'next/cache';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { db, schema } from '@salvemundi/db';
 import { eq, or, type SQL } from 'drizzle-orm';
-import { fetchEventSignupByIdDb } from '@/server/internal/event-db.utils';
-import { fetchPubCrawlSignupByIdDb } from '@/server/internal/kroegentocht-db.utils';
-import { fetchTripSignupByIdDb } from '@/server/internal/trip-db.utils';
-import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteit-utils';
+import { fetchEventSignupByIdDb } from '@/server/internal/activiteiten/activiteiten-db.utils';
+import { fetchPubCrawlSignupByIdDb } from '@/server/internal/kroegentocht/kroegentocht-signup-db.utils';;
+import { fetchTripSignupByIdDb } from '@/server/internal/reis/reis-signup-db.utils';;
+import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteiten/activiteiten.utils';
 import { type PubCrawlSignup } from '@salvemundi/validations/directus/schema';
 import { type PaymentStatus, type SignupStatusResult } from './types';
 import { safeConsoleError } from '@/server/utils/logger';
+import { canAccess } from '@/shared/lib/permissions';
 
 interface FinanceStatusResponse {
     payment_status?: PaymentStatus;
@@ -137,12 +138,12 @@ export async function getSignupStatus(
             const signupId = parseInt(id);
             const session = await getEnrichedSession();
             const user = session?.user;
-            const isAdmin = user?.role === 'admin' || user?.role === '06e78cf9-f9c3-4f9e-a86d-1907de634567';
+            const isCommitteeAdmin = canAccess(user?.committees, 'commissies');
 
             const signup = await fetchEventSignupByIdDb(signupId);
             if (signup) {
                 const isOwner = user?.id && signup.directus_relations === user.id;
-                if (isAdmin || isOwner) {
+                if (isCommitteeAdmin || isOwner) {
                     return { status: (signup.payment_status as PaymentStatus), signup };
                 }
                 return { status: 'unauthorized' };
@@ -151,7 +152,7 @@ export async function getSignupStatus(
             const krotoSignup = await fetchPubCrawlSignupByIdDb(signupId);
             if (krotoSignup) {
                 const isOwner = user?.id && krotoSignup.directus_relations === user.id;
-                if (isAdmin || isOwner) {
+                if (isCommitteeAdmin || isOwner) {
                     return { status: (krotoSignup.payment_status as PaymentStatus), signup: krotoSignup as unknown as PubCrawlSignup };
                 }
                 return { status: 'unauthorized' };
@@ -160,7 +161,7 @@ export async function getSignupStatus(
             const tripSignup = await fetchTripSignupByIdDb(signupId);
             if (tripSignup) {
                 const isOwner = user?.id && tripSignup.directus_relations === user.id;
-                if (isAdmin || isOwner) {
+                if (isCommitteeAdmin || isOwner) {
                     const status = (tripSignup.deposit_paid || tripSignup.full_payment_paid) ? 'paid' : paymentStatus;
                     return { status: status as PaymentStatus, signup: tripSignup, isTrip: true };
                 }

@@ -40,7 +40,7 @@ export default function AdminVisibilityToggle({
                 ) : (
                     <div 
                         className={`w-4 h-4 bg-white rounded-full transition-transform ${
-                            isVisible ? 'translate-x-[1.5rem]' : 'translate-x-0'
+                            isVisible ? 'translate-x-6' : 'translate-x-0'
                         } shadow-sm`} 
                     />
                 )}

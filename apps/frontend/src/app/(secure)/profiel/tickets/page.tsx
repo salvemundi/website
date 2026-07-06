@@ -1,5 +1,5 @@
-import { getMyTickets } from '@/server/actions/events/public-activiteit-status.actions';
-import TicketListIsland from '@/components/islands/activities/TicketListIsland';
+import { getMyTickets } from '@/server/actions/events/activiteiten/activiteiten-status.actions';
+import TicketListIsland from '@/components/islands/activiteiten/TicketListIsland';
 import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata = {

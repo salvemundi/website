@@ -3,11 +3,11 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
 import ActiviteitBewerkenIsland from '@/components/islands/admin/activities/ActiviteitBewerkenIsland';
-import { getActivityByIdInternal } from '@/server/queries/admin-event.queries';
+import { getActivityByIdInternal } from '@/server/queries/activiteiten/admin-activiteiten.queries';
 import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
 import { getPermissions } from '@/shared/lib/permissions';
-import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
+import { fetchUserCommitteesDb } from '@/server/internal/leden/leden-db.utils';
 import { safeConsoleError } from '@/server/utils/logger';
 import { type EnrichedUser } from '@/types/auth';
 import { type AdminActivity } from "@salvemundi/validations";
@@ -35,7 +35,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
 
     const permissions = getPermissions(userCommittees);
 
-    if (!permissions.canAccessActivitiesEdit) {
+    if (!permissions.includes('activiteiten:edit')) {
         return (
             <AdminUnauthorized
                 title="Activiteit Bewerken"
@@ -44,7 +44,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
         );
     }
 
-    const isPowerful = permissions.isLeader || permissions.isICT;
+    const isPowerful = permissions.includes('leader') || permissions.includes('ict');
 
     const [eventData, allCommittees] = await Promise.all([
         getActivityByIdInternal(id),

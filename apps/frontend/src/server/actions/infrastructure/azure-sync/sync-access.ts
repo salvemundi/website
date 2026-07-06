@@ -1,21 +1,19 @@
 import 'server-only';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { isSuperAdmin } from "@/lib/auth";
+import { canAccess } from "@/shared/lib/permissions";
 
 export const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
 export const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
-import { type EnrichedUser } from "@/types/auth";
 
 export async function checkSyncAccess(targetId?: string) {
     const session = await getEnrichedSession();
     if (!session) return null;
     
-    const user = session.user as unknown as EnrichedUser;
+    const user = session.user;
     
-    // Allow if SuperAdmin OR if it's the user's own ID/EntraID
     const isOwner = targetId && (user.id === targetId || user.entra_id === targetId);
-    if (isSuperAdmin(user.committees) || isOwner) {
+    if (canAccess(user.committees, 'sync') || isOwner) {
         return user;
     }
     

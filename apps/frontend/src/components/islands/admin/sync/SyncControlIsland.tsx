@@ -4,11 +4,7 @@ import React from 'react';
 import { RefreshCw, X, Info } from 'lucide-react';
 import { useSync } from './SyncContext';
 
-interface Props {
-    tasks?: { [key: string]: unknown }[];
-}
-
-export default function SyncControlIsland({ tasks: _tasks = [] }: Props) {
+export default function SyncControlIsland() {
     const {
         isStartingSync, isStopping, isResetting, isUserSyncLoading,
         selectedSyncFields, toggleField, forceLink, setForceLink,

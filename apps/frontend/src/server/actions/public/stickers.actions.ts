@@ -9,6 +9,7 @@ import { db, schema } from '@salvemundi/db';
 import { eq, desc } from 'drizzle-orm';
 import { z } from 'zod';
 import { safeConsoleError } from '@/server/utils/logger';
+import { uploadToDirectus } from '@/server/utils/media';
 
 const stickerListSchema = z.array(stickerPublicSchema);
 
@@ -24,7 +25,7 @@ const stickerCreateSchema = z.object({
 
 export async function getPublicStickers() {
     const session = await getEnrichedSession();
-    const isLoggedIn = !!session?.user;
+    const isLoggedIn = !!session?.user && session.user.membership_status === 'active';
 
     const rows = await db.select({
         s: schema.Stickers,
@@ -66,8 +67,8 @@ export async function getPublicStickers() {
 export async function createStickerPublic(data: unknown) {
     const session = await getEnrichedSession();
 
-    if (!session?.user) {
-        throw new Error('Je moet ingelogd zijn om een sticker toe te voegen.');
+    if (!session?.user || session.user.membership_status !== 'active') {
+        throw new Error('Je moet een actief lid zijn om een sticker toe te voegen.');
     }
 
     const { rateLimit } = await import('@/server/utils/ratelimit');
@@ -102,8 +103,8 @@ export async function createStickerPublic(data: unknown) {
 
 export async function uploadFileAction(formData: FormData): Promise<{ success: true; data: string } | { success: false; error: string }> {
     const session = await getEnrichedSession();
-    if (!session?.user) {
-        throw new Error('Niet geautoriseerd: Je moet ingelogd zijn om bestanden te uploaden.');
+    if (!session?.user || session.user.membership_status !== 'active') {
+        throw new Error('Niet geautoriseerd: Je moet een actief lid zijn om bestanden te uploaden.');
     }
 
     const { rateLimit } = await import('@/server/utils/ratelimit');
@@ -111,28 +112,20 @@ export async function uploadFileAction(formData: FormData): Promise<{ success: t
     if (!success) {
         throw new Error('Te veel bestanden geüpload. Probeer het later opnieuw.');
     }
+    const file = formData.get('file') as File | null;
+    if (!file) return { success: false, error: 'Geen bestand gevonden in upload.' };
+
     try {
-        const token = process.env.DIRECTUS_STATIC_TOKEN;
-        const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
-        const res = await fetch(`${directusUrl}/files`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${token}`
-            },
-            body: formData
-        });
-
-        if (!res.ok) {
-            throw new Error(`Upload failed: ${await res.text()}`);
+        const uploadResult = await uploadToDirectus(file);
+        if (!uploadResult.success) {
+            return { success: false, error: uploadResult.error };
         }
-
-        const json = await res.json() as { data?: { id?: string } };
-        const fileId = json.data?.id;
-
-        if (!fileId) {
+        
+        if (!uploadResult.id) {
             return { success: false, error: 'Foto upload mislukt op de server (geen ID teruggekregen).' };
         }
-        return { success: true, data: fileId };
+
+        return { success: true, data: uploadResult.id };
     } catch (error) {
         safeConsoleError(`[stickers.actions.ts][uploadFileAction] Error while uploading file:`, error);
         return { success: false, error: 'Foto upload mislukt op de server.' };

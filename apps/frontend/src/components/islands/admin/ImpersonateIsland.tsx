@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { Check, Save, Trash, Key, Loader2, Shield } from 'lucide-react';
-import { setImpersonateToken, clearImpersonateToken } from '@/server/actions/admin/impersonation.actions';
+import { setImpersonateToken, clearImpersonateToken } from '@/server/actions/admin/admin-impersonation.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';

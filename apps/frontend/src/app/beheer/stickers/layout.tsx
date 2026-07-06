@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 export default function StickersLayout({ children }: { children: ReactNode }) {
     return (
         <AdminGuard 
-            permission="canAccessStickers" 
+            feature="stickers" 
             title="Sticker Beheer" 
             description="Je hebt geen rechten om stickers te beheren. Alleen het Bestuur en ICT hebben deze rechten."
         >

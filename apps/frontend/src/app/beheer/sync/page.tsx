@@ -1,7 +1,5 @@
-import React from 'react';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { getSyncStatusAction, type SyncStatus } from '@/server/actions/infrastructure/azure-sync/sync-monitoring.actions';
 
 // Modular Islands
@@ -10,28 +8,21 @@ import SyncMonitorIsland from '@/components/islands/admin/sync/SyncMonitorIsland
 import { SyncProvider } from '@/components/islands/admin/sync/SyncContext';
 
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import { type Committee } from '@/shared/lib/permissions';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 
 export const metadata: Metadata = {
     title: 'Beheer Sync | SV Salve Mundi'
 };
 
-async function checkSyncAccess() {
-    const session = await getEnrichedSession();
-    if (!session) return false;
-
-    const user = session.user;
-    const memberships = user.committees || [];
-    return memberships.some((c: Committee) => {
-        const name = (c.name || '').toString().toLowerCase();
-        return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
-    });
-}
 
 export default async function AzureSyncPage() {
-    // SECURITY: Still check access server-side to prevent unauthorized shell rendering
-    const hasAccess = await checkSyncAccess();
-    if (!hasAccess) redirect('/beheer');
+    const { isAuthorized, isIct } = await checkAdminAccess();
+    if (!isAuthorized) redirect('/?needLogin=true');
+    
+    if (!isIct) {
+        return <AdminUnauthorized title="Azure Sync" backHref="/beheer" />;
+    }
 
     const statusData = await getSyncStatusAction();
     const initialStatus = !('success' in statusData)

@@ -107,8 +107,6 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
                 />
                 <ProfielQuickLinks
                     user={optimisticUser}
-                    canAccessAdmin={!!(optimisticUser.isAdmin || optimisticUser.isICT)}
-                    isICT={!!optimisticUser.isICT}
                 />
             </div>
 

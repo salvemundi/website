@@ -7,7 +7,7 @@ import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
 import { triggerUserSyncAction } from '@/server/actions/infrastructure/azure-sync/sync-tasks.actions';
 import { clearSessionCache } from '@/server/auth/session-utils';
-import { getAuthorizedUser } from '@/server/actions/events/activiteiten/auth-check';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import sharp from 'sharp';
 import { safeConsoleError } from '@/server/utils/logger';
 import { imageUploadSchema } from '@salvemundi/validations/schema/shared.zod';
@@ -23,10 +23,11 @@ interface AzureErrorResponse {
 }
 
 export async function updateUserProfile(data: z.infer<typeof updateProfileSchema>) {
-    const user = await getAuthorizedUser();
+    const session = await getEnrichedSession();
+    const user = session?.user;
 
     if (!user?.id) {
-        return { success: false, error: 'Not authenticated' };
+        return { success: false, error: 'Je bent niet ingelogd.' };
     }
 
     const { rateLimit } = await import('@/server/utils/ratelimit');
@@ -108,7 +109,8 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
 }
 
 export async function uploadUserAvatar(formData: FormData) {
-    const user = await getAuthorizedUser();
+    const session = await getEnrichedSession();
+    const user = session?.user;
     if (!user?.id) return { success: false, error: 'Not authenticated' };
 
     const { rateLimit } = await import('@/server/utils/ratelimit');

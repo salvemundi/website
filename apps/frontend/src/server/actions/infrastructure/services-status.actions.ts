@@ -8,12 +8,11 @@ const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
 const AZURE_SYNC_URL = process.env.AZURE_SYNC_SERVICE_URL;
 const FINANCE_URL = process.env.FINANCE_SERVICE_URL;
 const MAIL_URL = process.env.MAIL_SERVICE_URL;
-const NOTIFICATION_API_URL = process.env.NEXT_PUBLIC_NOTIFICATION_API_URL;
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
 async function checkSystemAdminAccess() {
     const access = await checkAdminAccess();
-    if (!access.isAuthorized || !access.isIct) return null;
+    if (!access.isIct) return null;
     return access;
 }
 
@@ -91,7 +90,7 @@ export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
         if (!url) return null;
         const start = Date.now();
         let status: 'online' | 'offline' | 'degraded' = 'offline';
-        let error: string | undefined = undefined;
+        let errorMessage: string | undefined = undefined;
         let latency: number | undefined = undefined;
 
         try {
@@ -104,20 +103,31 @@ export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
 
             status = res.ok ? 'online' : 'degraded';
             latency = Date.now() - start;
-            error = res.ok ? undefined : `HTTP ${res.status}`;
-        } catch (e: unknown) {
-            const err = e as Error;
+            errorMessage = res.ok ? undefined : `HTTP ${res.status}`;
+        } catch (error: unknown) {
             status = 'offline';
-            error = err.name === 'AbortError' ? 'Timeout (2s)' : 'Connection failed';
+            if (error instanceof Error) {
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Timeout (2s)';
+                } else {
+                    const cause = (error as { cause?: unknown }).cause;
+                    const causeMsg = cause instanceof Error ? cause.message : 
+                                     (cause && typeof cause === 'object' && 'message' in cause) ? String((cause as { message: unknown }).message) : undefined;
+                    const detail = causeMsg || error.message;
+                    errorMessage = detail ? `Connection failed: ${detail}` : 'Connection failed';
+                }
+            } else {
+                errorMessage = 'Connection failed';
+            }
         }
 
-        const history = await updateServiceHistory(name, status, error);
+        const history = await updateServiceHistory(name, status, errorMessage);
 
         return {
             name,
             status,
             latency,
-            error: error || history.lastError,
+            error: errorMessage || history.lastError,
             lastOffline: history.lastOffline,
             lastOnline: history.lastOnline,
             outageStart: history.outageStart
@@ -128,7 +138,7 @@ export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
     const checkDirectus = async (): Promise<ServiceStatus> => {
         const start = Date.now();
         let status: 'online' | 'offline' | 'degraded' = 'offline';
-        let error: string | undefined = undefined;
+        let errorMessage: string | undefined = undefined;
         let latency: number | undefined = undefined;
 
         try {
@@ -145,19 +155,18 @@ export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
 
             status = 'online';
             latency = Date.now() - start;
-        } catch (e: unknown) {
-            const err = e as Error;
+        } catch (error: unknown) {
             status = 'offline';
-            error = err.name === 'AbortError' ? 'Timeout (2s)' : err.message;
+            errorMessage = (error as Error).name === 'AbortError' ? 'Timeout (2s)' : (error as Error).message;
         }
 
-        const history = await updateServiceHistory('Directus CMS', status, error);
+        const history = await updateServiceHistory('Directus CMS', status, errorMessage);
 
         return {
             name: 'Directus CMS',
             status,
             latency,
-            error: error || history.lastError,
+            error: errorMessage || history.lastError,
             lastOffline: history.lastOffline,
             lastOnline: history.lastOnline,
             outageStart: history.outageStart
@@ -169,8 +178,7 @@ export async function getServicesStatusAction(): Promise<ServiceStatus[]> {
         checkService('Azure Management', AZURE_MGMT_URL, true, '/health'),
         checkService('Azure Sync Service', AZURE_SYNC_URL, true, '/health'),
         checkService('Finance Service', FINANCE_URL, true, '/health'),
-        checkService('Mail Service', MAIL_URL, true, '/health'),
-        checkService('Notification API', NOTIFICATION_API_URL, false, '/health')
+        checkService('Mail Service', MAIL_URL, true, '/health')
     ]);
 
     return results.filter(Boolean) as ServiceStatus[];

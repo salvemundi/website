@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import Link from 'next/link';
-import { Package, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, CalendarClock, ClipboardList } from 'lucide-react';
-import AdminToolbar from '@/components/ui/admin/AdminToolbar';
+import { Package, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, CalendarClock} from 'lucide-react';
 import AdminModal from '@/components/ui/admin/AdminModal';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -15,7 +13,7 @@ import {
     saveProduct,
     deleteProduct,
     toggleProductActive
-} from '@/server/actions/admin/admin-webshop-products.actions';
+} from '@/server/actions/admin/webshop/admin-webshop-products.actions';
 import { formatDate } from '@/shared/lib/utils/date';
 import { type AdminDropWindow, type AdminProduct } from './webshop-admin-types';
 
@@ -118,21 +116,6 @@ export default function AdminWebshopProductsIsland({ initialDropWindows, initial
 
     return (
         <>
-            <AdminToolbar
-                title="Webshop Beheer"
-                subtitle="Beheer drops, producten en varianten"
-                backHref="/beheer"
-                actions={
-                    <Link
-                        href="/beheer/webshop/bestellingen"
-                        className="flex items-center justify-center gap-1.5 px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm"
-                    >
-                        <ClipboardList className="h-3.5 w-3.5" />
-                        <span>Bestellingen</span>
-                    </Link>
-                }
-            />
-
             <div className="admin-container py-4 md:py-8 space-y-12">
                 {/* Drop windows */}
                 <div className="space-y-4">

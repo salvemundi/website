@@ -3,12 +3,10 @@
 import { useOptimistic, useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save, Loader2 } from 'lucide-react';
-import { createActivityAction } from '@/server/actions/events/activiteiten/activities-write.actions';
+import { createActivityAction } from '@/server/actions/events/activiteiten/activiteiten-write.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-
-// Refactored Modules
 import { useActivityForm, ActivityStatus } from '@/hooks/use-activity-form';
 import {
     GeneralInfoSection,

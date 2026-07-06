@@ -48,20 +48,20 @@ export default async function BeheerPage() {
     ]);
     
     const allPermissions = [
-        permissions.canAccessIntro,
-        permissions.canAccessReis,
-        permissions.canAccessLogging,
-        permissions.canAccessSync,
-        permissions.canAccessCoupons,
-        permissions.canAccessStickers,
-        permissions.canAccessPermissions,
-        permissions.isIct
+        permissions.includes('intro'),
+        permissions.includes('reis'),
+        permissions.includes('logging'),
+        permissions.includes('sync'),
+        permissions.includes('coupons'),
+        permissions.includes('stickers'),
+        permissions.includes('kroegentocht'),
+        permissions.includes('webshop')
     ];
     const visibleCount = allPermissions.filter(Boolean).length;
     const isLimitedAccess = visibleCount <= 2;
 
-    const isIct = permissions.isIct || permissions.isICT || false;
-    const isBestuur = access.user.committees?.some(c => c.azure_group_id === COMMITTEES.BESTUUR) || false;
+    const isIct = permissions.includes('ict');
+    const isBestuur = access.user.committees.some(c => c.azure_group_id === COMMITTEES.BESTUUR);
     const hideStickers = isIct || isBestuur;
 
     return (

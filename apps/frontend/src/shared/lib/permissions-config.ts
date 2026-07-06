@@ -12,7 +12,6 @@ export enum AdminResource {
     Stickers = 'admin:stickers',
     Logging = 'admin:logging',
     Sync = 'admin:sync',
-    Permissions = 'admin:permissions',
     Users = 'admin:users',
     Kroegentocht = 'admin:kroegentocht',
     ActivitiesView = 'admin:activities:view',
@@ -26,7 +25,7 @@ export interface PermissionRequirement {
 }
 
 /**
- * Committee UUIDs from Directus.
+ * Committee UUIDs from Azure.
  */
 export const COMMITTEES = {
     ICT: 'a4aeb401-882d-4e1e-90ee-106b7fdb23cc',
@@ -38,52 +37,44 @@ export const COMMITTEES = {
     STUDY: 'ee4c4407-6d61-483e-a98c-77c5e20bd7ba',
     INTRO: '516f03f9-be0a-4514-9da8-396415f59d0b',
     MARKETING: '0140644c-be1e-438f-9db1-9c082283abf2',
-    ACTIVITEIT: 'd4686b83-4679-46ed-9fd8-c6ff3c6a265f',
+    ACTIVITEITEN: 'd4686b83-4679-46ed-9fd8-c6ff3c6a265f',
     REIS: '4c027a6d-0307-4aee-b719-23d67bcd0959',
     KANDI: 'adf4d258-a404-4bc0-ae73-6bfa429a1537'
 };
 
-const ALL_COMMITTEES = Object.values(COMMITTEES);
+export interface FeatureRegistry {
+    activiteiten: readonly string[];
+    commissies: readonly string[];
+    coupons: readonly string[];
+    impersonate: readonly string[];
+    intro: readonly string[];
+    kroegentocht: readonly string[];
+    leden: readonly string[];
+    logging: readonly string[];
+    reis: readonly string[];
+    services: readonly string[];
+    stickers: readonly string[];
+    sync: readonly string[];
+    webshop: readonly string[];
+}
 
-export const RESOURCE_PERMISSIONS: Record<AdminResource, PermissionRequirement> = {
-    [AdminResource.Intro]: {
-        allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR, COMMITTEES.KANDI, COMMITTEES.INTRO]
-    },
-    [AdminResource.Reis]: {
-        allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR, COMMITTEES.KANDI, COMMITTEES.REIS]
-    },
-    [AdminResource.Committees]: {
-        allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR]
-    },
-    [AdminResource.Coupons]: {
-        allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR]
-    },
-    [AdminResource.Stickers]: {
-        allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR, COMMITTEES.KANDI]
-    },
-    [AdminResource.Logging]: {
-        allowedCommitteeIds: [COMMITTEES.ICT]
-    },
-    [AdminResource.Sync]: {
-        allowedCommitteeIds: [COMMITTEES.ICT]
-    },
-    [AdminResource.Permissions]: {
-        allowedCommitteeIds: [COMMITTEES.ICT]
-    },
-    [AdminResource.Users]: {
-        allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR]
-    },
-    [AdminResource.Kroegentocht]: {
-        allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR, COMMITTEES.FEEST]
-    },
-    [AdminResource.ActivitiesView]: {
-        allowedCommitteeIds: ALL_COMMITTEES
-    },
-    [AdminResource.ActivitiesEdit]: {
-        allowedCommitteeIds: ALL_COMMITTEES,
-        leaderOnly: true
-    },
-    [AdminResource.Webshop]: {
-        allowedCommitteeIds: [COMMITTEES.ICT, COMMITTEES.BESTUUR]
-    }
-};
+export const FEATURE_ACCESS: FeatureRegistry = {
+    // Content group dashboard.
+    activiteiten: [COMMITTEES.KAMP, COMMITTEES.FEEST, COMMITTEES.STUDY, COMMITTEES.ACTIVITEITEN],
+    intro: [COMMITTEES.INTRO],
+    kroegentocht: [COMMITTEES.FEEST],
+    reis: [COMMITTEES.REIS],
+    // Beheer group dashboard.
+    webshop: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
+    commissies: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
+    coupons: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
+    leden: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
+    stickers: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
+    // system group dashboard.  
+    impersonate: [],
+    logging: [],
+    services: [],
+    sync: [],
+} as const;
+
+export type AdminFeature = keyof FeatureRegistry;

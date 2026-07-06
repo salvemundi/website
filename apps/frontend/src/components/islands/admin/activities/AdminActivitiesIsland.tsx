@@ -10,7 +10,6 @@ import ActivityFilters from './ActivityFilters';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import type { UserPermissions } from '@/shared/lib/permissions';
 
 function cleanCommitteeName(name: string): string {
     return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
@@ -24,7 +23,7 @@ interface Props {
     committees?: Committee[];
     userId?: string;
     userCommittees?: Committee[];
-    permissions?: UserPermissions;
+    permissions?: string[];
 }
 
 export default function AdminActivitiesIsland({
@@ -75,7 +74,7 @@ export default function AdminActivitiesIsland({
             signups
         };
     }, [displayedEvents]);
-    const canEdit = !!permissions?.canAccessActivitiesEdit;
+    const canEdit = !!permissions?.includes('activiteiten:edit');
 
     return (
         <div className="w-full">
@@ -134,6 +133,7 @@ export default function AdminActivitiesIsland({
                             canEdit={canEdit}
                             isPending={isPending}
                             onViewSignups={(id) => router.push(`/beheer/activiteiten/${id}/aanmeldingen`)}
+                            onViewAttendance={(id) => router.push(`/beheer/activiteiten/${id}/aanwezigheid`)}
                             onEdit={(id) => router.push(`/beheer/activiteiten/${id}/bewerken`)}
                         />
                     ))}

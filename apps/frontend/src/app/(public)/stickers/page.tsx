@@ -19,7 +19,9 @@ export default async function StickersPage() {
     ]);
 
     const currentUser = session?.user ? (session.user as unknown as EnrichedUser) : null;
-    const isLoggedIn = !!currentUser;
+    const isActiveMember = currentUser?.membership_status === 'active';
+    const activeUser = isActiveMember ? currentUser : null;
+    const isLoggedIn = !!activeUser;
 
     return (
         <PublicPageShell
@@ -32,7 +34,7 @@ export default async function StickersPage() {
                         <div className="h-full overflow-hidden squircle-lg">
                             <StickerMapBridge
                                 initialStickers={stickers}
-                                user={currentUser}
+                                user={activeUser}
                                 className="shadow-2xl"
                             />
                         </div>
@@ -42,7 +44,7 @@ export default async function StickersPage() {
                         <div className="w-full lg:w-[400px] shrink-0 order-2 h-[40vh] lg:h-full">
                             <Leaderboard
                                 stickers={stickers}
-                                currentUser={currentUser}
+                                currentUser={activeUser}
                             />
                         </div>
                     )}

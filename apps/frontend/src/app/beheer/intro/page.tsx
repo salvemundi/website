@@ -4,14 +4,14 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import IntroManagementIsland from '@/components/islands/admin/IntroManagementIsland';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { getPermissions } from '@/shared/lib/permissions';
-import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
+import { fetchUserCommitteesDb } from '@/server/internal/leden/leden-db.utils';
 import { safeConsoleError } from '@/server/utils/logger';
 import {
     getIntroSignups,
     getIntroParentSignups,
     getIntroBlogs,
     getIntroPlanning
-} from '@/server/actions/admin/admin-intro.actions';
+} from '@/server/actions/admin/intro/admin-intro-core.actions';
 import { getIntroSettings } from '@/server/actions/public/intro.actions';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import IntroVisibilityIsland from '@/components/islands/admin/intro/IntroVisibilityIsland';
@@ -34,7 +34,7 @@ export default async function BeheerIntroPage() {
 
     const permissions = getPermissions(userCommittees);
 
-    if (!permissions.canAccessIntro) {
+    if (!permissions.includes('intro')) {
         return (
             <AdminUnauthorized
                 title="Introductie Beheer"

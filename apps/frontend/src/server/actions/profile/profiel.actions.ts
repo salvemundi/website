@@ -15,8 +15,8 @@ import {
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { db, schema } from '@salvemundi/db';
 import { eq, or, desc } from 'drizzle-orm';
-import { fetchUserEventSignupsDb } from '@/server/internal/event-db.utils';
-import { fetchUserPubCrawlSignupsDb } from '@/server/internal/kroegentocht-db.utils';
+import { fetchUserEventSignupsDb } from '@/server/internal/activiteiten/activiteiten-db.utils';
+import { fetchUserPubCrawlSignupsDb } from '@/server/internal/kroegentocht/kroegentocht-signup-db.utils';;
 import { safeConsoleError } from '@/server/utils/logger';
 import { type z } from 'zod';
 

@@ -19,7 +19,9 @@ const authEnvSchema = z.object({
     BETTER_AUTH_TRUSTED_ORIGINS: z.string().optional(),
 });
 
-const getAuthEnv = () => {
+type AuthEnv = z.infer<typeof authEnvSchema>;
+
+const getAuthEnv = (): AuthEnv => {
     if (isBuildTime) {
         return {
             BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET || "build-placeholder-secret",
@@ -34,38 +36,35 @@ const getAuthEnv = () => {
     try {
         return authEnvSchema.parse(process.env);
     } catch (error: unknown) {
-        safeConsoleError("[auth.ts][getAuthEnv] ", error);
+        safeConsoleError("[auth.ts][getAuthEnv] Configuration parse failure", error);
         throw error;
     }
 };
 
 const authEnv = getAuthEnv();
+const trustedOriginsList = authEnv.BETTER_AUTH_TRUSTED_ORIGINS?.split(',').map(o => o.trim()) || [];
 
 export const auth = betterAuth({
-    debug: true,
+    debug: process.env.NODE_ENV !== "production",
     database: pool,
     secret: authEnv.BETTER_AUTH_SECRET,
     baseURL: authEnv.BETTER_AUTH_TRUSTED_ORIGINS
         ? {
-            allowedHosts: authEnv.BETTER_AUTH_TRUSTED_ORIGINS.split(',').map(o => {
-                try {
-                    return new URL(o).host;
-                } catch {
-                    return o;
-                }
+            allowedHosts: trustedOriginsList.map(o => {
+                try { return new URL(o).host; } catch { return o; }
             }),
             fallback: authEnv.BETTER_AUTH_URL
           }
         : authEnv.BETTER_AUTH_URL,
-    trustedOrigins: authEnv.BETTER_AUTH_TRUSTED_ORIGINS
-        ? authEnv.BETTER_AUTH_TRUSTED_ORIGINS.split(',')
-        : [authEnv.BETTER_AUTH_URL],
+    trustedOrigins: authEnv.BETTER_AUTH_TRUSTED_ORIGINS ? trustedOriginsList : [authEnv.BETTER_AUTH_URL],
     socialProviders: {
         microsoft: {
             clientId: authEnv.AZURE_WEBSITEV7_AUTH_CLIENT_ID,
             clientSecret: authEnv.AZURE_WEBSITEV7_AUTH_CLIENT_SECRET,
             tenantId: authEnv.AZURE_WEBSITEV7_TENANT_ID,
-            prompt: "select_account" } },
+            prompt: "select_account"
+        }
+    },
     user: {
         modelName: "directus_users",
         fields: {
@@ -79,16 +78,15 @@ export const auth = betterAuth({
         additionalFields: {
             first_name: { type: "string" },
             last_name: { type: "string" },
-            membership_status: { type: "string" },
-            membership_expiry: { type: "string" },
+            membership_status: { type: "string", input: false },
+            membership_expiry: { type: "string", input: false },
             phone_number: { type: "string" },
             date_of_birth: { type: "string" },
             avatar: { type: "string" },
             minecraft_username: { type: "string" },
-            entra_id: { type: "string" },
-            isAdmin: { type: "boolean" },
-            isICT: { type: "boolean" },
-            role: { type: "string" } }
+            entra_id: { type: "string", input: false },
+            role: { type: "string", input: false }
+        }
     },
     session: {
         modelName: "auth_sessions"
@@ -97,7 +95,8 @@ export const auth = betterAuth({
         modelName: "auth_accounts",
         accountLinking: {
             enabled: true,
-            trustedProviders: ["microsoft"] }
+            trustedProviders: ["microsoft"]
+        }
     },
     plugins: [
         createRedisSessionPlugin(pool),

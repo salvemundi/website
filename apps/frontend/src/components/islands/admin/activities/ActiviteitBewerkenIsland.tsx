@@ -3,7 +3,7 @@
 import { useState, useOptimistic, useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save, Loader2, Trash } from 'lucide-react';
-import { updateActivityAction, deleteActivity } from '@/server/actions/events/activiteiten/activities-write.actions';
+import { updateActivityAction, deleteActivity } from '@/server/actions/events/activiteiten/activiteiten-write.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';

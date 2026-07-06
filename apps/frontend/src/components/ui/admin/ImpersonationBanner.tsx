@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react';
 import { Shield, X, User } from 'lucide-react';
-import { clearImpersonateToken } from '@/server/actions/admin/impersonation.actions';
+import { clearImpersonateToken } from '@/server/actions/admin/admin-impersonation.actions';
 
 interface Props {
     targetName: string;

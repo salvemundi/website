@@ -6,11 +6,13 @@ import Link from 'next/link';
 interface AdminUnauthorizedProps {
     title?: string;
     description?: string;
+    backHref?: string;
 }
 
 export default function AdminUnauthorized({
     title = 'Geen toegang',
     description = 'Je hebt geen rechten om deze sectie te bekijken. Neem contact op met de ICT-commissie als je denkt dat dit een fout is.',
+    backHref,
 }: AdminUnauthorizedProps) {
     return (
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center select-none pt-20">
@@ -47,13 +49,23 @@ export default function AdminUnauthorized({
                     Terug naar Home
                 </Link>
 
-                <button
-                    onClick={() => window.history.back()}
-                    className="flex items-center gap-2 rounded-full px-8 py-3.5 font-bold text-text-main bg-bg-card border border-border-color/20 hover:bg-black/5 dark:hover:bg-white/5 transition-all text-base tracking-widest"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                    Vorige Pagina
-                </button>
+                {backHref ? (
+                    <Link
+                        href={backHref}
+                        className="flex items-center gap-2 rounded-full px-8 py-3.5 font-bold text-text-main bg-bg-card border border-border-color/20 hover:bg-black/5 dark:hover:bg-white/5 transition-all text-base tracking-widest"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        Vorige Pagina
+                    </Link>
+                ) : (
+                    <button
+                        onClick={() => window.history.back()}
+                        className="flex items-center gap-2 rounded-full px-8 py-3.5 font-bold text-text-main bg-bg-card border border-border-color/20 hover:bg-black/5 dark:hover:bg-white/5 transition-all text-base tracking-widest"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        Vorige Pagina
+                    </button>
+                )}
             </div>
         </div>
     );

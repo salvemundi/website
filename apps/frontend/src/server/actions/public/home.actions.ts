@@ -17,8 +17,8 @@ import { toLocalISOString } from '@/lib/utils/date-utils';
 import {
     type Schema
 } from '@salvemundi/validations';
-import { getActivitiesInternal } from "@/server/queries/admin-event.queries";
-import { getUpcomingTrips } from "@/server/actions/events/trip.actions";
+import { getActivitiesInternal } from "@/server/queries/activiteiten/admin-activiteiten.queries";
+import { getUpcomingTrips } from "@/server/actions/events/reis/reis-public.actions";
 import { getDisabledRoutes } from '@/lib/config/feature-flags';
 import { safeConsoleError } from '@/server/utils/logger';
 

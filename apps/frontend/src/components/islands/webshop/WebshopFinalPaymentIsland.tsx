@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { AlertCircle, CreditCard } from 'lucide-react';
 import { initiateFinalPayment } from '@/server/actions/public/webshop-checkout.actions';
 import { safeConsoleError } from '@/server/utils/logger';
-import { type PreorderWithLines } from '@/server/internal/webshop-db.utils';
+import { type PreorderWithLines } from '@/server/internal/webshop/webshop-preorder-db.utils';;
 
 interface WebshopFinalPaymentIslandProps {
     preorder: PreorderWithLines;

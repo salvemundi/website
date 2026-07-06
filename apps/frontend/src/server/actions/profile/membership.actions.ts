@@ -15,7 +15,7 @@ import { type EnrichedUser } from '@/types/auth';
 import { revalidateTag } from 'next/cache';
 import { rateLimit } from '@/server/utils/ratelimit';
 import { getExpandedEnv } from '@/server/utils/env';
-import { getValidCoupon, claimCoupon, releaseCoupon } from '@/server/utils/coupon.utils';
+import { getValidCoupon, claimCoupon, releaseCoupon } from '@/server/internal/coupon/coupon-db.utils';;
 import { normalizeDate } from '@/lib/utils/date-utils';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -77,7 +77,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     const user = session?.user as EnrichedUser | undefined;
     const isExpired = user && user.membership_status !== 'active';
 
-    const { fetchUserCommitteesDb } = await import('@/server/internal/user-db.utils');
+    const { fetchUserCommitteesDb } = await import('@/server/internal/leden/leden-db.utils');
     const committees = user ? await fetchUserCommitteesDb(user.id) : [];
     const isCommitteeMember = committees.length > 0;
 

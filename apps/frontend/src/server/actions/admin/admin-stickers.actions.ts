@@ -1,25 +1,16 @@
 'use server';
 
-import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { revalidateTag, revalidatePath } from "next/cache";
 import { logAdminAction } from "@/server/actions/infrastructure/audit.actions";
-import { isSuperAdmin } from "@/lib/auth";
-import { type EnrichedUser } from "@/types/auth";
 import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
 import { safeConsoleError } from '@/server/utils/logger';
 
+import { enforceFeatureAccess } from '@/server/actions/admin/admin-utils.actions';
+
 async function requireStickerAdmin() {
-    const session = await getEnrichedSession();
-
-    if (!session?.user) throw new Error('Niet ingelogd');
-
-    const user = session.user as unknown as EnrichedUser;
-    if (!isSuperAdmin(user.committees)) {
-        throw new Error('Geen rechten om stickers te beheren');
-    }
-
-    return session.user as unknown as EnrichedUser;
+    const { user } = await enforceFeatureAccess('stickers');
+    return user;
 }
 
 export async function getStickers() {

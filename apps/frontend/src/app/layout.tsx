@@ -75,15 +75,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     return (
         <html lang="nl" className="dark" suppressHydrationWarning>
             <head>
-                <script id="theme-strategy" nonce={nonce} suppressHydrationWarning>{`
-                    (function(){
-                        try {
-                            if(localStorage.theme === 'light'){
-                                document.documentElement.classList.remove('dark');
-                            }
-                        } catch(e) {}
-                    })()
-                `}</script>
+                <script id="theme-strategy" nonce={nonce} suppressHydrationWarning>
+                    {"(function(){try{if(localStorage.theme==='light'){document.documentElement.classList.remove('dark')}else{document.documentElement.classList.add('dark')}}catch(e){}})()"}
+                </script>
             </head>
             <body className={`${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}>
                 <ImpersonationWrapper impersonation={impersonation} />
@@ -112,7 +106,7 @@ async function HeaderWrapper({ initialSession, isAuthorized }: { initialSession:
         <NavigationHeader
             disabledRoutes={disabledRoutes}
             initialSession={initialSession}
-            isAdmin={isAuthorized}
+            canAccessAdmin={isAuthorized}
         />
     );
 }

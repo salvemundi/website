@@ -8,7 +8,18 @@ import {
     getIdNameLookupAction
 } from '@/server/actions/infrastructure/audit.actions';
 
+import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { getPermissions } from '@/shared/lib/permissions';
+import { redirect } from 'next/navigation';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+
 export default async function AuditLoggingPage() {
+    const session = await getEnrichedSession();
+    if (!session?.user) redirect('/?needLogin=true');
+    const permissions = getPermissions(session.user.committees);
+    if (!permissions.includes('logging')) {
+        return <AdminUnauthorized title="Logboek Beheer" backHref="/beheer" />;
+    }
     const [
         signupsRes,
         settingsRes,

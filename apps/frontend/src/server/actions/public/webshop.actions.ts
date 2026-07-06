@@ -2,11 +2,12 @@
 
 import { unstable_noStore as noStore } from 'next/cache';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { getCatalogProductsInternal, getProductBySlugInternal } from '@/server/queries/webshop.queries';
-import { fetchPreorderWithLinesDb, type PreorderWithLines } from '@/server/internal/webshop-db.utils';
-import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteit-utils';
+import { getCatalogProductsInternal, getProductBySlugInternal } from '@/server/queries/webshop/webshop.queries';
+import { fetchPreorderWithLinesDb, type PreorderWithLines } from '@/server/internal/webshop/webshop-preorder-db.utils';;
+import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteiten/activiteiten.utils';
 import { type WebshopCatalogProduct } from '@salvemundi/validations/schema/webshop.zod';
 import { safeConsoleError } from '@/server/utils/logger';
+import { getFeatureFlagSettings } from '@/server/actions/admin/admin-utils.actions';
 
 export async function getCatalogProducts(category?: 'clothing' | 'item'): Promise<WebshopCatalogProduct[]> {
     try {
@@ -26,11 +27,6 @@ export async function getProductBySlug(slug: string): Promise<WebshopCatalogProd
     }
 }
 
-/**
- * Asks finance-service to reconcile a transaction's live Mollie status against our DB.
- * Needed because the Mollie webhook is never registered when PUBLIC_URL is localhost
- * (Mollie can't reach it), so without this the confirmation page would never see updates.
- */
 export async function syncPreorderPaymentStatus(transactionToken: string): Promise<void> {
     try {
         const FINANCE_SERVICE_URL = getFinanceServiceUrl();
@@ -71,4 +67,12 @@ export async function getPreorderStatus(preorderId: number, accessToken?: string
         safeConsoleError('[webshop.actions.ts][getPreorderStatus]', error);
         return { status: 'error' };
     }
+}
+
+export async function getWebshopSettings() {
+    const settings = await getFeatureFlagSettings('/webshop');
+    return {
+        show: settings.show,
+        disabled_message: settings.disabled_message ?? 'De webshop is momenteel gesloten.'
+    };
 }

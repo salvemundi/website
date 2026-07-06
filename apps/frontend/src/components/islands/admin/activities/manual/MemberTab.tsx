@@ -3,7 +3,7 @@
 import React from 'react';
 import { X, Check } from 'lucide-react';
 import { UserBasic } from '@salvemundi/validations';
-import UserSearch from '@/components/ui/admin/UserSearch';
+import AdminLedenSearch from '@/components/ui/admin/AdminLedenSearch';
 
 interface MemberTabProps {
     selectedMember: UserBasic | null;
@@ -22,7 +22,7 @@ export default function MemberTab({
                 Zoek bestaand lid
             </label>
             {selectedMember ? (
-                <div className="group relative overflow-hidden p-5 bg-gradient-to-br from-(--beheer-card-soft) to-transparent border border-(--beheer-border) rounded-2xl animate-in zoom-in-95 duration-300">
+                <div className="group relative overflow-hidden p-5 bg-linear-to-br from-(--beheer-card-soft) to-transparent border border-(--beheer-border) rounded-2xl animate-in zoom-in-95 duration-300">
                     <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className="bg-(--beheer-accent)/10 p-1.5 rounded-lg">
                             <Check className="h-3 w-3 text-(--beheer-accent)" />
@@ -49,7 +49,7 @@ export default function MemberTab({
                     </div>
                 </div>
             ) : (
-                <UserSearch 
+                <AdminLedenSearch 
                     onSelect={onSelect}
                     placeholder="TYP NAAM OM TE ZOEKEN..."
                     autoFocus

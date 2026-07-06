@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import AdminVisibilityToggle from '@/components/ui/admin/AdminVisibilityToggle';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import { toggleIntroVisibility } from '@/server/actions/admin/admin-intro.actions';
+import { toggleIntroVisibility } from '@/server/actions/admin/intro/admin-intro-core.actions';
 
 interface Props {
     initialVisible: boolean;

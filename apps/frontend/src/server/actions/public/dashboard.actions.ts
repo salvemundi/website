@@ -15,8 +15,8 @@ import {
 import {
     getDashboardStatsInternal,
     getRecentActivitiesInternal
-} from "@/server/queries/admin-dashboard.queries";
-import { getPermissions, type UserPermissions } from '@/shared/lib/permissions';
+} from "@/server/queries/dashboard/admin-dashboard.queries";
+import { getPermissions } from '@/shared/lib/permissions';
 import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -24,39 +24,14 @@ import { safeConsoleError } from '@/server/utils/logger';
 
 
 
-export async function getDashboardPermissions(): Promise<UserPermissions & { isIct: boolean }> {
-    const { isAuthorized, user, isIct } = await checkAdminAccess();
+export async function getDashboardPermissions(): Promise<string[]> {
+    const { isAuthorized, user } = await checkAdminAccess();
 
     if (!isAuthorized || !user) {
-        return {
-            canAccessIntro: false,
-            canAccessReis: false,
-            canAccessLogging: false,
-            canAccessSync: false,
-            canAccessCoupons: false,
-            canAccessPermissions: false,
-            canAccessStickers: false,
-            canAccessKroegentocht: false,
-            canAccessMembers: false,
-            canAccessCommittees: false,
-            canAccessActivitiesView: false,
-            canAccessActivitiesEdit: false,
-            canAccessMail: false,
-            canAccessWebshop: false,
-            isLeader: false,
-            isICT: false,
-            isAdmin: false,
-            isIct: false
-        };
+        return [];
     }
-
-    const perms = getPermissions(user.committees || []);
-
-    return {
-        ...perms,
-        isAdmin: !!user.isAdmin || perms.isAdmin,
-        isIct
-    };
+    
+    return getPermissions(user.committees);
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {

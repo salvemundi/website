@@ -1,0 +1,307 @@
+'use client';
+
+import { useState, useEffect, useActionState } from 'react';
+import { CalendarIcon, Euro, Info } from 'lucide-react';
+import type { Trip } from '@salvemundi/validations/schema/admin-trip.zod';
+import { getImageUrl } from '@/lib/utils/image-utils';
+import ReisFormSidebar from './ReisFormSidebar';
+import { createTrip, updateTrip } from '@/server/actions/admin/reis/admin-reis-core.actions';
+import { AdminDatepicker } from '@/components/ui/forms/AdminDatepicker';
+import { AdminDatetimepicker } from '@/components/ui/forms/AdminDatetimepicker';
+
+const toISODateString = (date: Date | null): string => {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+interface ActionState {
+    success: boolean;
+    id?: number;
+    error?: string;
+    fieldErrors?: Record<string, string[]>;
+    initialData?: Record<string, string | number | boolean | File | null | undefined>;
+}
+
+interface ReisFormProps {
+    editingTrip: Trip | null;
+    isAdding: boolean;
+    onCancel: () => void;
+    onSuccess: (message: string) => void;
+}
+
+export default function ReisForm({
+    editingTrip,
+    isAdding,
+    onCancel,
+    onSuccess }: ReisFormProps) {
+    const [createState, createAction, isCreating] = useActionState<ActionState | null, FormData>(createTrip, null);
+    const [updateState, updateAction, isUpdating] = useActionState<ActionState | null, FormData>(updateTrip, null);
+
+    const state = editingTrip ? updateState : createState;
+    const pending = editingTrip ? isUpdating : isCreating;
+
+    useEffect(() => {
+        if (state?.success) {
+            onSuccess(editingTrip ? 'Reis succesvol bijgewerkt' : 'Reis succesvol aangemaakt');
+        }
+    }, [state, editingTrip, onSuccess]);
+
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [existingImageId, setExistingImageId] = useState<string | null>(null);
+    const [imageError, setImageError] = useState<string | null>(null);
+    const [registrationOpen, setRegistrationOpen] = useState(false);
+    const [allowFinalPayments, setAllowFinalPayments] = useState(false);
+    const [isBusTrip, setIsBusTrip] = useState(false);
+    const [startDate, setStartDate] = useState<Date | null>(() => {
+        const d = (editingTrip?.start_date as string) || (state?.initialData?.start_date as string);
+        return d ? new Date(d) : null;
+    });
+    const [endDate, setEndDate] = useState<Date | null>(() => {
+        const d = (editingTrip?.end_date as string) || (state?.initialData?.end_date as string);
+        return d ? new Date(d) : null;
+    });
+
+    useEffect(() => {
+        if (editingTrip) {
+            setStartDate(editingTrip.start_date ? new Date(editingTrip.start_date) : null);
+            setEndDate(editingTrip.end_date ? new Date(editingTrip.end_date) : null);
+        }
+    }, [editingTrip]);
+
+    useEffect(() => {
+        if (editingTrip) {
+            if (editingTrip.image) {
+                setImagePreview(getImageUrl(editingTrip.image, { width: 400, height: 200, fit: 'cover' }));
+                setExistingImageId(editingTrip.image);
+            } else {
+                setExistingImageId(null);
+            }
+            setRegistrationOpen(!!editingTrip.registration_open);
+            setAllowFinalPayments(!!editingTrip.allow_final_payments);
+            setIsBusTrip(!!editingTrip.is_bus_trip);
+        }
+
+        if (state?.initialData) {
+            const d = state.initialData;
+            setRegistrationOpen(d.registration_open === 'on' || d.registration_open === 'true' || d.registration_open === true);
+            setAllowFinalPayments(d.allow_final_payments === 'on' || d.allow_final_payments === 'true' || d.allow_final_payments === true);
+            setIsBusTrip(d.is_bus_trip === 'on' || d.is_bus_trip === 'true' || d.is_bus_trip === true);
+        }
+    }, [editingTrip, state]);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        setImageError(null);
+
+        if (file) {
+            const maxSizeBytes = 10 * 1024 * 1024;
+            if (file.size > maxSizeBytes) {
+                setImageError('De geselecteerde afbeelding is te groot (maximaal 10MB).');
+                e.target.value = '';
+                return;
+            }
+
+            setExistingImageId(null);
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreview(reader.result as string);
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setImagePreview(null);
+        setImageError(null);
+        setExistingImageId(null);
+    };
+
+    const handleSubmit = (e: React.SyntheticEvent) => {
+        if (imageError) {
+            e.preventDefault();
+            return;
+        }
+
+        const formData = new FormData(e.currentTarget as HTMLFormElement);
+        const file = formData.get('image_file') as File | null;
+
+        if (file && file.size > 10 * 1024 * 1024) {
+            e.preventDefault();
+            setImageError('De afbeelding is te groot om te uploaden (maximaal 10MB).');
+        }
+    };
+
+    const formErrors = (state?.fieldErrors || {}) as Record<string, string[] | undefined>;
+
+    const toLocalISO = (d: string | Date | null | undefined) => {
+        if (!d) return '';
+        const date = new Date(d);
+        if (isNaN(date.getTime())) return '';
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    return (
+        <div className="mb-12">
+            <form action={editingTrip ? updateAction : createAction} onSubmit={handleSubmit}>
+                {editingTrip && <input type="hidden" name="id" value={editingTrip.id} />}
+                {/* Hidden fields for controlled state toggles */}
+                <input type="hidden" name="registration_open" value={registrationOpen ? 'on' : 'off'} />
+                <input type="hidden" name="allow_final_payments" value={allowFinalPayments ? 'on' : 'off'} />
+                <input type="hidden" name="is_bus_trip" value={isBusTrip ? 'on' : 'off'} />
+                <input type="hidden" name="existing_image_id" value={existingImageId || ''} />
+
+                {imageError && (
+                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500 text-[10px] font-semibold tracking-widest uppercase">
+                        <Info className="h-4 w-4 shrink-0" />
+                        <span>{imageError}</span>
+                    </div>
+                )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    {/* Main Content Area */}
+                    <div className="lg:col-span-8 space-y-6">
+                        {/* Section 1: Algemene Informatie */}
+                        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border) overflow-hidden">
+                            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3">
+                                <Info className="h-4 w-4 text-(--beheer-accent)" />
+                                <h2 className="text-[10px] font-semibold tracking-widest text-(--beheer-text)">Algemene Informatie</h2>
+                            </div>
+                            <div className="p-6 space-y-6">
+                                <div>
+                                    <label htmlFor="name" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Naam van de reis *</label>
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        name="name"
+                                        autoComplete="off"
+                                        className={`beheer-input ${formErrors.name ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                                        placeholder="Bijv. Skiereis 2025"
+                                        defaultValue={(state?.initialData?.name as string | undefined) ?? editingTrip?.name ?? undefined}
+                                    />
+                                    {formErrors.name && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.name[0]}</p>}
+                                </div>
+
+                                <div>
+                                    <label htmlFor="description" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Beschrijving</label>
+                                    <textarea
+                                        id="description"
+                                        name="description"
+                                        rows={4}
+                                        className={`beheer-input ${formErrors.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                                        placeholder="Wat gaan we beleven op deze reis?"
+                                        defaultValue={(state?.initialData?.description as string | undefined) ?? editingTrip?.description ?? undefined}
+                                    />
+                                    {formErrors.description && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.description[0]}</p>}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Section 2: Planning & Capaciteit */}
+                        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border)">
+                            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3 rounded-t-(--beheer-radius)">
+                                <CalendarIcon className="h-4 w-4 text-(--beheer-accent)" />
+                                <h2 className="text-[10px] font-semibold tracking-widest text-(--beheer-text)">Planning & Capaciteit</h2>
+                            </div>
+                            <div className="p-6 space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="start_date" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Startdatum *</label>
+                                        <input type="hidden" name="start_date" value={startDate ? toISODateString(startDate) : ''} />
+                                        <AdminDatepicker
+                                            value={startDate}
+                                            onChange={setStartDate}
+                                            className={formErrors.start_date ? 'border-red-500' : ''}
+                                        />
+                                        {formErrors.start_date && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.start_date[0]}</p>}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="end_date" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Einddatum</label>
+                                        <input type="hidden" name="end_date" value={endDate ? toISODateString(endDate) : ''} />
+                                        <AdminDatepicker
+                                            value={endDate}
+                                            onChange={setEndDate}
+                                            minDate={startDate || undefined}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-(--beheer-border)/30">
+                                    <div>
+                                        <label htmlFor="max_participants" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Max. Deelnemers *</label>
+                                        <input type="number" id="max_participants" name="max_participants" min="0" className={`beheer-input ${formErrors.max_participants ? 'border-red-500' : ''}`} placeholder="Bijv. 50" defaultValue={(state?.initialData?.max_participants as number | undefined) ?? editingTrip?.max_participants ?? undefined} />
+                                        {formErrors.max_participants && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.max_participants[0]}</p>}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="registration_start_date" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Auto-open Datum</label>
+                                        <AdminDatetimepicker
+                                            id="registration_start_date"
+                                            name="registration_start_date"
+                                            defaultValue={(state?.initialData?.registration_start_date as string) || toLocalISO(editingTrip?.registration_start_date)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Section 3: Financiën */}
+                        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border) overflow-hidden">
+                            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3">
+                                <Euro className="h-4 w-4 text-(--beheer-accent)" />
+                                <h2 className="text-[10px] font-semibold tracking-widest text-(--beheer-text)">Financiën</h2>
+                            </div>
+                            <div className="p-6 space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label htmlFor="base_price" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Totale Prijs (€) *</label>
+                                        <input type="number" id="base_price" name="base_price" step="0.01" min="0" className={`beheer-input ${formErrors.base_price ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={(state?.initialData?.base_price as number | undefined) ?? editingTrip?.base_price ?? undefined} />
+                                        {formErrors.base_price && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.base_price[0]}</p>}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="crew_discount" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Crewkorting (€)</label>
+                                        <input type="number" id="crew_discount" name="crew_discount" step="0.01" min="0" className={`beheer-input ${formErrors.crew_discount ? 'border-red-500' : ''}`} placeholder="20.00" defaultValue={(state?.initialData?.crew_discount as number | undefined) ?? editingTrip?.crew_discount ?? undefined} />
+                                        {formErrors.crew_discount && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.crew_discount[0]}</p>}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="deposit_amount" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Aanbetaling (€) *</label>
+                                        <input type="number" id="deposit_amount" name="deposit_amount" step="0.01" min="0" className={`beheer-input ${formErrors.deposit_amount ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={(state?.initialData?.deposit_amount as number | undefined) ?? editingTrip?.deposit_amount ?? undefined} />
+                                        {formErrors.deposit_amount && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.deposit_amount[0]}</p>}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Sidebar */}
+                    <ReisFormSidebar
+                        isAdding={isAdding}
+                        pending={pending}
+                        imagePreview={imagePreview}
+                        onImageChange={handleImageChange}
+                        onRemoveImage={handleRemoveImage}
+                        onCancel={onCancel}
+                        registrationOpen={registrationOpen}
+                        setRegistrationOpen={setRegistrationOpen}
+                        allowFinalPayments={allowFinalPayments}
+                        setAllowFinalPayments={setAllowFinalPayments}
+                        isBusTrip={isBusTrip}
+                        setIsBusTrip={setIsBusTrip}
+                        registrationStartDate={editingTrip?.registration_start_date}
+                    />
+                </div>
+            </form>
+        </div>
+    );
+}
+
+
+
+
+

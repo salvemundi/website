@@ -1,11 +1,11 @@
 import { type AzureUser, GraphService } from '../graph.service.js';
-import { type DirectusUser } from '../../types/schema.js';
+import crypto from 'crypto';
 import { DirectusService } from '../directus.service.js';
+import { DbService } from '../db.service.js';
 import { type SyncContext } from './sync-types.js';
 import { parseAzureDate, sanitizeAzureDate } from './sync-helpers.js';
 import { SyncLifecycle } from './sync-lifecycle.js';
 import { logInfo, safeConsoleError } from '../../utils/logger.js';
-import { type CommitteeMembership as DirectusCommitteeMembership } from '@salvemundi/validations';
 
 export class SyncProcessor {
     static async syncUserOptimized(ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> }, aUser: AzureUser) {
@@ -19,7 +19,7 @@ export class SyncProcessor {
 
             if (existingByEmail) {
                 logInfo(`[sync-processor.ts][syncUserOptimized] Linking existing user ${email} to Entra ID ${aUser.id}`);
-                await DirectusService.updateUser(existingByEmail.id, { entra_id: aUser.id });
+                await DbService.updateUser(existingByEmail.id, { entra_id: aUser.id });
                 dUser = { ...existingByEmail, entra_id: aUser.id };
                 ctx.userCacheByEntra.set(aUser.id, dUser);
                 changes.push({ field: 'User Link', old: 'Geen Entra ID', new: `Gekoppeld aan ${aUser.id}` });
@@ -50,20 +50,20 @@ export class SyncProcessor {
             }
 
             try {
-                dUser = await DirectusService.createUser({
+                dUser = await DbService.createUser({
+                    id: crypto.randomUUID(),
                     first_name: aUser.givenName || '',
                     last_name: aUser.surname || '',
                     email: email,
                     entra_id: aUser.id,
                     status: 'active',
                     text_direction: 'auto',
-                    admin_access: false,
                     phone_number: phone,
                     date_of_birth: dob,
                     membership_expiry: expiry,
                     originele_betaaldatum: paidDate,
                     membership_status: 'none'
-                }) as unknown as DirectusUser;
+                });
                 ctx.status.createdCount++;
                 changes.push({ field: 'User', old: 'Bestaat niet', new: 'Nieuw lid aangemaakt' });
                 ctx.status.createdUsers.push({ email, changes: [...changes] });
@@ -125,7 +125,7 @@ export class SyncProcessor {
         }
 
         if (changes.length > 0 && Object.keys(updatePayload).length > 0) {
-            await DirectusService.updateUser(currentUser.id, updatePayload);
+            await DbService.updateUser(currentUser.id, updatePayload);
         }
 
         if (fields.includes('membership_status') || fields.includes('membership_expiry')) {
@@ -134,13 +134,7 @@ export class SyncProcessor {
         }
 
         if (fields.includes('committees')) {
-            const currentMemberships = (ctx.membershipCache.get(currentUser.id) || []).map(m => ({
-                id: String(m.id),
-                user_id: m.user_id,
-                is_leader: m.is_leader,
-                is_visible: m.is_visible ?? true,
-                committee_id: { id: m.committee_id }
-            })) as unknown as DirectusCommitteeMembership[];
+            const currentMemberships = ctx.membershipCache.get(currentUser.id) || [];
 
             const azureMemberships = ctx.membershipMap.get(aUser.id) || new Map<number, boolean>();
 
@@ -148,32 +142,29 @@ export class SyncProcessor {
                 const committee = ctx.committeeByIdCache?.get(Number(committeeId));
                 const committeeName = committee?.name || `ID ${committeeId}`;
 
-                const existing = currentMemberships.find((m) => {
-                    const cId = (m.committee_id as any)?.id ?? m.committee_id;
-                    return Number(cId) === Number(committeeId);
-                });
+                const existing = currentMemberships.find((m) => m.committee_id === committeeId);
 
                 if (!existing) {
-                    await DirectusService.addMemberToCommittee(currentUser.id, committeeId, isLeader);
+                    await DbService.addMemberToCommittee(currentUser.id, committeeId, isLeader);
                     changes.push({ field: 'Commissie', old: 'Geen', new: `Toegevoegd aan ${committeeName}${isLeader ? ' (Leider)' : ''}` });
-                } else if ((existing.is_leader as unknown as boolean) !== isLeader) {
-                    await DirectusService.updateCommitteeMember(Number(existing.id), { is_leader: isLeader });
+                } else if (Boolean(existing.is_leader) !== isLeader) {
+                    await DbService.updateCommitteeMember(existing.id, { is_leader: isLeader });
                     changes.push({
                         field: `${committeeName} status`,
-                        old: (existing.is_leader as unknown as boolean) ? 'Leider' : 'Lid',
+                        old: existing.is_leader ? 'Leider' : 'Lid',
                         new: isLeader ? 'Leider' : 'Lid'
                     });
                 }
             }
 
             for (const current of currentMemberships) {
-                const committeeIdNum = Number((current.committee_id as any)?.id ?? current.committee_id);
+                const committeeIdNum = current.committee_id;
 
                 if (!azureMemberships.has(committeeIdNum)) {
                     const committee = ctx.committeeByIdCache?.get(committeeIdNum);
                     const committeeName = committee?.name || `ID ${committeeIdNum}`;
 
-                    await DirectusService.removeMemberFromCommittee(Number(current.id));
+                    await DbService.removeMemberFromCommittee(current.id);
                     changes.push({ field: 'Commissie', old: committeeName, new: 'Verwijderd' });
                 }
             }

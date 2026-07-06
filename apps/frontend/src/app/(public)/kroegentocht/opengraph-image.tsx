@@ -1,6 +1,6 @@
 // OG-image route voor de kroegentochtpagina
 import { generateEventOGImage } from '@/lib/utils/og-utils';
-import { getKroegentochtEvent } from '@/server/actions/events/kroegentocht.actions';
+import { getKroegentochtEvent } from '@/server/actions/events/kroegentocht/kroegentocht-public.actions';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';

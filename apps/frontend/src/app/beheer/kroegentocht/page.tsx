@@ -1,7 +1,10 @@
-import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 import { unstable_noStore as noStore } from 'next/cache';
-import { getPubCrawlEvents, getKroegentochtSettings, getPubCrawlSignups } from '@/server/actions/admin/admin-kroegentocht.actions';
+import { getPubCrawlEvents, getKroegentochtSettings, getPubCrawlSignups } from '@/server/actions/admin/kroegentocht/admin-kroegentocht-core.actions';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { getPermissions } from '@/shared/lib/permissions';
+import { redirect } from 'next/navigation';
 import KroegentochtManagementIsland from '@/components/islands/admin/KroegentochtManagementIsland';
 
 export const metadata = {
@@ -9,16 +12,19 @@ export const metadata = {
     description: 'Beheer aanmeldingen en instellingen voor de Kroegentocht.' };
 
 export default async function KroegentochtPage() {
-    const { user: _user } = await checkAdminAccess(); // Ensure authorized
     noStore();
+    const session = await getEnrichedSession();
+    if (!session?.user) redirect('/?needLogin=true');
+    const permissions = getPermissions(session.user.committees);
+    if (!permissions.includes('kroegentocht')) {
+        return <AdminUnauthorized title="Kroegentocht Beheer" backHref="/beheer" />;
+    }
 
-    // NUCLEAR SSR: Fetch events, settings and initial signups at the top level
     const [events, settings] = await Promise.all([
         getPubCrawlEvents().catch(() => []),
         getKroegentochtSettings().catch(() => ({ show: true }))
     ]);
 
-    // Pre-fetch signups for the primary event (first future or first overall)
     const initialEvent = (events.find(e => e.date && new Date(e.date) >= new Date()) || events[0]) as typeof events[0] | undefined;
     const initialSignups = initialEvent ? await getPubCrawlSignups(Number(initialEvent.id)).catch(() => []) : [];
 

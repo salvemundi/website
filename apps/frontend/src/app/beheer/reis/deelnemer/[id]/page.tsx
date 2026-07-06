@@ -1,12 +1,16 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import TripParticipantDetailIsland from '@/components/islands/admin/TripParticipantDetailIsland';
-import { getTrips, getTripActivities } from '@/server/queries/admin-trip.queries';
+import ReisParticipantDetailIsland from '@/components/islands/admin/reis/ReisParticipantDetailIsland';
+import { getTrips, getTripActivities } from '@/server/queries/reis/admin-reis.queries';
 import { Trip, TripActivity } from '@salvemundi/validations/schema/admin-trip.zod';
-import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/admin/trip-signups.actions';
+import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/admin/reis/admin-reis-signups.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 import { db, schema } from "@salvemundi/db";
 import { eq } from "drizzle-orm";
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { getPermissions } from '@/shared/lib/permissions';
+import { redirect } from 'next/navigation';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -39,7 +43,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Deelnemer Details | SV Salve Mundi' };
 }
 
-export default async function DeelnemerDetailPage({ params }: PageProps) {
+export default async function ReisParticipantPage({ params }: PageProps) {
+    const session = await getEnrichedSession();
+    if (!session?.user) redirect('/?needLogin=true');
+    const permissions = getPermissions(session.user.committees);
+    if (!permissions.includes('reis')) {
+        return <AdminUnauthorized title="Deelnemer Details" backHref="/beheer/reis" />;
+    }
+
     const { id } = await params;
     const signupId = parseInt(id);
 
@@ -67,7 +78,7 @@ export default async function DeelnemerDetailPage({ params }: PageProps) {
 
     return (
         <div className="w-full">
-            <TripParticipantDetailIsland
+            <ReisParticipantDetailIsland
                 initialSignup={signup}
                 trips={trips as unknown as Trip[]}
                 allActivities={activities as unknown as TripActivity[]}

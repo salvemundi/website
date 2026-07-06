@@ -1,7 +1,10 @@
-import EventForm from '@/components/islands/admin/kroegentocht/EventForm';
-import { getPubCrawlEvent } from '@/server/actions/admin/admin-kroegentocht.actions';
-import { notFound } from 'next/navigation';
+import KroegentochtEventForm from '@/components/islands/admin/kroegentocht/KroegentochtEventForm';
+import { getPubCrawlEvent } from '@/server/actions/admin/kroegentocht/admin-kroegentocht-core.actions';
+import { notFound, redirect } from 'next/navigation';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { getPermissions } from '@/shared/lib/permissions';
 
 export const metadata = {
     title: 'Kroegentocht Event Bewerken | Salve Mundi' };
@@ -11,6 +14,13 @@ interface EditKroegentochtPageProps {
 }
 
 export default async function EditKroegentochtPage({ params }: EditKroegentochtPageProps) {
+    const session = await getEnrichedSession();
+    if (!session?.user) redirect('/?needLogin=true');
+    const permissions = getPermissions(session.user.committees);
+    if (!permissions.includes('kroegentocht')) {
+        return <AdminUnauthorized title="Event Bewerken" backHref="/beheer/kroegentocht" />;
+    }
+
     const { id } = await params;
     const event = await getPubCrawlEvent(id).catch(() => null);
 
@@ -22,7 +32,7 @@ export default async function EditKroegentochtPage({ params }: EditKroegentochtP
             subtitle={`Beheer de gegevens van ${event.name}`}
             backHref="/beheer/kroegentocht"
         >
-            <EventForm event={event} />
+            <KroegentochtEventForm event={event} />
         </AdminPageShell>
     );
 }

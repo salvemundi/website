@@ -1,7 +1,7 @@
 import { useState, useTransition, useOptimistic } from 'react';
 import type { Trip, TripSignup } from '@salvemundi/validations/schema/admin-trip.zod';
-import { updateSignupStatus, deleteTripSignup, updateTripSignup, updateSignupActivities } from '@/server/actions/admin/trip-signups.actions';
-import { sendPaymentEmail } from '@/server/actions/admin/trip-mail.actions';
+import { updateSignupStatus, deleteTripSignup, updateTripSignup, updateSignupActivities } from '@/server/actions/admin/reis/admin-reis-signups.actions';
+import { sendPaymentEmail } from '@/server/actions/admin/reis/admin-reis-mail.actions';
 
 import { type ToastType } from '@/components/ui/admin/AdminToast';
 

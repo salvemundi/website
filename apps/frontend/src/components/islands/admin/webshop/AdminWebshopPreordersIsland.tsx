@@ -5,7 +5,7 @@ import { ClipboardList, Copy, ChevronDown, ChevronUp } from 'lucide-react';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
-import { updatePreorderStatus, getPreorderPaymentLink } from '@/server/actions/admin/admin-webshop-preorders.actions';
+import { updatePreorderStatus, getPreorderPaymentLink } from '@/server/actions/admin/webshop/admin-webshop-preorders.actions';
 import { formatDate } from '@/shared/lib/utils/date';
 import { type AdminPreorder } from './webshop-admin-types';
 

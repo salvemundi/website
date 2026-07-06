@@ -4,6 +4,7 @@ export interface Schema {
   Board: Board[];
   Board_Members: BoardMember[];
   Stickers: Sticker[];
+  auth_accounts: AuthAccount[];
   club_members: ClubMember[];
   clubs: Club[];
   committee_members: CommitteeMember[];
@@ -42,10 +43,15 @@ export interface Schema {
   trip_signup_activities: TripSignupActivity[];
   trip_signups: TripSignup[];
   trips: Trip[];
+  webshop_drop_windows: WebshopDropWindow[];
+  webshop_preorder_lines: WebshopPreorderLine[];
+  webshop_preorders: WebshopPreorder[];
+  webshop_product_media: WebshopProductMedia[];
+  webshop_product_variants: WebshopProductVariant[];
+  webshop_products: WebshopProduct[];
   whatsapp_groups: WhatsappGroup[];
   directus_users: CustomDirectusUser;
   directus_deployments: CustomDirectusDeployment;
-  auth_accounts: AuthAccount[];
   auth_sessions: AuthSession[];
   membership_history: MembershipHistory[];
   verification: Verification[];
@@ -88,6 +94,22 @@ export interface Sticker {
   city: string | null;
   image: string | DirectusFile<Schema> | null;
   status: string | null;
+}
+
+export interface AuthAccount {
+  id: string;
+  accountId: string;
+  providerId: string;
+  userId: string;
+  accessToken: string | null;
+  refreshToken: string | null;
+  idToken: string | null;
+  accessTokenExpiresAt: string | "datetime" | null;
+  refreshTokenExpiresAt: string | "datetime" | null;
+  scope: string | null;
+  password: string | null;
+  createdAt: string | "datetime";
+  updatedAt: string | "datetime";
 }
 
 export interface ClubMember {
@@ -503,6 +525,7 @@ export interface Transaction {
   product_type: "membership_new" | "membership_renewal" | "event" | "pub_crawl" | "trip" | string;
   mollie_id: string;
   access_token: string | null;
+  webshop_preorder: number | WebshopPreorder | null;
   pub_crawl_signups: number[] | PubCrawlSignupTransaction[];
 }
 
@@ -581,6 +604,83 @@ export interface Trip {
   allow_final_payments: boolean | null;
 }
 
+export interface WebshopDropWindow {
+  id: number;
+  name: string;
+  status: string | null;
+  opens_at: string | "datetime" | null;
+  closes_at: string | "datetime";
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+}
+
+export interface WebshopPreorderLine {
+  id: number;
+  preorder_id: number | WebshopPreorder;
+  product_id: number | WebshopProduct | null;
+  variant_id: number | WebshopProductVariant | null;
+  quantity: number;
+  unit_price: number;
+  product_name_snapshot: string | null;
+  variant_label_snapshot: string | null;
+}
+
+export interface WebshopPreorder {
+  id: number;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+  user_id: string | DirectusUser<Schema> | null;
+  drop_window_id: number | WebshopDropWindow | null;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string | null;
+  status: string | null;
+  subtotal_amount: number;
+  deposit_amount: number;
+  deposit_paid: boolean | null;
+  deposit_paid_at: string | "datetime" | null;
+  final_payment_paid: boolean | null;
+  final_payment_paid_at: string | "datetime" | null;
+  terms_accepted: boolean | null;
+  pickup_notes: string | null;
+  access_token: string | null;
+}
+
+export interface WebshopProductMedia {
+  id: number;
+  product_id: number | WebshopProduct;
+  asset: string | DirectusFile<Schema>;
+  display_order: number | null;
+  created_at: string | "datetime" | null;
+}
+
+export interface WebshopProductVariant {
+  id: number;
+  product_id: number | WebshopProduct;
+  size: string | null;
+  color: string | null;
+  sku: string | null;
+  is_active: boolean | null;
+  display_order: number | null;
+}
+
+export interface WebshopProduct {
+  id: number;
+  drop_window_id: number | WebshopDropWindow | null;
+  type: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  price: number;
+  deposit_amount: number;
+  size_chart: unknown | null;
+  is_active: boolean | null;
+  display_order: number | null;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+}
+
 export interface WhatsappGroup {
   id: number;
   name: string;
@@ -602,7 +702,6 @@ export interface CustomDirectusUser {
   minecraft_username: string | null;
   photo_etag: string | null;
   date_of_birth: string | "datetime" | null;
-  admin_access: boolean | null;
   originele_betaaldatum: string | "datetime" | null;
   emailverified: boolean | null;
   image: string | null;
@@ -614,22 +713,6 @@ export interface CustomDirectusUser {
 
 export interface CustomDirectusDeployment {
   webhook_secret: string | null;
-}
-
-export interface AuthAccount {
-  id: string;
-  accountId: string;
-  providerId: string;
-  userId: string;
-  accessToken: string | null;
-  refreshToken: string | null;
-  idToken: string | null;
-  accessTokenExpiresAt: string | "datetime" | null;
-  refreshTokenExpiresAt: string | "datetime" | null;
-  scope: string | null;
-  password: string | null;
-  createdAt: string | "datetime";
-  updatedAt: string | "datetime";
 }
 
 export interface AuthSession {

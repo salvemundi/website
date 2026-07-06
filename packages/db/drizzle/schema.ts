@@ -1550,7 +1550,6 @@ export const directusUsers = pgTable("directus_users", {
 	minecraftUsername: varchar("minecraft_username", { length: 100 }),
 	photoEtag: varchar("photo_etag", { length: 255 }),
 	dateOfBirth: date("date_of_birth"),
-	adminAccess: boolean("admin_access"),
 	origineleBetaaldatum: date("originele_betaaldatum"),
 	emailverified: boolean().default(false),
 	image: text(),
@@ -1558,7 +1557,6 @@ export const directusUsers = pgTable("directus_users", {
 	createdat: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedat: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
-	index().using("btree", table.adminAccess.asc().nullsLast().op("bool_ops")),
 	index("idx_directus_users_entra_id").using("btree", table.entraId.asc().nullsLast().op("text_ops")),
 	foreignKey({
 			columns: [table.role],
@@ -1596,6 +1594,7 @@ export const webshopProductMedia = pgTable("webshop_product_media", {
 	displayOrder: integer("display_order").default(0),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [
+	index("idx_webshop_product_media_product").using("btree", table.productId.asc().nullsLast().op("int4_ops")),
 	foreignKey({
 			columns: [table.productId],
 			foreignColumns: [webshopProducts.id],
@@ -1757,6 +1756,7 @@ export const webshopProductVariants = pgTable("webshop_product_variants", {
 	isActive: boolean("is_active").default(true),
 	displayOrder: integer("display_order").default(0),
 }, (table) => [
+	index("idx_webshop_product_variants_product").using("btree", table.productId.asc().nullsLast().op("int4_ops")),
 	foreignKey({
 			columns: [table.productId],
 			foreignColumns: [webshopProducts.id],
@@ -1789,6 +1789,7 @@ export const webshopProducts = pgTable("webshop_products", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [
+	index("idx_webshop_products_drop_window").using("btree", table.dropWindowId.asc().nullsLast().op("int4_ops")),
 	foreignKey({
 			columns: [table.dropWindowId],
 			foreignColumns: [webshopDropWindows.id],
@@ -1818,6 +1819,8 @@ export const webshopPreorders = pgTable("webshop_preorders", {
 	pickupNotes: text("pickup_notes"),
 	accessToken: varchar("access_token", { length: 255 }),
 }, (table) => [
+	index("idx_webshop_preorders_drop_window").using("btree", table.dropWindowId.asc().nullsLast().op("int4_ops")),
+	index("idx_webshop_preorders_user").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [directusUsers.id],
@@ -1840,6 +1843,7 @@ export const webshopPreorderLines = pgTable("webshop_preorder_lines", {
 	productNameSnapshot: varchar("product_name_snapshot", { length: 255 }),
 	variantLabelSnapshot: varchar("variant_label_snapshot", { length: 255 }),
 }, (table) => [
+	index("idx_webshop_preorder_lines_preorder").using("btree", table.preorderId.asc().nullsLast().op("int4_ops")),
 	foreignKey({
 			columns: [table.preorderId],
 			foreignColumns: [webshopPreorders.id],

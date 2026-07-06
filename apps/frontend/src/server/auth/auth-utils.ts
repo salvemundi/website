@@ -3,7 +3,7 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { hasPermission } from "@/shared/lib/permissions";
-import { AdminResource } from "@/shared/lib/permissions-config";
+import { type AdminResource } from "@/shared/lib/permissions-config";
 import { type Session } from "better-auth";
 import { type EnrichedUser } from "@/types/auth";
 import { safeConsoleError } from '../utils/logger';
@@ -19,14 +19,13 @@ export async function requireAdminResource(resource: AdminResource) {
     let committees = user.committees;
 
     if (!committees || !Array.isArray(committees)) {
-        const { fetchUserCommitteesDb } = await import("@/server/internal/user-db.utils");
+        const { fetchUserCommitteesDb } = await import("@/server/internal/leden/leden-db.utils");
         committees = await fetchUserCommitteesDb(user.id);
         user.committees = committees;
     }
 
     if (!hasPermission(committees, resource)) {
-        const resourceName = resource.replace('admin:', '');
-        throw new Error(`Forbidden: ${resourceName} Admin rechten vereist.`);
+        throw new Error(`Forbidden: ${resource} Admin rechten vereist.`);
     }
 
     return user;

@@ -2,7 +2,7 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
 import { getPermissions } from '@/shared/lib/permissions';
-import { fetchUserCommitteesDb } from '@/server/internal/user-db.utils';
+import { fetchUserCommitteesDb } from '@/server/internal/leden/leden-db.utils';
 import { db, schema } from '@salvemundi/db';
 import { inArray, asc } from 'drizzle-orm';
 import { type EnrichedUser } from '@/types/auth';
@@ -13,7 +13,7 @@ async function getCommitteesForUser(
     permissions: ReturnType<typeof getPermissions>
 ): Promise<{ id: number; name: string; email?: string | null }[]> {
     const memberships = user.committees ?? [];
-    const isPowerful = permissions.isLeader || permissions.isICT;
+    const isPowerful = permissions.includes('leader') || permissions.includes('ict');
 
     try {
         if (isPowerful) {
@@ -71,7 +71,7 @@ export default async function ActivityCreatePage() {
 
     const permissions = getPermissions(userCommittees);
 
-    if (!permissions.canAccessActivitiesEdit) {
+    if (!permissions.includes('activiteiten:edit')) {
         return (
             <AdminUnauthorized
                 title="Activiteit Aanmaken"

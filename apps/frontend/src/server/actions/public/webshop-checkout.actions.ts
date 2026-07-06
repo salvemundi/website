@@ -5,13 +5,9 @@ import crypto from 'node:crypto';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import { webshopPreorderFormSchema, type WebshopPreorderForm } from '@salvemundi/validations/schema/webshop.zod';
-import {
-    fetchProductByIdDb,
-    insertPreorderDb,
-    insertPreorderLinesDb,
-    fetchPreorderByIdDb,
-} from '@/server/internal/webshop-db.utils';
-import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteit-utils';
+import { fetchProductByIdDb } from '@/server/internal/webshop/webshop-product-db.utils';
+import { insertPreorderDb, insertPreorderLinesDb, fetchPreorderByIdDb } from '@/server/internal/webshop/webshop-preorder-db.utils';;
+import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteiten/activiteiten.utils';
 import { safeConsoleError } from '@/server/utils/logger';
 
 interface FinancePaymentResponse {

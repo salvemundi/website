@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import PaymentStatusIsland from '@/components/islands/activities/PaymentStatusIsland';
-import { getPaymentStatusAction } from '@/server/actions/events/trip-payment.actions';
+import PaymentStatusIsland from '@/components/islands/activiteiten/PaymentStatusIsland';
+import { getPaymentStatusAction } from '@/server/actions/events/reis/reis-payment.actions';
 import { CheckCircle2, ChevronRight, XCircle } from 'lucide-react';
 import BackButton from '@/components/ui/navigation/BackButton';
 

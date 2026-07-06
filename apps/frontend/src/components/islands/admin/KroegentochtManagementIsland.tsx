@@ -18,8 +18,8 @@ import {
     toggleKroegentochtVisibility,
     getPubCrawlSignups,
     updatePubCrawlSignup
-} from '@/server/actions/admin/admin-kroegentocht.actions';
-import EventDropdown from '@/components/islands/admin/kroegentocht/EventDropdown';
+} from '@/server/actions/admin/kroegentocht/admin-kroegentocht-core.actions';
+import KroegentochtEventDropdown from '@/components/islands/admin/kroegentocht/KroegentochtEventDropdown';
 import SignupList from '@/components/islands/admin/kroegentocht/SignupList';
 import { type PubCrawlEvent, type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -150,7 +150,7 @@ export default function KroegentochtManagementIsland({
                 backHref="/beheer"
                 actions={
                     <>
-                        <EventDropdown
+                        <KroegentochtEventDropdown
                             events={events}
                             selectedEventId={selectedEvent?.id || null}
                             onSelect={handleEventSelect}

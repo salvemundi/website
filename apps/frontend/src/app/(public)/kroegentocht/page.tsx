@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic';
-import { getKroegentochtEvent, getKroegentochtTickets } from '@/server/actions/events/kroegentocht.actions';
+import { getKroegentochtEvent, getKroegentochtTickets } from '@/server/actions/events/kroegentocht/kroegentocht-public.actions';
 import { type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { Info, MapPin, Calendar, Clock, Users, Mail, ShieldAlert, ShieldCheck, Ticket } from 'lucide-react';

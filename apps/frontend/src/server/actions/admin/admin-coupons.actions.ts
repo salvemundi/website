@@ -1,76 +1,83 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-
 import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
-import { AdminResource } from '@/shared/lib/permissions-config';
-import { hasPermission } from '@/shared/lib/permissions';
-import { type EnrichedUser } from '@/types/auth';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
-
-async function checkAccess() {
-    const session = await getEnrichedSession();
-    if (!session?.user) throw new Error('Niet ingelogd');
-
-    const user = session.user as unknown as EnrichedUser;
-    if (!hasPermission(user.committees, AdminResource.Coupons)) {
-        throw new Error('Geen toegang: onvoldoende rechten voor coupon beheer');
-    }
-
-    return session;
-}
-
 import { type Coupon } from '@/components/islands/admin/coupons/coupon-types';
 import { safeConsoleError } from '@/server/utils/logger';
+import { z } from 'zod';
+
+const couponFormSchema = z.object({
+    coupon_code: z.string().min(1, 'Coupon code is verplicht').transform(val => val.trim().toUpperCase()),
+    discount_type: z.enum(['fixed', 'percentage']),
+    discount_value: z.preprocess(
+        (val) => typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val,
+        z.number().positive('Ongeldige kortingswaarde: moet een positief getal zijn')
+    ),
+    usage_limit: z.preprocess(
+        (val) => (val === '' || val === null || val === undefined) ? null : Number(val),
+        z.number().min(1, 'Gebruikslimiet moet minimaal 1 zijn').nullable()
+    ),
+    valid_from: z.string().nullable().transform(val => val || null),
+    valid_until: z.string().nullable().transform(val => val || null),
+    is_active: z.preprocess((val) => val === 'on' || val === true, z.boolean())
+}).refine(data => {
+    if (data.discount_type === 'percentage' && data.discount_value > 100) {
+        return false;
+    }
+    return true;
+}, {
+    message: 'Percentage moet tussen 0.01% en 100% liggen',
+    path: ['discount_value']
+});
+
+import { enforceFeatureAccess } from '@/server/actions/admin/admin-utils.actions';
+
+async function checkAccess() {
+    return enforceFeatureAccess('coupons');
+}
 
 export async function createCoupon(formData: FormData): Promise<{ success: boolean; data?: Coupon; error?: string; fieldErrors?: Record<string, string[]> }> {
     await checkAccess();
 
-    const code = formData.get('coupon_code') as string;
-    const discountType = formData.get('discount_type') as string;
-    const discountValueRaw = formData.get('discount_value') as string;
-    const usageLimitRaw = formData.get('usage_limit') as string;
-    const validFrom = formData.get('valid_from') as string;
-    const validUntil = formData.get('valid_until') as string;
-    const isActive = formData.get('is_active') === 'on';
+    const rawData = {
+        coupon_code: formData.get('coupon_code'),
+        discount_type: formData.get('discount_type'),
+        discount_value: formData.get('discount_value'),
+        usage_limit: formData.get('usage_limit'),
+        valid_from: formData.get('valid_from'),
+        valid_until: formData.get('valid_until'),
+        is_active: formData.get('is_active')
+    };
 
-    if (!code || !discountValueRaw) {
-        return { success: false, error: 'Coupon code en waarde zijn verplicht' };
+    const validated = couponFormSchema.safeParse(rawData);
+
+    if (!validated.success) {
+        const errors = validated.error.flatten();
+        return { 
+            success: false, 
+            error: errors.formErrors[0] || 'Validatie mislukt',
+            fieldErrors: errors.fieldErrors 
+        };
     }
 
-    const discountValue = parseFloat(discountValueRaw.replace(',', '.'));
-    if (isNaN(discountValue) || discountValue <= 0) {
-        return { success: false, error: 'Ongeldige kortingswaarde: moet een positief getal zijn' };
-    }
-
-    if (discountType === 'percentage' && (discountValue > 100 || discountValue <= 0)) {
-        return { success: false, error: 'Percentage moet tussen 0.01% en 100% liggen' };
-    }
-
-    let usageLimit: number | null = null;
-    if (usageLimitRaw) {
-        usageLimit = parseInt(usageLimitRaw);
-        if (isNaN(usageLimit) || usageLimit < 1) {
-            return { success: false, error: 'Gebruikslimiet moet minimaal 1 zijn (of leeg voor onbeperkt)' };
-        }
-    }
+    const data = validated.data;
 
     try {
         const inserted = await db.insert(schema.coupons).values({
-            coupon_code: code.trim().toUpperCase(),
-            discount_type: discountType,
-            discount_value: discountValue,
-            is_active: isActive,
+            coupon_code: data.coupon_code,
+            discount_type: data.discount_type,
+            discount_value: data.discount_value,
+            is_active: data.is_active,
             usage_count: 0,
-            usage_limit: usageLimit,
-            valid_from: validFrom || null,
-            valid_until: validUntil || null
+            usage_limit: data.usage_limit,
+            valid_from: data.valid_from,
+            valid_until: data.valid_until
         }).returning();
 
         if (inserted.length === 0) throw new Error('Insert returned no data');
         const item = inserted[0];
-
+        
         revalidatePath('/beheer/coupons');
 
         const newCoupon: Coupon = {
@@ -117,5 +124,3 @@ export async function toggleCouponActive(id: number, currentActive: boolean): Pr
         return { success: false, error: 'Bijwerken mislukt' };
     }
 }
-
-

@@ -11,18 +11,20 @@ export const metadata = {
 };
 
 export default async function ProfielPage() {
-    const [eventSignups, pubCrawlSignups, { user: enrichedUser }] = await Promise.all([
+    const [eventSignups, pubCrawlSignups, adminData] = await Promise.all([
         getUserEventSignups(),
         getUserPubCrawlSignups(),
         checkAdminAccess()
     ]);
+
+    const enrichedUser = adminData.user as SessionUser | null;
 
     return (
         <PublicPageShell title="Mijn Profiel">
             <div className="container mx-auto px-4 py-12 max-w-7xl">
                 {enrichedUser && (
                     <ProfielIsland 
-                        user={enrichedUser as SessionUser} 
+                        user={enrichedUser}
                         initialSignups={eventSignups}
                         pubCrawlSignups={pubCrawlSignups}
                     />

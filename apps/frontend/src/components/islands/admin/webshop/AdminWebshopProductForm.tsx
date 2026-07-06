@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { AlertCircle, Loader2, Plus, Save, Trash2, Upload } from 'lucide-react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
-import { uploadWebshopMedia } from '@/server/actions/admin/admin-webshop-products.actions';
+import { uploadWebshopMedia } from '@/server/actions/admin/webshop/admin-webshop-products.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 import { type AdminDropWindow, type AdminProduct } from './webshop-admin-types';
 

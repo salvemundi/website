@@ -1,7 +1,7 @@
 import type { Session, User } from "better-auth";
-import { type UserPermissions, type Committee } from "@/shared/lib/permissions";
+import { type Committee } from "@/shared/lib/permissions";
 
-export type ExtendedUser = User & Omit<UserPermissions, 'isICT'> & {
+export type ExtendedUser = User & {
     first_name?: string;
     last_name?: string;
     membership_status?: string;

@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getActivityById } from '@/server/actions/events/public-activiteit.actions';
-import { getActivitySignups } from '@/server/actions/admin/admin-activiteit.actions';
-import AttendanceIsland from '@/components/islands/activities/AttendanceIsland';
-import AdminToolbar from '@/components/ui/admin/AdminToolbar';
+import { getActivityById } from '@/server/actions/events/activiteiten/activiteiten-public.actions';
+import { getActivitySignups } from '@/server/actions/admin/activiteiten/admin-activiteiten-core.actions';
+import AttendanceIsland from '@/components/islands/activiteiten/AttendanceIsland';
 import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import { getPermissions } from '@/shared/lib/permissions';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 
 export const metadata: Metadata = {
     title: 'Aanwezigheidsbeheer | SV Salve Mundi' };
@@ -15,7 +17,14 @@ interface PageProps {
 
 export default async function AttendancePage({ params }: PageProps) {
     const { id } = await params;
-    const { user: _user } = await checkAdminAccess();
+    const { isAuthorized, user } = await checkAdminAccess();
+
+    if (!isAuthorized || !user) return notFound();
+
+    const permissions = getPermissions(user.committees);
+    if (!permissions.includes('activiteiten')) {
+        return <AdminUnauthorized title="Aanwezigheidsbeheer" backHref={`/beheer/activiteiten/${id}`} />;
+    }
 
     // NUCLEAR SSR: Fetch all data at the top level
     const [activity, signups] = await Promise.all([
