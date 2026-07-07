@@ -85,7 +85,7 @@ export default function SyncControlIsland() {
                         ) : (
                             <button
                                 onClick={() => { void handleFullSync(); }}
-                                disabled={isStartingSync}
+                                disabled={isStartingSync || !!status?.error}
                                 className="w-full flex items-center justify-center gap-2 py-3.5 bg-(--beheer-accent) text-white rounded-xl font-semibold text-xs shadow-md hover:scale-[1.01] active:scale-95 disabled:opacity-50 transition-all"
                             >
                                 <RefreshCw className={`h-4 w-4 ${isStartingSync ? 'animate-spin' : ''}`} />
@@ -120,7 +120,7 @@ export default function SyncControlIsland() {
                     />
                     <button
                         type="submit"
-                        disabled={isUserSyncLoading || !userId.trim()}
+                        disabled={isUserSyncLoading || !userId.trim() || !!status?.error}
                         className="w-full flex items-center justify-center gap-2 py-3.5 bg-(--beheer-card-soft) text-(--beheer-text) border border-(--beheer-border) rounded-xl font-semibold text-xs hover:border-(--beheer-accent) hover:text-(--beheer-accent) transition-all disabled:opacity-50 active:scale-95"
                     >
                         <RefreshCw className={`h-4 w-4 ${isUserSyncLoading ? 'animate-spin' : ''}`} />

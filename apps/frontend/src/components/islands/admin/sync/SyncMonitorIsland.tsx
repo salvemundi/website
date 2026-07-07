@@ -60,7 +60,7 @@ export default function SyncMonitorIsland() {
         <div className="bg-(--beheer-card-bg) p-6 rounded-(--beheer-radius) border border-(--beheer-border) shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                 <div className="flex items-center gap-4">
-                    <div className="p-2.5 bg-(--theme-info)/10 rounded-xl text-(--theme-info)">
+                    <div className="p-2.5 bg-(--beheer-accent)/10 rounded-xl text-(--beheer-accent)">
                         <Activity className="h-5 w-5" />
                     </div>
                     <div>
@@ -71,6 +71,22 @@ export default function SyncMonitorIsland() {
                     </div>
                 </div>
             </div>
+
+            {status?.error && (
+                <div className="mb-8 p-5 bg-(--theme-error)/5 border border-(--theme-error)/10 rounded-2xl">
+                    <div className="flex items-start gap-4">
+                        <div className="p-2 bg-(--theme-error)/10 rounded-lg text-(--theme-error)">
+                            <AlertCircle className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-semibold text-(--theme-error) tracking-tight">Verbindingsfout met Sync Service</h4>
+                            <p className="text-[11px] font-semibold text-(--beheer-text)/80 mt-1">
+                                {status.error} (Controleer of de service en de Netbird VPN verbinding actief zijn.)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {status?.fatalError && (
                 <div className="mb-8 p-5 bg-(--theme-error)/5 border border-(--theme-error)/10 rounded-2xl">
@@ -116,7 +132,7 @@ export default function SyncMonitorIsland() {
                     </div>
                     <div className="h-3 w-full bg-(--beheer-card-soft) rounded-full overflow-hidden border border-(--beheer-border)/20 shadow-inner">
                         <div
-                            className="h-full bg-gradient-to-r from-(--beheer-accent) to-(--theme-info) transition-all duration-500 relative"
+                            className="h-full bg-linear-to-r from-(--beheer-accent) to-(--theme-info) transition-all duration-500 relative"
                             style={{ width: `${progress}%` }}
                         >
                         </div>

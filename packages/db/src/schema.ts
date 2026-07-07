@@ -1121,7 +1121,6 @@ export const directus_users = pgTable("directus_users", {
 	minecraft_username: varchar("minecraft_username", { length: 100 }),
 	photo_etag: varchar("photo_etag", { length: 255 }),
 	date_of_birth: date("date_of_birth"),
-	admin_access: boolean("admin_access"),
 	originele_betaaldatum: date("originele_betaaldatum"),
 	emailverified: boolean("emailverified").default(false),
 	image: text("image"),
@@ -1132,7 +1131,6 @@ export const directus_users = pgTable("directus_users", {
 (table) => {
 	return {
 		idx_directus_users_entra_id: index("idx_directus_users_entra_id").on(table.entra_id),
-		admin_access_idx: index().on(table.admin_access),
 		directus_users_email_unique: unique("directus_users_email_unique").on(table.email),
 		directus_users_token_unique: unique("directus_users_token_unique").on(table.token),
 		directus_users_external_identifier_unique: unique("directus_users_external_identifier_unique").on(table.external_identifier),

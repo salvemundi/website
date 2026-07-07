@@ -21,7 +21,6 @@ export * from './schema/shared.zod.js';
 export * from './schema/events.zod.js';
 export * from './schema/audit.zod.js';
 export * as Directus from './directus/schema.js';
-export * from './directus/fields.js';
 export * from './utils/boolean-utils.js';
 
 import { type DirectusUser as SDKDirectusUser } from '@directus/sdk';
