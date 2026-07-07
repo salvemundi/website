@@ -103,28 +103,26 @@ export async function checkAdminAccess() {
             const infoCookie = cookieStore.get('impersonation_info')?.value;
             
             if (!infoCookie) {
-                throw new Error('Test modus is actief, maar de sessie data ontbreekt. Wis je cookies (directus_test_token) of log opnieuw in.');
-            }
-
-            try {
-                const parsed = JSON.parse(infoCookie) as { adminName?: string; targetName?: string; targetCommittees?: string[] };
-                
-                if (!parsed.adminName || !parsed.targetName) {
-                    throw new Error('Test modus sessie data is corrupt.');
+                safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Test token is present, but impersonation_info cookie is missing.`);
+            } else {
+                try {
+                    const parsed = JSON.parse(infoCookie) as { adminName?: string; targetName?: string; targetCommittees?: string[] };
+                    
+                    if (parsed.adminName && parsed.targetName) {
+                        impersonationInfo = {
+                            id: '',
+                            email: '',
+                            isNormallyAdmin: true,
+                            name: parsed.adminName,
+                            targetName: parsed.targetName,
+                            targetCommittees: parsed.targetCommittees || []
+                        };
+                    } else {
+                        safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Test modus session data is corrupt: missing adminName or targetName.`);
+                    }
+                } catch (error) {
+                    safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Failed to parse impersonation_info cookie`, error);
                 }
-                
-                impersonationInfo = {
-                    id: '',
-                    email: '',
-                    isNormallyAdmin: true,
-                    name: parsed.adminName,
-                    targetName: parsed.targetName,
-                    targetCommittees: parsed.targetCommittees || []
-                };
-            } catch (error) {
-                safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Failed to parse impersonation_info`, error);
-                if (error instanceof Error) throw error;
-                throw new Error('Test modus status is beschadigd.');
             }
         }
 
@@ -136,9 +134,6 @@ export async function checkAdminAccess() {
         };
     } catch (error) {
         safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Error in checkAdminAccess`, error);
-        if (error instanceof Error && error.message.includes('Test modus')) {
-            throw error;
-        }
         return { isAuthorized: false, user: null, isIct: false, impersonation: null };
     }
 }
