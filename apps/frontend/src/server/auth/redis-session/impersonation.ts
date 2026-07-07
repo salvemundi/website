@@ -19,7 +19,7 @@ interface RawImpersonationDbUser {
     role: string | null;
 }
 
-export async function getImpersonatedUser(testToken: string, _pool: Pool): Promise<ExtendedUser | null> {
+export async function getImpersonatedUser(testToken: string, _pool?: Pool | null): Promise<ExtendedUser | null> {
     try {
         const redis = await getRedis();
         const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
@@ -97,7 +97,7 @@ export async function getImpersonatedUser(testToken: string, _pool: Pool): Promi
             emailVerified: true,
             createdAt: new Date(),
             updatedAt: new Date(),
-            ...perms
+            permissions: perms
         };
 
         await redis.set(cacheKey, JSON.stringify(targetUser), 'EX', 300);

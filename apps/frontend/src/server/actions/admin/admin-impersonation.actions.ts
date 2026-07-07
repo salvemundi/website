@@ -34,6 +34,9 @@ export async function setImpersonateToken(token: string) {
         const json = await response.json() as { data: DirectusUser };
         const targetUser = json.data;
 
+        const { getImpersonatedUser } = await import("@/server/auth/redis-session/impersonation");
+        const targetDbUser = await getImpersonatedUser(token).catch(() => null);
+
         const cookieStore = await cookies();
         cookieStore.set(TEST_TOKEN_COOKIE, token, {
             path: '/',
@@ -48,8 +51,16 @@ export async function setImpersonateToken(token: string) {
             throw new Error("Jouw eigen admin profiel mist een voor- of achternaam. Dit is verplicht.");
         }
 
-        const targetFullName = `${targetUser.first_name || ''} ${targetUser.last_name || ''}`.trim();
-        const finalTargetName = targetFullName || targetUser.email;
+        let finalTargetName = "";
+        let targetCommittees: string[] = [];
+
+        if (targetDbUser) {
+            finalTargetName = targetDbUser.name || targetDbUser.email || '';
+            targetCommittees = targetDbUser.committees?.map(c => c.name) || [];
+        } else {
+            const targetFullName = `${targetUser.first_name || ''} ${targetUser.last_name || ''}`.trim();
+            finalTargetName = targetFullName || targetUser.email || '';
+        }
 
         if (!finalTargetName) {
             throw new Error("De gekozen test-gebruiker heeft geen naam of e-mailadres. Kan de test-sessie niet starten met ontbrekende data.");
@@ -58,7 +69,7 @@ export async function setImpersonateToken(token: string) {
         cookieStore.set('impersonation_info', JSON.stringify({
             adminName,
             targetName: finalTargetName,
-            targetCommittees: []
+            targetCommittees
         }), {
             path: '/',
             maxAge: 7 * 24 * 60 * 60,

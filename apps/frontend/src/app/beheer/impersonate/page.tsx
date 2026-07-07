@@ -15,7 +15,8 @@ export default async function ImpersonatePage() {
     }
 
     const permissions = getPermissions(user.committees);
-    if (!permissions.includes('impersonate')) {
+    const hasImpersonatePermission = permissions.includes('impersonate') || !!impersonation;
+    if (!hasImpersonatePermission) {
         return <AdminUnauthorized title="Test Modus" backHref="/beheer" />;
     }
 

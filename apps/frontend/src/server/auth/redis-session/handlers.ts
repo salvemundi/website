@@ -138,7 +138,9 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
 
         const typedCommittees = realCommittees as unknown as Committee[];
         sessionWithUser.user.committees = typedCommittees;
-        Object.assign(sessionWithUser.user, getPermissions(typedCommittees));
+        Object.assign(sessionWithUser.user, {
+            permissions: getPermissions(typedCommittees)
+        });
 
         if (!sessionWithUser.user.name && (sessionWithUser.user.first_name || sessionWithUser.user.last_name)) {
             sessionWithUser.user.name = `${sessionWithUser.user.first_name || ''} ${sessionWithUser.user.last_name || ''}`.trim();

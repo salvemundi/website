@@ -1,7 +1,7 @@
 'use server';
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import type { ImpersonationInfo } from '@/types/auth';
+import type { ImpersonationInfo, ExtendedSession } from '@/types/auth';
 import { COMMITTEES, type AdminFeature } from '@/shared/lib/permissions-config';
 import { checkFeatureAccess, getPermissions } from '@/shared/lib/permissions';
 import { fetchUserMetadataDb, fetchUserCommitteesDb } from "@/server/internal/leden/leden-db.utils";
@@ -18,8 +18,8 @@ export interface StronglyTypedAdminUser extends DirectusUserSelect {
     committees: CommitteeSelect[];
 }
 
-const getCachedUserEnrichment = unstable_cache(
-    async (userId: string) => {
+const getCachedUserEnrichment = (userId: string) => unstable_cache(
+    async () => {
         const [metadata, committees] = await Promise.all([
             fetchUserMetadataDb(userId),
             fetchUserCommitteesDb(userId)
@@ -29,9 +29,9 @@ const getCachedUserEnrichment = unstable_cache(
             committees: committees as CommitteeSelect[] | null 
         };
     },
-    ['user-enrichment-v1'],
+    ['user-enrichment-v1', userId],
     { revalidate: 10 }
-);
+)();
 
 export async function checkAdminAccess() {
     try {
@@ -93,37 +93,55 @@ export async function checkAdminAccess() {
             permissions,
         });
 
-        const isAuthorized = isIct || isBoard || isKandi || currentCommittees.length > 0;
+        let isAuthorized = isIct || isBoard || isKandi || currentCommittees.length > 0;
 
-        const cookieStore = await cookies();
-        const testToken = cookieStore.get('directus_test_token')?.value;
+        // Resolve impersonation info from session first (most reliable), fall back to cookie if needed.
         let impersonationInfo: ImpersonationInfo | null = null;
-        
-        if (testToken) {
-            const infoCookie = cookieStore.get('impersonation_info')?.value;
+        const extendedSession = session as unknown as ExtendedSession | null;
+
+        if (extendedSession?.impersonatedBy) {
+            impersonationInfo = {
+                id: extendedSession.impersonatedBy.id,
+                name: extendedSession.impersonatedBy.name,
+                email: extendedSession.impersonatedBy.email,
+                isNormallyAdmin: extendedSession.impersonatedBy.isNormallyAdmin,
+                targetName: extendedSession.user.name || extendedSession.user.email,
+                targetCommittees: extendedSession.user.committees?.map(c => c.name) || []
+            };
+        } else {
+            const cookieStore = await cookies();
+            const testToken = cookieStore.get('directus_test_token')?.value;
             
-            if (!infoCookie) {
-                safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Test token is present, but impersonation_info cookie is missing.`);
-            } else {
-                try {
-                    const parsed = JSON.parse(infoCookie) as { adminName?: string; targetName?: string; targetCommittees?: string[] };
-                    
-                    if (parsed.adminName && parsed.targetName) {
-                        impersonationInfo = {
-                            id: '',
-                            email: '',
-                            isNormallyAdmin: true,
-                            name: parsed.adminName,
-                            targetName: parsed.targetName,
-                            targetCommittees: parsed.targetCommittees || []
-                        };
-                    } else {
-                        safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Test modus session data is corrupt: missing adminName or targetName.`);
+            if (testToken) {
+                const infoCookie = cookieStore.get('impersonation_info')?.value;
+                
+                if (!infoCookie) {
+                    safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Test token is present, but impersonation_info cookie is missing.`);
+                } else {
+                    try {
+                        const parsed = JSON.parse(infoCookie) as { adminName?: string; targetName?: string; targetCommittees?: string[] };
+                        
+                        if (parsed.adminName && parsed.targetName) {
+                            impersonationInfo = {
+                                id: '',
+                                email: '',
+                                isNormallyAdmin: true,
+                                name: parsed.adminName,
+                                targetName: parsed.targetName,
+                                targetCommittees: parsed.targetCommittees || []
+                            };
+                        } else {
+                            safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Test modus session data is corrupt: missing adminName or targetName.`);
+                        }
+                    } catch (error) {
+                        safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Failed to parse impersonation_info cookie`, error);
                     }
-                } catch (error) {
-                    safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Failed to parse impersonation_info cookie`, error);
                 }
             }
+        }
+
+        if (impersonationInfo) {
+            isAuthorized = true;
         }
 
         return {
