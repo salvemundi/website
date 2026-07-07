@@ -3,7 +3,7 @@
 import { useState, useMemo, useOptimistic, useTransition } from 'react';
 import Link from 'next/link';
 import { Search, Download, UserPlus, QrCode } from 'lucide-react';
-import { deleteSignupAction, toggleCheckInAction } from '@/server/actions/admin/aanmeldingen.actions';
+import { deleteSignupAction, toggleCheckInAction } from '@/server/actions/admin/activiteiten/admin-activiteiten-signups.actions';
 import ManualSignupModal from './ManualSignupModal';
 import { useRouter } from 'next/navigation';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -50,7 +50,7 @@ export default function ActiviteitAanmeldingenIsland({
 }) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
-    const [_isPending, startTransition] = useTransition();
+    const [, startTransition] = useTransition();
     const [searchQuery, setSearchQuery] = useState('');
     const [isManualModalOpen, setIsManualModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
@@ -110,7 +110,7 @@ export default function ActiviteitAanmeldingenIsland({
     }
 
     async function handleDelete(signupId: number, email: string) {
-        if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen? De persoon krijgt hiervan een email notificatie.')) {
+        if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen? De persoon krijgt hierover een e-mail.')) {
             return;
         }
 

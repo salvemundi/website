@@ -7,7 +7,7 @@ import {
     togglePubCrawlTicketCheckIn,
     updatePubCrawlTickets,
     deletePubCrawlSignup
-} from '@/server/actions/admin/admin-kroegentocht.actions';
+} from '@/server/actions/admin/kroegentocht/admin-kroegentocht-core.actions';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import SignupHeader from './signup/SignupHeader';
@@ -15,7 +15,7 @@ import SignupPersonalDetails from './signup/SignupPersonalDetails';
 import SignupTicketList from './signup/SignupTicketList';
 import SignupFormActions from './signup/SignupFormActions';
 
-import { type EnrichedPubCrawlSignup } from '@/server/internal/kroegentocht-db.utils';
+import { type EnrichedPubCrawlSignup } from '@/server/internal/kroegentocht/kroegentocht-types';
 
 interface SignupFormProps {
     signup: EnrichedPubCrawlSignup;
@@ -89,7 +89,7 @@ export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps
     const handleDeleteTicket = async (ticketId: number) => {
         if (!window.confirm('Weet je zeker dat je dit ticket wilt verwijderen?')) return;
 
-        const { deletePubCrawlTicket } = await import('@/server/actions/admin/admin-kroegentocht.actions');
+        const { deletePubCrawlTicket } = await import('@/server/actions/admin/kroegentocht/admin-kroegentocht-core.actions');
 
         startTransition(async () => {
             try {

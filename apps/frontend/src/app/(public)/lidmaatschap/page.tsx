@@ -2,7 +2,7 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import MembershipFormIsland from '@/components/islands/membership/MembershipFormIsland';
 import MembershipStatusIsland, { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { fetchUserCommitteesDb, type Committee } from '@/server/internal/user-db.utils';
+import { fetchUserCommitteesDb, type Committee } from '@/server/internal/leden/leden-db.utils';
 import { connection } from 'next/server';
 import { safeConsoleError } from '@/server/utils/logger';
 import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';

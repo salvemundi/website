@@ -3,7 +3,7 @@
 import { useState, useOptimistic, useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save, Loader2, Trash } from 'lucide-react';
-import { updateActivityAction, deleteActivity } from '@/server/actions/events/activiteiten/activities-write.actions';
+import { updateActivityAction, deleteActivity } from '@/server/actions/events/activiteiten/activiteiten-write.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -101,6 +101,18 @@ export default function ActiviteitBewerkenIsland({
 
     const initialData = (state.initialData || event) as { [key: string]: unknown };
 
+    const handleValidatedImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const MAX_SIZE_MB = 10;
+
+    if (file && file.size > MAX_SIZE_MB * 1024 * 1024) {
+        showToast(`Bestand is te groot. Maximaal ${MAX_SIZE_MB}MB toegestaan.`, 'error');
+        e.target.value = '';
+        return;
+    }
+    
+    handleImageChange(e);
+    };
     return (
         <div className="pb-20">
             <AdminToolbar title="Activiteit bewerken" subtitle={`Wijzig "${event.name}"`} backHref="/beheer/activiteiten" />
@@ -117,7 +129,7 @@ export default function ActiviteitBewerkenIsland({
                                 onUploadClick={() => fileInputRef.current?.click()}
                                 onRemoveClick={handleRemoveImage}
                                 fileInputRef={fileInputRef}
-                                onFileChange={handleImageChange}
+                                onFileChange={handleValidatedImageChange}
                             />
                             <StatusSection
                                 status={status}

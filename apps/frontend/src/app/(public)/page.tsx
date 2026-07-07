@@ -1,6 +1,6 @@
 import { getHeroBanners, getUpcomingActiviteiten, getSponsors } from '@/server/actions/public/home.actions';
 import { HeroIsland } from '@/components/islands/layout/HeroIsland';
-import { EventsSection } from '@/components/ui/activities/EventsSection';
+import { ActiviteitenSection } from '@/components/ui/activiteiten/ActiviteitenSection';
 import { WhySalveMundiSection } from '@/components/ui/membership/WhySalveMundiSection';
 import { JoinSectionIsland } from '@/components/islands/membership/JoinSectionIsland';
 import { SponsorsSection } from '@/components/ui/layout/SponsorsSection';
@@ -66,7 +66,7 @@ async function HomeContent() {
     return (
         <>
             <HeroIsland banners={banners} activiteiten={heroActivities} initialSession={session} />
-            <EventsSection activities={activities} />
+            <ActiviteitenSection activities={activities} />
             <WhySalveMundiSection />
             <JoinSectionIsland serverUser={user} />
             <SponsorsSection sponsors={sponsors} />

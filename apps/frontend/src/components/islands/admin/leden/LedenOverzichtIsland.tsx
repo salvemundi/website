@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useTransition } from 'react';
 import { downloadCSV } from '@/lib/utils/export';
-import { sendMembershipReminderAction } from '@/server/actions/admin/leden.actions';
+import { sendMembershipReminderAction } from '@/server/actions/admin/leden/admin-leden-membership.actions';
 import LedenFilters from './LedenFilters';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';

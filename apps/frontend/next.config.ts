@@ -12,18 +12,19 @@ interface CustomWebpackConfig {
 }
 
 const nextConfig: NextConfig = {
-    output: 'standalone',
-    poweredByHeader: false,
-    cacheComponents: false,
-    productionBrowserSourceMaps: false,
     serverExternalPackages: ['isomorphic-dompurify', 'jsdom'],
     experimental: {
         serverSourceMaps: true,
         optimizePackageImports: ['lucide-react', 'maplibre-gl'],
         serverActions: {
-            bodySizeLimit: '50mb'
+            bodySizeLimit: '10mb'
         }
     },
+    devIndicators: false,
+    output: 'standalone',
+    poweredByHeader: false,
+    cacheComponents: false,
+    productionBrowserSourceMaps: false,
     turbopack: {},
     staticPageGenerationTimeout: 60,
     logging: false,
@@ -83,15 +84,7 @@ const nextConfig: NextConfig = {
             },
         ];
     },
-    async redirects() {
-        return [
-            { source: '/vereniging/commissies/:path*', destination: '/commissies/:path*', permanent: true },
-            { source: '/vereniging/:path*', destination: '/commissies/:path*', permanent: true },
-            { source: '/beheer/vereniging/:path*', destination: '/beheer/commissies/:path*', permanent: true },
-            { source: '/profiel/lidmaatschap/:path*', destination: '/lidmaatschap/:path*', permanent: true },
-            { source: '/profiel/lidmaatschap', destination: '/lidmaatschap', permanent: true },
-        ];
-    },
+
     webpack: (config: unknown, { isServer }: { isServer: boolean }) => {
         const webpackConfig = config as CustomWebpackConfig;
         webpackConfig.resolve.fallback = { ...webpackConfig.resolve.fallback, fs: false, net: false, tls: false };

@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils/cn';
@@ -19,26 +18,24 @@ import { BRAND_CONFIG } from '@/lib/config/brand';
 interface NavigationHeaderProps {
     disabledRoutes?: string[];
     initialSession?: ExtendedSession | null;
-    isAdmin?: boolean;
+    canAccessAdmin?: boolean;
 }
 
-/**
- * Navigation Header Component.
- */
 const NavigationHeader = ({
     disabledRoutes = [],
     initialSession,
-    isAdmin: initialIsAdmin
+    canAccessAdmin: initialCanAccessAdmin = false
 }: NavigationHeaderProps) => {
     const pathname = usePathname() || '/';
     const user = initialSession?.user ?? null;
     const isAuthenticated = !!user;
 
-    const canAccessAdmin = !!(initialIsAdmin || user?.isAdmin || user?.isICT || user?.canAccessIntro);
+    const canAccessAdmin = !!(initialCanAccessAdmin || user?.permissions?.includes('ict') || (user?.committees && user.committees.length > 0));
 
     const navItems = ([
         { name: 'Home', href: ROUTES.HOME, icon: 'Home' },
         { name: 'Intro', href: ROUTES.INTRO, icon: 'Sparkles' },
+        { name: 'Webshop', href: ROUTES.WEBSHOP, icon: 'Shirt' },
         { name: 'Lidmaatschap', href: ROUTES.MEMBERSHIP, icon: 'User' },
         { name: 'Activiteiten', href: ROUTES.ACTIVITIES, icon: 'CalendarDays' },
         { name: 'Commissies', href: ROUTES.COMMITTEES, icon: 'Users' },
@@ -52,7 +49,6 @@ const NavigationHeader = ({
     return (
         <HeaderShell>
             <div className="w-full px-4 lg:px-8 z-10 relative @container h-20 flex items-center justify-between">
-                {/* Logo Section */}
                 <div className="shrink-0">
                     <Link href="/" className="group flex items-center gap-3 transition-transform duration-300 hover:scale-[1.03] active:scale-95">
                         <div className="relative w-12 h-12">
@@ -60,14 +56,7 @@ const NavigationHeader = ({
                                 src={BRAND_CONFIG.logoLightMode}
                                 alt="Salve Mundi Logo"
                                 fill
-                                className="object-contain dark:hidden"
-                                priority
-                            />
-                            <Image
-                                src={BRAND_CONFIG.logoDarkMode}
-                                alt="Salve Mundi Logo"
-                                fill
-                                className="object-contain hidden dark:block"
+                                className="object-contain"
                                 priority
                             />
                         </div>
@@ -78,7 +67,6 @@ const NavigationHeader = ({
                     </Link>
                 </div>
 
-                {/* Desktop Navigation */}
                 <nav className="hidden lg:flex flex-1 items-center justify-center px-4 gap-x-[clamp(0.4rem,0.8vw,1.1rem)] min-w-0">
                     {navItems.map((link) => {
                         const active = isPathActive(pathname, link.href);
@@ -102,7 +90,6 @@ const NavigationHeader = ({
                     })}
                 </nav>
 
-                {/* Right Actions */}
                 <div className="shrink-0 flex items-center justify-end gap-3">
                     <NavUserSection
                         initialSession={initialSession}

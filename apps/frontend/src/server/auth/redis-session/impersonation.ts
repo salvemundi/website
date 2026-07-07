@@ -16,11 +16,10 @@ interface RawImpersonationDbUser {
     phone_number: string | null;
     date_of_birth: string | Date | null;
     minecraft_username: string | null;
-    admin_access: boolean | null;
     role: string | null;
 }
 
-export async function getImpersonatedUser(testToken: string, _pool: Pool): Promise<ExtendedUser | null> {
+export async function getImpersonatedUser(testToken: string, _pool?: Pool | null): Promise<ExtendedUser | null> {
     try {
         const redis = await getRedis();
         const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
@@ -62,7 +61,6 @@ export async function getImpersonatedUser(testToken: string, _pool: Pool): Promi
             phone_number: schema.directus_users.phone_number,
             date_of_birth: schema.directus_users.date_of_birth,
             minecraft_username: schema.directus_users.minecraft_username,
-            admin_access: schema.directus_users.admin_access,
             role: schema.directus_users.role
         }).from(schema.directus_users).where(eq(schema.directus_users.id, rawImpUser.id)).limit(1);
 
@@ -99,8 +97,7 @@ export async function getImpersonatedUser(testToken: string, _pool: Pool): Promi
             emailVerified: true,
             createdAt: new Date(),
             updatedAt: new Date(),
-            ...perms,
-            isAdmin: !!dbUser.admin_access || perms.isAdmin
+            permissions: perms
         };
 
         await redis.set(cacheKey, JSON.stringify(targetUser), 'EX', 300);

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
-import ActivitiesBannerIsland from '@/components/islands/activities/ActivitiesBannerIsland';
-import ActivitiesProviderIsland from '@/components/islands/activities/ActivitiesProviderIsland';
-import { getActivities } from '@/server/actions/events/public-activiteit.actions';
+import ActivitiesBannerIsland from '@/components/islands/activiteiten/ActivitiesBannerIsland';
+import ActivitiesProviderIsland from '@/components/islands/activiteiten/ActivitiesProviderIsland';
+import { getActivities } from '@/server/actions/events/activiteiten/activiteiten-public.actions';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 
 export const dynamic = 'force-dynamic';

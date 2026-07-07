@@ -1,7 +1,7 @@
-import { getReisSiteSettings, getUpcomingTrips, getUserTripSignup, getTripParticipantsCount, getCurrentUserProfileAction } from '@/server/actions/events/trip.actions';
+import { getReisSiteSettings, getUpcomingTrips, getUserTripSignup, getTripParticipantsCount, getCurrentUserProfileAction } from '@/server/actions/events/reis/reis-public.actions';
 import { getDocumenten } from '@/server/actions/public/website.actions';
-import { TripFormIsland } from '@/components/islands/reis/TripFormIsland';
-import { TripInfoIsland } from '@/components/islands/reis/TripInfoIsland';
+import { ReisFormIsland } from '@/components/islands/reis/ReisFormIsland';
+import { ReisInfoIsland } from '@/components/islands/reis/ReisInfoIsland';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { connection } from 'next/server';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
@@ -83,7 +83,7 @@ export default async function ReisPage() {
             <h1 className="sr-only">Reis</h1>
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 lg:pt-16 pb-16 sm:pb-24 lg:pb-32">
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
-                    <TripFormIsland
+                    <ReisFormIsland
                         nextTrip={nextTrip}
                         userSignup={userSignup}
                         canSignUp={canSignUp}
@@ -92,7 +92,7 @@ export default async function ReisPage() {
                         initialUser={currentUserProfile}
                         termsFileUrl={termsFileUrl}
                     />
-                    <TripInfoIsland nextTrip={nextTrip} />
+                    <ReisInfoIsland nextTrip={nextTrip} />
                 </div>
             </div>
         </PublicPageShell>

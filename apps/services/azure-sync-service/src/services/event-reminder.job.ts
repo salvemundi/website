@@ -1,7 +1,7 @@
 import { safeConsoleError, logInfo } from '../utils/logger.js';
 import { type Redis } from 'ioredis';
-import { DirectusService } from './directus.service.js';
-import { type Event, type EventSignup } from '../types/schema.js';
+import { DbService } from './db.service.js';
+import { schema } from '@salvemundi/db';
 
 export class EventReminderJob {
     private static readonly REDIS_PREFIX = 'v7:mail:notified:event:';
@@ -37,17 +37,17 @@ export class EventReminderJob {
     static async runCheck(redis: Redis) {
         logInfo('[event-reminder.job.ts][runCheck] ', 'Running upcoming event scan (3 days ahead)...');
 
-        const isActive = await DirectusService.isFlagActive('mail_event_reminders');
+        const isActive = await DbService.isFlagActive('mail_event_reminders');
         if (!isActive) {
             logInfo('[event-reminder.job.ts][runCheck] ', 'Automated event reminders are DISABLED via feature flag. Skipping run.');
             return;
         }
 
-        const upcomingEvents = await DirectusService.getUpcomingEvents(3);
+        const upcomingEvents = await DbService.getUpcomingEvents(3);
         logInfo('[event-reminder.job.ts][runCheck] ', `Found ${upcomingEvents.length} events scheduled in 3 days.`);
 
         for (const event of upcomingEvents) {
-            const signups = await DirectusService.getPaidEventSignups(event.id);
+            const signups = await DbService.getPaidEventSignups(event.id);
             logInfo('[event-reminder.job.ts][runCheck] ', `Notifying ${signups.length} participants for event: ${event.name}`);
 
             for (const signup of signups) {
@@ -56,7 +56,7 @@ export class EventReminderJob {
         }
     }
 
-    private static async notifyParticipant(redis: Redis, event: Event, signup: EventSignup) {
+    private static async notifyParticipant(redis: Redis, event: typeof schema.events.$inferSelect, signup: typeof schema.event_signups.$inferSelect) {
         const redisKey = `${this.REDIS_PREFIX}${signup.id}:reminder_3d`;
 
         const exists = await redis.get(redisKey);

@@ -46,7 +46,6 @@ export interface DirectusUser {
     date_of_birth?: string | null;
     originele_betaaldatum?: string | null;
     text_direction?: string;
-    admin_access?: boolean;
 }
 
 export interface Committee {

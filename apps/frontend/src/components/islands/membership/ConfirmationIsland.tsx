@@ -12,7 +12,7 @@ interface ConfirmationIslandProps {
     initialUserId?: string | null;
 }
 
-export default function ConfirmationIsland({ transactionId, type, initialStatus, initialUserId: _initialUserId }: ConfirmationIslandProps) {
+export default function ConfirmationIsland({ transactionId, type, initialStatus }: ConfirmationIslandProps) {
     const router = useRouter();
     const [status, setStatus] = useState<'loading' | 'paid' | 'open' | 'failed' | 'error'>(initialStatus || (transactionId ? 'loading' : 'paid'));
     const [retryCount, setRetryCount] = useState(0);

@@ -1,7 +1,7 @@
 import { safeConsoleError, logInfo, logWarn } from '../utils/logger.js';
 import { type Redis } from 'ioredis';
-import { DirectusService } from './directus.service.js';
-import { type DirectusUser } from '../types/schema.js';
+import { DbService } from './db.service.js';
+import { schema } from '@salvemundi/db';
 
 export class ExpiryCheckJob {
     private static readonly REDIS_PREFIX = 'v7:mail:notified:';
@@ -54,13 +54,13 @@ export class ExpiryCheckJob {
         }
 
         try {
-            const isActive = await DirectusService.isFlagActive('mail_expiry_check');
+            const isActive = await DbService.isFlagActive('mail_expiry_check');
             if (!isActive) {
                 logInfo('[expiry-check.job.ts][runCheck] ', 'Automated membership emails are DISABLED via feature flag. Skipping run.');
                 return;
             }
 
-            const members = await DirectusService.getAllUsers();
+            const members = await DbService.getAllUsers();
             const now = new Date();
 
             for (const member of members) {
@@ -87,7 +87,7 @@ export class ExpiryCheckJob {
         }
     }
 
-    private static async notifyMember(redis: Redis, member: DirectusUser, milestone: string) {
+    private static async notifyMember(redis: Redis, member: typeof schema.directus_users.$inferSelect, milestone: string) {
         const year = new Date().getFullYear();
         const redisKey = `${this.REDIS_PREFIX}${member.id}:${milestone}:${year}`;
 

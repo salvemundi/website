@@ -1,47 +1,54 @@
 'use server';
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { getPermissions } from '@/shared/lib/permissions';
-import { fetchUserMetadataDb, fetchUserCommitteesDb } from "@/server/internal/user-db.utils";
-import { type EnrichedUser, type ImpersonationInfo } from "@/types/auth";
-import { headers } from 'next/headers';
+import type { ImpersonationInfo, ExtendedSession } from '@/types/auth';
+import { COMMITTEES, type AdminFeature } from '@/shared/lib/permissions-config';
+import { checkFeatureAccess, getPermissions } from '@/shared/lib/permissions';
+import { fetchUserMetadataDb, fetchUserCommitteesDb } from "@/server/internal/leden/leden-db.utils";
+import { headers, cookies } from 'next/headers';
 import { safeConsoleError } from '@/server/utils/logger';
-import { unstable_cache } from 'next/cache';
+import { unstable_cache, revalidatePath } from 'next/cache';
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 
-/**
- * Centraal mechanisme voor admin-toegangscontrole en user-enrichment.
- * Wordt gebruikt in layouts, pages en server actions.
- */
-const getCachedUserEnrichment = unstable_cache(
-    async (userId: string) => {
+type DirectusUserSelect = typeof schema.directus_users.$inferSelect;
+type CommitteeSelect = typeof schema.committees.$inferSelect;
+
+export interface StronglyTypedAdminUser extends DirectusUserSelect {
+    committees: CommitteeSelect[];
+}
+
+const getCachedUserEnrichment = (userId: string) => unstable_cache(
+    async () => {
         const [metadata, committees] = await Promise.all([
             fetchUserMetadataDb(userId),
             fetchUserCommitteesDb(userId)
         ]);
-        return { metadata, committees };
+        return { 
+            metadata: metadata as DirectusUserSelect | null, 
+            committees: committees as CommitteeSelect[] | null 
+        };
     },
-    ['user-enrichment-v1'],
+    ['user-enrichment-v1', userId],
     { revalidate: 10 }
-);
+)();
 
 export async function checkAdminAccess() {
-    const safeHeaders = new Headers();
     try {
-        const h = await headers();
-        h.forEach((headerValue, headerKey) => safeHeaders.set(headerKey, headerValue));
+        await headers();
     } catch (error) {
-        safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Failed to fetch headers:`, error);
+        safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Failed to fetch headers`, error);
         return { isAuthorized: false, user: null, isIct: false, impersonation: null };
     }
 
     try {
         const session = await getEnrichedSession();
-
-        if (!session) {
+        if (!session?.user) {
             return { isAuthorized: false, user: null, isIct: false, impersonation: null };
         }
 
-        const user = session.user as unknown as EnrichedUser;
+        const user = session.user as unknown as StronglyTypedAdminUser;
+        user.committees = [];
 
         try {
             const { metadata, committees } = await getCachedUserEnrichment(user.id);
@@ -54,40 +61,157 @@ export async function checkAdminAccess() {
                 user.date_of_birth = metadata.date_of_birth;
                 user.entra_id = metadata.entra_id;
             }
-            user.committees = committees;
-            const perms = getPermissions(committees);
-            user.isICT = perms.isICT;
-
-            // Store granular permissions in the user object for convenience
-            Object.assign(user, perms);
+            if (committees) {
+                user.committees = committees;
+            }
         } catch (error) {
-            safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Error while enriching user:`, error);
+            safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Error while enriching user`, error);
         }
 
-        if (!user.name && (user.first_name || user.last_name)) {
-            user.name = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+        const firstName = user.first_name ?? '';
+        const lastName = user.last_name ?? '';
+        if (!user.name && (firstName || lastName)) {
+            user.name = `${firstName} ${lastName}`.trim();
         }
-        const impersonatedBy = (session as { impersonatedBy?: ImpersonationInfo }).impersonatedBy || null;
 
-        const perms = getPermissions(user.committees || []);
-        const isAuthorized = Object.values(perms).some(permValue => permValue === true);
-        const isIct = perms.isICT || false;
+        const currentCommittees = user.committees;
+        const permissions = getPermissions(currentCommittees);
+        const isIct = permissions.includes('ict');
+        let isBoard = false;
+        let isKandi = false;
+
+        for (const c of currentCommittees) {
+            if (c.azure_group_id === COMMITTEES.BESTUUR) {
+                isBoard = true;
+            }
+            if (c.azure_group_id === COMMITTEES.KANDI) {
+                isKandi = true;
+            }
+        }
+
+        Object.assign(user, {
+            permissions,
+        });
+
+        let isAuthorized = isIct || isBoard || isKandi || currentCommittees.length > 0;
+
+        // Resolve impersonation info from session first (most reliable), fall back to cookie if needed.
+        let impersonationInfo: ImpersonationInfo | null = null;
+        const extendedSession = session as unknown as ExtendedSession | null;
+
+        if (extendedSession?.impersonatedBy) {
+            impersonationInfo = {
+                id: extendedSession.impersonatedBy.id,
+                name: extendedSession.impersonatedBy.name,
+                email: extendedSession.impersonatedBy.email,
+                isNormallyAdmin: extendedSession.impersonatedBy.isNormallyAdmin,
+                targetName: extendedSession.user.name || extendedSession.user.email,
+                targetCommittees: extendedSession.user.committees?.map(c => c.name) || []
+            };
+        } else {
+            const cookieStore = await cookies();
+            const testToken = cookieStore.get('directus_test_token')?.value;
+            
+            if (testToken) {
+                const infoCookie = cookieStore.get('impersonation_info')?.value;
+                
+                if (!infoCookie) {
+                    safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Test token is present, but impersonation_info cookie is missing.`);
+                } else {
+                    try {
+                        const parsed = JSON.parse(infoCookie) as { adminName?: string; targetName?: string; targetCommittees?: string[] };
+                        
+                        if (parsed.adminName && parsed.targetName) {
+                            impersonationInfo = {
+                                id: '',
+                                email: '',
+                                isNormallyAdmin: true,
+                                name: parsed.adminName,
+                                targetName: parsed.targetName,
+                                targetCommittees: parsed.targetCommittees || []
+                            };
+                        } else {
+                            safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Test modus session data is corrupt: missing adminName or targetName.`);
+                        }
+                    } catch (error) {
+                        safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Failed to parse impersonation_info cookie`, error);
+                    }
+                }
+            }
+        }
+
+        if (impersonationInfo) {
+            isAuthorized = true;
+        }
 
         return {
             isAuthorized,
             user,
             isIct,
-            impersonation: impersonatedBy ? {
-                id: impersonatedBy.id,
-                name: impersonatedBy.name,
-                email: impersonatedBy.email,
-                isNormallyAdmin: impersonatedBy.isNormallyAdmin,
-                targetName: user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim(),
-                targetCommittees: user.committees?.map((c) => c.name) || []
-            } : null
+            impersonation: impersonationInfo
         };
     } catch (error) {
-        safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Error in checkAdminAccess:`, error);
+        safeConsoleError(`[admin-utils.actions.ts][checkAdminAccess] Error in checkAdminAccess`, error);
         return { isAuthorized: false, user: null, isIct: false, impersonation: null };
     }
+}
+
+export async function enforceFeatureAccess(feature: AdminFeature) {
+    const { user } = await checkAdminAccess();
+    if (!user) {
+        throw new Error("Helaas, je bent niet ingelogd en mag deze pagina niet bezoeken.");
+    }
+
+    const { hasAccess, isLeader } = checkFeatureAccess(user.committees, feature);
+    if (!hasAccess) {
+        throw new Error("Helaas, je hebt geen rechten om deze pagina te bezoeken.");
+    }
+
+    return { user, isLeader };
+}
+
+export async function toggleFeatureFlag(
+    routeMatch: string,
+    name: string,
+    defaultMessage: string,
+    pathsToRevalidate: string[]
+) {
+    try {
+        const rows = await db.select({
+            id: schema.feature_flags.id,
+            is_active: schema.feature_flags.is_active
+        }).from(schema.feature_flags)
+        .where(eq(schema.feature_flags.route_match, routeMatch))
+        .limit(1);
+
+        if (rows.length === 0) {
+            await db.insert(schema.feature_flags).values({
+                name,
+                route_match: routeMatch,
+                is_active: true,
+                message: defaultMessage
+            });
+        } else {
+            await db.update(schema.feature_flags)
+                .set({ is_active: !rows[0].is_active })
+                .where(eq(schema.feature_flags.id, rows[0].id));
+        }
+
+        for (const path of pathsToRevalidate) {
+            revalidatePath(path);
+        }
+
+        return { success: true };
+    } catch (error) {
+        safeConsoleError(`[admin-utils.actions.ts][toggleFeatureFlag] Failed for ${routeMatch}`, error);
+        return { success: false, error: 'Kan zichtbaarheid niet aanpassen.' };
+    }
+}
+
+export async function getFeatureFlagSettings(routeMatch: string) {
+    const rows = await db.select({ is_active: schema.feature_flags.is_active, message: schema.feature_flags.message })
+        .from(schema.feature_flags)
+        .where(eq(schema.feature_flags.route_match, routeMatch))
+        .limit(1);
+    return rows[0] ? { show: rows[0].is_active, disabled_message: rows[0].message } : { show: true, disabled_message: null };
 }

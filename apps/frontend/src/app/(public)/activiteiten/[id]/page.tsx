@@ -1,9 +1,9 @@
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { notFound } from 'next/navigation';
-import { getActivityBySlug, checkUserSignupStatus } from '@/server/actions/events/public-activiteit.actions';
-import { getSignupStatus } from '@/server/actions/events/public-activiteit-status.actions';
-import ActivityDetailIsland from '@/components/islands/activities/ActivityDetailIsland';
-import EventSignupIsland from '@/components/islands/activities/EventSignupIsland';
+import { getActivityBySlug, checkUserSignupStatus } from '@/server/actions/events/activiteiten/activiteiten-public.actions';
+import { getSignupStatus } from '@/server/actions/events/activiteiten/activiteiten-status.actions';
+import ActivityDetailIsland from '@/components/islands/activiteiten/ActivityDetailIsland';
+import ActiviteitSignupIsland from '@/components/islands/activiteiten/ActiviteitSignupIsland';
 import { type EventSignup } from '@salvemundi/validations/directus/schema';
 import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
@@ -96,19 +96,21 @@ async function ActivityContent({ params, searchParams }: PageProps) {
             </div>
 
             <ActivityDetailIsland activity={activity} isLoggedIn={!!session?.user}>
-                <EventSignupIsland
+                <ActiviteitSignupIsland
                     eventId={Number(activity.id)}
                     price={Number(price)}
                     eventDate={activity.event_date}
                     description={activity.description || ''}
-                    isPast={isEventPast}
-                    isDeadlinePassed={isDeadlinePassed}
                     eventName={activity.name}
                     initialUser={session?.user || null}
                     verifiedPaymentStatus={verifiedPaymentStatus}
                     initialQrToken={qrToken}
                     initialIsSignedUp={isSignedUp}
                     id={signupId}
+                    isPast={isEventPast}
+                    isDeadlinePassed={isDeadlinePassed}
+                    isMembersOnly={!!activity.only_members}
+                    isMember={isMember}
                 />
             </ActivityDetailIsland>
         </>

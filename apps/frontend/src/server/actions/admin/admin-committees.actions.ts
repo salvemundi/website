@@ -1,19 +1,17 @@
 'use server';
 
-import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { revalidatePath } from "next/cache";
-import { isSuperAdmin } from '@/lib/auth';
 import { db, schema } from '@salvemundi/db';
 import { eq, and } from 'drizzle-orm';
-import type { CommitteeMember } from '@/server/queries/admin-commissies.queries';
-import { getCommitteeMembers as getCommitteeMembersQuery } from '@/server/queries/admin-commissies.queries';
+import type { CommitteeMember } from '@/server/queries/commissies/admin-commissies.queries';
+import { getCommitteeMembers as getCommitteeMembersQuery } from '@/server/queries/commissies/admin-commissies.queries';
 import {
     updateCommitteeDetailsSchema,
     addCommitteeMemberSchema,
     toggleCommitteeLeaderSchema,
     removeCommitteeMemberSchema
 } from '@salvemundi/validations';
-import { type EnrichedUser } from '@/types/auth';
+
 import { safeConsoleError } from '@/server/utils/logger';
 
 interface AzureErrorResponse {
@@ -30,16 +28,10 @@ const serviceHeaders = (contentType = true) => {
     return headers;
 };
 
+import { enforceFeatureAccess } from '@/server/actions/admin/admin-utils.actions';
+
 async function checkAccess() {
-    const session = await getEnrichedSession();
-    if (!session?.user) throw new Error('Niet ingelogd');
-
-    const user = session.user as unknown as EnrichedUser;
-    if (!isSuperAdmin(user.committees)) {
-        throw new Error('Geen toegang: Beheerrechten vereist.');
-    }
-
-    return session;
+    return enforceFeatureAccess('commissies');
 }
 
 export async function getCommitteeMembers(committeeId: string): Promise<CommitteeMember[]> {

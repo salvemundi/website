@@ -13,9 +13,9 @@ import {
     ExternalLink,
     Loader2
 } from 'lucide-react';
-import type { Committee, CommitteeMember } from '@/server/queries/admin-commissies.queries';
+import type { Committee, CommitteeMember } from '@/server/queries/commissies/admin-commissies.queries';
 import { type UserBasic } from '@salvemundi/validations';
-import UserSearch from '@/components/ui/admin/UserSearch';
+import AdminLedenSearch from '@/components/ui/admin/AdminLedenSearch';
 
 interface Props {
     selected: Committee;
@@ -160,7 +160,7 @@ export default function CommitteeDetail({
 
                     {selected.azure_group_id ? (
                         <div className="flex-1 w-full md:max-w-md lg:max-w-lg">
-                            <UserSearch
+                            <AdminLedenSearch
                                 onSelect={onAddMember}
                                 disabled={addingMember}
                                 placeholder="Zoek lid op naam om toe te voegen..."

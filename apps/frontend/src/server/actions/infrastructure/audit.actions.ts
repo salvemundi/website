@@ -1,8 +1,7 @@
 'use server';
 import { safeConsoleError, logWarn } from '@/server/utils/logger';
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from "next/cache";
-import { isSuperAdmin } from "@/lib/auth";
-import { type Committee } from "@/shared/lib/permissions";
+import { canAccess } from "@/shared/lib/permissions";
 import { db, schema } from '@salvemundi/db';
 import { eq, sql } from 'drizzle-orm';
 import {
@@ -11,10 +10,10 @@ import {
     insertSystemLogInternal,
     getIdNameLookupInternal,
     type SystemLog
-} from "@/server/queries/audit.queries";
+} from "@/server/queries/audit/audit.queries";
 import { type PendingSignup } from "@salvemundi/validations/schema/audit.zod";
 import { getEnrichedSession } from "@/server/auth/auth-utils";
-import { type EnrichedUser } from "@/types/auth";
+
 import { sanitizePayload } from "@/server/utils/log-sanitizer";
 
 type ActionResponse<T> = { success: true; data: T } | { success: false; error: string };
@@ -53,7 +52,7 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
         }
 
         const safePayload = sanitizePayload(payload as { [key: string]: unknown });
-        const user = session.user as unknown as EnrichedUser;
+        const user = session.user;
         const impersonatedBy = (session as { impersonatedBy?: { id: string; name: string } }).impersonatedBy;
 
         const adminId = impersonatedBy?.id || user.id;
@@ -92,10 +91,8 @@ async function checkAuditAccess() {
     const session = await getEnrichedSession();
     if (!session) return null;
 
-    const user = session.user as { committees?: Committee[] };
-    const isAdmin = isSuperAdmin(user.committees);
-
-    if (!isAdmin) return null;
+    const user = session.user;
+    if (!canAccess(user.committees, 'logging')) return null;
     return session;
 }
 

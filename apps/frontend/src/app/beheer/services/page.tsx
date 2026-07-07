@@ -4,21 +4,21 @@ import SystemManagementIsland from '@/components/islands/admin/SystemManagementI
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { getServicesStatusAction } from '@/server/actions/infrastructure/services-status.actions';
 import { getSystemAutomationSettings } from '@/server/actions/admin/admin-automation.actions';
-import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { getPermissions } from '@/shared/lib/permissions';
 
 export const metadata = {
     title: 'Systeem Beheer | SV Salve Mundi' };
-
-/**
- * SystemStatusPage: Nuclear SSR for both service health and automation toggles.
- */
 export default async function ServicesStatusPage() {
-    const access = await checkAdminAccess();
-    if (!access.isAuthorized || !access.isIct) {
-        redirect('/beheer');
+    const session = await getEnrichedSession();
+    if (!session?.user) redirect('/?needLogin=true');
+    const permissions = getPermissions(session.user.committees);
+    
+    if (!permissions.includes('services') && !permissions.includes('ict')) {
+        return <AdminUnauthorized title="Systeem Status" backHref="/beheer" />;
     }
 
-    // NUCLEAR SSR: Parallel fetch for status and settings
     const [initialStatuses, automationRes] = await Promise.all([
         getServicesStatusAction(),
         getSystemAutomationSettings()

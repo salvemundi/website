@@ -7,7 +7,7 @@ import ActiviteitAanmeldingenIsland, { type Signup, type AdminEvent } from '@/co
 import {
     getActivityByIdInternal,
     getActivitySignupsInternal
-} from '@/server/queries/admin-event.queries';
+} from '@/server/queries/activiteiten/admin-activiteiten.queries';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { type EnrichedUser } from '@/types/auth';
 
@@ -23,7 +23,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
     if (!session) return <AdminUnauthorized title="Activiteit Aanmeldingen" />;
 
     const user = session.user as unknown as EnrichedUser;
-    const hasAccess = !!user.canAccessActivitiesView;
+    const hasAccess = !!user.permissions?.includes('activiteiten');
 
     const eventData = await getActivityByIdInternal(id);
 
@@ -102,7 +102,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
                 <ActiviteitAanmeldingenIsland
                     event={event}
                     initialSignups={signups}
-                    canAccessEdit={!!user.canAccessActivitiesEdit}
+                    canAccessEdit={!!user.permissions?.includes('activiteiten:edit')}
                 />
             </div>
         </AdminPageShell>

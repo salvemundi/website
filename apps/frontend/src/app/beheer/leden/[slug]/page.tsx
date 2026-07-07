@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import LedenDetailIsland, { type Member, type CommitteeMembership, type Signup } from '@/components/islands/admin/leden/LedenDetailIsland';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { type EnrichedUser } from '@/types/auth';
-import { type Committee } from '@/shared/lib/permissions';
+import { canAccess } from '@/shared/lib/permissions';
 import {
     type DirectusUser,
     type CommitteeMember,
@@ -34,16 +34,13 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
 
     const user = session.user as unknown as EnrichedUser;
     const memberships = user.committees || [];
-    const hasPriv = memberships.some((c: Committee) => {
-        const name = (c.name || '').toString().toLowerCase();
-        return name.includes('bestuur') || name.includes('ict') || name.includes('kandi');
-    });
+    const hasPriv = canAccess(memberships, 'leden');
 
     if (!hasPriv) {
         return (
             <AdminUnauthorized
                 title="Lid Detail"
-                description="Je hebt geen rechten om persoonsgegevens van dit lid te bekijken. Dit is een beperkte sectie voor het Bestuur en ICT."
+                description="Je hebt geen rechten om persoonsgegevens van dit lid te bekijken. Dit is een beperkte sectie voor het Bestuur og ICT."
             />
         );
     }
@@ -57,18 +54,19 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(decodedSlug);
 
         if (isUuid) {
-            // Updated Drizzle Syntax for Relational API
             const result = await db.query.directus_users.findFirst({
                 where: (users, { eq }) => eq(users.id, decodedSlug),
                 columns: { id: true, first_name: true, last_name: true, email: true, date_of_birth: true, membership_expiry: true, status: true, phone_number: true, avatar: true, entra_id: true }
             });
             if (result) memberData = result as unknown as DirectusUser;
         } else {
-            // Updated Drizzle Syntax for Relational API
+            const escapedSlug = decodedSlug.replace(/[\\%_]/g, '\\$&');
+            const escapedNormalizedSlug = decodedSlug.replace(/-/g, '.').replace(/[\\%_]/g, '\\$&');
+
             const memberResult = await db.query.directus_users.findMany({
                 where: (users, { or, ilike }) => or(
-                    ilike(users.email, `${decodedSlug}@%`),
-                    ilike(users.email, `${decodedSlug.replace(/-/g, '.')}@%`)
+                    ilike(users.email, `${escapedSlug}@%`),
+                    ilike(users.email, `${escapedNormalizedSlug}@%`)
                 ),
                 columns: { id: true, first_name: true, last_name: true, email: true, date_of_birth: true, membership_expiry: true, status: true, phone_number: true, avatar: true, entra_id: true },
                 limit: 100
@@ -185,7 +183,6 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
         throw error;
     }
 
-
     return (
         <AdminPageShell
             title="Lid Detail"
@@ -197,11 +194,11 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                 signups={signups as unknown as Signup[]}
                 allCommittees={allCommittees.map(c => ({
                     id: String(c.id),
-                    name: c.name || '',
+                    name: c.name,
                     is_visible: !!c.is_visible,
                     azure_group_id: c.azure_group_id
                 }))}
-                isAdmin={hasPriv}
+                hasAccess={hasPriv}
             />
         </AdminPageShell>
     );

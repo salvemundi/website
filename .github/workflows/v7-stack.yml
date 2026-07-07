@@ -22,9 +22,12 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ github.ref_name }}
+      tag: ${{ steps.tag.outputs.value }}
     steps:
-      - run: echo "Determining tag for branch ${{ github.ref_name }}"
+      - id: tag
+        run: |
+          echo "Determining tag for ref ${{ github.ref_name }}"
+          echo "value=$(echo '${{ github.ref_name }}' | tr '/' '-')" >> "$GITHUB_OUTPUT"
 
   lint:
     needs: prepare

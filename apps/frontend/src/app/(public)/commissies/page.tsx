@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
-import CommitteesList from '@/components/ui/committees/CommitteesList';
+import CommitteesList from '@/components/ui/commissies/CommitteesList';
 
 export const metadata: Metadata = {
     title: 'Commissies | SV Salve Mundi',
@@ -25,7 +25,7 @@ export default async function CommissiesPage() {
                     <p className="text-text-muted max-w-2xl text-lg font-medium leading-relaxed">
                         Ontdek onze commissies die SV Salve Mundi draaiende houden.
                     </p>
-                    <div className="h-1 w-24 bg-gradient-to-r from-transparent via-purple-500 to-transparent rounded-full mt-6" />
+                    <div className="h-1 w-24 bg-linear-to-r from-transparent via-purple-500 to-transparent rounded-full mt-6" />
                 </div>
                 <CommitteesList initialCommittees={committees} />
             </div>

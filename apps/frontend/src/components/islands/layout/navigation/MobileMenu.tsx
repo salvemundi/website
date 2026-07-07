@@ -22,8 +22,6 @@ interface User {
     email?: string | null;
     image?: string | null;
     avatar?: string | null;
-    isAdmin?: boolean;
-    isICT?: boolean;
 }
 
 interface MobileMenuProps {
@@ -139,7 +137,6 @@ export default function MobileMenu({
 
                     {navItems
                         .filter(item => {
-                            // Verwijder redundant lidmaatschap link als we de "Word lid" knop tonen
                             if (!isAuthenticated && item.href === ROUTES.MEMBERSHIP) return false;
                             return true;
                         })
@@ -208,7 +205,6 @@ export default function MobileMenu({
                                                 callbackURL: '/profiel'
                                             });
                                         } catch {
-                                            // Handle error
                                         }
                                     })();
                                 }}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import type { IntroBlog, IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import {
     deleteIntroSignup,
@@ -14,7 +13,7 @@ import {
     getIntroPlanning,
     upsertIntroPlanning,
     deleteIntroPlanning
-} from '@/server/actions/admin/admin-intro.actions';
+} from '@/server/actions/admin/intro/admin-intro-core.actions';
 import { type IntroSignup as IntroSignupRow, type IntroParentSignup as IntroParentRow } from '@salvemundi/validations/directus/schema';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -33,8 +32,7 @@ interface Props {
     initialIntroVisible: boolean;
 }
 
-export default function IntroManagementIsland({ initialSignups, initialParents, initialBlogs, initialPlanning, initialIntroVisible: _initialIntroVisible }: Props) {
-    const _router = useRouter();
+export default function IntroManagementIsland({ initialSignups, initialParents, initialBlogs, initialPlanning }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
 
     const [activeTab, setActiveTab] = useState<TabType>('signups');

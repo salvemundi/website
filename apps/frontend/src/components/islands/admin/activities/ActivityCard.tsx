@@ -23,6 +23,7 @@ interface Props {
     canEdit?: boolean;
     isPending?: boolean;
     onViewSignups?: (id: number) => void;
+    onViewAttendance?: (id: number) => void;
     onEdit?: (id: number) => void;
 }
 
@@ -30,6 +31,7 @@ export default function ActivityCard({
     event,
     canEdit = false,
     onViewSignups = () => { },
+    onViewAttendance = () => { },
     onEdit = () => { } }: Props) {
     if (!event) return null;
     const eventDate = new Date(event.event_date);
@@ -125,6 +127,14 @@ export default function ActivityCard({
                 >
                     <Eye className="h-5 w-5 group-hover/btn:scale-110 transition-transform" />
                     <span>Aanmeldingen</span>
+                </button>
+
+                <button
+                    onClick={() => onViewAttendance(event.id)}
+                    className="flex-1 flex items-center justify-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-5 text-[11px] bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
+                >
+                    <Users className="h-5 w-5 group-hover/btn:scale-110 transition-transform" />
+                    <span>Aanwezigheid</span>
                 </button>
 
                 {canEdit && (

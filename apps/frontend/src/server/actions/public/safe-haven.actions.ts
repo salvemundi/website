@@ -44,6 +44,6 @@ async function fetchSafeHavensFromDirectus(isAuthenticated: boolean): Promise<Sa
 
 export async function getSafeHavens(): Promise<SafeHaven[]> {
     const session = await getEnrichedSession();
-    const isAuthenticated = !!session?.user;
+    const isAuthenticated = !!session?.user && session.user.membership_status === 'active';
     return fetchSafeHavensFromDirectus(isAuthenticated);
 }

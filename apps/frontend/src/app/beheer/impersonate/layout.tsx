@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 export default function ImpersonateLayout({ children }: { children: ReactNode }) {
     return (
         <AdminGuard 
-            permission="isICT" 
+            feature="impersonate" 
             title="Test Modus" 
             description="Deze systeemfunctie is exclusief gereserveerd voor de ICT-commissie."
         >

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { getKroegentochtWhatsAppLink } from "@/server/actions/events/kroegentocht.actions";
+import { getKroegentochtWhatsAppLink } from "@/server/actions/events/kroegentocht/kroegentocht-public.actions";
 import { MessageCircle, ArrowRight, X } from "lucide-react";
 
 interface KroegentochtWhatsAppPopupProps {

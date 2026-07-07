@@ -24,23 +24,8 @@ declare module "better-auth" {
         committees?: Committee[];
         entra_id?: string | null;
         role?: string | null;
-        isAdmin?: boolean;
-        isICT?: boolean;
 
-        // Permissies (UserPermissions)
-        isLeader?: boolean;
-        canAccessIntro?: boolean;
-        canAccessReis?: boolean;
-        canAccessLogging?: boolean;
-        canAccessSync?: boolean;
-        canAccessCoupons?: boolean;
-        canAccessPermissions?: boolean;
-        canAccessStickers?: boolean;
-        canAccessKroegentocht?: boolean;
-        canAccessMembers?: boolean;
-        canAccessCommittees?: boolean;
-        canAccessActivitiesView?: boolean;
-        canAccessActivitiesEdit?: boolean;
-        canAccessMail?: boolean;
+        // Permissies
+        permissions?: string[];
     }
 }

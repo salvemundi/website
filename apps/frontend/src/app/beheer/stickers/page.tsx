@@ -1,7 +1,10 @@
 import { getStickers } from '@/server/actions/admin/admin-stickers.actions';
 import StickerManagementIsland from '@/components/islands/admin/StickerManagementIsland';
-import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { getPermissions } from '@/shared/lib/permissions';
+import { redirect } from 'next/navigation';
 
 export const metadata = {
     title: 'Sticker Beheer | SV Salve Mundi',
@@ -9,7 +12,12 @@ export const metadata = {
 };
 
 export default async function StickersAdminPage() {
-    const { user: _user } = await checkAdminAccess();
+    const session = await getEnrichedSession();
+    if (!session?.user) redirect('/?needLogin=true');
+    const permissions = getPermissions(session.user.committees);
+    if (!permissions.includes('stickers')) {
+        return <AdminUnauthorized title="Sticker Beheer" backHref="/beheer" />;
+    }
 
     const stickers = await getStickers();
 

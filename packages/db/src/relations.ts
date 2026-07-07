@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { clubs, club_members, directus_files, Stickers, directus_users, Board, Board_Members, contacts, directus_policies, directus_access, directus_roles, committees, directus_comments, directus_dashboards, directus_folders, directus_collections, directus_flows, directus_panels, directus_permissions, directus_presets, directus_activity, directus_revisions, directus_versions, directus_shares, directus_notifications, directus_operations, documents, events, event_signups, events_directus_users, intro_blogs, intro_blog_likes, events_members, hero_banners, intro_blog_gallery, pub_crawl_events, membership_history, pub_crawl_signups, pub_crawl_signups_transactions, transactions, push_notification, intro_planning, pub_crawl_tickets, intro_parent_signups, trips, trip_signups, trip_activities, trip_signup_activities, safe_havens, sponsors, directus_sessions, permissions, role_permissions, roles, auth_accounts, auth_sessions, committee_members, intro_planning_signups, intro_signups, directus_deployments, directus_deployment_projects, directus_settings, directus_deployment_runs } from "./schema.js";
+import { clubs, club_members, directus_files, Stickers, directus_users, Board, Board_Members, contacts, directus_policies, directus_access, directus_roles, committees, directus_comments, directus_dashboards, directus_folders, directus_collections, directus_flows, directus_panels, directus_permissions, directus_presets, directus_activity, directus_revisions, directus_versions, directus_shares, directus_notifications, directus_operations, documents, events, event_signups, events_directus_users, intro_blogs, intro_blog_likes, events_members, hero_banners, intro_blog_gallery, pub_crawl_events, membership_history, pub_crawl_signups, pub_crawl_signups_transactions, transactions, push_notification, intro_planning, pub_crawl_tickets, intro_parent_signups, trips, trip_signups, trip_activities, trip_signup_activities, safe_havens, sponsors, directus_sessions, permissions, role_permissions, roles, auth_accounts, auth_sessions, committee_members, intro_planning_signups, intro_signups, directus_deployments, directus_deployment_projects, directus_settings, directus_deployment_runs, webshop_drop_windows, webshop_products, webshop_product_media, webshop_product_variants, webshop_preorders, webshop_preorder_lines } from "./schema.js";
 
 export const club_membersRelations = relations(club_members, ({one}) => ({
 	club: one(clubs, {
@@ -604,6 +604,10 @@ export const transactionsRelations = relations(transactions, ({one, many}) => ({
 		fields: [transactions.trip_signup],
 		references: [trip_signups.id]
 	}),
+	webshop_preorder: one(webshop_preorders, {
+		fields: [transactions.webshop_preorder],
+		references: [webshop_preorders.id]
+	}),
 }));
 
 export const push_notificationRelations = relations(push_notification, ({one}) => ({
@@ -853,5 +857,67 @@ export const directus_deployment_runsRelations = relations(directus_deployment_r
 	directus_user: one(directus_users, {
 		fields: [directus_deployment_runs.user_created],
 		references: [directus_users.id]
+	}),
+}));
+
+export const webshop_drop_windowsRelations = relations(webshop_drop_windows, ({many}) => ({
+	webshop_products: many(webshop_products),
+	webshop_preorders: many(webshop_preorders),
+}));
+
+export const webshop_productsRelations = relations(webshop_products, ({one, many}) => ({
+	webshop_drop_window: one(webshop_drop_windows, {
+		fields: [webshop_products.drop_window_id],
+		references: [webshop_drop_windows.id]
+	}),
+	webshop_product_media: many(webshop_product_media),
+	webshop_product_variants: many(webshop_product_variants),
+	webshop_preorder_lines: many(webshop_preorder_lines),
+}));
+
+export const webshop_product_mediaRelations = relations(webshop_product_media, ({one}) => ({
+	webshop_product: one(webshop_products, {
+		fields: [webshop_product_media.product_id],
+		references: [webshop_products.id]
+	}),
+	directus_file: one(directus_files, {
+		fields: [webshop_product_media.asset],
+		references: [directus_files.id]
+	}),
+}));
+
+export const webshop_product_variantsRelations = relations(webshop_product_variants, ({one, many}) => ({
+	webshop_product: one(webshop_products, {
+		fields: [webshop_product_variants.product_id],
+		references: [webshop_products.id]
+	}),
+	webshop_preorder_lines: many(webshop_preorder_lines),
+}));
+
+export const webshop_preordersRelations = relations(webshop_preorders, ({one, many}) => ({
+	directus_user: one(directus_users, {
+		fields: [webshop_preorders.user_id],
+		references: [directus_users.id]
+	}),
+	webshop_drop_window: one(webshop_drop_windows, {
+		fields: [webshop_preorders.drop_window_id],
+		references: [webshop_drop_windows.id]
+	}),
+	webshop_preorder_lines: many(webshop_preorder_lines),
+	transactions: many(transactions),
+}));
+
+export const webshop_preorder_linesRelations = relations(webshop_preorder_lines, ({one}) => ({
+	webshop_preorder: one(webshop_preorders, {
+		fields: [webshop_preorder_lines.preorder_id],
+		references: [webshop_preorders.id]
+	}),
+	webshop_product: one(webshop_products, {
+		fields: [webshop_preorder_lines.product_id],
+		references: [webshop_products.id]
+	}),
+	webshop_product_variant: one(webshop_product_variants, {
+		fields: [webshop_preorder_lines.variant_id],
+		references: [webshop_product_variants.id]
 	}),
 }));

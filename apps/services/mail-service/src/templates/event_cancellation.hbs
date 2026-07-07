@@ -1,0 +1,13 @@
+{{#> layout headerTitle="Annuleren Aanmelding"}}
+    <div class="status-badge error">Geannuleerd</div>
+    <p>Beste lid,</p>
+    
+    <p>Je bent afgemeld voor de activiteit: <strong>{{eventName}}</strong>.</p>
+
+    <p>Heb je vragen? Stuur dan gerust een mailtje naar de organisatie via <a href="mailto:{{#if organizerEmail}}{{organizerEmail}}{{else}}info@salvemundi.nl{{/if}}">{{#if organizerEmail}}{{organizerEmail}}{{else}}info@salvemundi.nl{{/if}}</a>.</p>
+
+    <p>Met vriendelijke groet,<br><br>
+    <strong>Salve Mundi</strong><br>
+    Rachelsmolen 1<br>
+    5612 MA Eindhoven</p>
+{{/layout}}

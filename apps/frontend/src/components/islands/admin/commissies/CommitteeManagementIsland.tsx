@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Users } from 'lucide-react';
-import type { Committee, CommitteeMember } from '@/server/queries/admin-commissies.queries';
+import type { Committee, CommitteeMember } from '@/server/queries/commissies/admin-commissies.queries';
 import {
     getCommitteeMembers,
     addCommitteeMember,

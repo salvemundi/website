@@ -47,7 +47,7 @@ interface Props {
     memberships: CommitteeMembership[];
     realCommittees: CommitteeMembership[];
     otherGroups: CommitteeMembership[];
-    isAdmin: boolean;
+    hasAccess: boolean;
     onUpdateProfile: (data: Partial<Member>) => Promise<boolean>;
 }
 
@@ -55,7 +55,7 @@ export default function MemberProfileTab({
     member,
     realCommittees,
     otherGroups,
-    isAdmin,
+    hasAccess,
     onUpdateProfile
 }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
@@ -109,7 +109,7 @@ export default function MemberProfileTab({
                 <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-8 shadow-sm">
                     <div className="flex items-center justify-between mb-8">
                         <h3 className="text-xs font-semibold text-(--beheer-text-muted)">Gegevens</h3>
-                        {isAdmin && !isEditing && (
+                        {hasAccess && !isEditing && (
                             <button onClick={() => setIsEditing(true)} className="p-2 text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/10 rounded-xl transition-all cursor-pointer">
                                 <Edit className="h-4 w-4" />
                             </button>

@@ -1,13 +1,13 @@
 import { notFound } from 'next/navigation';
-import ConfirmationIsland from '@/components/islands/activities/ConfirmationIsland';
+import ConfirmationIsland from '@/components/islands/activiteiten/ConfirmationIsland';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 
 interface PageProps {
     searchParams: Promise<{ id?: string; transaction_id?: string; t?: string }>;
 }
 
-import { getSignupStatus } from '@/server/actions/events/public-activiteit-status.actions';
-import { type SignupData } from '@/components/islands/activities/ConfirmationIsland';
+import { getSignupStatus } from '@/server/actions/events/activiteiten/activiteiten-status.actions';
+import { type SignupData } from '@/components/islands/activiteiten/ConfirmationIsland';
 
 
 export default async function ActiviteitenConfirmationPage({ searchParams }: PageProps) {

@@ -1,6 +1,6 @@
 import { safeConsoleError, logInfo } from '../utils/logger.js';
 import { type Redis } from 'ioredis';
-import { DirectusService } from './directus.service.js';
+import { DbService } from './db.service.js';
 import { SyncJob } from './sync/sync-job.js';
 
 export class FullSyncJob {
@@ -28,7 +28,7 @@ export class FullSyncJob {
                 await new Promise(resolve => setTimeout(resolve, delay));
                 if (this.isStopped()) break;
 
-                const isActive = await DirectusService.isFlagActive('auto_sync_nightly');
+                const isActive = await DbService.isFlagActive('auto_sync_nightly');
                 if (!isActive) {
                     logInfo('[full-sync.job.ts][start] ', 'Nightly sync is DISABLED via feature flag. Skipping run.');
                     continue;

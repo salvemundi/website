@@ -3,7 +3,8 @@
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
-import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteit-utils';
+import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteiten/activiteiten.utils';
+import { canAccess } from '@/shared/lib/permissions';
 import { safeConsoleError } from '@/server/utils/logger';
 
 export async function retryActivityPayment(signupId: number) {
@@ -35,11 +36,10 @@ export async function retryActivityPayment(signupId: number) {
         }
 
         const signup = rows[0];
-
-        const isAdmin = currentUser.role === 'admin' || currentUser.role === '06e78cf9-f9c3-4f9e-a86d-1907de634567' || currentUser.isICT;
+        const isCommitteeAdmin = canAccess(currentUser.committees, 'commissies');
         const isParticipant = currentUser.email === signup.participant_email;
 
-        if (!isAdmin && !isParticipant) {
+        if (!isCommitteeAdmin && !isParticipant) {
             return { success: false, error: "Unauthorized" };
         }
 

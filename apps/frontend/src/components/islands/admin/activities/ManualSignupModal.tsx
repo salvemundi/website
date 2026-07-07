@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import type { SyntheticEvent } from 'react';
 import { X, Loader2, User, UserPlus, XCircle, CheckCircle } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import { createManualSignupAction } from '@/server/actions/admin/aanmeldingen.actions';
+import { createManualSignupAction } from '@/server/actions/admin/activiteiten/admin-activiteiten-signups.actions';
 import { type UserBasic } from '@salvemundi/validations';
 
 import MemberTab from './manual/MemberTab';

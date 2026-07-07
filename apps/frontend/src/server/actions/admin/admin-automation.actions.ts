@@ -2,9 +2,8 @@
 
 import { db, schema } from '@salvemundi/db';
 import { eq, inArray, not } from 'drizzle-orm';
-import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
+import { enforceFeatureAccess } from '@/server/actions/admin/admin-utils.actions';
 import { revalidatePath } from 'next/cache';
-import { isSuperAdmin } from '@/lib/auth/auth-utils';
 import { safeConsoleError } from '@/server/utils/logger';
 
 export type AutomationSetting = {
@@ -17,8 +16,7 @@ export type AutomationSetting = {
 const AUTOMATION_FLAGS = ['mail_expiry_check', 'mail_event_reminders', 'auto_sync_nightly'];
 
 export async function getSystemAutomationSettings(): Promise<{ success: boolean; settings?: AutomationSetting[]; error?: string }> {
-    const { isAuthorized, user } = await checkAdminAccess();
-    if (!isAuthorized || !isSuperAdmin(user?.committees)) throw new Error('Geen toegang: Alleen voor ICT en Bestuur.');
+    await enforceFeatureAccess('sync');
 
     try {
         const rows = await db.select({
@@ -62,8 +60,7 @@ export async function getSystemAutomationSettings(): Promise<{ success: boolean;
 }
 
 export async function toggleAutomationSetting(key: string) {
-    const { isAuthorized, user } = await checkAdminAccess();
-    if (!isAuthorized || !isSuperAdmin(user?.committees)) throw new Error('Geen toegang: Alleen voor ICT en Bestuur.');
+    await enforceFeatureAccess('sync');
 
     try {
         await db.update(schema.feature_flags)

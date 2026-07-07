@@ -8,7 +8,7 @@ import { safeConsoleError } from '@/server/utils/logger';
 import {
     savePubCrawlGroupsAssignment,
     updatePubCrawlEventGroups
-} from '@/server/actions/admin/admin-kroegentocht.actions';
+} from '@/server/actions/admin/kroegentocht/admin-kroegentocht-core.actions';
 
 import StatsToolbar from './signup-list/StatsToolbar';
 import SignupTableView from './signup-list/SignupTableView';

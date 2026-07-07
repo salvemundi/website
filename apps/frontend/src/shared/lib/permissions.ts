@@ -1,4 +1,4 @@
-import { AdminResource, RESOURCE_PERMISSIONS, COMMITTEES } from './permissions-config';
+import { AdminFeature, FEATURE_ACCESS, COMMITTEES } from './permissions-config';
 
 export interface Committee {
     id: number;
@@ -7,61 +7,71 @@ export interface Committee {
     is_leader?: boolean;
 }
 
-export interface UserPermissions {
-    isAdmin: boolean;
-    isLeader: boolean;
-    isICT: boolean;
-    // Granular permissions
-    canAccessIntro: boolean;
-    canAccessReis: boolean;
-    canAccessLogging: boolean;
-    canAccessSync: boolean;
-    canAccessCoupons: boolean;
-    canAccessPermissions: boolean;
-    canAccessStickers: boolean;
-    canAccessKroegentocht: boolean;
-    canAccessMembers: boolean;
-    canAccessCommittees: boolean;
-    canAccessActivitiesView: boolean;
-    canAccessActivitiesEdit: boolean;
-    canAccessMail: boolean;
+const featureAccessMap = new Map<string, readonly string[]>(Object.entries(FEATURE_ACCESS));
+
+export function canAccess(committees: Committee[] | undefined, feature: AdminFeature): boolean {
+    if (!committees) return false;
+    const isIct = committees.some(c => c.azure_group_id === COMMITTEES.ICT);
+    if (isIct) return true;
+
+    const allowed = featureAccessMap.get(feature);
+    if (!allowed) return false;
+
+    return committees.some(c => c.azure_group_id && allowed.includes(c.azure_group_id));
 }
 
-export function hasPermission(committees: Committee[] = [], resource: AdminResource): boolean {
-    const requirement = Reflect.get(RESOURCE_PERMISSIONS, resource) as typeof RESOURCE_PERMISSIONS[AdminResource];
-
-    return committees.some(c => {
-        const hasPermissionForGroup = !!(c.azure_group_id && requirement.allowedCommitteeIds.includes(c.azure_group_id));
-        if (requirement.leaderOnly) {
-            return hasPermissionForGroup && c.is_leader;
-        }
-
-        return hasPermissionForGroup;
-    });
-
-}
-
-export function getPermissions(committees: Committee[] = []): UserPermissions {
-    const isAdmin = hasPermission(committees, AdminResource.Intro);
-    const isICT = hasPermission(committees, AdminResource.Sync);
+export function checkFeatureAccess(committees: Committee[] | undefined, feature: AdminFeature): { hasAccess: boolean; isLeader: boolean } {
+    if (!committees) return { hasAccess: false, isLeader: false };
+    const hasAccess = canAccess(committees, feature);
     const isLeader = committees.some(c => c.is_leader && c.azure_group_id !== COMMITTEES.BESTUUR);
+    return { hasAccess, isLeader };
+}
 
-    return {
-        isAdmin,
-        isLeader,
-        isICT,
-        canAccessIntro: hasPermission(committees, AdminResource.Intro),
-        canAccessReis: hasPermission(committees, AdminResource.Reis),
-        canAccessLogging: hasPermission(committees, AdminResource.Logging),
-        canAccessSync: hasPermission(committees, AdminResource.Sync),
-        canAccessCoupons: hasPermission(committees, AdminResource.Coupons),
-        canAccessPermissions: hasPermission(committees, AdminResource.Permissions),
-        canAccessStickers: hasPermission(committees, AdminResource.Stickers),
-        canAccessKroegentocht: hasPermission(committees, AdminResource.Kroegentocht),
-        canAccessMembers: hasPermission(committees, AdminResource.Users),
-        canAccessCommittees: hasPermission(committees, AdminResource.Committees),
-        canAccessActivitiesView: hasPermission(committees, AdminResource.ActivitiesView),
-        canAccessActivitiesEdit: hasPermission(committees, AdminResource.ActivitiesEdit),
-        canAccessMail: hasPermission(committees, AdminResource.Sync), // Proxying mail access to ICT/Sync for now
-    };
+const resourceToFeature = new Map<string, AdminFeature>([
+    ['admin:intro', 'intro'],
+    ['admin:reis', 'reis'],
+    ['admin:committees', 'commissies'],
+    ['admin:coupons', 'coupons'],
+    ['admin:stickers', 'stickers'],
+    ['admin:logging', 'logging'],
+    ['admin:sync', 'sync'],
+    ['admin:users', 'leden'],
+    ['admin:kroegentocht', 'kroegentocht'],
+    ['admin:activities:view', 'activiteiten'],
+    ['admin:activities:edit', 'activiteiten'],
+    ['admin:webshop', 'webshop']
+]);
+
+export function hasPermission(committees: Committee[] | undefined, resource: string): boolean {
+    const feature = resourceToFeature.get(resource);
+    return feature ? canAccess(committees, feature) : false;
+}
+
+export function getPermissions(committees: Committee[] | undefined = []): string[] {
+    const safeCommittees = committees;
+    const isICT = safeCommittees.some(c => c.azure_group_id === COMMITTEES.ICT);
+    const isLeader = safeCommittees.some(c => c.is_leader && c.azure_group_id !== COMMITTEES.BESTUUR);
+
+    const permissions: string[] = [];
+
+    const features: AdminFeature[] = [
+        'intro', 'reis', 'logging', 'sync', 'coupons', 'stickers', 
+        'kroegentocht', 'leden', 'commissies', 'activiteiten', 
+        'webshop', 'impersonate', 'services'
+    ];
+
+    for (const feature of features) {
+        if (canAccess(safeCommittees, feature)) {
+            permissions.push(feature);
+        }
+    }
+
+    if (isICT || (canAccess(safeCommittees, 'activiteiten') && isLeader)) {
+        permissions.push('activiteiten:edit');
+    }
+
+    if (isICT) permissions.push('ict');
+    if (isLeader) permissions.push('leader');
+
+    return permissions;
 }

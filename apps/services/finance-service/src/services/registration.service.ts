@@ -12,7 +12,8 @@ export interface RegistrationUpdateMetadata {
 const COLLECTION_MAP = new Map<string, string>([
     ['event_signup', 'event_signups'],
     ['pub_crawl_signup', 'pub_crawl_signups'],
-    ['trip_signup', 'trip_signups']
+    ['trip_signup', 'trip_signups'],
+    ['webshop_preorder', 'webshop_preorders']
 ]);
 
 export class RegistrationService {
@@ -37,16 +38,30 @@ export class RegistrationService {
 
         let updateData: Record<string, unknown> = { payment_status: 'paid' };
 
-        if (registrationType === 'trip_signup' && paymentType) {
-            if (paymentType === 'deposit') {
+        if (registrationType === 'trip_signup') {
+            if (paymentType === 'final') {
+                updateData = {
+                    full_payment_paid: true,
+                    full_payment_paid_at: new Date().toISOString()
+                };
+            } else {
                 updateData = {
                     deposit_paid: true,
                     deposit_paid_at: new Date().toISOString()
                 };
-            } else if (paymentType === 'final') {
+            }
+        } else if (registrationType === 'webshop_preorder') {
+            if (paymentType === 'final') {
                 updateData = {
-                    full_payment_paid: true,
-                    full_payment_paid_at: new Date().toISOString()
+                    final_payment_paid: true,
+                    final_payment_paid_at: new Date().toISOString(),
+                    status: 'completed'
+                };
+            } else {
+                updateData = {
+                    deposit_paid: true,
+                    deposit_paid_at: new Date().toISOString(),
+                    status: 'awaiting_final'
                 };
             }
         }
@@ -62,6 +77,9 @@ export class RegistrationService {
                     break;
                 case 'trip_signups':
                     schemaTable = schema.trip_signups;
+                    break;
+                case 'webshop_preorders':
+                    schemaTable = schema.webshop_preorders;
                     break;
                 default:
                     throw new Error(`Unknown collection: ${targetCollection}`);

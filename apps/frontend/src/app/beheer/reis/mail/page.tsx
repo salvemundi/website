@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
-import TripMailIsland from '@/components/islands/admin/TripMailIsland';
+import ReisMailIsland from '@/components/islands/admin/reis/ReisMailIsland';
 import { notFound } from 'next/navigation';
-
-import { Trip, TripSignup } from '@salvemundi/validations';
-
+import { type Trip, type TripSignup } from '@salvemundi/validations';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import Link from 'next/link';
 import { Ticket } from 'lucide-react';
-import { db, schema } from "@salvemundi/db";
-import { eq, desc } from "drizzle-orm";
+import { getTripsForMail, getTripSignupsForMail } from '@/server/queries/reis/admin-reis.queries';
+import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { getPermissions } from '@/shared/lib/permissions';
+import { redirect } from 'next/navigation';
 
 interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -19,13 +20,18 @@ export const metadata: Metadata = {
 };
 
 export default async function ReisMailPage({ searchParams }: PageProps) {
+    const session = await getEnrichedSession();
+    if (!session?.user) redirect('/?needLogin=true');
+    const permissions = getPermissions(session.user.committees);
+    if (!permissions.includes('reis')) {
+        return <AdminUnauthorized title="Reis Mail" backHref="/beheer/reis" />;
+    }
+
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
-
-    const trips = await db.query.trips.findMany({
-        columns: { id: true, name: true },
-        orderBy: [desc(schema.trips.start_date)]
-    }) as unknown as Trip[];
+    
+    const tripsRaw = await getTripsForMail();
+    const trips = tripsRaw as unknown as Trip[];
 
     if (trips.length === 0) {
         return (
@@ -44,18 +50,15 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
         notFound();
     }
 
-    // Fetch signups for the selected trip
-    const signups = await db.query.trip_signups.findMany({
-        where: eq(schema.trip_signups.trip_id, activeTripId),
-        columns: { id: true, first_name: true, last_name: true, email: true, status: true, role: true, deposit_paid: true, full_payment_paid: true }
-    }) as unknown as TripSignup[];
+    const signupsRaw = await getTripSignupsForMail(activeTripId);
+    const signups = signupsRaw as unknown as TripSignup[];
 
     const confirmedCount = signups.filter(s => s.status === 'confirmed').length;
     const unpaidCount = signups.filter(s => s.status !== 'cancelled' && !s.full_payment_paid).length;
 
     return (
         <AdminPageShell
-            title={`Reis Mail — ${activeTrip.name}`}
+            title={`Reis Mail   ${activeTrip.name}`}
             subtitle="Verstuur bulk e-mails naar groepen reizigers"
             backHref="/beheer/reis"
             actions={
@@ -81,7 +84,7 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
                 </div>
             }
         >
-            <TripMailIsland
+            <ReisMailIsland
                 trips={trips}
                 initialSignups={signups}
                 initialSelectedTripId={activeTripId}
@@ -89,5 +92,3 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
         </AdminPageShell>
     );
 }
-
-

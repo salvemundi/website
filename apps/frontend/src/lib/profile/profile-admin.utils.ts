@@ -35,10 +35,7 @@ export type SessionUser = {
     image?: string | null;
     minecraft_username?: string | null;
     committees?: CommitteeMeta[] | null;
-    isAdmin?: boolean;
-    isLeader?: boolean;
-    isICT?: boolean;
-    canAccessIntro?: boolean;
+    permissions?: string[] | null;
     entra_id?: string | null;
 };
 
@@ -52,7 +49,8 @@ export function mergeUserData(sUser: SessionUser | null | undefined, initialUser
         membership_status: initialUser.membership_status ?? sUser.membership_status,
         membership_expiry: initialUser.membership_expiry ?? sUser.membership_expiry,
         date_of_birth: initialUser.date_of_birth ?? sUser.date_of_birth,
-        entra_id: initialUser.entra_id ?? sUser.entra_id
+        entra_id: initialUser.entra_id ?? sUser.entra_id,
+        permissions: initialUser.permissions ?? sUser.permissions ?? [],
     };
 
     if (!mergedUser.name && (mergedUser.first_name || mergedUser.last_name)) {
@@ -68,17 +66,15 @@ export function mergeUserData(sUser: SessionUser | null | undefined, initialUser
 
 export function calculateMembershipStatus(user: SessionUser) {
     const isCommitteeMember = Array.isArray(user.committees) && user.committees.length > 0;
-    const isLeader = !!user.isLeader;
-    const isAdmin = !!(user.isAdmin || user.canAccessIntro || user.isICT);
+    const isLeader = !!user.permissions?.includes('leader');
     const status = user.membership_status;
     const isMember = status === 'active';
 
     const isBestuur = !!user.committees?.some(c => c.name?.toLowerCase().includes('bestuur'));
-    const isICTMember = !!user.isICT;
 
     let role = "Lid";
     if (isBestuur) role = "Bestuur";
-    else if (isICTMember) role = "ICT";
+    else if (user.permissions?.includes('ict')) role = "ICT";
     else if (isLeader) role = "Commissie Leider";
     else if (isCommitteeMember) role = "Actief Lid";
     else role = "Lid";
@@ -91,7 +87,7 @@ export function calculateMembershipStatus(user: SessionUser) {
     let textColor = "text-purple-700 dark:text-white font-bold";
 
     if (status === "active") {
-        if (isAdmin || isLeader) {
+        if (user.permissions?.includes('ict') || isLeader) {
             color = "bg-gradient-to-r from-purple-500 to-purple-400 shadow-lg";
             textColor = "text-white";
         } else if (isCommitteeMember || isMember) {

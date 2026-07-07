@@ -3,7 +3,7 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import LedenOverzichtIsland, { type Member } from '@/components/islands/admin/leden/LedenOverzichtIsland';
-import { isMemberAdmin } from '@/lib/auth';
+import { canAccess } from '@/shared/lib/permissions';
 import { EXCLUDED_EMAILS } from '@/shared/lib/constants/admin.constants';
 import { type EnrichedUser } from '@/types/auth';
 import { db, schema } from '@salvemundi/db';
@@ -20,7 +20,7 @@ export default async function LedenBeheerPage() {
     if (!session) return <AdminUnauthorized />;
 
     const user = session.user as unknown as EnrichedUser;
-    if (!isMemberAdmin(user.committees)) {
+    if (!canAccess(user.committees, 'leden')) {
         return (
             <AdminUnauthorized
                 title="Leden Beheer"

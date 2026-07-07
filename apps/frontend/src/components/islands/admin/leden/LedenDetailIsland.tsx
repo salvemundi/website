@@ -7,12 +7,9 @@ import {
     Settings,
     Mail
 } from 'lucide-react';
-import {
-    manageAzureMembershipAction,
-    updateMemberProfileAction,
-    renewMembershipAction,
-    provisionAzureAccountAction
-} from '@/server/actions/admin/leden.actions';
+import { manageAzureMembershipAction, provisionAzureAccountAction } from '@/server/actions/admin/leden/admin-leden-azure.actions';
+import { updateMemberProfileAction } from '@/server/actions/admin/leden/admin-leden-profile.actions';
+import { renewMembershipAction } from '@/server/actions/admin/leden/admin-leden-membership.actions';
 import { triggerUserSyncAction } from '@/server/actions/infrastructure/azure-sync/sync-tasks.actions';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import MediaAsset from '@/components/ui/media/MediaAsset';
@@ -34,7 +31,7 @@ interface Props {
     initialMemberships?: CommitteeMembership[];
     signups?: AdminSignup[];
     allCommittees?: { id: string; name: string; is_visible: boolean; azure_group_id?: string | null | undefined }[];
-    isAdmin?: boolean;
+    hasAccess?: boolean;
 }
 
 export default function LedenDetailIsland({
@@ -42,7 +39,7 @@ export default function LedenDetailIsland({
     initialMemberships = [],
     signups = [],
     allCommittees = [],
-    isAdmin = false
+    hasAccess = false
 }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [activeTab, setActiveTab] = useState<'profiel' | 'activiteiten' | 'beheer'>('profiel');
@@ -208,7 +205,7 @@ export default function LedenDetailIsland({
                     { id: 'activiteiten', label: 'Activiteiten', icon: History },
                     { id: 'beheer', label: 'Beheer', icon: Settings, adminOnly: true }
                 ].map(tab => (
-                    (!tab.adminOnly || isAdmin) && (
+                    (!tab.adminOnly || hasAccess) && (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as typeof activeTab)}
@@ -230,7 +227,7 @@ export default function LedenDetailIsland({
                         memberships={optimisticMemberships}
                         realCommittees={realCommittees}
                         otherGroups={otherGroups}
-                        isAdmin={isAdmin}
+                        hasAccess={hasAccess}
                         onUpdateProfile={handleUpdateProfile}
                     />
                 )}
@@ -239,7 +236,7 @@ export default function LedenDetailIsland({
                     <MemberActivitiesTab signups={signups} />
                 )}
 
-                {activeTab === 'beheer' && isAdmin && (
+                {activeTab === 'beheer' && hasAccess && (
                     <MemberAdminTab
                         member={localMember}
                         optimisticMemberships={optimisticMemberships}

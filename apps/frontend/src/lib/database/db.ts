@@ -12,7 +12,10 @@ const dbHost = process.env.DB_HOST;
 const dbPort = process.env.DB_PORT;
 const dbName = process.env.DB_NAME;
 
-const connectionString = process.env.DATABASE_URL || (dbUser && dbPassword && dbHost && dbName ? `postgres://${encodeURIComponent(dbUser)}:${encodeURIComponent(dbPassword)}@${dbHost}:${dbPort}/${dbName}` : undefined);
+const connectionString = process.env.DATABASE_URL || 
+    (dbUser && dbPassword && dbHost && dbName 
+        ? `postgres://${encodeURIComponent(dbUser)}:${encodeURIComponent(dbPassword)}@${dbHost}:${dbPort}/${dbName}` 
+        : undefined);
 
 const globalForPool = globalThis as unknown as {
     pool: Pool | undefined;
@@ -29,18 +32,23 @@ if (!globalForPool.pool) {
     });
 
     const originalQuery = pool.query.bind(pool);
-    pool.query = (function(this: Pool, ...args: unknown[]) {
-        const res = (originalQuery as (...args: unknown[]) => unknown)(...args);
-        if (res && typeof res === 'object' && 'catch' in res && typeof (res as { catch: unknown }).catch === 'function') {
+
+    pool.query = (function(this: Pool, ...args: unknown[]): unknown {
+        const res = (originalQuery as (...queryArgs: unknown[]) => unknown)(...args);
+
+        if (res instanceof Promise) {
             return (res as Promise<unknown>).catch((err: unknown) => {
                 const errMsg = err instanceof Error ? err.message : String(err);
-                safeConsoleError(`[db.ts][pg Pool Query Error] SQL Error: ${errMsg}`, { query: args[0], error: err });
+                safeConsoleError(`[db.ts][pg Pool Query Error] SQL Error: ${errMsg}`, { 
+                    query: args[0], 
+                    error: err 
+                });
                 throw err instanceof Error ? err : new Error(String(err));
             });
         }
+
         return res;
     }) as unknown as Pool['query'];
 }
 
 if (process.env.NODE_ENV !== 'production') globalForPool.pool = pool;
-

@@ -1,5 +1,5 @@
 import { type Redis } from 'ioredis';
-import { type Committee, type DirectusUser, type CommitteeMember } from '../../types/schema.js';
+import { schema } from '@salvemundi/db';
 
 export interface SyncStatus {
     jobId?: string;
@@ -43,11 +43,11 @@ export interface SyncContext {
     status: SyncStatus;
     options: SyncOptions;
     token: string;
-    committeeCache: Map<string, Committee>;
-    committeeByIdCache?: Map<number, Committee>;
+    committeeCache: Map<string, typeof schema.committees.$inferSelect>;
+    committeeByIdCache?: Map<number, typeof schema.committees.$inferSelect>;
     ownerCache: Map<string, string[]>;
-    userCacheByEntra: Map<string, DirectusUser>;
-    membershipCache: Map<string, CommitteeMember[]>;
+    userCacheByEntra: Map<string, typeof schema.directus_users.$inferSelect>;
+    membershipCache: Map<string, typeof schema.committee_members.$inferSelect[]>;
     membershipMap?: Map<string, Map<number, boolean>>;
     mainMembershipState: Map<string, Set<string>>;
     processedEmails?: Set<string>;

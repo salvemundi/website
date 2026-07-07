@@ -2,20 +2,18 @@ import type { Metadata } from 'next';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { Settings2, Plane, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
-
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import AdminTripSwitcher from '@/components/ui/admin/AdminTripSwitcher';
-import AdminTripTableIsland from '@/components/islands/admin/AdminTripTableIsland';
-import TripVisibilityToggle from '@/components/islands/admin/reis/TripVisibilityToggle';
-
-import { getReisSiteSettings } from '@/server/actions/events/trip.actions';
-import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
-import { getAdminTrips, getAdminTripById } from '@/server/actions/admin/trip-core.actions';
-import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/admin/trip-signups.actions';
-import { getTripActivities } from '@/server/queries/admin-trip.queries';
-import { groupActivitiesBySignup } from '@/server/utils/trip-mapping';
-
+import AdminReisSwitcher from '@/components/ui/admin/AdminReisSwitcher';
+import AdminReisTableIsland from '@/components/islands/admin/reis/AdminReisTableIsland';
+import ReisVisibilityToggle from '@/components/islands/admin/reis/ReisVisibilityToggle';
+import { getReisSiteSettings } from '@/server/actions/events/reis/reis-public.actions';
+import { getAdminTrips, getAdminTripById } from '@/server/actions/admin/reis/admin-reis-core.actions';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { getPermissions } from '@/shared/lib/permissions';
+import { redirect } from 'next/navigation';
+import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/admin/reis/admin-reis-signups.actions';
+import { getTripActivities } from '@/server/queries/reis/admin-reis.queries';
+import { groupActivitiesBySignup } from '@/server/internal/reis/reis-mapping';;;
 import {
     tripSchema,
     tripSignupSchema,
@@ -30,9 +28,7 @@ interface AdminReisPageProps {
 export async function generateMetadata({ searchParams }: AdminReisPageProps): Promise<Metadata> {
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
-
     let title = 'Beheer Reis | SV Salve Mundi';
-
     if (tripIdParam) {
         const tripsRes = await getAdminTripById(Number(tripIdParam));
         if (tripsRes) {
@@ -42,30 +38,82 @@ export async function generateMetadata({ searchParams }: AdminReisPageProps): Pr
             }
         }
     }
-
     return { title };
 }
 
-export default async function AdminReisPage({ searchParams }: AdminReisPageProps) {
+async function loadReisAdminData(tripIdParam: string | undefined) {
     try {
-        await checkAdminAccess();
-    } catch (e: unknown) {
-        const msg = (e instanceof Error) ? e.message : 'Niet geautoriseerd';
-        return <AdminUnauthorized title="Geen Toegang" description={msg} />;
-    }
+        const session = await getEnrichedSession();
+        if (!session?.user) redirect('/?needLogin=true');
+        const permissions = getPermissions(session.user.committees);
+        if (!permissions.includes('reis')) {
+            return { success: false as const, error: 'unauthorized' as const };
+        }
+        const [tripsRes, settingsRes] = await Promise.all([
+            getAdminTrips(),
+            getReisSiteSettings()
+        ]);
+        const trips = tripSchema.array().parse(tripsRes);
+        const reisSettings = settingsRes || { show: true };
 
+        if (trips.length === 0) {
+            return { success: true as const, trips, noTrips: true as const };
+        }
+
+        const activeTripId = tripIdParam ? Number(tripIdParam) : trips[0].id;
+        const activeTrip = trips.find((t) => t.id === activeTripId);
+        if (!activeTrip) {
+            return { success: false as const, error: 'Reis niet gevonden' };
+        }
+
+        const [sRes, saRes, activitiesRes] = await Promise.all([
+            getTripSignups(activeTrip.id as number),
+            getTripSignupActivitiesAction(activeTrip.id as number),
+            getTripActivities(activeTrip.id as number)
+        ]);
+
+        const signups = tripSignupSchema.array().parse(sRes);
+        const allSignupSelections = tripSignupActivitySchema.array().parse(saRes);
+        const allTripActivities = tripActivitySchema.array().parse(activitiesRes);
+        const activitiesMap = groupActivitiesBySignup(signups, allSignupSelections);
+
+        const stats = {
+            total: signups.filter((s) => s.status !== 'cancelled').length,
+            confirmed: signups.filter((s) => s.status === 'confirmed').length,
+            waitlist: signups.filter((s) => s.status === 'waitlist').length,
+            depositPaid: signups.filter((s) => s.deposit_paid).length,
+            fullPaid: signups.filter((s) => s.full_payment_paid).length,
+        };
+
+        return {
+            success: true as const,
+            trips,
+            reisSettings,
+            activeTrip,
+            activeTripId,
+            signups,
+            allTripActivities,
+            activitiesMap,
+            stats,
+            noTrips: false as const
+        };
+    } catch (error: unknown) {
+        return { success: false as const, error: (error instanceof Error) ? error.message : 'Fout bij het laden van gegevens' };
+    }
+}
+
+export default async function AdminReisPage({ searchParams }: AdminReisPageProps) {
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 
-    const [tripsRes, settingsRes] = await Promise.all([
-        getAdminTrips(),
-        getReisSiteSettings()
-    ]);
+    const data = await loadReisAdminData(tripIdParam);
 
-    const trips = tripSchema.array().parse(tripsRes);
-    const _reisSettings = settingsRes || { show: true };
+    if (!data.success) {
+        if (data.error === 'unauthorized') return <AdminUnauthorized title="Reis Beheer" backHref="/beheer" />;
+        return <AdminUnauthorized title="Geen Toegang" description={data.error} />;
+    }
 
-    if (trips.length === 0) {
+    if (data.noTrips) {
         return (
             <AdminPageShell title="Reis Beheer" backHref="/beheer">
                 <NoTripsView />
@@ -73,72 +121,55 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
         );
     }
 
-    const activeTripId = tripIdParam ? Number(tripIdParam) : trips[0].id;
-    const activeTrip = trips.find((t) => t.id === activeTripId);
-
-    if (!activeTrip) {
-        notFound();
-    }
-
-    const [sRes, saRes, activitiesRes] = await Promise.all([
-        getTripSignups(activeTrip.id as number),
-        getTripSignupActivitiesAction(activeTrip.id as number),
-        getTripActivities(activeTrip.id as number)
-    ]);
-
-    const signups = tripSignupSchema.array().parse(sRes);
-    const allSignupSelections = tripSignupActivitySchema.array().parse(saRes);
-    const allTripActivities = tripActivitySchema.array().parse(activitiesRes);
-
-    const activitiesMap = groupActivitiesBySignup(signups, allSignupSelections);
-
-    const stats = {
-        total: signups.filter((s) => s.status !== 'cancelled').length,
-        confirmed: signups.filter((s) => s.status === 'confirmed').length,
-        waitlist: signups.filter((s) => s.status === 'waitlist').length,
-        depositPaid: signups.filter((s) => s.deposit_paid).length,
-        fullPaid: signups.filter((s) => s.full_payment_paid).length,
-    };
+    const {
+        trips,
+        reisSettings,
+        activeTrip,
+        activeTripId,
+        signups,
+        allTripActivities,
+        activitiesMap,
+        stats
+    } = data;
 
     return (
         <AdminPageShell
             title={activeTrip.name ?? 'Reis'}
             backHref="/beheer"
             actions={
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-                    <div className="hidden xl:flex items-center gap-4 bg-bg-card px-5 py-2.5 rounded-2xl border border-border-color shadow-sm">
-                        <StatItem label="Aanmeldingen" value={stats.total} color="text-text-main" />
-                        <Divider />
-                        <StatItem label="Bevestigd" value={stats.confirmed} color="text-emerald-500" />
-                        <Divider />
-                        <StatItem label="Wachtlijst" value={stats.waitlist} color="text-amber-500" />
-                        <Divider />
-                        <StatItem label="Aanbetaling" value={stats.depositPaid} color="text-blue-500" />
-                        <Divider />
-                        <StatItem label="Restbetaling" value={stats.fullPaid} color="text-purple-500" />
+                <>
+                    <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                        <div className="hidden xl:flex items-center gap-4 bg-bg-card px-5 py-2.5 rounded-2xl border border-border-color shadow-sm">
+                            <StatItem label="Aanmeldingen" value={stats.total} color="text-text-main" />
+                            <Divider />
+                            <StatItem label="Bevestigd" value={stats.confirmed} color="text-emerald-500" />
+                            <Divider />
+                            <StatItem label="Wachtlijst" value={stats.waitlist} color="text-amber-500" />
+                            <Divider />
+                            <StatItem label="Aanbetaling" value={stats.depositPaid} color="text-blue-500" />
+                            <Divider />
+                            <StatItem label="Restbetaling" value={stats.fullPaid} color="text-purple-500" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <AdminReisSwitcher
+                                trips={trips}
+                                activeTripId={activeTripId as number}
+                            />
+                            <Link
+                                href="/beheer/reis/instellingen"
+                                className="flex items-center justify-center gap-2 px-4 py-2 bg-bg-card border border-border-color text-text-main rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm"
+                            >
+                                <Settings2 className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">Instellingen</span>
+                            </Link>
+                            <ReisVisibilityToggle initialVisible={reisSettings.show} />
+                        </div>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                        <AdminTripSwitcher
-                            trips={trips}
-                            activeTripId={activeTripId as number}
-                        />
-
-                        <Link
-                            href="/beheer/reis/instellingen"
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-bg-card border border-border-color text-text-main rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm"
-                        >
-                            <Settings2 className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">Instellingen</span>
-                        </Link>
-
-                        <TripVisibilityToggle initialVisible={_reisSettings.show} />
-                    </div>
-                </div>
+                </>
             }
         >
             <div className="pb-8">
-                <AdminTripTableIsland
+                <AdminReisTableIsland
                     trip={activeTrip}
                     initialSignups={signups}
                     initialSignupActivities={activitiesMap}
@@ -171,7 +202,6 @@ function NoTripsView() {
                 </div>
                 <h2 className="text-3xl font-semibold text-theme-purple mb-2">Geen reizen gevonden</h2>
                 <p className="text-text-muted font-semibold text-sm mb-10">Er zijn momenteel geen actieve of geplande reizen in het systeem.</p>
-
                 <Link
                     href="/beheer/reis/instellingen"
                     className="inline-flex items-center gap-3 px-10 py-4 bg-theme-purple text-white rounded-2xl font-semibold text-sm shadow-xl transition-all hover:scale-[1.03] active:scale-95 group"

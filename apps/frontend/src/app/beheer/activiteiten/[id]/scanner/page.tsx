@@ -5,9 +5,9 @@ import { notFound } from 'next/navigation';
 import {
     getActivityByIdInternal,
     getActivitySignupsInternal
-} from '@/server/queries/admin-event.queries';
+} from '@/server/queries/activiteiten/admin-activiteiten.queries';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import AttendanceIsland from '@/components/islands/activities/AttendanceIsland';
+import AttendanceIsland from '@/components/islands/activiteiten/AttendanceIsland';
 import { safeConsoleError } from '@/server/utils/logger';
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default async function ScannerPage({ params }: { params: Promise<{ id: st
     if (!session) return <AdminUnauthorized title="Activiteit Scanner" />;
 
     const user = session.user;
-    const hasAccess = !!user.canAccessActivitiesView;
+    const hasAccess = !!user.permissions?.includes('activiteiten');
 
     let eventData: Awaited<ReturnType<typeof getActivityByIdInternal>> | null = null;
     let initialSignups: ScannerSignup[] = [];

@@ -1,6 +1,6 @@
 // OG-image route voor de activiteit detailpagina (Refactored)
 import { ImageResponse } from 'next/og';
-import { getActivityBySlug } from '@/server/actions/events/public-activiteit.actions';
+import { getActivityBySlug } from '@/server/actions/events/activiteiten/activiteiten-public.actions';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

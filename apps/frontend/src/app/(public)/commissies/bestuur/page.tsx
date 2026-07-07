@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { getCommitteeBySlug } from '@/server/actions/public/committees.actions';
-import { CommitteeDetail } from '@/components/ui/committees/CommitteeDetail';
+import { CommitteeDetail } from '@/components/ui/commissies/CommitteeDetail';
 import BackButton from '@/components/ui/navigation/BackButton';
 import { connection } from 'next/server';
 

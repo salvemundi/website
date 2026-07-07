@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 export default function ServicesLayout({ children }: { children: ReactNode }) {
     return (
         <AdminGuard 
-            permission="isICT" 
+            feature="services" 
             title="Systeem Status" 
             description="Deze systeemfunctie is exclusief gereserveerd voor de ICT-commissie."
         >

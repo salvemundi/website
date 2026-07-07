@@ -14,7 +14,6 @@ import unusedImports from "eslint-plugin-unused-imports";
 import eslintComments from "eslint-plugin-eslint-comments";
 import nextConfig from "eslint-config-next";
 import tsEslint from "@typescript-eslint/eslint-plugin";
-import tsParser from "@typescript-eslint/parser";
 
 const eslintConfig = [
     { ignores: [".next/", "node_modules/", "dist/"] },
