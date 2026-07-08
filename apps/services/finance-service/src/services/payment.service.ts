@@ -2,7 +2,6 @@ import { type FastifyInstance } from 'fastify';
 import { createDirectus, rest, staticToken, readItems, readUser } from '@directus/sdk';
 import {
     PaymentSuccessEventSchema,
-    type FeatureFlag,
     type MolliePaymentMetadata,
     type Directus
 } from '@salvemundi/validations';

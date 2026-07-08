@@ -40,6 +40,8 @@ interface SyncContextType {
     setForceLink: (val: boolean) => void;
     activeOnly: boolean;
     setActiveOnly: (val: boolean) => void;
+    sendExpiryEmails: boolean;
+    setSendExpiryEmails: (val: boolean) => void;
     resultFilter: string;
     setResultFilter: (filter: string) => void;
     syncFieldOptions: { id: string; label: string }[];
@@ -68,6 +70,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
     const [selectedSyncFields, setSelectedSyncFields] = useState<string[]>(['membership_expiry', 'geboortedatum', 'phone_number', 'committees', 'profile_photo']);
     const [forceLink, setForceLink] = useState(false);
     const [activeOnly, setActiveOnly] = useState(false);
+    const [sendExpiryEmails, setSendExpiryEmails] = useState(false);
     const [resultFilter, setResultFilter] = useState<string>('all');
 
     const syncFieldOptions = [
@@ -120,7 +123,8 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
             const result = await triggerFullSyncAction({
                 fields: selectedSyncFields,
                 forceLink,
-                activeOnly
+                activeOnly,
+                sendExpiryEmails
             });
             if (!result.success) {
                 showToast(result.error || 'Kon sync niet starten', 'error');
@@ -203,7 +207,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
         <SyncContext.Provider value={{
             status, isLoading: false, isStartingSync, isStopping, isResetting, isUserSyncLoading,
             userId, setUserId, lastUpdated, selectedSyncFields, toggleField,
-            forceLink, setForceLink, activeOnly, setActiveOnly,
+            forceLink, setForceLink, activeOnly, setActiveOnly, sendExpiryEmails, setSendExpiryEmails,
             resultFilter, setResultFilter, syncFieldOptions, fetchStatus,
             handleFullSync, handleStopSync, handleResetSync, handleUserSync
         }}>

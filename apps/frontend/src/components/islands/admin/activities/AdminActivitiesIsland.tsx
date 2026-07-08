@@ -80,7 +80,6 @@ export default function AdminActivitiesIsland({
         <div className="w-full">
             <AdminToolbar
                 title="Activiteiten Beheer"
-                subtitle="Organiseer en beheer alle activiteiten van Salve Mundi"
                 backHref="/beheer"
                 actions={
                     <div className="flex flex-wrap items-center gap-4">

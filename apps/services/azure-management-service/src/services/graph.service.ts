@@ -2,6 +2,30 @@ import { safeConsoleError } from '../utils/logger.js';
 import { Client } from '@microsoft/microsoft-graph-client';
 import crypto from 'crypto';
 
+interface UserPayload {
+    accountEnabled?: boolean;
+    displayName?: string;
+    givenName?: string;
+    surname?: string;
+    mailNickname?: string;
+    userPrincipalName?: string;
+    otherMails?: string[];
+    mail?: string;
+    passwordProfile?: {
+        forceChangePasswordNextSignIn: boolean;
+        password: string;
+    };
+    mobilePhone?: string;
+    customSecurityAttributes?: {
+        SalveMundiLidmaatschap: {
+            "@odata.type": string;
+            Geboortedatum?: string;
+            VerloopdatumStr?: string;
+            OrigineleBetaalDatumStr?: string;
+        };
+    };
+}
+
 export class GraphService {
     private static getClient(token: string): Client {
         return Client.init({
@@ -11,7 +35,7 @@ export class GraphService {
         });
     }
 
-    static async addGroupMember(groupId: string, memberId: string, token: string) {
+    static async addGroupMember(groupId: string, memberId: string, token: string): Promise<unknown> {
         const client = this.getClient(token);
         const memberUrl = `https://graph.microsoft.com/v1.0/directoryObjects/${memberId}`;
 
@@ -21,13 +45,13 @@ export class GraphService {
             });
     }
 
-    static async removeGroupMember(groupId: string, memberId: string, token: string) {
+    static async removeGroupMember(groupId: string, memberId: string, token: string): Promise<unknown> {
         const client = this.getClient(token);
         return await client.api(`/groups/${groupId}/members/${memberId}/$ref`)
             .delete();
     }
 
-    static async addGroupOwner(groupId: string, ownerId: string, token: string) {
+    static async addGroupOwner(groupId: string, ownerId: string, token: string): Promise<unknown> {
         const client = this.getClient(token);
         const ownerUrl = `https://graph.microsoft.com/v1.0/directoryObjects/${ownerId}`;
 
@@ -37,7 +61,7 @@ export class GraphService {
             });
     }
 
-    static async removeGroupOwner(groupId: string, ownerId: string, token: string) {
+    static async removeGroupOwner(groupId: string, ownerId: string, token: string): Promise<unknown> {
         const client = this.getClient(token);
         return await client.api(`/groups/${groupId}/owners/${ownerId}/$ref`)
             .delete();
@@ -48,7 +72,7 @@ export class GraphService {
         let candidateUpn = `${baseName}@${domain}`;
         let counter = 0;
 
-        while (true) {
+        for (;;) {
             if (counter > 0) {
                 candidateUpn = `${baseName}${counter}@${domain}`;
             }
@@ -62,8 +86,9 @@ export class GraphService {
                 if (!response.value || response.value.length === 0) {
                     return candidateUpn;
                 }
-            } catch (error: any) {
-                safeConsoleError(`[graph.service.ts][generateUniqueUpn] Error verifying UPN ${candidateUpn}:`, error.message);
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                safeConsoleError(`[graph.service.ts][generateUniqueUpn] Error verifying UPN ${candidateUpn}:`, errorMessage);
                 throw error;
             }
 
@@ -88,7 +113,7 @@ export class GraphService {
         const specialPart = crypto.randomUUID().split('-')[1].toUpperCase();
         const tempPassword = `SM-${randomPart}!${specialPart}#`;
 
-        const user: any = {
+        const user: UserPayload = {
             accountEnabled: true,
             displayName: `${firstName} ${lastName}`,
             givenName: firstName,
@@ -106,28 +131,34 @@ export class GraphService {
         if (phoneNumber) user.mobilePhone = phoneNumber;
 
         if (dateOfBirth || originalPaymentDate || membershipExpiry) {
-            user.customSecurityAttributes = {
-                SalveMundiLidmaatschap: {
-                    "@odata.type": "#Microsoft.DirectoryServices.CustomSecurityAttributeValue",
-                }
+            const attributes: {
+                "@odata.type": string;
+                Geboortedatum?: string;
+                OrigineleBetaalDatumStr?: string;
+                VerloopdatumStr?: string;
+            } = {
+                "@odata.type": "#Microsoft.DirectoryServices.CustomSecurityAttributeValue"
             };
             if (dateOfBirth) {
-                user.customSecurityAttributes.SalveMundiLidmaatschap.Geboortedatum = dateOfBirth.replace(/-/g, '');
+                attributes.Geboortedatum = dateOfBirth.replace(/-/g, '');
             }
             if (originalPaymentDate) {
-                user.customSecurityAttributes.SalveMundiLidmaatschap.OrigineleBetaalDatumStr = originalPaymentDate.replace(/-/g, '');
+                attributes.OrigineleBetaalDatumStr = originalPaymentDate.replace(/-/g, '');
             }
             if (membershipExpiry) {
-                user.customSecurityAttributes.SalveMundiLidmaatschap.VerloopdatumStr = membershipExpiry.replace(/-/g, '');
+                attributes.VerloopdatumStr = membershipExpiry.replace(/-/g, '');
             }
+            user.customSecurityAttributes = {
+                SalveMundiLidmaatschap: attributes
+            };
         }
 
-        const result = await client.api('/users').post(user) as Record<string, unknown>;
+        const result = await client.api('/users').post(user) as { id?: string | number; userPrincipalName?: string } & Record<string, unknown>;
 
         return {
             ...result,
-            id: String(result.id),
-            userPrincipalName: String(result.userPrincipalName),
+            id: String(result.id ?? ''),
+            userPrincipalName: String(result.userPrincipalName ?? ''),
             temporaryPassword: tempPassword
         };
     }
@@ -144,9 +175,9 @@ export class GraphService {
             membershipExpiry?: string;
             originalPaymentDate?: string;
         }
-    ) {
+    ): Promise<unknown> {
         const client = this.getClient(token);
-        const payload: any = {};
+        const payload: UserPayload = {};
 
         if (data.displayName) payload.displayName = data.displayName;
         if (data.givenName) payload.givenName = data.givenName;
@@ -154,32 +185,38 @@ export class GraphService {
         if (data.phoneNumber) payload.mobilePhone = data.phoneNumber;
 
         if (data.dateOfBirth || data.membershipExpiry || data.originalPaymentDate) {
-            payload.customSecurityAttributes = {
-                SalveMundiLidmaatschap: {
-                    "@odata.type": "#Microsoft.DirectoryServices.CustomSecurityAttributeValue",
-                }
+            const attributes: {
+                "@odata.type": string;
+                Geboortedatum?: string;
+                VerloopdatumStr?: string;
+                OrigineleBetaalDatumStr?: string;
+            } = {
+                "@odata.type": "#Microsoft.DirectoryServices.CustomSecurityAttributeValue"
             };
             if (data.dateOfBirth) {
-                payload.customSecurityAttributes.SalveMundiLidmaatschap.Geboortedatum = data.dateOfBirth.replace(/-/g, '');
+                attributes.Geboortedatum = data.dateOfBirth.replace(/-/g, '');
             }
             if (data.membershipExpiry) {
-                payload.customSecurityAttributes.SalveMundiLidmaatschap.VerloopdatumStr = data.membershipExpiry.replace(/-/g, '');
+                attributes.VerloopdatumStr = data.membershipExpiry.replace(/-/g, '');
             }
             if (data.originalPaymentDate) {
-                payload.customSecurityAttributes.SalveMundiLidmaatschap.OrigineleBetaalDatumStr = data.originalPaymentDate.replace(/-/g, '');
+                attributes.OrigineleBetaalDatumStr = data.originalPaymentDate.replace(/-/g, '');
             }
+            payload.customSecurityAttributes = {
+                SalveMundiLidmaatschap: attributes
+            };
         }
 
         return await client.api(`/users/${entraId}`).update(payload);
     }
 
-    static async getUserGroups(entraId: string, token: string) {
+    static async getUserGroups(entraId: string, token: string): Promise<unknown[]> {
         const client = this.getClient(token);
         const response = await client.api(`/users/${entraId}/memberOf`).select('id,displayName').get() as { value?: unknown[] };
         return response.value || [];
     }
 
-    static async updateUserPhoto(entraId: string, photo: Buffer, token: string) {
+    static async updateUserPhoto(entraId: string, photo: Buffer, token: string): Promise<unknown> {
         const client = this.getClient(token);
         return await client.api(`/users/${entraId}/photo/$value`)
             .header('Content-Type', 'image/jpeg')

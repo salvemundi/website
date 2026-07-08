@@ -1,11 +1,7 @@
 import type { Metadata } from 'next';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { notFound } from 'next/navigation';
 import LedenDetailIsland, { type Member, type CommitteeMembership, type Signup } from '@/components/islands/admin/leden/LedenDetailIsland';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import { type EnrichedUser } from '@/types/auth';
-import { canAccess } from '@/shared/lib/permissions';
 import {
     type DirectusUser,
     type CommitteeMember,
@@ -28,22 +24,6 @@ export const metadata: Metadata = {
 export default async function LidDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const resolvedParams = await params;
     const decodedSlug = decodeURIComponent(resolvedParams.slug);
-
-    const session = await getEnrichedSession();
-    if (!session) return <AdminUnauthorized title="Lid Detail" />;
-
-    const user = session.user as unknown as EnrichedUser;
-    const memberships = user.committees || [];
-    const hasPriv = canAccess(memberships, 'leden');
-
-    if (!hasPriv) {
-        return (
-            <AdminUnauthorized
-                title="Lid Detail"
-                description="Je hebt geen rechten om persoonsgegevens van dit lid te bekijken. Dit is een beperkte sectie voor het Bestuur og ICT."
-            />
-        );
-    }
 
     let memberData: DirectusUser | undefined;
     let signups: EventSignup[] = [];
@@ -198,7 +178,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                     is_visible: !!c.is_visible,
                     azure_group_id: c.azure_group_id
                 }))}
-                hasAccess={hasPriv}
+                hasAccess={true}
             />
         </AdminPageShell>
     );

@@ -126,7 +126,6 @@ export default function CouponManagementIsland({
         <>
             <AdminToolbar
                 title="Coupons Beheer"
-                subtitle="Beheer kortingscodes en acties voor het lidmaatschap"
                 backHref="/beheer"
                 actions={
                     <button
@@ -144,7 +143,6 @@ export default function CouponManagementIsland({
                     isOpen={isAdding}
                     onClose={() => setIsAdding(false)}
                     title="Nieuwe Coupon Aanmaken"
-                    subtitle="Voeg een nieuwe kortingscode toe aan het systeem"
                     maxWidth="3xl"
                 >
                     <CouponForm

@@ -1,24 +1,13 @@
 import { cookies } from 'next/headers';
 import ImpersonateIsland from '@/components/islands/admin/ImpersonateIsland';
 import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
-import { redirect } from 'next/navigation';
-import { getPermissions } from '@/shared/lib/permissions';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 
 export const metadata = {
-    title: 'Test Modus | Salve Mundi Beheer' };
+    title: 'Test Modus | Salve Mundi Beheer'
+};
 
 export default async function ImpersonatePage() {
-    const { isAuthorized, user, impersonation } = await checkAdminAccess();
-    if (!isAuthorized || !user) {
-        redirect('/beheer');
-    }
-
-    const permissions = getPermissions(user.committees);
-    const hasImpersonatePermission = permissions.includes('impersonate') || !!impersonation;
-    if (!hasImpersonatePermission) {
-        return <AdminUnauthorized title="Test Modus" backHref="/beheer" />;
-    }
+    const { impersonation } = await checkAdminAccess();
 
     const cookieStore = await cookies();
     const activeToken = cookieStore.get('directus_test_token')?.value || null;

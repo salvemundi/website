@@ -8,18 +8,7 @@ import {
     getIdNameLookupAction
 } from '@/server/actions/infrastructure/audit.actions';
 
-import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { getPermissions } from '@/shared/lib/permissions';
-import { redirect } from 'next/navigation';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
-
 export default async function AuditLoggingPage() {
-    const session = await getEnrichedSession();
-    if (!session?.user) redirect('/?needLogin=true');
-    const permissions = getPermissions(session.user.committees);
-    if (!permissions.includes('logging')) {
-        return <AdminUnauthorized title="Logboek Beheer" backHref="/beheer" />;
-    }
     const [
         signupsRes,
         settingsRes,
@@ -50,7 +39,6 @@ export default async function AuditLoggingPage() {
     return (
         <AdminPageShell
             title="Audit & Logboek"
-            subtitle="Monitor systeemwijzigingen en beheerdersacties in real-time."
             backHref="/beheer"
             actions={
                 <div className="flex items-center gap-4 bg-(--beheer-card-soft) px-4 py-2 rounded-2xl border border-(--beheer-border)/50 shadow-sm">

@@ -87,7 +87,7 @@ export class ExpiryCheckJob {
         }
     }
 
-    private static async notifyMember(redis: Redis, member: typeof schema.directus_users.$inferSelect, milestone: string) {
+    public static async notifyMember(redis: Redis, member: typeof schema.directus_users.$inferSelect, milestone: string) {
         const year = new Date().getFullYear();
         const redisKey = `${this.REDIS_PREFIX}${member.id}:${milestone}:${year}`;
 

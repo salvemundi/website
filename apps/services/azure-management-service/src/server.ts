@@ -34,7 +34,7 @@ fastify.get('/health', { logLevel: 'silent' }, () => {
     };
 });
 
-fastify.addHook('onClose', async () => {
+fastify.addHook('onClose', () => {
     ProvisionWorkerService.stop();
 });
 

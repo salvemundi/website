@@ -6,7 +6,8 @@
   "description": "Administrative gateway for Azure AD writes (Provisioning)",
   "scripts": {
     "build": "tsc",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src"
   },
   "dependencies": {
     "@azure/identity": "^4.13.1",

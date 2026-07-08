@@ -43,7 +43,7 @@ export async function getStickers() {
             city: s.city || null,
             country: s.country || null,
             address: s.address || null,
-            date_created: s.date_created ? String(s.date_created) : undefined,
+            date_created: s.date_created ? String(s.date_created) : null,
             user_created: s.directus_user_user_created ? {
                 id: s.directus_user_user_created.id,
                 first_name: s.directus_user_user_created.first_name,

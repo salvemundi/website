@@ -65,7 +65,6 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
         <>
             <AdminToolbar
                 title="Test Modus"
-                subtitle="Imiteer een andere gebruiker"
                 backHref="/beheer"
                 actions={
                     <div className="flex items-center gap-3">

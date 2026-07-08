@@ -41,7 +41,7 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
             <div className="p-4 flex items-start gap-4 transition-colors">
                 <div className="mt-0.5">{icons.get(type)}</div>
                 <div className="min-w-0 flex-1">
-                    <div className="text-base font-semibold text-(--beheer-text) truncate">{email}</div>
+                    <div className="text-base font-semibold text-(--beheer-text) break-all">{email}</div>
                     {message && <div className="text-sm text-(--beheer-text-muted) font-medium mt-1">{message}</div>}
                 </div>
                 <div className="ml-auto flex items-center gap-3">
@@ -82,12 +82,12 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
                                     {changes.map((change, idx) => (
                                         <div key={idx} className="flex flex-col gap-0.5 p-2 bg-(--beheer-card-bg) rounded-xl border border-(--beheer-border)/20">
                                             <span className="text-sm font-semibold text-(--beheer-text)">{change.field}</span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm text-(--beheer-text-muted) truncate max-w-[150px]">{String(change.old ?? 'leeg')}</span>
-                                                <svg className="h-3 w-3 text-(--beheer-text-muted)/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <span className="text-sm text-(--beheer-text-muted) break-all">{String(change.old ?? 'leeg')}</span>
+                                                <svg className="h-3 w-3 text-(--beheer-text-muted)/50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
                                                 </svg>
-                                                <span className="text-sm font-semibold text-(--beheer-active) truncate max-w-[150px]">{String(change.new ?? 'leeg')}</span>
+                                                <span className="text-sm font-semibold text-(--beheer-active) break-all">{String(change.new ?? 'leeg')}</span>
                                             </div>
                                         </div>
                                     ))}

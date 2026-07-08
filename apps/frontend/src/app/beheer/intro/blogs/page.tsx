@@ -1,25 +1,12 @@
 import React from 'react';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
-import { getPermissions } from '@/shared/lib/permissions';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { redirect } from 'next/navigation';
 import { PenTool, Construction } from 'lucide-react';
 
 export default async function BlogsPage() {
-    const session = await getEnrichedSession();
-    if (!session?.user) redirect('/?needLogin=true');
-
-    const permissions = getPermissions(session.user.committees);
-    if (!permissions.includes('intro')) {
-        return <AdminUnauthorized title="Intro Blogs" backHref="/beheer/intro" />;
-    }
-
     return (
         <div className="w-full">
             <AdminToolbar 
                 title="Intro Blogs"
-                subtitle="Beheer de blogposts voor de Introductieweek"
                 backHref="/beheer/intro"
             />
             

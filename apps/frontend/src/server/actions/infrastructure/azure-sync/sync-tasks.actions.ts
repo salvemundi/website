@@ -9,11 +9,12 @@ interface SyncServiceErrorResponse {
 }
 
 interface DirectusUserRow {
+    id?: string;
     entra_id?: unknown;
     email?: unknown;
 }
 
-export async function triggerFullSyncAction(options?: { fields: string[]; forceLink?: boolean; activeOnly?: boolean }) {
+export async function triggerFullSyncAction(options?: { fields: string[]; forceLink?: boolean; activeOnly?: boolean; sendExpiryEmails?: boolean }) {
     const admin = await checkSyncAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
@@ -148,6 +149,13 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
         if (emailSlug) revalidatePath(`/beheer/leden/${encodeURIComponent(emailSlug)}`);
         revalidateTag(`user_${entraId}`, 'max');
         revalidatePath('/beheer/commissies');
+
+        const isSelf = admin.id === targetUser?.id || admin.entra_id === targetUser?.entra_id;
+        if (isSelf) {
+            const { clearSessionCache } = await import('@/server/auth/session-utils');
+            await clearSessionCache();
+            revalidatePath('/profiel');
+        }
 
         return { success: true, message: `Synchronisatie voor gebruiker ${userId} voltooid.` };
     } catch (error: unknown) {

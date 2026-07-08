@@ -4,10 +4,6 @@ import { getTrips, getTripActivities } from '@/server/queries/reis/admin-reis.qu
 import { notFound } from 'next/navigation';
 import { getTripSignupActivitiesAction } from '@/server/actions/admin/reis/admin-reis-signups.actions';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { getPermissions } from '@/shared/lib/permissions';
-import { redirect } from 'next/navigation';
 import { safeConsoleError } from '@/server/utils/logger';
 import { db, schema } from "@salvemundi/db";
 import { eq } from "drizzle-orm";
@@ -48,13 +44,6 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 }
 
 export default async function ReisActiviteitenPage({ searchParams }: PageProps) {
-    const session = await getEnrichedSession();
-    if (!session?.user) redirect('/?needLogin=true');
-    const permissions = getPermissions(session.user.committees);
-    if (!permissions.includes('reis')) {
-        return <AdminUnauthorized title="Reis Activiteiten" backHref="/beheer/reis" />;
-    }
-
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 

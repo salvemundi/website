@@ -6,7 +6,7 @@ export default function StickersLayout({ children }: { children: ReactNode }) {
         <AdminGuard 
             feature="stickers" 
             title="Sticker Beheer" 
-            description="Je hebt geen rechten om stickers te beheren. Alleen het Bestuur en ICT hebben deze rechten."
+            description="Je hebt geen rechten om stickers te beheren."
         >
             {children}
         </AdminGuard>

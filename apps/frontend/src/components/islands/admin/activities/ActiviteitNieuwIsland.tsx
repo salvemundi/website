@@ -104,7 +104,6 @@ export default function ActiviteitNieuwIsland({
         <div className="pb-20">
             <AdminToolbar
                 title="Nieuwe activiteit"
-                subtitle="Creëer een nieuwe activiteit voor de vereniging"
                 backHref="/beheer/activiteiten"
             />
             <div className="container mx-auto px-4 py-8 max-w-7xl">

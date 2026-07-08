@@ -4,6 +4,8 @@ import { type AzureUser } from '../graph.service.js';
 import { type SyncContext, GROUP_ACTIVE_LID, GROUP_EXPIRED_LID } from './sync-types.js';
 import { ManagementService } from '../management.service.js';
 import { safeConsoleError } from '../../utils/logger.js';
+import { ExpiryCheckJob } from '../expiry-check.job.js';
+import { DbService } from '../db.service.js';
 
 export interface DirectusUserRecord {
     id: string | number;
@@ -64,6 +66,15 @@ export class SyncLifecycle {
                 } else {
                     ctx.status.movedExpiredCount++;
                     ctx.status.movedExpiredUsers.push(userEntry);
+                }
+            }
+
+            if (ctx.options.sendExpiryEmails && desiredStatus === 'expired' && expiryDate && daysSinceExpiry >= 0 && daysSinceExpiry <= 14) {
+                try {
+                    const fullUser = await DbService.getUserById(String(dUser.id));
+                    await ExpiryCheckJob.notifyMember(ctx.redis, fullUser, 'expired');
+                } catch (error) {
+                    safeConsoleError(`[sync-lifecycle.ts][handleLifecycle] Failed to trigger expired email notification:`, error);
                 }
             }
 

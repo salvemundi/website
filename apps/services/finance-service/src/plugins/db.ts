@@ -1,6 +1,6 @@
 import { type FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
-import { db, client, schema } from '@salvemundi/db';
+import { db, client } from '@salvemundi/db';
 
 declare module 'fastify' {
     interface FastifyInstance {

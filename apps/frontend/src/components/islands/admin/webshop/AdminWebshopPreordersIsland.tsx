@@ -55,7 +55,9 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
 
     return (
         <>
-            <AdminToolbar title="Webshop Bestellingen" subtitle="Overzicht van preorders en betaalstatus" backHref="/beheer/webshop" />
+            <AdminToolbar 
+            title="Webshop Bestellingen"
+            backHref="/beheer/webshop" />
 
             <div className="admin-container py-4 md:py-8 space-y-4">
                 <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-xl">

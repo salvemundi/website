@@ -42,8 +42,6 @@ export class ProvisionWorkerService {
                 }
 
                 for (const taskJson of tasks) {
-                    if (this.shouldStop) break;
-
                     let taskRaw: unknown;
                     try {
                         taskRaw = JSON.parse(taskJson);
@@ -103,8 +101,9 @@ export class ProvisionWorkerService {
                         try {
                             logInfo(`[provision-worker.ts][start] Adding user to group ${activeGroupId}...`);
                             await GraphService.addGroupMember(activeGroupId, result.id, token);
-                        } catch (groupErr: any) {
-                            safeConsoleError(`[provision-worker.ts][start] Failed to add user to active lid group: ${groupErr.message}`);
+                        } catch (groupErr: unknown) {
+                            const groupErrorMessage = groupErr instanceof Error ? groupErr.message : String(groupErr);
+                            safeConsoleError(`[provision-worker.ts][start] Failed to add user to active lid group: ${groupErrorMessage}`);
                         }
 
                         if (process.env.AZURE_SYNC_SERVICE_URL) {
@@ -146,10 +145,12 @@ export class ProvisionWorkerService {
                         logInfo(`[provision-worker.ts][start] [${task.email}] Welcome email successful.`);
 
                         await redis.zrem(this.QUEUE_KEY, taskJson);
-                    } catch (error: any) {
-                        safeConsoleError(`[provision-worker.ts][start] [${task.email}] Failed:`, error.message);
+                    } catch (error: unknown) {
+                        const errorMessage = error instanceof Error ? error.message : String(error);
+                        const errorStatus = (error as { status?: number }).status;
+                        safeConsoleError(`[provision-worker.ts][start] [${task.email}] Failed:`, errorMessage);
 
-                        if (error.message?.includes('already exists') || error.status === 409) {
+                        if (errorMessage.includes('already exists') || errorStatus === 409) {
                             logInfo(`[provision-worker.ts][start] [${task.email}] User already exists. Removing task.`);
                             await redis.zrem(this.QUEUE_KEY, taskJson);
                             continue;
@@ -179,20 +180,21 @@ export class ProvisionWorkerService {
                                             payload: {
                                                 email: task.email,
                                                 name: `${task.firstName} ${task.lastName}`,
-                                                error: error.message,
+                                                error: errorMessage,
                                                 timestamp: new Date().toISOString()
                                             }
                                         })
                                     });
                                 }
-                            } catch (logErr) {
+                            } catch {
                                 safeConsoleError(`[provision-worker.ts][start] [${task.email}] Failed to write system_logs for dead-letter.`);
                             }
                         }
                     }
                 }
-            } catch (loopErr: any) {
-                safeConsoleError('[provision-worker.ts][start] Loop Error:', loopErr.message);
+            } catch (loopErr: unknown) {
+                const loopErrorMessage = loopErr instanceof Error ? loopErr.message : String(loopErr);
+                safeConsoleError('[provision-worker.ts][start] Loop Error:', loopErrorMessage);
                 await new Promise(resolve => setTimeout(resolve, 5000));
             }
         }

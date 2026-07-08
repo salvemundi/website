@@ -66,7 +66,7 @@ export default async function statusRoutes(fastify: FastifyInstance) {
                             transaction.access_token || ''
                         );
 
-                        transaction.payment_status = livePayment.status as typeof transaction.payment_status;
+                        transaction.payment_status = livePayment.status;
                         (transaction as { updated_at?: string | null }).updated_at = new Date().toISOString();
                     }
                 } catch (mollieErr) {

@@ -8,9 +8,6 @@ import AdminReisTableIsland from '@/components/islands/admin/reis/AdminReisTable
 import ReisVisibilityToggle from '@/components/islands/admin/reis/ReisVisibilityToggle';
 import { getReisSiteSettings } from '@/server/actions/events/reis/reis-public.actions';
 import { getAdminTrips, getAdminTripById } from '@/server/actions/admin/reis/admin-reis-core.actions';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { getPermissions } from '@/shared/lib/permissions';
-import { redirect } from 'next/navigation';
 import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/admin/reis/admin-reis-signups.actions';
 import { getTripActivities } from '@/server/queries/reis/admin-reis.queries';
 import { groupActivitiesBySignup } from '@/server/internal/reis/reis-mapping';;;
@@ -43,12 +40,6 @@ export async function generateMetadata({ searchParams }: AdminReisPageProps): Pr
 
 async function loadReisAdminData(tripIdParam: string | undefined) {
     try {
-        const session = await getEnrichedSession();
-        if (!session?.user) redirect('/?needLogin=true');
-        const permissions = getPermissions(session.user.committees);
-        if (!permissions.includes('reis')) {
-            return { success: false as const, error: 'unauthorized' as const };
-        }
         const [tripsRes, settingsRes] = await Promise.all([
             getAdminTrips(),
             getReisSiteSettings()
@@ -109,7 +100,6 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     const data = await loadReisAdminData(tripIdParam);
 
     if (!data.success) {
-        if (data.error === 'unauthorized') return <AdminUnauthorized title="Reis Beheer" backHref="/beheer" />;
         return <AdminUnauthorized title="Geen Toegang" description={data.error} />;
     }
 
