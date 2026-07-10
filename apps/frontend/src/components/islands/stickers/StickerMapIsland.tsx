@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useTransition, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Filter, BarChart3, X } from 'lucide-react';
 
 
@@ -164,6 +165,22 @@ export default function StickerMapIsland({
             { enableHighAccuracy: true, timeout: 10000 }
         );
     };
+
+    const searchParams = useSearchParams();
+    const hasHandledAddShortcut = useRef(false);
+
+    useEffect(() => {
+        if (hasHandledAddShortcut.current) return;
+        if (searchParams.get('action') !== 'add') return;
+
+        hasHandledAddShortcut.current = true;
+        handlePlaceSticker();
+
+        const url = new URL(window.location.href);
+        url.searchParams.delete('action');
+        window.history.replaceState({}, '', url);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
 
     const handleAutomatedFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

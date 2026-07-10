@@ -9,6 +9,47 @@ export default function manifest(): MetadataRoute.Manifest {
         display: 'standalone',
         background_color: '#1a141b',
         theme_color: '#a4539b',
+        shortcuts: [
+            {
+                name: 'Sticker plakken',
+                short_name: 'Sticker',
+                description: 'Plaats direct een nieuwe sticker op de kaart',
+                url: '/stickers?action=add',
+                icons: [
+                    {
+                        src: '/img/icons/icon-192x192.png',
+                        sizes: '192x192',
+                        type: 'image/png'
+                    }
+                ]
+            },
+            {
+                name: 'Activiteiten',
+                short_name: 'Activiteiten',
+                description: 'Bekijk aankomende activiteiten',
+                url: '/activiteiten',
+                icons: [
+                    {
+                        src: '/img/icons/icon-192x192.png',
+                        sizes: '192x192',
+                        type: 'image/png'
+                    }
+                ]
+            },
+            {
+                name: 'Beheer',
+                short_name: 'Beheer',
+                description: 'Ga naar het beheerpaneel',
+                url: '/beheer',
+                icons: [
+                    {
+                        src: '/img/icons/icon-192x192.png',
+                        sizes: '192x192',
+                        type: 'image/png'
+                    }
+                ]
+            }
+        ],
         icons: [
             {
                 src: '/img/icons/icon-48x48.png',
