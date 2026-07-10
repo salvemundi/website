@@ -2,9 +2,10 @@
 
 import { useState, useMemo, useOptimistic, useTransition } from 'react';
 import Link from 'next/link';
-import { Search, Download, UserPlus, QrCode } from 'lucide-react';
+import { Search, Download, UserPlus, QrCode, Mail } from 'lucide-react';
 import { deleteSignupAction, toggleCheckInAction } from '@/server/actions/admin/activiteiten/admin-activiteiten-signups.actions';
 import ManualSignupModal from './ManualSignupModal';
+import EventMailModal from './EventMailModal';
 import { useRouter } from 'next/navigation';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -53,6 +54,7 @@ export default function ActiviteitAanmeldingenIsland({
     const [, startTransition] = useTransition();
     const [searchQuery, setSearchQuery] = useState('');
     const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+    const [isMailModalOpen, setIsMailModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
     const [optimisticSignups, setOptimisticSignups] = useOptimistic(
@@ -154,6 +156,16 @@ export default function ActiviteitAanmeldingenIsland({
                                 Handmatig
                             </button>
                         )}
+                        {canAccessEdit && (
+                            <button
+                                onClick={() => setIsMailModalOpen(true)}
+                                disabled={optimisticSignups.length === 0}
+                                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-xl text-xs font-semibold hover:border-(--beheer-accent)/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                            >
+                                <Mail className="h-3.5 w-3.5" />
+                                Mail
+                            </button>
+                        )}
                     </div>
 
                     <div className="relative group w-full sm:w-[320px] order-1 sm:order-2">
@@ -173,6 +185,14 @@ export default function ActiviteitAanmeldingenIsland({
                     onClose={() => setIsManualModalOpen(false)}
                     eventId={event.id}
                     eventName={event.name}
+                />
+
+                <EventMailModal
+                    isOpen={isMailModalOpen}
+                    onClose={() => setIsMailModalOpen(false)}
+                    eventId={event.id}
+                    eventName={event.name}
+                    signups={optimisticSignups}
                 />
 
                 <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-sm ring-1 ring-(--beheer-border) overflow-hidden">
