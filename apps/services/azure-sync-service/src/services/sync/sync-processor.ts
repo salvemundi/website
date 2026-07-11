@@ -16,11 +16,14 @@ export class SyncProcessor {
 
         if (!dUser && ctx.options.forceLink) {
             const existingByEmail = Array.from(ctx.userCacheByEntra.values()).find(u => u.email?.toLowerCase() === email);
-
             if (existingByEmail) {
                 logInfo(`[sync-processor.ts][syncUserOptimized] Linking existing user ${email} to Entra ID ${aUser.id}`);
-                await DbService.updateUser(existingByEmail.id, { entra_id: aUser.id });
-                dUser = { ...existingByEmail, entra_id: aUser.id };
+                await DbService.updateUser(existingByEmail.id, {
+                    entra_id: aUser.id,
+                    provider: 'microsoft',
+                    external_identifier: email
+                });
+                dUser = { ...existingByEmail, entra_id: aUser.id, provider: 'microsoft', external_identifier: email };
                 ctx.userCacheByEntra.set(aUser.id, dUser);
                 changes.push({ field: 'User Link', old: 'Geen Entra ID', new: `Gekoppeld aan ${aUser.id}` });
             }
@@ -63,7 +66,9 @@ export class SyncProcessor {
                     membership_expiry: expiry,
                     originele_betaaldatum: paidDate,
                     membership_status: 'none',
-                    emailverified: true
+                    emailverified: true,
+                    provider: 'microsoft',
+                    external_identifier: email
                 });
                 ctx.status.createdCount++;
                 changes.push({ field: 'User', old: 'Bestaat niet', new: 'Nieuw lid aangemaakt' });
@@ -125,6 +130,16 @@ export class SyncProcessor {
             changes.push({ field: 'phone_number', old: currentUser.phone_number || 'leeg', new: updatePayload.phone_number });
         }
 
+        if (currentUser.provider !== 'microsoft') {
+            updatePayload.provider = 'microsoft';
+            changes.push({ field: 'provider', old: currentUser.provider || 'default', new: 'microsoft' });
+        }
+
+        if (currentUser.external_identifier !== email) {
+            updatePayload.external_identifier = email;
+            changes.push({ field: 'external_identifier', old: currentUser.external_identifier || 'leeg', new: email });
+        }
+
         if (!currentUser.emailverified) {
             updatePayload.emailverified = true;
             changes.push({ field: 'emailverified', old: false, new: true });
@@ -141,13 +156,11 @@ export class SyncProcessor {
 
         if (fields.includes('committees')) {
             const currentMemberships = ctx.membershipCache.get(currentUser.id) || [];
-
             const azureMemberships = ctx.membershipMap.get(aUser.id) || new Map<number, boolean>();
 
             for (const [committeeId, isLeader] of azureMemberships) {
                 const committee = ctx.committeeByIdCache?.get(Number(committeeId));
                 const committeeName = committee?.name || `ID ${committeeId}`;
-
                 const existing = currentMemberships.find((m) => m.committee_id === committeeId);
 
                 if (!existing) {
@@ -182,7 +195,7 @@ export class SyncProcessor {
                 let photo = ctx.photoCache?.get(aUser.id);
 
                 if (photo === undefined) {
-                    photo = await GraphService.getUserPhoto(aUser.id, ctx.token);
+                    photo = await GraphService.getUserPhoto(aUser.id);
                 }
 
                 if (photo) {

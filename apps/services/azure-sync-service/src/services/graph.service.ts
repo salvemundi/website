@@ -1,5 +1,6 @@
 import { safeConsoleError, logInfo } from '../utils/logger.js';
 import { Client } from '@microsoft/microsoft-graph-client';
+import { getGraphClient } from '../config/azure.js';
 
 export interface AzureUser {
     id: string;
@@ -29,32 +30,28 @@ export interface AzureGroup {
 }
 
 export class GraphService {
-    static async getUser(userId: string, token: string): Promise<AzureUser> {
-        return await this.getClient(token).api(`/users/${userId}`)
+    static async getUser(userId: string): Promise<AzureUser> {
+        return await this.getClient().api(`/users/${userId}`)
             .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,customSecurityAttributes,birthday')
             .get() as AzureUser;
     }
 
-    static async getUserByEmail(email: string, token: string): Promise<AzureUser | null> {
-        const response = await this.getClient(token).api('/users')
+    static async getUserByEmail(email: string): Promise<AzureUser | null> {
+        const response = await this.getClient().api('/users')
             .filter(`mail eq '${email}' or userPrincipalName eq '${email}'`)
             .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,customSecurityAttributes,birthday')
             .get() as { value?: AzureUser[] };
         return response.value?.[0] || null;
     }
 
-    private static getClient(token: string): Client {
-        return Client.init({
-            authProvider: (done) => {
-                done(null, token);
-            }
-        });
+    private static getClient(): Client {
+        return getGraphClient();
     }
 
-    static async getAllUsers(token: string): Promise<AzureUser[]> {
+    static async getAllUsers(): Promise<AzureUser[]> {
         logInfo(`[graph.service.ts][getAllUsers] getAllUsers started`);
         let allUsers: AzureUser[];
-        const client = this.getClient(token);
+        const client = this.getClient();
 
         const fetchWithRetry = async (url: string, selectFields?: string, top: number = 100, retries = 3): Promise<unknown> => {
             const isFullUrl = url.startsWith('http');
@@ -100,16 +97,16 @@ export class GraphService {
         }
     }
 
-    static async getUserGroups(userId: string, token: string): Promise<AzureGroup[]> {
-        const response = await this.getClient(token).api(`/users/${userId}/memberOf/microsoft.graph.group`)
+    static async getUserGroups(userId: string): Promise<AzureGroup[]> {
+        const response = await this.getClient().api(`/users/${userId}/memberOf/microsoft.graph.group`)
             .select('id,displayName')
             .get() as { value?: AzureGroup[] };
         return response.value || [];
     }
 
-    static async getGroupOwners(groupId: string, token: string): Promise<string[]> {
+    static async getGroupOwners(groupId: string): Promise<string[]> {
         try {
-            const response = await this.getClient(token).api(`/groups/${groupId}/owners`)
+            const response = await this.getClient().api(`/groups/${groupId}/owners`)
                 .select('id')
                 .get() as { value?: { id: string }[] };
             return (response.value || []).map(o => o.id);
@@ -123,9 +120,9 @@ export class GraphService {
         }
     }
 
-    static async getBatchGroupDetails(groupIds: string[], token: string): Promise<Map<string, { members: string[], owners: string[] }>> {
+    static async getBatchGroupDetails(groupIds: string[]): Promise<Map<string, { members: string[], owners: string[] }>> {
         const result = new Map<string, { members: string[], owners: string[] }>();
-        const client = this.getClient(token);
+        const client = this.getClient();
 
         for (const id of groupIds) {
             try {
@@ -138,7 +135,7 @@ export class GraphService {
                     members = [...members, ...((response.value as { id: string }[] | undefined) || []).map(m => m.id)];
                 }
 
-                const owners = await this.getGroupOwners(id, token);
+                const owners = await this.getGroupOwners(id);
 
                 result.set(id, { members, owners });
             } catch (error: unknown) {
@@ -151,9 +148,9 @@ export class GraphService {
         return result;
     }
 
-    static async getUserPhotosBatch(userIds: string[], token: string): Promise<Map<string, { buffer: Buffer; contentType: string } | null>> {
+    static async getUserPhotosBatch(userIds: string[]): Promise<Map<string, { buffer: Buffer; contentType: string } | null>> {
         const result = new Map<string, { buffer: Buffer; contentType: string } | null>();
-        const client = this.getClient(token);
+        const client = this.getClient();
 
         for (let i = 0; i < userIds.length; i += 20) {
             const batchIds = userIds.slice(i, i + 20);
@@ -186,23 +183,12 @@ export class GraphService {
         return result;
     }
 
-    static async getUserPhoto(userId: string, token: string): Promise<{ buffer: Buffer; contentType: string } | null> {
+    static async getUserPhoto(userId: string): Promise<{ buffer: Buffer; contentType: string } | null> {
         try {
-            const response = await fetch(`https://graph.microsoft.com/v1.0/users/${userId}/photo/$value`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (!response.ok) {
-                if (response.status === 404) return null;
-                throw new Error(`Failed to fetch photo: ${response.statusText}`);
-            }
-
-            const arrayBuffer = await response.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
-            const contentType = response.headers.get('content-type') || 'image/jpeg';
-
+            const response = await this.getClient().api(`/users/${userId}/photo/$value`).get();
+            if (!response) return null;
+            const buffer = Buffer.from(response);
+            const contentType = 'image/jpeg';
             return { buffer, contentType };
         } catch (error) {
             safeConsoleError(`[graph.service.ts][getUserPhoto] Error fetching photo for user ${userId}:`, error);

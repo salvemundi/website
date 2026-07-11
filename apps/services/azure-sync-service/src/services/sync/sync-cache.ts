@@ -47,8 +47,8 @@ export class SyncCache {
         return { allMemberships, membershipCache };
     }
 
-    static async getMainMembershipState(token: string, entraId?: string) {
-        const mainGroupDetails = await GraphService.getBatchGroupDetails([GROUP_ACTIVE_LID, GROUP_EXPIRED_LID], token);
+    static async getMainMembershipState(entraId?: string) {
+        const mainGroupDetails = await GraphService.getBatchGroupDetails([GROUP_ACTIVE_LID, GROUP_EXPIRED_LID]);
         const mainMembershipState = new Map<string, Set<string>>();
 
         for (const [groupId, details] of mainGroupDetails) {
@@ -64,8 +64,8 @@ export class SyncCache {
         return mainMembershipState;
     }
 
-    static async getAzureMembershipMap(relevantAzureGroupIds: string[], committeeCache: Map<string, { id: number }>, token: string) {
-        const groupDetails = await GraphService.getBatchGroupDetails(relevantAzureGroupIds, token);
+    static async getAzureMembershipMap(relevantAzureGroupIds: string[], committeeCache: Map<string, { id: number }>) {
+        const groupDetails = await GraphService.getBatchGroupDetails(relevantAzureGroupIds);
         const membershipMap = new Map<string, Map<number, boolean>>();
 
         for (const [groupId, details] of groupDetails) {
