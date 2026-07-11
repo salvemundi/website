@@ -71,9 +71,9 @@ export const auth = betterAuth({
             email: "email",
             name: "name",
             image: "image",
-            emailVerified: "emailVerified",
-            createdAt: "createdAt",
-            updatedAt: "updatedAt"
+            emailVerified: "emailverified",
+            createdAt: "createdat",
+            updatedAt: "updatedat"
         },
         additionalFields: {
             first_name: { type: "string" },

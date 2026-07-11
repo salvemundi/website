@@ -62,7 +62,8 @@ export class SyncProcessor {
                     date_of_birth: dob,
                     membership_expiry: expiry,
                     originele_betaaldatum: paidDate,
-                    membership_status: 'none'
+                    membership_status: 'none',
+                    emailverified: true
                 });
                 ctx.status.createdCount++;
                 changes.push({ field: 'User', old: 'Bestaat niet', new: 'Nieuw lid aangemaakt' });
@@ -122,6 +123,11 @@ export class SyncProcessor {
         }
         if ('phone_number' in updatePayload && currentUser.phone_number !== updatePayload.phone_number) {
             changes.push({ field: 'phone_number', old: currentUser.phone_number || 'leeg', new: updatePayload.phone_number });
+        }
+
+        if (!currentUser.emailverified) {
+            updatePayload.emailverified = true;
+            changes.push({ field: 'emailverified', old: false, new: true });
         }
 
         if (changes.length > 0 && Object.keys(updatePayload).length > 0) {
