@@ -27,11 +27,9 @@ const getServiceHeaders = (): HeadersInit => {
 };
 
 export async function createTripSignup(data: ReisSignupForm, tripId: number): Promise<{ success: boolean; message?: string }> {
-    const { rateLimit } = await import('@/server/utils/ratelimit');
-    const { success: rateLimitSuccess } = await rateLimit('trip-signup', 10, 600); // 10 pogingen per 10 min
-    if (!rateLimitSuccess) {
-        return { success: false, message: 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het over een kwartier opnieuw.' };
-    }
+    const { checkRateLimit } = await import('@/server/utils/ratelimit');
+    const rateLimitResult = await checkRateLimit('trip-signup', 10, 600, 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het over een kwartier opnieuw.');
+    if (!rateLimitResult.success) return rateLimitResult;
 
     // Normalize DD-MM-YYYY to YYYY-MM-DD before validation
     data.date_of_birth = normalizeDate(data.date_of_birth) || data.date_of_birth;

@@ -96,11 +96,9 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
         return { success: false, error: 'Validatie mislukt' };
     }
 
-    const { rateLimit } = await import('@/server/utils/ratelimit');
-    const { success } = await rateLimit('intro-signup', 3, 300);
-    if (!success) {
-        return { success: false, error: 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het later opnieuw.' };
-    }
+    const { checkRateLimit } = await import('@/server/utils/ratelimit');
+    const rateLimitResult = await checkRateLimit('intro-signup', 3, 300, 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het later opnieuw.');
+    if (!rateLimitResult.success) return rateLimitResult;
 
     if (parsed.data.website) {
         return { success: true };
@@ -223,11 +221,9 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
         return { success: true };
     }
 
-    const { rateLimit } = await import('@/server/utils/ratelimit');
-    const { success } = await rateLimit('intro-parent-signup', 3, 300);
-    if (!success) {
-        return { success: false, error: 'Te veel aanmeldingen. Probeer het over een paar minuten opnieuw.' };
-    }
+    const { checkRateLimit } = await import('@/server/utils/ratelimit');
+    const rateLimitResult = await checkRateLimit('intro-parent-signup', 3, 300, 'Te veel aanmeldingen. Probeer het over een paar minuten opnieuw.');
+    if (!rateLimitResult.success) return rateLimitResult;
 
     const parsed = introParentSignupFormSchema.safeParse(data);
     if (!parsed.success) {

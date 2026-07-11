@@ -105,11 +105,9 @@ export async function checkUserSignupStatus(eventId: number, email: string, user
 }
 
 export async function signupForActivity(data: EventSignupForm) {
-    const { rateLimit } = await import('@/server/utils/ratelimit');
-    const { success } = await rateLimit('event-signup', 10, 600);
-    if (!success) {
-        return { success: false, error: 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het over een kwartier opnieuw.' };
-    }
+    const { checkRateLimit } = await import('@/server/utils/ratelimit');
+    const rateLimitResult = await checkRateLimit('event-signup', 10, 600, 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het over een kwartier opnieuw.');
+    if (!rateLimitResult.success) return rateLimitResult;
 
     const parsed = eventSignupFormSchema.safeParse(data);
     if (!parsed.success) {
