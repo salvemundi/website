@@ -75,7 +75,7 @@ export default async function ActivityCreatePage() {
         return (
             <AdminUnauthorized
                 title="Activiteit Aanmaken"
-                description="Je hebt geen rechten om activiteiten aan te maken. Alleen commissieleiders en bestuur hebben deze rechten."
+                description="Je hebt geen rechten om activiteiten aan te maken."
             />
         );
     }

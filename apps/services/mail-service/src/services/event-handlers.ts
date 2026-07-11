@@ -184,9 +184,6 @@ export class EventHandlers {
                 .where(eq(schema.pub_crawl_signups.id, signupId))
                 .limit(1)
                 .then(res => res[0]);
-
-            if (!data) return null;
-
             const validated = pubCrawlWhatsAppUrlSchema.parse(data);
             return validated.whatsapp_community_url ?? null;
         } catch (error) {

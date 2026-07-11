@@ -1,14 +1,9 @@
 'use client';
 
-import { X, Camera, Loader2, Plus } from 'lucide-react';
+import { X, Camera, Loader2, Plus, LocateFixed } from 'lucide-react';
 import { useState } from 'react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
-
-interface NominatimSearchResult {
-    lat: string;
-    lon: string;
-    display_name?: string;
-}
+import { searchLocations, reverseGeocode, type LocationSearchResult } from '@/shared/lib/utils/geolocation';
 
 interface AddStickerModalProps {
     show: boolean;
@@ -50,36 +45,78 @@ export default function AddStickerModal({
 }: AddStickerModalProps) {
     const [addressQuery, setAddressQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
+    const [searchResults, setSearchResults] = useState<LocationSearchResult[]>([]);
+    const [isLocatingCurrent, setIsLocatingCurrent] = useState(false);
+    const [locationError, setLocationError] = useState<string | null>(null);
 
     if (!show) return null;
 
     const handleAddressSearch = async () => {
         if (!addressQuery) return;
         setIsSearching(true);
-        try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressQuery)}&limit=5&accept-language=nl`, {
-                headers: { 'User-Agent': 'SalveMundi-Website' }
-            });
-            const items = (await res.json()) as NominatimSearchResult[];
-            if (items.length > 0) {
-                const first = items[0];
-                const lat = parseFloat(first.lat || '0');
-                const lon = parseFloat(first.lon || '0');
-                setSelectedLocation({ lat, lng: lon });
-
-                const addr = first.display_name || '';
-                const parts = addr.split(',').map((s: string) => s.trim());
-                const country = parts[parts.length - 1] || '';
-                const city = parts.length > 1 ? parts[parts.length - 3] || parts[parts.length - 2] || '' : '';
-                setFormData((prev) => ({ ...prev, city, country }));
-            }
-        } catch (_e) {
+        setLocationError(null);
+        const results = await searchLocations(addressQuery);
+        setSearchResults(results);
+        if (results.length === 0) {
+            setLocationError('Geen locaties gevonden voor deze zoekopdracht.');
         }
         setIsSearching(false);
     };
 
     const handleAddressSearchSync = () => {
         void handleAddressSearch();
+    };
+
+    const handleSelectResult = (result: LocationSearchResult) => {
+        setSelectedLocation({ lat: result.lat, lng: result.lng });
+        setFormData((prev) => ({
+            ...prev,
+            city: result.city,
+            country: result.country,
+            location_name: prev.location_name || result.city
+        }));
+        setAddressQuery(result.displayName);
+        setSearchResults([]);
+        setLocationError(null);
+    };
+
+    const handleUseCurrentLocation = () => {
+        if (!(navigator as Partial<Navigator>).geolocation) {
+            setLocationError('Je browser ondersteunt geen geolocatie.');
+            return;
+        }
+
+        setIsLocatingCurrent(true);
+        setLocationError(null);
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                void (async () => {
+                    const { latitude, longitude } = position.coords;
+                    const { city, country } = await reverseGeocode(latitude, longitude);
+
+                    setSelectedLocation({ lat: latitude, lng: longitude });
+                    setFormData((prev) => ({
+                        ...prev,
+                        city,
+                        country,
+                        location_name: prev.location_name || city
+                    }));
+                    setAddressQuery(city && country ? `${city}, ${country}` : addressQuery);
+                    setSearchResults([]);
+                    setIsLocatingCurrent(false);
+                })();
+            },
+            (error) => {
+                setLocationError(error.code === 1 ? 'Locatie toegang geweigerd.' : 'Kon je locatie niet bepalen.');
+                setIsLocatingCurrent(false);
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    };
+
+    const handleUseCurrentLocationSync = () => {
+        handleUseCurrentLocation();
     };
 
     return (
@@ -95,26 +132,44 @@ export default function AddStickerModal({
                     </button>
                 </div>
 
-                <form onSubmit={onSubmit} className="p-4 sm:p-8 space-y-6 overflow-y-auto">
+                <form onSubmit={onSubmit} autoComplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" className="p-4 sm:p-8 space-y-6 overflow-y-auto">
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <p className="text-[10px] uppercase tracking-widest font-black opacity-80">Locatie</p>
                             <div className="flex items-center gap-3">
                                 <div className="text-sm text-(--text-main)">
                                     {selectedLocation ? (
-                                        <span>Geselecteerde location: {selectedLocation.lat.toFixed(5)}, {selectedLocation.lng.toFixed(5)}</span>
+                                        <span>
+                                            {formData.city && formData.country ? `${formData.city}, ${formData.country}` : 'Locatie geselecteerd'}
+                                            {' '}({selectedLocation.lat.toFixed(5)}, {selectedLocation.lng.toFixed(5)})
+                                        </span>
                                     ) : (
                                         <span>Geen locatie geselecteerd</span>
                                     )}
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => setSelectedLocation(null)}
+                                    onClick={() => {
+                                        setSelectedLocation(null);
+                                        setFormData((prev) => ({ ...prev, city: '', country: '' }));
+                                        setAddressQuery('');
+                                        setSearchResults([]);
+                                    }}
                                     className="ml-auto inline-flex items-center gap-2 rounded-xl bg-(--bg-main)/60 px-3 py-2 text-xs font-black uppercase tracking-widest"
                                 >
                                     Reset
                                 </button>
                             </div>
+
+                            <button
+                                type="button"
+                                onClick={handleUseCurrentLocationSync}
+                                disabled={isLocatingCurrent}
+                                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-(--bg-main)/60 border border-(--border-color)/30 px-3 py-2.5 text-xs font-black uppercase tracking-widest text-(--text-main) hover:border-(--theme-purple)/50 transition-colors disabled:opacity-50"
+                            >
+                                {isLocatingCurrent ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
+                                Gebruik mijn huidige locatie
+                            </button>
 
                             <div className="flex gap-2">
                                 <input
@@ -132,6 +187,25 @@ export default function AddStickerModal({
                                     {isSearching ? 'Zoeken…' : 'Zoek'}
                                 </button>
                             </div>
+
+                            {searchResults.length > 0 && (
+                                <div className="rounded-xl border border-(--border-color)/30 bg-(--bg-main)/80 overflow-hidden divide-y divide-(--border-color)/20">
+                                    {searchResults.map((result, idx) => (
+                                        <button
+                                            key={`${result.lat}-${result.lng}-${idx}`}
+                                            type="button"
+                                            onClick={() => handleSelectResult(result)}
+                                            className="w-full text-left px-3 py-2 text-xs text-(--text-main) hover:bg-(--theme-purple)/10 transition-colors"
+                                        >
+                                            {result.displayName}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {locationError && (
+                                <p className="text-xs text-red-400 font-bold">{locationError}</p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-[10px] font-black uppercase tracking-widest text-(--text-muted) mb-2 ml-1">Naam van de Locatie</label>
@@ -149,25 +223,25 @@ export default function AddStickerModal({
                             <div>
                                 <label className="block text-[10px] font-black uppercase tracking-widest text-(--text-muted) mb-2 ml-1">Stad</label>
                                 <input
-                                    required
+                                    readOnly
+                                    tabIndex={-1}
                                     type="text"
-                                    placeholder="Eindhoven"
+                                    placeholder="Kies via zoeken of huidige locatie"
                                     value={formData.city}
-                                    onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
                                     suppressHydrationWarning
-                                    className="w-full bg-(--bg-main)/50 border border-(--border-color)/30 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all outline-none"
+                                    className="w-full bg-(--bg-main)/30 border border-(--border-color)/20 rounded-xl px-4 py-3 text-sm text-(--text-muted) cursor-not-allowed outline-none"
                                 />
                             </div>
                             <div>
                                 <label className="block text-[10px] font-black uppercase tracking-widest text-(--text-muted) mb-2 ml-1">Land</label>
                                 <input
-                                    required
+                                    readOnly
+                                    tabIndex={-1}
                                     type="text"
-                                    placeholder="Nederland"
+                                    placeholder="Kies via zoeken of huidige locatie"
                                     value={formData.country}
-                                    onChange={(e) => setFormData((prev) => ({ ...prev, country: e.target.value }))}
                                     suppressHydrationWarning
-                                    className="w-full bg-(--bg-main)/50 border border-(--border-color)/30 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all outline-none"
+                                    className="w-full bg-(--bg-main)/30 border border-(--border-color)/20 rounded-xl px-4 py-3 text-sm text-(--text-muted) cursor-not-allowed outline-none"
                                 />
                             </div>
                         </div>
@@ -211,7 +285,7 @@ export default function AddStickerModal({
 
                     <button
                         type="submit"
-                        disabled={isPending}
+                        disabled={isPending || !selectedLocation || !formData.city || !formData.country}
                         className="w-full py-4 bg-gradient-to-r from-(--theme-purple) to-orange-500 text-white rounded-2xl shadow-xl shadow-purple-500/20 hover:shadow-2xl hover:shadow-purple-500/30 transition-all font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
                     >
                         {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}

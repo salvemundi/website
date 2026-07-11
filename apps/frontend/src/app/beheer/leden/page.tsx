@@ -1,11 +1,7 @@
 import React from 'react';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import LedenOverzichtIsland, { type Member } from '@/components/islands/admin/leden/LedenOverzichtIsland';
-import { canAccess } from '@/shared/lib/permissions';
 import { EXCLUDED_EMAILS } from '@/shared/lib/constants/admin.constants';
-import { type EnrichedUser } from '@/types/auth';
 import { db, schema } from '@salvemundi/db';
 import { isNotNull, notInArray, and, asc } from 'drizzle-orm';
 
@@ -15,19 +11,6 @@ export const metadata = {
 };
 
 export default async function LedenBeheerPage() {
-    const session = await getEnrichedSession();
-
-    if (!session) return <AdminUnauthorized />;
-
-    const user = session.user as unknown as EnrichedUser;
-    if (!canAccess(user.committees, 'leden')) {
-        return (
-            <AdminUnauthorized
-                title="Leden Beheer"
-                description="Je hebt geen rechten om (persoons)gegevens van leden te bekijken."
-            />
-        );
-    }
 
     let members: Member[] = [];
     let totalCount = 0;
@@ -63,7 +46,6 @@ export default async function LedenBeheerPage() {
     return (
         <AdminPageShell
             title="Leden Overzicht"
-            subtitle="Beheer alle Salve Mundi leden en lidmaatschappen"
             backHref="/beheer"
             actions={
                 <div className="flex items-center gap-4">

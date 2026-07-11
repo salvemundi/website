@@ -1,13 +1,8 @@
-'use server';
-
 import SignupForm from '@/components/islands/admin/kroegentocht/SignupForm';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { getPubCrawlSignup, getPubCrawlEvent } from '@/server/actions/admin/kroegentocht/admin-kroegentocht-core.actions';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { unstable_noStore as noStore } from 'next/cache';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { getPermissions } from '@/shared/lib/permissions';
 
 export async function generateMetadata({ params: _params }: { params: Promise<{ id: string }> }) {
     return {
@@ -21,12 +16,6 @@ interface DeelnemerPageProps {
 
 export default async function DeelnemerPage({ params }: DeelnemerPageProps) {
     noStore();
-    const session = await getEnrichedSession();
-    if (!session?.user) redirect('/?needLogin=true');
-    const permissions = getPermissions(session.user.committees);
-    if (!permissions.includes('kroegentocht')) {
-        return <AdminUnauthorized title="Deelnemer Beheer" backHref="/beheer/kroegentocht" />;
-    }
 
     const { id } = await params;
     

@@ -27,9 +27,9 @@
     --bg-gradient-end: #1a0b1d;
 
     --theme-success: #4ade80;
-    --theme-warning: #F8CF45; /* Geel */
+    --theme-warning: #F8CF45;
     --theme-error: #f87171;
-    --theme-info: #132A40; /* Donker Blauw */
+    --theme-info: #132A40;
 }
 
 :root {

@@ -6,10 +6,6 @@ import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import Link from 'next/link';
 import { Ticket } from 'lucide-react';
 import { getTripsForMail, getTripSignupsForMail } from '@/server/queries/reis/admin-reis.queries';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { getPermissions } from '@/shared/lib/permissions';
-import { redirect } from 'next/navigation';
 
 interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -20,13 +16,6 @@ export const metadata: Metadata = {
 };
 
 export default async function ReisMailPage({ searchParams }: PageProps) {
-    const session = await getEnrichedSession();
-    if (!session?.user) redirect('/?needLogin=true');
-    const permissions = getPermissions(session.user.committees);
-    if (!permissions.includes('reis')) {
-        return <AdminUnauthorized title="Reis Mail" backHref="/beheer/reis" />;
-    }
-
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
     

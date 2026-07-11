@@ -63,11 +63,11 @@ export class SyncJob {
                 status,
                 options,
                 token,
-                committeeCache: committeeCache as unknown as SyncContext['committeeCache'],
-                committeeByIdCache: committeeByIdCache as unknown as SyncContext['committeeByIdCache'],
+                committeeCache,
+                committeeByIdCache,
                 ownerCache: new Map(),
-                userCacheByEntra: userCacheByEntra as unknown as SyncContext['userCacheByEntra'],
-                membershipCache: membershipCache as unknown as SyncContext['membershipCache'],
+                userCacheByEntra,
+                membershipCache,
                 membershipMap,
                 mainMembershipState
             };
@@ -168,11 +168,11 @@ export class SyncJob {
             status,
             options,
             token,
-            committeeCache: committeeCache as unknown as SyncContext['committeeCache'],
-            committeeByIdCache: committeeByIdCache as unknown as SyncContext['committeeByIdCache'],
+            committeeCache,
+            committeeByIdCache,
             ownerCache: new Map(),
-            userCacheByEntra: userCacheByEntra as unknown as SyncContext['userCacheByEntra'],
-            membershipCache: membershipCache as unknown as SyncContext['membershipCache'],
+            userCacheByEntra,
+            membershipCache,
             membershipMap,
             mainMembershipState
         };

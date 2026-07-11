@@ -3,10 +3,10 @@ import type { ReactNode } from 'react';
 
 export default function LedenLayout({ children }: { children: ReactNode }) {
     return (
-        <AdminGuard 
-            feature="leden" 
-            title="Leden Beheer" 
-            description="Je hebt geen rechten om leden te beheren. Alleen het Bestuur en ICT hebben deze rechten."
+        <AdminGuard
+            feature="leden"
+            title="Leden Beheer"
+            description="Je hebt geen rechten om leden te beheren."
         >
             {children}
         </AdminGuard>

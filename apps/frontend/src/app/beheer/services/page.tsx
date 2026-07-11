@@ -1,24 +1,14 @@
 import React from 'react';
-import { redirect } from 'next/navigation';
 import SystemManagementIsland from '@/components/islands/admin/SystemManagementIsland';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import { getServicesStatusAction } from '@/server/actions/infrastructure/services-status.actions';
 import { getSystemAutomationSettings } from '@/server/actions/admin/admin-automation.actions';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { getPermissions } from '@/shared/lib/permissions';
 
 export const metadata = {
-    title: 'Systeem Beheer | SV Salve Mundi' };
-export default async function ServicesStatusPage() {
-    const session = await getEnrichedSession();
-    if (!session?.user) redirect('/?needLogin=true');
-    const permissions = getPermissions(session.user.committees);
-    
-    if (!permissions.includes('services') && !permissions.includes('ict')) {
-        return <AdminUnauthorized title="Systeem Status" backHref="/beheer" />;
-    }
+    title: 'Systeem Beheer | SV Salve Mundi' 
+};
 
+export default async function ServicesStatusPage() {
     const [initialStatuses, automationRes] = await Promise.all([
         getServicesStatusAction(),
         getSystemAutomationSettings()
@@ -33,7 +23,6 @@ export default async function ServicesStatusPage() {
     return (
         <AdminPageShell 
             title="Systeem & Automatisering"
-            subtitle="Beheer backend services en automatische processen"
             backHref="/beheer"
             actions={
                 <div className="flex items-center gap-4 bg-bg-soft px-4 py-2 rounded-2xl border border-border-color/50 shadow-sm">

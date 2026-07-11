@@ -6,7 +6,7 @@ services:
     env_file:
       - .env.${ENV_NAME}
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
     environment:
       - PUBLIC_URL=${PUBLIC_URL}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}

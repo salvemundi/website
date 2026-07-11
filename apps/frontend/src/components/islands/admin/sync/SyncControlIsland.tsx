@@ -8,7 +8,8 @@ export default function SyncControlIsland() {
     const {
         isStartingSync, isStopping, isResetting, isUserSyncLoading,
         selectedSyncFields, toggleField, forceLink, setForceLink,
-        activeOnly, setActiveOnly, handleFullSync, handleStopSync, handleResetSync,
+        activeOnly, setActiveOnly, sendExpiryEmails, setSendExpiryEmails,
+        handleFullSync, handleStopSync, handleResetSync,
         userId, setUserId, handleUserSync, syncFieldOptions, status
     } = useSync();
 
@@ -58,6 +59,16 @@ export default function SyncControlIsland() {
                                 <div className={`absolute top-1 w-2 h-2 rounded-full bg-white transition-all ${activeOnly ? 'right-1' : 'left-1'}`} />
                             </div>
                         </button>
+
+                        <button
+                            onClick={() => setSendExpiryEmails(!sendExpiryEmails)}
+                            className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${sendExpiryEmails ? 'border-(--beheer-accent) bg-(--beheer-accent)/5' : 'border-(--beheer-border) hover:border-(--beheer-accent)/30 group'}`}
+                        >
+                            <span className={`text-[11px] font-semibold transition-colors ${sendExpiryEmails ? 'text-(--beheer-accent)' : 'text-(--beheer-text-muted) group-hover:text-(--beheer-text)'}`}>Verstuur Expiratie E-mails</span>
+                            <div className={`h-4 w-8 rounded-full relative transition-all ${sendExpiryEmails ? 'bg-(--beheer-accent)' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                                <div className={`absolute top-1 w-2 h-2 rounded-full bg-white transition-all ${sendExpiryEmails ? 'right-1' : 'left-1'}`} />
+                            </div>
+                        </button>
                     </div>
 
                     <div className="pt-4 flex flex-col gap-3">
@@ -85,7 +96,7 @@ export default function SyncControlIsland() {
                         ) : (
                             <button
                                 onClick={() => { void handleFullSync(); }}
-                                disabled={isStartingSync}
+                                disabled={isStartingSync || !!status?.error}
                                 className="w-full flex items-center justify-center gap-2 py-3.5 bg-(--beheer-accent) text-white rounded-xl font-semibold text-xs shadow-md hover:scale-[1.01] active:scale-95 disabled:opacity-50 transition-all"
                             >
                                 <RefreshCw className={`h-4 w-4 ${isStartingSync ? 'animate-spin' : ''}`} />
@@ -120,7 +131,7 @@ export default function SyncControlIsland() {
                     />
                     <button
                         type="submit"
-                        disabled={isUserSyncLoading || !userId.trim()}
+                        disabled={isUserSyncLoading || !userId.trim() || !!status?.error}
                         className="w-full flex items-center justify-center gap-2 py-3.5 bg-(--beheer-card-soft) text-(--beheer-text) border border-(--beheer-border) rounded-xl font-semibold text-xs hover:border-(--beheer-accent) hover:text-(--beheer-accent) transition-all disabled:opacity-50 active:scale-95"
                     >
                         <RefreshCw className={`h-4 w-4 ${isUserSyncLoading ? 'animate-spin' : ''}`} />

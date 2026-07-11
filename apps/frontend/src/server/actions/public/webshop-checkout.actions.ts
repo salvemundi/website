@@ -98,6 +98,10 @@ export async function submitPreorderAndInitiatePayment(formData: WebshopPreorder
             return { success: false, error: 'Ongeldige aanvraag.' };
         }
 
+        const { checkRateLimit } = await import('@/server/utils/ratelimit');
+        const rateLimitResult = await checkRateLimit('webshop-checkout', 5, 300, 'Te veel bestelpogingen vanaf dit IP-adres. Probeer het over een paar minuten opnieuw.');
+        if (!rateLimitResult.success) return rateLimitResult;
+
         const memberCheck = await requireMemberSession();
         if (!memberCheck.ok) return { success: false, error: memberCheck.error };
         const { session } = memberCheck;
@@ -177,6 +181,10 @@ export async function submitPreorderAndInitiatePayment(formData: WebshopPreorder
 
 export async function initiateFinalPayment(preorderId: number, token?: string) {
     try {
+        const { checkRateLimit } = await import('@/server/utils/ratelimit');
+        const rateLimitResult = await checkRateLimit(`webshop-final-payment:${preorderId}`, 5, 60, 'Te veel betaalpogingen. Probeer het over een minuut opnieuw.');
+        if (!rateLimitResult.success) return rateLimitResult;
+
         const preorder = await fetchPreorderByIdDb(preorderId);
         if (!preorder) return { success: false as const, error: 'Bestelling niet gevonden.' };
 

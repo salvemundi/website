@@ -6,7 +6,8 @@
   "scripts": {
     "start": "fastify start -a 0.0.0.0 -l info dist/server.js",
     "build": "tsc",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src"
   },
   "dependencies": {
     "@directus/sdk": "^22.0.0",

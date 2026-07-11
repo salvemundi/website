@@ -71,11 +71,8 @@ export async function createStickerPublic(data: unknown) {
         throw new Error('Je moet een actief lid zijn om een sticker toe te voegen.');
     }
 
-    const { rateLimit } = await import('@/server/utils/ratelimit');
-    const { success: rateLimitSuccess } = await rateLimit('sticker-create', 5, 300);
-    if (!rateLimitSuccess) {
-        throw new Error('Te veel stickers geplaatst. Probeer het later opnieuw.');
-    }
+    const { enforceRateLimit } = await import('@/server/utils/ratelimit');
+    await enforceRateLimit('sticker-create', 5, 300, 'Te veel stickers geplaatst. Probeer het later opnieuw.');
 
     const parsed = stickerCreateSchema.safeParse(data);
     if (!parsed.success) {
@@ -107,11 +104,8 @@ export async function uploadFileAction(formData: FormData): Promise<{ success: t
         throw new Error('Niet geautoriseerd: Je moet een actief lid zijn om bestanden te uploaden.');
     }
 
-    const { rateLimit } = await import('@/server/utils/ratelimit');
-    const { success } = await rateLimit('file-upload', 5, 300);
-    if (!success) {
-        throw new Error('Te veel bestanden geüpload. Probeer het later opnieuw.');
-    }
+    const { enforceRateLimit } = await import('@/server/utils/ratelimit');
+    await enforceRateLimit('file-upload', 5, 300, 'Te veel bestanden geüpload. Probeer het later opnieuw.');
     const file = formData.get('file') as File | null;
     if (!file) return { success: false, error: 'Geen bestand gevonden in upload.' };
 

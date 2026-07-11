@@ -13,19 +13,27 @@ Handlebars.registerHelper('eq', (a, b) => a === b);
 Handlebars.registerHelper('neq', (a, b) => a !== b);
 Handlebars.registerHelper('addOne', (value: number) => value + 1);
 
+const fsRef = fs as unknown as {
+    existsSync: (path: string) => boolean;
+    readdirSync: (path: string) => string[];
+    readFileSync: {
+        (path: string, options: 'utf-8'): string;
+        (path: string): Buffer;
+    };
+};
+
 const templatesDir = path.join(__dirname, '../templates');
-if (fs.existsSync(templatesDir)) {
-    const files = fs.readdirSync(templatesDir);
+if (fsRef['existsSync'](templatesDir)) {
+    const files = fsRef['readdirSync'](templatesDir);
     files.forEach(file => {
         if (file.endsWith('.hbs')) {
             const name = path.basename(file, '.hbs');
-            const source = fs.readFileSync(path.join(templatesDir, file), 'utf-8');
+            const source = fsRef['readFileSync'](path.join(templatesDir, file), 'utf-8');
             Handlebars.registerPartial(name, source);
         }
     });
 }
 
-// Helper voor nette ms-formatting
 function ms(start: number): string {
     return `${(performance.now() - start).toFixed(1)}ms`;
 }
@@ -46,16 +54,17 @@ export class MailerService {
     private static logoInitialized = false;
 
     private static getTemplate(templateId: string): HandlebarsTemplateDelegate {
-        if (this.templateCache.has(templateId)) {
-            return this.templateCache.get(templateId)!;
+        const cached = this.templateCache.get(templateId);
+        if (cached) {
+            return cached;
         }
 
         const templatePath = path.join(__dirname, '../templates', `${templateId}.hbs`);
-        if (!fs.existsSync(templatePath)) {
+        if (!fsRef['existsSync'](templatePath)) {
             throw new Error(`Template not found: ${templateId}`);
         }
 
-        const source = fs.readFileSync(templatePath, 'utf-8');
+        const source = fsRef['readFileSync'](templatePath, 'utf-8');
         const template = Handlebars.compile(source);
 
         this.templateCache.set(templateId, template);
@@ -68,12 +77,12 @@ export class MailerService {
         }
 
         const logoPath = path.join(__dirname, '../assets/newlogo.png');
-        if (fs.existsSync(logoPath)) {
+        if (fsRef['existsSync'](logoPath)) {
             this.cachedLogoAttachment = {
                 '@odata.type': '#microsoft.graph.fileAttachment',
                 name: 'logo.png',
                 contentType: 'image/png',
-                contentBytes: fs.readFileSync(logoPath).toString('base64'),
+                contentBytes: fsRef['readFileSync'](logoPath).toString('base64'),
                 contentId: 'logo',
                 isInline: true
             };
@@ -90,29 +99,24 @@ export class MailerService {
 
     static async send(redis: Redis, to: string, templateId: string, data: Record<string, unknown>): Promise<boolean> {
         const totalStart = performance.now();
-        safeConsoleLog(`[MailerService] Preparing ${templateId} for ${to}...`);
+        safeConsoleLog(`[mailer.ts][send] Preparing ${templateId} for ${to}...`);
 
         try {
-            // 1. Template renderen
-            const t1 = performance.now();
             const htmlContent = this.renderTemplate(templateId, data);
-            safeConsoleLog(`[MailerService] [timing] renderTemplate: ${ms(t1)} (html size: ${htmlContent.length} chars)`);
+            safeConsoleLog(`[mailer.ts][send] renderTemplate: ${ms(totalStart)} (html size: ${htmlContent.length} chars)`);
 
-            // 2. Azure access token ophalen (cache of fresh)
             const t2 = performance.now();
             const accessToken = await TokenService.getAccessToken(redis);
-            safeConsoleLog(`[MailerService] [timing] getAccessToken: ${ms(t2)}`);
+            safeConsoleLog(`[mailer.ts][send] getAccessToken: ${ms(t2)}`);
 
-            // 3. Logo attachment laden (gecached na eerste keer)
             const t3 = performance.now();
             const logoAttachment = this.getLogoAttachment();
-            safeConsoleLog(`[MailerService] [timing] getLogoAttachment: ${ms(t3)} (cached: ${this.logoInitialized})`);
+            safeConsoleLog(`[mailer.ts][send] getLogoAttachment: ${ms(t3)} (cached: ${this.logoInitialized})`);
 
             const senderEmail = process.env.AZURE_MAIL_SENDER || 'info@salvemundi.nl';
             const customSubject = data['subject'] as string | undefined;
             const userFriendlySubject = customSubject || this.SUBJECT_MAP.get(templateId) || templateId.replace(/[-_]/g, ' ');
 
-            // 4. Graph API call
             const t4 = performance.now();
             const response = await fetch(`https://graph.microsoft.com/v1.0/users/${senderEmail}/sendMail`, {
                 method: 'POST',
@@ -138,20 +142,20 @@ export class MailerService {
                     }
                 })
             });
-            safeConsoleLog(`[MailerService] [timing] Graph API sendMail: ${ms(t4)} (status: ${response.status})`);
+            safeConsoleLog(`[mailer.ts][send] Graph API sendMail: ${ms(t4)} (status: ${response.status})`);
 
             if (!response.ok) {
                 const errorData = await response.json() as unknown;
                 throw new Error(`Graph API Error: ${JSON.stringify(errorData)}`);
             }
 
-            safeConsoleLog(`[MailerService] Successfully dispatched to ${to}`);
-            safeConsoleLog(`[MailerService] [timing] TOTAL send(): ${ms(totalStart)}`);
+            safeConsoleLog(`[mailer.ts][send] Successfully dispatched to ${to}`);
+            safeConsoleLog(`[mailer.ts][send][timing] TOTAL send(): ${ms(totalStart)}`);
             return true;
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             safeConsoleError(`[mailer.ts][send] Failed to send email:`, errorMessage);
-            safeConsoleLog(`[MailerService] [timing] TOTAL send() (failed): ${ms(totalStart)}`);
+            safeConsoleLog(`[mailer.ts][send][timing] TOTAL send() (failed): ${ms(totalStart)}`);
             throw error;
         }
     }

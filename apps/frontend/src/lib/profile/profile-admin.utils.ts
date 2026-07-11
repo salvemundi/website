@@ -57,9 +57,7 @@ export function mergeUserData(sUser: SessionUser | null | undefined, initialUser
         mergedUser.name = `${mergedUser.first_name || ''} ${mergedUser.last_name || ''}`.trim();
     }
 
-    if (!mergedUser.committees && initialUser.committees) {
-        mergedUser.committees = initialUser.committees;
-    }
+    mergedUser.committees = initialUser.committees ?? sUser.committees;
 
     return mergedUser;
 }

@@ -38,7 +38,6 @@ export default async function AdminActiviteitenPage() {
     return (
         <AdminPageShell
             title="Activiteiten Beheer"
-            subtitle="Organiseer en beheer alle activiteiten van Salve Mundi"
             backHref="/beheer"
             hideToolbar={true}
         >

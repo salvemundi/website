@@ -42,3 +42,33 @@ export async function rateLimit(key: string, limit: number = 5, windowSeconds: n
         reset: Math.max(0, ttl)
     };
 }
+
+export async function checkRateLimit(
+    key: string,
+    limit: number = 5,
+    windowSeconds: number = 60,
+    errorMessage: string = 'Te veel pogingen vanaf dit IP-adres. Probeer het later opnieuw.'
+) {
+    const { success } = await rateLimit(key, limit, windowSeconds);
+    if (!success) {
+        return {
+            success: false as const,
+            error: errorMessage,
+            message: errorMessage,
+            errors: undefined
+        };
+    }
+    return { success: true as const };
+}
+
+export async function enforceRateLimit(
+    key: string,
+    limit: number = 5,
+    windowSeconds: number = 60,
+    errorMessage: string = 'Te veel pogingen vanaf dit IP-adres. Probeer het later opnieuw.'
+) {
+    const { success } = await rateLimit(key, limit, windowSeconds);
+    if (!success) {
+        throw new Error(errorMessage);
+    }
+}

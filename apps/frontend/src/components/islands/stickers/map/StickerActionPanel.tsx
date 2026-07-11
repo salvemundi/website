@@ -35,7 +35,7 @@ export default function StickerActionPanel({ user, isLocating, onPlaceSticker, c
                 className={`w-full bg-gradient-to-r from-(--theme-purple) to-orange-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all font-black uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 ${compact ? 'py-2 text-[10px] leading-tight px-3' : 'py-3 text-xs'}`}
             >
                 {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapIcon className="h-4 w-4 shrink-0" />}
-                <span className="whitespace-normal text-center">Ik ben hier!</span>
+                <span className="whitespace-normal text-center">Plaats sticker</span>
             </button>
             <p className={`text-[9px] text-(--text-muted) mt-2 text-center uppercase font-bold tracking-tighter italic ${compact ? 'leading-tight' : ''}`}>
                 Plak een sticker op je huidige GPS locatie

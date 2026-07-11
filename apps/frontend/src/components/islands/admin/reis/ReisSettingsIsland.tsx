@@ -104,7 +104,6 @@ export default function ReisSettingsIsland({ initialTrips, initialSettings }: Re
         <>
             <AdminToolbar
                 title="Reis Instellingen"
-                subtitle="Configureer reis details, prijzen en algemene instellingen"
                 backHref="/beheer/reis"
                 actions={
                     <div className="flex items-center gap-4">

@@ -1,15 +1,9 @@
 import { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import { getSyncStatusAction, type SyncStatus } from '@/server/actions/infrastructure/azure-sync/sync-monitoring.actions';
-
-// Modular Islands
 import SyncControlIsland from '@/components/islands/admin/sync/SyncControlIsland';
 import SyncMonitorIsland from '@/components/islands/admin/sync/SyncMonitorIsland';
 import { SyncProvider } from '@/components/islands/admin/sync/SyncContext';
-
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
-import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 
 export const metadata: Metadata = {
     title: 'Beheer Sync | SV Salve Mundi'
@@ -17,12 +11,6 @@ export const metadata: Metadata = {
 
 
 export default async function AzureSyncPage() {
-    const { isAuthorized, isIct } = await checkAdminAccess();
-    if (!isAuthorized) redirect('/?needLogin=true');
-    
-    if (!isIct) {
-        return <AdminUnauthorized title="Azure Sync" backHref="/beheer" />;
-    }
 
     const statusData = await getSyncStatusAction();
     const initialStatus = !('success' in statusData)
@@ -35,7 +23,6 @@ export default async function AzureSyncPage() {
     return (
         <AdminPageShell
             title="Azure Sync Monitor"
-            subtitle="Beheer de synchronisatie tussen Salve Mundi en Azure AD / Microsoft 365."
             backHref="/beheer"
             actions={
                 <div className="flex items-center gap-4 bg-bg-soft px-4 py-2 rounded-2xl border border-border-color/50 shadow-sm">

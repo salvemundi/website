@@ -2,7 +2,6 @@ import { safeConsoleError, logInfo } from './utils/logger.js';
 import Fastify from 'fastify';
 import redisPlugin from './plugins/redis.js';
 import syncRoutes from './routes/sync.js';
-import { db } from './plugins/db.js';
 import client from './plugins/db.js';
 import { ProvisionWorkerService } from './services/provision-worker.js';
 import { EventListenerService } from './services/event-listener.js';

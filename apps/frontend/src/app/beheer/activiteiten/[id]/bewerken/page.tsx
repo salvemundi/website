@@ -39,7 +39,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
         return (
             <AdminUnauthorized
                 title="Activiteit Bewerken"
-                description="Je hebt geen rechten om activiteiten te bewerken. Alleen commissieleiders en beheer hebben deze rechten."
+                description="Je hebt geen rechten om activiteiten te bewerken."
             />
         );
     }

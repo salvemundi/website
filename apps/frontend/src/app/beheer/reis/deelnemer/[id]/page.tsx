@@ -7,10 +7,6 @@ import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/a
 import { safeConsoleError } from '@/server/utils/logger';
 import { db, schema } from "@salvemundi/db";
 import { eq } from "drizzle-orm";
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { getPermissions } from '@/shared/lib/permissions';
-import { redirect } from 'next/navigation';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -44,13 +40,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function ReisParticipantPage({ params }: PageProps) {
-    const session = await getEnrichedSession();
-    if (!session?.user) redirect('/?needLogin=true');
-    const permissions = getPermissions(session.user.committees);
-    if (!permissions.includes('reis')) {
-        return <AdminUnauthorized title="Deelnemer Details" backHref="/beheer/reis" />;
-    }
-
     const { id } = await params;
     const signupId = parseInt(id);
 

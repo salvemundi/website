@@ -42,8 +42,6 @@ export class MailWorkerService {
                 }
 
                 for (const taskJson of tasks) {
-                    if (this.shouldStop) break;
-
                     const claimed = await redis.zrem(this.QUEUE_KEY, taskJson);
                     if (claimed === 0) {
                         continue;

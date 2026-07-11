@@ -57,71 +57,73 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         suppressHydrationWarning
-                        className="w-full pl-12 pr-4 py-3 bg-(--bg-main)/50 border border-(--beheer-border) rounded-(--beheer-radius) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) transition-all font-bold text-[10px] uppercase tracking-widest text-(--beheer-text) placeholder:text-(--beheer-text-muted)"
+                        className="w-full pl-12 pr-4 py-3 bg-(--beheer-card-soft) border border-(--beheer-border) rounded-xl text-xs font-semibold focus:outline-none focus:border-(--beheer-accent) transition-all placeholder:text-(--beheer-text-muted)/40 text-(--beheer-text)"
                     />
                 </div>
             </div>
 
-            <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border) overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+            <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-sm border border-(--beheer-border) overflow-hidden">
+                <div className="overflow-x-auto custom-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
                         <thead>
-                            <tr className="bg-(--bg-main)/50 border-b border-(--beheer-border)">
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-(--beheer-text-muted)">Locatie & Gebruiker</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-(--text-muted)">Stad / Land</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-(--text-muted)">Datum</th>
-                                <th className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-(--text-muted)">Foto</th>
-                                <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-(--beheer-text-muted)">Acties</th>
+                            <tr className="border-b border-(--beheer-border) bg-(--beheer-card-soft) text-xs font-semibold text-(--beheer-text-muted)">
+                                <th className="px-6 py-4">Locatie & Gebruiker</th>
+                                <th className="px-6 py-4">Stad / Land</th>
+                                <th className="px-6 py-4">Datum</th>
+                                <th className="px-6 py-4 text-center">Foto</th>
+                                <th className="px-6 py-4 text-right">Acties</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-(--beheer-border)/10">
                             {filteredStickers.map((sticker) => (
-                                <tr key={sticker.id} className="hover:bg-(--bg-main)/30 transition-colors group">
+                                <tr key={sticker.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col gap-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-black text-(--beheer-text) group-hover:text-(--beheer-accent) transition-colors uppercase tracking-tight">
-                                                    {sticker.user_created
-                                                        ? `${sticker.user_created.first_name || ''} ${sticker.user_created.last_name || ''}`
-                                                        : 'Systeem'}                                              </span>
+                                                <span className="font-semibold text-(--beheer-text) group-hover:text-(--beheer-accent) transition-colors leading-tight">
+                                                    {sticker.location_name || 'Onbekende Locatie'}
+                                                </span>
                                                 {sticker.status === 'published' ? (
-                                                    <span className="px-1.5 py-0.5 rounded-md bg-green-500/10 text-green-500 text-[8px] font-black uppercase tracking-widest border border-green-500/20">
+                                                    <span className="px-2 py-0.5 rounded-md bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] font-semibold border border-green-500/20">
                                                         Live
                                                     </span>
                                                 ) : (
-                                                    <span className="px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-widest border border-amber-500/20">
+                                                    <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-semibold border border-amber-500/20">
                                                         Draft
                                                     </span>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-(--beheer-text-muted)">
-                                                <User className="h-3 w-3" />
-                                                {sticker.user_created
-                                                    ? `${sticker.user_created.first_name || ''} ${sticker.user_created.last_name || ''}`
-                                                    : 'Systeem'}
+                                            <div className="flex items-center gap-1.5 text-xs text-(--beheer-text-muted) font-medium">
+                                                <User className="h-3.5 w-3.5 opacity-60" />
+                                                <span>
+                                                    Geüpload door:{' '}
+                                                    {sticker.user_created
+                                                        ? `${sticker.user_created.first_name || ''} ${sticker.user_created.last_name || ''}`
+                                                        : 'Systeem'}
+                                                </span>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-(--beheer-text) flex items-center gap-1.5 uppercase tracking-widest leading-none">
-                                                <MapPin className="h-3 w-3 text-red-500" />
-                                                {sticker.city || ''}
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-sm font-semibold text-(--beheer-text) flex items-center gap-1.5 leading-none">
+                                                <MapPin className="h-3.5 w-3.5 text-red-500/80" />
+                                                {sticker.city || 'Onbekende stad'}
                                             </span>
-                                            <span className="text-[10px] font-black text-(--beheer-text-muted) uppercase tracking-widest flex items-center gap-1.5 mt-1.5 leading-none">
-                                                <Globe className="h-3 w-3 text-blue-500" />
-                                                {sticker.country || ''}
+                                            <span className="text-xs font-medium text-(--beheer-text-muted) flex items-center gap-1.5 leading-none">
+                                                <Globe className="h-3.5 w-3.5 text-blue-500/80" />
+                                                {sticker.country || 'Onbekend land'}
                                             </span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-[10px] font-black text-(--beheer-text-muted) uppercase tracking-widest" suppressHydrationWarning>
+                                    <td className="px-6 py-4 text-sm font-medium text-(--beheer-text-muted)">
+                                        <span suppressHydrationWarning>
                                             {formatDate(sticker.date_created, 'dd MMM yyyy')}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <div
-                                            className="w-12 h-12 mx-auto rounded-(--beheer-radius) bg-(--bg-main) border border-dashed border-(--beheer-border) flex items-center justify-center text-(--beheer-text-muted) cursor-pointer hover:border-(--beheer-accent) transition-colors overflow-hidden"
+                                            className="w-12 h-12 mx-auto rounded-(--beheer-radius) bg-(--beheer-card-soft) border border-dashed border-(--beheer-border) flex items-center justify-center text-(--beheer-text-muted) cursor-pointer hover:border-(--beheer-accent) transition-colors overflow-hidden"
                                             onClick={() => sticker.image && setSelectedImage(`${ASSET_URL}/${sticker.image}`)}
                                         >
                                             {!sticker.image ? (
@@ -142,7 +144,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                             {sticker.status !== 'published' && (
                                                 <button
                                                     onClick={() => onApprove(sticker.id)}
-                                                    className="p-2 bg-green-500/10 text-green-500 rounded-lg hover:bg-green-500 hover:text-white transition-all shadow-sm"
+                                                    className="p-2 bg-green-500/10 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-600 hover:text-white transition-all shadow-sm"
                                                     title="Publiceren"
                                                 >
                                                     <CheckCircle className="h-4 w-4" />
@@ -150,7 +152,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                             )}
                                             <button
                                                 onClick={() => onDelete(sticker.id)}
-                                                className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                                                className="p-2 bg-red-500/10 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm"
                                                 title="Verwijderen"
                                             >
                                                 <Trash className="h-4 w-4" />
@@ -161,7 +163,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                             ))}
                             {filteredStickers.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-16 text-center text-(--beheer-text-muted) italic font-bold uppercase tracking-widest text-[10px]">
+                                    <td colSpan={5} className="px-6 py-16 text-center text-(--beheer-text-muted) italic font-semibold text-sm">
                                         Geen stickers gevonden voor dit filter.
                                     </td>
                                 </tr>

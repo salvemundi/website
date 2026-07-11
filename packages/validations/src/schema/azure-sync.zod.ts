@@ -7,5 +7,6 @@ export const azureGroupOwnerSchema = z.object({
 export const azureSyncRunSchema = z.object({
     fields: z.array(z.string()).optional(),
     activeOnly: z.boolean().optional(),
-    silent: z.boolean().optional()
+    silent: z.boolean().optional(),
+    sendExpiryEmails: z.boolean().optional()
 });
