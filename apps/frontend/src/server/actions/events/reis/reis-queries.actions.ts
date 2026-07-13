@@ -16,12 +16,13 @@ import { fetchUserProfileByEmailDb } from '@/server/internal/leden/leden-db.util
 import { safeConsoleError } from '@/server/utils/logger';
 import { getFeatureFlagSettings } from '../../admin/admin-utils.actions';
 
-export async function getReisSiteSettings(): Promise<ReisSiteSettings | null> {
+export async function getReisSiteSettings(): Promise<ReisSiteSettings & { canToggleVisibility?: boolean } | null> {
     const settings = await getFeatureFlagSettings('/reis');
     return {
         id: 'reis',
         show: settings.show,
-        disabled_message: settings.disabled_message
+        disabled_message: settings.disabled_message,
+        canToggleVisibility: settings.canToggleVisibility
     };
 }
 

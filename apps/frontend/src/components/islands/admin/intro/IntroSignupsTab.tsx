@@ -5,7 +5,6 @@ import type { MouseEvent, ChangeEvent } from 'react';
 import {
     Search,
     Mail,
-    Download,
     ChevronDown,
     Edit,
     Trash,
@@ -29,7 +28,7 @@ interface Props {
     deletingId: number | null;
 }
 
-export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport, deletingId }: Props) {
+export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingId }: Props) {
     const [search, setSearch] = useState('');
     const [expandedRows, setExpandedRows] = useState<number[]>([]);
     const [editingId, setEditingId] = useState<number | null>(null);
@@ -83,9 +82,6 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, onExport,
                 <div className="flex gap-2">
                     <Button onClick={handleMailBcc} variant="secondary" icon={Mail}>
                         Mail BCC
-                    </Button>
-                    <Button onClick={onExport} icon={Download}>
-                        Export CSV
                     </Button>
                 </div>
             </div>

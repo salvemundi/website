@@ -37,9 +37,6 @@ function normalizeGroups(rawGroups: unknown): GroupConfig[] {
     }).filter(g => g.name !== '');
 }
 
-/**
- * Fetches all pub crawl events.
- */
 export async function fetchPubCrawlEventsDb(): Promise<PubCrawlEvent[]> {
     const rows = await db.select().from(schema.pub_crawl_events).orderBy(desc(schema.pub_crawl_events.date)).limit(100);
 
@@ -56,9 +53,6 @@ export async function fetchPubCrawlEventsDb(): Promise<PubCrawlEvent[]> {
     }) as unknown as PubCrawlEvent[];
 }
 
-/**
- * Fetches a single pub crawl event by ID directly from PostgreSQL.
- */
 export async function fetchPubCrawlEventByIdDb(id: number): Promise<PubCrawlEvent | null> {
     const rows = await db.select().from(schema.pub_crawl_events).where(eq(schema.pub_crawl_events.id, id)).limit(1);
 

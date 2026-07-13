@@ -12,20 +12,20 @@ export async function requireAdminResource(resource: AdminResource) {
     const session = await getEnrichedSession();
 
     if (!session) {
-        throw new Error('Niet ingelogd');
+        throw new Error('Je bent niet goed ingelogd');
     }
 
     const user = session.user;
     let committees = user.committees;
 
-    if (!committees || !Array.isArray(committees)) {
+    if (!committees || !Array.isArray(committees) || committees.length === 0) {
         const { fetchUserCommitteesDb } = await import("@/server/internal/leden/leden-db.utils");
         committees = await fetchUserCommitteesDb(user.id);
         user.committees = committees;
     }
 
     if (!hasPermission(committees, resource)) {
-        throw new Error(`Forbidden: ${resource} Admin rechten vereist.`);
+        throw new Error(`Helaas, je hebt geen rechten om deze pagina te bekijken.`);
     }
 
     return user;

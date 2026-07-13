@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Loader2 } from 'lucide-react';
+import { useGuardAccess } from '@/components/ui/admin/AdminGuardClient';
 
 interface AdminVisibilityToggleProps {
     isVisible: boolean;
@@ -11,9 +12,6 @@ interface AdminVisibilityToggleProps {
     disabled?: boolean;
 }
 
-/**
- * A standardized toggle for controlling page visibility on the public site.
- */
 export default function AdminVisibilityToggle({
     isVisible,
     onToggle,
@@ -21,6 +19,12 @@ export default function AdminVisibilityToggle({
     label = "Zichtbaarheid",
     disabled = false
 }: AdminVisibilityToggleProps) {
+    const { canToggleVisibility } = useGuardAccess();
+
+    if (!canToggleVisibility) {
+        return null;
+    }
+
     return (
         <div className={`flex items-center gap-3 px-4 py-2 bg-bg-card border border-border-color rounded-3xl shadow-sm ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
             <span className="text-base font-semibold text-text-muted">

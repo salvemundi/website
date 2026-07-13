@@ -39,7 +39,7 @@ export function DashboardHub({
             title: "Content",
             icon: <Layout />,
             items: [
-                { title: "Activiteiten", value: stats.upcomingEventsCount, icon: <Calendar />, href: "/beheer/activiteiten", colorClass: "purple" as const },
+                { title: "Activiteiten", value: stats.upcomingEventsCount, icon: <Calendar />, href: "/beheer/activiteiten", colorClass: "purple" as const, disabled: !permissions.includes('activiteiten') },
                 { title: "Intro", value: stats.introSignups, icon: <FileText />, href: "/beheer/intro", colorClass: "blue" as const, disabled: !permissions.includes('intro') },
                 { title: "Reis", value: stats.reisSignups, icon: <Globe />, href: "/beheer/reis", colorClass: "teal" as const, disabled: !permissions.includes('reis') },
                 { title: "Kroegentocht", value: stats.pubCrawlSignups, icon: <Ticket />, href: "/beheer/kroegentocht", colorClass: "orange" as const, disabled: !permissions.includes('kroegentocht') },
@@ -69,6 +69,7 @@ export function DashboardHub({
     ];
 
     const groups = getGroups(stats);
+    const hasAnyVisibleSection = groups.some(group => group.items.length > 0);
 
     interface DashboardItem {
         title: string;
@@ -110,19 +111,23 @@ export function DashboardHub({
 
     return (
         <div className="space-y-12">
-            {groups.map((group, idx) => (
-                <React.Fragment key={idx}>
-                    {renderSection(group.title, group.items, group.icon)}
-                </React.Fragment>
-            ))}
+            {hasAnyVisibleSection ? (
+                groups.map((group, idx) => (
+                    <React.Fragment key={idx}>
+                        {renderSection(group.title, group.items, group.icon)}
+                    </React.Fragment>
+                ))
+            ) : (
+                <div className="bg-bg-soft rounded-2xl border border-border-color/50 p-8 text-center max-w-md mx-auto my-8 shadow-sm">
+                    <p className="text-sm font-medium text-text-muted">
+                        Er zijn nog geen beheerpagina&apos;s voor de commissies waar je in zit.
+                    </p>
+                </div>
+            )}
         </div>
     );
 }
 
-/**
- * Vertical list showing upcoming birthdays.
- * Modernized: Pure data rendering, no manual loading states.
- */
 export function BirthdaysList({ data }: { data: Birthday[] }) {
     if (data.length === 0) return null;
     return (
@@ -150,9 +155,6 @@ export function BirthdaysList({ data }: { data: Birthday[] }) {
     );
 }
 
-/**
- * Top sticker collectors rankings.
- */
 export function TopStickersList({ data }: { data: TopSticker[] }) {
     if (data.length === 0) return null;
     return (
@@ -179,9 +181,6 @@ export function TopStickersList({ data }: { data: TopSticker[] }) {
     );
 }
 
-/**
- * Activity signups overview.
- */
 export function ActivitySignupsList({ data }: { data: RecentActivity[] }) {
     if (data.length === 0) return null;
     return (

@@ -28,7 +28,7 @@ const serviceHeaders = (contentType = true) => {
     return headers;
 };
 
-import { enforceFeatureAccess } from '@/server/actions/admin/admin-utils.actions';
+import { enforceFeatureAccess, revalidateUserCache } from '@/server/actions/admin/admin-utils.actions';
 
 async function checkAccess() {
     return enforceFeatureAccess('commissies');
@@ -100,6 +100,7 @@ export async function addCommitteeMember(
             is_leader: false,
             is_visible: true
         });
+        await revalidateUserCache();
         revalidatePath('/beheer/commissies');
     } catch (error: unknown) {
         safeConsoleError(`[admin-committees.actions.ts][addCommitteeMember] Failed to write local membership to Directus:`, error);
@@ -165,6 +166,7 @@ export async function removeCommitteeMember(
                         eq(schema.committee_members.committee_id, committee.id)
                     )
                 );
+                await revalidateUserCache();
             }
         }
         revalidatePath('/beheer/commissies');
@@ -191,6 +193,7 @@ export async function toggleCommitteeLeader(
         await db.update(schema.committee_members)
             .set({ is_leader: !currentIsLeader })
             .where(eq(schema.committee_members.id, membershipId));
+        await revalidateUserCache();
         revalidatePath('/beheer/commissies');
     } catch (error: unknown) {
         safeConsoleError(`[admin-committees.actions.ts][toggleCommitteeLeader] Failed to toggle leader for membership ${membershipId}:`, error);

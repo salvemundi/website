@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { clubs, clubMembers, directusFiles, stickers, directusUsers, board, boardMembers, contacts, directusPolicies, directusAccess, directusRoles, committees, directusComments, directusDashboards, directusFolders, directusCollections, directusFlows, directusPanels, directusPermissions, directusPresets, directusActivity, directusRevisions, directusVersions, directusShares, directusNotifications, directusOperations, documents, events, eventSignups, eventsDirectusUsers, introBlogs, introBlogLikes, eventsMembers, heroBanners, introBlogGallery, pubCrawlEvents, membershipHistory, pubCrawlSignups, pubCrawlSignupsTransactions, transactions, pushNotification, introPlanning, pubCrawlTickets, introParentSignups, trips, tripSignups, tripActivities, tripSignupActivities, safeHavens, sponsors, directusSessions, permissions, rolePermissions, roles, webshopPreorders, authAccounts, authSessions, committeeMembers, introPlanningSignups, introSignups, directusDeployments, webshopProducts, webshopProductMedia, directusDeploymentProjects, directusSettings, directusDeploymentRuns, webshopProductVariants, webshopDropWindows, webshopPreorderLines } from "./schema";
+import { clubs, clubMembers, directusUsers, stickers, directusFiles, board, boardMembers, contacts, directusRoles, directusAccess, directusPolicies, committees, directusComments, directusDashboards, directusFolders, directusCollections, directusFlows, directusPanels, directusPermissions, directusPresets, directusActivity, directusRevisions, directusVersions, directusShares, directusNotifications, directusOperations, introBlogs, documents, events, eventSignups, eventsDirectusUsers, introBlogLikes, eventsMembers, heroBanners, introBlogGallery, pubCrawlEvents, membershipHistory, pubCrawlSignups, pubCrawlSignupsTransactions, transactions, pushNotification, introPlanning, pubCrawlTickets, introParentSignups, trips, tripSignups, tripActivities, tripSignupActivities, safeHavens, sponsors, directusSessions, roles, rolePermissions, permissions, webshopPreorders, authAccounts, authSessions, committeeMembers, introPlanningSignups, introSignups, directusDeployments, webshopProducts, webshopProductMedia, directusDeploymentProjects, directusSettings, directusDeploymentRuns, webshopProductVariants, webshopDropWindows, webshopPreorderLines } from "./schema";
 
 export const clubMembersRelations = relations(clubMembers, ({one}) => ({
 	club: one(clubs, {
@@ -17,10 +17,6 @@ export const clubsRelations = relations(clubs, ({one, many}) => ({
 }));
 
 export const stickersRelations = relations(stickers, ({one}) => ({
-	directusFile: one(directusFiles, {
-		fields: [stickers.image],
-		references: [directusFiles.id]
-	}),
 	directusUser_userCreated: one(directusUsers, {
 		fields: [stickers.userCreated],
 		references: [directusUsers.id],
@@ -31,50 +27,9 @@ export const stickersRelations = relations(stickers, ({one}) => ({
 		references: [directusUsers.id],
 		relationName: "stickers_userUpdated_directusUsers_id"
 	}),
-}));
-
-export const directusFilesRelations = relations(directusFiles, ({one, many}) => ({
-	stickers: many(stickers),
-	boards: many(board),
-	contacts: many(contacts),
-	committees: many(committees),
-	directusFolder: one(directusFolders, {
-		fields: [directusFiles.folder],
-		references: [directusFolders.id]
-	}),
-	directusUser_modifiedBy: one(directusUsers, {
-		fields: [directusFiles.modifiedBy],
-		references: [directusUsers.id],
-		relationName: "directusFiles_modifiedBy_directusUsers_id"
-	}),
-	directusUser_uploadedBy: one(directusUsers, {
-		fields: [directusFiles.uploadedBy],
-		references: [directusUsers.id],
-		relationName: "directusFiles_uploadedBy_directusUsers_id"
-	}),
-	documents: many(documents),
-	events: many(events),
-	introBlogs: many(introBlogs),
-	heroBanners: many(heroBanners),
-	introBlogGalleries: many(introBlogGallery),
-	pubCrawlEvents: many(pubCrawlEvents),
-	trips: many(trips),
-	tripActivities: many(tripActivities),
-	safeHavens: many(safeHavens),
-	sponsors: many(sponsors),
-	clubs: many(clubs),
-	webshopProductMedias: many(webshopProductMedia),
-	directusSettings_projectLogo: many(directusSettings, {
-		relationName: "directusSettings_projectLogo_directusFiles_id"
-	}),
-	directusSettings_publicBackground: many(directusSettings, {
-		relationName: "directusSettings_publicBackground_directusFiles_id"
-	}),
-	directusSettings_publicFavicon: many(directusSettings, {
-		relationName: "directusSettings_publicFavicon_directusFiles_id"
-	}),
-	directusSettings_publicForeground: many(directusSettings, {
-		relationName: "directusSettings_publicForeground_directusFiles_id"
+	directusFile: one(directusFiles, {
+		fields: [stickers.image],
+		references: [directusFiles.id]
 	}),
 }));
 
@@ -100,11 +55,11 @@ export const directusUsersRelations = relations(directusUsers, ({one, many}) => 
 		relationName: "directusComments_userUpdated_directusUsers_id"
 	}),
 	directusDashboards: many(directusDashboards),
-	directusFiles_modifiedBy: many(directusFiles, {
-		relationName: "directusFiles_modifiedBy_directusUsers_id"
-	}),
 	directusFiles_uploadedBy: many(directusFiles, {
 		relationName: "directusFiles_uploadedBy_directusUsers_id"
+	}),
+	directusFiles_modifiedBy: many(directusFiles, {
+		relationName: "directusFiles_modifiedBy_directusUsers_id"
 	}),
 	directusFlows: many(directusFlows),
 	directusPanels: many(directusPanels),
@@ -123,15 +78,15 @@ export const directusUsersRelations = relations(directusUsers, ({one, many}) => 
 	directusVersions_userUpdated: many(directusVersions, {
 		relationName: "directusVersions_userUpdated_directusUsers_id"
 	}),
-	eventSignups: many(eventSignups),
-	eventsDirectusUsers: many(eventsDirectusUsers),
-	introBlogLikes: many(introBlogLikes),
 	introBlogs_userCreated: many(introBlogs, {
 		relationName: "introBlogs_userCreated_directusUsers_id"
 	}),
 	introBlogs_userUpdated: many(introBlogs, {
 		relationName: "introBlogs_userUpdated_directusUsers_id"
 	}),
+	eventSignups: many(eventSignups),
+	eventsDirectusUsers: many(eventsDirectusUsers),
+	introBlogLikes: many(introBlogLikes),
 	heroBanners: many(heroBanners),
 	membershipHistories: many(membershipHistory),
 	pushNotifications: many(pushNotification),
@@ -142,17 +97,17 @@ export const directusUsersRelations = relations(directusUsers, ({one, many}) => 
 	introPlannings_userUpdated: many(introPlanning, {
 		relationName: "introPlanning_userUpdated_directusUsers_id"
 	}),
-	introParentSignups_approvedBy: many(introParentSignups, {
-		relationName: "introParentSignups_approvedBy_directusUsers_id"
-	}),
 	introParentSignups_userCreated: many(introParentSignups, {
 		relationName: "introParentSignups_userCreated_directusUsers_id"
+	}),
+	introParentSignups_userUpdated: many(introParentSignups, {
+		relationName: "introParentSignups_userUpdated_directusUsers_id"
 	}),
 	introParentSignups_userId: many(introParentSignups, {
 		relationName: "introParentSignups_userId_directusUsers_id"
 	}),
-	introParentSignups_userUpdated: many(introParentSignups, {
-		relationName: "introParentSignups_userUpdated_directusUsers_id"
+	introParentSignups_approvedBy: many(introParentSignups, {
+		relationName: "introParentSignups_approvedBy_directusUsers_id"
 	}),
 	tripSignups: many(tripSignups),
 	safeHavens: many(safeHavens),
@@ -177,11 +132,52 @@ export const directusUsersRelations = relations(directusUsers, ({one, many}) => 
 	webshopPreorders: many(webshopPreorders),
 }));
 
-export const boardRelations = relations(board, ({one, many}) => ({
-	directusFile: one(directusFiles, {
-		fields: [board.image],
-		references: [directusFiles.id]
+export const directusFilesRelations = relations(directusFiles, ({one, many}) => ({
+	stickers: many(stickers),
+	boards: many(board),
+	contacts: many(contacts),
+	committees: many(committees),
+	directusFolder: one(directusFolders, {
+		fields: [directusFiles.folder],
+		references: [directusFolders.id]
 	}),
+	directusUser_uploadedBy: one(directusUsers, {
+		fields: [directusFiles.uploadedBy],
+		references: [directusUsers.id],
+		relationName: "directusFiles_uploadedBy_directusUsers_id"
+	}),
+	directusUser_modifiedBy: one(directusUsers, {
+		fields: [directusFiles.modifiedBy],
+		references: [directusUsers.id],
+		relationName: "directusFiles_modifiedBy_directusUsers_id"
+	}),
+	introBlogs: many(introBlogs),
+	documents: many(documents),
+	events: many(events),
+	heroBanners: many(heroBanners),
+	introBlogGalleries: many(introBlogGallery),
+	pubCrawlEvents: many(pubCrawlEvents),
+	trips: many(trips),
+	tripActivities: many(tripActivities),
+	safeHavens: many(safeHavens),
+	sponsors: many(sponsors),
+	clubs: many(clubs),
+	webshopProductMedias: many(webshopProductMedia),
+	directusSettings_projectLogo: many(directusSettings, {
+		relationName: "directusSettings_projectLogo_directusFiles_id"
+	}),
+	directusSettings_publicForeground: many(directusSettings, {
+		relationName: "directusSettings_publicForeground_directusFiles_id"
+	}),
+	directusSettings_publicBackground: many(directusSettings, {
+		relationName: "directusSettings_publicBackground_directusFiles_id"
+	}),
+	directusSettings_publicFavicon: many(directusSettings, {
+		relationName: "directusSettings_publicFavicon_directusFiles_id"
+	}),
+}));
+
+export const boardRelations = relations(board, ({one, many}) => ({
 	directusUser_userCreated: one(directusUsers, {
 		fields: [board.userCreated],
 		references: [directusUsers.id],
@@ -191,6 +187,10 @@ export const boardRelations = relations(board, ({one, many}) => ({
 		fields: [board.userUpdated],
 		references: [directusUsers.id],
 		relationName: "board_userUpdated_directusUsers_id"
+	}),
+	directusFile: one(directusFiles, {
+		fields: [board.image],
+		references: [directusFiles.id]
 	}),
 	boardMembers: many(boardMembers),
 }));
@@ -214,10 +214,6 @@ export const contactsRelations = relations(contacts, ({one}) => ({
 }));
 
 export const directusAccessRelations = relations(directusAccess, ({one}) => ({
-	directusPolicy: one(directusPolicies, {
-		fields: [directusAccess.policy],
-		references: [directusPolicies.id]
-	}),
 	directusRole: one(directusRoles, {
 		fields: [directusAccess.role],
 		references: [directusRoles.id]
@@ -226,11 +222,10 @@ export const directusAccessRelations = relations(directusAccess, ({one}) => ({
 		fields: [directusAccess.user],
 		references: [directusUsers.id]
 	}),
-}));
-
-export const directusPoliciesRelations = relations(directusPolicies, ({many}) => ({
-	directusAccesses: many(directusAccess),
-	directusPermissions: many(directusPermissions),
+	directusPolicy: one(directusPolicies, {
+		fields: [directusAccess.policy],
+		references: [directusPolicies.id]
+	}),
 }));
 
 export const directusRolesRelations = relations(directusRoles, ({one, many}) => ({
@@ -247,6 +242,11 @@ export const directusRolesRelations = relations(directusRoles, ({one, many}) => 
 	directusShares: many(directusShares),
 	directusUsers: many(directusUsers),
 	directusSettings: many(directusSettings),
+}));
+
+export const directusPoliciesRelations = relations(directusPolicies, ({many}) => ({
+	directusAccesses: many(directusAccess),
+	directusPermissions: many(directusPermissions),
 }));
 
 export const committeesRelations = relations(committees, ({one, many}) => ({
@@ -332,13 +332,13 @@ export const directusPermissionsRelations = relations(directusPermissions, ({one
 }));
 
 export const directusPresetsRelations = relations(directusPresets, ({one}) => ({
-	directusRole: one(directusRoles, {
-		fields: [directusPresets.role],
-		references: [directusRoles.id]
-	}),
 	directusUser: one(directusUsers, {
 		fields: [directusPresets.user],
 		references: [directusUsers.id]
+	}),
+	directusRole: one(directusRoles, {
+		fields: [directusPresets.role],
+		references: [directusRoles.id]
 	}),
 }));
 
@@ -347,6 +347,10 @@ export const directusRevisionsRelations = relations(directusRevisions, ({one, ma
 		fields: [directusRevisions.activity],
 		references: [directusActivity.id]
 	}),
+	directusVersion: one(directusVersions, {
+		fields: [directusRevisions.version],
+		references: [directusVersions.id]
+	}),
 	directusRevision: one(directusRevisions, {
 		fields: [directusRevisions.parent],
 		references: [directusRevisions.id],
@@ -354,10 +358,6 @@ export const directusRevisionsRelations = relations(directusRevisions, ({one, ma
 	}),
 	directusRevisions: many(directusRevisions, {
 		relationName: "directusRevisions_parent_directusRevisions_id"
-	}),
-	directusVersion: one(directusVersions, {
-		fields: [directusRevisions.version],
-		references: [directusVersions.id]
 	}),
 }));
 
@@ -417,6 +417,10 @@ export const directusOperationsRelations = relations(directusOperations, ({one, 
 		fields: [directusOperations.flow],
 		references: [directusFlows.id]
 	}),
+	directusUser: one(directusUsers, {
+		fields: [directusOperations.userCreated],
+		references: [directusUsers.id]
+	}),
 	directusOperation_reject: one(directusOperations, {
 		fields: [directusOperations.reject],
 		references: [directusOperations.id],
@@ -433,10 +437,25 @@ export const directusOperationsRelations = relations(directusOperations, ({one, 
 	directusOperations_resolve: many(directusOperations, {
 		relationName: "directusOperations_resolve_directusOperations_id"
 	}),
-	directusUser: one(directusUsers, {
-		fields: [directusOperations.userCreated],
-		references: [directusUsers.id]
+}));
+
+export const introBlogsRelations = relations(introBlogs, ({one, many}) => ({
+	directusUser_userCreated: one(directusUsers, {
+		fields: [introBlogs.userCreated],
+		references: [directusUsers.id],
+		relationName: "introBlogs_userCreated_directusUsers_id"
 	}),
+	directusUser_userUpdated: one(directusUsers, {
+		fields: [introBlogs.userUpdated],
+		references: [directusUsers.id],
+		relationName: "introBlogs_userUpdated_directusUsers_id"
+	}),
+	directusFile: one(directusFiles, {
+		fields: [introBlogs.image],
+		references: [directusFiles.id]
+	}),
+	introBlogLikes: many(introBlogLikes),
+	introBlogGalleries: many(introBlogGallery),
 }));
 
 export const documentsRelations = relations(documents, ({one}) => ({
@@ -461,25 +480,25 @@ export const eventsRelations = relations(events, ({one, many}) => ({
 }));
 
 export const eventSignupsRelations = relations(eventSignups, ({one, many}) => ({
-	directusUser: one(directusUsers, {
-		fields: [eventSignups.directusRelations],
-		references: [directusUsers.id]
-	}),
 	event: one(events, {
 		fields: [eventSignups.eventId],
 		references: [events.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [eventSignups.directusRelations],
+		references: [directusUsers.id]
 	}),
 	transactions: many(transactions),
 }));
 
 export const eventsDirectusUsersRelations = relations(eventsDirectusUsers, ({one}) => ({
-	directusUser: one(directusUsers, {
-		fields: [eventsDirectusUsers.directusUsersId],
-		references: [directusUsers.id]
-	}),
 	event: one(events, {
 		fields: [eventsDirectusUsers.eventsId],
 		references: [events.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [eventsDirectusUsers.directusUsersId],
+		references: [directusUsers.id]
 	}),
 }));
 
@@ -494,25 +513,6 @@ export const introBlogLikesRelations = relations(introBlogLikes, ({one}) => ({
 	}),
 }));
 
-export const introBlogsRelations = relations(introBlogs, ({one, many}) => ({
-	introBlogLikes: many(introBlogLikes),
-	directusFile: one(directusFiles, {
-		fields: [introBlogs.image],
-		references: [directusFiles.id]
-	}),
-	directusUser_userCreated: one(directusUsers, {
-		fields: [introBlogs.userCreated],
-		references: [directusUsers.id],
-		relationName: "introBlogs_userCreated_directusUsers_id"
-	}),
-	directusUser_userUpdated: one(directusUsers, {
-		fields: [introBlogs.userUpdated],
-		references: [directusUsers.id],
-		relationName: "introBlogs_userUpdated_directusUsers_id"
-	}),
-	introBlogGalleries: many(introBlogGallery),
-}));
-
 export const eventsMembersRelations = relations(eventsMembers, ({one}) => ({
 	event: one(events, {
 		fields: [eventsMembers.eventsId],
@@ -521,24 +521,24 @@ export const eventsMembersRelations = relations(eventsMembers, ({one}) => ({
 }));
 
 export const heroBannersRelations = relations(heroBanners, ({one}) => ({
-	directusFile: one(directusFiles, {
-		fields: [heroBanners.image],
-		references: [directusFiles.id]
-	}),
 	directusUser: one(directusUsers, {
 		fields: [heroBanners.userCreated],
 		references: [directusUsers.id]
 	}),
+	directusFile: one(directusFiles, {
+		fields: [heroBanners.image],
+		references: [directusFiles.id]
+	}),
 }));
 
 export const introBlogGalleryRelations = relations(introBlogGallery, ({one}) => ({
-	directusFile: one(directusFiles, {
-		fields: [introBlogGallery.directusFilesId],
-		references: [directusFiles.id]
-	}),
 	introBlog: one(introBlogs, {
 		fields: [introBlogGallery.introBlogId],
 		references: [introBlogs.id]
+	}),
+	directusFile: one(directusFiles, {
+		fields: [introBlogGallery.directusFilesId],
+		references: [directusFiles.id]
 	}),
 }));
 
@@ -570,13 +570,13 @@ export const pubCrawlSignupsTransactionsRelations = relations(pubCrawlSignupsTra
 
 export const pubCrawlSignupsRelations = relations(pubCrawlSignups, ({one, many}) => ({
 	pubCrawlSignupsTransactions: many(pubCrawlSignupsTransactions),
-	directusUser: one(directusUsers, {
-		fields: [pubCrawlSignups.directusRelations],
-		references: [directusUsers.id]
-	}),
 	pubCrawlEvent: one(pubCrawlEvents, {
 		fields: [pubCrawlSignups.pubCrawlEventId],
 		references: [pubCrawlEvents.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [pubCrawlSignups.directusRelations],
+		references: [directusUsers.id]
 	}),
 	pubCrawlTickets: many(pubCrawlTickets),
 	transactions: many(transactions),
@@ -584,14 +584,14 @@ export const pubCrawlSignupsRelations = relations(pubCrawlSignups, ({one, many})
 
 export const transactionsRelations = relations(transactions, ({one, many}) => ({
 	pubCrawlSignupsTransactions: many(pubCrawlSignupsTransactions),
-	webshopPreorder: one(webshopPreorders, {
-		fields: [transactions.webshopPreorder],
-		references: [webshopPreorders.id]
-	}),
 	directusUser_userId: one(directusUsers, {
 		fields: [transactions.userId],
 		references: [directusUsers.id],
 		relationName: "transactions_userId_directusUsers_id"
+	}),
+	eventSignup: one(eventSignups, {
+		fields: [transactions.registration],
+		references: [eventSignups.id]
 	}),
 	directusUser_approvedBy: one(directusUsers, {
 		fields: [transactions.approvedBy],
@@ -602,13 +602,13 @@ export const transactionsRelations = relations(transactions, ({one, many}) => ({
 		fields: [transactions.pubCrawlSignup],
 		references: [pubCrawlSignups.id]
 	}),
-	eventSignup: one(eventSignups, {
-		fields: [transactions.registration],
-		references: [eventSignups.id]
-	}),
 	tripSignup: one(tripSignups, {
 		fields: [transactions.tripSignup],
 		references: [tripSignups.id]
+	}),
+	webshopPreorder: one(webshopPreorders, {
+		fields: [transactions.webshopPreorder],
+		references: [webshopPreorders.id]
 	}),
 }));
 
@@ -641,25 +641,25 @@ export const pubCrawlTicketsRelations = relations(pubCrawlTickets, ({one}) => ({
 }));
 
 export const introParentSignupsRelations = relations(introParentSignups, ({one}) => ({
-	directusUser_approvedBy: one(directusUsers, {
-		fields: [introParentSignups.approvedBy],
-		references: [directusUsers.id],
-		relationName: "introParentSignups_approvedBy_directusUsers_id"
-	}),
 	directusUser_userCreated: one(directusUsers, {
 		fields: [introParentSignups.userCreated],
 		references: [directusUsers.id],
 		relationName: "introParentSignups_userCreated_directusUsers_id"
+	}),
+	directusUser_userUpdated: one(directusUsers, {
+		fields: [introParentSignups.userUpdated],
+		references: [directusUsers.id],
+		relationName: "introParentSignups_userUpdated_directusUsers_id"
 	}),
 	directusUser_userId: one(directusUsers, {
 		fields: [introParentSignups.userId],
 		references: [directusUsers.id],
 		relationName: "introParentSignups_userId_directusUsers_id"
 	}),
-	directusUser_userUpdated: one(directusUsers, {
-		fields: [introParentSignups.userUpdated],
+	directusUser_approvedBy: one(directusUsers, {
+		fields: [introParentSignups.approvedBy],
 		references: [directusUsers.id],
-		relationName: "introParentSignups_userUpdated_directusUsers_id"
+		relationName: "introParentSignups_approvedBy_directusUsers_id"
 	}),
 }));
 
@@ -673,38 +673,38 @@ export const tripsRelations = relations(trips, ({one, many}) => ({
 }));
 
 export const tripSignupsRelations = relations(tripSignups, ({one, many}) => ({
-	directusUser: one(directusUsers, {
-		fields: [tripSignups.directusRelations],
-		references: [directusUsers.id]
-	}),
 	trip: one(trips, {
 		fields: [tripSignups.tripId],
 		references: [trips.id]
+	}),
+	directusUser: one(directusUsers, {
+		fields: [tripSignups.directusRelations],
+		references: [directusUsers.id]
 	}),
 	tripSignupActivities: many(tripSignupActivities),
 	transactions: many(transactions),
 }));
 
 export const tripActivitiesRelations = relations(tripActivities, ({one, many}) => ({
-	directusFile: one(directusFiles, {
-		fields: [tripActivities.image],
-		references: [directusFiles.id]
-	}),
 	trip: one(trips, {
 		fields: [tripActivities.tripId],
 		references: [trips.id]
+	}),
+	directusFile: one(directusFiles, {
+		fields: [tripActivities.image],
+		references: [directusFiles.id]
 	}),
 	tripSignupActivities: many(tripSignupActivities),
 }));
 
 export const tripSignupActivitiesRelations = relations(tripSignupActivities, ({one}) => ({
-	tripActivity: one(tripActivities, {
-		fields: [tripSignupActivities.tripActivityId],
-		references: [tripActivities.id]
-	}),
 	tripSignup: one(tripSignups, {
 		fields: [tripSignupActivities.tripSignupId],
 		references: [tripSignups.id]
+	}),
+	tripActivity: one(tripActivities, {
+		fields: [tripSignupActivities.tripActivityId],
+		references: [tripActivities.id]
 	}),
 }));
 
@@ -727,32 +727,32 @@ export const sponsorsRelations = relations(sponsors, ({one}) => ({
 }));
 
 export const directusSessionsRelations = relations(directusSessions, ({one}) => ({
-	directusShare: one(directusShares, {
-		fields: [directusSessions.share],
-		references: [directusShares.id]
-	}),
 	directusUser: one(directusUsers, {
 		fields: [directusSessions.user],
 		references: [directusUsers.id]
 	}),
+	directusShare: one(directusShares, {
+		fields: [directusSessions.share],
+		references: [directusShares.id]
+	}),
 }));
 
 export const rolePermissionsRelations = relations(rolePermissions, ({one}) => ({
-	permission: one(permissions, {
-		fields: [rolePermissions.permissionId],
-		references: [permissions.id]
-	}),
 	role: one(roles, {
 		fields: [rolePermissions.roleId],
 		references: [roles.id]
 	}),
-}));
-
-export const permissionsRelations = relations(permissions, ({many}) => ({
-	rolePermissions: many(rolePermissions),
+	permission: one(permissions, {
+		fields: [rolePermissions.permissionId],
+		references: [permissions.id]
+	}),
 }));
 
 export const rolesRelations = relations(roles, ({many}) => ({
+	rolePermissions: many(rolePermissions),
+}));
+
+export const permissionsRelations = relations(permissions, ({many}) => ({
 	rolePermissions: many(rolePermissions),
 }));
 
@@ -835,11 +835,11 @@ export const webshopProductMediaRelations = relations(webshopProductMedia, ({one
 export const webshopProductsRelations = relations(webshopProducts, ({one, many}) => ({
 	webshopProductMedias: many(webshopProductMedia),
 	webshopProductVariants: many(webshopProductVariants),
+	webshopPreorderLines: many(webshopPreorderLines),
 	webshopDropWindow: one(webshopDropWindows, {
 		fields: [webshopProducts.dropWindowId],
 		references: [webshopDropWindows.id]
 	}),
-	webshopPreorderLines: many(webshopPreorderLines),
 }));
 
 export const directusDeploymentProjectsRelations = relations(directusDeploymentProjects, ({one, many}) => ({
@@ -860,28 +860,28 @@ export const directusSettingsRelations = relations(directusSettings, ({one}) => 
 		references: [directusFiles.id],
 		relationName: "directusSettings_projectLogo_directusFiles_id"
 	}),
+	directusFile_publicForeground: one(directusFiles, {
+		fields: [directusSettings.publicForeground],
+		references: [directusFiles.id],
+		relationName: "directusSettings_publicForeground_directusFiles_id"
+	}),
 	directusFile_publicBackground: one(directusFiles, {
 		fields: [directusSettings.publicBackground],
 		references: [directusFiles.id],
 		relationName: "directusSettings_publicBackground_directusFiles_id"
+	}),
+	directusFolder: one(directusFolders, {
+		fields: [directusSettings.storageDefaultFolder],
+		references: [directusFolders.id]
 	}),
 	directusFile_publicFavicon: one(directusFiles, {
 		fields: [directusSettings.publicFavicon],
 		references: [directusFiles.id],
 		relationName: "directusSettings_publicFavicon_directusFiles_id"
 	}),
-	directusFile_publicForeground: one(directusFiles, {
-		fields: [directusSettings.publicForeground],
-		references: [directusFiles.id],
-		relationName: "directusSettings_publicForeground_directusFiles_id"
-	}),
 	directusRole: one(directusRoles, {
 		fields: [directusSettings.publicRegistrationRole],
 		references: [directusRoles.id]
-	}),
-	directusFolder: one(directusFolders, {
-		fields: [directusSettings.storageDefaultFolder],
-		references: [directusFolders.id]
 	}),
 }));
 
@@ -905,8 +905,8 @@ export const webshopProductVariantsRelations = relations(webshopProductVariants,
 }));
 
 export const webshopDropWindowsRelations = relations(webshopDropWindows, ({many}) => ({
-	webshopProducts: many(webshopProducts),
 	webshopPreorders: many(webshopPreorders),
+	webshopProducts: many(webshopProducts),
 }));
 
 export const webshopPreorderLinesRelations = relations(webshopPreorderLines, ({one}) => ({

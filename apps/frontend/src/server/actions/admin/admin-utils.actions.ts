@@ -7,12 +7,19 @@ import { checkFeatureAccess, getPermissions } from '@/shared/lib/permissions';
 import { fetchUserMetadataDb, fetchUserCommitteesDb } from "@/server/internal/leden/leden-db.utils";
 import { headers, cookies } from 'next/headers';
 import { safeConsoleError } from '@/server/utils/logger';
-import { unstable_cache, revalidatePath } from 'next/cache';
 import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
+import { unstable_cache, revalidatePath, updateTag } from 'next/cache';
 
 type DirectusUserSelect = typeof schema.directus_users.$inferSelect;
 type CommitteeSelect = typeof schema.committees.$inferSelect;
+
+const TOGGLEABLE_FEATURES: Record<string, AdminFeature | undefined> = {
+    '/reis': 'reis',
+    '/kroegentocht': 'kroegentocht',
+    '/webshop': 'webshop',
+    '/intro': 'intro',
+};
 
 export interface StronglyTypedAdminUser extends DirectusUserSelect {
     committees: CommitteeSelect[];
@@ -26,11 +33,11 @@ const getCachedUserEnrichment = (userId: string) => unstable_cache(
         ]);
         return { 
             metadata: metadata as DirectusUserSelect | null, 
-            committees: committees as CommitteeSelect[] | null 
+            committees: committees as CommitteeSelect[] | null
         };
     },
     ['user-enrichment-v1', userId],
-    { revalidate: 10 }
+    { revalidate: 10, tags: ['user-enrichment'] }
 )();
 
 export async function checkAdminAccess() {
@@ -167,7 +174,12 @@ export async function enforceFeatureAccess(feature: AdminFeature) {
         throw new Error("Helaas, je hebt geen rechten om deze pagina te bezoeken.");
     }
 
-    return { user, isLeader };
+    const isIctOrBestuur = user.committees.some(
+        c => c.azure_group_id === COMMITTEES.ICT || c.azure_group_id === COMMITTEES.BESTUUR
+    );
+    const canToggleVisibility = isLeader || isIctOrBestuur;
+
+    return { user, isLeader, canToggleVisibility };
 }
 
 export async function toggleFeatureFlag(
@@ -176,6 +188,15 @@ export async function toggleFeatureFlag(
     defaultMessage: string,
     pathsToRevalidate: string[]
 ) {
+    const featureKey = TOGGLEABLE_FEATURES[routeMatch];
+
+    if (featureKey) {
+        const { canToggleVisibility } = await enforceFeatureAccess(featureKey);
+        if (!canToggleVisibility) {
+            throw new Error("Helaas, je kan de zichtbaarheid van deze pagina niet aanpassen.");
+        }
+    }
+
     try {
         const rows = await db.select({
             id: schema.feature_flags.id,
@@ -207,11 +228,36 @@ export async function toggleFeatureFlag(
         return { success: false, error: 'Kan zichtbaarheid niet aanpassen.' };
     }
 }
-
 export async function getFeatureFlagSettings(routeMatch: string) {
+    let canToggleVisibility = false;
+    const featureKey = TOGGLEABLE_FEATURES[routeMatch];
+
+    if (featureKey) {
+        try {
+            const access = await enforceFeatureAccess(featureKey);
+            canToggleVisibility = access.canToggleVisibility;
+        } catch {
+            canToggleVisibility = false;
+        }
+    }
+
     const rows = await db.select({ is_active: schema.feature_flags.is_active, message: schema.feature_flags.message })
         .from(schema.feature_flags)
         .where(eq(schema.feature_flags.route_match, routeMatch))
         .limit(1);
-    return rows[0] ? { show: rows[0].is_active, disabled_message: rows[0].message } : { show: true, disabled_message: null };
+
+    return rows[0] 
+        ? { show: rows[0].is_active, disabled_message: rows[0].message, canToggleVisibility } 
+        : { show: true, disabled_message: null, canToggleVisibility };
+}
+
+export async function revalidateUserCache() {
+    updateTag('user-enrichment');
+}
+
+export async function getModuleLayoutContext(routeMatch: string) {
+    const flagConfig = await getFeatureFlagSettings(routeMatch);
+    return {
+        canToggleVisibility: flagConfig.canToggleVisibility
+    };
 }

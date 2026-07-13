@@ -104,7 +104,7 @@ export default function StatsToolbar({
                         className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold text-xs rounded-xl shadow-lg shadow-green-600/10 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
                     >
                         <Download className="h-4 w-4" />
-                        Export CSV
+                        Exporteer CSV
                     </button>
                 </div>
             </div>

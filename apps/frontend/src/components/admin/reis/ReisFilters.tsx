@@ -85,7 +85,7 @@ export default function ReisFilters({
                             className="flex items-center justify-center gap-2 px-6 py-2 bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm hover:bg-emerald-800 transition-all active:scale-95 border border-white/10 whitespace-nowrap"
                         >
                             <Download className="h-3.5 w-3.5" />
-                            Export CSV
+                            Exporteer CSV
                         </button>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 {
   "name": "salve-mundi-v7",
-  "version": "1.0.0",
+  "version": "4.0.4",
   "private": true,
   "packageManager": "pnpm@11.11.0",
   "engines": {
@@ -11,7 +11,7 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r --parallel --if-present lint",
     "knip": "knip",
-    "type-check": "pnpm -r --parallel exec tsc --noEmit",
+    "type-check": "pnpm -r --if-present run type-check",
     "validate": "pnpm type-check && pnpm lint && pnpm knip && pnpm build",
     "setup": "pnpm install && pnpm validate",
     "db:sync": "pnpm --filter @salvemundi/db pull && pnpm --filter @salvemundi/validations generate:zod && pnpm --filter @salvemundi/validations typegen"

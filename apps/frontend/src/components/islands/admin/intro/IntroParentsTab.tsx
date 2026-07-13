@@ -4,7 +4,6 @@ import { useState, Fragment } from 'react';
 import type { MouseEvent, ChangeEvent } from 'react';
 import {
     Search,
-    Download,
     ChevronDown,
     Edit,
     Trash,
@@ -27,7 +26,7 @@ interface Props {
     deletingId: number | null;
 }
 
-export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport, deletingId }: Props) {
+export default function IntroParentsTab({ parents, onDelete, onUpdate, deletingId }: Props) {
     const [search, setSearch] = useState('');
     const [expandedRows, setExpandedRows] = useState<number[]>([]);
     const [editingId, setEditingId] = useState<number | null>(null);
@@ -72,11 +71,6 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, onExport,
                         onChange={e => setSearch(e.target.value)}
                         className="w-full pl-11 pr-4 py-3.5 rounded-(--beheer-radius) bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm border-0 ring-1 ring-(--beheer-border)/40 text-(--beheer-text) text-sm font-semibold focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main)/80 outline-none transition-all shadow-inner placeholder:text-(--beheer-text-muted)/40"
                     />
-                </div>
-                <div className="flex gap-2">
-                    <Button onClick={onExport} icon={Download}>
-                        Export CSV
-                    </Button>
                 </div>
             </div>
 

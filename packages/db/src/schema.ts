@@ -645,7 +645,7 @@ export const pub_crawl_events = pgTable("pub_crawl_events", {
 },
 (table) => {
 	return {
-		pub_crawl_events_email_key: unique("pub_crawl_events_email_key").on(table.email),
+		pub_crawl_events_email_unique: unique("pub_crawl_events_email_unique").on(table.email),
 	}
 });
 

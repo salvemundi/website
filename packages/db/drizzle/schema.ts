@@ -1,4 +1,4 @@
-import { pgTable, index, foreignKey, integer, boolean, serial, uuid, timestamp, varchar, text, doublePrecision, unique, json, real, bigint, date, numeric, time, inet, check, jsonb, bigserial } from "drizzle-orm/pg-core"
+import { pgTable, index, foreignKey, integer, boolean, serial, uuid, timestamp, varchar, text, doublePrecision, unique, json, real, bigint, date, numeric, time, inet, jsonb, bigserial } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -13,7 +13,7 @@ export const clubMembers = pgTable("club_members", {
 	foreignKey({
 			columns: [table.clubId],
 			foreignColumns: [clubs.id],
-			name: "club_members_club_id_fkey"
+			name: "club_members_club_id_clubs_id_fk"
 		}),
 ]);
 
@@ -34,20 +34,20 @@ export const stickers = pgTable("Stickers", {
 	status: varchar({ length: 255 }).default('draft'),
 }, (table) => [
 	foreignKey({
-			columns: [table.image],
-			foreignColumns: [directusFiles.id],
-			name: "stickers_image_foreign"
-		}).onDelete("set null"),
-	foreignKey({
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
-			name: "stickers_user_created_foreign"
+			name: "Stickers_user_created_directus_users_id_fk"
 		}).onDelete("set default"),
 	foreignKey({
 			columns: [table.userUpdated],
 			foreignColumns: [directusUsers.id],
-			name: "stickers_user_updated_foreign"
+			name: "Stickers_user_updated_directus_users_id_fk"
 		}).onDelete("set default"),
+	foreignKey({
+			columns: [table.image],
+			foreignColumns: [directusFiles.id],
+			name: "Stickers_image_directus_files_id_fk"
+		}).onDelete("set null"),
 ]);
 
 export const board = pgTable("Board", {
@@ -61,20 +61,20 @@ export const board = pgTable("Board", {
 	year: varchar({ length: 255 }),
 }, (table) => [
 	foreignKey({
-			columns: [table.image],
-			foreignColumns: [directusFiles.id],
-			name: "board_image_foreign"
-		}).onDelete("set null"),
-	foreignKey({
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
-			name: "board_user_created_foreign"
+			name: "Board_user_created_directus_users_id_fk"
 		}),
 	foreignKey({
 			columns: [table.userUpdated],
 			foreignColumns: [directusUsers.id],
-			name: "board_user_updated_foreign"
+			name: "Board_user_updated_directus_users_id_fk"
 		}),
+	foreignKey({
+			columns: [table.image],
+			foreignColumns: [directusFiles.id],
+			name: "Board_image_directus_files_id_fk"
+		}).onDelete("set null"),
 ]);
 
 export const boardMembers = pgTable("Board_Members", {
@@ -89,12 +89,12 @@ export const boardMembers = pgTable("Board_Members", {
 	foreignKey({
 			columns: [table.boardId],
 			foreignColumns: [board.id],
-			name: "board_members_board_id_foreign"
+			name: "Board_Members_board_id_Board_id_fk"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [directusUsers.id],
-			name: "board_members_user_id_foreign"
+			name: "Board_Members_user_id_directus_users_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -107,15 +107,15 @@ export const contacts = pgTable("contacts", {
 	description: text(),
 	isActive: boolean("is_active").default(true).notNull(),
 	displayOrder: integer("display_order").default(0).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	image: uuid(),
 }, (table) => [
-	index("idx_contacts_display_order").using("btree", table.displayOrder.asc().nullsLast().op("int4_ops"), table.isActive.asc().nullsLast().op("int4_ops")),
+	index("idx_contacts_display_order").using("btree", table.isActive.asc().nullsLast().op("int4_ops"), table.displayOrder.asc().nullsLast().op("int4_ops")),
 	foreignKey({
 			columns: [table.image],
 			foreignColumns: [directusFiles.id],
-			name: "contacts_image_foreign"
+			name: "contacts_image_directus_files_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -127,26 +127,26 @@ export const directusAccess = pgTable("directus_access", {
 	sort: integer(),
 }, (table) => [
 	foreignKey({
-			columns: [table.policy],
-			foreignColumns: [directusPolicies.id],
-			name: "directus_access_policy_foreign"
-		}).onDelete("cascade"),
-	foreignKey({
 			columns: [table.role],
 			foreignColumns: [directusRoles.id],
-			name: "directus_access_role_foreign"
+			name: "directus_access_role_directus_roles_id_fk"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.user],
 			foreignColumns: [directusUsers.id],
-			name: "directus_access_user_foreign"
+			name: "directus_access_user_directus_users_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.policy],
+			foreignColumns: [directusPolicies.id],
+			name: "directus_access_policy_directus_policies_id_fk"
 		}).onDelete("cascade"),
 ]);
 
 export const committees = pgTable("committees", {
 	id: serial().primaryKey().notNull(),
 	name: varchar({ length: 255 }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
 	image: uuid(),
 	isVisible: boolean("is_visible").default(false),
@@ -159,7 +159,7 @@ export const committees = pgTable("committees", {
 	foreignKey({
 			columns: [table.image],
 			foreignColumns: [directusFiles.id],
-			name: "committees_image_foreign"
+			name: "committees_image_directus_files_id_fk"
 		}).onDelete("set null"),
 	unique("committees_name_key").on(table.name),
 	unique("committees_commissie_token_unique").on(table.commissieToken),
@@ -170,20 +170,20 @@ export const directusComments = pgTable("directus_comments", {
 	collection: varchar({ length: 64 }).notNull(),
 	item: varchar({ length: 255 }).notNull(),
 	comment: text().notNull(),
-	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).defaultNow(),
+	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }).defaultNow(),
 	userCreated: uuid("user_created"),
 	userUpdated: uuid("user_updated"),
 }, (table) => [
 	foreignKey({
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
-			name: "directus_comments_user_created_foreign"
+			name: "directus_comments_user_created_directus_users_id_fk"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.userUpdated],
 			foreignColumns: [directusUsers.id],
-			name: "directus_comments_user_updated_foreign"
+			name: "directus_comments_user_updated_directus_users_id_fk"
 		}),
 ]);
 
@@ -192,14 +192,14 @@ export const directusDashboards = pgTable("directus_dashboards", {
 	name: varchar({ length: 255 }).notNull(),
 	icon: varchar({ length: 64 }).default('dashboard').notNull(),
 	note: text(),
-	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).defaultNow(),
 	userCreated: uuid("user_created"),
 	color: varchar({ length: 255 }),
 }, (table) => [
 	foreignKey({
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
-			name: "directus_dashboards_user_created_foreign"
+			name: "directus_dashboards_user_created_directus_users_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -265,7 +265,7 @@ export const directusActivity = pgTable("directus_activity", {
 	id: serial().primaryKey().notNull(),
 	action: varchar({ length: 45 }).notNull(),
 	user: uuid(),
-	timestamp: timestamp({ withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	timestamp: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	ip: varchar({ length: 50 }),
 	userAgent: text("user_agent"),
 	collection: varchar({ length: 64 }).notNull(),
@@ -278,7 +278,7 @@ export const directusActivity = pgTable("directus_activity", {
 export const directusMigrations = pgTable("directus_migrations", {
 	version: varchar({ length: 255 }).primaryKey().notNull(),
 	name: varchar({ length: 255 }).notNull(),
-	timestamp: timestamp({ withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	timestamp: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 });
 
 export const directusFiles = pgTable("directus_files", {
@@ -290,9 +290,9 @@ export const directusFiles = pgTable("directus_files", {
 	type: varchar({ length: 255 }),
 	folder: uuid(),
 	uploadedBy: uuid("uploaded_by"),
-	createdOn: timestamp("created_on", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	createdOn: timestamp("created_on", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	modifiedBy: uuid("modified_by"),
-	modifiedOn: timestamp("modified_on", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	modifiedOn: timestamp("modified_on", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	charset: varchar({ length: 50 }),
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	filesize: bigint({ mode: "number" }),
@@ -313,17 +313,17 @@ export const directusFiles = pgTable("directus_files", {
 	foreignKey({
 			columns: [table.folder],
 			foreignColumns: [directusFolders.id],
-			name: "directus_files_folder_foreign"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.modifiedBy],
-			foreignColumns: [directusUsers.id],
-			name: "directus_files_modified_by_foreign"
+			name: "directus_files_folder_directus_folders_id_fk"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.uploadedBy],
 			foreignColumns: [directusUsers.id],
-			name: "directus_files_uploaded_by_foreign"
+			name: "directus_files_uploaded_by_directus_users_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.modifiedBy],
+			foreignColumns: [directusUsers.id],
+			name: "directus_files_modified_by_directus_users_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -367,13 +367,13 @@ export const directusFlows = pgTable("directus_flows", {
 	accountability: varchar({ length: 255 }).default('all'),
 	options: json(),
 	operation: uuid(),
-	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).defaultNow(),
 	userCreated: uuid("user_created"),
 }, (table) => [
 	foreignKey({
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
-			name: "directus_flows_user_created_foreign"
+			name: "directus_flows_user_created_directus_users_id_fk"
 		}).onDelete("set null"),
 	unique("directus_flows_operation_unique").on(table.operation),
 ]);
@@ -382,7 +382,7 @@ export const directusPanels = pgTable("directus_panels", {
 	id: uuid().primaryKey().notNull(),
 	dashboard: uuid().notNull(),
 	name: varchar({ length: 255 }),
-	icon: varchar({ length: 64 }).default(sql`NULL`),
+	icon: varchar({ length: 64 }),
 	color: varchar({ length: 10 }),
 	showHeader: boolean("show_header").default(false).notNull(),
 	note: text(),
@@ -392,18 +392,18 @@ export const directusPanels = pgTable("directus_panels", {
 	width: integer().notNull(),
 	height: integer().notNull(),
 	options: json(),
-	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).defaultNow(),
 	userCreated: uuid("user_created"),
 }, (table) => [
 	foreignKey({
 			columns: [table.dashboard],
 			foreignColumns: [directusDashboards.id],
-			name: "directus_panels_dashboard_foreign"
+			name: "directus_panels_dashboard_directus_dashboards_id_fk"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
-			name: "directus_panels_user_created_foreign"
+			name: "directus_panels_user_created_directus_users_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -420,7 +420,7 @@ export const directusPermissions = pgTable("directus_permissions", {
 	foreignKey({
 			columns: [table.policy],
 			foreignColumns: [directusPolicies.id],
-			name: "directus_permissions_policy_foreign"
+			name: "directus_permissions_policy_directus_policies_id_fk"
 		}).onDelete("cascade"),
 ]);
 
@@ -440,14 +440,14 @@ export const directusPresets = pgTable("directus_presets", {
 	color: varchar({ length: 255 }),
 }, (table) => [
 	foreignKey({
-			columns: [table.role],
-			foreignColumns: [directusRoles.id],
-			name: "directus_presets_role_foreign"
-		}).onDelete("cascade"),
-	foreignKey({
 			columns: [table.user],
 			foreignColumns: [directusUsers.id],
-			name: "directus_presets_user_foreign"
+			name: "directus_presets_user_directus_users_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.role],
+			foreignColumns: [directusRoles.id],
+			name: "directus_presets_role_directus_roles_id_fk"
 		}).onDelete("cascade"),
 ]);
 
@@ -480,18 +480,18 @@ export const directusRevisions = pgTable("directus_revisions", {
 	foreignKey({
 			columns: [table.activity],
 			foreignColumns: [directusActivity.id],
-			name: "directus_revisions_activity_foreign"
+			name: "directus_revisions_activity_directus_activity_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.version],
+			foreignColumns: [directusVersions.id],
+			name: "directus_revisions_version_directus_versions_id_fk"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.parent],
 			foreignColumns: [table.id],
 			name: "directus_revisions_parent_foreign"
 		}),
-	foreignKey({
-			columns: [table.version],
-			foreignColumns: [directusVersions.id],
-			name: "directus_revisions_version_foreign"
-		}).onDelete("cascade"),
 ]);
 
 export const directusRelations = pgTable("directus_relations", {
@@ -515,7 +515,7 @@ export const directusShares = pgTable("directus_shares", {
 	role: uuid(),
 	password: varchar({ length: 255 }),
 	userCreated: uuid("user_created"),
-	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).defaultNow(),
 	dateStart: timestamp("date_start", { withTimezone: true, mode: 'string' }),
 	dateEnd: timestamp("date_end", { withTimezone: true, mode: 'string' }),
 	timesUsed: integer("times_used").default(0),
@@ -524,23 +524,23 @@ export const directusShares = pgTable("directus_shares", {
 	foreignKey({
 			columns: [table.collection],
 			foreignColumns: [directusCollections.collection],
-			name: "directus_shares_collection_foreign"
+			name: "directus_shares_collection_directus_collections_collection_fk"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.role],
 			foreignColumns: [directusRoles.id],
-			name: "directus_shares_role_foreign"
+			name: "directus_shares_role_directus_roles_id_fk"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
-			name: "directus_shares_user_created_foreign"
+			name: "directus_shares_user_created_directus_users_id_fk"
 		}).onDelete("set null"),
 ]);
 
 export const directusNotifications = pgTable("directus_notifications", {
 	id: serial().primaryKey().notNull(),
-	timestamp: timestamp({ withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	timestamp: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 	status: varchar({ length: 255 }).default('inbox'),
 	recipient: uuid().notNull(),
 	sender: uuid(),
@@ -552,12 +552,12 @@ export const directusNotifications = pgTable("directus_notifications", {
 	foreignKey({
 			columns: [table.recipient],
 			foreignColumns: [directusUsers.id],
-			name: "directus_notifications_recipient_foreign"
+			name: "directus_notifications_recipient_directus_users_id_fk"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.sender],
 			foreignColumns: [directusUsers.id],
-			name: "directus_notifications_sender_foreign"
+			name: "directus_notifications_sender_directus_users_id_fk"
 		}),
 ]);
 
@@ -583,14 +583,19 @@ export const directusOperations = pgTable("directus_operations", {
 	resolve: uuid(),
 	reject: uuid(),
 	flow: uuid().notNull(),
-	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).defaultNow(),
 	userCreated: uuid("user_created"),
 }, (table) => [
 	foreignKey({
 			columns: [table.flow],
 			foreignColumns: [directusFlows.id],
-			name: "directus_operations_flow_foreign"
+			name: "directus_operations_flow_directus_flows_id_fk"
 		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.userCreated],
+			foreignColumns: [directusUsers.id],
+			name: "directus_operations_user_created_directus_users_id_fk"
+		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.reject],
 			foreignColumns: [table.id],
@@ -601,11 +606,6 @@ export const directusOperations = pgTable("directus_operations", {
 			foreignColumns: [table.id],
 			name: "directus_operations_resolve_foreign"
 		}),
-	foreignKey({
-			columns: [table.userCreated],
-			foreignColumns: [directusUsers.id],
-			name: "directus_operations_user_created_foreign"
-		}).onDelete("set null"),
 	unique("directus_operations_resolve_unique").on(table.resolve),
 	unique("directus_operations_reject_unique").on(table.reject),
 ]);
@@ -624,8 +624,8 @@ export const directusVersions = pgTable("directus_versions", {
 	collection: varchar({ length: 64 }).notNull(),
 	item: varchar({ length: 255 }).notNull(),
 	hash: varchar({ length: 255 }),
-	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).defaultNow(),
+	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }).defaultNow(),
 	userCreated: uuid("user_created"),
 	userUpdated: uuid("user_updated"),
 	delta: json(),
@@ -633,18 +633,59 @@ export const directusVersions = pgTable("directus_versions", {
 	foreignKey({
 			columns: [table.collection],
 			foreignColumns: [directusCollections.collection],
-			name: "directus_versions_collection_foreign"
+			name: "directus_versions_collection_directus_collections_collection_fk"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
-			name: "directus_versions_user_created_foreign"
+			name: "directus_versions_user_created_directus_users_id_fk"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.userUpdated],
 			foreignColumns: [directusUsers.id],
-			name: "directus_versions_user_updated_foreign"
+			name: "directus_versions_user_updated_directus_users_id_fk"
 		}),
+]);
+
+export const introBlogs = pgTable("intro_blogs", {
+	id: serial().primaryKey().notNull(),
+	status: varchar({ length: 255 }).default('draft'),
+	sort: integer(),
+	userCreated: uuid("user_created"),
+	userUpdated: uuid("user_updated"),
+	title: varchar({ length: 255 }).notNull(),
+	slug: varchar({ length: 255 }),
+	content: text().notNull(),
+	excerpt: varchar({ length: 500 }),
+	image: uuid(),
+	isPublished: boolean("is_published").default(false),
+	blogType: varchar("blog_type", { length: 50 }).default('update'),
+	metaTitle: varchar("meta_title", { length: 255 }),
+	metaDescription: varchar("meta_description", { length: 500 }),
+	viewsCount: integer("views_count").default(0),
+	createdAt: timestamp("created_at", { mode: 'string' }),
+	updatedAt: timestamp("updated_at", { mode: 'string' }),
+	likes: varchar({ length: 255 }).default('0'),
+	dateUpdated: timestamp("date_updated", { mode: 'string' }),
+}, (table) => [
+	index("idx_intro_blogs_slug").using("btree", table.slug.asc().nullsLast().op("text_ops")),
+	index("idx_intro_blogs_type").using("btree", table.blogType.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.userCreated],
+			foreignColumns: [directusUsers.id],
+			name: "intro_blogs_user_created_directus_users_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.userUpdated],
+			foreignColumns: [directusUsers.id],
+			name: "intro_blogs_user_updated_directus_users_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.image],
+			foreignColumns: [directusFiles.id],
+			name: "intro_blogs_image_directus_files_id_fk"
+		}).onDelete("set null"),
+	unique("intro_blogs_slug_key").on(table.slug),
 ]);
 
 export const documents = pgTable("documents", {
@@ -654,8 +695,8 @@ export const documents = pgTable("documents", {
 	category: varchar({ length: 100 }),
 	isActive: boolean("is_active").default(true).notNull(),
 	displayOrder: integer("display_order").default(0).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	file: uuid(),
 }, (table) => [
 	index("idx_documents_active_order").using("btree", table.isActive.asc().nullsLast().op("int4_ops"), table.displayOrder.asc().nullsLast().op("int4_ops")),
@@ -663,7 +704,7 @@ export const documents = pgTable("documents", {
 	foreignKey({
 			columns: [table.file],
 			foreignColumns: [directusFiles.id],
-			name: "documents_file_foreign"
+			name: "documents_file_directus_files_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -697,12 +738,12 @@ export const events = pgTable("events", {
 	foreignKey({
 			columns: [table.committeeId],
 			foreignColumns: [committees.id],
-			name: "events_committee_id_fkey"
+			name: "events_committee_id_committees_id_fk"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.image],
 			foreignColumns: [directusFiles.id],
-			name: "events_image_foreign"
+			name: "events_image_directus_files_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -723,15 +764,15 @@ export const eventSignups = pgTable("event_signups", {
 }, (table) => [
 	index("idx_event_signups_event").using("btree", table.eventId.asc().nullsLast().op("int4_ops")),
 	foreignKey({
-			columns: [table.directusRelations],
-			foreignColumns: [directusUsers.id],
-			name: "event_signups_directus_relations_foreign"
-		}).onDelete("set null"),
-	foreignKey({
 			columns: [table.eventId],
 			foreignColumns: [events.id],
-			name: "event_signups_event_id_fkey"
+			name: "event_signups_event_id_events_id_fk"
 		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.directusRelations],
+			foreignColumns: [directusUsers.id],
+			name: "event_signups_directus_relations_directus_users_id_fk"
+		}).onDelete("set null"),
 ]);
 
 export const eventsDirectusUsers = pgTable("events_directus_users", {
@@ -740,14 +781,14 @@ export const eventsDirectusUsers = pgTable("events_directus_users", {
 	directusUsersId: uuid("directus_users_id"),
 }, (table) => [
 	foreignKey({
-			columns: [table.directusUsersId],
-			foreignColumns: [directusUsers.id],
-			name: "events_directus_users_directus_users_id_foreign"
-		}).onDelete("set null"),
-	foreignKey({
 			columns: [table.eventsId],
 			foreignColumns: [events.id],
-			name: "events_directus_users_events_id_foreign"
+			name: "events_directus_users_events_id_events_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.directusUsersId],
+			foreignColumns: [directusUsers.id],
+			name: "events_directus_users_directus_users_id_directus_users_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -761,63 +802,21 @@ export const introBlogLikes = pgTable("intro_blog_likes", {
 	id: serial().primaryKey().notNull(),
 	blog: integer().notNull(),
 	userId: uuid("user_id").notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	ipAddress: inet("ip_address"),
 	userAgent: text("user_agent"),
 }, (table) => [
 	foreignKey({
 			columns: [table.blog],
 			foreignColumns: [introBlogs.id],
-			name: "intro_blog_likes_blog_fkey"
+			name: "intro_blog_likes_blog_intro_blogs_id_fk"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [directusUsers.id],
-			name: "intro_blog_likes_user_id_fkey"
+			name: "intro_blog_likes_user_id_directus_users_id_fk"
 		}).onDelete("cascade"),
 	unique("uniq_blog_user").on(table.blog, table.userId),
-]);
-
-export const introBlogs = pgTable("intro_blogs", {
-	id: serial().primaryKey().notNull(),
-	status: varchar({ length: 255 }).default('draft'),
-	sort: integer(),
-	userCreated: uuid("user_created"),
-	userUpdated: uuid("user_updated"),
-	title: varchar({ length: 255 }).notNull(),
-	slug: varchar({ length: 255 }),
-	content: text().notNull(),
-	excerpt: varchar({ length: 500 }),
-	image: uuid(),
-	isPublished: boolean("is_published").default(false),
-	blogType: varchar("blog_type", { length: 50 }).default('update'),
-	metaTitle: varchar("meta_title", { length: 255 }),
-	metaDescription: varchar("meta_description", { length: 500 }),
-	viewsCount: integer("views_count").default(0),
-	createdAt: timestamp("created_at", { mode: 'string' }),
-	updatedAt: timestamp("updated_at", { mode: 'string' }),
-	likes: varchar({ length: 255 }).default('0'),
-	dateUpdated: timestamp("date_updated", { mode: 'string' }),
-}, (table) => [
-	index("idx_intro_blogs_slug").using("btree", table.slug.asc().nullsLast().op("text_ops")),
-	index("idx_intro_blogs_type").using("btree", table.blogType.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.image],
-			foreignColumns: [directusFiles.id],
-			name: "intro_blogs_image_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.userCreated],
-			foreignColumns: [directusUsers.id],
-			name: "intro_blogs_user_created_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.userUpdated],
-			foreignColumns: [directusUsers.id],
-			name: "intro_blogs_user_updated_fkey"
-		}).onDelete("set null"),
-	unique("intro_blogs_slug_key").on(table.slug),
-	check("intro_blogs_blog_type_check", sql`(blog_type)::text = ANY (ARRAY[('update'::character varying)::text, ('pictures'::character varying)::text, ('event'::character varying)::text, ('announcement'::character varying)::text])`),
 ]);
 
 export const eventsMembers = pgTable("events_members", {
@@ -827,7 +826,7 @@ export const eventsMembers = pgTable("events_members", {
 	foreignKey({
 			columns: [table.eventsId],
 			foreignColumns: [events.id],
-			name: "events_members_events_id_foreign"
+			name: "events_members_events_id_events_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -840,15 +839,15 @@ export const heroBanners = pgTable("hero_banners", {
 	title: varchar({ length: 255 }),
 }, (table) => [
 	foreignKey({
-			columns: [table.image],
-			foreignColumns: [directusFiles.id],
-			name: "hero_banners_image_foreign"
-		}).onDelete("set null"),
-	foreignKey({
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
-			name: "hero_banners_user_created_foreign"
+			name: "hero_banners_user_created_directus_users_id_fk"
 		}),
+	foreignKey({
+			columns: [table.image],
+			foreignColumns: [directusFiles.id],
+			name: "hero_banners_image_directus_files_id_fk"
+		}).onDelete("set null"),
 ]);
 
 export const introBlogGallery = pgTable("intro_blog_gallery", {
@@ -857,18 +856,18 @@ export const introBlogGallery = pgTable("intro_blog_gallery", {
 	directusFilesId: uuid("directus_files_id").notNull(),
 	sort: integer().default(0),
 	caption: varchar({ length: 500 }),
-	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
 }, (table) => [
 	index("idx_intro_blog_gallery_blog").using("btree", table.introBlogId.asc().nullsLast().op("int4_ops"), table.sort.asc().nullsLast().op("int4_ops")),
 	foreignKey({
-			columns: [table.directusFilesId],
-			foreignColumns: [directusFiles.id],
-			name: "intro_blog_gallery_directus_files_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
 			columns: [table.introBlogId],
 			foreignColumns: [introBlogs.id],
-			name: "intro_blog_gallery_intro_blog_id_fkey"
+			name: "intro_blog_gallery_intro_blog_id_intro_blogs_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.directusFilesId],
+			foreignColumns: [directusFiles.id],
+			name: "intro_blog_gallery_directus_files_id_directus_files_id_fk"
 		}).onDelete("cascade"),
 	unique("intro_blog_gallery_intro_blog_id_directus_files_id_key").on(table.introBlogId, table.directusFilesId),
 ]);
@@ -876,7 +875,7 @@ export const introBlogGallery = pgTable("intro_blog_gallery", {
 export const pubCrawlEvents = pgTable("pub_crawl_events", {
 	id: serial().primaryKey().notNull(),
 	name: varchar({ length: 255 }).notNull(),
-	email: varchar({ length: 255 }).notNull(),
+	email: varchar({ length: 255 }).default(sql`NULL`).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
 	image: uuid(),
@@ -888,9 +887,8 @@ export const pubCrawlEvents = pgTable("pub_crawl_events", {
 	foreignKey({
 			columns: [table.image],
 			foreignColumns: [directusFiles.id],
-			name: "pub_crawl_events_image_foreign"
+			name: "pub_crawl_events_image_directus_files_id_fk"
 		}).onDelete("set null"),
-	unique("pub_crawl_events_email_key").on(table.email),
 ]);
 
 export const membershipHistory = pgTable("membership_history", {
@@ -898,12 +896,12 @@ export const membershipHistory = pgTable("membership_history", {
 	userId: uuid("user_id"),
 	previousStatus: varchar("previous_status", { length: 255 }),
 	newStatus: varchar("new_status", { length: 255 }),
-	changedAt: timestamp("changed_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	changedAt: timestamp("changed_at", { mode: 'string' }).defaultNow(),
 }, (table) => [
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [directusUsers.id],
-			name: "membership_history_user_id_fkey"
+			name: "membership_history_user_id_directus_users_id_fk"
 		}).onDelete("cascade"),
 ]);
 
@@ -926,12 +924,12 @@ export const pubCrawlSignupsTransactions = pgTable("pub_crawl_signups_transactio
 	foreignKey({
 			columns: [table.pubCrawlSignupsId],
 			foreignColumns: [pubCrawlSignups.id],
-			name: "pub_crawl_signups_transactions_pub_crawl_signups_id_foreign"
+			name: "pub_crawl_signups_transactions_pub_crawl_signups_id_pub_crawl_s"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.transactionsId],
 			foreignColumns: [transactions.id],
-			name: "pub_crawl_signups_transactions_transactions_id_foreign"
+			name: "pub_crawl_signups_transactions_transactions_id_transactions_id_"
 		}).onDelete("set null"),
 ]);
 
@@ -947,7 +945,7 @@ export const pushNotification = pgTable("push_notification", {
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [directusUsers.id],
-			name: "push_notification_user_id_foreign"
+			name: "push_notification_user_id_directus_users_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -990,15 +988,15 @@ export const pubCrawlSignups = pgTable("pub_crawl_signups", {
 	groupName: varchar("group_name", { length: 255 }),
 }, (table) => [
 	foreignKey({
-			columns: [table.directusRelations],
-			foreignColumns: [directusUsers.id],
-			name: "pub_crawl_signups_directus_relations_foreign"
-		}).onDelete("set null"),
-	foreignKey({
 			columns: [table.pubCrawlEventId],
 			foreignColumns: [pubCrawlEvents.id],
-			name: "pub_crawl_signups_pub_crawl_event_id_foreign"
+			name: "pub_crawl_signups_pub_crawl_event_id_pub_crawl_events_id_fk"
 		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.directusRelations],
+			foreignColumns: [directusUsers.id],
+			name: "pub_crawl_signups_directus_relations_directus_users_id_fk"
+		}).onDelete("set null"),
 ]);
 
 export const introPlanning = pgTable("intro_planning", {
@@ -1006,9 +1004,9 @@ export const introPlanning = pgTable("intro_planning", {
 	status: varchar({ length: 255 }).default('published'),
 	sort: integer(),
 	userCreated: uuid("user_created"),
-	dateCreated: timestamp("date_created", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	dateCreated: timestamp("date_created", { mode: 'string' }).defaultNow(),
 	userUpdated: uuid("user_updated"),
-	dateUpdated: timestamp("date_updated", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	dateUpdated: timestamp("date_updated", { mode: 'string' }).defaultNow(),
 	day: varchar({ length: 50 }).notNull(),
 	date: date().notNull(),
 	timeStart: time("time_start").notNull(),
@@ -1020,8 +1018,8 @@ export const introPlanning = pgTable("intro_planning", {
 	color: varchar({ length: 7 }),
 	capacity: integer(),
 	signupRequired: boolean("signup_required").default(false),
-	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
 	icon: varchar({ length: 255 }).default('Calendar Today'),
 	isMandatory: varchar("is_mandatory", { length: 255 }),
 }, (table) => [
@@ -1031,12 +1029,12 @@ export const introPlanning = pgTable("intro_planning", {
 	foreignKey({
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
-			name: "intro_planning_user_created_fkey"
+			name: "intro_planning_user_created_directus_users_id_fk"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.userUpdated],
 			foreignColumns: [directusUsers.id],
-			name: "intro_planning_user_updated_fkey"
+			name: "intro_planning_user_updated_directus_users_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -1054,7 +1052,7 @@ export const pubCrawlTickets = pgTable("pub_crawl_tickets", {
 	foreignKey({
 			columns: [table.signupId],
 			foreignColumns: [pubCrawlSignups.id],
-			name: "pub_crawl_tickets_signup_id_foreign"
+			name: "pub_crawl_tickets_signup_id_pub_crawl_signups_id_fk"
 		}).onDelete("set null"),
 	unique("pub_crawl_tickets_qr_token_unique").on(table.qrToken),
 ]);
@@ -1092,24 +1090,24 @@ export const introParentSignups = pgTable("intro_parent_signups", {
 	index("idx_intro_parent_signups_approved").using("btree", table.approved.asc().nullsLast().op("bool_ops")),
 	index("idx_intro_parent_signups_user").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
-			columns: [table.approvedBy],
-			foreignColumns: [directusUsers.id],
-			name: "intro_parent_signups_approved_by_fkey"
-		}).onDelete("set null"),
-	foreignKey({
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
-			name: "intro_parent_signups_user_created_fkey"
+			name: "intro_parent_signups_user_created_directus_users_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.userUpdated],
+			foreignColumns: [directusUsers.id],
+			name: "intro_parent_signups_user_updated_directus_users_id_fk"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [directusUsers.id],
-			name: "intro_parent_signups_user_id_fkey"
+			name: "intro_parent_signups_user_id_directus_users_id_fk"
 		}).onDelete("cascade"),
 	foreignKey({
-			columns: [table.userUpdated],
+			columns: [table.approvedBy],
 			foreignColumns: [directusUsers.id],
-			name: "intro_parent_signups_user_updated_fkey"
+			name: "intro_parent_signups_approved_by_directus_users_id_fk"
 		}).onDelete("set null"),
 	unique("intro_parent_signups_user_id_key").on(table.userId),
 ]);
@@ -1121,8 +1119,8 @@ export const whatsappGroups = pgTable("whatsapp_groups", {
 	inviteLink: varchar("invite_link", { length: 500 }).notNull(),
 	isActive: boolean("is_active").default(true),
 	requiresMembership: boolean("requires_membership").default(true),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
 	index("idx_whatsapp_groups_active").using("btree", table.isActive.asc().nullsLast().op("bool_ops")),
 	index("idx_whatsapp_groups_membership").using("btree", table.requiresMembership.asc().nullsLast().op("bool_ops")),
@@ -1152,7 +1150,7 @@ export const trips = pgTable("trips", {
 	foreignKey({
 			columns: [table.image],
 			foreignColumns: [directusFiles.id],
-			name: "trips_image_foreign"
+			name: "trips_image_directus_files_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -1186,14 +1184,14 @@ export const tripSignups = pgTable("trip_signups", {
 	extraLuggage: boolean("extra_luggage"),
 }, (table) => [
 	foreignKey({
-			columns: [table.directusRelations],
-			foreignColumns: [directusUsers.id],
-			name: "trip_signups_directus_relations_fkey"
-		}).onDelete("set null"),
-	foreignKey({
 			columns: [table.tripId],
 			foreignColumns: [trips.id],
-			name: "trip_signups_trip_id_foreign"
+			name: "trip_signups_trip_id_trips_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.directusRelations],
+			foreignColumns: [directusUsers.id],
+			name: "trip_signups_directus_relations_directus_users_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -1213,14 +1211,14 @@ export const tripActivities = pgTable("trip_activities", {
 	maxSelections: integer("max_selections"),
 }, (table) => [
 	foreignKey({
-			columns: [table.image],
-			foreignColumns: [directusFiles.id],
-			name: "trip_activities_image_foreign"
-		}).onDelete("set null"),
-	foreignKey({
 			columns: [table.tripId],
 			foreignColumns: [trips.id],
-			name: "trip_activities_trip_id_foreign"
+			name: "trip_activities_trip_id_trips_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.image],
+			foreignColumns: [directusFiles.id],
+			name: "trip_activities_image_directus_files_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -1232,21 +1230,21 @@ export const tripSignupActivities = pgTable("trip_signup_activities", {
 	selectedOptions: json("selected_options"),
 }, (table) => [
 	foreignKey({
-			columns: [table.tripActivityId],
-			foreignColumns: [tripActivities.id],
-			name: "trip_signup_activities_trip_activity_id_foreign"
-		}).onDelete("set null"),
-	foreignKey({
 			columns: [table.tripSignupId],
 			foreignColumns: [tripSignups.id],
-			name: "trip_signup_activities_trip_signup_id_foreign"
+			name: "trip_signup_activities_trip_signup_id_trip_signups_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.tripActivityId],
+			foreignColumns: [tripActivities.id],
+			name: "trip_signup_activities_trip_activity_id_trip_activities_id_fk"
 		}).onDelete("set null"),
 ]);
 
 export const safeHavens = pgTable("safe_havens", {
 	id: serial().primaryKey().notNull(),
 	contactName: varchar("contact_name", { length: 255 }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
 	phoneNumber: varchar("phone_number", { length: 20 }),
 	image: uuid(),
@@ -1256,12 +1254,12 @@ export const safeHavens = pgTable("safe_havens", {
 	foreignKey({
 			columns: [table.image],
 			foreignColumns: [directusFiles.id],
-			name: "safe_havens_image_foreign"
+			name: "safe_havens_image_directus_files_id_fk"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [directusUsers.id],
-			name: "safe_havens_user_id_foreign"
+			name: "safe_havens_user_id_directus_users_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -1274,7 +1272,7 @@ export const sponsors = pgTable("sponsors", {
 	foreignKey({
 			columns: [table.image],
 			foreignColumns: [directusFiles.id],
-			name: "sponsors_image_foreign"
+			name: "sponsors_image_directus_files_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -1283,7 +1281,7 @@ export const systemLogs = pgTable("system_logs", {
 	type: varchar({ length: 255 }).notNull(),
 	status: varchar({ length: 50 }).notNull(),
 	payload: jsonb(),
-	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
 	acknowledgedAt: timestamp("acknowledged_at", { withTimezone: true, mode: 'string' }),
 });
 
@@ -1301,7 +1299,7 @@ export const clubs = pgTable("clubs", {
 	foreignKey({
 			columns: [table.image],
 			foreignColumns: [directusFiles.id],
-			name: "clubs_image_foreign"
+			name: "clubs_image_directus_files_id_fk"
 		}).onDelete("set null"),
 	unique("clubs_name_key").on(table.name),
 ]);
@@ -1317,14 +1315,14 @@ export const directusSessions = pgTable("directus_sessions", {
 	nextToken: varchar("next_token", { length: 64 }),
 }, (table) => [
 	foreignKey({
-			columns: [table.share],
-			foreignColumns: [directusShares.id],
-			name: "directus_sessions_share_foreign"
-		}).onDelete("cascade"),
-	foreignKey({
 			columns: [table.user],
 			foreignColumns: [directusUsers.id],
-			name: "directus_sessions_user_foreign"
+			name: "directus_sessions_user_directus_users_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.share],
+			foreignColumns: [directusShares.id],
+			name: "directus_sessions_share_directus_shares_id_fk"
 		}).onDelete("cascade"),
 ]);
 
@@ -1334,14 +1332,14 @@ export const rolePermissions = pgTable("role_permissions", {
 	permissionId: integer("permission_id").notNull(),
 }, (table) => [
 	foreignKey({
-			columns: [table.permissionId],
-			foreignColumns: [permissions.id],
-			name: "role_permissions_permission_id_fkey"
-		}),
-	foreignKey({
 			columns: [table.roleId],
 			foreignColumns: [roles.id],
-			name: "role_permissions_role_id_fkey"
+			name: "role_permissions_role_id_roles_id_fk"
+		}),
+	foreignKey({
+			columns: [table.permissionId],
+			foreignColumns: [permissions.id],
+			name: "role_permissions_permission_id_permissions_id_fk"
 		}),
 	unique("role_permissions_role_id_permission_id_key").on(table.roleId, table.permissionId),
 ]);
@@ -1349,8 +1347,8 @@ export const rolePermissions = pgTable("role_permissions", {
 export const transactions = pgTable("transactions", {
 	id: serial().primaryKey().notNull(),
 	userId: uuid("user_id"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	transactionId: varchar("transaction_id", { length: 255 }),
 	productName: varchar("product_name", { length: 255 }),
 	email: varchar({ length: 255 }),
@@ -1371,37 +1369,37 @@ export const transactions = pgTable("transactions", {
 	accessToken: uuid("access_token"),
 	webshopPreorder: integer("webshop_preorder"),
 }, (table) => [
-	index("idx_transactions_created_at").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("idx_transactions_created_at").using("btree", table.createdAt.asc().nullsLast().op("timestamptz_ops")),
 	index("idx_transactions_user_id").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
-	foreignKey({
-			columns: [table.webshopPreorder],
-			foreignColumns: [webshopPreorders.id],
-			name: "transactions_webshop_preorder_foreign"
-		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [directusUsers.id],
-			name: "fk_transactions_user"
+			name: "transactions_user_id_directus_users_id_fk"
 		}).onDelete("set default"),
+	foreignKey({
+			columns: [table.registration],
+			foreignColumns: [eventSignups.id],
+			name: "transactions_registration_event_signups_id_fk"
+		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.approvedBy],
 			foreignColumns: [directusUsers.id],
-			name: "transactions_approved_by_foreign"
+			name: "transactions_approved_by_directus_users_id_fk"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.pubCrawlSignup],
 			foreignColumns: [pubCrawlSignups.id],
-			name: "transactions_pub_crawl_signup_foreign"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.registration],
-			foreignColumns: [eventSignups.id],
-			name: "transactions_registration_foreign"
+			name: "transactions_pub_crawl_signup_pub_crawl_signups_id_fk"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.tripSignup],
 			foreignColumns: [tripSignups.id],
-			name: "transactions_trip_signup_foreign"
+			name: "transactions_trip_signup_trip_signups_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.webshopPreorder],
+			foreignColumns: [webshopPreorders.id],
+			name: "transactions_webshop_preorder_webshop_preorders_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -1423,7 +1421,7 @@ export const authAccounts = pgTable("auth_accounts", {
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [directusUsers.id],
-			name: "auth_accounts_userId_fkey"
+			name: "auth_accounts_userId_directus_users_id_fk"
 		}).onDelete("cascade"),
 ]);
 
@@ -1440,7 +1438,7 @@ export const authSessions = pgTable("auth_sessions", {
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [directusUsers.id],
-			name: "auth_sessions_userId_fkey"
+			name: "auth_sessions_userId_directus_users_id_fk"
 		}).onDelete("cascade"),
 	unique("auth_sessions_token_key").on(table.token),
 ]);
@@ -1464,12 +1462,12 @@ export const committeeMembers = pgTable("committee_members", {
 	foreignKey({
 			columns: [table.committeeId],
 			foreignColumns: [committees.id],
-			name: "committee_members_committee_id_fkey"
+			name: "committee_members_committee_id_committees_id_fk"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [directusUsers.id],
-			name: "committee_members_user_id_fkey"
+			name: "committee_members_user_id_directus_users_id_fk"
 		}).onDelete("cascade"),
 ]);
 
@@ -1489,8 +1487,8 @@ export const introPlanningSignups = pgTable("intro_planning_signups", {
 	status: varchar({ length: 50 }).default('registered'),
 	attended: boolean().default(false),
 	attendedAt: timestamp("attended_at", { mode: 'string' }),
-	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
 }, (table) => [
 	index("idx_intro_planning_signups_activity").using("btree", table.introPlanningId.asc().nullsLast().op("int4_ops")),
@@ -1498,17 +1496,17 @@ export const introPlanningSignups = pgTable("intro_planning_signups", {
 	foreignKey({
 			columns: [table.introPlanningId],
 			foreignColumns: [introPlanning.id],
-			name: "intro_planning_signups_intro_planning_id_fkey"
+			name: "intro_planning_signups_intro_planning_id_intro_planning_id_fk"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.introSignupId],
 			foreignColumns: [introSignups.id],
-			name: "intro_planning_signups_intro_signup_id_fkey"
+			name: "intro_planning_signups_intro_signup_id_intro_signups_id_fk"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [directusUsers.id],
-			name: "intro_planning_signups_user_id_fkey"
+			name: "intro_planning_signups_user_id_directus_users_id_fk"
 		}).onDelete("cascade"),
 	unique("intro_planning_signups_intro_planning_id_intro_signup_id_key").on(table.introPlanningId, table.introSignupId),
 	unique("intro_planning_signups_intro_planning_id_user_id_key").on(table.introPlanningId, table.userId),
@@ -1525,7 +1523,7 @@ export const directusUsers = pgTable("directus_users", {
 	description: text(),
 	tags: json(),
 	avatar: uuid(),
-	language: varchar({ length: 255 }).default(sql`NULL`),
+	language: varchar({ length: 255 }),
 	tfaSecret: varchar("tfa_secret", { length: 255 }),
 	status: varchar({ length: 16 }).default('active').notNull(),
 	role: uuid(),
@@ -1561,7 +1559,7 @@ export const directusUsers = pgTable("directus_users", {
 	foreignKey({
 			columns: [table.role],
 			foreignColumns: [directusRoles.id],
-			name: "directus_users_role_foreign"
+			name: "directus_users_role_directus_roles_id_fk"
 		}).onDelete("set null"),
 	unique("directus_users_email_unique").on(table.email),
 	unique("directus_users_token_unique").on(table.token),
@@ -1573,7 +1571,7 @@ export const directusDeployments = pgTable("directus_deployments", {
 	provider: varchar({ length: 255 }).notNull(),
 	credentials: text(),
 	options: text(),
-	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).defaultNow(),
 	userCreated: uuid("user_created"),
 	webhookIds: json("webhook_ids"),
 	webhookSecret: varchar("webhook_secret", { length: 255 }),
@@ -1582,7 +1580,7 @@ export const directusDeployments = pgTable("directus_deployments", {
 	foreignKey({
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
-			name: "directus_deployments_user_created_foreign"
+			name: "directus_deployments_user_created_directus_users_id_fk"
 		}).onDelete("set null"),
 	unique("directus_deployments_provider_unique").on(table.provider),
 ]);
@@ -1592,18 +1590,18 @@ export const webshopProductMedia = pgTable("webshop_product_media", {
 	productId: integer("product_id").notNull(),
 	asset: uuid().notNull(),
 	displayOrder: integer("display_order").default(0),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
 	index("idx_webshop_product_media_product").using("btree", table.productId.asc().nullsLast().op("int4_ops")),
 	foreignKey({
 			columns: [table.productId],
 			foreignColumns: [webshopProducts.id],
-			name: "webshop_product_media_product_id_foreign"
+			name: "webshop_product_media_product_id_webshop_products_id_fk"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.asset],
 			foreignColumns: [directusFiles.id],
-			name: "webshop_product_media_asset_foreign"
+			name: "webshop_product_media_asset_directus_files_id_fk"
 		}).onDelete("cascade"),
 ]);
 
@@ -1612,7 +1610,7 @@ export const directusDeploymentProjects = pgTable("directus_deployment_projects"
 	deployment: uuid().notNull(),
 	externalId: varchar("external_id", { length: 255 }).notNull(),
 	name: varchar({ length: 255 }).notNull(),
-	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).defaultNow(),
 	userCreated: uuid("user_created"),
 	url: varchar({ length: 255 }),
 	framework: varchar({ length: 255 }),
@@ -1621,12 +1619,12 @@ export const directusDeploymentProjects = pgTable("directus_deployment_projects"
 	foreignKey({
 			columns: [table.deployment],
 			foreignColumns: [directusDeployments.id],
-			name: "directus_deployment_projects_deployment_foreign"
+			name: "directus_deployment_projects_deployment_directus_deployments_id"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
-			name: "directus_deployment_projects_user_created_foreign"
+			name: "directus_deployment_projects_user_created_directus_users_id_fk"
 		}).onDelete("set null"),
 	unique("directus_deployment_projects_deployment_external_id_unique").on(table.deployment, table.externalId),
 ]);
@@ -1669,7 +1667,7 @@ export const directusSettings = pgTable("directus_settings", {
 	projectId: uuid("project_id"),
 	mcpEnabled: boolean("mcp_enabled").default(false).notNull(),
 	mcpAllowDeletes: boolean("mcp_allow_deletes").default(false).notNull(),
-	mcpPromptsCollection: varchar("mcp_prompts_collection", { length: 255 }).default(sql`NULL`),
+	mcpPromptsCollection: varchar("mcp_prompts_collection", { length: 255 }),
 	mcpSystemPromptEnabled: boolean("mcp_system_prompt_enabled").default(true).notNull(),
 	mcpSystemPrompt: text("mcp_system_prompt"),
 	projectOwner: varchar("project_owner", { length: 255 }),
@@ -1694,32 +1692,32 @@ export const directusSettings = pgTable("directus_settings", {
 	foreignKey({
 			columns: [table.projectLogo],
 			foreignColumns: [directusFiles.id],
-			name: "directus_settings_project_logo_foreign"
-		}),
-	foreignKey({
-			columns: [table.publicBackground],
-			foreignColumns: [directusFiles.id],
-			name: "directus_settings_public_background_foreign"
-		}),
-	foreignKey({
-			columns: [table.publicFavicon],
-			foreignColumns: [directusFiles.id],
-			name: "directus_settings_public_favicon_foreign"
+			name: "directus_settings_project_logo_directus_files_id_fk"
 		}),
 	foreignKey({
 			columns: [table.publicForeground],
 			foreignColumns: [directusFiles.id],
-			name: "directus_settings_public_foreground_foreign"
+			name: "directus_settings_public_foreground_directus_files_id_fk"
+		}),
+	foreignKey({
+			columns: [table.publicBackground],
+			foreignColumns: [directusFiles.id],
+			name: "directus_settings_public_background_directus_files_id_fk"
+		}),
+	foreignKey({
+			columns: [table.storageDefaultFolder],
+			foreignColumns: [directusFolders.id],
+			name: "directus_settings_storage_default_folder_directus_folders_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.publicFavicon],
+			foreignColumns: [directusFiles.id],
+			name: "directus_settings_public_favicon_directus_files_id_fk"
 		}),
 	foreignKey({
 			columns: [table.publicRegistrationRole],
 			foreignColumns: [directusRoles.id],
-			name: "directus_settings_public_registration_role_foreign"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.storageDefaultFolder],
-			foreignColumns: [directusFolders.id],
-			name: "directus_settings_storage_default_folder_foreign"
+			name: "directus_settings_public_registration_role_directus_roles_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -1728,7 +1726,7 @@ export const directusDeploymentRuns = pgTable("directus_deployment_runs", {
 	project: uuid().notNull(),
 	externalId: varchar("external_id", { length: 255 }).notNull(),
 	target: varchar({ length: 255 }).notNull(),
-	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).defaultNow(),
 	userCreated: uuid("user_created"),
 	status: varchar({ length: 255 }),
 	url: varchar({ length: 255 }),
@@ -1738,12 +1736,12 @@ export const directusDeploymentRuns = pgTable("directus_deployment_runs", {
 	foreignKey({
 			columns: [table.project],
 			foreignColumns: [directusDeploymentProjects.id],
-			name: "directus_deployment_runs_project_foreign"
+			name: "directus_deployment_runs_project_directus_deployment_projects_i"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.userCreated],
 			foreignColumns: [directusUsers.id],
-			name: "directus_deployment_runs_user_created_foreign"
+			name: "directus_deployment_runs_user_created_directus_users_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -1760,7 +1758,7 @@ export const webshopProductVariants = pgTable("webshop_product_variants", {
 	foreignKey({
 			columns: [table.productId],
 			foreignColumns: [webshopProducts.id],
-			name: "webshop_product_variants_product_id_foreign"
+			name: "webshop_product_variants_product_id_webshop_products_id_fk"
 		}).onDelete("cascade"),
 ]);
 
@@ -1770,38 +1768,14 @@ export const webshopDropWindows = pgTable("webshop_drop_windows", {
 	status: varchar({ length: 255 }).default('draft'),
 	opensAt: timestamp("opens_at", { withTimezone: true, mode: 'string' }),
 	closesAt: timestamp("closes_at", { withTimezone: true, mode: 'string' }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 });
-
-export const webshopProducts = pgTable("webshop_products", {
-	id: serial().primaryKey().notNull(),
-	dropWindowId: integer("drop_window_id"),
-	type: varchar({ length: 255 }).default('item').notNull(),
-	name: varchar({ length: 255 }).notNull(),
-	slug: varchar({ length: 255 }).notNull(),
-	description: text(),
-	price: numeric({ precision: 10, scale:  5 }).notNull(),
-	depositAmount: numeric("deposit_amount", { precision: 10, scale:  5 }).notNull(),
-	sizeChart: json("size_chart"),
-	isActive: boolean("is_active").default(true),
-	displayOrder: integer("display_order").default(0),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-}, (table) => [
-	index("idx_webshop_products_drop_window").using("btree", table.dropWindowId.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-			columns: [table.dropWindowId],
-			foreignColumns: [webshopDropWindows.id],
-			name: "webshop_products_drop_window_id_foreign"
-		}).onDelete("set null"),
-	unique("webshop_products_slug_unique").on(table.slug),
-]);
 
 export const webshopPreorders = pgTable("webshop_preorders", {
 	id: serial().primaryKey().notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	userId: uuid("user_id"),
 	dropWindowId: integer("drop_window_id"),
 	firstName: varchar("first_name", { length: 255 }).notNull(),
@@ -1824,12 +1798,12 @@ export const webshopPreorders = pgTable("webshop_preorders", {
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [directusUsers.id],
-			name: "webshop_preorders_user_id_foreign"
+			name: "webshop_preorders_user_id_directus_users_id_fk"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.dropWindowId],
 			foreignColumns: [webshopDropWindows.id],
-			name: "webshop_preorders_drop_window_id_foreign"
+			name: "webshop_preorders_drop_window_id_webshop_drop_windows_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -1847,16 +1821,40 @@ export const webshopPreorderLines = pgTable("webshop_preorder_lines", {
 	foreignKey({
 			columns: [table.preorderId],
 			foreignColumns: [webshopPreorders.id],
-			name: "webshop_preorder_lines_preorder_id_foreign"
+			name: "webshop_preorder_lines_preorder_id_webshop_preorders_id_fk"
 		}).onDelete("cascade"),
 	foreignKey({
 			columns: [table.productId],
 			foreignColumns: [webshopProducts.id],
-			name: "webshop_preorder_lines_product_id_foreign"
+			name: "webshop_preorder_lines_product_id_webshop_products_id_fk"
 		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.variantId],
 			foreignColumns: [webshopProductVariants.id],
-			name: "webshop_preorder_lines_variant_id_foreign"
+			name: "webshop_preorder_lines_variant_id_webshop_product_variants_id_f"
 		}).onDelete("set null"),
+]);
+
+export const webshopProducts = pgTable("webshop_products", {
+	id: serial().primaryKey().notNull(),
+	dropWindowId: integer("drop_window_id"),
+	type: varchar({ length: 255 }).default('item').notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	slug: varchar({ length: 255 }).notNull(),
+	description: text(),
+	price: numeric({ precision: 10, scale:  5 }).notNull(),
+	depositAmount: numeric("deposit_amount", { precision: 10, scale:  5 }).notNull(),
+	sizeChart: jsonb("size_chart"),
+	isActive: boolean("is_active").default(true),
+	displayOrder: integer("display_order").default(0),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_webshop_products_drop_window").using("btree", table.dropWindowId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.dropWindowId],
+			foreignColumns: [webshopDropWindows.id],
+			name: "webshop_products_drop_window_id_webshop_drop_windows_id_fk"
+		}).onDelete("set null"),
+	unique("uq_webshop_products_slug").on(table.slug),
 ]);
