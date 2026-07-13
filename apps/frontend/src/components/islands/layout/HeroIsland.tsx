@@ -52,19 +52,16 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
     return (
         <section
             id="home"
-            className="relative justify-self-center overflow-hidden w-full pt-8 pb-6 sm:pt-12 sm:pb-8 md:pt-16 md:pb-10"
+            className="relative justify-self-center overflow-hidden w-full pt-fluid-xl pb-fluid-lg"
         >
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 <div className="relative w-full px-0">
-                    <div className="grid gap-5 sm:gap-6 md:grid-cols-2 md:gap-10 lg:gap-16 xl:gap-20 md:items-center">
-
-                        {/* ── Links: tekst + dynamische kaart ─────────────────────── */}
-                        <div className="space-y-5 sm:space-y-6 md:space-y-8 lg:space-y-10 min-w-0">
+                    <div className="grid gap-5 sm:gap-6 md:grid-cols-[3fr_2fr] md:gap-6 lg:gap-10 xl:gap-12 md:items-center">
+                        <div className="@container space-y-5 sm:space-y-6 md:space-y-8 lg:space-y-10 min-w-0">
                             <div className="space-y-3 sm:space-y-4 md:space-y-6">
-                                <h1 className="text-gradient-animated text-2xl font-black leading-tight sm:text-3xl md:text-5xl lg:text-6xl pb-1">
-                                    <span>Studievereniging</span>
-                                    <br />
-                                    <span className="inline-block w-full">Salve Mundi</span>
+                                <h1 className="text-gradient-animated text-[clamp(1.75rem,8.2cqw,4.5rem)] font-black leading-tight pb-1">
+                                    <span className="block w-full">Studievereniging</span>
+                                    <span className="block w-full">Salve Mundi</span>
                                 </h1>
                                 <p className="text-xs leading-relaxed text-(--text-muted) sm:text-sm md:text-lg lg:max-w-xl">
                                     Dè studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd.

@@ -7,9 +7,9 @@ export function parseAzureDate(dateStr?: string): string | null {
 
     const cleaned = dateStr.trim();
 
-    let year = 0;
-    let month = 0;
-    let day = 0;
+    let year: number;
+    let month: number;
+    let day: number;
 
     // Pattern 1: YYYYMMDD or YYYYDDMM (8 digits)
     if (/^\d{8}$/.test(cleaned)) {

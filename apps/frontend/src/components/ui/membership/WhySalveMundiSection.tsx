@@ -83,7 +83,7 @@ const pijlers: Pijler[] = [
 
 export function WhySalveMundiSection() {
     return (
-        <section className="py-6 sm:py-8">
+        <section className="py-fluid-lg">
             <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 {/* Sectie-header */}
                 <div className="text-center mb-6 sm:mb-10">

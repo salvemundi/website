@@ -27,7 +27,6 @@
     }
 }
 
-/* Nieuwe hardware-versnelde animatie voor de tekst-gradient */
 @keyframes hueShift {
     0% {
         filter: hue-rotate(0deg);
@@ -36,6 +35,16 @@
     100% {
         filter: hue-rotate(30deg);
     }
+}
+
+@keyframes slideDownIn {
+    0% { transform: translateY(-100%); opacity: 0; }
+    100% { transform: translateY(0%); opacity: 1; }
+}
+
+@keyframes slideDownOut {
+    0% { transform: translateY(0%); opacity: 1; }
+    100% { transform: translateY(100%); opacity: 0; }
 }
 
 /* ── Utilities ─────────────────────────────────────────────────────────────── */
@@ -48,7 +57,6 @@
         animation: fadeIn 0.4s ease-out forwards;
     }
 
-    /* Stagger animation helpers — apply to grid/list items */
     .stagger-item {
         opacity: 0;
         animation: fadeIn 0.4s ease-out forwards;
@@ -70,7 +78,6 @@
         animation-delay: 0.2s;
     }
 
-    /* Text gradient (static) — purple in light mode, animated gradient in dark */
     .text-gradient {
         color: var(--theme-purple);
     }
@@ -82,7 +89,6 @@
         background-clip: text;
     }
 
-    /* Animated gradient text — dark mode only */
     .text-gradient-animated {
         color: var(--theme-purple);
     }
@@ -95,4 +101,7 @@
         animation: hueShift 4s infinite alternate ease-in-out;
         will-change: filter;
     }
-}
+
+    .digit-in { animation: slideDownIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    .digit-out { animation: slideDownOut 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+}

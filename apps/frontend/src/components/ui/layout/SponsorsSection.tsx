@@ -17,7 +17,7 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
     const scrollDuration = Math.max(2, sponsors.length * 0.8);
 
     return (
-        <section className="py-6 sm:py-8 overflow-hidden" style={{ '--scroll-duration': `${scrollDuration}s` } as React.CSSProperties}>
+        <section className="py-fluid-lg overflow-hidden" style={{ '--scroll-duration': `${scrollDuration}s` } as React.CSSProperties}>
             <div className="mx-auto max-w-app px-6">
                 <div className="text-center mb-6 sm:mb-8">
                     <h2 className="text-2xl font-black text-gradient sm:text-3xl">

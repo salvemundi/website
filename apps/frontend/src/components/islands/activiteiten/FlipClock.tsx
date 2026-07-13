@@ -147,7 +147,7 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
 
             {title && (
                 <div className="text-center mb-8">
-                    <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-purple-800 dark:text-purple-200 tracking-tight mb-2">
+                    <h2 className="text-[clamp(1.5rem,6cqw,3rem)] font-black text-purple-800 dark:text-purple-200 tracking-tight mb-2">
                         {title}
                     </h2>
                     <p className="text-sm sm:text-base font-semibold text-purple-600 dark:text-purple-400 opacity-80">
