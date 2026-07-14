@@ -62,8 +62,8 @@ export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten
                     <div className="flex flex-col gap-2">
                         <ActionItem
                             icon={<MapPin />}
-                            title="Rachelsmolen 1"
-                            subtitle="Gebouw R10, Lokaal 2.26"
+                            title="Rachelsmolen 1, Eindhoven"
+                            subtitle="Gebouw R10, Lokaal 2.17"
                         />
 
                         <ActionItem

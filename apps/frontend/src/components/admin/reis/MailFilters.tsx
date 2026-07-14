@@ -3,11 +3,12 @@
 import { Layout, Filter, Search, Users } from 'lucide-react';
 import type { Trip, TripSignup } from '@salvemundi/validations/schema/admin-trip.zod';
 import { Card, FilterField } from './MailComponents';
+import AdminSelect from '@/components/ui/admin/AdminSelect';
 
 interface MailFiltersProps {
     trips: Trip[];
     selectedTripId: number;
-    onTripChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+    onTripChange: (id: number) => void;
     filterStatus: string;
     setFilterStatus: (status: string) => void;
     filterRole: string;
@@ -19,6 +20,27 @@ interface MailFiltersProps {
     filteredCount: number;
     filteredRecipients: TripSignup[];
 }
+
+const statusOptions = [
+    { value: 'all', label: 'Alle Statussen' },
+    { value: 'registered', label: 'Geregistreerd' },
+    { value: 'confirmed', label: 'Bevestigd' },
+    { value: 'waitlist', label: 'Wachtlijst' },
+    { value: 'cancelled', label: 'Geannuleerd' }
+];
+
+const roleOptions = [
+    { value: 'all', label: 'Alle Rollen' },
+    { value: 'participant', label: 'Deelnemer' },
+    { value: 'crew', label: 'Crew' }
+];
+
+const paymentOptions = [
+    { value: 'all', label: 'Alle Betalingen' },
+    { value: 'unpaid', label: 'Onbetaald' },
+    { value: 'deposit_paid', label: 'Aanbetaling OK' },
+    { value: 'full_paid', label: 'Volledig OK' }
+];
 
 export default function MailFilters({
     trips,
@@ -35,42 +57,29 @@ export default function MailFilters({
     filteredCount,
     filteredRecipients
 }: MailFiltersProps) {
+    const tripOptions = trips.map(trip => ({
+        value: trip.id,
+        label: trip.name || 'Onbekende reis'
+    }));
+
     return (
         <div className="lg:col-span-1 space-y-6">
             {/* Trip Selector */}
             <Card title="Selecteer Reis" icon={<Layout className="h-4 w-4" />}>
-                <select 
+                <AdminSelect
                     value={selectedTripId}
                     onChange={onTripChange}
-                    className="beheer-select text-[11px] font-semibold tracking-tight"
-                >
-                    {trips.map(trip => (
-                        <option key={trip.id} value={trip.id} className="text-base font-semibold">{trip.name}</option>
-                    ))}
-                </select>
+                    options={tripOptions}
+                    size="sm"
+                />
             </Card>
 
             {/* Filters */}
             <Card title="Ontvangers Filter" icon={<Filter className="h-4 w-4" />}>
                 <div className="space-y-6">
-                    <FilterField label="Status" value={filterStatus} onChange={setFilterStatus}>
-                        <option value="all">Alle Statussen</option>
-                        <option value="registered">Geregistreerd</option>
-                        <option value="confirmed">Bevestigd</option>
-                        <option value="waitlist">Wachtlijst</option>
-                        <option value="cancelled">Geannuleerd</option>
-                    </FilterField>
-                    <FilterField label="Rol" value={filterRole} onChange={setFilterRole}>
-                        <option value="all">Alle Rollen</option>
-                        <option value="participant">Deelnemer</option>
-                        <option value="crew">Crew</option>
-                    </FilterField>
-                    <FilterField label="Betaling" value={filterPayment} onChange={setFilterPayment}>
-                        <option value="all">Alle Betalingen</option>
-                        <option value="unpaid">Onbetaald</option>
-                        <option value="deposit_paid">Aanbetaling OK</option>
-                        <option value="full_paid">Volledig OK</option>
-                    </FilterField>
+                    <FilterField label="Status" value={filterStatus} onChange={setFilterStatus} options={statusOptions} />
+                    <FilterField label="Rol" value={filterRole} onChange={setFilterRole} options={roleOptions} />
+                    <FilterField label="Betaling" value={filterPayment} onChange={setFilterPayment} options={paymentOptions} />
                     <div className="relative group/search pt-2">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-(--beheer-text-muted) group-focus-within/search:text-(--beheer-accent) transition-colors opacity-50" />
                         <input 

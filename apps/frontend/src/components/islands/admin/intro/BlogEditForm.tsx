@@ -5,6 +5,14 @@ import type { IntroBlog } from '@salvemundi/validations/schema/intro.zod';
 import { Button, Field, inputClass } from './IntroTabComponents';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { AdminDatetimepicker } from '@/components/ui/forms/AdminDatetimepicker';
+import AdminSelect from '@/components/ui/admin/AdminSelect';
+
+const blogTypeOptions = [
+    { value: 'update', label: 'Update' },
+    { value: 'pictures', label: "Foto's" },
+    { value: 'event', label: 'Evenement' },
+    { value: 'announcement', label: 'Aankondiging' }
+];
 
 interface Props {
     blog: Partial<IntroBlog>;
@@ -78,15 +86,12 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                     <p className="text-[10px] font-semibold text-(--beheer-accent)">Instellingen</p>
 
                     <Field label="Type">
-                        <select
+                        <AdminSelect
                             value={data.blog_type || 'update'}
-                            onChange={e => onChange({ ...data, blog_type: e.target.value as IntroBlog['blog_type'] })}
-                            className="beheer-select text-xs font-semibold"
-                        >
-                            <option value="update" className="bg-(--beheer-card-bg)">Update</option>
-                            <option value="pictures" className="bg-(--beheer-card-bg)">Foto&apos;s</option>                            <option value="event" className="bg-(--beheer-card-bg)">Evenement</option>
-                            <option value="announcement" className="bg-(--beheer-card-bg)">Aankondiging</option>
-                        </select>
+                            onChange={val => onChange({ ...data, blog_type: val as IntroBlog['blog_type'] })}
+                            options={blogTypeOptions}
+                            size="sm"
+                        />
                     </Field>
 
                     <Field label="Datum (Publicatie)">

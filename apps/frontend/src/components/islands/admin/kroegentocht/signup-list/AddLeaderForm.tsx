@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import AdminSelect from '@/components/ui/admin/AdminSelect';
 
 interface Participant {
     name: string;
@@ -13,6 +14,11 @@ interface AddLeaderFormProps {
     onAdd: (name: string, signupId: number | null) => void;
     onCancel: () => void;
 }
+
+const leaderTypeOptions = [
+    { value: 'signup', label: 'Deelnemer uit groep' },
+    { value: 'external', label: 'Externe persoon (Handmatig typen)' }
+];
 
 export default function AddLeaderForm({
     participantsList,
@@ -34,24 +40,30 @@ export default function AddLeaderForm({
         }
     };
 
+    const participantOptions = [
+        { value: '', label: 'Selecteer deelnemer...' },
+        ...participantsList.map(p => ({
+            value: String(p.signupId),
+            label: `${p.name} (${p.association})`
+        }))
+    ];
+
     return (
         <div className="p-3 bg-(--bg-main)/50 border border-(--border-color)/30 rounded-xl space-y-3">
             <div className="space-y-1">
                 <label className="text-[9px] font-bold text-(--text-muted) uppercase tracking-wider">
                     Kies leider type
                 </label>
-                <select
+                <AdminSelect
                     value={leaderType}
-                    onChange={(e) => {
-                        setLeaderType(e.target.value as 'signup' | 'external');
+                    onChange={(val) => {
+                        setLeaderType(val as 'signup' | 'external');
                         setLeaderName('');
                         setLeaderSignupId('');
                     }}
-                    className="beheer-select text-xs font-semibold"
-                >
-                    <option value="signup">Deelnemer uit groep</option>
-                    <option value="external">Externe persoon (Handmatig typen)</option>
-                </select>
+                    options={leaderTypeOptions}
+                    size="sm"
+                />
             </div>
 
             {leaderType === 'signup' ? (
@@ -59,25 +71,18 @@ export default function AddLeaderForm({
                     <label className="text-[9px] font-bold text-(--text-muted) uppercase tracking-wider">
                         Kies deelnemer
                     </label>
-                    <select
+                    <AdminSelect
                         value={leaderSignupId}
-                        onChange={(e) => {
-                            const val = e.target.value;
+                        onChange={(val) => {
                             setLeaderSignupId(val);
                             const found = participantsList.find(p => p.signupId === Number(val));
                             if (found) {
                                 setLeaderName(found.name);
                             }
                         }}
-                        className="beheer-select text-xs font-semibold"
-                    >
-                        <option value="">Selecteer deelnemer...</option>
-                        {participantsList.map((p, pIdx) => (
-                            <option key={`${p.signupId}-${pIdx}`} value={p.signupId}>
-                                {p.name} ({p.association})
-                            </option>
-                        ))}
-                    </select>
+                        options={participantOptions}
+                        size="sm"
+                    />
                 </div>
             ) : (
                 <div className="space-y-1">

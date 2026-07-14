@@ -91,7 +91,7 @@ async function SafeHavensContent() {
                                         <p className="mt-3 text-base sm:text-lg text-text-muted leading-relaxed">
                                             Binnen Salve Mundi vinden wij een veilige en respectvolle omgeving essentieel.
                                             Safe Havens zijn zorgvuldig geselecteerde personen die voor jou klaarstaan:
-                                            ze luisteren zonder te oordelen, denken met je mee, en helpen je een passende vervolgstap te vinden.
+                                            ze luisteren zonder te oordelen, denken met je mee en helpen je een passende vervolgstap te vinden.
                                         </p>
                                     </div>
                                 </div>
@@ -178,7 +178,7 @@ async function SafeHavensContent() {
                                         key={index}
                                         className="group flex items-center gap-3 rounded-xl bg-bg-main/40 border border-transparent p-3 hover:bg-bg-main hover:border-border-color transition-all duration-200"
                                     >
-                                        <div className={`h-9 w-9 rounded-lg bg-gradient-to-br ${topic.color} flex items-center justify-center shrink-0 shadow-sm group-hover:shadow-md transition-shadow`}>
+                                        <div className={`h-9 w-9 rounded-lg bg-linear-to-br ${topic.color} flex items-center justify-center shrink-0 shadow-sm group-hover:shadow-md transition-shadow`}>
                                             <topic.Icon className="h-4 w-4 text-white" />
                                         </div>
                                         <span className="text-sm font-medium text-text-main">
