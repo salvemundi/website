@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 
@@ -59,32 +59,39 @@ export default function AdminSelect<T extends string | number = string | number>
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const updateCoords = () => {
+    const updateCoords = useCallback(() => {
         if (buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
+            const dropdownHeight = options.length === 0
+                ? 40
+                : Math.min(options.length * 34 + 10, 250);
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+
+            const openUpwards = spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
+
             setCoords({
-                top: rect.bottom + window.scrollY,
+                top: openUpwards 
+                    ? rect.top + window.scrollY - dropdownHeight - 8 
+                    : rect.bottom + window.scrollY + 4,
                 left: rect.left + window.scrollX,
                 width: rect.width
             });
         }
-    };
+    }, [options.length]);
 
     useEffect(() => {
         if (isOpen) {
             updateCoords();
             window.addEventListener('resize', updateCoords);
-            
-            // Close dropdown on scroll so it doesn't float detached from trigger
-            const handleScroll = () => setIsOpen(false);
-            window.addEventListener('scroll', handleScroll, { passive: true });
+            window.addEventListener('scroll', updateCoords, { passive: true });
 
             return () => {
                 window.removeEventListener('resize', updateCoords);
-                window.removeEventListener('scroll', handleScroll);
+                window.removeEventListener('scroll', updateCoords);
             };
         }
-    }, [isOpen]);
+    }, [isOpen, updateCoords]);
 
     useEffect(() => {
         if (value !== undefined) {
@@ -137,7 +144,7 @@ export default function AdminSelect<T extends string | number = string | number>
                         top: `${coords.top + 4}px`,
                         left: `${coords.left}px`,
                         width: `${coords.width}px`,
-                        zIndex: 9999
+                        zIndex: 999999
                     }}
                     className="bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl shadow-(--shadow-card-elevated) overflow-hidden animate-in fade-in zoom-in-95 duration-150 ease-out"
                 >

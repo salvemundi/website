@@ -8,7 +8,7 @@ import {
     type ReisTripSignup
 } from '@salvemundi/validations/schema/trip.zod';
 import { db, schema } from '@salvemundi/db';
-import { eq, inArray, count } from 'drizzle-orm';
+import { eq, inArray, count, lt, desc, and, or, isNull } from 'drizzle-orm';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { fetchUserSignupStatusDb, fetchAllTripSignupsDb } from '@/server/internal/reis/reis-signup-db.utils';
 import { fetchPublicTripsDb } from '@/server/internal/reis/reis-trip-db.utils';;
@@ -103,4 +103,48 @@ export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup 
 
 export async function getTripSignupsInternal(tripId: number): Promise<ReisTripSignup[]> {
     return await fetchAllTripSignupsDb(tripId);
+}
+
+export async function getLatestPastTrip(): Promise<ReisTrip | null> {
+    try {
+        const todayStr = new Date().toISOString().split('T')[0];
+        
+        // Find published (or status-null) trips that have already ended
+        const data = await db.select()
+            .from(schema.trips)
+            .where(
+                and(
+                    or(eq(schema.trips.status, 'published'), isNull(schema.trips.status)),
+                    lt(schema.trips.end_date, todayStr)
+                )
+            )
+            .orderBy(desc(schema.trips.end_date))
+            .limit(1);
+
+        if (data.length === 0) return null;
+
+        const trip = data[0];
+        const formattedTrip = {
+            ...trip,
+            max_participants: trip.max_participants !== null ? Number(trip.max_participants) : 0,
+            max_crew: trip.max_crew !== null ? Number(trip.max_crew) : 0,
+            base_price: trip.base_price !== null ? String(trip.base_price) : "0",
+            crew_discount: trip.crew_discount !== null ? String(trip.crew_discount) : "0",
+            deposit_amount: trip.deposit_amount !== null ? String(trip.deposit_amount) : "0",
+            registration_open: !!trip.registration_open,
+            is_bus_trip: !!trip.is_bus_trip,
+            allow_final_payments: !!trip.allow_final_payments,
+        };
+
+        const parsed = reisTripSchema.safeParse(formattedTrip);
+        if (!parsed.success) {
+            safeConsoleError(`[trip-queries.actions.ts][getLatestPastTrip] Failed to parse trip:`, parsed.error);
+            return formattedTrip as unknown as ReisTrip;
+        }
+
+        return parsed.data;
+    } catch (error) {
+        safeConsoleError('[trip-queries.actions.ts][getLatestPastTrip] Error:', error);
+        return null;
+    }
 }

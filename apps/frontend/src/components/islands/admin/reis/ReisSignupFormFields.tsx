@@ -1,7 +1,21 @@
 import React from 'react';
-import { ChevronRight } from 'lucide-react';
 import { DateInput } from '@/shared/ui/DateInput';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
+import AdminSelect, { AdminSelectOption } from '@/components/ui/admin/AdminSelect';
+
+const parseOptionsFromChildren = (children: React.ReactNode): AdminSelectOption[] => {
+    const list = React.Children.map(children, (child) => {
+        if (React.isValidElement(child) && child.type === 'option') {
+            const props = child.props as React.OptionHTMLAttributes<HTMLOptionElement>;
+            return {
+                value: (props.value ?? '') as string | number,
+                label: (props.children as string) || ''
+            };
+        }
+        return null;
+    });
+    return (list || []).filter(Boolean) as AdminSelectOption[];
+};
 
 // --- Shared Types ---
 export interface FieldProps extends React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> {
@@ -59,20 +73,39 @@ export function Input({ label, ...props }: FieldProps) {
 }
 
 export function Select({ label, children, ...props }: FieldProps & { children: React.ReactNode }) {
+    const options = parseOptionsFromChildren(children);
+
+    const handleSelectChange = (val: string | number) => {
+        if (props.onChange) {
+            const event = {
+                target: {
+                    name: props.name,
+                    id: props.id,
+                    value: val
+                },
+                currentTarget: {
+                    name: props.name,
+                    id: props.id,
+                    value: val
+                }
+            } as React.ChangeEvent<HTMLSelectElement>;
+            props.onChange(event);
+        }
+    };
+
     return (
         <div className="space-y-1.5 group/field">
-            <label className="block text-[11px] font-semibold text-(--beheer-text-muted) group-focus-within/field:text-(--beheer-accent) transition-colors px-1 opacity-70">{label}</label>
-            <div className="relative group">
-                <select 
-                    {...props} 
-                    className="w-full pl-4 pr-10 py-2.5 bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm border border-(--beheer-border)/40 rounded-xl text-(--beheer-text) font-semibold text-sm focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main)/80 transition-all appearance-none cursor-pointer outline-none shadow-inner"
-                >
-                    {children}
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none group-hover:text-(--beheer-accent) transition-colors text-(--beheer-text-muted) opacity-50">
-                    <ChevronRight className="h-4 w-4 rotate-90" />
-                </div>
-            </div>
+            <label className="block text-[11px] font-semibold text-(--beheer-text-muted) transition-colors px-1 opacity-70">
+                {label}
+            </label>
+            <AdminSelect
+                name={props.name}
+                defaultValue={props.defaultValue as string | number}
+                value={props.value as string | number}
+                onChange={handleSelectChange}
+                options={options}
+                disabled={props.disabled}
+            />
         </div>
     );
 }
@@ -162,20 +195,41 @@ export function HorizontalPhone({ label, name, defaultValue }: { label: string; 
 }
 
 export function HorizontalSelect({ label, name, children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { label: string; name: string; children: React.ReactNode }) {
-    const id = React.useId();
+    const options = parseOptionsFromChildren(children);
+
+    const handleSelectChange = (val: string | number) => {
+        if (props.onChange) {
+            const event = {
+                target: {
+                    name,
+                    id: props.id,
+                    value: val
+                },
+                currentTarget: {
+                    name,
+                    id: props.id,
+                    value: val
+                }
+            } as React.ChangeEvent<HTMLSelectElement>;
+            props.onChange(event);
+        }
+    };
+
     return (
         <div className="flex items-center gap-3 py-0.5 group relative">
-            <label htmlFor={id} className="w-28 shrink-0 text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 group-hover:opacity-100 group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 transition-all cursor-pointer">{label}</label>
-            <div className="flex-1 bg-slate-500/5 dark:bg-black/40 rounded-lg px-3 border border-(--beheer-border)/5 group-focus-within:border-(--beheer-accent)/20 transition-all relative">
-                <select 
-                    {...props} 
-                    id={id}
+            <label className="w-28 shrink-0 text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 group-hover:opacity-100 transition-all">
+                {label}
+            </label>
+            <div className="flex-1">
+                <AdminSelect
                     name={name}
-                    className="w-full bg-transparent text-xs text-(--beheer-text) font-semibold outline-none h-7 appearance-none cursor-pointer"
-                >
-                    {children}
-                </select>
-                <ChevronRight className="h-3 w-3 rotate-90 absolute right-3 top-1/2 -translate-y-1/2 text-(--beheer-text-muted) opacity-30 pointer-events-none" />
+                    defaultValue={props.defaultValue as string | number}
+                    value={props.value as string | number}
+                    onChange={handleSelectChange}
+                    options={options}
+                    disabled={props.disabled}
+                    size="sm"
+                />
             </div>
         </div>
     );
