@@ -83,6 +83,7 @@ export class SyncProcessor {
                 if (pendingTarget) {
                     logInfo(`[sync-processor.ts][syncUserOptimized] User ${aUser.id} is in correct state now. Cancelling pending UPN change to ${pendingTarget}.`);
                     await ctx.redis.del(pendingKey);
+                    changes.push({ field: 'UserPrincipalName change scheduled', old: `Ingepland naar ${pendingTarget}`, new: 'Geannuleerd' });
                 }
             }
         }
