@@ -27,7 +27,11 @@ const dbUrl = process.env.DATABASE_URL || `postgres://${dbUser}:${dbPassword}@${
 
 export default defineConfig({
   out: './drizzle',
-  schema: './src/schema.ts',
+  schema: './drizzle/schema.ts',
+  casing: 'snake_case',
+  introspect: {
+    casing: 'preserve',
+  },
   dialect: 'postgresql',
   dbCredentials: {
     url: dbUrl,

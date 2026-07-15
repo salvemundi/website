@@ -9,6 +9,7 @@ export default function SyncControlIsland() {
         isStartingSync, isStopping, isResetting, isUserSyncLoading,
         selectedSyncFields, toggleField, forceLink, setForceLink,
         activeOnly, setActiveOnly, sendExpiryEmails, setSendExpiryEmails,
+        convertUpn, setConvertUpn,
         handleFullSync, handleStopSync, handleResetSync,
         userId, setUserId, handleUserSync, syncFieldOptions, status
     } = useSync();
@@ -67,6 +68,16 @@ export default function SyncControlIsland() {
                             <span className={`text-[11px] font-semibold transition-colors ${sendExpiryEmails ? 'text-(--beheer-accent)' : 'text-(--beheer-text-muted) group-hover:text-(--beheer-text)'}`}>Verstuur Expiratie E-mails</span>
                             <div className={`h-4 w-8 rounded-full relative transition-all ${sendExpiryEmails ? 'bg-(--beheer-accent)' : 'bg-slate-300 dark:bg-slate-700'}`}>
                                 <div className={`absolute top-1 w-2 h-2 rounded-full bg-white transition-all ${sendExpiryEmails ? 'right-1' : 'left-1'}`} />
+                            </div>
+                        </button>
+
+                        <button
+                            onClick={() => setConvertUpn(!convertUpn)}
+                            className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${convertUpn ? 'border-(--beheer-accent) bg-(--beheer-accent)/5' : 'border-(--beheer-border) hover:border-(--beheer-accent)/30 group'}`}
+                        >
+                            <span className={`text-[11px] font-semibold transition-colors ${convertUpn ? 'text-(--beheer-accent)' : 'text-(--beheer-text-muted) group-hover:text-(--beheer-text)'}`}>Automatische UPN Conversie</span>
+                            <div className={`h-4 w-8 rounded-full relative transition-all ${convertUpn ? 'bg-(--beheer-accent)' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                                <div className={`absolute top-1 w-2 h-2 rounded-full bg-white transition-all ${convertUpn ? 'right-1' : 'left-1'}`} />
                             </div>
                         </button>
                     </div>

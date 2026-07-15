@@ -13,6 +13,7 @@ export interface AzureUser {
     businessPhones: string[];
     jobTitle: string;
     birthday?: string;
+    otherMails?: string[];
     customSecurityAttributes?: {
         SalveMundiLidmaatschap?: {
             VerloopdatumStr?: string;
@@ -32,7 +33,7 @@ export interface AzureGroup {
 export class GraphService {
     static async getUser(userId: string): Promise<AzureUser> {
         return await this.getClient().api(`/users/${userId}`)
-            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,customSecurityAttributes,birthday')
+            .select('id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,customSecurityAttributes,birthday,otherMails')
             .get() as AzureUser;
     }
 
@@ -75,7 +76,7 @@ export class GraphService {
         };
 
         try {
-            const selectFields = 'id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,customSecurityAttributes';
+            const selectFields = 'id,displayName,givenName,surname,mail,userPrincipalName,mobilePhone,jobTitle,customSecurityAttributes,otherMails';
             logInfo(`[graph.service.ts][getAllUsers] Fetching users (page 1)...`);
             let response = await fetchWithRetry('/users', selectFields, 100) as Record<string, unknown>;
 

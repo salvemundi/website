@@ -8,6 +8,7 @@ import { EventListenerService } from './services/event-listener.js';
 import { ExpiryCheckJob } from './services/expiry-check.job.js';
 import { EventReminderJob } from './services/event-reminder.job.js';
 import { FullSyncJob } from './services/full-sync.job.js';
+import { PendingUpnWorkerService } from './services/pending-upn-worker.js';
 
 const fastify = Fastify({
     logger: true,
@@ -32,6 +33,7 @@ fastify.addHook('onClose', async () => {
     ExpiryCheckJob.stop();
     EventReminderJob.stop();
     FullSyncJob.stop();
+    PendingUpnWorkerService.stop();
     await client.end();
 });
 
@@ -66,6 +68,11 @@ const start = async () => {
         });
 
         FullSyncJob.start(fastify.redis).catch((error: unknown) => {
+            safeConsoleError('[server.ts][start] ', error);
+            process.exit(1);
+        });
+
+        PendingUpnWorkerService.start(fastify.redis).catch((error: unknown) => {
             safeConsoleError('[server.ts][start] ', error);
             process.exit(1);
         });

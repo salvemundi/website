@@ -102,6 +102,21 @@ export async function addCommitteeMember(
         });
         await revalidateUserCache();
         revalidatePath('/beheer/commissies');
+
+        const syncUrl = process.env.AZURE_SYNC_SERVICE_URL;
+        const internalToken = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
+        if (syncUrl && internalToken) {
+            fetch(`${syncUrl}/api/sync/run/${encodeURIComponent(user.entra_id)}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${internalToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ convertUpn: true })
+            }).catch((syncErr) => {
+                safeConsoleError(`[admin-committees.actions.ts][addCommitteeMember] Failed to trigger sync for user ${user.entra_id}:`, syncErr);
+            });
+        }
     } catch (error: unknown) {
         safeConsoleError(`[admin-committees.actions.ts][addCommitteeMember] Failed to write local membership to Directus:`, error);
     }
@@ -170,6 +185,21 @@ export async function removeCommitteeMember(
             }
         }
         revalidatePath('/beheer/commissies');
+
+        const syncUrl = process.env.AZURE_SYNC_SERVICE_URL;
+        const internalToken = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
+        if (syncUrl && internalToken) {
+            fetch(`${syncUrl}/api/sync/run/${encodeURIComponent(entraId)}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${internalToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ convertUpn: true })
+            }).catch((syncErr) => {
+                safeConsoleError(`[admin-committees.actions.ts][removeCommitteeMember] Failed to trigger sync for user ${entraId}:`, syncErr);
+            });
+        }
     } catch (error: unknown) {
         safeConsoleError(`[admin-committees.actions.ts][removeCommitteeMember] Failed to delete local membership from Directus:`, error);
     }

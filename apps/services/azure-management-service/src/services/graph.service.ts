@@ -174,6 +174,8 @@ export class GraphService {
             dateOfBirth?: string;
             membershipExpiry?: string;
             originalPaymentDate?: string;
+            userPrincipalName?: string;
+            mail?: string;
         }
     ): Promise<unknown> {
         const client = this.getClient(token);
@@ -183,6 +185,8 @@ export class GraphService {
         if (data.givenName) payload.givenName = data.givenName;
         if (data.surname) payload.surname = data.surname;
         if (data.phoneNumber) payload.mobilePhone = data.phoneNumber;
+        if (data.userPrincipalName) payload.userPrincipalName = data.userPrincipalName;
+        if (data.mail) payload.mail = data.mail;
 
         if (data.dateOfBirth || data.membershipExpiry || data.originalPaymentDate) {
             const attributes: {

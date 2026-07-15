@@ -6,11 +6,11 @@ import { verifyInternalToken } from '../middleware/auth.js';
 export default async function userRoutes(fastify: FastifyInstance) {
     fastify.patch('/:entraId', { preHandler: [verifyInternalToken] }, async (request, reply) => {
         const { entraId } = request.params as { entraId: string };
-        const { displayName, phoneNumber, dateOfBirth, membershipExpiry, originalPaymentDate } = request.body as Record<string, string>;
+        const { displayName, phoneNumber, dateOfBirth, membershipExpiry, originalPaymentDate, userPrincipalName, mail } = request.body as Record<string, string>;
 
         try {
             const token = await TokenService.getAccessToken(fastify.redis);
-            await GraphService.updateUser(entraId, token, { displayName, phoneNumber, dateOfBirth, membershipExpiry, originalPaymentDate });
+            await GraphService.updateUser(entraId, token, { displayName, phoneNumber, dateOfBirth, membershipExpiry, originalPaymentDate, userPrincipalName, mail });
             return { success: true, message: 'User updated in Microsoft Entra ID' };
         } catch (error: any) {
             fastify.log.error(`[USERS] Failed to update user ${entraId}:`, error.message);

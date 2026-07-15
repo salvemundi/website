@@ -37,6 +37,7 @@ export interface SyncOptions {
     forceSyncPhotos?: boolean;
     silent?: boolean;
     sendExpiryEmails?: boolean;
+    convertUpn?: boolean;
 }
 
 export interface SyncContext {

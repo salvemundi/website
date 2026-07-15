@@ -42,6 +42,8 @@ interface SyncContextType {
     setActiveOnly: (val: boolean) => void;
     sendExpiryEmails: boolean;
     setSendExpiryEmails: (val: boolean) => void;
+    convertUpn: boolean;
+    setConvertUpn: (val: boolean) => void;
     resultFilter: string;
     setResultFilter: (filter: string) => void;
     syncFieldOptions: { id: string; label: string }[];
@@ -71,6 +73,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
     const [forceLink, setForceLink] = useState(false);
     const [activeOnly, setActiveOnly] = useState(false);
     const [sendExpiryEmails, setSendExpiryEmails] = useState(false);
+    const [convertUpn, setConvertUpn] = useState(true);
     const [resultFilter, setResultFilter] = useState<string>('all');
 
     const syncFieldOptions = [
@@ -124,7 +127,8 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
                 fields: selectedSyncFields,
                 forceLink,
                 activeOnly,
-                sendExpiryEmails
+                sendExpiryEmails,
+                convertUpn
             });
             if (!result.success) {
                 showToast(result.error || 'Kon sync niet starten', 'error');
@@ -208,6 +212,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
             status, isLoading: false, isStartingSync, isStopping, isResetting, isUserSyncLoading,
             userId, setUserId, lastUpdated, selectedSyncFields, toggleField,
             forceLink, setForceLink, activeOnly, setActiveOnly, sendExpiryEmails, setSendExpiryEmails,
+            convertUpn, setConvertUpn,
             resultFilter, setResultFilter, syncFieldOptions, fetchStatus,
             handleFullSync, handleStopSync, handleResetSync, handleUserSync
         }}>

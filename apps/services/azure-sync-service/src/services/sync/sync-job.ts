@@ -12,6 +12,7 @@ import {
 import { getSyncStatus, persistSyncStatus, shouldExcludeUser } from './sync-helpers.js';
 import { SyncProcessor } from './sync-processor.js';
 import { SyncCache } from './sync-cache.js';
+import { DbService } from '../db.service.js';
 
 export class SyncJob {
     static async getStatus(redis: Redis): Promise<SyncStatus> {
@@ -139,14 +140,21 @@ export class SyncJob {
             options.fields = ['status', 'membership_status', 'membership_expiry', 'committees', 'profile_photo', 'geboortedatum', 'phone_number', 'originele_betaaldatum'];
         }
 
+        let actualEntraId = entraId;
+        const dbUser = await DbService.getUserById(entraId);
+        const dbEntraId = dbUser?.entra_id;
+        if (dbEntraId) {
+            actualEntraId = dbEntraId;
+        }
+
         const [{ committeeCache, committeeByIdCache }, { userCacheByEntra }, { membershipCache }] = await Promise.all([
             SyncCache.getCommittees(),
             SyncCache.getUsers(),
             SyncCache.getMemberships()
         ]);
 
-        const aUser = await GraphService.getUser(entraId) as unknown as AzureUser | null;
-        if (!aUser) throw new Error(`Entra ID ${entraId} niet gevonden.`);
+        const aUser = await GraphService.getUser(actualEntraId) as unknown as AzureUser | null;
+        if (!aUser) throw new Error(`Entra ID ${actualEntraId} niet gevonden.`);
 
         const userGroups = await GraphService.getUserGroups(aUser.id);
         const userMap = new Map<number, boolean>();

@@ -72,7 +72,9 @@ export class SyncLifecycle {
             if (ctx.options.sendExpiryEmails && desiredStatus === 'expired' && expiryDate && daysSinceExpiry >= 0 && daysSinceExpiry <= 14) {
                 try {
                     const fullUser = await DbService.getUserById(String(dUser.id));
-                    await ExpiryCheckJob.notifyMember(ctx.redis, fullUser, 'expired');
+                    if (fullUser) {
+                        await ExpiryCheckJob.notifyMember(ctx.redis, fullUser, 'expired');
+                    }
                 } catch (error) {
                     safeConsoleError(`[sync-lifecycle.ts][handleLifecycle] Failed to trigger expired email notification:`, error);
                 }
