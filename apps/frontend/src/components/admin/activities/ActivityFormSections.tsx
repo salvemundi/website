@@ -378,8 +378,8 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
 
 export function StatusSection({ status, onStatusChange, initialData }: { status: string, onStatusChange: (val: string) => void, initialData?: Record<string, InitialValue> }) {
     return (
-        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border) overflow-hidden">
-            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3">
+        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border)">
+            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3 rounded-t-(--beheer-radius)">
                 <Eye className="h-4 w-4 text-(--beheer-accent)" />
                 <h2 className="text-base font-semibold text-(--beheer-text)">Status</h2>
             </div>
