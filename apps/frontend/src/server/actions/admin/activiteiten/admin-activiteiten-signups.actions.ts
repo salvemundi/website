@@ -157,11 +157,9 @@ export async function createManualSignupAction(
     }
     try {
         const user = await verifyActivityBOLA(eventId);
-        const { rateLimit } = await import('@/server/utils/ratelimit');
-        const { success } = await rateLimit(`manual-signup:${user.id}`, 20, 60);
-        if (!success) {
-            return { success: false, error: "Te veel aanmeldingen achter elkaar. Wacht even." };
-        }
+        const { checkRateLimit } = await import('@/server/utils/ratelimit');
+        const rateLimitResult = await checkRateLimit(`manual-signup:${user.id}`, 20, 60, "Te veel aanmeldingen achter elkaar. Wacht even.");
+        if (!rateLimitResult.success) return rateLimitResult;
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : "Unauthorized" };
     }

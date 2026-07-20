@@ -8,7 +8,7 @@ export const pubCrawlEventSchema = selectPubCrawlEventsSchema.extend({
     email: z.string().email().nullable().optional(),
     image: z.string().nullable().optional(),
     date: z.coerce.string().nullable().optional(),
-    show: z.boolean().nullable().optional().default(true), // Default to true if missing
+    show: z.boolean().nullable().optional().default(true),
     disabled_message: z.string().nullable().optional(),
     price: z.coerce.number().optional().default(1),
     max_tickets_per_person: z.coerce.number().optional().default(10),
@@ -28,10 +28,10 @@ export const pubCrawlSignupSchema = selectPubCrawlSignupsSchema.extend({
     association: z.string().min(1, 'Vereniging is verplicht'),
     amount_tickets: z.coerce.number().min(1).max(10),
     pub_crawl_event_id: z.union([z.string(), z.number()]),
-    name_initials: z.string(), // JSON string voor legacy compatibiliteit
+    name_initials: z.string(),
     payment_status: z.enum(['open', 'paid', 'failed', 'canceled', 'expired']).default('open'),
     directus_relations: z.string().optional().nullable(),
-    website: z.string().optional(), // Honeypot
+    website: z.string().optional(),
     group_name: z.string().optional().nullable(),
 });
 

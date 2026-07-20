@@ -17,6 +17,7 @@ import {
     tripSignupActivitySchema,
     tripActivitySchema
 } from '@salvemundi/validations';
+import { getFeatureFlagSettings } from '@/server/actions/admin/admin-utils.actions';
 
 interface AdminReisPageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -40,12 +41,14 @@ export async function generateMetadata({ searchParams }: AdminReisPageProps): Pr
 
 async function loadReisAdminData(tripIdParam: string | undefined) {
     try {
-        const [tripsRes, settingsRes] = await Promise.all([
+        const [tripsRes, settingsRes, flagConfig] = await Promise.all([
             getAdminTrips(),
-            getReisSiteSettings()
+            getReisSiteSettings(),
+            getFeatureFlagSettings('/reis')
         ]);
         const trips = tripSchema.array().parse(tripsRes);
         const reisSettings = settingsRes || { show: true };
+        const canToggleVisibility = flagConfig.canToggleVisibility;
 
         if (trips.length === 0) {
             return { success: true as const, trips, noTrips: true as const };
@@ -80,6 +83,7 @@ async function loadReisAdminData(tripIdParam: string | undefined) {
             success: true as const,
             trips,
             reisSettings,
+            canToggleVisibility,
             activeTrip,
             activeTripId,
             signups,
@@ -114,6 +118,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     const {
         trips,
         reisSettings,
+        canToggleVisibility,
         activeTrip,
         activeTripId,
         signups,
@@ -152,7 +157,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
                                 <Settings2 className="h-3.5 w-3.5" />
                                 <span className="hidden sm:inline">Instellingen</span>
                             </Link>
-                            <ReisVisibilityToggle initialVisible={reisSettings.show} />
+                            <ReisVisibilityToggle initialVisible={reisSettings.show} canToggle={canToggleVisibility} />
                         </div>
                     </div>
                 </>

@@ -126,11 +126,9 @@ export async function getKroegentochtTickets(email: string): Promise<PubCrawlTic
 }
 
 export async function initiateKroegentochtPayment(formData: unknown) {
-    const { rateLimit } = await import('@/server/utils/ratelimit');
-    const { success: rateLimitSuccess } = await rateLimit('kroegentocht-signup', 15, 600);
-    if (!rateLimitSuccess) {
-        return { success: false, error: 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het over een kwartier opnieuw.' };
-    }
+    const { checkRateLimit } = await import('@/server/utils/ratelimit');
+    const rateLimitResult = await checkRateLimit('kroegentocht-signup', 15, 600, 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het over een kwartier opnieuw.');
+    if (!rateLimitResult.success) return rateLimitResult;
 
     const parsed = pubCrawlSignupSchema.safeParse(formData);
     if (!parsed.success) {

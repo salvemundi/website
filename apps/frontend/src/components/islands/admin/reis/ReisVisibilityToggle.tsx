@@ -9,20 +9,21 @@ import { toggleReisVisibility } from '@/server/actions/admin/reis/admin-reis-cor
 
 interface Props {
     initialVisible: boolean;
+    canToggle: boolean;
 }
 
-export default function ReisVisibilityToggle({ initialVisible }: Props) {
+export default function ReisVisibilityToggle({ initialVisible, canToggle }: Props) {
     const router = useRouter();
     const [isVisible, setIsVisible] = useState(initialVisible);
     const [isPending, startTransition] = useTransition();
     const { toast, showToast, hideToast } = useAdminToast();
 
-    // Sync state with server prop updates
     useEffect(() => {
         setIsVisible(initialVisible);
     }, [initialVisible]);
 
     const handleToggle = () => {
+        if (!canToggle) return;
         startTransition(async () => {
             try {
                 const res = await toggleReisVisibility();
@@ -38,6 +39,8 @@ export default function ReisVisibilityToggle({ initialVisible }: Props) {
             }
         });
     };
+
+    if (!canToggle) return null;
 
     return (
         <>

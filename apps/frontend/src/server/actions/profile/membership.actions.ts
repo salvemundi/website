@@ -13,7 +13,7 @@ import {
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type EnrichedUser } from '@/types/auth';
 import { revalidateTag } from 'next/cache';
-import { rateLimit } from '@/server/utils/ratelimit';
+import { checkRateLimit } from '@/server/utils/ratelimit';
 import { getExpandedEnv } from '@/server/utils/env';
 import { getValidCoupon, claimCoupon, releaseCoupon } from '@/server/internal/coupon/coupon-db.utils';;
 import { normalizeDate } from '@/lib/utils/date-utils';
@@ -37,10 +37,8 @@ export async function validateCouponAction(formData: FormData) {
         return { success: false, error: 'Ongeldige coupon code' };
     }
 
-    const { success } = await rateLimit('validate-coupon', 10, 60);
-    if (!success) {
-        return { success: false, error: 'Te veel verzoeken. Probeer het later opnieuw.' };
-    }
+    const rateLimitResult = await checkRateLimit('validate-coupon', 10, 60, 'Te veel verzoeken. Probeer het later opnieuw.');
+    if (!rateLimitResult.success) return rateLimitResult;
 
     const result = await getValidCoupon(parsed.data.couponCode);
 
@@ -67,10 +65,8 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
         return { success: false, errors: z.flattenError(parsed.error).fieldErrors };
     }
 
-    const { success } = await rateLimit('membership-signup', 3, 300);
-    if (!success) {
-        return { success: false, error: 'Te veel inschrijfpogingen. Probeer het over een paar minuten opnieuw.' };
-    }
+    const rateLimitResult = await checkRateLimit('membership-signup', 3, 300, 'Te veel inschrijfpogingen. Probeer het over een paar minuten opnieuw.');
+    if (!rateLimitResult.success) return rateLimitResult;
 
     const session = await getEnrichedSession();
 

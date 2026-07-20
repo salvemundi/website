@@ -69,16 +69,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
         email: event?.email || 'feest@salvemundi.nl',
         image: event?.image || null,
         whatsapp_community_url: event?.whatsapp_community_url || '',
-        groups: (normalizedEventGroups.length > 0 ? normalizedEventGroups : [
-            { name: 'Pils Panters', leaders: [] },
-            { name: 'Tipsy Tijgers', leaders: [] },
-            { name: 'Flamingos', leaders: [] },
-            { name: 'Krokobillen', leaders: [] },
-            { name: 'Jaeger Meisters', leaders: [] },
-            { name: 'Lamme Leeuwen', leaders: [] },
-            { name: 'Aapjes', leaders: [] },
-            { name: 'Zuipende Zebra\'s', leaders: [] }
-        ]) as GroupConfig[]
+        groups: (normalizedEventGroups.length > 0 ? normalizedEventGroups : []) as GroupConfig[]
     });
     const [eventDate, setEventDate] = useState<Date | null>(() => {
         return formData.date ? new Date(formData.date) : null;

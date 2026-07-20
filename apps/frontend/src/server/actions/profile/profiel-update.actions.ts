@@ -30,11 +30,9 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
         return { success: false, error: 'Je bent niet ingelogd.' };
     }
 
-    const { rateLimit } = await import('@/server/utils/ratelimit');
-    const { success } = await rateLimit('profile-update', 10, 300);
-    if (!success) {
-        return { success: false, error: 'Te veel wijzigingen. Probeer het over 5 minutes opnieuw.' };
-    }
+    const { checkRateLimit } = await import('@/server/utils/ratelimit');
+    const rateLimitResult = await checkRateLimit('profile-update', 10, 300, 'Te veel wijzigingen. Probeer het over 5 minutes opnieuw.');
+    if (!rateLimitResult.success) return rateLimitResult;
 
     const parsed = updateProfileSchema.safeParse(data);
     if (!parsed.success) {
@@ -113,9 +111,9 @@ export async function uploadUserAvatar(formData: FormData) {
     const user = session?.user;
     if (!user?.id) return { success: false, error: 'Not authenticated' };
 
-    const { rateLimit } = await import('@/server/utils/ratelimit');
-    const { success } = await rateLimit(`avatar-upload:${user.id}`, 5, 600);
-    if (!success) return { success: false, error: 'Te veel uploads. Probeer het over 10 minuten opnieuw.' };
+    const { checkRateLimit } = await import('@/server/utils/ratelimit');
+    const rateLimitResult = await checkRateLimit(`avatar-upload:${user.id}`, 5, 600, 'Te veel uploads. Probeer het over 10 minuten opnieuw.');
+    if (!rateLimitResult.success) return rateLimitResult;
 
     const file = formData.get('file');
 

@@ -44,4 +44,24 @@ export class ManagementService {
             throw new Error(`Management Service error: ${errorMessage}`);
         }
     }
+
+    static async updateUserPrincipalName(userId: string, newUpn: string): Promise<void> {
+        const { baseUrl, token } = this.getConfig();
+        logInfo(`[management.service.ts][updateUserPrincipalName] Delegating UPN update for ${userId} to ${newUpn} at ${baseUrl}`);
+
+        const response = await fetch(`${baseUrl}/api/users/${userId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ userPrincipalName: newUpn, mail: newUpn })
+        });
+
+        if (!response.ok) {
+            const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+            const errorMessage = typeof body.error === 'string' ? body.error : response.statusText;
+            throw new Error(`Management Service error: ${errorMessage}`);
+        }
+    }
 }

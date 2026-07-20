@@ -3,24 +3,104 @@ import crypto from 'crypto';
 import { DirectusService } from '../directus.service.js';
 import { DbService } from '../db.service.js';
 import { type SyncContext } from './sync-types.js';
-import { parseAzureDate, sanitizeAzureDate } from './sync-helpers.js';
+import { parseAzureDate, sanitizeAzureDate, shouldExcludeUser } from './sync-helpers.js';
 import { SyncLifecycle } from './sync-lifecycle.js';
 import { logInfo, safeConsoleError } from '../../utils/logger.js';
 
 export class SyncProcessor {
     static async syncUserOptimized(ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> }, aUser: AzureUser) {
-        const email = (aUser.mail || aUser.userPrincipalName).toLowerCase();
         const changes: { field: string; old: unknown; new: unknown }[] = [];
+        const currentUpn = aUser.userPrincipalName.toLowerCase();
+        let targetUpn = currentUpn;
+        const isUpnConversionEnabled = await DbService.isFlagActive('auto_upn_conversion');
 
+        if (isUpnConversionEnabled && ctx.options.convertUpn && !shouldExcludeUser(currentUpn)) {
+            const azureMemberships = ctx.membershipMap.get(aUser.id) || new Map<number, boolean>();
+            const isInCommittee = azureMemberships.size > 0;
+
+            if (isInCommittee && currentUpn.endsWith('@lid.salvemundi.nl')) {
+                targetUpn = currentUpn.replace('@lid.salvemundi.nl', '@salvemundi.nl');
+            } else if (!isInCommittee && currentUpn.endsWith('@salvemundi.nl')) {
+                targetUpn = currentUpn.replace('@salvemundi.nl', '@lid.salvemundi.nl');
+            }
+
+            const pendingKey = `v7:pending_upn_change:${aUser.id}`;
+            const queueKey = 'v7:queue:upn_changes';
+
+            if (targetUpn !== currentUpn) {
+                const pendingTarget = await ctx.redis.get(pendingKey);
+                if (pendingTarget !== targetUpn) {
+                    logInfo(`[sync-processor.ts][syncUserOptimized] UPN change needed for ${aUser.id}: ${currentUpn} -> ${targetUpn}. Queueing change with 2-day delay...`);
+                    
+                    const delayMs = (Number(process.env.UPN_CHANGE_DELAY_SECONDS) || 172800) * 1000;
+                    const executionTime = Date.now() + delayMs;
+                    const changeDateStr = new Date(executionTime).toLocaleDateString('nl-NL', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+
+                    const task = {
+                        entraId: aUser.id,
+                        targetUpn,
+                        oldUpn: currentUpn,
+                        firstName: aUser.givenName || 'lid'
+                    };
+
+                    await ctx.redis.set(pendingKey, targetUpn);
+                    await ctx.redis.zadd(queueKey, executionTime, JSON.stringify(task));
+
+                    // Send email immediately to current email address
+                    if (process.env.MAIL_SERVICE_URL) {
+                        logInfo(`[sync-processor.ts][syncUserOptimized] Sending immediate UPN change warning email to ${aUser.mail || currentUpn}...`);
+                        await fetch(`${process.env.MAIL_SERVICE_URL}/api/mail/send`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_TOKEN}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                to: aUser.mail || currentUpn,
+                                templateId: 'upn_changed',
+                                data: {
+                                    firstName: aUser.givenName || 'lid',
+                                    oldUpn: currentUpn,
+                                    newUpn: targetUpn,
+                                    changeDate: changeDateStr
+                                }
+                            })
+                        }).catch((err: unknown) => {
+                            safeConsoleError(`[sync-processor.ts][syncUserOptimized] Failed to send UPN changed email to ${aUser.mail || currentUpn}:`, err);
+                        });
+                    }
+
+                    changes.push({ field: 'UserPrincipalName change scheduled', old: currentUpn, new: `${targetUpn} (op ${changeDateStr})` });
+                }
+            } else {
+                // If they are in the correct state, clear any pending change
+                const pendingTarget = await ctx.redis.get(pendingKey);
+                if (pendingTarget) {
+                    logInfo(`[sync-processor.ts][syncUserOptimized] User ${aUser.id} is in correct state now. Cancelling pending UPN change to ${pendingTarget}.`);
+                    await ctx.redis.del(pendingKey);
+                    changes.push({ field: 'UserPrincipalName verandering gepland', old: `${pendingTarget}`, new: 'Geannuleerd' });
+                }
+            }
+        }
+
+        const email = (aUser.mail || aUser.userPrincipalName).toLowerCase();
         let dUser = ctx.userCacheByEntra.get(aUser.id);
 
         if (!dUser && ctx.options.forceLink) {
             const existingByEmail = Array.from(ctx.userCacheByEntra.values()).find(u => u.email?.toLowerCase() === email);
-
             if (existingByEmail) {
                 logInfo(`[sync-processor.ts][syncUserOptimized] Linking existing user ${email} to Entra ID ${aUser.id}`);
-                await DbService.updateUser(existingByEmail.id, { entra_id: aUser.id });
-                dUser = { ...existingByEmail, entra_id: aUser.id };
+                await DbService.updateUser(existingByEmail.id, {
+                    entra_id: aUser.id,
+                    provider: 'microsoft',
+                    external_identifier: email
+                });
+                dUser = { ...existingByEmail, entra_id: aUser.id, provider: 'microsoft', external_identifier: email };
                 ctx.userCacheByEntra.set(aUser.id, dUser);
                 changes.push({ field: 'User Link', old: 'Geen Entra ID', new: `Gekoppeld aan ${aUser.id}` });
             }
@@ -62,7 +142,10 @@ export class SyncProcessor {
                     date_of_birth: dob,
                     membership_expiry: expiry,
                     originele_betaaldatum: paidDate,
-                    membership_status: 'none'
+                    membership_status: 'none',
+                    emailverified: true,
+                    provider: 'microsoft',
+                    external_identifier: email
                 });
                 ctx.status.createdCount++;
                 changes.push({ field: 'User', old: 'Bestaat niet', new: 'Nieuw lid aangemaakt' });
@@ -124,6 +207,26 @@ export class SyncProcessor {
             changes.push({ field: 'phone_number', old: currentUser.phone_number || 'leeg', new: updatePayload.phone_number });
         }
 
+        if (currentUser.provider !== 'microsoft') {
+            updatePayload.provider = 'microsoft';
+            changes.push({ field: 'provider', old: currentUser.provider || 'default', new: 'microsoft' });
+        }
+
+        if (currentUser.email !== email) {
+            updatePayload.email = email;
+            changes.push({ field: 'email', old: currentUser.email || 'leeg', new: email });
+        }
+
+        if (currentUser.external_identifier !== email) {
+            updatePayload.external_identifier = email;
+            changes.push({ field: 'external_identifier', old: currentUser.external_identifier || 'leeg', new: email });
+        }
+
+        if (!currentUser.emailverified) {
+            updatePayload.emailverified = true;
+            changes.push({ field: 'emailverified', old: false, new: true });
+        }
+
         if (changes.length > 0 && Object.keys(updatePayload).length > 0) {
             await DbService.updateUser(currentUser.id, updatePayload);
         }
@@ -135,13 +238,11 @@ export class SyncProcessor {
 
         if (fields.includes('committees')) {
             const currentMemberships = ctx.membershipCache.get(currentUser.id) || [];
-
             const azureMemberships = ctx.membershipMap.get(aUser.id) || new Map<number, boolean>();
 
             for (const [committeeId, isLeader] of azureMemberships) {
                 const committee = ctx.committeeByIdCache?.get(Number(committeeId));
                 const committeeName = committee?.name || `ID ${committeeId}`;
-
                 const existing = currentMemberships.find((m) => m.committee_id === committeeId);
 
                 if (!existing) {
@@ -176,7 +277,7 @@ export class SyncProcessor {
                 let photo = ctx.photoCache?.get(aUser.id);
 
                 if (photo === undefined) {
-                    photo = await GraphService.getUserPhoto(aUser.id, ctx.token);
+                    photo = await GraphService.getUserPhoto(aUser.id);
                 }
 
                 if (photo) {

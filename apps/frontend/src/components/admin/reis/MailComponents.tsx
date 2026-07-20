@@ -16,17 +16,18 @@ export function Card({ title, icon, children }: { title: string, icon: React.Rea
     );
 }
 
-export function FilterField({ label, value, onChange, children }: { label: string, value: string, onChange: (fieldValue: string) => void, children: React.ReactNode }) {
+import AdminSelect from '@/components/ui/admin/AdminSelect';
+
+export function FilterField({ label, value, onChange, options }: { label: string, value: string, onChange: (fieldValue: string) => void, options: { value: string; label: string }[] }) {
     return (
         <div className="space-y-2">
             <label className="text-[10px] font-semibold uppercase tracking-widest text-(--beheer-text-muted) ml-1 opacity-60">{label}</label>
-            <select 
+            <AdminSelect 
                 value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="beheer-select text-xs font-semibold"
-            >
-                {children}
-            </select>
+                onChange={onChange}
+                options={options}
+                size="sm"
+            />
         </div>
     );
 }

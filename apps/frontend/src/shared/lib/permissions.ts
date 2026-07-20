@@ -23,7 +23,15 @@ export function canAccess(committees: Committee[] | undefined, feature: AdminFea
 export function checkFeatureAccess(committees: Committee[] | undefined, feature: AdminFeature): { hasAccess: boolean; isLeader: boolean } {
     if (!committees) return { hasAccess: false, isLeader: false };
     const hasAccess = canAccess(committees, feature);
-    const isLeader = committees.some(c => c.is_leader && c.azure_group_id !== COMMITTEES.BESTUUR);
+    
+    const allowed = featureAccessMap.get(feature) || [];
+    const isLeader = committees.some(c => 
+        c.is_leader && 
+        c.azure_group_id && 
+        allowed.includes(c.azure_group_id) && 
+        c.azure_group_id !== COMMITTEES.BESTUUR
+    );
+    
     return { hasAccess, isLeader };
 }
 

@@ -20,10 +20,6 @@ import { getPermissions } from '@/shared/lib/permissions';
 import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";
 import { safeConsoleError } from '@/server/utils/logger';
 
-
-
-
-
 export async function getDashboardPermissions(): Promise<string[]> {
     const { isAuthorized, user } = await checkAdminAccess();
 

@@ -8,6 +8,13 @@
       "when": 1782667859271,
       "tag": "0000_elite_newton_destine",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783950298282,
+      "tag": "0001_worthless_proteus",
+      "breakpoints": true
     }
   ]
 }

@@ -9,12 +9,6 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node"],
     "outDir": "dist",
-    "rootDir": "src",
-    "declaration": true,
-    "paths": {
-      "drizzle-orm": ["../../node_modules/drizzle-orm"],
-      "drizzle-orm/*": ["../../node_modules/drizzle-orm/*"]
-    }
-  },
-  "include": ["src/**/*"]
+    "declaration": true},
+  "include": ["src/**/*", "drizzle/**/*"]
 }

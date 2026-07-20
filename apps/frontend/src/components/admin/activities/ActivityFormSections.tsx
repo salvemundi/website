@@ -6,6 +6,7 @@ import { AdminTimepicker } from '@/components/ui/forms/AdminTimepicker';
 import { AdminDatetimepicker } from '@/components/ui/forms/AdminDatetimepicker';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { ActivityAdmin } from '@salvemundi/validations';
+import AdminSelect from '@/components/ui/admin/AdminSelect';
 
 function cleanCommitteeName(name: string): string {
     return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim();
@@ -301,16 +302,16 @@ export function CapacityCostsSection({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
                     <div>
                         <label htmlFor="committee_id" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Organiserende commissie</label>
-                        <select
-                            id="committee_id"
+                        <AdminSelect
                             name="committee_id"
                             defaultValue={toInputSafe(initialData?.committee_id)}
-                            onChange={(e) => onCommitteeChange(e.target.value)}
-                            className="beheer-select"
-                        >
-                            <option value="">Geen (Algemeen)</option>
-                            {committees.map(c => <option key={String(c.id)} value={String(c.id)}>{cleanCommitteeName(c.name)}</option>)}
-                        </select>
+                            onChange={onCommitteeChange}
+                            options={[
+                                { value: '', label: 'Geen (Algemeen)' },
+                                ...committees.map(c => ({ value: String(c.id), label: cleanCommitteeName(c.name) }))
+                            ]}
+                            size="md"
+                        />
                     </div>
                     <div>
                         <label htmlFor="contact" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Contactpersoon (e-mail)</label>

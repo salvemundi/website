@@ -3,17 +3,17 @@ import { eq, sql } from 'drizzle-orm';
 import { safeConsoleError } from '../utils/logger.js';
 
 export class DbService {
-    static async getUserById(id: string) {
+    static async getUserById(id: string): Promise<typeof schema.directus_users.$inferSelect | null> {
         const rows = await db.select().from(schema.directus_users).where(eq(schema.directus_users.id, id)).limit(1);
         return rows[0] || null;
     }
 
-    static async getUserByEntraId(entraId: string) {
+    static async getUserByEntraId(entraId: string): Promise<typeof schema.directus_users.$inferSelect | null> {
         const rows = await db.select().from(schema.directus_users).where(eq(schema.directus_users.entra_id, entraId)).limit(1);
         return rows[0] || null;
     }
 
-    static async getUserByEmail(email: string) {
+    static async getUserByEmail(email: string): Promise<typeof schema.directus_users.$inferSelect | null> {
         const rows = await db.select()
             .from(schema.directus_users)
             .where(sql`LOWER(${schema.directus_users.email}) = ${email.toLowerCase()}`)

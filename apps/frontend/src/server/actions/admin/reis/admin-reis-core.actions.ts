@@ -14,6 +14,7 @@ import { tripSchema } from '@salvemundi/validations/schema/admin-trip.zod';
 import { safeConsoleError } from '@/server/utils/logger';
 import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
 import { uploadToDirectus } from '@/server/utils/media';
+import { amsterdamToUTC } from '@/lib/utils/date-utils';
 
 async function handleImageUpload(formData: FormData): Promise<string | null> {
     const file = formData.get('image_file') as File | null;
@@ -57,7 +58,7 @@ export async function createTrip(prevState: unknown, formData: FormData) {
             crew_discount: parseFloat(rawData.crew_discount as string) || 0,
             deposit_amount: parseFloat(rawData.deposit_amount as string) || 0,
             start_date: rawData.start_date || null,
-            registration_start_date: rawData.registration_start_date || null,
+            registration_start_date: amsterdamToUTC(rawData.registration_start_date as string) || null,
             image: newImageId || (rawData.image as string) || null,
             end_date: (rawData.end_date as string) || null,
             status: 'published'
@@ -122,7 +123,7 @@ export async function updateTrip(prevState: unknown, formData: FormData) {
             crew_discount: parseFloat(rawData.crew_discount as string) || 0,
             deposit_amount: parseFloat(rawData.deposit_amount as string) || 0,
             start_date: rawData.start_date || null,
-            registration_start_date: rawData.registration_start_date || null,
+            registration_start_date: amsterdamToUTC(rawData.registration_start_date as string) || null,
             image: newImageId || (rawData.existing_image_id as string) || null,
 
             end_date: (rawData.end_date as string) || null

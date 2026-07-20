@@ -10,6 +10,7 @@ import { deleteTripActivity, createTripActivity, updateTripActivity } from '@/se
 import AdminToast from '@/components/ui/admin/AdminToast';
 
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import AdminSelect from '@/components/ui/admin/AdminSelect';
 
 import ReisActivityCard from './ReisActivityCard';
 import ReisActivityForm from './ReisActivityForm';
@@ -53,8 +54,7 @@ export default function ReisActivitiesIsland({
         setSelectedTripId(initialSelectedTripId);
     }, [initialActivities, initialSelectedTripId]);
 
-    const handleTripChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const id = parseInt(e.target.value);
+    const handleTripChange = (id: number) => {
         router.push(`/beheer/reis/activiteiten?tripId=${id}`);
     };
 
@@ -103,15 +103,15 @@ export default function ReisActivitiesIsland({
             <div className="flex flex-col gap-8">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                     <div className="min-w-[240px]">
-                        <select
+                        <AdminSelect
                             value={selectedTripId}
                             onChange={handleTripChange}
-                            className="beheer-select text-xs font-semibold"
-                        >
-                            {initialTrips.map(trip => (
-                                <option key={trip.id} value={trip.id}>{trip.name}</option>
-                            ))}
-                        </select>
+                            options={initialTrips.map(trip => ({
+                                value: trip.id,
+                                label: trip.name || 'Onbekende reis'
+                            }))}
+                            size="sm"
+                        />
                     </div>
 
                     <button

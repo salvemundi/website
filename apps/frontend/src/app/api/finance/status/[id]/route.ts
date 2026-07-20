@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getInternalHeaders } from '@/server/internal/activiteiten/activiteiten.utils';
 
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
-    const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL || 'http://finance-service:3001';
+    const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL;
 
     try {
         const response = await fetch(`${FINANCE_SERVICE_URL}/api/finance/status/${id}`, {
+            headers: getInternalHeaders(),
             cache: 'no-store'
         });
 

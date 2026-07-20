@@ -602,6 +602,7 @@ export interface Trip {
   registration_start_date: string | "datetime" | null;
   max_crew: number | null;
   allow_final_payments: boolean | null;
+  allow_deposit_payments: boolean | null;
 }
 
 export interface WebshopDropWindow {

@@ -12,6 +12,7 @@ import {
 import { getSyncStatus, persistSyncStatus, shouldExcludeUser } from './sync-helpers.js';
 import { SyncProcessor } from './sync-processor.js';
 import { SyncCache } from './sync-cache.js';
+import { DbService } from '../db.service.js';
 
 export class SyncJob {
     static async getStatus(redis: Redis): Promise<SyncStatus> {
@@ -38,18 +39,17 @@ export class SyncJob {
 
             if (!options.silent) logInfo(`[sync-job.ts][run] [${jobId}] Step 1: Fetching users & group data...`);
             const [azureUsers, { committees, committeeCache, committeeByIdCache }, { allLeden, userCacheByEntra }, { membershipCache }] = await Promise.all([
-                GraphService.getAllUsers(token),
+                GraphService.getAllUsers(),
                 SyncCache.getCommittees(),
                 SyncCache.getUsers(),
                 SyncCache.getMemberships()
             ]);
 
             const [mainMembershipState, membershipMap] = await Promise.all([
-                SyncCache.getMainMembershipState(token),
+                SyncCache.getMainMembershipState(),
                 SyncCache.getAzureMembershipMap(
                     committees.filter((c): c is typeof c & { azure_group_id: string } => typeof c.azure_group_id === 'string').map(c => c.azure_group_id),
-                    committeeCache,
-                    token
+                    committeeCache
                 )
             ]);
 
@@ -92,7 +92,7 @@ export class SyncJob {
 
                 const chunk = usersToProcess.slice(i, i + CHUNK_SIZE);
                 if (options.fields.includes('profile_photo')) {
-                    ctx.photoCache = await GraphService.getUserPhotosBatch(chunk.map(u => u.id), ctx.token);
+                    ctx.photoCache = await GraphService.getUserPhotosBatch(chunk.map(u => u.id));
                 }
 
                 await Promise.all(chunk.map(async (aUser) => {
@@ -140,27 +140,34 @@ export class SyncJob {
             options.fields = ['status', 'membership_status', 'membership_expiry', 'committees', 'profile_photo', 'geboortedatum', 'phone_number', 'originele_betaaldatum'];
         }
 
+        let actualEntraId = entraId;
+        const dbUser = await DbService.getUserById(entraId);
+        const dbEntraId = dbUser?.entra_id;
+        if (dbEntraId) {
+            actualEntraId = dbEntraId;
+        }
+
         const [{ committeeCache, committeeByIdCache }, { userCacheByEntra }, { membershipCache }] = await Promise.all([
             SyncCache.getCommittees(),
             SyncCache.getUsers(),
             SyncCache.getMemberships()
         ]);
 
-        const aUser = await GraphService.getUser(entraId, token) as unknown as AzureUser | null;
-        if (!aUser) throw new Error(`Entra ID ${entraId} niet gevonden.`);
+        const aUser = await GraphService.getUser(actualEntraId) as unknown as AzureUser | null;
+        if (!aUser) throw new Error(`Entra ID ${actualEntraId} niet gevonden.`);
 
-        const userGroups = await GraphService.getUserGroups(aUser.id, token);
+        const userGroups = await GraphService.getUserGroups(aUser.id);
         const userMap = new Map<number, boolean>();
         for (const group of userGroups) {
             const dComm = committeeCache.get(group.id);
             if (dComm && typeof dComm.id === 'number') {
-                const owners = await GraphService.getGroupOwners(group.id, token);
+                const owners = await GraphService.getGroupOwners(group.id);
                 userMap.set(dComm.id, owners.includes(aUser.id));
             }
         }
 
         const membershipMap = new Map([[aUser.id, userMap]]);
-        const mainMembershipState = await SyncCache.getMainMembershipState(token, entraId);
+        const mainMembershipState = await SyncCache.getMainMembershipState(entraId);
 
         const status: SyncStatus = { ...getInitialStatus(), active: true, status: 'running', total: 1, jobId: `single-${entraId}`, startTime: new Date().toISOString() };
         const ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> } = {

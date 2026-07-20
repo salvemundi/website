@@ -23,7 +23,7 @@ export default function ToastHeader({ onDismiss }: { onDismiss: () => void }) {
                     Installeer de app
                 </p>
                 <p style={{ margin: '0.1rem 0 0', fontSize: '0.775rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.4 }}>
-                    Snellere toegang, werkt ook offline
+                    Snellere toegang tot al onze functies
                 </p>
             </div>
             <button

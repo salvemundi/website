@@ -34,7 +34,7 @@ export default function ActivitiesBannerIsland({ events, serverTime }: Activitie
 
     const datePart = upcomingEvent.event_date.split('T')[0];
     return (
-        <div className="relative w-full flex justify-center py-4">
+        <div className="relative w-full flex justify-center py-4 @container">
             <FlipClock
                 targetDate={upcomingEvent.event_time
                     ? `${datePart}T${upcomingEvent.event_time}`

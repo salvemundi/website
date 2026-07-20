@@ -16,6 +16,10 @@ export async function getUpcomingTrips() {
     return queries.getUpcomingTrips();
 }
 
+export async function getLatestPastTrip() {
+    return queries.getLatestPastTrip();
+}
+
 export async function getTripParticipantsCount(tripId: number) {
     return queries.getTripParticipantsCount(tripId);
 }

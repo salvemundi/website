@@ -18,8 +18,10 @@ interface ActionItemProps {
 
 function ActionItem({ icon, title, subtitle, href, onClick, children }: ActionItemProps) {
     const Component = href ? 'a' : (onClick ? 'button' : 'div');
-    const commonClasses = "flex items-start gap-4 py-3 px-2 transition-all duration-300 w-full text-left group";
+    const commonClasses = "flex items-start gap-4 py-1.5 px-2 transition-all duration-300 w-fit text-left group";
     const interactionClasses = (href || onClick) ? "hover:translate-x-1 cursor-pointer" : "";
+
+    const isInteractive = !!(href || onClick);
 
     return (
         <div className="flex flex-col gap-1">
@@ -32,7 +34,7 @@ function ActionItem({ icon, title, subtitle, href, onClick, children }: ActionIt
                     {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'h-5 w-5' })}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h4 className="text-(--text-main) text-lg font-semibold leading-tight group-hover:text-purple-600 transition-colors">
+                    <h4 className={`text-(--text-main) text-lg font-semibold leading-tight transition-colors ${isInteractive ? "group-hover:text-purple-600" : ""}`}>
                         {title}
                     </h4>
                     {subtitle && (
@@ -54,23 +56,25 @@ export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten
     return (
         <div className="@container w-full">
             <div className="grid grid-cols-1 @[700px]:grid-cols-2 gap-10">
-                <div className="space-y-6">
+                <div className="flex flex-col gap-6">
                     <h2 className="text-2xl font-black text-theme-purple px-2">Informatie</h2>
 
-                    <ActionItem
-                        icon={<MapPin />}
-                        title="Rachelsmolen 1"
-                        subtitle="Gebouw R10, Lokaal 2.26"
-                    />
+                    <div className="flex flex-col gap-2">
+                        <ActionItem
+                            icon={<MapPin />}
+                            title="Rachelsmolen 1, Eindhoven"
+                            subtitle="Gebouw R10, Lokaal 2.17"
+                        />
 
-                    <ActionItem
-                        icon={<Building />}
-                        title="KvK nummer 70280606"
-                    />
+                        <ActionItem
+                            icon={<Building />}
+                            title="KvK nummer 70280606"
+                        />
+                    </div>
 
 
-                    <div className="pt-4 px-2">
-                        <h3 className="font-semibold text-(--text-main) text-lg mb-4 flex items-center gap-3">
+                    <div className="pt-2 px-2">
+                        <h3 className="font-semibold text-(--text-main) text-lg mb-3 flex items-center gap-3">
                             <FileText className="h-5 w-5 text-purple-500" />
                             Documenten
                         </h3>
@@ -79,27 +83,29 @@ export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten
                 </div>
 
                 {/* Rechterkolom: Contactopties */}
-                <div className="space-y-6">
+                <div className="flex flex-col gap-6">
                     <h2 className="text-2xl font-black text-theme-purple px-2">Contact</h2>
 
-                    <ActionItem
-                        icon={<Mail />}
-                        title={<ObfuscatedEmail email="info@salvemundi.nl" showIcon={false} />}
-                    />
-
-                    <ActionItem
-                        icon={<Phone />}
-                        title="+31 6 24827777"
-                        href="tel:+31624827777"
-                    />
-
-                    {isLoggedIn && (
+                    <div className="flex flex-col gap-2">
                         <ActionItem
-                            icon={<MessageCircle />}
-                            title="WhatsApp"
-                            href="https://wa.me/31624827777"
+                            icon={<Mail />}
+                            title={<ObfuscatedEmail email="info@salvemundi.nl" showIcon={false} />}
                         />
-                    )}
+
+                        <ActionItem
+                            icon={<Phone />}
+                            title="+31 6 24827777"
+                            href="tel:+31624827777"
+                        />
+
+                        {isLoggedIn && (
+                            <ActionItem
+                                icon={<MessageCircle />}
+                                title="WhatsApp"
+                                href="https://wa.me/31624827777"
+                            />
+                        )}
+                    </div>
 
                     <SafeHavenButton />
                 </div>

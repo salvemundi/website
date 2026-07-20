@@ -1,8 +1,12 @@
+'use server';
+
 import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
 import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
 import { checkFeatureAccess } from '@/shared/lib/permissions';
 import type { AdminFeature } from '@/shared/lib/permissions-config';
 import type { ReactNode } from 'react';
+import { COMMITTEES } from '@/shared/lib/permissions-config';
+import { GuardAccessClientProvider } from './AdminGuardClient';
 
 interface AdminGuardProps {
     children: ReactNode;
@@ -28,7 +32,7 @@ export default async function AdminGuard({
     }
 
     const committeesList = accessData.user.committees;
-    const { hasAccess } = checkFeatureAccess(committeesList, feature);
+    const { hasAccess, isLeader } = checkFeatureAccess(committeesList, feature);
 
     if (!hasAccess) {
         return (
@@ -38,5 +42,15 @@ export default async function AdminGuard({
         );
     }
 
-    return <>{children}</>;
+    const isIctOrBestuur = committeesList.some(
+        c => c.azure_group_id === COMMITTEES.ICT || c.azure_group_id === COMMITTEES.BESTUUR
+    );
+
+    const canToggleVisibility = isLeader || isIctOrBestuur;
+
+    return (
+        <GuardAccessClientProvider canToggleVisibility={canToggleVisibility}>
+            {children}
+        </GuardAccessClientProvider>
+    );
 }

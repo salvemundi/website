@@ -42,8 +42,7 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
         setSelectedTripId(initialSelectedTripId);
     }, [initialSignups, initialSelectedTripId]);
 
-    const handleTripChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const id = parseInt(e.target.value);
+    const handleTripChange = (id: number) => {
         router.push(`/beheer/reis/mail?tripId=${id}`);
     };
 

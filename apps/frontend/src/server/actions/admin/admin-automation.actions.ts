@@ -13,7 +13,7 @@ export type AutomationSetting = {
     description: string;
 };
 
-const AUTOMATION_FLAGS = ['mail_expiry_check', 'mail_event_reminders', 'auto_sync_nightly'];
+const AUTOMATION_FLAGS = ['mail_expiry_check', 'mail_event_reminders', 'auto_sync_nightly', 'auto_upn_conversion'];
 
 export async function getSystemAutomationSettings(): Promise<{ success: boolean; settings?: AutomationSetting[]; error?: string }> {
     await enforceFeatureAccess('sync');
@@ -40,6 +40,21 @@ export async function getSystemAutomationSettings(): Promise<{ success: boolean;
                 route_match: 'auto_sync_nightly',
                 is_active: false,
                 message: 'Synchroniseert elke nacht om 03:00 alle Azure leden en groepen.'
+            });
+        }
+
+        if (!foundFlags.includes('auto_upn_conversion')) {
+            await db.insert(schema.feature_flags).values({
+                name: 'Automatische UPN Conversie',
+                route_match: 'auto_upn_conversion',
+                is_active: true,
+                message: 'Zet e-maildomeinen automatisch om naar @salvemundi.nl voor commissieleden (met 2 dagen vertraging).'
+            }).onConflictDoNothing();
+            rows.push({
+                name: 'Automatische UPN Conversie',
+                route_match: 'auto_upn_conversion',
+                is_active: true,
+                message: 'Zet e-maildomeinen automatisch om naar @salvemundi.nl voor commissieleden (met 2 dagen vertraging).'
             });
         }
 

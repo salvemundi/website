@@ -14,7 +14,7 @@ interface DirectusUserRow {
     email?: unknown;
 }
 
-export async function triggerFullSyncAction(options?: { fields: string[]; forceLink?: boolean; activeOnly?: boolean; sendExpiryEmails?: boolean }) {
+export async function triggerFullSyncAction(options?: { fields: string[]; forceLink?: boolean; activeOnly?: boolean; sendExpiryEmails?: boolean; convertUpn?: boolean }) {
     const admin = await checkSyncAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
@@ -73,7 +73,7 @@ export async function triggerFullSyncAction(options?: { fields: string[]; forceL
     }
 }
 
-export async function triggerUserSyncAction(userId: string, options?: { fields: string[]; forceLink?: boolean; activeOnly?: boolean; forceSyncPhotos?: boolean }) {
+export async function triggerUserSyncAction(userId: string, options?: { fields: string[]; forceLink?: boolean; activeOnly?: boolean; forceSyncPhotos?: boolean; convertUpn?: boolean }) {
     const admin = await checkSyncAccess(userId);
     if (!admin) return { success: false, error: "Unauthorized" };
 
@@ -119,7 +119,7 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
                 'Authorization': `Bearer ${INTERNAL_TOKEN}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(options || { fields: ['membership_expiry', 'geboortedatum', 'phone_number', 'committees', 'profile_photo', 'membership_status'] }),
+            body: JSON.stringify(options || { fields: ['membership_expiry', 'geboortedatum', 'phone_number', 'committees', 'profile_photo', 'membership_status'], convertUpn: true }),
             signal: controller.signal
         });
         clearTimeout(timeoutId);

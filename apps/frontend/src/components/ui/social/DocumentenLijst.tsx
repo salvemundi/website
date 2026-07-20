@@ -20,7 +20,7 @@ export default function DocumentenLijst({ documenten }: DocumentenLijstProps) {
     }
 
     return (
-        <div className="space-y-3 ml-14">
+        <div className="space-y-1.5 ml-14">
             {documenten.map((doc) => {
                 // Asset-URL opbouwen via de publieke Directus URL
                 const fileUrl = getImageUrl(doc.file) || '#';
@@ -31,7 +31,7 @@ export default function DocumentenLijst({ documenten }: DocumentenLijstProps) {
                         href={fileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block text-(--text-muted) hover:text-(--text-main) transition-colors group"
+                        className="w-fit block text-(--text-muted) hover:text-(--text-main) transition-colors group"
                         title={doc.description !== null ? doc.description : undefined}
                     >
                         {/* Kleine pijl-animatie op hover */}

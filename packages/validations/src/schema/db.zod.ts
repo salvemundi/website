@@ -128,6 +128,10 @@ export const selectDirectusTranslationsSchema = createSelectSchema(schema.direct
 export const insertDirectusVersionsSchema = createInsertSchema(schema.directus_versions);
 export const selectDirectusVersionsSchema = createSelectSchema(schema.directus_versions);
 
+// --- intro_blogs ---
+export const insertIntroBlogsSchema = createInsertSchema(schema.intro_blogs);
+export const selectIntroBlogsSchema = createSelectSchema(schema.intro_blogs);
+
 // --- documents ---
 export const insertDocumentsSchema = createInsertSchema(schema.documents);
 export const selectDocumentsSchema = createSelectSchema(schema.documents);
@@ -151,10 +155,6 @@ export const selectHeroBannersFilesSchema = createSelectSchema(schema.hero_banne
 // --- intro_blog_likes ---
 export const insertIntroBlogLikesSchema = createInsertSchema(schema.intro_blog_likes);
 export const selectIntroBlogLikesSchema = createSelectSchema(schema.intro_blog_likes);
-
-// --- intro_blogs ---
-export const insertIntroBlogsSchema = createInsertSchema(schema.intro_blogs);
-export const selectIntroBlogsSchema = createSelectSchema(schema.intro_blogs);
 
 // --- events_members ---
 export const insertEventsMembersSchema = createInsertSchema(schema.events_members);
@@ -216,13 +216,13 @@ export const selectRolesSchema = createSelectSchema(schema.roles);
 export const insertIntroParentSignupsSchema = createInsertSchema(schema.intro_parent_signups);
 export const selectIntroParentSignupsSchema = createSelectSchema(schema.intro_parent_signups);
 
-// --- whatsapp_groups ---
-export const insertWhatsappGroupsSchema = createInsertSchema(schema.whatsapp_groups);
-export const selectWhatsappGroupsSchema = createSelectSchema(schema.whatsapp_groups);
-
 // --- trips ---
 export const insertTripsSchema = createInsertSchema(schema.trips);
 export const selectTripsSchema = createSelectSchema(schema.trips);
+
+// --- whatsapp_groups ---
+export const insertWhatsappGroupsSchema = createInsertSchema(schema.whatsapp_groups);
+export const selectWhatsappGroupsSchema = createSelectSchema(schema.whatsapp_groups);
 
 // --- trip_signups ---
 export const insertTripSignupsSchema = createInsertSchema(schema.trip_signups);
@@ -260,6 +260,10 @@ export const selectDirectusSessionsSchema = createSelectSchema(schema.directus_s
 export const insertRolePermissionsSchema = createInsertSchema(schema.role_permissions);
 export const selectRolePermissionsSchema = createSelectSchema(schema.role_permissions);
 
+// --- transactions ---
+export const insertTransactionsSchema = createInsertSchema(schema.transactions);
+export const selectTransactionsSchema = createSelectSchema(schema.transactions);
+
 // --- auth_accounts ---
 export const insertAuthAccountsSchema = createInsertSchema(schema.auth_accounts);
 export const selectAuthAccountsSchema = createSelectSchema(schema.auth_accounts);
@@ -280,10 +284,6 @@ export const selectCommitteeMembersSchema = createSelectSchema(schema.committee_
 export const insertFeatureFlagsSchema = createInsertSchema(schema.feature_flags);
 export const selectFeatureFlagsSchema = createSelectSchema(schema.feature_flags);
 
-// --- transactions ---
-export const insertTransactionsSchema = createInsertSchema(schema.transactions);
-export const selectTransactionsSchema = createSelectSchema(schema.transactions);
-
 // --- intro_planning_signups ---
 export const insertIntroPlanningSignupsSchema = createInsertSchema(schema.intro_planning_signups);
 export const selectIntroPlanningSignupsSchema = createSelectSchema(schema.intro_planning_signups);
@@ -295,6 +295,10 @@ export const selectDirectusUsersSchema = createSelectSchema(schema.directus_user
 // --- directus_deployments ---
 export const insertDirectusDeploymentsSchema = createInsertSchema(schema.directus_deployments);
 export const selectDirectusDeploymentsSchema = createSelectSchema(schema.directus_deployments);
+
+// --- webshop_product_media ---
+export const insertWebshopProductMediaSchema = createInsertSchema(schema.webshop_product_media);
+export const selectWebshopProductMediaSchema = createSelectSchema(schema.webshop_product_media);
 
 // --- directus_deployment_projects ---
 export const insertDirectusDeploymentProjectsSchema = createInsertSchema(schema.directus_deployment_projects);
@@ -308,21 +312,13 @@ export const selectDirectusSettingsSchema = createSelectSchema(schema.directus_s
 export const insertDirectusDeploymentRunsSchema = createInsertSchema(schema.directus_deployment_runs);
 export const selectDirectusDeploymentRunsSchema = createSelectSchema(schema.directus_deployment_runs);
 
-// --- webshop_drop_windows ---
-export const insertWebshopDropWindowsSchema = createInsertSchema(schema.webshop_drop_windows);
-export const selectWebshopDropWindowsSchema = createSelectSchema(schema.webshop_drop_windows);
-
-// --- webshop_products ---
-export const insertWebshopProductsSchema = createInsertSchema(schema.webshop_products);
-export const selectWebshopProductsSchema = createSelectSchema(schema.webshop_products);
-
-// --- webshop_product_media ---
-export const insertWebshopProductMediaSchema = createInsertSchema(schema.webshop_product_media);
-export const selectWebshopProductMediaSchema = createSelectSchema(schema.webshop_product_media);
-
 // --- webshop_product_variants ---
 export const insertWebshopProductVariantsSchema = createInsertSchema(schema.webshop_product_variants);
 export const selectWebshopProductVariantsSchema = createSelectSchema(schema.webshop_product_variants);
+
+// --- webshop_drop_windows ---
+export const insertWebshopDropWindowsSchema = createInsertSchema(schema.webshop_drop_windows);
+export const selectWebshopDropWindowsSchema = createSelectSchema(schema.webshop_drop_windows);
 
 // --- webshop_preorders ---
 export const insertWebshopPreordersSchema = createInsertSchema(schema.webshop_preorders);
@@ -331,4 +327,8 @@ export const selectWebshopPreordersSchema = createSelectSchema(schema.webshop_pr
 // --- webshop_preorder_lines ---
 export const insertWebshopPreorderLinesSchema = createInsertSchema(schema.webshop_preorder_lines);
 export const selectWebshopPreorderLinesSchema = createSelectSchema(schema.webshop_preorder_lines);
+
+// --- webshop_products ---
+export const insertWebshopProductsSchema = createInsertSchema(schema.webshop_products);
+export const selectWebshopProductsSchema = createSelectSchema(schema.webshop_products);
 
