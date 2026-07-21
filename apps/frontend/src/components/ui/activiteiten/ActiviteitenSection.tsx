@@ -1,4 +1,3 @@
-import React from 'react';
 import Link from 'next/link';
 import { ChevronRight, Calendar } from 'lucide-react';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
@@ -39,7 +38,7 @@ export function ActiviteitenSection({ activities = [], count = 4 }: Activiteiten
 
                 <div className={`grid gap-4 ${gridLayoutClass}`}>
                     {!hasActivities ? (
-                        <div className="col-span-full flex flex-col items-center justify-center min-h-[320px] p-12 text-center bg-white/50 dark:bg-black/20 rounded-[2.5rem] border border-dashed border-purple-500/20">
+                        <div className="col-span-full flex flex-col items-center justify-center min-h-80 p-12 text-center bg-white/50 dark:bg-black/20 rounded-[2.5rem] border border-dashed border-purple-500/20">
                             <div className="h-16 w-16 mb-4 rounded-full bg-purple-100 dark:bg-transparent flex items-center justify-center text-purple-600 dark:text-purple-300">
                                 <Calendar className="h-8 w-8" />
                             </div>

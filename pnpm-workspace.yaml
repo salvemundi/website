@@ -1,19 +1,22 @@
 packages:
-  - 'apps/frontend'
-  - 'apps/services/*'
-  - 'packages/*'
+  - "apps/frontend"
+  - "apps/services/*"
+  - "packages/*"
 
 allowBuilds:
-  '@parcel/watcher': false
+  "@parcel/watcher": false
   core-js-pure: false
   es5-ext: false
   esbuild: false
   puppeteer: false
-  sharp: false
+  sharp: true
   unrs-resolver: false
   vue-demi: false
 
 overrides:
+  sharp: "0.35.3"
+  "@img/sharp-win32-x64": "0.35.3"
+  "@img/sharp-linuxmusl-x64": "0.35.3"
   react: "^19.2.7"
   react-dom: "^19.2.7"
   better-auth: "1.6.20"
