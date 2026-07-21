@@ -272,18 +272,15 @@ export class SyncProcessor {
         }
 
         if (fields.includes('profile_photo')) {
-            const shouldSync = ctx.options.forceSyncPhotos || !currentUser.avatar;
-            if (shouldSync) {
-                let photo = ctx.photoCache?.get(aUser.id);
+            let photo = ctx.photoCache?.get(aUser.id);
 
-                if (photo === undefined) {
-                    photo = await GraphService.getUserPhoto(aUser.id);
-                }
+            if (photo === undefined) {
+                photo = await GraphService.getUserPhoto(aUser.id);
+            }
 
-                if (photo) {
-                    await DirectusService.uploadUserAvatar(currentUser.id, photo.buffer, `avatar_${aUser.id}.jpg`, photo.contentType);
-                    changes.push({ field: 'Profielfoto', old: currentUser.avatar ? 'Bestaand' : 'Geen', new: 'Bijgewerkt vanuit Azure' });
-                }
+            if (photo) {
+                await DirectusService.uploadUserAvatar(currentUser.id, photo.buffer, `avatar_${aUser.id}.jpg`, photo.contentType);
+                changes.push({ field: 'Profielfoto', old: currentUser.avatar ? 'Bestaand' : 'Geen', new: 'Bijgewerkt vanuit Azure' });
             }
         }
 
