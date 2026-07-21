@@ -52,6 +52,8 @@ COPY --from=builder --chown=node:node /app/apps/frontend/public ./apps/frontend/
 COPY --from=builder --chown=node:node /app/apps/frontend/.next/standalone ./
 COPY --from=builder --chown=node:node /app/apps/frontend/.next/static ./apps/frontend/.next/static
 
+RUN mkdir -p apps/frontend/.next/cache && chown -R node:node apps/frontend/.next/cache
+
 USER node
 
 EXPOSE 3000
