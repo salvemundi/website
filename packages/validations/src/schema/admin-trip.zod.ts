@@ -1,22 +1,49 @@
 import { z } from 'zod';
 import { insertTripsSchema, insertTripSignupsSchema, insertTripSignupActivitiesSchema, insertTripActivitiesSchema } from './db.zod.js';
+import type { Trip as DirectusTrip } from '../directus/schema.js';
 
 export const tripSchema = insertTripsSchema.extend({
     id: z.coerce.number().int(),
-    description: z.preprocess((value) => (value === null || value === undefined) ? value : (value === '' ? null : String(value as string)), z.string().nullable().optional()),
-    image: z.preprocess((value) => (value === null || value === undefined) ? value : (value === '' ? null : String(value as string)), z.string().nullable().optional()),
-    start_date: z.preprocess((value) => (value === null || value === undefined) ? value : (value === '' ? null : String(value as string)), z.string().nullable().optional()),
-    end_date: z.preprocess((value) => (value === null || value === undefined) ? value : (value === '' ? null : String(value as string)), z.string().nullable().optional()),
-    registration_start_date: z.preprocess((value) => (value === null || value === undefined) ? value : (value === '' ? null : String(value as string)), z.string().nullable().optional()),
-    registration_open: z.any().transform(registrationOpenValue => !!registrationOpenValue),
+    description: z.preprocess((value) => {
+        if (value === null || value === undefined || value === '') return null;
+        if (typeof value === 'string') return value;
+        if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+        return null;
+    }, z.string().nullable().optional()),
+    image: z.preprocess((value) => {
+        if (value === null || value === undefined || value === '') return null;
+        if (typeof value === 'object') return value;
+        if (typeof value === 'string') return value;
+        if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+        return null;
+    }, z.custom<DirectusTrip['image']>().nullable().optional()),
+    start_date: z.preprocess((value) => {
+        if (value === null || value === undefined || value === '') return null;
+        if (typeof value === 'string') return value;
+        if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+        return null;
+    }, z.string().nullable().optional()),
+    end_date: z.preprocess((value) => {
+        if (value === null || value === undefined || value === '') return null;
+        if (typeof value === 'string') return value;
+        if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+        return null;
+    }, z.string().nullable().optional()),
+    registration_start_date: z.preprocess((value) => {
+        if (value === null || value === undefined || value === '') return null;
+        if (typeof value === 'string') return value;
+        if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+        return null;
+    }, z.string().nullable().optional()),
+    registration_open: z.unknown().transform(registrationOpenValue => !!registrationOpenValue),
     max_participants: z.coerce.number().int(),
     max_crew: z.coerce.number().int().nullable().optional(),
     base_price: z.coerce.number(),
     crew_discount: z.coerce.number(),
     deposit_amount: z.coerce.number(),
-    is_bus_trip: z.any().transform(isBusTripValue => !!isBusTripValue),
-    allow_final_payments: z.any().transform(allowFinalPaymentsValue => !!allowFinalPaymentsValue).nullable().optional(),
-    allow_deposit_payments: z.any().transform(allowDepositPaymentsValue => !!allowDepositPaymentsValue).nullable().optional(),
+    is_bus_trip: z.unknown().transform(isBusTripValue => !!isBusTripValue),
+    allow_final_payments: z.unknown().transform(allowFinalPaymentsValue => !!allowFinalPaymentsValue).nullable().optional(),
+    allow_deposit_payments: z.unknown().transform(allowDepositPaymentsValue => !!allowDepositPaymentsValue).nullable().optional(),
 });
 
 export const tripSignupSchema = insertTripSignupsSchema.extend({
@@ -50,9 +77,9 @@ export const tripSignupSchema = insertTripSignupsSchema.extend({
 
 export const tripSignupActivitySchema = insertTripSignupActivitiesSchema.extend({
     id: z.coerce.number().int().optional(),
-    trip_signup_id: z.any(),
-    trip_activity_id: z.any(),
-    selected_options: z.any().nullable().optional(),
+    trip_signup_id: z.unknown(),
+    trip_activity_id: z.unknown(),
+    selected_options: z.unknown().nullable().optional(),
 });
 
 export const tripActivitySchema = insertTripActivitiesSchema.extend({
@@ -63,7 +90,7 @@ export const tripActivitySchema = insertTripActivitiesSchema.extend({
     price: z.coerce.number().nullable().optional(),
     image: z.string().nullable().optional(),
     max_participants: z.coerce.number().int().nullable().optional(),
-    is_active: z.any().transform(isActiveValue => !!isActiveValue).nullable().optional(),
+    is_active: z.unknown().transform(isActiveValue => !!isActiveValue).nullable().optional(),
     display_order: z.coerce.number().int().nullable().optional(),
     options: z.preprocess(
         (optionsValue) => (optionsValue && typeof optionsValue === 'object' && !Array.isArray(optionsValue) ? null : optionsValue),
