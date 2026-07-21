@@ -1,8 +1,8 @@
 'use client';
 
 import { Upload, X, Save, Loader2, Eye, Check } from 'lucide-react';
-import Image from 'next/image';
 import { useRef } from 'react';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 
 interface ReisFormSidebarProps {
     isAdding: boolean;
@@ -59,24 +59,13 @@ export default function ReisFormSidebar({
                         </div>
                     ) : (
                         <div className="relative group overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft)/50 h-40 flex items-center justify-center">
-                            {imagePreview.startsWith('data:video') ? (
-                                <video
-                                    src={imagePreview}
-                                    className="object-contain h-full w-full"
-                                    autoPlay
-                                    loop
-                                    muted
-                                    playsInline
-                                />
-                            ) : (
-                                <Image
-                                    src={imagePreview}
-                                    alt="Preview"
-                                    fill
-                                    unoptimized={true}
-                                    className="object-contain transition-transform duration-700"
-                                />
-                            )}
+                            <MediaAsset
+                                asset={imagePreview}
+                                alt="Preview"
+                                fill
+                                objectFit="contain"
+                                unoptimized
+                            />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                                 <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-white text-slate-900 p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-4 w-4" /></button>
                                 <button type="button" onClick={onRemoveImage} className="bg-red-500 text-white p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-4 w-4" /></button>

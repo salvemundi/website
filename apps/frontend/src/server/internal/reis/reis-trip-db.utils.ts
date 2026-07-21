@@ -5,8 +5,13 @@ import { toLocalISOString } from '@/lib/utils/date-utils';
 import { Trip as Trip } from '@salvemundi/validations/directus/schema';
 
 export async function fetchFullTripsDb(): Promise<Trip[]> {
-    const rows = await db.select().from(schema.trips).orderBy(desc(schema.trips.start_date));
-    return rows.map(t => ({
+    const rows = await db
+        .select({ trip: schema.trips, image_type: schema.directus_files.type })
+        .from(schema.trips)
+        .leftJoin(schema.directus_files, eq(schema.trips.image, schema.directus_files.id))
+        .orderBy(desc(schema.trips.start_date));
+
+    return rows.map(({ trip: t, image_type }) => ({
         ...t,
         max_participants: t.max_participants !== null ? Number(t.max_participants) : 0,
         max_crew: t.max_crew !== null ? Number(t.max_crew) : 0,
@@ -19,7 +24,8 @@ export async function fetchFullTripsDb(): Promise<Trip[]> {
         allow_deposit_payments: !!t.allow_deposit_payments,
         start_date: toLocalISOString(t.start_date),
         end_date: toLocalISOString(t.end_date),
-        registration_start_date: toLocalISOString(t.registration_start_date, true)
+        registration_start_date: toLocalISOString(t.registration_start_date, true),
+        image: t.image ? (image_type ? { id: t.image, type: image_type } : t.image) : null,
     } as unknown as Trip));
 }
 
@@ -46,10 +52,15 @@ export async function fetchAllTripsDb(): Promise<Pick<Trip, 'id' | 'name' | 'sta
 }
 
 export async function fetchTripByIdDb(tripId: number): Promise<Trip | null> {
-    const rows = await db.select().from(schema.trips).where(eq(schema.trips.id, tripId)).limit(1);
+    const rows = await db
+        .select({ trip: schema.trips, image_type: schema.directus_files.type })
+        .from(schema.trips)
+        .leftJoin(schema.directus_files, eq(schema.trips.image, schema.directus_files.id))
+        .where(eq(schema.trips.id, tripId))
+        .limit(1);
     if (rows.length === 0) return null;
 
-    const t = rows[0];
+    const { trip: t, image_type } = rows[0];
     return {
         ...t,
         max_participants: t.max_participants !== null ? Number(t.max_participants) : 0,
@@ -63,7 +74,8 @@ export async function fetchTripByIdDb(tripId: number): Promise<Trip | null> {
         allow_deposit_payments: !!t.allow_deposit_payments,
         start_date: toLocalISOString(t.start_date),
         end_date: toLocalISOString(t.end_date),
-        registration_start_date: toLocalISOString(t.registration_start_date, true)
+        registration_start_date: toLocalISOString(t.registration_start_date, true),
+        image: t.image ? (image_type ? { id: t.image, type: image_type } : t.image) : null,
     } as unknown as Trip;
 }
 
@@ -85,8 +97,10 @@ export async function deleteTripDb(id: number): Promise<boolean> {
 }
 
 export async function fetchPublicTripsDb(): Promise<Trip[]> {
-    const rows = await db.select()
+    const rows = await db
+        .select({ trip: schema.trips, image_type: schema.directus_files.type })
         .from(schema.trips)
+        .leftJoin(schema.directus_files, eq(schema.trips.image, schema.directus_files.id))
         .where(
             and(
                 or(eq(schema.trips.status, 'published'), isNull(schema.trips.status)),
@@ -95,7 +109,7 @@ export async function fetchPublicTripsDb(): Promise<Trip[]> {
         )
         .orderBy(asc(schema.trips.start_date));
 
-    return rows.map(t => ({
+    return rows.map(({ trip: t, image_type }) => ({
         ...t,
         max_participants: t.max_participants !== null ? Number(t.max_participants) : 0,
         max_crew: t.max_crew !== null ? Number(t.max_crew) : 0,
@@ -108,6 +122,7 @@ export async function fetchPublicTripsDb(): Promise<Trip[]> {
         allow_deposit_payments: !!t.allow_deposit_payments,
         start_date: toLocalISOString(t.start_date),
         end_date: toLocalISOString(t.end_date),
-        registration_start_date: toLocalISOString(t.registration_start_date, true)
+        registration_start_date: toLocalISOString(t.registration_start_date, true),
+        image: t.image ? (image_type ? { id: t.image, type: image_type } : t.image) : null,
     } as unknown as Trip));
 }

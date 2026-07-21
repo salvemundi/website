@@ -1,9 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
 import { Calendar, Info, ShieldCheck, Mail, ExternalLink } from 'lucide-react';
-import { getImageUrl } from '@/lib/utils/image-utils';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 import type { ReisTrip } from '@salvemundi/validations/schema/trip.zod';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -26,7 +24,6 @@ const formatFullDate = (d: Date) => {
 };
 
 export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
-    const [imageError, setImageError] = useState(false);
 
     const nextTripStartDate = nextTrip?.start_date ? new Date(nextTrip.start_date) : null;
     const nextTripEndDate = nextTrip?.end_date ? new Date(nextTrip.end_date) : null;
@@ -44,14 +41,12 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
             {nextTrip && (
                 <div className="bg-bg-card dark:border dark:border-white/10 rounded-3xl overflow-hidden shadow-2xl group relative">
                     {nextTrip.image ? (
-                        <div className="relative w-full h-[300px] sm:h-[400px] overflow-hidden">
-                            <Image
-                                src={imageError ? '/img/placeholder.svg' : getImageUrl(nextTrip.image)}
+                        <div className="relative w-full h-75 sm:h-100 overflow-hidden">
+                            <MediaAsset
+                                asset={nextTrip.image}
                                 alt={nextTrip.name ?? 'Reis'}
                                 fill
-                                className="object-contain"
-                                unoptimized
-                                onError={() => setImageError(true)}
+                                objectFit="contain"
                             />
                         </div>
                     ) : (

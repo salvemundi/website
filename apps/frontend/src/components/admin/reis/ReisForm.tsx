@@ -75,8 +75,10 @@ export default function ReisForm({
     useEffect(() => {
         if (editingTrip) {
             if (editingTrip.image) {
-                setImagePreview(getImageUrl(editingTrip.image, { width: 400, height: 200, fit: 'cover' }));
-                setExistingImageId(editingTrip.image);
+                const rawImage = editingTrip.image as unknown as string | { id: string; type?: string | null } | null;
+                const imageId = rawImage && typeof rawImage === 'object' ? rawImage.id : (rawImage as string | null);
+                setImagePreview(getImageUrl(imageId, { width: 400, height: 200, fit: 'cover' }));
+                setExistingImageId(imageId);
             } else {
                 setExistingImageId(null);
             }

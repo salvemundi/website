@@ -1,10 +1,9 @@
 'use client';
 
 import { Pen, Trash, Calendar, Users, Euro, Loader2 } from 'lucide-react';
-import Image from 'next/image';
-import { getImageUrl } from '@/lib/utils/image-utils';
 import type { Trip } from '@salvemundi/validations/schema/admin-trip.zod';
 import { FallbackLogo } from '@/components/ui/media/FallbackLogo';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 
 interface ReisCardProps {
     trip: Trip;
@@ -29,7 +28,7 @@ export default function ReisCard({ trip, onEdit, onDelete, isDeleting }: ReisCar
     }).format(Number(trip.base_price || 0));
 
     return (
-        <div className="group bg-(--bg-card) rounded-2xl shadow-(--shadow-card) ring-1 ring-(--border-color) overflow-hidden flex flex-col transition-all hover:translate-y-[-4px] hover:shadow-2xl">
+        <div className="group bg-(--bg-card) rounded-2xl shadow-(--shadow-card) ring-1 ring-(--border-color) overflow-hidden flex flex-col transition-all hover:-translate-y-1 hover:shadow-2xl">
             <div className="relative h-48 bg-(--beheer-border)/5 dark:bg-black/20 flex items-center justify-center overflow-hidden">                {(() => {
                 const isOpen = trip.registration_open || (trip.registration_start_date && new Date(trip.registration_start_date) <= new Date());
                 return (
@@ -46,22 +45,13 @@ export default function ReisCard({ trip, onEdit, onDelete, isDeleting }: ReisCar
                 )}
 
                 {trip.image ? (
-                    (() => {
-                        const imgUrl = getImageUrl(trip.image, { fit: 'contain' });
-                        if (imgUrl) {
-                            return (
-                                <Image
-                                    src={imgUrl}
-                                    alt={trip.name || 'Trip'}
-                                    fill
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                    className="object-contain transition-transform duration-700"
-                                />
-                            );
-                        }
-
-                        return <FallbackLogo className="object-contain p-8" />;
-                    })()
+                    <MediaAsset
+                        asset={trip.image}
+                        alt={trip.name || 'Trip'}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        objectFit="contain"
+                    />
                 ) : (
                     <FallbackLogo className="object-contain p-8 opacity-40" />
                 )}
