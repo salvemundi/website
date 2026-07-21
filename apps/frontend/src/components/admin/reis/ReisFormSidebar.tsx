@@ -7,7 +7,7 @@ import MediaAsset from '@/components/ui/media/MediaAsset';
 interface ReisFormSidebarProps {
     isAdding: boolean;
     pending: boolean;
-    imagePreview: string | null;
+    imagePreview: string | { id: string; type?: string | null } | null;
     onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onRemoveImage: () => void;
     onCancel: () => void;

@@ -11,7 +11,7 @@ export async function fetchFullTripsDb(): Promise<Trip[]> {
         .leftJoin(schema.directus_files, eq(schema.trips.image, schema.directus_files.id))
         .orderBy(desc(schema.trips.start_date));
 
-    return rows.map(({ trip: t }) => ({
+    return rows.map(({ trip: t, image_type }) => ({
         ...t,
         max_participants: t.max_participants !== null ? Number(t.max_participants) : 0,
         max_crew: t.max_crew !== null ? Number(t.max_crew) : 0,
@@ -25,7 +25,7 @@ export async function fetchFullTripsDb(): Promise<Trip[]> {
         start_date: toLocalISOString(t.start_date),
         end_date: toLocalISOString(t.end_date),
         registration_start_date: toLocalISOString(t.registration_start_date, true),
-        image: t.image ?? null,
+        image: t.image ? (image_type ? { id: t.image, type: image_type } : t.image) : null,
     } as unknown as Trip));
 }
 
@@ -60,7 +60,7 @@ export async function fetchTripByIdDb(tripId: number): Promise<Trip | null> {
         .limit(1);
     if (rows.length === 0) return null;
 
-    const { trip: t } = rows[0];
+    const { trip: t, image_type } = rows[0];
     return {
         ...t,
         max_participants: t.max_participants !== null ? Number(t.max_participants) : 0,
@@ -75,7 +75,7 @@ export async function fetchTripByIdDb(tripId: number): Promise<Trip | null> {
         start_date: toLocalISOString(t.start_date),
         end_date: toLocalISOString(t.end_date),
         registration_start_date: toLocalISOString(t.registration_start_date, true),
-        image: t.image ?? null,
+        image: t.image ? (image_type ? { id: t.image, type: image_type } : t.image) : null,
     } as unknown as Trip;
 }
 
@@ -109,7 +109,7 @@ export async function fetchPublicTripsDb(): Promise<Trip[]> {
         )
         .orderBy(asc(schema.trips.start_date));
 
-    return rows.map(({ trip: t }) => ({
+    return rows.map(({ trip: t, image_type }) => ({
         ...t,
         max_participants: t.max_participants !== null ? Number(t.max_participants) : 0,
         max_crew: t.max_crew !== null ? Number(t.max_crew) : 0,
@@ -123,6 +123,6 @@ export async function fetchPublicTripsDb(): Promise<Trip[]> {
         start_date: toLocalISOString(t.start_date),
         end_date: toLocalISOString(t.end_date),
         registration_start_date: toLocalISOString(t.registration_start_date, true),
-        image: t.image ?? null,
+        image: t.image ? (image_type ? { id: t.image, type: image_type } : t.image) : null,
     } as unknown as Trip));
 }

@@ -9,7 +9,15 @@ export const reisSiteSettingsSchema = z.object({
 });
 export type ReisSiteSettings = z.infer<typeof reisSiteSettingsSchema>;
 
-export const reisTripSchema = selectTripsSchema;
+export const reisTripSchema = selectTripsSchema.extend({
+    image: z.union([
+        z.string(),
+        z.object({
+            id: z.string(),
+            type: z.string().nullable().optional(),
+        }),
+    ]).nullable().optional(),
+});
 export type ReisTrip = z.infer<typeof reisTripSchema>;
 
 export const reisTripSignupSchema = selectTripSignupsSchema.extend({
@@ -40,7 +48,7 @@ export const reisSignupFormSchema = z.object({
     terms_accepted: z.boolean().refine(termsValue => termsValue === true, {
         message: 'Je moet de algemene voorwaarden accepteren.',
     }),
-    website: z.string().optional(), // Honeypot
+    website: z.string().optional(),
 });
 
 export const reisPaymentEnrichmentSchema = z.object({
@@ -84,7 +92,6 @@ export const reisPaymentEnrichmentSchema = z.object({
     } else {
         const expiryDate = new Date(data.document_expiry_date);
 
-        
         const returnDate = new Date();
         returnDate.setDate(returnDate.getDate() + 14);
 

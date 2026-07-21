@@ -48,7 +48,7 @@ export default function ReisForm({
         }
     }, [state, editingTrip, onSuccess]);
 
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | { id: string; type?: string | null } | null>(null);
     const [existingImageId, setExistingImageId] = useState<string | null>(null);
     const [imageError, setImageError] = useState<string | null>(null);
     const [registrationOpen, setRegistrationOpen] = useState(false);
@@ -76,7 +76,7 @@ export default function ReisForm({
             if (editingTrip.image) {
                 const rawImage = editingTrip.image as unknown as string | { id: string; type?: string | null } | null;
                 const imageId = rawImage && typeof rawImage === 'object' ? rawImage.id : (rawImage as string | null);
-                setImagePreview(imageId);
+                setImagePreview(rawImage);
                 setExistingImageId(imageId);
             } else {
                 setExistingImageId(null);
@@ -85,7 +85,7 @@ export default function ReisForm({
             setAllowFinalPayments(!!editingTrip.allow_final_payments);
             setAllowDepositPayments(!!editingTrip.allow_deposit_payments);
             setIsBusTrip(!!editingTrip.is_bus_trip);
-        }
+    }
 
         if (state?.initialData) {
             const d = state.initialData;
