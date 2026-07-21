@@ -15,6 +15,11 @@ COPY apps/services/azure-management-service/package.json ./apps/services/azure-m
 COPY packages/validations/package.json ./packages/validations/
 COPY packages/db/package.json ./packages/db/
 
+# Tell pnpm to include linuxmusl binaries during docker install
+RUN pnpm config set supportedArchitectures.libc musl && \
+    pnpm config set supportedArchitectures.os linux && \
+    pnpm config set supportedArchitectures.cpu x64
+
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
 
 COPY packages/db ./packages/db
@@ -44,13 +49,15 @@ RUN chown node:node /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN apk add --no-cache tzdata
+RUN apk add --no-cache tzdata vips
 ENV TZ=Europe/Amsterdam
 
 RUN mkdir -p apps/frontend/public && chown -R node:node apps/frontend/public
 COPY --from=builder --chown=node:node /app/apps/frontend/public ./apps/frontend/public
 COPY --from=builder --chown=node:node /app/apps/frontend/.next/standalone ./
 COPY --from=builder --chown=node:node /app/apps/frontend/.next/static ./apps/frontend/.next/static
+# Copy global node_modules so native sharp bindings are guaranteed to exist at runtime
+COPY --from=builder --chown=node:node /app/node_modules ./node_modules
 
 RUN mkdir -p apps/frontend/.next/cache && chown -R node:node apps/frontend/.next/cache
 

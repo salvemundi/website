@@ -12,7 +12,7 @@ interface CustomWebpackConfig {
 }
 
 const nextConfig: NextConfig = {
-    serverExternalPackages: ['isomorphic-dompurify', 'jsdom'],
+    serverExternalPackages: ['isomorphic-dompurify', 'jsdom', 'sharp'],
     experimental: {
         serverSourceMaps: true,
         optimizePackageImports: ['lucide-react', 'maplibre-gl'],
