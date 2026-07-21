@@ -8,10 +8,9 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import type { ReisTripSignup } from '@salvemundi/validations/schema/trip.zod';
 import type { EnrichedUser } from '@/types/auth';
 import { formatDate } from '@/shared/lib/utils/date';
-import Image from 'next/image';
 import { Lock, ShieldCheck, Mail, Info, ExternalLink } from 'lucide-react';
-import { getImageUrl } from '@/lib/utils/image-utils';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 
 export const metadata = {
     title: 'Reis | Salve Mundi',
@@ -166,13 +165,12 @@ export default async function ReisPage() {
                             {displayTrip && (
                                 <div className="bg-bg-card dark:border dark:border-white/10 rounded-3xl overflow-hidden shadow-2xl relative">
                                     {displayTripImage && (
-                                        <div className="relative w-full h-[250px] sm:h-[350px] overflow-hidden bg-slate-900/10">
-                                            <Image
-                                                src={getImageUrl(displayTripImage)}
+                                        <div className="relative w-full h-62.5 sm:h-87.5 overflow-hidden bg-slate-900/10">
+                                            <MediaAsset
+                                                asset={displayTripImage}
                                                 alt={displayTripName ?? 'Reis'}
                                                 fill
-                                                className="object-contain"
-                                                unoptimized
+                                                objectFit="contain"
                                             />
                                         </div>
                                     )}
