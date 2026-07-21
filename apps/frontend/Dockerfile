@@ -15,11 +15,6 @@ COPY apps/services/azure-management-service/package.json ./apps/services/azure-m
 COPY packages/validations/package.json ./packages/validations/
 COPY packages/db/package.json ./packages/db/
 
-# Tell pnpm to include linuxmusl binaries during docker install
-RUN pnpm config set supportedArchitectures.libc musl && \
-    pnpm config set supportedArchitectures.os linux && \
-    pnpm config set supportedArchitectures.cpu x64
-
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
 
 COPY packages/db ./packages/db
