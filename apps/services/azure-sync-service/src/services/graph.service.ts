@@ -194,7 +194,7 @@ export class GraphService {
                 const arrayBuffer = await response.arrayBuffer();
                 buffer = Buffer.from(arrayBuffer);
             } else {
-                buffer = Buffer.from(response as string | ArrayBuffer | SharedArrayBuffer | Uint8Array);
+                buffer = Buffer.from(response as any);
             }
 
             const contentType = 'image/jpeg';
