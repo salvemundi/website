@@ -54,23 +54,34 @@ export default function ReisFormSidebar({
                     {!imagePreview ? (
                         <div onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center w-full min-h-40 border-2 border-dashed border-(--beheer-border) rounded-xl cursor-pointer hover:border-(--beheer-accent) hover:bg-(--beheer-accent)/5 transition-all bg-(--beheer-card-soft) group">
                             <Upload className="h-6 w-6 mb-2 text-(--beheer-text-muted) group-hover:text-(--beheer-accent) transition-colors" />
-                            <span className="text-[9px] font-semibold tracking-widest text-(--beheer-text-muted) group-hover:text-(--beheer-accent) text-center px-4">Upload banner</span>
-                            <input ref={fileInputRef} type="file" name="image_file" accept="image/*" onChange={onImageChange} className="hidden" />
+                            <span className="text-[9px] font-semibold tracking-widest text-(--beheer-text-muted) group-hover:text-(--beheer-accent) text-center px-4">Upload banner (afbeelding of video)</span>
+                            <input ref={fileInputRef} type="file" name="image_file" accept="image/*,video/*" onChange={onImageChange} className="hidden" />
                         </div>
                     ) : (
                         <div className="relative group overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft)/50 h-40 flex items-center justify-center">
-                            <Image 
-                                src={imagePreview} 
-                                alt="Preview" 
-                                fill
-                                unoptimized={true}
-                                className="object-contain transition-transform duration-700" 
-                            />
+                            {imagePreview.startsWith('data:video') ? (
+                                <video
+                                    src={imagePreview}
+                                    className="object-contain h-full w-full"
+                                    autoPlay
+                                    loop
+                                    muted
+                                    playsInline
+                                />
+                            ) : (
+                                <Image
+                                    src={imagePreview}
+                                    alt="Preview"
+                                    fill
+                                    unoptimized={true}
+                                    className="object-contain transition-transform duration-700"
+                                />
+                            )}
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                                 <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-white text-slate-900 p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-4 w-4" /></button>
                                 <button type="button" onClick={onRemoveImage} className="bg-red-500 text-white p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-4 w-4" /></button>
                             </div>
-                            <input ref={fileInputRef} type="file" name="image_file" accept="image/*" onChange={onImageChange} className="hidden" />
+                            <input ref={fileInputRef} type="file" name="image_file" accept="image/*,video/*" onChange={onImageChange} className="hidden" />
                         </div>
                     )}
                 </div>

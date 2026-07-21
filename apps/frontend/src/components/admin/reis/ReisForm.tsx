@@ -102,7 +102,7 @@ export default function ReisForm({
         if (file) {
             const maxSizeBytes = 10 * 1024 * 1024;
             if (file.size > maxSizeBytes) {
-                setImageError('De geselecteerde afbeelding is te groot (maximaal 10MB).');
+                setImageError('Het geselecteerde bestand is te groot (maximaal 10MB).');
                 e.target.value = '';
                 return;
             }
@@ -131,7 +131,7 @@ export default function ReisForm({
 
         if (file && file.size > 10 * 1024 * 1024) {
             e.preventDefault();
-            setImageError('De afbeelding is te groot om te uploaden (maximaal 10MB).');
+            setImageError('Het bestand is te groot om te uploaden (maximaal 10MB).');
         }
     };
 
