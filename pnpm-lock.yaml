@@ -8,6 +8,7 @@ overrides:
   sharp: 0.35.3
   '@img/sharp-win32-x64': 0.35.3
   '@img/sharp-linuxmusl-x64': 0.35.3
+  '@img/sharp-libvips-linuxmusl-x64': 1.3.2
   react: ^19.2.7
   react-dom: ^19.2.7
   better-auth: 1.6.20
