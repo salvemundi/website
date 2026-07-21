@@ -188,7 +188,15 @@ export class GraphService {
         try {
             const response = await this.getClient().api(`/users/${userId}/photo/$value`).get();
             if (!response) return null;
-            const buffer = Buffer.from(response);
+
+            let buffer: Buffer;
+            if (response instanceof Blob) {
+                const arrayBuffer = await response.arrayBuffer();
+                buffer = Buffer.from(arrayBuffer);
+            } else {
+                buffer = Buffer.from(response as string | ArrayBuffer | SharedArrayBuffer | Uint8Array);
+            }
+
             const contentType = 'image/jpeg';
             return { buffer, contentType };
         } catch (error) {
