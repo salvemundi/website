@@ -15,6 +15,8 @@ interface ReisFormSidebarProps {
     setRegistrationOpen: (open: boolean) => void;
     allowFinalPayments: boolean;
     setAllowFinalPayments: (allow: boolean) => void;
+    allowDepositPayments: boolean;
+    setAllowDepositPayments: (allow: boolean) => void;
     isBusTrip: boolean;
     setIsBusTrip: (isBus: boolean) => void;
     registrationStartDate?: string | null;
@@ -31,6 +33,8 @@ export default function ReisFormSidebar({
     setRegistrationOpen,
     allowFinalPayments,
     setAllowFinalPayments,
+    allowDepositPayments,
+    setAllowDepositPayments,
     isBusTrip,
     setIsBusTrip,
     registrationStartDate
@@ -48,13 +52,13 @@ export default function ReisFormSidebar({
                 </div>
                 <div className="p-4">
                     {!imagePreview ? (
-                        <div onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center w-full min-h-[160px] border-2 border-dashed border-(--beheer-border) rounded-xl cursor-pointer hover:border-(--beheer-accent) hover:bg-(--beheer-accent)/5 transition-all bg-(--beheer-card-soft) group">
+                        <div onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center w-full min-h-40 border-2 border-dashed border-(--beheer-border) rounded-xl cursor-pointer hover:border-(--beheer-accent) hover:bg-(--beheer-accent)/5 transition-all bg-(--beheer-card-soft) group">
                             <Upload className="h-6 w-6 mb-2 text-(--beheer-text-muted) group-hover:text-(--beheer-accent) transition-colors" />
                             <span className="text-[9px] font-semibold tracking-widest text-(--beheer-text-muted) group-hover:text-(--beheer-accent) text-center px-4">Upload banner</span>
                             <input ref={fileInputRef} type="file" name="image_file" accept="image/*" onChange={onImageChange} className="hidden" />
                         </div>
                     ) : (
-                        <div className="relative group overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft)/50 h-[160px] flex items-center justify-center">
+                        <div className="relative group overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft)/50 h-40 flex items-center justify-center">
                             <Image 
                                 src={imagePreview} 
                                 alt="Preview" 
@@ -91,6 +95,15 @@ export default function ReisFormSidebar({
                                     Auto-Open Actief
                                 </div>
                             )}
+                        </label>
+
+                        <label className="relative flex items-center gap-4 bg-(--beheer-card-soft)/30 p-3 rounded-xl border border-(--beheer-border)/30 cursor-pointer group transition-all hover:bg-(--beheer-card-soft)/50">
+                            <div className="relative flex items-center justify-center">
+                                <input type="checkbox" name="allow_deposit_payments" checked={allowDepositPayments} onChange={(e) => setAllowDepositPayments(e.target.checked)} className="peer sr-only" />
+                                <div className="w-5 h-5 border-2 border-(--beheer-border) rounded peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent) transition-all"></div>
+                                <Check className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                            </div>
+                            <span className="text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest group-hover:text-(--beheer-text) transition-colors">Aanbetalingen Open</span>
                         </label>
 
                         <label className="relative flex items-center gap-4 bg-(--beheer-card-soft)/30 p-3 rounded-xl border border-(--beheer-border)/30 cursor-pointer group transition-all hover:bg-(--beheer-card-soft)/50">

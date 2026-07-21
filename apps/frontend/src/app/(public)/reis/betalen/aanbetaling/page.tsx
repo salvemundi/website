@@ -31,6 +31,10 @@ export default async function AanbetalingPage({ searchParams }: PageProps) {
         return <TripWaitlisted />;
     }
 
+    if (!trip.allow_deposit_payments && signup.role !== 'admin') {
+        return <TripAccessDenied error="De aanbetalingen zijn momenteel nog niet geopend voor deze reis. Je ontvangt een e-mail zodra je kunt betalen." />;
+    }
+
     if (signup.deposit_paid) {
         redirect(`/reis/betalen/restbetaling?id=${signupId}${token ? `&t=${token}` : ''}`);
     }

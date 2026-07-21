@@ -16,6 +16,7 @@ export const tripSchema = insertTripsSchema.extend({
     deposit_amount: z.coerce.number(),
     is_bus_trip: z.any().transform(isBusTripValue => !!isBusTripValue),
     allow_final_payments: z.any().transform(allowFinalPaymentsValue => !!allowFinalPaymentsValue).nullable().optional(),
+    allow_deposit_payments: z.any().transform(allowDepositPaymentsValue => !!allowDepositPaymentsValue).nullable().optional(),
 });
 
 export const tripSignupSchema = insertTripSignupsSchema.extend({

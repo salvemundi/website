@@ -16,6 +16,7 @@ export async function fetchFullTripsDb(): Promise<Trip[]> {
         registration_open: !!t.registration_open,
         is_bus_trip: !!t.is_bus_trip,
         allow_final_payments: !!t.allow_final_payments,
+        allow_deposit_payments: !!t.allow_deposit_payments,
         start_date: toLocalISOString(t.start_date),
         end_date: toLocalISOString(t.end_date),
         registration_start_date: toLocalISOString(t.registration_start_date, true)
@@ -59,6 +60,7 @@ export async function fetchTripByIdDb(tripId: number): Promise<Trip | null> {
         registration_open: !!t.registration_open,
         is_bus_trip: !!t.is_bus_trip,
         allow_final_payments: !!t.allow_final_payments,
+        allow_deposit_payments: !!t.allow_deposit_payments,
         start_date: toLocalISOString(t.start_date),
         end_date: toLocalISOString(t.end_date),
         registration_start_date: toLocalISOString(t.registration_start_date, true)
@@ -103,6 +105,7 @@ export async function fetchPublicTripsDb(): Promise<Trip[]> {
         registration_open: !!t.registration_open,
         is_bus_trip: !!t.is_bus_trip,
         allow_final_payments: !!t.allow_final_payments,
+        allow_deposit_payments: !!t.allow_deposit_payments,
         start_date: toLocalISOString(t.start_date),
         end_date: toLocalISOString(t.end_date),
         registration_start_date: toLocalISOString(t.registration_start_date, true)

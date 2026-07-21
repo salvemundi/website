@@ -67,6 +67,9 @@ export default async function tripRoutes(fastify: FastifyInstance) {
             if (paymentType === 'deposit' && signup.deposit_paid) {
                 return reply.status(400).send({ error: 'Aanbetaling is al voldaan.' });
             }
+            if (paymentType === 'deposit' && !trip.allow_deposit_payments && signup.role !== 'admin') {
+                return reply.status(403).send({ error: 'Aanbetalingen zijn nog niet geopend voor deze reis.' });
+            }
             if (paymentType === 'final' && signup.full_payment_paid) {
                 return reply.status(400).send({ error: 'Restbetaling is al voldaan.' });
             }

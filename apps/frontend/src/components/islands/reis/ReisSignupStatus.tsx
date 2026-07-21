@@ -18,13 +18,15 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
         if (signup.status === 'registered') return 'Geregistreerd';
 
         if (signup.full_payment_paid) return 'Geregistreerd (Betaald)';
-        if (!signup.deposit_paid) return 'Aanbetaling verwacht';
+        if (!signup.deposit_paid) {
+            return nextTrip?.allow_deposit_payments ? 'Aanbetaling verwacht' : 'Aanbetaling nog niet geopend';
+        }
         if (!nextTrip?.allow_final_payments) return 'Aanbetaling voldaan';
         return 'Restbetaling verwacht';
     };
 
     return (
-        <div className="bg-gradient-to-br from-theme-purple/5 to-theme-purple/10 rounded-2xl p-6 border border-theme-purple/20">
+        <div className="bg-linear-to-br from-theme-purple/5 to-theme-purple/10 rounded-2xl p-6 border border-theme-purple/20">
             {error && (
                 <div className="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-3 rounded-xl mb-6 text-sm font-medium">
                     {error}
@@ -42,7 +44,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
             <div className="bg-white/50 dark:bg-black/5 rounded-2xl p-6 border border-theme-purple/10 mb-6">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <p className="text-2xl sm:text-3xl font-bold text-theme-purple dark:text-white tracking-tight break-words">
+                        <p className="text-2xl sm:text-3xl font-bold text-theme-purple dark:text-white tracking-tight wrap-break-word">
                             {getSignupStatusDisplay(userSignup)}
                         </p>
                         {userSignup.status === 'registered' && (
@@ -57,13 +59,19 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
             {userSignup.status === 'confirmed' && !userSignup.full_payment_paid && (
                 <div className="mt-4 pt-4 border-t border-theme-purple/20 space-y-4">
                     {!userSignup.deposit_paid ? (
-                        <Link
-                            href={`/reis/betalen/aanbetaling?id=${userSignup.id}`}
-                            className="inline-flex items-center gap-2 px-6 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition group"
-                        >
-                            <CreditCard className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                            Ga naar aanbetaling
-                        </Link>
+                        nextTrip?.allow_deposit_payments ? (
+                            <Link
+                                href={`/reis/betalen/aanbetaling?id=${userSignup.id}`}
+                                className="inline-flex items-center gap-2 px-6 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition group"
+                            >
+                                <CreditCard className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                Ga naar aanbetaling
+                            </Link>
+                        ) : (
+                            <p className="text-xs italic text-text-muted leading-relaxed">
+                                De aanbetalingen zijn momenteel nog niet geopend voor deze reis. Je ontvangt een e-mail zodra je kunt betalen.
+                            </p>
+                        )
                     ) : (
                         <div className="space-y-4">
                             {nextTrip?.allow_final_payments ? (

@@ -54,6 +54,7 @@ export default function ReisForm({
     const [imageError, setImageError] = useState<string | null>(null);
     const [registrationOpen, setRegistrationOpen] = useState(false);
     const [allowFinalPayments, setAllowFinalPayments] = useState(false);
+    const [allowDepositPayments, setAllowDepositPayments] = useState(false);
     const [isBusTrip, setIsBusTrip] = useState(false);
     const [startDate, setStartDate] = useState<Date | null>(() => {
         const d = (editingTrip?.start_date as string) || (state?.initialData?.start_date as string);
@@ -81,6 +82,7 @@ export default function ReisForm({
             }
             setRegistrationOpen(!!editingTrip.registration_open);
             setAllowFinalPayments(!!editingTrip.allow_final_payments);
+            setAllowDepositPayments(!!editingTrip.allow_deposit_payments);
             setIsBusTrip(!!editingTrip.is_bus_trip);
         }
 
@@ -88,6 +90,7 @@ export default function ReisForm({
             const d = state.initialData;
             setRegistrationOpen(d.registration_open === 'on' || d.registration_open === 'true' || d.registration_open === true);
             setAllowFinalPayments(d.allow_final_payments === 'on' || d.allow_final_payments === 'true' || d.allow_final_payments === true);
+            setAllowDepositPayments(d.allow_deposit_payments === 'on' || d.allow_deposit_payments === 'true' || d.allow_deposit_payments === true);
             setIsBusTrip(d.is_bus_trip === 'on' || d.is_bus_trip === 'true' || d.is_bus_trip === true);
         }
     }, [editingTrip, state]);
@@ -155,6 +158,7 @@ export default function ReisForm({
                 {/* Hidden fields for controlled state toggles */}
                 <input type="hidden" name="registration_open" value={registrationOpen ? 'on' : 'off'} />
                 <input type="hidden" name="allow_final_payments" value={allowFinalPayments ? 'on' : 'off'} />
+                <input type="hidden" name="allow_deposit_payments" value={allowDepositPayments ? 'on' : 'off'} />
                 <input type="hidden" name="is_bus_trip" value={isBusTrip ? 'on' : 'off'} />
                 <input type="hidden" name="existing_image_id" value={existingImageId || ''} />
 
@@ -291,6 +295,8 @@ export default function ReisForm({
                         setRegistrationOpen={setRegistrationOpen}
                         allowFinalPayments={allowFinalPayments}
                         setAllowFinalPayments={setAllowFinalPayments}
+                        allowDepositPayments={allowDepositPayments}
+                        setAllowDepositPayments={setAllowDepositPayments}
                         isBusTrip={isBusTrip}
                         setIsBusTrip={setIsBusTrip}
                         registrationStartDate={editingTrip?.registration_start_date}
