@@ -3,7 +3,6 @@
 import { useState, useEffect, useActionState } from 'react';
 import { CalendarIcon, Euro, Info } from 'lucide-react';
 import type { Trip } from '@salvemundi/validations/schema/admin-trip.zod';
-import { getImageUrl } from '@/lib/utils/image-utils';
 import ReisFormSidebar from './ReisFormSidebar';
 import { createTrip, updateTrip } from '@/server/actions/admin/reis/admin-reis-core.actions';
 import { AdminDatepicker } from '@/components/ui/forms/AdminDatepicker';
@@ -77,7 +76,7 @@ export default function ReisForm({
             if (editingTrip.image) {
                 const rawImage = editingTrip.image as unknown as string | { id: string; type?: string | null } | null;
                 const imageId = rawImage && typeof rawImage === 'object' ? rawImage.id : (rawImage as string | null);
-                setImagePreview(getImageUrl(imageId, { width: 400, height: 200, fit: 'cover' }));
+                setImagePreview(imageId);
                 setExistingImageId(imageId);
             } else {
                 setExistingImageId(null);
@@ -308,8 +307,3 @@ export default function ReisForm({
         </div>
     );
 }
-
-
-
-
-

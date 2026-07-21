@@ -102,35 +102,40 @@ export const getUpcomingActiviteiten = unstable_cache(async (limit: number = 4):
 
     const mappedTrips = disabledRoutes.includes('/reis')
         ? []
-        : (tripEvents as unknown as Schema['trips']).map((item) => ({
-            id: `trip-${item.id}`,
-            name: item.name ?? '',
-            description: item.description ?? null,
-            description_logged_in: null,
-            max_sign_ups: null,
-            one_sign_up_max: false,
-            committee_id: null,
-            created_at: new Date().toISOString(),
-            updated_at: null,
-            image: item.image ?? null,
-            publish_date: null,
-            short_description: null,
-            location: 'Studiereis',
-            event_date: toLocalISOString(item.start_date, true) ?? toLocalISOString(now, true) ?? new Date().toISOString(),
-            event_date_end: toLocalISOString(item.end_date, true),
-            afbeelding_id: item.image ? { id: item.image } : null,
-            status: 'published',
-            price_members: item.base_price ? String(item.base_price) : '0.00',
-            price_non_members: item.base_price ? String(item.base_price) : '0.00',
-            only_members: true,
-            registration_deadline: item.registration_start_date ?? null,
-            contact: 'Reiscommissie',
-            event_time: null,
-            event_time_end: null,
-            custom_url: '/reis',
-            category: 'Reiscommissie',
-            committee_name: 'Reiscommissie'
-        }));
+        : (tripEvents as unknown as Schema['trips']).map((item) => {
+            const rawImage = item.image as unknown as string | { id: string } | null;
+            const tripImageId = typeof rawImage === 'object' && rawImage !== null ? rawImage.id : (rawImage as string | null);
+
+            return {
+                id: `trip-${item.id}`,
+                name: item.name ?? '',
+                description: item.description ?? null,
+                description_logged_in: null,
+                max_sign_ups: null,
+                one_sign_up_max: false,
+                committee_id: null,
+                created_at: new Date().toISOString(),
+                updated_at: null,
+                image: tripImageId ?? null,
+                publish_date: null,
+                short_description: null,
+                location: 'Studiereis',
+                event_date: toLocalISOString(item.start_date, true) ?? toLocalISOString(now, true) ?? new Date().toISOString(),
+                event_date_end: toLocalISOString(item.end_date, true),
+                afbeelding_id: tripImageId ? { id: tripImageId } : null,
+                status: 'published',
+                price_members: item.base_price ? String(item.base_price) : '0.00',
+                price_non_members: item.base_price ? String(item.base_price) : '0.00',
+                only_members: true,
+                registration_deadline: item.registration_start_date ?? null,
+                contact: 'Reiscommissie',
+                event_time: null,
+                event_time_end: null,
+                custom_url: '/reis',
+                category: 'Reiscommissie',
+                committee_name: 'Reiscommissie'
+            };
+        });
 
     const allEvents = [...mappedRegular, ...mappedPubCrawl, ...mappedTrips]
         .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
