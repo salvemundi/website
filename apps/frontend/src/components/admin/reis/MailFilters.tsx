@@ -80,14 +80,14 @@ export default function MailFilters({
                     <FilterField label="Status" value={filterStatus} onChange={setFilterStatus} options={statusOptions} />
                     <FilterField label="Rol" value={filterRole} onChange={setFilterRole} options={roleOptions} />
                     <FilterField label="Betaling" value={filterPayment} onChange={setFilterPayment} options={paymentOptions} />
-                    <div className="relative group/search pt-2">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-(--beheer-text-muted) group-focus-within/search:text-(--beheer-accent) transition-colors opacity-50" />
+                    <div className="flex items-center gap-3 px-4 py-3 bg-(--bg-main)/50 hover:bg-(--bg-main) border border-(--beheer-border)/50 rounded-2xl shadow-inner focus-within:border-(--beheer-accent) focus-within:ring-2 focus-within:ring-(--beheer-accent) transition-all">
+                        <Search className="h-4 w-4 shrink-0 text-(--beheer-text-muted) opacity-50" />
                         <input 
                             type="text" 
                             placeholder="Zoek deelnemer..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="beheer-input w-full pl-12 pr-4 py-3 bg-(--bg-main)/50 hover:bg-(--bg-main) border border-(--beheer-border)/50 rounded-2xl text-xs font-semibold text-(--beheer-text) placeholder:text-(--beheer-text-muted)/50 focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main) transition-all shadow-inner outline-none"
+                            className="beheer-input bg-transparent text-xs font-semibold text-(--beheer-text) placeholder:text-(--beheer-text-muted)/50 outline-none border-none p-0 w-full"
                         />
                     </div>
                 </div>

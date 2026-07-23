@@ -55,7 +55,7 @@ export default function ProfielGaming({
                                 placeholder="Username"
                                 autoComplete="off"
                             />
-                            <button type="submit" disabled={isPending} className="form-button p-1.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
+                            <button type="submit" disabled={isPending} className="form-button w-fit shrink-0 px-3 py-1.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center cursor-pointer disabled:opacity-50">
                                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                             </button>
                         </div>

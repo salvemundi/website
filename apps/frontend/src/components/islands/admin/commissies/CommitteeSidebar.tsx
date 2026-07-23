@@ -78,16 +78,16 @@ export default function CommitteeSidebar({
                         <button
                             key={c.id}
                             onClick={() => onSelect(c)}
-                            className={`beheer-button w-full group flex items-center justify-between p-4 rounded-xl transition-all ${selectedId === c.id
+                            className={`beheer-button w-full group flex items-center justify-between p-4 rounded-xl transition-all border-none ${selectedId === c.id
                                 ? 'bg-(--beheer-accent) text-white shadow-(--shadow-glow)'
-                                : 'hover:bg-(--beheer-card-soft) text-(--beheer-text) hover:translate-x-1'}`}
+                                : 'bg-(--beheer-card-soft)/40 hover:bg-(--beheer-card-soft) text-(--beheer-text) hover:translate-x-1'}`}
                         >
                             <div className="text-left min-w-0">
                                 <div className={`font-semibold text-sm truncate ${selectedId === c.id ? 'text-white' : 'text-(--beheer-text)'}`}>
                                     {normalizeName(c.name)}
                                 </div>
                                 {c.email && (
-                                    <div className={`text-xs truncate flex items-center gap-1.5 mt-1 font-medium ${selectedId === c.id ? 'text-white/60' : 'text-(--beheer-text-muted)'}`}>
+                                    <div className={`text-xs truncate flex items-center gap-1.5 mt-1 font-medium ${selectedId === c.id ? 'text-white/80' : 'text-(--beheer-text-muted)'}`}>
                                         <Mail className="h-3 w-3" />
                                         {c.email}
                                     </div>

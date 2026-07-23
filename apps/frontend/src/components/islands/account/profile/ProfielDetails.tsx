@@ -135,7 +135,7 @@ export default function ProfielDetails({
                                         {...registerPhone("phone_number")}
                                         className="flex-1 min-w-0 bg-white dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
                                     />
-                                    <button type="submit" disabled={isPending} className="form-button shrink-0 p-1.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
+                                    <button type="submit" disabled={isPending} className="form-button w-fit shrink-0 px-3 py-1.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center cursor-pointer disabled:opacity-50">
                                         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                                     </button>
                                 </div>

@@ -28,10 +28,8 @@ export default function ActivityFilters({
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-10 items-stretch">
             {/* Search Bar */}
-            <div className="relative group lg:col-span-5 shadow-sm rounded-(--beheer-radius) flex items-stretch">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-20">
-                    <Search className="h-4 w-4 text-(--beheer-text-muted) group-focus-within:text-(--beheer-accent) transition-colors" />
-                </div>
+            <div className="lg:col-span-5 flex items-center gap-3 px-4 py-3 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) shadow-sm focus-within:border-(--beheer-accent) focus-within:ring-4 focus-within:ring-(--beheer-accent)/10 transition-all">
+                <Search className="h-4 w-4 shrink-0 text-(--beheer-text-muted)" />
                 <input
                     type="text"
                     placeholder="Zoek activiteiten op naam of locatie..."
@@ -39,7 +37,7 @@ export default function ActivityFilters({
                     onChange={(e) => onSearchChange(e.target.value)}
                     autoComplete="off"
                     suppressHydrationWarning
-                    className="beheer-input w-full pl-11 pr-5 py-3 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-text) placeholder:text-(--beheer-text-muted) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold text-sm"
+                    className="beheer-input bg-transparent text-(--beheer-text) placeholder:text-(--beheer-text-muted) outline-none border-none p-0 w-full font-semibold text-sm"
                 />
             </div>
             

@@ -50,20 +50,18 @@ export default function LedenFilters({
             {/* Actions & Search */}
             <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full lg:w-auto">
                 {/* Search Bar */}
-                <div className="relative group flex-1 sm:w-72 shadow-sm rounded-(--beheer-radius)">
-                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-20">
-                        <Search className="h-4 w-4 text-(--beheer-text-muted) group-focus-within:text-(--beheer-accent) transition-colors" />
-                    </div>
+                <div className="flex items-center gap-3 flex-1 sm:w-72 px-4 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) shadow-sm focus-within:border-(--beheer-accent) focus-within:ring-4 focus-within:ring-(--beheer-accent)/10 transition-all">
+                    <Search className="h-4 w-4 shrink-0 text-(--beheer-text-muted)" />
                     <input
                         type="text"
                         placeholder="Zoek op naam of email..."
                         value={searchQuery}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        className="beheer-input w-full pl-11 pr-10 py-2.5 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-text) placeholder:text-(--beheer-text-muted) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold text-xs shadow-sm"
+                        className="beheer-input bg-transparent text-(--beheer-text) placeholder:text-(--beheer-text-muted) outline-none border-none p-0 w-full font-semibold text-xs"
                         suppressHydrationWarning
                         autoComplete="off"
                     />
-                    {isPending && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-(--beheer-accent)" />}
+                    {isPending && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-(--beheer-accent)" />}
                 </div>
 
                 {/* Export Button */}
