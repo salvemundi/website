@@ -164,15 +164,15 @@ export class KumaClient {
         if (!this.socket) throw new Error("[kuma-client.ts][addMonitor] Socket is not connected.");
 
         const addPromise = new Promise<void>((resolve, reject) => {
+            const onMonitorList = () => {
+                this.socket?.off("monitorList", onMonitorList);
+                resolve();
+            };
+            this.socket?.on("monitorList", onMonitorList);
             this.socket?.emit("addMonitor", payload, (res: unknown) => {
-                if (typeof res === "object" && res !== null && "ok" in res) {
-                    if ((res as SocketCallbackResponse).ok) {
-                        resolve();
-                    } else {
-                        reject(new Error((res as SocketCallbackResponse).msg ?? "[kuma-client.ts][addMonitor] addMonitor failed."));
-                    }
-                } else {
-                    resolve();
+                if (typeof res === "object" && res !== null && "ok" in res && !(res as SocketCallbackResponse).ok) {
+                    this.socket?.off("monitorList", onMonitorList);
+                    reject(new Error((res as SocketCallbackResponse).msg ?? "[kuma-client.ts][addMonitor] addMonitor failed."));
                 }
             });
         });
@@ -184,16 +184,15 @@ export class KumaClient {
         if (!this.socket) throw new Error("[kuma-client.ts][editMonitor] Socket is not connected.");
 
         const editPromise = new Promise<void>((resolve, reject) => {
+            const onMonitorList = () => {
+                this.socket?.off("monitorList", onMonitorList);
+                resolve();
+            };
+            this.socket?.on("monitorList", onMonitorList);
             this.socket?.emit("editMonitor", payload, (res: unknown) => {
-                if (typeof res === "object" && res !== null && "ok" in res) {
-                    if ((res as SocketCallbackResponse).ok) {
-                        resolve();
-                    } else {
-                        reject(new Error((res as SocketCallbackResponse).msg ?? "[kuma-client.ts][editMonitor] editMonitor failed."));
-                    }
-                } else {
-                    // No callback response from Uptime Kuma — resolve optimistically
-                    resolve();
+                if (typeof res === "object" && res !== null && "ok" in res && !(res as SocketCallbackResponse).ok) {
+                    this.socket?.off("monitorList", onMonitorList);
+                    reject(new Error((res as SocketCallbackResponse).msg ?? "[kuma-client.ts][editMonitor] editMonitor failed."));
                 }
             });
         });
