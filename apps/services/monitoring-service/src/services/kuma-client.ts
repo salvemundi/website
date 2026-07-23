@@ -182,8 +182,12 @@ export class KumaClient {
             this.socket?.on("monitorList", onMonitorList);
 
             this.socket?.emit("addMonitor", payload, (res: unknown) => {
-                if (typeof res === "object" && res !== null && "ok" in res && !(res as SocketCallbackResponse).ok) {
-                    done(() => reject(new Error((res as SocketCallbackResponse).msg ?? "[kuma-client.ts][addMonitor] addMonitor failed.")));
+                if (typeof res === "object" && res !== null && "ok" in res) {
+                    if ((res as SocketCallbackResponse).ok) {
+                        done(resolve);
+                    } else {
+                        done(() => reject(new Error((res as SocketCallbackResponse).msg ?? "[kuma-client.ts][addMonitor] addMonitor failed.")));
+                    }
                 }
             });
 
@@ -224,8 +228,12 @@ export class KumaClient {
             this.socket?.on("monitorList", onMonitorList);
 
             this.socket?.emit("editMonitor", payload, (res: unknown) => {
-                if (typeof res === "object" && res !== null && "ok" in res && !(res as SocketCallbackResponse).ok) {
-                    done(() => reject(new Error((res as SocketCallbackResponse).msg ?? "[kuma-client.ts][editMonitor] editMonitor failed.")));
+                if (typeof res === "object" && res !== null && "ok" in res) {
+                    if ((res as SocketCallbackResponse).ok) {
+                        done(resolve);
+                    } else {
+                        done(() => reject(new Error((res as SocketCallbackResponse).msg ?? "[kuma-client.ts][editMonitor] editMonitor failed.")));
+                    }
                 }
             });
 
