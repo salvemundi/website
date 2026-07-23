@@ -161,7 +161,7 @@ export class KumaClient {
     }
 
     public async addMonitor(payload: Partial<KumaMonitor>): Promise<void> {
-        await this.sendCommand("addMonitor", payload);
+        await this.sendCommand("add", payload);
     }
 
     public async editMonitor(payload: KumaMonitor): Promise<void> {
