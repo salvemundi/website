@@ -161,11 +161,33 @@ export class KumaClient {
     }
 
     public async addMonitor(payload: Partial<KumaMonitor>): Promise<void> {
-        await this.sendCommand("addMonitor", payload);
+        if (!this.socket) throw new Error("[kuma-client.ts][addMonitor] Socket is not connected.");
+
+        const addPromise = new Promise<void>((resolve, reject) => {
+            this.socket?.once("monitorList", () => resolve());
+            this.socket?.emit("addMonitor", payload, (res: unknown) => {
+                if (typeof res === "object" && res !== null && "ok" in res && !(res as SocketCallbackResponse).ok) {
+                    reject(new Error((res as SocketCallbackResponse).msg ?? "[kuma-client.ts][addMonitor] addMonitor failed."));
+                }
+            });
+        });
+
+        return withTimeout(addPromise, COMMAND_TIMEOUT_MS, `addMonitor('${payload.name}')`);
     }
 
     public async editMonitor(payload: KumaMonitor): Promise<void> {
-        await this.sendCommand("editMonitor", payload);
+        if (!this.socket) throw new Error("[kuma-client.ts][editMonitor] Socket is not connected.");
+
+        const editPromise = new Promise<void>((resolve, reject) => {
+            this.socket?.once("monitorList", () => resolve());
+            this.socket?.emit("editMonitor", payload, (res: unknown) => {
+                if (typeof res === "object" && res !== null && "ok" in res && !(res as SocketCallbackResponse).ok) {
+                    reject(new Error((res as SocketCallbackResponse).msg ?? "[kuma-client.ts][editMonitor] editMonitor failed."));
+                }
+            });
+        });
+
+        return withTimeout(editPromise, COMMAND_TIMEOUT_MS, `editMonitor('${payload.name}')`);
     }
 
     public disconnect(): void {
