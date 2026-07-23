@@ -7,7 +7,7 @@ Welkom bij de broncode van Salve Mundi V7. Dit project is een moderne monorepo a
 De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`):
 
 - **`/apps/frontend`**: De hoofdapplicatie gebouwd met Next.js (App Router). Bevat de website en het ledenportaal.
-- **`/apps/services`**: Diverse Fastify microservices voor specifieke taken (Finance, Azure Sync, Mail).
+- **`/apps/services`**: Diverse Fastify/Node microservices voor specifieke taken (Finance, Azure Sync, Mail, Azure Management, Monitoring).
 - **`/infrastructure`**: Docker Compose configuraties voor de core infrastructuur (Postgres, Redis, Directus).
 - **`/packages`**: Gedeelde bibliotheken, configuraties en types (bijv. `validations`).
 - **`/Docs`**: Uitgebreide bron-documentatie over de architectuur en workflows (lokaal genegeerd in git).
@@ -19,6 +19,7 @@ De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`
 - **Backend/CMS**: Directus 11.1.x (Requires `DIRECTUS_STATIC_TOKEN` for build verification), Fastify 5.8.x.
 - **Database**: PostgreSQL (centrale opslag) via Kysely (type-safe query builder).
 - **Caching**: Redis.
+- **Monitoring**: Uptime Kuma (geautomatiseerde socket provisioning & Discord webhooks).
 - **Infrastructuur**: Docker (floating major-versions), Nginx Proxy Manager (NPM).
 - **CI/CD**: GitHub Actions (met stricte pnpm caching).
 
@@ -60,6 +61,8 @@ Het project maakt gebruik van GitHub Actions voor geautomatiseerde deployment na
 
 - **`v7-core.yml`**: Verantwoordelijk voor de kern-infrastructuur (Database, Redis, Directus).
 - **`v7-stack.yml`**: Verantwoordelijk voor de applicatielaag (Frontend & Microservices).
+- **`monitoring.yml`**: Verantwoordelijk voor het bouwen en synchroniseren van de Uptime Kuma monitoring service (poort `3006` voor Prod, `13006` voor Acc).
+
 
 ## Beveiliging & Bijdragen
 
