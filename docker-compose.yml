@@ -248,6 +248,8 @@ services:
       - /etc/timezone:/etc/timezone:ro
     networks:
       - salve-mundi-v7-shared
+      - proxy-network
+
 
 networks:
   salve-mundi-v7-shared:
