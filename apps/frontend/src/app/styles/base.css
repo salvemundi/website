@@ -190,6 +190,20 @@
         }
     }
 
+    /* iOS Safari auto-zooms the viewport when focusing an input rendered below
+       16px. Force 16px on mobile regardless of the (smaller) desktop design size. */
+    @media (max-width: 767px) {
+        input,
+        select,
+        textarea,
+        .form-input,
+        .beheer-input,
+        .beheer-select,
+        .beheer-status-select {
+            font-size: 16px !important;
+        }
+    }
+
     /* ── Global Design System Enhancements ─────────────────────────────────── */
     /* Automatically apply squircle (Apple-style) corners to all rounded elements
        that have a significant radius. This ensures a premium feel site-wide.    */

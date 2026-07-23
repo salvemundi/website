@@ -181,8 +181,8 @@ export default function LedenDetailIsland({
                         )}
                     </div>
                 </div>
-                <div className="space-y-3">
-                    <h1 className="text-4xl font-semibold text-(--beheer-text) leading-none">
+                <div className="space-y-3 min-w-0">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-(--beheer-text) leading-tight break-words">
                         {localMember.first_name} {localMember.last_name}
                     </h1>
                     <div className="flex flex-wrap items-center gap-4">

@@ -37,7 +37,7 @@
 
     --max-w-app: 80rem;
     --header-padding: clamp(1rem, 5vw, 2.5rem);
-    --beheer-container-px: clamp(1rem, 3vw, 2rem);
+    --beheer-container-px: clamp(1.25rem, 5vw, 2rem);
 
     --color-purple-50: #f6f3f7;
     --color-purple-100: #ebdceb;
@@ -142,11 +142,7 @@
     margin-right: auto;
     width: 100%;
     max-width: var(--max-w-app);
-    padding-inline: var(--spacing-4);
-
-    @variant lg {
-        padding-inline: var(--spacing-6);
-    }
+    padding-inline: var(--beheer-container-px);
 }
 
 @utility pt-safe {
