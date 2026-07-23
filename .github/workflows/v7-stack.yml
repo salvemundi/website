@@ -259,9 +259,8 @@ jobs:
 
           docker compose --env-file .env.${ENV_NAME} pull
           docker compose --env-file .env.${ENV_NAME} up -d --remove-orphans
-          pnpm --filter=@salvemundi/monitoring-service build
-          pnpm --filter=@salvemundi/monitoring-service provision || echo "[DEPLOY] Kuma provisioning completed or waiting for service readiness."
           docker image prune -af
           ENDSSH
+
 
 
