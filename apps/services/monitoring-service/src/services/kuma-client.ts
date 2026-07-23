@@ -80,17 +80,18 @@ export class KumaClient {
             throw new Error("[kuma-client.ts][isSetupNeeded] Socket is not connected.");
         }
         return new Promise<boolean>((resolve) => {
-            this.socket?.emit("needSetup", (res: boolean | SocketCallbackResponse) => {
+            this.socket?.emit("needSetup", (res: unknown) => {
                 if (typeof res === "boolean") {
                     resolve(res);
                 } else if (typeof res === "object" && res !== null && "needSetup" in res) {
-                    resolve(Boolean(res.needSetup));
+                    resolve(Boolean((res as SocketCallbackResponse).needSetup));
                 } else {
                     resolve(true);
                 }
             });
         });
     }
+
 
 
     public async setupAdmin(username: string, password: string): Promise<void> {
