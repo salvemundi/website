@@ -1,5 +1,8 @@
 import { io, Socket } from "socket.io-client";
 
+const COMMAND_TIMEOUT_MS = 15_000;
+const EVENT_TIMEOUT_MS = 15_000;
+
 export interface SocketCallbackResponse {
     ok: boolean;
     msg?: string;
@@ -20,6 +23,7 @@ export interface KumaMonitor {
     id: number;
     name: string;
     type: string;
+    active: boolean;
     url?: string;
     hostname?: string;
     port?: number;
@@ -28,6 +32,22 @@ export interface KumaMonitor {
     maxretries?: number;
     description?: string;
     notificationIDList?: Record<string, boolean>;
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+        const timer = setTimeout(() => {
+            reject(new Error(`[kuma-client.ts] Timed out after ${ms}ms waiting for: ${label}`));
+        }, ms);
+
+        promise.then(
+            (val) => { clearTimeout(timer); resolve(val); },
+            (err: unknown) => {
+                clearTimeout(timer);
+                reject(err instanceof Error ? err : new Error(String(err)));
+            }
+        );
+    });
 }
 
 export class KumaClient {
@@ -42,7 +62,7 @@ export class KumaClient {
             timeout: 10000,
         });
 
-        return new Promise<void>((resolve, reject) => {
+        const connectPromise = new Promise<void>((resolve, reject) => {
             if (!this.socket) {
                 reject(new Error("Socket not initialized."));
                 return;
@@ -52,9 +72,11 @@ export class KumaClient {
                 resolve();
             });
             this.socket.on("connect_error", (err: Error) => {
-                reject(new Error(`[kuma-client.ts][connect] Failed to connect to Uptime Kuma socket: ${err.message}`));
+                reject(new Error(`[kuma-client.ts][connect] Failed to connect: ${err.message}`));
             });
         });
+
+        return withTimeout(connectPromise, 15_000, "socket connect");
     }
 
     public async sendCommand<T extends SocketCallbackResponse = SocketCallbackResponse>(
@@ -64,7 +86,8 @@ export class KumaClient {
         if (!this.socket) {
             throw new Error("[kuma-client.ts][sendCommand] Socket is not connected.");
         }
-        return new Promise<T>((resolve, reject) => {
+
+        const commandPromise = new Promise<T>((resolve, reject) => {
             this.socket?.emit(event, ...args, (res: SocketCallbackResponse) => {
                 if (!res.ok) {
                     reject(new Error(res.msg || `[kuma-client.ts][sendCommand] Command '${event}' failed.`));
@@ -73,13 +96,16 @@ export class KumaClient {
                 }
             });
         });
+
+        return withTimeout(commandPromise, COMMAND_TIMEOUT_MS, `sendCommand('${event}')`);
     }
 
     public async isSetupNeeded(): Promise<boolean> {
         if (!this.socket) {
             throw new Error("[kuma-client.ts][isSetupNeeded] Socket is not connected.");
         }
-        return new Promise<boolean>((resolve) => {
+
+        const checkPromise = new Promise<boolean>((resolve) => {
             this.socket?.emit("needSetup", (res: unknown) => {
                 if (typeof res === "boolean") {
                     resolve(res);
@@ -90,9 +116,9 @@ export class KumaClient {
                 }
             });
         });
+
+        return withTimeout(checkPromise, COMMAND_TIMEOUT_MS, "isSetupNeeded");
     }
-
-
 
     public async setupAdmin(username: string, password: string): Promise<void> {
         await this.sendCommand("setup", username, password);
@@ -103,11 +129,14 @@ export class KumaClient {
     }
 
     public async getNotificationList(): Promise<NotificationProvider[]> {
-        if (!this.socket) throw new Error("Socket is not connected.");
-        this.socket.emit("getNotificationList");
-        return new Promise((resolve) => {
+        if (!this.socket) throw new Error("[kuma-client.ts][getNotificationList] Socket is not connected.");
+
+        const listPromise = new Promise<NotificationProvider[]>((resolve) => {
             this.socket?.once("notificationList", (list: NotificationProvider[]) => resolve(list));
+            this.socket?.emit("getNotificationList");
         });
+
+        return withTimeout(listPromise, EVENT_TIMEOUT_MS, "getNotificationList");
     }
 
     public async addNotification(name: string, type: string, webhookUrl: string): Promise<number> {
@@ -121,11 +150,14 @@ export class KumaClient {
     }
 
     public async getMonitorList(): Promise<Record<string, KumaMonitor>> {
-        if (!this.socket) throw new Error("Socket is not connected.");
-        this.socket.emit("getMonitorList");
-        return new Promise((resolve) => {
+        if (!this.socket) throw new Error("[kuma-client.ts][getMonitorList] Socket is not connected.");
+
+        const listPromise = new Promise<Record<string, KumaMonitor>>((resolve) => {
             this.socket?.once("monitorList", (list: Record<string, KumaMonitor>) => resolve(list));
+            this.socket?.emit("getMonitorList");
         });
+
+        return withTimeout(listPromise, EVENT_TIMEOUT_MS, "getMonitorList");
     }
 
     public async addMonitor(payload: Partial<KumaMonitor>): Promise<void> {

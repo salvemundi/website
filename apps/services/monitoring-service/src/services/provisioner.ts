@@ -85,6 +85,7 @@ export class MonitoringProvisioner {
         const payload: Partial<KumaMonitor> = {
             name: service.name,
             type: service.type,
+            active: true,
             url: service.url,
             hostname: service.hostname,
             port: service.port,
