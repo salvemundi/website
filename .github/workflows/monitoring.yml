@@ -133,5 +133,16 @@ jobs:
             export AZURE_MANAGEMENT_SERVICE_URL="http://v7-prod-management:3004"
           fi
 
+          echo "[MONITORING] Waiting for Uptime Kuma socket to be ready at ${KUMA_URL}..."
+          for i in {1..30}; do
+            if curl -s -I "${KUMA_URL}" | grep -E "(200|302)" >/dev/null; then
+              echo "[MONITORING] Uptime Kuma is ready!"
+              break
+            fi
+            echo "[MONITORING] Waiting for Uptime Kuma... ($i/30)"
+            sleep 2
+          done
+
           pnpm --filter=@salvemundi/monitoring-service build
-          pnpm --filter=@salvemundi/monitoring-service provision || echo "[MONITORING] Kuma provisioning step completed or waiting for readiness."
+          pnpm --filter=@salvemundi/monitoring-service provision
+
