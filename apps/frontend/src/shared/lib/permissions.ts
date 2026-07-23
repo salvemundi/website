@@ -24,13 +24,16 @@ export function checkFeatureAccess(committees: Committee[] | undefined, feature:
     if (!committees) return { hasAccess: false, isLeader: false };
     const hasAccess = canAccess(committees, feature);
     
+    const isBoardOrKandi = committees.some(c => 
+        c.azure_group_id === COMMITTEES.BESTUUR || c.azure_group_id === COMMITTEES.KANDI
+    );
+    
     const allowed = featureAccessMap.get(feature) || [];
-    const isLeader = committees.some(c => 
+    const isLeader = hasAccess && (isBoardOrKandi || committees.some(c => 
         c.is_leader && 
         c.azure_group_id && 
-        allowed.includes(c.azure_group_id) && 
-        c.azure_group_id !== COMMITTEES.BESTUUR
-    );
+        allowed.includes(c.azure_group_id)
+    ));
     
     return { hasAccess, isLeader };
 }
@@ -58,7 +61,10 @@ export function hasPermission(committees: Committee[] | undefined, resource: str
 export function getPermissions(committees: Committee[] | undefined = []): string[] {
     const safeCommittees = committees;
     const isICT = safeCommittees.some(c => c.azure_group_id === COMMITTEES.ICT);
-    const isLeader = safeCommittees.some(c => c.is_leader && c.azure_group_id !== COMMITTEES.BESTUUR);
+    const isBoardOrKandi = safeCommittees.some(c => 
+        c.azure_group_id === COMMITTEES.BESTUUR || c.azure_group_id === COMMITTEES.KANDI
+    );
+    const isLeader = isBoardOrKandi || safeCommittees.some(c => c.is_leader);
 
     const permissions: string[] = [];
 
@@ -74,7 +80,7 @@ export function getPermissions(committees: Committee[] | undefined = []): string
         }
     }
 
-    if (isICT || (canAccess(safeCommittees, 'activiteiten') && isLeader)) {
+    if (isICT || isBoardOrKandi || (canAccess(safeCommittees, 'activiteiten') && isLeader)) {
         permissions.push('activiteiten:edit');
     }
 
