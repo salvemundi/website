@@ -110,8 +110,8 @@ export default function StatsToolbar({
             </div>
 
             <div className="flex flex-col md:flex-row gap-4">
-                <div className="relative group flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-(--text-muted) group-focus-within:text-(--theme-purple) transition-colors" />
+                <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus-within:ring-4 focus-within:ring-(--theme-purple)/10 focus-within:border-(--theme-purple) transition-all">
+                    <Search className="h-5 w-5 shrink-0 text-(--text-muted) group-focus-within:text-(--theme-purple) transition-colors" />
                     <input
                         type="text"
                         placeholder="Zoek op naam, e-mail of vereniging..."
@@ -119,7 +119,7 @@ export default function StatsToolbar({
                         onChange={(e) => setSearchQuery(e.target.value)}
                         autoComplete="off"
                         spellCheck={false}
-                        className="beheer-input w-full pl-12 pr-4 py-3 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-medium text-sm text-(--text-main)"
+                        className="beheer-input bg-transparent border-none p-0 w-full font-medium text-sm text-(--text-main) outline-none"
                     />
                 </div>
 

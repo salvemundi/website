@@ -55,14 +55,14 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
     return (
         <div className="space-y-12">
             <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
-                <div className="relative w-full md:w-96 group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-(--text-muted) group-focus-within:text-(--theme-purple) transition-colors" />
+                <div className="flex items-center gap-3 px-4 h-14 squircle bg-(--bg-card) border border-(--border-color) w-full md:w-96 group focus-within:ring-4 focus-within:ring-(--theme-purple)/10 focus-within:border-(--theme-purple) transition-all">
+                    <Search className="h-5 w-5 shrink-0 text-(--text-muted) group-focus-within:text-(--theme-purple) transition-colors" />
                     <input
                         type="text"
                         placeholder="Tickets zoeken..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="form-input w-full pl-12 pr-4 h-14 squircle bg-(--bg-card) border border-(--border-color) text-sm font-black uppercase tracking-widest focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all outline-none"
+                        className="form-input bg-transparent border-none p-0 w-full text-sm font-black uppercase tracking-widest outline-none"
                     />
                 </div>
                 <div className="flex gap-4">

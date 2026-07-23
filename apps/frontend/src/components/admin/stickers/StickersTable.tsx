@@ -49,15 +49,15 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
     return (
         <div className="space-y-6">
             <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) p-6 shadow-sm border border-(--beheer-border)">
-                <div className="relative group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-(--beheer-text-muted) group-focus-within:text-(--beheer-accent) transition-colors" />
+                <div className="flex items-center gap-3 bg-(--beheer-card-bg) rounded-(--beheer-radius) px-4 py-3 shadow-sm border border-(--beheer-border) focus-within:border-(--beheer-accent) focus-within:ring-2 focus-within:ring-(--beheer-accent)/20 transition-all">
+                    <Search className="h-4 w-4 shrink-0 text-(--beheer-text-muted)" />
                     <input
                         type="text"
                         placeholder="Zoek op locatie, stad, land of gebruiker..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         suppressHydrationWarning
-                        className="beheer-input w-full pl-12 pr-4 py-3 bg-(--beheer-card-soft) border border-(--beheer-border) rounded-xl text-xs font-semibold focus:outline-none focus:border-(--beheer-accent) transition-all placeholder:text-(--beheer-text-muted)/40 text-(--beheer-text)"
+                        className="beheer-input bg-transparent border-none p-0 w-full text-xs font-semibold focus:outline-none placeholder:text-(--beheer-text-muted)/40 text-(--beheer-text)"
                     />
                 </div>
             </div>

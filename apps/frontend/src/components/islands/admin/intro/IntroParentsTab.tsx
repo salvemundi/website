@@ -62,14 +62,14 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, deletingI
     return (
         <div>
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
-                <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-(--beheer-text-muted)" />
+                <div className="flex-1 flex items-center gap-3 px-4 py-2.5 rounded-(--beheer-radius) bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm ring-1 ring-(--beheer-border)/40 focus-within:ring-2 focus-within:ring-(--beheer-accent) focus-within:bg-(--bg-main)/80 transition-all shadow-inner">
+                    <Search className="h-4 w-4 shrink-0 text-(--beheer-text-muted)" />
                     <input
                         type="text"
                         placeholder="Zoek op naam, email of telefoon..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="beheer-input w-full pl-11 pr-4 py-3.5 rounded-(--beheer-radius) bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm border-0 ring-1 ring-(--beheer-border)/40 text-(--beheer-text) text-sm font-semibold focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main)/80 outline-none transition-all shadow-inner placeholder:text-(--beheer-text-muted)/40"
+                        className="beheer-input bg-transparent border-none p-0 w-full text-(--beheer-text) text-sm font-semibold outline-none placeholder:text-(--beheer-text-muted)/40"
                     />
                 </div>
             </div>

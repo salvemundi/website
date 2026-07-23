@@ -140,12 +140,12 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
             </div>
 
             <div className="flex flex-col gap-3 sm:gap-4">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-(--text-muted)" />
+                <div className="flex items-center gap-3 px-4 h-10 sm:h-12 rounded-xl bg-(--bg-soft) focus-within:ring-2 focus-within:ring-(--theme-purple)/20 transition-all">
+                    <Search className="h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-(--text-muted)" />
                     <input
                         type="text"
                         placeholder="Zoek deelnemers..."
-                        className="form-input w-full pl-9 sm:pl-10 pr-4 h-10 sm:h-12 rounded-xl bg-(--bg-soft) border-none focus:ring-2 focus:ring-(--theme-purple)/20 font-medium text-sm sm:text-base"
+                        className="form-input bg-transparent border-none p-0 w-full font-medium text-sm sm:text-base outline-none"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />

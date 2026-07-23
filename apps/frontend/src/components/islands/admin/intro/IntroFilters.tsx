@@ -30,16 +30,15 @@ export default function IntroFilters({
 
     return (
         <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="relative grow max-w-md">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-(--beheer-text-muted)" />
-                </div>
+            <div className="flex items-center gap-3 grow max-w-md px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl shadow-sm focus-within:border-(--beheer-accent) focus-within:ring-2 focus-within:ring-(--beheer-accent)/20 transition-all">
+                <Search className="h-4 w-4 shrink-0 text-(--beheer-text-muted)" />
                 <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
                     placeholder="Zoek op naam of titel..."
-                    className="beheer-input block w-full pl-10 pr-3 py-2 border border-(--beheer-border) rounded-xl leading-5 bg-(--beheer-card-bg) text-(--beheer-text) placeholder-(--beheer-text-muted) focus:outline-none focus:ring-2 focus:ring-(--beheer-accent) focus:border-transparent transition-all shadow-sm"
+                    className="beheer-input bg-transparent text-(--beheer-text) placeholder:text-(--beheer-text-muted) outline-none border-none p-0 w-full font-semibold text-xs"
+                    autoComplete="off"
                 />
             </div>
 
