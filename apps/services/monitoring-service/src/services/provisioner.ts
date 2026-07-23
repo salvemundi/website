@@ -82,7 +82,7 @@ export class MonitoringProvisioner {
         existing?: KumaMonitor,
         discordNotificationId?: number
     ): Promise<void> {
-        const payload: Partial<KumaMonitor> = {
+        const payload: Partial<KumaMonitor> & Record<string, unknown> = {
             name: service.name,
             type: service.type,
             active: true,
@@ -94,6 +94,7 @@ export class MonitoringProvisioner {
             maxretries: service.maxretries,
             description: service.description,
             notificationIDList: discordNotificationId ? { [String(discordNotificationId)]: true } : {},
+            accepted_statuscodes: ["200-299"],
         };
 
         if (existing) {
