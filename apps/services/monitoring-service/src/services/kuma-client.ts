@@ -76,9 +76,22 @@ export class KumaClient {
     }
 
     public async isSetupNeeded(): Promise<boolean> {
-        const res = await this.sendCommand<{ ok: boolean; needSetup?: boolean }>("needSetup");
-        return Boolean(res.needSetup);
+        if (!this.socket) {
+            throw new Error("[kuma-client.ts][isSetupNeeded] Socket is not connected.");
+        }
+        return new Promise<boolean>((resolve) => {
+            this.socket?.emit("needSetup", (res: boolean | SocketCallbackResponse) => {
+                if (typeof res === "boolean") {
+                    resolve(res);
+                } else if (typeof res === "object" && res !== null && "needSetup" in res) {
+                    resolve(Boolean(res.needSetup));
+                } else {
+                    resolve(true);
+                }
+            });
+        });
     }
+
 
     public async setupAdmin(username: string, password: string): Promise<void> {
         await this.sendCommand("setup", username, password);
