@@ -135,13 +135,14 @@ jobs:
 
           echo "[MONITORING] Waiting for Uptime Kuma socket to be ready at ${KUMA_URL}..."
           for i in {1..30}; do
-            if curl -s -I "${KUMA_URL}" | grep -E "(200|302)" >/dev/null; then
+            if curl -s -m 3 -I "${KUMA_URL}" | grep -iE "HTTP/.* (200|302)" >/dev/null; then
               echo "[MONITORING] Uptime Kuma is ready!"
               break
             fi
             echo "[MONITORING] Waiting for Uptime Kuma... ($i/30)"
             sleep 2
           done
+
 
           pnpm --filter=@salvemundi/monitoring-service build
           pnpm --filter=@salvemundi/monitoring-service provision
