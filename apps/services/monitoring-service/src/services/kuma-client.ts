@@ -188,15 +188,14 @@ export class KumaClient {
             });
 
             // Fallback poll: if monitorList never fires containing our monitor
-            poll = setInterval(async () => {
-                if (settled) { clearInterval(poll!); return; }
-                try {
-                    const list = await this.getMonitorList();
+            poll = setInterval(() => {
+                if (settled) { if (poll) clearInterval(poll); return; }
+                this.getMonitorList().then((list) => {
                     const exists = Object.values(list).some((m) => m.name === payload.name);
                     if (exists) done(resolve);
-                } catch {
+                }).catch(() => {
                     // ignore poll errors, let the outer timeout handle it
-                }
+                });
             }, 2000);
         });
 
@@ -231,15 +230,14 @@ export class KumaClient {
             });
 
             // Fallback poll: if monitorList never fires containing our monitor
-            poll = setInterval(async () => {
-                if (settled) { clearInterval(poll!); return; }
-                try {
-                    const list = await this.getMonitorList();
+            poll = setInterval(() => {
+                if (settled) { if (poll) clearInterval(poll); return; }
+                this.getMonitorList().then((list) => {
                     const exists = Object.values(list).some((m) => m.id === payload.id);
                     if (exists) done(resolve);
-                } catch {
+                }).catch(() => {
                     // ignore poll errors, let the outer timeout handle it
-                }
+                });
             }, 2000);
         });
 
