@@ -228,7 +228,8 @@ services:
     env_file:
       - .env.${ENV_NAME}
     ports:
-      - "127.0.0.1:${MONITORING_PORT:-3006}:3001"
+      - "${MONITORING_PORT:-3006}:3001"
+
     environment:
       - TZ=Europe/Amsterdam
     healthcheck:
