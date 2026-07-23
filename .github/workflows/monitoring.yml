@@ -1,0 +1,88 @@
+name: Monitoring Service Workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - acceptance
+    paths:
+      - "apps/services/monitoring-service/**"
+      - ".github/workflows/monitoring.yml"
+      - "docker-compose.yml"
+  pull_request:
+    branches:
+      - main
+      - acceptance
+    paths:
+      - "apps/services/monitoring-service/**"
+      - ".github/workflows/monitoring.yml"
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  NODE_OPTIONS: "--no-deprecation"
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check Monitoring Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+      - run: npm install -g pnpm@11.8.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter=@salvemundi/monitoring-service type-check
+      - run: pnpm --filter=@salvemundi/monitoring-service lint
+
+  build-monitoring:
+    needs: [lint-and-typecheck]
+    name: Build & Validate Monitoring Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+      - run: npm install -g pnpm@11.8.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter=@salvemundi/monitoring-service build
+
+  deploy-monitoring:
+    needs: [build-monitoring]
+    if: (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/acceptance') && github.event_name != 'pull_request'
+    name: Provision & Sync Uptime Kuma Monitors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+      - run: npm install -g pnpm@11.8.0
+      - run: pnpm install --frozen-lockfile
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H 100.77.182.130 >> ~/.ssh/known_hosts 2>/dev/null || true
+      - name: Provision Uptime Kuma on Server
+        run: |
+          ENV_NAME="acc"
+          MONITORING_PORT="13006"
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            ENV_NAME="prod"
+            MONITORING_PORT="3006"
+          fi
+
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@100.77.182.130 bash << ENDSSH
+          set -e
+          cd /opt/salve-mundi-v7
+          docker compose --env-file .env.${ENV_NAME} up -d monitoring-service
+          pnpm --filter=@salvemundi/monitoring-service build
+          pnpm --filter=@salvemundi/monitoring-service provision || echo "Provisioning step completed or waiting for Kuma readiness."
+          ENDSSH

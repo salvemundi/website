@@ -2,7 +2,7 @@ services:
   frontend:
     container_name: ${COMPOSE_PROJECT_NAME}-app
     image: ghcr.io/salvemundi/v7-app:${IMAGE_TAG:-latest}
-    restart: always
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/favicon.ico"]
       interval: 30s
@@ -51,7 +51,7 @@ services:
   finance-service:
     container_name: ${COMPOSE_PROJECT_NAME}-finance
     image: ghcr.io/salvemundi/v7-finance:${IMAGE_TAG:-latest}
-    restart: always
+    restart: unless-stopped
     env_file:
       - .env.${ENV_NAME}
     ports:
@@ -93,7 +93,7 @@ services:
   sync-service:
     container_name: ${COMPOSE_PROJECT_NAME}-sync
     image: ghcr.io/salvemundi/v7-sync:${IMAGE_TAG:-latest}
-    restart: always
+    restart: unless-stopped
     env_file:
       - .env.${ENV_NAME}
     ports:
@@ -139,7 +139,7 @@ services:
   mail-service:
     container_name: ${COMPOSE_PROJECT_NAME}-mail
     image: ghcr.io/salvemundi/v7-mail:${IMAGE_TAG:-latest}
-    restart: always
+    restart: unless-stopped
     env_file:
       - .env.${ENV_NAME}
     ports:
@@ -183,7 +183,7 @@ services:
   management-service:
     container_name: ${COMPOSE_PROJECT_NAME}-management
     image: ghcr.io/salvemundi/v7-management:${IMAGE_TAG:-latest}
-    restart: always
+    restart: unless-stopped
     env_file:
       - .env.${ENV_NAME}
     ports:
@@ -221,6 +221,34 @@ services:
     networks:
       - salve-mundi-v7-shared
 
+  monitoring-service:
+    container_name: ${COMPOSE_PROJECT_NAME}-monitoring
+    image: louislam/uptime-kuma:1
+    restart: unless-stopped
+    env_file:
+      - .env.${ENV_NAME}
+    ports:
+      - "127.0.0.1:${MONITORING_PORT:-3006}:3001"
+    environment:
+      - TZ=Europe/Amsterdam
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "extra/healthcheck.js",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    volumes:
+      - v7_kuma_data:/app/data
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    networks:
+      - salve-mundi-v7-shared
+
 networks:
   salve-mundi-v7-shared:
     external: true
@@ -229,3 +257,5 @@ networks:
 
 volumes:
   v7_next_cache:
+  v7_kuma_data:
+
