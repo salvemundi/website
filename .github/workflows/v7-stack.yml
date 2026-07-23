@@ -6,10 +6,28 @@ on:
     branches:
       - main
       - acceptance
+    paths:
+      - "apps/frontend/**"
+      - "apps/services/finance-service/**"
+      - "apps/services/azure-sync-service/**"
+      - "apps/services/mail-service/**"
+      - "apps/services/azure-management-service/**"
+      - "packages/**"
+      - "docker-compose.yml"
+      - ".github/workflows/v7-stack.yml"
   pull_request:
     branches:
       - main
       - acceptance
+    paths:
+      - "apps/frontend/**"
+      - "apps/services/finance-service/**"
+      - "apps/services/azure-sync-service/**"
+      - "apps/services/mail-service/**"
+      - "apps/services/azure-management-service/**"
+      - "packages/**"
+      - "docker-compose.yml"
+      - ".github/workflows/v7-stack.yml"
 
 permissions:
   contents: read
