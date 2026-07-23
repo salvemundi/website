@@ -1,10 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-    MapPin,
-    AlertCircle
-} from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { deleteSticker, updateSticker } from '@/server/actions/admin/admin-stickers.actions';
@@ -49,13 +46,6 @@ export default function StickerManagementIsland({
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl">
             <div>
-                <div className="flex items-center gap-3 mb-6">
-                    <MapPin className="h-5 w-5 text-(--beheer-accent)" />
-                    <h2 className="text-lg font-semibold text-(--beheer-text) tracking-tight">
-                        Geregistreerde <span className="text-(--beheer-accent)">Locaties</span>
-                    </h2>
-                </div>
-
                 {stickers.length > 0 ? (
                     <StickersTable
                         stickers={stickers}
