@@ -2,7 +2,7 @@ services:
   v7-core-db:
     image: postgres:16-alpine
     container_name: v7-core-db
-    restart: always
+    restart: unless-stopped
     env_file:
       - .env
     ports:
@@ -27,7 +27,7 @@ services:
   v7-core-redis:
     image: redis:8-alpine
     container_name: v7-core-redis
-    restart: always
+    restart: unless-stopped
     env_file:
       - .env
     command: redis-server --requirepass ${REDIS_PASSWORD}
@@ -46,7 +46,7 @@ services:
   v7-core-directus:
     image: directus/directus:11
     container_name: v7-core-directus
-    restart: always
+    restart: unless-stopped
     env_file:
       - .env
     mem_limit: 1024m
@@ -106,7 +106,7 @@ services:
   v7-core-redisinsight:
     image: redis/redisinsight:2.66
     container_name: v7-core-redisinsight
-    restart: always
+    restart: unless-stopped
     env_file:
       - .env
     expose:
