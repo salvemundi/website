@@ -35,7 +35,7 @@ jobs:
         with:
           node-version: 26
       - run: npm install -g pnpm@11.8.0
-      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm install --frozen-lockfile
       - run: pnpm --filter=@salvemundi/monitoring-service type-check
       - run: pnpm --filter=@salvemundi/monitoring-service lint
 
@@ -49,7 +49,7 @@ jobs:
         with:
           node-version: 26
       - run: npm install -g pnpm@11.8.0
-      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm install --frozen-lockfile
       - run: pnpm --filter=@salvemundi/monitoring-service build
 
   deploy-monitoring:
@@ -64,7 +64,7 @@ jobs:
         with:
           node-version: 26
       - run: npm install -g pnpm@11.8.0
-      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm install --frozen-lockfile
 
       - name: Connect to NetBird VPN
         uses: Alemiz112/netbird-connect@v1
@@ -143,7 +143,5 @@ jobs:
             sleep 2
           done
 
-
           pnpm --filter=@salvemundi/monitoring-service build
           pnpm --filter=@salvemundi/monitoring-service provision
-

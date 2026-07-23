@@ -112,10 +112,10 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0(react@19.2.8)
       react:
-        specifier: ^19.2.8
+        specifier: ^19.2.7
         version: 19.2.8
       react-dom:
-        specifier: ^19.2.8
+        specifier: ^19.2.7
         version: 19.2.8(react@19.2.8)
       react-hook-form:
         specifier: ^7.82.0
@@ -165,13 +165,13 @@ importers:
         version: 9.5.12(next@16.2.11(@babel/core@7.29.7(supports-color@7.2.0))(@playwright/test@1.61.1)(@types/node@26.1.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(typescript@6.0.3)
       '@serwist/precaching':
         specifier: ^9.5.12
-        version: 9.5.12(browserslist@4.28.7)(typescript@6.0.3)
+        version: 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
       '@serwist/sw':
         specifier: ^9.5.12
-        version: 9.5.12(browserslist@4.28.7)(typescript@6.0.3)
+        version: 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
       '@serwist/webpack-plugin':
         specifier: ^9.5.12
-        version: 9.5.12(browserslist@4.28.7)(typescript@6.0.3)
+        version: 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -228,7 +228,7 @@ importers:
         version: 8.5.14
       serwist:
         specifier: ^9.5.12
-        version: 9.5.12(browserslist@4.28.7)(typescript@6.0.3)
+        version: 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -5949,7 +5949,7 @@ snapshots:
     dependencies:
       '@babel/compat-data': 7.29.7
       '@babel/helper-validator-option': 7.29.7
-      browserslist: 4.28.6
+      browserslist: 4.28.7
       lru-cache: 5.1.1
       semver: 6.3.1
 
@@ -7205,20 +7205,6 @@ snapshots:
     transitivePeerDependencies:
       - browserslist
 
-  '@serwist/build@9.5.12(browserslist@4.28.7)(typescript@6.0.3)':
-    dependencies:
-      '@serwist/utils': 9.5.12(browserslist@4.28.7)
-      common-tags: 1.8.2
-      glob: 13.0.6
-      pretty-bytes: 6.1.1
-      source-map: 0.7.6
-      type-fest: 5.8.0
-      zod: 4.4.3
-    optionalDependencies:
-      typescript: 6.0.3
-    transitivePeerDependencies:
-      - browserslist
-
   '@serwist/next@9.5.12(next@16.2.11(@babel/core@7.29.7(supports-color@7.2.0))(@playwright/test@1.61.1)(@types/node@26.1.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(typescript@6.0.3)':
     dependencies:
       '@serwist/build': 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
@@ -7238,17 +7224,17 @@ snapshots:
     transitivePeerDependencies:
       - webpack
 
-  '@serwist/precaching@9.5.12(browserslist@4.28.7)(typescript@6.0.3)':
+  '@serwist/precaching@9.5.12(browserslist@4.28.6)(typescript@6.0.3)':
     dependencies:
-      serwist: 9.5.12(browserslist@4.28.7)(typescript@6.0.3)
+      serwist: 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
     optionalDependencies:
       typescript: 6.0.3
     transitivePeerDependencies:
       - browserslist
 
-  '@serwist/sw@9.5.12(browserslist@4.28.7)(typescript@6.0.3)':
+  '@serwist/sw@9.5.12(browserslist@4.28.6)(typescript@6.0.3)':
     dependencies:
-      serwist: 9.5.12(browserslist@4.28.7)(typescript@6.0.3)
+      serwist: 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
     optionalDependencies:
       typescript: 6.0.3
     transitivePeerDependencies:
@@ -7258,25 +7244,10 @@ snapshots:
     optionalDependencies:
       browserslist: 4.28.6
 
-  '@serwist/utils@9.5.12(browserslist@4.28.7)':
-    optionalDependencies:
-      browserslist: 4.28.7
-
   '@serwist/webpack-plugin@9.5.12(browserslist@4.28.6)(typescript@6.0.3)':
     dependencies:
       '@serwist/build': 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
       '@serwist/utils': 9.5.12(browserslist@4.28.6)
-      pretty-bytes: 6.1.1
-      zod: 4.4.3
-    optionalDependencies:
-      typescript: 6.0.3
-    transitivePeerDependencies:
-      - browserslist
-
-  '@serwist/webpack-plugin@9.5.12(browserslist@4.28.7)(typescript@6.0.3)':
-    dependencies:
-      '@serwist/build': 9.5.12(browserslist@4.28.7)(typescript@6.0.3)
-      '@serwist/utils': 9.5.12(browserslist@4.28.7)
       pretty-bytes: 6.1.1
       zod: 4.4.3
     optionalDependencies:
@@ -7943,7 +7914,6 @@ snapshots:
       electron-to-chromium: 1.5.395
       node-releases: 2.0.51
       update-browserslist-db: 1.2.3(browserslist@4.28.7)
-    optional: true
 
   buffer-equal-constant-time@1.0.1: {}
 
@@ -10652,15 +10622,6 @@ snapshots:
     transitivePeerDependencies:
       - browserslist
 
-  serwist@9.5.12(browserslist@4.28.7)(typescript@6.0.3):
-    dependencies:
-      '@serwist/utils': 9.5.12(browserslist@4.28.7)
-      idb: 8.0.3
-    optionalDependencies:
-      typescript: 6.0.3
-    transitivePeerDependencies:
-      - browserslist
-
   set-blocking@2.0.0: {}
 
   set-cookie-parser@2.7.2: {}
@@ -11226,7 +11187,6 @@ snapshots:
       browserslist: 4.28.7
       escalade: 3.2.0
       picocolors: 1.1.1
-    optional: true
 
   uri-js@4.4.1:
     dependencies:
