@@ -161,95 +161,11 @@ export class KumaClient {
     }
 
     public async addMonitor(payload: Partial<KumaMonitor>): Promise<void> {
-        if (!this.socket) throw new Error("[kuma-client.ts][addMonitor] Socket is not connected.");
-
-        let settled = false;
-        let poll: ReturnType<typeof setInterval> | null = null;
-
-        const addPromise = new Promise<void>((resolve, reject) => {
-            const done = (fn: () => void) => {
-                if (settled) return;
-                settled = true;
-                if (poll) clearInterval(poll);
-                this.socket?.off("monitorList", onMonitorList);
-                fn();
-            };
-
-            const onMonitorList = (list: Record<string, KumaMonitor>) => {
-                const exists = Object.values(list).some((m) => m.name === payload.name);
-                if (exists) done(resolve);
-            };
-            this.socket?.on("monitorList", onMonitorList);
-
-            this.socket?.emit("addMonitor", payload, (res: unknown) => {
-                if (typeof res === "object" && res !== null && "ok" in res) {
-                    if ((res as SocketCallbackResponse).ok) {
-                        done(resolve);
-                    } else {
-                        done(() => reject(new Error((res as SocketCallbackResponse).msg ?? "[kuma-client.ts][addMonitor] addMonitor failed.")));
-                    }
-                }
-            });
-
-            // Fallback poll: if monitorList never fires containing our monitor
-            poll = setInterval(() => {
-                if (settled) { if (poll) clearInterval(poll); return; }
-                this.getMonitorList().then((list) => {
-                    const exists = Object.values(list).some((m) => m.name === payload.name);
-                    if (exists) done(resolve);
-                }).catch(() => {
-                    // ignore poll errors, let the outer timeout handle it
-                });
-            }, 2000);
-        });
-
-        return withTimeout(addPromise, COMMAND_TIMEOUT_MS, `addMonitor('${payload.name}')`);
+        await this.sendCommand("addMonitor", payload);
     }
 
     public async editMonitor(payload: KumaMonitor): Promise<void> {
-        if (!this.socket) throw new Error("[kuma-client.ts][editMonitor] Socket is not connected.");
-
-        let settled = false;
-        let poll: ReturnType<typeof setInterval> | null = null;
-
-        const editPromise = new Promise<void>((resolve, reject) => {
-            const done = (fn: () => void) => {
-                if (settled) return;
-                settled = true;
-                if (poll) clearInterval(poll);
-                this.socket?.off("monitorList", onMonitorList);
-                fn();
-            };
-
-            const onMonitorList = (list: Record<string, KumaMonitor>) => {
-                const exists = Object.values(list).some((m) => m.id === payload.id);
-                if (exists) done(resolve);
-            };
-            this.socket?.on("monitorList", onMonitorList);
-
-            this.socket?.emit("editMonitor", payload, (res: unknown) => {
-                if (typeof res === "object" && res !== null && "ok" in res) {
-                    if ((res as SocketCallbackResponse).ok) {
-                        done(resolve);
-                    } else {
-                        done(() => reject(new Error((res as SocketCallbackResponse).msg ?? "[kuma-client.ts][editMonitor] editMonitor failed.")));
-                    }
-                }
-            });
-
-            // Fallback poll: if monitorList never fires containing our monitor
-            poll = setInterval(() => {
-                if (settled) { if (poll) clearInterval(poll); return; }
-                this.getMonitorList().then((list) => {
-                    const exists = Object.values(list).some((m) => m.id === payload.id);
-                    if (exists) done(resolve);
-                }).catch(() => {
-                    // ignore poll errors, let the outer timeout handle it
-                });
-            }, 2000);
-        });
-
-        return withTimeout(editPromise, COMMAND_TIMEOUT_MS, `editMonitor('${payload.name}')`);
+        await this.sendCommand("editMonitor", payload);
     }
 
     public disconnect(): void {
