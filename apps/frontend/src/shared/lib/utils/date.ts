@@ -2,11 +2,12 @@ const toDate = (d: string | Date | number) => new Date(d);
 
 export function formatDate(
     date: string | Date | number | undefined | null,
-    formatStr: string = 'dd-MM-yyyy'
+    formatStr: string = 'dd-MM-yyyy',
+    fallback: string = 'Datum volgt'
 ): string {
-    if (!date) return 'Datum volgt';
+    if (!date) return fallback;
     const d = toDate(date);
-    if (isNaN(d.getTime())) return 'Datum volgt';
+    if (isNaN(d.getTime())) return fallback;
 
     switch (formatStr) {
         case 'dd-MM-yyyy':

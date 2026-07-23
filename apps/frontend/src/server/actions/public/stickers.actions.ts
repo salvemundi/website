@@ -82,7 +82,8 @@ export async function createStickerPublic(data: unknown) {
     const payload = {
         ...parsed.data,
         status: 'published',
-        user_created: session.user.id
+        user_created: session.user.id,
+        date_created: new Date().toISOString()
     };
 
     try {

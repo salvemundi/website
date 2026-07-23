@@ -118,7 +118,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                     </td>
                                     <td className="px-6 py-4 text-sm font-medium text-(--beheer-text-muted)">
                                         <span suppressHydrationWarning>
-                                            {formatDate(sticker.date_created, 'dd MMM yyyy')}
+                                            {formatDate(sticker.date_created, 'dd MMM yyyy', '-')}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-center">
