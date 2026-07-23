@@ -28,7 +28,7 @@ export default function StickerFilters({
                     value={filterCountry}
                     onChange={(e) => setFilterCountry(e.target.value)}
                     suppressHydrationWarning
-                    className="w-full bg-(--bg-main)/50 border border-(--border-color)/30 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-(--theme-purple)/50 transition-all outline-none"
+                    className="form-input w-full bg-(--bg-main)/50 border border-(--border-color)/30 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-(--theme-purple)/50 transition-all outline-none"
                 />
                 <input
                     type="text"
@@ -36,7 +36,7 @@ export default function StickerFilters({
                     value={filterCity}
                     onChange={(e) => setFilterCity(e.target.value)}
                     suppressHydrationWarning
-                    className="w-full bg-(--bg-main)/50 border border-(--border-color)/30 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-(--theme-purple)/50 transition-all outline-none"
+                    className="form-input w-full bg-(--bg-main)/50 border border-(--border-color)/30 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-(--theme-purple)/50 transition-all outline-none"
                 />
             </div>
         </div>

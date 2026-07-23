@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { X, Check } from 'lucide-react';
 import { UserBasic } from '@salvemundi/validations';
 import AdminLedenSearch from '@/components/ui/admin/AdminLedenSearch';
@@ -41,7 +40,7 @@ export default function MemberTab({
                         <button
                             type="button"
                             onClick={onClear}
-                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-90 border border-red-500/20"
+                            className="icon-button w-10 h-10 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-90 border border-red-500/20"
                             title="Selectie wissen"
                         >
                             <X className="h-4 w-4" />

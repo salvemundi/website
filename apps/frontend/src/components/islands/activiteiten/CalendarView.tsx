@@ -75,7 +75,7 @@ export default function CalendarView({
                 <div className="flex items-center gap-2">
                     <button
                         onClick={onPrevMonth}
-                        className="p-2 hover:bg-(--theme-purple)/10 rounded-full transition-colors"
+                        className="icon-button p-2 hover:bg-(--theme-purple)/10 rounded-full transition-colors"
                         aria-label="Vorige maand"
                     >
                         <ChevronLeft className="w-6 h-6" />
@@ -86,13 +86,13 @@ export default function CalendarView({
                             onSelectDay(today);
                             onGoToDate?.(today);
                         }}
-                        className="px-4 py-1.5 bg-(--theme-purple)/10 hover:bg-(--theme-purple)/20 rounded-full text-sm font-semibold transition-colors"
+                        className="tab-button px-4 py-1.5 bg-(--theme-purple)/10 hover:bg-(--theme-purple)/20 rounded-full text-sm font-semibold transition-colors"
                     >
                         Vandaag
                     </button>
                     <button
                         onClick={onNextMonth}
-                        className="p-2 hover:bg-(--theme-purple)/10 rounded-full transition-colors"
+                        className="icon-button p-2 hover:bg-(--theme-purple)/10 rounded-full transition-colors"
                         aria-label="Volgende maand"
                     >
                         <ChevronRight className="w-6 h-6" />
@@ -119,7 +119,7 @@ export default function CalendarView({
                         <div
                             key={day.toString()}
                             onClick={() => onSelectDay(day)}
-                            className={`min-h-[120px] p-2 flex flex-col gap-1 transition-colors cursor-pointer
+                            className={`max-w-30 p-2 flex flex-col gap-1 transition-colors cursor-pointer
                                 ${!isCurrentMonth ? 'bg-(--bg-soft)/50 text-(--text-muted)' : 'bg-(--bg-card)'}
                                 ${isSelected ? 'ring-2 ring-inset ring-(--theme-purple) bg-(--theme-purple)/5' : ''}
                                 hover:ring-2 hover:ring-inset hover:ring-(--theme-purple)/30
@@ -135,7 +135,7 @@ export default function CalendarView({
                                 </span>
                             </div>
 
-                            <div className="flex flex-col gap-1 mt-1 overflow-y-auto max-h-[100px] custom-scrollbar">
+                            <div className="flex flex-col gap-1 mt-1 overflow-y-auto max-h-25 custom-scrollbar">
                                 {dayEvents.map(event => (
                                     <button
                                         key={event.id}
@@ -143,7 +143,7 @@ export default function CalendarView({
                                             e.stopPropagation();
                                             onEventClick(event);
                                         }}
-                                        className="w-full text-left text-[10px] p-1.5 rounded-lg bg-(--theme-purple)/10 hover:bg-(--theme-purple)/20 text-(--theme-purple) font-bold truncate transition-all hover:scale-[1.02] border border-transparent hover:border-(--theme-purple)/20"
+                                        className="form-button w-full text-left text-[10px] p-1.5 rounded-lg bg-(--theme-purple)/10 hover:bg-(--theme-purple)/20 text-(--theme-purple) font-bold truncate transition-all hover:scale-[1.02] border border-transparent hover:border-(--theme-purple)/20"
                                         title={`${event.event_time ? event.event_time.split(':').slice(0, 2).join(':') : '00:00'} - ${event.name}`}
                                     >
                                         <span className="opacity-60 mr-1.5 font-black">{event.event_time ? event.event_time.split(':').slice(0, 2).join(':') : '00:00'}</span>

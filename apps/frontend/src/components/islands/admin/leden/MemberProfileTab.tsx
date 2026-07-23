@@ -110,7 +110,7 @@ export default function MemberProfileTab({
                     <div className="flex items-center justify-between mb-8">
                         <h3 className="text-xs font-semibold text-(--beheer-text-muted)">Gegevens</h3>
                         {hasAccess && !isEditing && (
-                            <button onClick={() => setIsEditing(true)} className="p-2 text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/10 rounded-xl transition-all cursor-pointer">
+                            <button onClick={() => setIsEditing(true)} className="icon-button p-2 text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/10 rounded-xl transition-all cursor-pointer">
                                 <Edit className="h-4 w-4" />
                             </button>
                         )}
@@ -132,16 +132,16 @@ export default function MemberProfileTab({
                                             type={field.type}
                                             value={(editData[field.key] as string) || ''}
                                             onChange={e => setEditData(prev => ({ ...prev, [field.key]: e.target.value }))}
-                                            className="w-full px-4 py-3 rounded-xl bg-(--beheer-card-soft) border border-(--beheer-border) text-sm font-semibold focus:ring-2 focus:ring-(--beheer-accent) outline-none transition-all"
+                                            className="beheer-input w-full px-4 py-3 rounded-xl bg-(--beheer-card-soft) border border-(--beheer-border) text-sm font-semibold focus:ring-2 focus:ring-(--beheer-accent) outline-none transition-all"
                                         />
                                     )}
                                 </div>
                             ))}
                             <div className="flex gap-3 pt-4">
-                                <button onClick={() => { void handleSave(); }} disabled={saving} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-(--beheer-accent) text-white rounded-xl text-xs font-semibold shadow-(--shadow-glow) hover:opacity-90 transition-all disabled:opacity-50 cursor-pointer">
+                                <button onClick={() => { void handleSave(); }} disabled={saving} className="beheer-button flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-(--beheer-accent) text-white rounded-xl text-xs font-semibold shadow-(--shadow-glow) hover:opacity-90 transition-all disabled:opacity-50 cursor-pointer">
                                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Opslaan
                                 </button>
-                                <button onClick={() => setIsEditing(false)} className="flex-1 px-4 py-3 rounded-xl text-xs font-semibold text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) transition-all border border-transparent hover:border-(--beheer-border) cursor-pointer">
+                                <button onClick={() => setIsEditing(false)} className="beheer-button flex-1 px-4 py-3 rounded-xl text-xs font-semibold text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) transition-all border border-transparent hover:border-(--beheer-border) cursor-pointer">
                                     X
                                 </button>
                             </div>

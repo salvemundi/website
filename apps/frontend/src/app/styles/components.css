@@ -1,10 +1,4 @@
-/* ==========================================================================
-   COMPONENTS.CSS — Forms, Buttons, Gradients, Admin, Dark-Mode Card Fixes
-   ========================================================================== */
-
 @layer components {
-
-    /* ── Scrollbar Utilities ─────────────────────────────────────────────── */
     .scrollbar-thin::-webkit-scrollbar {
         width: 8px;
         height: 8px;
@@ -24,7 +18,6 @@
         display: none;
     }
 
-    /* Standardized Beheer Scrollbar */
     .custom-scrollbar::-webkit-scrollbar {
         width: 6px;
     }
@@ -45,7 +38,6 @@
         background-clip: border-box;
     }
 
-    /* ── Gradient Backgrounds ──────────────────────────────────────────────── */
     .bg-gradient-theme {
         background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
     }
@@ -62,7 +54,6 @@
         color: rgba(255, 255, 255, 0.82);
     }
 
-    /* Page-header variant (no hero image) */
     .bg-gradient-theme-page-alt {
         background: linear-gradient(135deg, #f4e9f3, #e4cbe2);
     }
@@ -71,7 +62,6 @@
         background: linear-gradient(135deg, #a16ca1, #c47bbb);
     }
 
-    /* ── Form Label ─────────────────────────────────────────────────────────── */
     .form-label {
         display: block;
         font-size: var(--font-size-sm);
@@ -80,43 +70,11 @@
         color: var(--theme-purple);
     }
 
-    /* ── Form Input ─────────────────────────────────────────────────────────── */
-    .form-input {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border-radius: var(--radius-xl);
-        background-color: var(--bg-soft);
-        border: 1.5px solid var(--border-color);
-        color: var(--text-main);
-        font-weight: 500;
-        font-size: var(--font-size-base);
-        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-        appearance: none;
-    }
-
-    .form-input::placeholder {
-        color: var(--text-light);
-    }
-
-    .form-input:focus {
-        outline: none;
-        box-shadow: 0 0 0 2px var(--theme-purple);
-    }
-
-    .dark .form-input {
-        background-color: rgba(255, 255, 255, 0.05);
-        border-color: rgba(255, 255, 255, 0.1);
-        color: var(--color-white);
-    }
-
-    /* Autofill management moved to dedicated autofill.css for global stability */
-
     textarea.form-input {
         min-height: 100px;
         resize: vertical;
     }
 
-    /* Select — custom arrow via inline SVG (avoids OS-default arrow) */
     select.form-input {
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a4539b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
         background-position: right 1rem center;
@@ -134,42 +92,8 @@
         color: var(--text-main);
     }
 
-    /* ── Form Button ─────────────────────────────────────────────────────────── */
-    .form-button {
-        width: 100%;
-        padding: 1rem 1.5rem;
-        border-radius: var(--radius-xl);
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        border: none;
-        font-size: var(--font-size-base);
-        background-color: var(--theme-purple);
-        color: var(--color-white);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .form-button:hover:not(:disabled) {
-        transform: scale(1.02);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .form-button:active:not(:disabled) {
-        transform: scale(0.98);
-    }
-
-    .form-button:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
-
-    /* ── Form Title ─────────────────────────────────────────────────────────── */
     .form-title {
-        font-size: var(--font-size-3xl); /* Fluid 1.5rem to 2.25rem */
+        font-size: var(--font-size-3xl);
         font-weight: 900;
         color: var(--color-purple-700);
         letter-spacing: -0.025em;
@@ -180,18 +104,6 @@
         color: var(--color-purple-300);
     }
 
-    /* Inverted variant for gradient-themed sections */
-    .bg-gradient-theme .form-button {
-        background-color: var(--color-white);
-        color: var(--color-purple-800);
-    }
-
-    .bg-gradient-theme .form-button:hover:not(:disabled) {
-        background-color: var(--color-white-soft);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-    }
-
-    /* ── Admin Utilities ────────────────────────────────────────────────────── */
     .bg-admin-card {
         background-color: var(--theme-admin-card);
     }
@@ -220,7 +132,6 @@
         background-color: var(--theme-admin-hover);
     }
 
-    /* ── Dark Mode — Card Contrast Fix ─────────────────────────────────────── */
     .dark :is(.activity-card, .card, .card-activity, .activity, .beheer-activiteit, .directus-card) {
         background-color: var(--bg-card);
         border: 1px solid var(--border-color);
@@ -230,13 +141,11 @@
         backdrop-filter: blur(4px);
     }
 
-    /* ── Sponsors Stabilization ────────────────────────────────────────── */
     .sponsors-scroll-track {
         height: 128px !important;
     }
 }
 
-/* ── Squircle Design (Apple Style) ────────────────────────────────────────── */
 .squircle {
     border-radius: 1.5rem;
     @supports (corner-shape: squircle) {
@@ -258,7 +167,6 @@
     }
 }
 
-/* ── Beheer Dropdowns & Selects ────────────────────────────────────────── */
 select {
     color-scheme: light;
 }

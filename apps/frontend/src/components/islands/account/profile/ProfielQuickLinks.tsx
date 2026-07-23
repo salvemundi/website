@@ -17,7 +17,7 @@ export default function ProfielQuickLinks({ user = {} }: ProfielQuickLinksProps)
                 <QuickLink
                     label="Lidmaatschap"
                     icon={<CreditCard className="h-6 w-6" />}
-                    href="/profiel/lidmaatschap"
+                    href="/lidmaatschap"
                 />
                 <QuickLink
                     label="Transacties"

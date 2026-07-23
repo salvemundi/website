@@ -28,7 +28,6 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                 return;
             }
 
-            // The lightbox only contains a single focusable control, so keep focus pinned there.
             if (e.key === 'Tab') {
                 e.preventDefault();
                 closeButtonRef.current?.focus();
@@ -59,7 +58,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
             <button
                 type="button"
                 onClick={() => setLightboxOpen(true)}
-                className="relative w-full aspect-square rounded-[1.75rem] overflow-hidden bg-(--bg-soft) block cursor-zoom-in"
+                className="form-button relative w-full aspect-square rounded-[1.75rem] overflow-hidden bg-(--bg-soft) block cursor-zoom-in"
                 aria-label={`${productName} - vergroot media ${activeIndex + 1}`}
             >
                 <MediaAsset
@@ -79,7 +78,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                             key={item.id}
                             type="button"
                             onClick={() => setActiveIndex(idx)}
-                            className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-colors ${idx === activeIndex ? 'border-(--theme-purple)' : 'border-transparent hover:border-(--border-color)'}`}
+                            className={`form-button relative aspect-square rounded-xl overflow-hidden border-2 transition-colors ${idx === activeIndex ? 'border-(--theme-purple)' : 'border-transparent hover:border-(--border-color)'}`}
                             aria-label={`Bekijk media ${idx + 1}`}
                             aria-current={idx === activeIndex}
                         >
@@ -108,7 +107,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                     <button
                         ref={closeButtonRef}
                         onClick={() => setLightboxOpen(false)}
-                        className="absolute top-4 right-4 z-50 p-2 rounded-full bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground backdrop-blur-sm transition-colors border border-border"
+                        className="form-button absolute top-4 right-4 z-50 p-2 rounded-full bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground backdrop-blur-sm transition-colors border border-border"
                         aria-label="Sluiten"
                     >
                         ×

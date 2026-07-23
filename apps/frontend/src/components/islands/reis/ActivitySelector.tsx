@@ -92,7 +92,7 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
 
                                 <button
                                     onClick={() => handleToggleActivity(activity.id as number)}
-                                    className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 whitespace-nowrap ${
+                                    className={`form-button px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 whitespace-nowrap ${
                                         isSelected
                                         ? 'bg-theme-purple text-white shadow-md'
                                         : 'bg-white/10 text-white hover:bg-white/20'
@@ -125,7 +125,7 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
                                                 <button
                                                     key={optId}
                                                     onClick={() => handleOptionToggle(activity.id as number, optId, activity.max_selections || 0)}
-                                                    className={`flex items-center justify-between p-3 rounded-xl border text-sm font-medium transition-all ${
+                                                    className={`form-button flex items-center justify-between p-3 rounded-xl border text-sm font-medium transition-all ${
                                                         isOptSelected
                                                         ? 'bg-white/10 border-theme-purple/50 text-white'
                                                         : 'bg-transparent border-white/5 text-gray-400 hover:border-white/20'

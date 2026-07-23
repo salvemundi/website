@@ -133,7 +133,7 @@ export default function LogsTab({
                             <button
                                 key={f.id}
                                 onClick={() => setStatusFilter(f.id as typeof statusFilter)}
-                                className={`px-3 py-1 rounded-lg text-[11px] font-semibold transition-all border ${statusFilter === f.id
+                                className={`tab-button px-3 py-1 rounded-lg text-[11px] font-semibold transition-all border ${statusFilter === f.id
                                     ? 'bg-(--beheer-accent)/10 text-(--beheer-accent) border-(--beheer-accent)/20'
                                     : 'text-(--beheer-text-muted) border-transparent hover:bg-(--beheer-card-soft)'
                                     }`}
@@ -150,7 +150,7 @@ export default function LogsTab({
                     </span>
                     <button
                         onClick={onRefresh}
-                        className="p-2 text-(--beheer-text-muted) hover:text-(--beheer-accent) transition-colors"
+                        className="icon-button p-2 text-(--beheer-text-muted) hover:text-(--beheer-accent) transition-colors"
                     >
                         <RefreshCw className="h-5 w-5" />
                     </button>
@@ -164,7 +164,7 @@ export default function LogsTab({
                             <th className="p-4">Type</th>
                             <th className="p-4">Context</th>
                             <th className="p-4">Admin</th>
-                            <th className="p-4 min-w-[200px]">Details</th>
+                            <th className="p-4 min-w-5">Details</th>
                             <th className="p-4 text-center">Status</th>
                         </tr>
                     </thead>
@@ -218,7 +218,7 @@ export default function LogsTab({
                                                                 {context}
                                                             </span>
                                                             {contextName && (
-                                                                <span className="text-[10px] text-(--beheer-text-muted) truncate max-w-[120px]" title={contextName}>
+                                                                <span className="text-[10px] text-(--beheer-text-muted) truncate max-w-30" title={contextName}>
                                                                     {contextName}
                                                                 </span>
                                                             )}
@@ -244,7 +244,7 @@ export default function LogsTab({
                                             })()}
                                         </td>
                                         <td className="p-4">
-                                            <div className="text-xs font-medium text-(--beheer-text-muted) tracking-tight max-w-[280px] break-all">
+                                            <div className="text-xs font-medium text-(--beheer-text-muted) tracking-tight max-w-70 break-all">
                                                 {log.payload && typeof log.payload === 'object' ? (
                                                     log.type === 'system_sync_summary' ? (
                                                         <div className="space-y-1">
@@ -306,13 +306,13 @@ export default function LogsTab({
                                                                         <div key={key} className="flex flex-col gap-0.5">
                                                                             <div className="flex flex-wrap items-center gap-1">
                                                                                 <span className="opacity-50 font-semibold">{key}:</span>
-                                                                                {isComplex ? (
+                                                                                 {isComplex ? (
                                                                                     <button
                                                                                         onClick={(e) => {
                                                                                             e.stopPropagation();
                                                                                             toggleExpand(log.id);
                                                                                         }}
-                                                                                        className="px-2 py-0.5 bg-(--beheer-accent)/10 hover:bg-(--beheer-accent)/20 text-(--beheer-accent) rounded text-[10px] font-semibold transition-all active:scale-95 flex items-center gap-1"
+                                                                                        className="beheer-button px-2 py-0.5 bg-(--beheer-accent)/10 hover:bg-(--beheer-accent)/20 text-(--beheer-accent) rounded text-[10px] font-semibold transition-all active:scale-95 flex items-center gap-1"
                                                                                     >
                                                                                         {expandedLogs.has(log.id) ? 'Verberg details' : 'Toon details'}
                                                                                     </button>
@@ -343,7 +343,7 @@ export default function LogsTab({
                                                     <button
                                                         onClick={() => { void handleAcknowledge(log.id); }}
                                                         disabled={acknowledging === log.id}
-                                                        className="text-[10px] text-(--beheer-accent) hover:text-(--beheer-accent)/80 hover:underline disabled:opacity-50"
+                                                        className="beheer-button text-[10px] text-(--beheer-accent) hover:text-(--beheer-accent)/80 hover:underline disabled:opacity-50"
                                                     >
                                                         {acknowledging === log.id ? 'Bezig...' : 'Markeer als gezien'}
                                                     </button>
@@ -367,12 +367,12 @@ export default function LogsTab({
                                                                 void navigator.clipboard.writeText(JSON.stringify(log.payload, null, 2));
                                                                 showToast('Gekopieerd naar klembord', 'success');
                                                             }}
-                                                            className="px-3 py-1 bg-(--beheer-card-bg) border border-(--beheer-border) hover:bg-(--beheer-card-soft) text-xs rounded-lg font-semibold text-(--beheer-text) transition-all flex items-center gap-1 active:scale-95"
+                                                            className="beheer-button px-3 py-1 bg-(--beheer-card-bg) border border-(--beheer-border) hover:bg-(--beheer-card-soft) text-xs rounded-lg font-semibold text-(--beheer-text) transition-all flex items-center gap-1 active:scale-95"
                                                         >
                                                             Kopieer JSON
                                                         </button>
                                                     </div>
-                                                    <pre className="text-xs p-4 bg-(--beheer-card-bg) border border-(--beheer-border)/80 rounded-xl overflow-x-auto text-(--beheer-text) font-mono max-h-[350px] leading-relaxed shadow-inner break-all whitespace-pre-wrap md:whitespace-pre">
+                                                    <pre className="text-xs p-4 bg-(--beheer-card-bg) border border-(--beheer-border)/80 rounded-xl overflow-x-auto text-(--beheer-text) font-mono max-h-87.5 leading-relaxed shadow-inner break-all whitespace-pre-wrap md:whitespace-pre">
                                                         {JSON.stringify(log.payload, null, 2)}
                                                     </pre>
                                                 </div>
@@ -394,7 +394,7 @@ export default function LogsTab({
                 <div className="p-4 border-t border-(--beheer-border)/50 flex justify-center">
                     <button
                         onClick={onLoadMore}
-                        className="px-6 py-2 bg-(--beheer-accent)/10 text-(--beheer-accent) rounded-xl text-xs font-semibold hover:bg-(--beheer-accent)/20 transition-all border border-(--beheer-accent)/20 active:scale-95"
+                        className="beheer-button px-6 py-2 bg-(--beheer-accent)/10 text-(--beheer-accent) rounded-xl text-xs font-semibold hover:bg-(--beheer-accent)/20 transition-all border border-(--beheer-accent)/20 active:scale-95"
                     >
                         Meer laden
                     </button>

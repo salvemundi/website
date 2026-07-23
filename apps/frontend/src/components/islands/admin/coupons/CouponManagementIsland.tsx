@@ -130,7 +130,7 @@ export default function CouponManagementIsland({
                 actions={
                     <button
                         onClick={() => setIsAdding(true)}
-                        className="flex items-center justify-center gap-1.5 px-4 py-2 bg-theme-purple text-white rounded-xl squircle text-xs font-semibold shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 whitespace-nowrap cursor-pointer"
+                        className="beheer-button flex items-center justify-center gap-1.5 px-4 py-2 bg-theme-purple text-white rounded-xl squircle text-xs font-semibold shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 whitespace-nowrap cursor-pointer"
                     >
                         <Plus className="h-4 w-4" />
                         <span>Nieuwe Coupon</span>
@@ -207,7 +207,7 @@ export default function CouponManagementIsland({
                 <div className="mt-12 space-y-4">
                     <button
                         onClick={() => setShowExpired(!showExpired)}
-                        className="flex items-center gap-4 text-(--beheer-text-muted) hover:text-(--beheer-text) transition-all group cursor-pointer border-l-4 border-slate-500 pl-4 py-1"
+                        className="beheer-button flex items-center gap-4 text-(--beheer-text-muted) hover:text-(--beheer-text) transition-all group cursor-pointer border-l-4 border-slate-500 pl-4 py-1"
                     >
                         <h2 className="text-sm font-semibold flex items-center gap-3">
                             {showExpired ? <ToggleRight className="h-5 w-5 text-(--beheer-accent)" /> : <ToggleLeft className="h-5 w-5" />}

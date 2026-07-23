@@ -98,7 +98,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                             <button
                                 onClick={handleClear}
                                 disabled={isPending}
-                                className="flex items-center gap-2 px-4 py-2 bg-(--beheer-inactive)/10 text-(--beheer-inactive) border border-(--beheer-inactive)/20 rounded-(--beheer-radius) text-base font-semibold hover:bg-(--beheer-inactive) hover:text-white transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                                className="beheer-button flex items-center gap-2 px-4 py-2 bg-(--beheer-inactive)/10 text-(--beheer-inactive) border border-(--beheer-inactive)/20 rounded-(--beheer-radius) text-base font-semibold hover:bg-(--beheer-inactive) hover:text-white transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                             >
                                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash className="h-4 w-4" />}
                                 <span className="hidden md:inline">Stop Testen</span>
@@ -152,7 +152,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                                     value={token}
                                     onChange={(e) => setToken(e.target.value)}
                                     placeholder="Plak hier de token..."
-                                    className={`w-full bg-(--beheer-card-bg) border rounded-(--beheer-radius) px-(--beheer-btn-px) py-(--beheer-btn-py) text-(--beheer-text) font-semibold placeholder:text-(--beheer-text-muted) focus:outline-none focus:ring-2 transition-all ${status === 'error' ? 'border-(--beheer-inactive)/50 focus:ring-(--beheer-inactive)/20' : 'border-(--beheer-border) focus:ring-(--beheer-accent)/20 focus:border-(--beheer-accent)'}`}
+                                    className={`beheer-input w-full bg-(--beheer-card-bg) border rounded-(--beheer-radius) px-(--beheer-btn-px) py-(--beheer-btn-py) text-(--beheer-text) font-semibold placeholder:text-(--beheer-text-muted) focus:outline-none focus:ring-2 transition-all ${status === 'error' ? 'border-(--beheer-inactive)/50 focus:ring-(--beheer-inactive)/20' : 'border-(--beheer-border) focus:ring-(--beheer-accent)/20 focus:border-(--beheer-accent)'}`}
                                     disabled={isPending}
                                     autoComplete="off"
                                     suppressHydrationWarning

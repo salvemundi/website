@@ -120,7 +120,7 @@ export default function CouponRow({
                                 onClick={() => onToggle(coupon)}
                                 disabled={isToggling}
                                 title={coupon.is_active ? 'Deactiveren' : 'Activeren'}
-                                className={`p-3 rounded-xl transition-all cursor-pointer ${coupon.is_active ? 'text-emerald-500 hover:bg-emerald-500/10' : 'text-slate-400 hover:bg-slate-500/10'}`}
+                                className={`icon-button p-3 rounded-xl transition-all cursor-pointer ${coupon.is_active ? 'text-emerald-500 hover:bg-emerald-500/10' : 'text-slate-400 hover:bg-slate-500/10'}`}
                             >
                                 {isToggling
                                     ? <Loader2 className="h-5 w-5 animate-spin" />
@@ -132,7 +132,7 @@ export default function CouponRow({
                                 onClick={() => onDelete(coupon.id)}
                                 disabled={isDeleting}
                                 title="Verwijderen"
-                                className="p-3 text-(--beheer-text-muted) hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer"
+                                className="icon-button p-3 text-(--beheer-text-muted) hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer"
                             >
                                 {isDeleting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash className="h-5 w-5" />}
                             </button>

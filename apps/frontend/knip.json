@@ -1,0 +1,23 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/app/**/page.{ts,tsx}",
+    "src/app/**/layout.{ts,tsx}",
+    "src/app/**/route.{ts,tsx}",
+    "src/app/**/error.{ts,tsx}",
+    "src/app/**/not-found.{ts,tsx}",
+    "src/sw.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}"
+  ],
+  "ignoreDependencies": [
+    "@tailwindcss/typography",
+    "@serwist/sw",
+    "@serwist/webpack-plugin"
+  ],
+  "exclude": [
+    "exports",
+    "types"
+  ]
+}

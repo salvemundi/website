@@ -112,7 +112,7 @@ export default function SystemManagementIsland({
                         <button
                             onClick={() => setActiveTab('status')}
                             className={cn(
-                                "flex-1 sm:flex-none px-6 py-2.5 text-[10px] font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5",
+                                "tab-button flex-1 sm:flex-none px-6 py-2.5 text-[10px] font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5",
                                 activeTab === 'status'
                                     ? "bg-(--beheer-card-bg) text-(--beheer-accent) shadow-sm border border-(--beheer-border)"
                                     : "text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg)/40"
@@ -124,7 +124,7 @@ export default function SystemManagementIsland({
                         <button
                             onClick={() => setActiveTab('automation')}
                             className={cn(
-                                "flex-1 sm:flex-none px-6 py-2.5 text-[10px] font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5",
+                                "tab-button flex-1 sm:flex-none px-6 py-2.5 text-[10px] font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5",
                                 activeTab === 'automation'
                                     ? "bg-(--beheer-card-bg) text-(--beheer-accent) shadow-sm border border-(--beheer-border)"
                                     : "text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg)/40"
@@ -138,7 +138,7 @@ export default function SystemManagementIsland({
                     <button
                         onClick={() => { void fetchStatus(); }}
                         disabled={isRefreshing}
-                        className="flex items-center justify-center gap-2 px-8 py-3 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-2xl text-[10px] font-semibold hover:border-(--beheer-accent)/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                        className="beheer-button flex items-center justify-center gap-2 px-8 py-3 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-2xl text-[10px] font-semibold hover:border-(--beheer-accent)/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                     >
                         <RefreshCw className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")} />
                         Update Status

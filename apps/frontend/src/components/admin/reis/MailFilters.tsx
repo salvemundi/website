@@ -87,7 +87,7 @@ export default function MailFilters({
                             placeholder="Zoek deelnemer..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-(--bg-main)/50 hover:bg-(--bg-main) border border-(--beheer-border)/50 rounded-2xl text-xs font-semibold text-(--beheer-text) placeholder:text-(--beheer-text-muted)/50 focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main) transition-all shadow-inner outline-none"
+                            className="beheer-input w-full pl-12 pr-4 py-3 bg-(--bg-main)/50 hover:bg-(--bg-main) border border-(--beheer-border)/50 rounded-2xl text-xs font-semibold text-(--beheer-text) placeholder:text-(--beheer-text-muted)/50 focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main) transition-all shadow-inner outline-none"
                         />
                     </div>
                 </div>
@@ -111,7 +111,7 @@ export default function MailFilters({
 
             {/* Geselecteerde Ontvangers */}
             <Card title="Geselecteerde Ontvangers" icon={<Users className="h-4 w-4" />}>
-                <div className="max-h-[250px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                <div className="max-h-62.5 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
                     {filteredRecipients.length === 0 ? (
                         <p className="text-[10px] text-(--beheer-text-muted) opacity-50 italic text-center py-4">
                             Geen ontvangers geselecteerd

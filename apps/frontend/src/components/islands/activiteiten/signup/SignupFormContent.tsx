@@ -114,7 +114,7 @@ export default function SignupFormContent({
                     <button
                         type="submit"
                         disabled={isPending}
-                        className="w-full relative group py-4 bg-gradient-to-br from-theme-purple via-purple-600 to-theme-purple bg-[length:200%_auto] enabled:hover:bg-[position:right_center] text-white font-black rounded-2xl shadow-xl shadow-theme-purple/20 enabled:hover:shadow-2xl enabled:hover:shadow-theme-purple/40 enabled:hover:-translate-y-1 enabled:active:scale-95 transition-all duration-500 disabled:opacity-70"
+                        className="form-button w-full relative group py-4 bg-linear-to-br from-theme-purple via-purple-600 to-theme-purple bg-size-[200%_auto] enabled:hover:bg-position-[right_center] text-white font-black rounded-2xl shadow-xl shadow-theme-purple/20 enabled:hover:shadow-2xl enabled:hover:shadow-theme-purple/40 enabled:hover:-translate-y-1 enabled:active:scale-95 transition-all duration-500 disabled:opacity-70"
                     >
                         <div className="flex items-center justify-center gap-3">
                             {isPending ? (

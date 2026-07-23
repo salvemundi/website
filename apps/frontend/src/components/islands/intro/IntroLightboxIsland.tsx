@@ -77,7 +77,7 @@ export const IntroLightboxIsland = () => {
                 >
                     <button
                         onClick={closeLightbox}
-                        className="absolute top-4 right-4 z-50 p-2 rounded-full bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground backdrop-blur-sm transition-colors border border-border"
+                        className="icon-button absolute top-4 right-4 z-50 p-2 rounded-full bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground backdrop-blur-sm transition-colors border border-border"
                         aria-label="Sluiten"
                     >
                         ×

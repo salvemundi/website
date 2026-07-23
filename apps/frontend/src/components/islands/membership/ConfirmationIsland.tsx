@@ -74,7 +74,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
                         </p>
                         <button
                             onClick={() => router.push('/lidmaatschap')}
-                            className="bg-theme-purple dark:bg-purple-500 text-white font-bold py-4 px-8 rounded-2xl shadow-lg hover:scale-105 transition-transform"
+                            className="form-button bg-theme-purple dark:bg-purple-500 text-white font-bold py-4 px-8 rounded-2xl shadow-lg hover:scale-105 transition-transform"
                         >
                             Opnieuw proberen
                         </button>
@@ -105,7 +105,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
                 {status === 'paid' && (
                     <button
                         onClick={() => router.push('/profiel')}
-                        className="flex items-center justify-center gap-2 bg-theme-purple text-white font-bold py-4 px-8 rounded-2xl shadow-glow transition-all hover:scale-105"
+                        className="form-button flex items-center justify-center gap-2 bg-theme-purple text-white font-bold py-4 px-8 rounded-2xl shadow-glow transition-all hover:scale-105"
                     >
                         <User className="w-5 h-5" />
                         Naar mijn account
@@ -113,7 +113,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
                 )}
                 <button
                     onClick={() => router.push('/')}
-                    className="flex items-center justify-center gap-2 bg-purple-50 dark:bg-white/5 text-theme-purple dark:text-purple-400 font-bold py-4 px-8 rounded-2xl border border-purple-100 dark:border-white/10 transition-all hover:bg-purple-100 dark:hover:bg-white/10"
+                    className="form-button flex items-center justify-center gap-2 bg-purple-50 dark:bg-white/5 text-theme-purple dark:text-purple-400 font-bold py-4 px-8 rounded-2xl border border-purple-100 dark:border-white/10 transition-all hover:bg-purple-100 dark:hover:bg-white/10"
                 >
                     <Home className="w-5 h-5" />
                     Terug naar Home

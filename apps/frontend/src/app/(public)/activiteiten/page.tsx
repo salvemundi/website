@@ -21,6 +21,9 @@ export default async function ActivitiesPage() {
         ? viewModeCookie
         : 'list';
 
+    const showPastCookie = cookieStore.get('activities_show_past')?.value;
+    const initialShowPast = showPastCookie === 'true';
+
     const events = await getActivities(email);
     const serverTime = new Date().toISOString();
 
@@ -33,7 +36,12 @@ export default async function ActivitiesPage() {
             </div>
 
             <main className="w-full px-4 py-4 sm:py-6 md:py-8 max-w-7xl mx-auto">
-                <ActivitiesProviderIsland events={events} serverTime={serverTime} initialViewMode={initialViewMode} />
+                <ActivitiesProviderIsland 
+                    events={events} 
+                    serverTime={serverTime} 
+                    initialViewMode={initialViewMode} 
+                    initialShowPast={initialShowPast}
+                />
             </main>
         </div>
     );

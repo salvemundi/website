@@ -67,8 +67,8 @@ export default function ReisFormSidebar({
                                 unoptimized
                             />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-white text-slate-900 p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-4 w-4" /></button>
-                                <button type="button" onClick={onRemoveImage} className="bg-red-500 text-white p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-4 w-4" /></button>
+                                <button type="button" onClick={() => fileInputRef.current?.click()} className="icon-button bg-white text-slate-900 p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-4 w-4" /></button>
+                                <button type="button" onClick={onRemoveImage} className="icon-button bg-red-500 text-white p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-4 w-4" /></button>
                             </div>
                             <input ref={fileInputRef} type="file" name="image_file" accept="image/*,video/*" onChange={onImageChange} className="hidden" />
                         </div>
@@ -139,7 +139,7 @@ export default function ReisFormSidebar({
                 <button 
                     type="submit" 
                     disabled={pending} 
-                    className="w-full bg-(--beheer-accent) text-white px-8 py-4 rounded-xl font-semibold tracking-widest text-[10px] shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 group border border-white/10"
+                    className="form-button w-full bg-(--beheer-accent) text-white px-8 py-4 rounded-xl font-semibold tracking-widest text-[10px] shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 group border border-white/10"
                 >
                     {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 group-hover:scale-110 transition-transform" />}
                     <span>{pending ? 'Bezig...' : isAdding ? 'Reis Aanmaken' : 'Wijzigingen Opslaan'}</span>
@@ -148,7 +148,7 @@ export default function ReisFormSidebar({
                 <button 
                     type="button" 
                     onClick={onCancel} 
-                    className="w-full px-8 py-4 rounded-xl font-semibold tracking-widest text-[10px] border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-all cursor-pointer"
+                    className="beheer-button w-full px-8 py-4 rounded-xl font-semibold tracking-widest text-[10px] border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-all cursor-pointer"
                 >
                     Annuleren
                 </button>

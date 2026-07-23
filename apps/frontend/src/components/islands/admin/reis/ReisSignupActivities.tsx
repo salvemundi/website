@@ -52,7 +52,7 @@ export default function SignupActivities({
                                 key={activity.id}
                                 type="button"
                                 onClick={() => onToggleActivity(activity.id as number)}
-                                className={`w-full group relative flex items-center justify-between p-3 rounded-xl border transition-all duration-300 ${
+                                className={`beheer-button w-full group relative flex items-center justify-between p-3 rounded-xl border transition-all duration-300 ${
                                     isSelected 
                                     ? 'bg-(--beheer-accent)/10 border-(--beheer-accent)/30 shadow-sm' 
                                     : 'bg-(--bg-main)/40 border-(--beheer-border)/30 hover:border-(--beheer-accent)/40'
@@ -91,7 +91,7 @@ export default function SignupActivities({
                     type="button"
                     onClick={onUpdate}
                     disabled={isUpdating}
-                    className="mt-8 w-full py-4 bg-(--beheer-accent)/5 hover:bg-(--beheer-accent)/10 text-(--beheer-accent) rounded-2xl font-semibold text-[10px] transition-all flex items-center justify-center gap-3 border border-(--beheer-accent)/10 hover:border-(--beheer-accent)/30 active:scale-95"
+                    className="beheer-button mt-8 w-full py-4 bg-(--beheer-accent)/5 hover:bg-(--beheer-accent)/10 text-(--beheer-accent) rounded-2xl font-semibold text-[10px] transition-all flex items-center justify-center gap-3 border border-(--beheer-accent)/10 hover:border-(--beheer-accent)/30 active:scale-95"
                 >
                     {isUpdating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
                     <span>Activiteiten Opslaan</span>

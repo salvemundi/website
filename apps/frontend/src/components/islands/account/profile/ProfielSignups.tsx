@@ -32,7 +32,7 @@ export default function ProfielSignups({
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowPastEvents((previousValue) => !previousValue)}
-                        className="inline-flex items-center justify-center rounded-xl bg-purple-50 dark:bg-white/5 px-4 py-2 text-[10px] font-black uppercase text-purple-700 dark:text-white hover:bg-purple-100 dark:hover:bg-white/10 transition border border-purple-100 dark:border-white/10 disabled:opacity-50"
+                        className="tab-button inline-flex items-center justify-center rounded-xl bg-purple-50 dark:bg-white/5 px-4 py-2 text-[10px] font-black uppercase text-purple-700 dark:text-white hover:bg-purple-100 dark:hover:bg-white/10 transition border border-purple-100 dark:border-white/10 disabled:opacity-50"
                     >
                         {showPastEvents ? "Verberg oude" : "Toon oude"}
                     </button>

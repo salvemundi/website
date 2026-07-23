@@ -141,7 +141,7 @@ export default function GroupCard({
                                         />
                                         <div className="flex flex-col min-w-0">
                                             <span
-                                                className="font-bold text-amber-700 dark:text-amber-300 truncate max-w-[130px] sm:max-w-[170px]"
+                                                className="font-bold text-amber-700 dark:text-amber-300 truncate max-w-32.5 sm:max-w-42.5"
                                                 title={leader.name}
                                             >
                                                 {leader.name}
@@ -154,7 +154,7 @@ export default function GroupCard({
                                     <button
                                         type="button"
                                         onClick={() => onRemoveLeader?.(groupName, leader)}
-                                        className="p-1 rounded text-amber-600 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+                                        className="icon-button p-1 rounded text-amber-600 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer opacity-0 group-hover:opacity-100"
                                         title="Verwijder groepsleider"
                                     >
                                         <X className="h-3.5 w-3.5" />
@@ -177,12 +177,12 @@ export default function GroupCard({
                                 >
                                     <div className="flex flex-col min-w-0">
                                         <span
-                                            className="font-semibold text-(--text-main) truncate max-w-[130px] sm:max-w-[170px]"
+                                            className="font-semibold text-(--text-main) truncate max-w-32.5 sm:max-w-42.5"
                                             title={p.name}
                                         >
                                             {p.name}
                                         </span>
-                                        <span className="text-[9px] text-(--text-muted) truncate max-w-[120px]">
+                                        <span className="text-[9px] text-(--text-muted) truncate max-w-30">
                                             {p.association}
                                         </span>
                                     </div>
@@ -203,7 +203,7 @@ export default function GroupCard({
                             {regularParticipants.length > limit && (
                                 <button
                                     onClick={() => setIsExpanded(!isExpanded)}
-                                    className="w-full py-1.5 flex items-center justify-center gap-1.5 bg-(--bg-main)/30 hover:bg-(--bg-main)/60 border border-(--border-color)/40 rounded-lg text-[10px] font-bold text-(--text-muted) hover:text-(--text-main) transition-all col-span-full mt-2"
+                                    className="beheer-button w-full py-1.5 flex items-center justify-center gap-1.5 bg-(--bg-main)/30 hover:bg-(--bg-main)/60 border border-(--border-color)/40 rounded-lg text-[10px] font-bold text-(--text-muted) hover:text-(--text-main) transition-all col-span-full mt-2"
                                 >
                                     {isExpanded ? (
                                         <>
@@ -237,7 +237,7 @@ export default function GroupCard({
                         <button
                             type="button"
                             onClick={() => setShowAddLeaderForm(true)}
-                            className="w-full py-1.5 flex items-center justify-center gap-1 bg-(--bg-main)/30 hover:bg-(--bg-main)/60 border border-(--border-color)/30 hover:border-(--theme-purple)/40 rounded-xl text-[10px] font-bold text-(--text-muted) hover:text-(--theme-purple) transition-all cursor-pointer"
+                            className="beheer-button w-full py-1.5 flex items-center justify-center gap-1 bg-(--bg-main)/30 hover:bg-(--bg-main)/60 border border-(--border-color)/30 hover:border-(--theme-purple)/40 rounded-xl text-[10px] font-bold text-(--text-muted) hover:text-(--theme-purple) transition-all cursor-pointer"
                         >
                             <Plus className="h-3 w-3" /> Leider toevoegen
                         </button>

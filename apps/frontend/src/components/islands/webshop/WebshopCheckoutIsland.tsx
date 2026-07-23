@@ -141,7 +141,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                 </div>
             </div>
 
-            <div className="animate-in fade-in duration-300" hidden={step !== 1}>
+<div className="animate-in fade-in duration-300" hidden={step !== 1}>
                 <div className="space-y-6">
                     {product.type === 'clothing' && (
                         <FormField label="Maat" required error={errors.lines?.[0]?.variant_id?.message}>
@@ -154,7 +154,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                             key={variant.id}
                                             type="button"
                                             onClick={() => setValue('lines.0.variant_id', variant.id, { shouldValidate: true })}
-                                            className={`px-4 py-2 rounded-full text-sm font-bold border-2 transition-all ${
+                                            className={`form-button px-4 py-2 rounded-full text-sm font-bold border-2 transition-all ${
                                                 isSelected
                                                     ? 'border-(--theme-purple) bg-(--theme-purple) text-white'
                                                     : 'border-(--border-color) text-(--text-muted) hover:border-(--theme-purple)'
@@ -173,7 +173,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                             <button
                                 type="button"
                                 onClick={() => setValue('lines.0.quantity', Math.max(1, quantity - 1), { shouldValidate: true })}
-                                className="p-2 rounded-full bg-(--bg-soft) text-(--theme-purple) hover:scale-105 transition-all disabled:opacity-30"
+                                className="form-button p-2 rounded-full bg-(--bg-soft) text-(--theme-purple) hover:scale-105 transition-all disabled:opacity-30"
                                 disabled={quantity <= 1}
                                 aria-label="Verminder aantal"
                             >
@@ -183,7 +183,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                             <button
                                 type="button"
                                 onClick={() => setValue('lines.0.quantity', Math.min(MAX_QUANTITY, quantity + 1), { shouldValidate: true })}
-                                className="p-2 rounded-full bg-(--bg-soft) text-(--theme-purple) hover:scale-105 transition-all disabled:opacity-30"
+                                className="form-button p-2 rounded-full bg-(--bg-soft) text-(--theme-purple) hover:scale-105 transition-all disabled:opacity-30"
                                 disabled={quantity >= MAX_QUANTITY}
                                 aria-label="Verhoog aantal"
                             >
@@ -261,7 +261,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                 <button
                     type="button"
                     onClick={() => setStep(Math.max(1, step - 1))}
-                    className="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-sm text-(--text-muted) hover:text-(--text-main) transition-all flex items-center justify-center gap-2"
+                    className="form-button w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-sm text-(--text-muted) hover:text-(--text-main) transition-all flex items-center justify-center gap-2"
                 >
                     <ChevronLeft className="w-4 h-4" />
                     Vorige

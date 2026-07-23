@@ -44,7 +44,7 @@ export default function DistributionPreviewModal({
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 rounded-lg text-(--text-muted) hover:bg-(--bg-main)/50 hover:text-(--text-main) transition-colors cursor-pointer"
+                        className="icon-button p-2 rounded-lg text-(--text-muted) hover:bg-(--bg-main)/50 hover:text-(--text-main) transition-colors cursor-pointer"
                     >
                         <X className="h-5 w-5" />
                     </button>
@@ -97,7 +97,7 @@ export default function DistributionPreviewModal({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="w-full sm:w-auto px-6 py-2.5 bg-(--bg-card) border border-(--border-color)/30 rounded-xl text-xs font-semibold text-(--text-muted) hover:text-(--text-main) hover:bg-(--bg-main) transition-all active:scale-95 cursor-pointer text-center"
+                            className="beheer-button w-full sm:w-auto px-6 py-2.5 bg-(--bg-card) border border-(--border-color)/30 rounded-xl text-xs font-semibold text-(--text-muted) hover:text-(--text-main) hover:bg-(--bg-main) transition-all active:scale-95 cursor-pointer text-center"
                         >
                             Annuleren
                         </button>
@@ -105,7 +105,7 @@ export default function DistributionPreviewModal({
                             type="button"
                             onClick={onSave}
                             disabled={isPending}
-                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-2.5 bg-green-600 hover:opacity-90 text-white font-semibold text-xs rounded-xl shadow-lg shadow-green-600/10 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                            className="beheer-button w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-2.5 bg-green-600 hover:opacity-90 text-white font-semibold text-xs rounded-xl shadow-lg shadow-green-600/10 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
                         >
                             {isPending && <RefreshCw className="h-4 w-4 animate-spin" />}
                             Indeling Opslaan

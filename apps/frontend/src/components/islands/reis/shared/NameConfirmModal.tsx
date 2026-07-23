@@ -38,7 +38,7 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
     if (!mounted || !isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 isolate">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6 isolate">
             <div
                 className="absolute inset-0 bg-slate-950/60 backdrop-blur-xl animate-in fade-in duration-300"
                 onClick={onCancel}
@@ -61,7 +61,7 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                     </div>
                     <button
                         onClick={onCancel}
-                        className="text-(--text-muted) hover:text-(--text-main) p-2.5 rounded-full transition-all active:scale-90"
+                        className="icon-button text-(--text-muted) hover:text-(--text-main) p-2.5 rounded-full transition-all active:scale-90"
                     >
                         <X className="h-5 w-5" />
                     </button>
@@ -92,21 +92,21 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                     <div className="flex flex-col gap-3 mb-2">
                         <button
                             onClick={onConfirm}
-                            className="w-full py-5 bg-theme-purple hover:bg-theme-purple-dark text-white rounded-2xl font-bold text-sm tracking-widest transition-all flex items-center justify-center gap-3 shadow-lg shadow-theme-purple/20 group"
+                            className="form-button w-full py-5 bg-theme-purple hover:bg-theme-purple-dark text-white rounded-2xl font-bold text-sm tracking-widest transition-all flex items-center justify-center gap-3 shadow-lg shadow-theme-purple/20 group"
                         >
                             <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
                             Ja, dit klopt exact
                         </button>
                         <button
                             onClick={onCancel}
-                            className="w-full py-5 bg-(--bg-soft) hover:bg-(--bg-card) text-(--text-muted) hover:text-(--text-main) rounded-2xl font-bold text-sm tracking-widest transition-all border border-(--border-color) dark:border-white/5"
+                            className="form-button w-full py-5 bg-(--bg-soft) hover:bg-(--bg-card) text-(--text-muted) hover:text-(--text-main) rounded-2xl font-bold text-sm tracking-widest transition-all border border-(--border-color) dark:border-white/5"
                         >
                             Nee, aanpassen
                         </button>
                     </div>
                 </div>
 
-                <div className="h-1.5 w-full bg-gradient-to-r from-transparent via-theme-purple/30 to-transparent opacity-50" />
+                <div className="h-1.5 w-full bg-linear-to-r from-transparent via-theme-purple/30 to-transparent opacity-50" />
             </div>
         </div>,
         document.body

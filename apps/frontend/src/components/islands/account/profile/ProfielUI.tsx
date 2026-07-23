@@ -82,7 +82,7 @@ export function QuickLink({
             </Link>
         );
     }
-    return <button type="button" onClick={onClick} className={common}>{inner}</button>;
+    return <button type="button" onClick={onClick} className={`form-button ${common}`}>{inner}</button>;
 }
 
 export const formatForBreak = (text: string | null | undefined) => {

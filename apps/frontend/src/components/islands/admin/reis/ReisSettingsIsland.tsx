@@ -114,7 +114,7 @@ export default function ReisSettingsIsland({ initialTrips, initialSettings }: Re
                         />
                         <button
                             onClick={handleAdd}
-                            className="px-6 py-2.5 bg-(--beheer-accent) hover:opacity-90 text-white rounded-xl font-semibold tracking-widest text-[10px] shadow-lg transition-all active:scale-95 flex items-center gap-2 group border border-white/10"
+                            className="beheer-button px-6 py-2.5 bg-(--beheer-accent) hover:opacity-90 text-white rounded-xl font-semibold tracking-widest text-[10px] shadow-lg transition-all active:scale-95 flex items-center gap-2 group border border-white/10"
                         >
                             <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
                             <span>Nieuwe Reis</span>

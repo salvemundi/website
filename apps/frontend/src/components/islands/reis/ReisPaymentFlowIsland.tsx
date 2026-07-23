@@ -281,7 +281,7 @@ export default function ReisPaymentFlowIsland({
                             <div className="order-2 sm:order-1 w-full sm:w-auto">
                                 <button
                                     onClick={step === 1 ? () => window.location.href = '/reis' : () => setStep(step - 1)}
-                                    className="w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-sm text-(--text-muted) hover:text-(--text-main) transition-all flex items-center justify-center gap-2"
+                                    className="form-button w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-sm text-(--text-muted) hover:text-(--text-main) transition-all flex items-center justify-center gap-2"
                                 >
                                     <ChevronLeft className="w-4 h-4" /> 
                                     {step === 1 ? 'Annuleren' : 'Vorige'}
@@ -299,7 +299,7 @@ export default function ReisPaymentFlowIsland({
                                 <button
                                     onClick={() => void handleNext()}
                                     disabled={loading}
-                                    className={`form-button w-full sm:w-auto px-10 bg-gradient-to-br from-theme-purple to-theme-purple-dark flex items-center justify-center gap-2 ${
+                                    className={`form-button w-full sm:w-auto px-10 bg-linear-to-br from-theme-purple to-theme-purple-dark flex items-center justify-center gap-2 ${
                                         loading ? 'opacity-50 cursor-not-allowed grayscale' : ''
                                     }`}
                                 >

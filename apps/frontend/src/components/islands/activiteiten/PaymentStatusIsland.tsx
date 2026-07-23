@@ -108,7 +108,7 @@ export default function PaymentStatusIsland({
                     </p>
                     <button
                         onClick={() => window.location.href = returnUrl}
-                        className="px-10 py-5 rounded-2xl bg-white text-black font-bold text-base hover:bg-green-500 hover:text-white transition-all shadow-2xl shadow-green-500/10 flex items-center gap-2 mx-auto"
+                        className="form-button px-10 py-5 rounded-2xl bg-white text-black font-bold text-base hover:bg-green-500 hover:text-white transition-all shadow-2xl shadow-green-500/10 flex items-center gap-2 mx-auto"
                     >
                         {returnText}
                         <ChevronRight className="w-5 h-5" />
@@ -130,14 +130,14 @@ export default function PaymentStatusIsland({
                     <div className="flex flex-col gap-4">
                         <button
                             onClick={() => window.location.reload()}
-                            className="px-10 py-5 rounded-2xl bg-white text-black font-bold text-base hover:bg-orange-500 hover:text-white transition-all flex items-center gap-2 mx-auto"
+                            className="form-button px-10 py-5 rounded-2xl bg-white text-black font-bold text-base hover:bg-orange-500 hover:text-white transition-all flex items-center gap-2 mx-auto"
                         >
                             <RefreshCw className="w-5 h-5" />
                             Controleer Handmatig
                         </button>
                         <button
                             onClick={() => window.location.href = returnUrl}
-                            className="text-gray-500 text-base font-bold hover:text-white transition-all"
+                            className="form-button text-gray-500 text-base font-bold hover:text-white transition-all"
                         >
                             Ik check het later wel
                         </button>

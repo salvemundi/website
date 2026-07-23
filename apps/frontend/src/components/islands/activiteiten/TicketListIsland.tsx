@@ -62,7 +62,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                         placeholder="Tickets zoeken..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-12 pr-4 h-14 squircle bg-(--bg-card) border border-(--border-color) text-sm font-black uppercase tracking-widest focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all outline-none"
+                        className="form-input w-full pl-12 pr-4 h-14 squircle bg-(--bg-card) border border-(--border-color) text-sm font-black uppercase tracking-widest focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all outline-none"
                     />
                 </div>
                 <div className="flex gap-4">
@@ -134,7 +134,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                         >
                             <button
                                 onClick={handleCloseModal}
-                                className="absolute top-6 right-6 p-2 h-10 w-10 flex items-center justify-center rounded-full bg-black/5 hover:bg-black/10 transition-colors z-20 group"
+                                className="icon-button absolute top-6 right-6 p-2 h-10 w-10 flex items-center justify-center rounded-full bg-black/5 hover:bg-black/10 transition-colors z-20 group"
                             >
                                 <X className="h-5 w-5 text-(--text-muted) group-hover:text-(--text-main) transition-colors" />
                             </button>

@@ -102,7 +102,7 @@ export default function CommitteeDetail({
                         </a>
                         <button
                             onClick={onToggleEditing}
-                            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-xs transition-all shadow-sm active:scale-95 border ${editingDetail ? 'bg-(--beheer-accent) text-white border-(--beheer-accent)' : 'bg-(--beheer-card-soft) text-(--beheer-text) border-(--beheer-border) hover:bg-white dark:hover:bg-white/5'}`}
+                            className={`beheer-button flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-xs transition-all shadow-sm active:scale-95 border ${editingDetail ? 'bg-(--beheer-accent) text-white border-(--beheer-accent)' : 'bg-(--beheer-card-soft) text-(--beheer-text) border-(--beheer-border) hover:bg-white dark:hover:bg-white/5'}`}
                         >
                             <Settings className={`h-4 w-4 ${editingDetail ? 'animate-spin' : ''}`} /> {editingDetail ? 'Annuleren' : 'Details'}
                         </button>
@@ -119,7 +119,7 @@ export default function CommitteeDetail({
                                     onChange={e => onShortDescChange(e.target.value)}
                                     rows={2}
                                     autoComplete="off"
-                                    className="w-full px-6 py-4 rounded-xl bg-(--beheer-card-soft) border-none text-sm text-(--beheer-text) placeholder:text-(--beheer-text-muted) focus:ring-(--beheer-accent)/10 transition-all resize-none font-medium leading-relaxed"
+                                    className="beheer-input w-full px-6 py-4 rounded-xl bg-(--beheer-card-soft) border-none text-sm text-(--beheer-text) placeholder:text-(--beheer-text-muted) focus:ring-(--beheer-accent)/10 transition-all resize-none font-medium leading-relaxed"
                                     placeholder="Korte pakkende tekst over de commissie..."
                                 />
                             </div>
@@ -130,7 +130,7 @@ export default function CommitteeDetail({
                                     onChange={e => onDescChange(e.target.value)}
                                     rows={12}
                                     autoComplete="off"
-                                    className="w-full px-6 py-4 rounded-xl bg-(--beheer-card-soft) border-none text-sm text-(--beheer-text) placeholder:text-(--beheer-text-muted) focus:ring-(--beheer-accent)/10 transition-all font-mono leading-relaxed"
+                                    className="beheer-input w-full px-6 py-4 rounded-xl bg-(--beheer-card-soft) border-none text-sm text-(--beheer-text) placeholder:text-(--beheer-text-muted) focus:ring-(--beheer-accent)/10 transition-all font-mono leading-relaxed"
                                     placeholder="### Onze missie..."
                                 />
                             </div>
@@ -138,7 +138,7 @@ export default function CommitteeDetail({
                         <button
                             onClick={onSaveDetail}
                             disabled={savingDetail}
-                            className="w-full flex items-center justify-center gap-3 py-5 bg-(--beheer-accent) text-white rounded-2xl font-semibold text-sm shadow-xl shadow-(--beheer-accent)/20 hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50"
+                            className="beheer-button w-full flex items-center justify-center gap-3 py-5 bg-(--beheer-accent) text-white rounded-2xl font-semibold text-sm shadow-xl shadow-(--beheer-accent)/20 hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50"
                         >
                             {savingDetail ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
                             Wijzigingen Opslaan
@@ -220,7 +220,7 @@ export default function CommitteeDetail({
                                             <button
                                                 onClick={() => onToggleLeader(member)}
                                                 disabled={!!actionLoading}
-                                                className={`p-3 rounded-xl transition-all shadow-sm ${member.isLeader ? 'bg-amber-100 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400' : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/20 dark:hover:text-amber-400'}`}
+                                                 className={`icon-button p-3 rounded-xl transition-all shadow-sm ${member.isLeader ? 'bg-amber-100 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400' : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/20 dark:hover:text-amber-400'}`}
                                                 title="Rechten status omschakelen"
                                             >
                                                 {actionLoading === `leader-${member.entraId}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Award className="h-4 w-4" />}
@@ -230,7 +230,7 @@ export default function CommitteeDetail({
                                             <button
                                                 onClick={() => onRemoveMember(member)}
                                                 disabled={!!actionLoading}
-                                                className="p-3 bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:text-red-500 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/20 rounded-xl transition-all shadow-sm"
+                                                className="icon-button p-3 bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:text-red-500 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/20 rounded-xl transition-all shadow-sm"
                                                 title="Verwijderen uit Azure groep"
                                             >
                                                 {actionLoading === `remove-${member.entraId}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserMinus className="h-4 w-4" />}

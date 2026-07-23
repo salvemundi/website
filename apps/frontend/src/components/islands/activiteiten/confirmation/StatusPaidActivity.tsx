@@ -44,7 +44,7 @@ export default function StatusPaidActivity({
                     <div
                         key={i}
                         id={`ticket-card-${i}`}
-                        className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] min-w-[300px] max-w-[380px] p-8 rounded-[3rem] bg-(--bg-card) border border-(--border-color) shadow-xl space-y-6 relative overflow-hidden"
+                        className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] min-w-75 max-w-95 p-8 rounded-[3rem] bg-(--bg-card) border border-(--border-color) shadow-xl space-y-6 relative overflow-hidden"
                     >
                         <div className="flex flex-col items-center gap-4">
                             <p className="text-base font-semibold text-(--theme-purple)">Ticket {i + 1} / {amount}</p>
@@ -67,7 +67,7 @@ export default function StatusPaidActivity({
 
                         <button
                             onClick={() => downloadTicket(`ticket-card-${i}`, eventName)}
-                            className="absolute top-4 right-4 p-3 rounded-full bg-(--bg-soft) border border-(--border-color) text-(--text-muted) hover:bg-(--theme-purple) hover:text-white hover:scale-110 transition-all shadow-lg backdrop-blur-md"
+                            className="icon-button absolute top-4 right-4 p-3 rounded-full bg-(--bg-soft) border border-(--border-color) text-(--text-muted) hover:bg-(--theme-purple) hover:text-white hover:scale-110 transition-all shadow-lg backdrop-blur-md"
                             title="Download Ticket"
                         >
                             <Save className="h-5 w-5" />

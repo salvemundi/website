@@ -209,7 +209,7 @@ export default function LedenDetailIsland({
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                            className={`flex items-center gap-3 px-8 py-5 font-semibold text-xs transition-all border-b-2 cursor-pointer ${activeTab === tab.id
+                            className={`tab-button flex items-center gap-3 px-8 py-5 font-semibold text-xs transition-all border-b-2 cursor-pointer ${activeTab === tab.id
                                 ? 'text-(--beheer-accent) border-(--beheer-accent)'
                                 : 'text-(--beheer-text-muted) border-transparent hover:text-(--beheer-text)'
                                 }`}
@@ -220,7 +220,7 @@ export default function LedenDetailIsland({
                 ))}
             </div>
 
-            <div className="min-h-[400px]">
+            <div className="min-h-100">
                 {activeTab === 'profiel' && (
                     <MemberProfileTab
                         member={localMember}

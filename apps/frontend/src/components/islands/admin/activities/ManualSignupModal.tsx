@@ -118,7 +118,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                     </h2>
                     <button
                         onClick={onClose}
-                        className="text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg) p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border border-transparent hover:border-(--beheer-border)"
+                        className="icon-button text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg) p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border border-transparent hover:border-(--beheer-border)"
                     >
                         <X className="h-5 w-5" />
                     </button>
@@ -128,7 +128,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                     <div className="flex bg-(--beheer-card-soft) p-1.5 rounded-2xl border border-(--beheer-border) gap-1">
                         <button
                             type="button"
-                            className={`flex-1 py-2.5 text-[10px] font-semibold tracking-widest rounded-xl transition-all flex justify-center items-center gap-2.5 ${activeTab === 'member'
+                            className={`tab-button flex-1 py-2.5 text-[10px] font-semibold tracking-widest rounded-xl transition-all flex justify-center items-center gap-2.5 ${activeTab === 'member'
                                 ? 'bg-(--beheer-card-bg) text-(--beheer-accent) shadow-md border border-(--beheer-border)'
                                 : 'text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg)/40'
                                 }`}
@@ -139,7 +139,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                         </button>
                         <button
                             type="button"
-                            className={`flex-1 py-2.5 text-[10px] font-semibold tracking-widest rounded-xl transition-all flex justify-center items-center gap-2.5 ${activeTab === 'guest'
+                            className={`tab-button flex-1 py-2.5 text-[10px] font-semibold tracking-widest rounded-xl transition-all flex justify-center items-center gap-2.5 ${activeTab === 'guest'
                                 ? 'bg-(--beheer-card-bg) text-(--beheer-accent) shadow-md border border-(--beheer-border)'
                                 : 'text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg)/40'
                                 }`}
@@ -187,7 +187,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="flex-1 h-14 rounded-2xl font-semibold tracking-widest text-[10px] border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-all active:scale-[0.98] cursor-pointer"
+                                className="beheer-button flex-1 h-14 rounded-2xl font-semibold tracking-widest text-[10px] border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-all active:scale-[0.98] cursor-pointer"
                                 disabled={isLoading}
                             >
                                 Annuleren
@@ -195,7 +195,7 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                             <button
                                 type="submit"
                                 disabled={isLoading || (activeTab === 'member' && !selectedMember)}
-                                className="flex-[1.5] h-14 rounded-2xl font-semibold tracking-widest text-[10px] bg-(--beheer-accent) text-white shadow-(--shadow-glow) hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3 border border-white/10 group"
+                                className="form-button flex-[1.5] h-14 rounded-2xl font-semibold tracking-widest text-[10px] bg-(--beheer-accent) text-white shadow-(--shadow-glow) hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3 border border-white/10 group"
                             >
                                 {isLoading ? (
                                     <Loader2 className="h-5 w-5 animate-spin" />

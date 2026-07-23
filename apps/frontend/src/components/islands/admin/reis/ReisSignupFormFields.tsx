@@ -66,7 +66,7 @@ export function Input({ label, ...props }: FieldProps) {
             <label className="block text-[11px] font-semibold text-(--beheer-text-muted) group-focus-within/field:text-(--beheer-accent) transition-colors px-1 opacity-70">{label}</label>
             <input 
                 {...props} 
-                className={`w-full px-4 py-2.5 bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm border border-(--beheer-border)/40 rounded-xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main)/80 transition-all font-semibold outline-none shadow-inner placeholder:opacity-30 ${props.className || ''}`}
+                className={`beheer-input w-full px-4 py-2.5 bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm border border-(--beheer-border)/40 rounded-xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main)/80 transition-all font-semibold outline-none shadow-inner placeholder:opacity-30 ${props.className || ''}`}
             />
         </div>
     );
@@ -116,7 +116,7 @@ export function Textarea({ label, ...props }: FieldProps) {
             <label className="block text-[11px] font-semibold text-(--beheer-text-muted) group-focus-within/field:text-(--beheer-accent) transition-colors px-1 opacity-70">{label}</label>
             <textarea 
                 {...props} 
-                className="w-full px-4 py-2.5 bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm border border-(--beheer-border)/40 rounded-xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main)/80 transition-all resize-none min-h-[80px] font-semibold outline-none shadow-inner placeholder:opacity-30 leading-relaxed"
+                className="beheer-input w-full px-4 py-2.5 bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm border border-(--beheer-border)/40 rounded-xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main)/80 transition-all resize-none min-h-20 font-semibold outline-none shadow-inner placeholder:opacity-30 leading-relaxed"
             />
         </div>
     );
@@ -149,7 +149,7 @@ export function HorizontalInput({ label, name, ...props }: React.InputHTMLAttrib
                     {...props} 
                     id={id}
                     name={name}
-                    className={`w-full bg-transparent text-xs text-(--beheer-text) font-semibold outline-none placeholder:opacity-20 h-7 ${props.className || ''}`}
+                    className={`beheer-input w-full bg-transparent text-xs text-(--beheer-text) font-semibold outline-none placeholder:opacity-20 h-7 ${props.className || ''}`}
                 />
             </div>
         </div>
@@ -244,7 +244,7 @@ export function HorizontalTextarea({ label, name, ...props }: React.TextareaHTML
                 {...props} 
                 id={id}
                 name={name}
-                className="w-full bg-slate-500/5 dark:bg-black/40 rounded-xl p-2.5 text-xs text-(--beheer-text) font-semibold outline-none placeholder:opacity-20 min-h-[45px] resize-none border border-(--beheer-border)/5 transition-all focus:border-(--beheer-accent)/30"
+                className="beheer-input w-full bg-slate-500/5 dark:bg-black/40 rounded-xl p-2.5 text-xs text-(--beheer-text) font-semibold outline-none placeholder:opacity-20 min-h-11.25 resize-none border border-(--beheer-border)/5 transition-all focus:border-(--beheer-accent)/30"
             />
         </div>
     );

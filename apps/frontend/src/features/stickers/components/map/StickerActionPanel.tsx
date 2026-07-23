@@ -32,7 +32,7 @@ export default function StickerActionPanel({ user, isLocating, onPlaceSticker, c
             <button
                 onClick={onPlaceSticker}
                 disabled={isLocating}
-                className={`w-full bg-gradient-to-r from-(--theme-purple) to-orange-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all font-black uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 ${compact ? 'py-2 text-[10px] leading-tight px-3' : 'py-3 text-xs'}`}
+                className={`form-button w-full bg-linear-to-r from-(--theme-purple) to-orange-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all font-black uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 ${compact ? 'py-2 text-[10px] leading-tight px-3' : 'py-3 text-xs'}`}
             >
                 {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapIcon className="h-4 w-4 shrink-0" />}
                 <span className="whitespace-normal text-center">Plaats sticker</span>

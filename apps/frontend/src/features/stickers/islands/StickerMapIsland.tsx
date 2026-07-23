@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState, useTransition, useRef } from 'react';
+import { useEffect, useState, useTransition, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Filter, BarChart3, X } from 'lucide-react';
-
+import { Filter, BarChart3 } from 'lucide-react';
 
 import { createStickerPublic, uploadFileAction } from '@/server/actions/public/stickers.actions';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -11,13 +10,16 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 
 import StickerMap from '@/components/ui/maps/StickerMap';
 
-import StickerStats from './map/StickerStats';
-import StickerFilters from './map/StickerFilters';
-import StickerActionPanel from './map/StickerActionPanel';
-import AddStickerModal from './map/AddStickerModal';
+import StickerStats from '../components/map/StickerStats';
+import StickerFilters from '../components/map/StickerFilters';
+import StickerActionPanel from '../components/map/StickerActionPanel';
+import AddStickerModal from '../components/map/AddStickerModal';
+import { MobileOverlays } from '../components/MobileOverlays';
 
 import { type EnrichedUser } from '@/types/auth';
 import { type StickerPublic } from '@salvemundi/validations';
+import { compressStickerImage, readFileAsDataUrl } from '@/shared/lib/utils/image-compression';
+import { reverseGeocode } from '@/shared/lib/utils/geolocation';
 
 type MapSticker = Omit<StickerPublic, 'user_updated' | 'date_updated' | 'address' | 'status'>;
 
@@ -39,9 +41,6 @@ interface DirectusStickerResponse {
     date_created?: string | null;
 }
 
-import { compressStickerImage, readFileAsDataUrl } from '@/shared/lib/utils/image-compression';
-import { reverseGeocode } from '@/shared/lib/utils/geolocation';
-
 export default function StickerMapIsland({
     initialStickers,
     user,
@@ -53,17 +52,14 @@ export default function StickerMapIsland({
     const [isLocating, setIsLocating] = useState(false);
     const cameraInputRef = useRef<HTMLInputElement>(null);
 
-    // UI State
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [showMobileFilters, setShowMobileFilters] = useState(false);
     const [showMobileStats, setShowMobileStats] = useState(false);
 
-    // Filters
     const [filterCountry, setFilterCountry] = useState('');
     const [filterCity, setFilterCity] = useState('');
 
-    // Form State
     const [formData, setFormData] = useState({
         location_name: '',
         description: '',
@@ -106,15 +102,12 @@ export default function StickerMapIsland({
         setShowMobileStats(true);
     };
 
-    const handlePlaceSticker = () => {
+    const handlePlaceSticker = useCallback(() => {
         if (!user) {
             showToast("Log in om een sticker te plakken.", 'error');
             return;
         }
 
-        // On mobile we no longer immediately open the camera. Instead open the
-        // add-sticker form and try to fill location automatically — adding a photo
-        // becomes optional via the form.
         setIsLocating(true);
 
         if (!(navigator as Partial<Navigator>).geolocation) {
@@ -164,7 +157,7 @@ export default function StickerMapIsland({
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );
-    };
+    }, [user, showToast]);
 
     const searchParams = useSearchParams();
     const hasHandledAddShortcut = useRef(false);
@@ -179,8 +172,7 @@ export default function StickerMapIsland({
         const url = new URL(window.location.href);
         url.searchParams.delete('action');
         window.history.replaceState({}, '', url);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchParams]);
+    }, [searchParams, handlePlaceSticker]);
 
     const handleAutomatedFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -391,7 +383,6 @@ export default function StickerMapIsland({
         void handleAutomatedFileChange(e);
     };
 
-
     return (
         <div className="flex flex-col h-full gap-4 sm:gap-6">
             <div className="hidden md:block shrink-0">
@@ -411,13 +402,12 @@ export default function StickerMapIsland({
                     className={className}
                 />
 
-                {/* Floating Controls */}
                 <div className="absolute inset-x-0 top-4 z-90 px-4 pointer-events-none md:inset-auto md:top-4 md:left-4 md:right-auto md:w-80 md:px-0 md:bottom-auto">
                     <div className="flex items-center gap-3 md:hidden pointer-events-auto">
                         <button
                             type="button"
                             onClick={openMobileFilters}
-                            className="inline-flex flex-1 min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-bg-card/95 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-text-main shadow-2xl backdrop-blur-md whitespace-nowrap"
+                            className="form-button inline-flex flex-1 min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-bg-card/95 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-text-main shadow-2xl backdrop-blur-md whitespace-nowrap"
                         >
                             <Filter className="h-4 w-4 text-theme-purple shrink-0" />
                             Filters
@@ -425,7 +415,7 @@ export default function StickerMapIsland({
                         <button
                             type="button"
                             onClick={openMobileStats}
-                            className="inline-flex flex-1 min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-bg-card/95 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-text-main shadow-2xl backdrop-blur-md whitespace-nowrap"
+                            className="form-button inline-flex flex-1 min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-bg-card/95 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-text-main shadow-2xl backdrop-blur-md whitespace-nowrap"
                         >
                             <BarChart3 className="h-4 w-4 text-theme-purple shrink-0" />
                             Stats
@@ -459,49 +449,16 @@ export default function StickerMapIsland({
                 </div>
             </div>
 
-            {(showMobileFilters || showMobileStats) && (
-                <div className="fixed inset-0 z-210 md:hidden">
-                    <button
-                        type="button"
-                        className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
-                        onClick={closeMobileOverlays}
-                        aria-label="Sluit overlay"
-                    />
-                    <div className="absolute inset-x-0 bottom-0 max-h-[78dvh] overflow-y-auto rounded-t-4xl border-t border-white/10 bg-bg-main shadow-[0_-20px_60px_rgba(0,0,0,0.35)]">
-                        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border-color/10 bg-bg-main/95 px-4 py-4 backdrop-blur-md">
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">
-                                    Salve Mundi
-                                </p>
-                                <h2 className="text-base font-black uppercase tracking-widest text-text-main">
-                                    {showMobileFilters ? 'Filters' : 'Statistieken'}
-                                </h2>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={closeMobileOverlays}
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-bg-card text-text-main shadow-sm"
-                                aria-label="Sluit paneel"
-                            >
-                                <X className="h-4 w-4" />
-                            </button>
-                        </div>
-
-                        <div className="p-4">
-                            {showMobileFilters ? (
-                                <StickerFilters
-                                    filterCountry={filterCountry}
-                                    setFilterCountry={setFilterCountry}
-                                    filterCity={filterCity}
-                                    setFilterCity={setFilterCity}
-                                />
-                            ) : (
-                                <StickerStats stickers={stickers as unknown as StickerPublic[]} />
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+            <MobileOverlays
+                showMobileFilters={showMobileFilters}
+                showMobileStats={showMobileStats}
+                closeMobileOverlays={closeMobileOverlays}
+                filterCountry={filterCountry}
+                setFilterCountry={setFilterCountry}
+                filterCity={filterCity}
+                setFilterCity={setFilterCity}
+                stickers={stickers as unknown as StickerPublic[]}
+            />
 
             <AddStickerModal
                 show={showAddModal}
@@ -511,6 +468,7 @@ export default function StickerMapIsland({
                 formData={formData}
                 setFormData={setFormData}
                 handleImageChange={handleImageChange}
+                onRemoveImage={() => setImagePreview(null)}
                 imagePreview={imagePreview}
                 selectedLocation={selectedLocation}
                 setSelectedLocation={setSelectedLocation}
@@ -529,4 +487,3 @@ export default function StickerMapIsland({
         </div>
     );
 }
-

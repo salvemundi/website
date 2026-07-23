@@ -35,7 +35,7 @@ export default function WebshopCatalogIsland({ products }: WebshopCatalogIslandP
                         role="tab"
                         aria-selected={category === filter.value}
                         onClick={() => setCategory(filter.value)}
-                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                        className={`form-button px-4 py-2 rounded-full text-sm font-bold transition-all ${
                             category === filter.value
                                 ? 'bg-(--theme-purple) text-white shadow-lg shadow-(--theme-purple)/20'
                                 : 'bg-(--bg-soft) text-(--text-muted) hover:text-(--theme-purple)'

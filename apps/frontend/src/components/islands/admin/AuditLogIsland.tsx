@@ -234,7 +234,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-[11px] transition-all ${activeTab === tab.id ? 'bg-(--beheer-card-bg) shadow-md text-(--beheer-accent)' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
+                                className={`tab-button flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-[11px] transition-all ${activeTab === tab.id ? 'bg-(--beheer-card-bg) shadow-md text-(--beheer-accent)' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
                             >
                                 <tab.icon className="h-3 w-3" /> {tab.label}
                             </button>
@@ -253,7 +253,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         </div>
                         <button
                             onClick={() => { void toggleManualApproval(); }}
-                            className={`relative inline-flex h-5 w-10 shrink-0 items-center rounded-full transition-all focus:outline-none ${manualApproval ? 'bg-amber-500' : 'bg-green-500'}`}
+                            className={`beheer-button relative inline-flex h-5 w-10 shrink-0 items-center rounded-full transition-all focus:outline-none ${manualApproval ? 'bg-amber-500' : 'bg-green-500'}`}
                         >
                             <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${manualApproval ? 'translate-x-[1.2rem]' : 'translate-x-1'}`} />
                         </button>

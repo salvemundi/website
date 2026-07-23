@@ -43,7 +43,7 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                             type="text"
                             value={data.title || ''}
                             onChange={e => onChange({ ...data, title: e.target.value })}
-                            className={inputClass}
+                            className={`beheer-input ${inputClass}`}
                             placeholder="Titel van de blog..."
                         />
                     </Field>
@@ -52,7 +52,7 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                             type="text"
                             value={data.slug || ''}
                             onChange={e => onChange({ ...data, slug: e.target.value })}
-                            className={inputClass}
+                            className={`beheer-input ${inputClass}`}
                             placeholder="blog-titel-slug"
                         />
                     </Field>
@@ -62,7 +62,7 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                                 value={data.excerpt || ''}
                                 onChange={e => onChange({ ...data, excerpt: e.target.value })}
                                 rows={2}
-                                className={`${inputClass} min-h-[80px] resize-none`}
+                                className={`beheer-input ${inputClass} min-h-20 resize-none`}
                                 placeholder="Een korte samenvatting..."
                             />
                         </Field>
@@ -73,7 +73,7 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                                 value={data.content || ''}
                                 onChange={e => onChange({ ...data, content: e.target.value })}
                                 rows={8}
-                                className={`${inputClass} min-h-[200px] resize-none`}
+                                className={`beheer-input ${inputClass} min-h-50 resize-none`}
                                 placeholder="Schrijf hier je blog post..."
                             />
                         </Field>

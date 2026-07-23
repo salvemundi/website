@@ -2,7 +2,7 @@
   "name": "salve-mundi-v7",
   "version": "4.0.4",
   "private": true,
-  "packageManager": "pnpm@11.11.0",
+  "packageManager": "pnpm@11.15.1",
   "engines": {
     "node": ">=22.13.1"
   },

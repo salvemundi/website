@@ -18,12 +18,14 @@ interface ActivitiesProviderIslandProps {
     events?: (Activiteit & { is_signed_up?: boolean })[];
     serverTime?: string;
     initialViewMode?: 'list' | 'grid' | 'calendar';
+    initialShowPast?: boolean;
 }
 
 export default function ActivitiesProviderIsland({
     events: initialEvents = [],
     serverTime,
-    initialViewMode = 'list'
+    initialViewMode = 'list',
+    initialShowPast = false
 }: ActivitiesProviderIslandProps) {
     const router = useRouter();
     const [events] = useState<(Activiteit & { is_signed_up?: boolean })[]>(initialEvents);
@@ -35,7 +37,17 @@ export default function ActivitiesProviderIsland({
         setViewModeState(mode);
         document.cookie = `activities_view_mode=${mode}; path=/; max-age=31536000; SameSite=Lax`;
     }, []);
-    const [showPastActivities, setShowPastActivities] = useState(false);
+
+    const [showPastActivities, setShowPastActivitiesState] = useState<boolean>(initialShowPast);
+
+    const toggleShowPastActivities = useCallback(() => {
+        setShowPastActivitiesState(prev => {
+            const next = !prev;
+            document.cookie = `activities_show_past=${next}; path=/; max-age=31536000; SameSite=Lax`;
+            return next;
+        });
+    }, []);
+
     const [selectedDay, setSelectedDay] = useState<Date | null>(null);
     const [currentDate, setCurrentDate] = useState(serverTime ? new Date(serverTime) : new Date());
 
@@ -120,7 +132,7 @@ export default function ActivitiesProviderIsland({
                         <button
                             onClick={() => setViewMode('list')}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
+                                "tab-button flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
                                 viewMode === 'list'
                                     ? "bg-theme-purple text-white shadow-md shadow-theme-purple/20"
                                     : "text-theme-purple hover:bg-theme-purple/5"
@@ -132,7 +144,7 @@ export default function ActivitiesProviderIsland({
                         <button
                             onClick={() => setViewMode('grid')}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
+                                "tab-button flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
                                 viewMode === 'grid'
                                     ? "bg-theme-purple text-white shadow-md shadow-theme-purple/20"
                                     : "text-theme-purple hover:bg-theme-purple/5"
@@ -144,7 +156,7 @@ export default function ActivitiesProviderIsland({
                         <button
                             onClick={() => setViewMode('calendar')}
                             className={cn(
-                                "hidden lg:flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
+                                "tab-button hidden lg:flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all",
                                 viewMode === 'calendar'
                                     ? "bg-theme-purple text-white shadow-md shadow-theme-purple/20"
                                     : "text-theme-purple hover:bg-theme-purple/5"
@@ -156,15 +168,14 @@ export default function ActivitiesProviderIsland({
                     </div>
 
                     <button
-                        onClick={() => setShowPastActivities(!showPastActivities)}
+                        onClick={toggleShowPastActivities}
                         className={cn(
-                            "group relative inline-flex items-center justify-center gap-3 px-6 py-3 rounded-xl border transition-all active:scale-95 text-[10px] font-black uppercase tracking-widest",
+                            "tab-button group relative inline-flex items-center justify-center gap-3 px-6 py-3 rounded-xl border transition-all active:scale-95 text-[10px] font-black uppercase tracking-widest",
                             showPastActivities
                                 ? "bg-theme-purple text-white border-theme-purple shadow-lg shadow-theme-purple/20"
                                 : "bg-bg-card text-theme-purple border-border-color/30 hover:border-theme-purple/30 hover:bg-theme-purple/5"
                         )}
                     >
-                        {/* Grid container to prevent layout shifting */}
                         <span className="grid grid-cols-1 grid-rows-1">
                             <span className={cn(
                                 "col-start-1 row-start-1 transition-opacity duration-200",

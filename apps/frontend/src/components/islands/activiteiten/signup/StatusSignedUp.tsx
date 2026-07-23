@@ -51,7 +51,7 @@ export default function StatusSignedUp({
 
                         <button
                             onClick={onRetry}
-                            className="w-full h-14 bg-(--theme-purple) text-white font-semibold rounded-2xl shadow-lg shadow-(--theme-purple)/20 hover:shadow-xl hover:shadow-(--theme-purple)/40 hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-3  text-[10px] tracking-widest"
+                            className="form-button w-full h-14 bg-(--theme-purple) text-white font-semibold rounded-2xl shadow-lg shadow-(--theme-purple)/20 hover:shadow-xl hover:shadow-(--theme-purple)/40 hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-3  text-[10px] tracking-widest"
                         >
                             <CreditCard className="h-4 w-4" />
                             <span>Betaal Nu</span>

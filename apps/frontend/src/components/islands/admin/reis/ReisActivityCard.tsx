@@ -78,20 +78,20 @@ export default function ReisActivityCard({ activity, onEdit, onDelete, onViewSig
                     <div className="flex gap-3">
                         <button 
                             onClick={() => onEdit(activity)}
-                            className="flex-1 px-4 py-3 rounded-xl border border-(--beheer-border) font-semibold text-[10px] text-(--beheer-text) hover:border-(--beheer-accent) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/5 transition-all flex items-center justify-center gap-2 active:scale-95"
+                            className="beheer-button flex-1 px-4 py-3 rounded-xl border border-(--beheer-border) font-semibold text-[10px] text-(--beheer-text) hover:border-(--beheer-accent) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/5 transition-all flex items-center justify-center gap-2 active:scale-95"
                         >
                             <Pen className="h-3.5 w-3.5" /> Bewerken
                         </button>
                         <button 
                             onClick={() => onDelete(activity.id as number)}
-                            className="p-3 rounded-xl border border-(--beheer-border) text-(--beheer-text-muted) hover:text-red-500 hover:border-red-500/20 hover:bg-red-500/5 transition-all flex items-center justify-center active:scale-95"
+                            className="icon-button p-3 rounded-xl border border-(--beheer-border) text-(--beheer-text-muted) hover:text-red-500 hover:border-red-500/20 hover:bg-red-500/5 transition-all flex items-center justify-center active:scale-95"
                         >
                             <Trash className="h-4 w-4" />
                         </button>
                     </div>
                     <button 
                         onClick={() => onViewSignups(activity.id as number)}
-                        className="w-full h-11 bg-(--beheer-accent)/5 hover:bg-(--beheer-accent)/10 text-(--beheer-accent) rounded-xl font-semibold text-[10px] transition-all flex items-center justify-center gap-2 border border-(--beheer-accent)/10 active:scale-95"
+                        className="beheer-button w-full h-11 bg-(--beheer-accent)/5 hover:bg-(--beheer-accent)/10 text-(--beheer-accent) rounded-xl font-semibold text-[10px] transition-all flex items-center justify-center gap-2 border border-(--beheer-accent)/10 active:scale-95"
                     >
                         <Users className="h-3.5 w-3.5" /> Inschrijvingen
                     </button>

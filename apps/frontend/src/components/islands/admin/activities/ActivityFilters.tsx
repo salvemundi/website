@@ -39,7 +39,7 @@ export default function ActivityFilters({
                     onChange={(e) => onSearchChange(e.target.value)}
                     autoComplete="off"
                     suppressHydrationWarning
-                    className="w-full pl-11 pr-5 py-3 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-text) placeholder:text-(--beheer-text-muted) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold text-sm"
+                    className="beheer-input w-full pl-11 pr-5 py-3 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-text) placeholder:text-(--beheer-text-muted) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold text-sm"
                 />
             </div>
             
@@ -52,7 +52,7 @@ export default function ActivityFilters({
                         value={selectedCommittee}
                         onChange={(e) => onCommitteeChange(e.target.value)}
                         suppressHydrationWarning
-                        className="bg-transparent text-(--beheer-text) text-[11px] font-bold outline-none cursor-pointer border-none p-0 focus:ring-0 min-w-0 flex-1 text-right sm:text-left truncate"
+                        className="beheer-select bg-transparent text-(--beheer-text) text-[11px] font-bold outline-none cursor-pointer border-none p-0 focus:ring-0 min-w-0 flex-1 text-right sm:text-left truncate"
                     >
                         <option value="all" className="bg-(--beheer-card-bg)">Alle</option>
                         {committees.map(c => (
@@ -68,7 +68,7 @@ export default function ActivityFilters({
                         value={pageSize === -1 ? 'all' : pageSize}
                         onChange={(e) => onPageSizeChange(e.target.value === 'all' ? -1 : parseInt(e.target.value, 10))}
                         suppressHydrationWarning
-                        className="bg-transparent text-(--beheer-text) text-[11px] font-bold outline-none cursor-pointer border-none p-0 focus:ring-0 min-w-0 flex-1 text-right sm:text-left"
+                        className="beheer-select bg-transparent text-(--beheer-text) text-[11px] font-bold outline-none cursor-pointer border-none p-0 focus:ring-0 min-w-0 flex-1 text-right sm:text-left"
                     >
                         <option value="10" className="bg-(--beheer-card-bg)">10 items</option>
                         <option value="25" className="bg-(--beheer-card-bg)">25 items</option>
@@ -82,7 +82,7 @@ export default function ActivityFilters({
                         <button
                             key={f}
                             onClick={() => onFilterChange(f)}
-                            className={`flex-1 px-3 py-2 rounded-[calc(var(--beheer-radius)-4px)] text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap text-center ${
+                            className={`tab-button flex-1 px-3 py-2 rounded-[calc(var(--beheer-radius)-4px)] text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap text-center ${
                                 filter === f 
                                 ? 'bg-(--beheer-accent) text-white shadow-sm' 
                                 : 'text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-white/50 dark:hover:bg-white/5'

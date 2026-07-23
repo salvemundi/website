@@ -189,7 +189,7 @@ export default function MobileMenu({
                             <button
                                 type="button"
                                 onClick={onLogout}
-                                className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-red-500 bg-red-500/5 hover:bg-red-500/10 active:scale-95 transition-all"
+                                className="form-button flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-red-500 bg-red-500/5 hover:bg-red-500/10 active:scale-95 transition-all"
                             >
                                 <LogOut className="h-5 w-5" />
                                 <span>Uitloggen</span>
@@ -208,7 +208,7 @@ export default function MobileMenu({
                                         }
                                     })();
                                 }}
-                                className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 active:scale-95 transition-all"
+                                className="form-button flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 active:scale-95 transition-all"
                                 style={{
                                     backgroundColor: 'var(--color-purple-500)',
                                     color: 'white'

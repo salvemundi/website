@@ -65,7 +65,7 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
             </div>
 
             {!isDropOpen ? (
-                <button type="button" disabled className="w-full py-3 rounded-full bg-(--theme-purple)/10 text-(--theme-purple)/40 font-bold cursor-not-allowed flex items-center justify-center gap-2">
+                <button type="button" disabled className="form-button w-full py-3 rounded-full bg-(--theme-purple)/10 text-(--theme-purple)/40 font-bold cursor-not-allowed flex items-center justify-center gap-2">
                     <Lock className="h-4 w-4" />
                     Drop gesloten
                 </button>
@@ -73,7 +73,7 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
                 <button
                     type="button"
                     onClick={handleLogin}
-                    className="w-full py-3 rounded-full bg-(--theme-purple) text-white font-bold shadow-lg shadow-(--theme-purple)/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+                    className="form-button w-full py-3 rounded-full bg-(--theme-purple) text-white font-bold shadow-lg shadow-(--theme-purple)/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
                 >
                     <LogIn className="h-4 w-4" />
                     Log in om te bestellen

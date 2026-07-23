@@ -145,14 +145,14 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                     <input
                         type="text"
                         placeholder="Zoek deelnemers..."
-                        className="w-full pl-9 sm:pl-10 pr-4 h-10 sm:h-12 rounded-xl bg-(--bg-soft) border-none focus:ring-2 focus:ring-(--theme-purple)/20 font-medium text-sm sm:text-base"
+                        className="form-input w-full pl-9 sm:pl-10 pr-4 h-10 sm:h-12 rounded-xl bg-(--bg-soft) border-none focus:ring-2 focus:ring-(--theme-purple)/20 font-medium text-sm sm:text-base"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
                 <button
                     onClick={startScanner}
-                    className="w-full sm:w-auto h-10 sm:h-12 px-4 sm:px-6 squircle bg-(--theme-purple) text-white font-bold flex items-center justify-center sm:justify-start gap-2 hover:scale-105 transition-all shadow-lg shadow-(--theme-purple)/20 text-sm sm:text-base"
+                    className="form-button w-full sm:w-auto h-10 sm:h-12 px-4 sm:px-6 squircle bg-(--theme-purple) text-white font-bold flex items-center justify-center sm:justify-start gap-2 hover:scale-105 transition-all shadow-lg shadow-(--theme-purple)/20 text-sm sm:text-base"
                 >
                     <QrCode className="h-4 w-4 sm:h-5 sm:w-5" />
                     Scan QR
@@ -164,7 +164,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                     <div id="reader" className="scanner-reader w-full max-w-md bg-(--bg-card) squircle-lg overflow-hidden shadow-2xl" />
                     <button
                         onClick={() => setScanning(false)}
-                        className="mt-6 px-8 py-3 squircle bg-white/20 text-white font-bold hover:bg-white/30 transition-all text-base"
+                        className="form-button mt-6 px-8 py-3 squircle bg-white/20 text-white font-bold hover:bg-white/30 transition-all text-base"
                     >
                         Annuleren
                     </button>
@@ -185,7 +185,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                 <div className={`p-4 rounded-xl flex items-center gap-3 animate-in zoom-in duration-300 ${scanResult.success ? 'bg-green-50 border border-green-100 text-green-700' : 'bg-red-50 border border-red-100 text-red-700'}`}>
                     {scanResult.success ? <UserCheck className="h-6 w-6" /> : <UserX className="h-6 w-6" />}
                     <p className="font-bold text-base">{scanResult.message}</p>
-                    <button onClick={() => setScanResult(null)} className="ml-auto text-sm font-bold opacity-50">Sluiten</button>
+                    <button onClick={() => setScanResult(null)} className="icon-button ml-auto text-sm font-bold opacity-50">Sluiten</button>
                 </div>
             )}
 
@@ -236,7 +236,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                                     <td className="px-4 sm:px-6 py-4 text-right">
                                         <button
                                             onClick={() => void handleToggleCheckIn(s.id, s.checked_in)}
-                                            className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${s.checked_in ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
+                                            className={`form-button px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${s.checked_in ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
                                         >
                                             {s.checked_in ? 'Afmelden' : 'Inchecken'}
                                         </button>
@@ -252,7 +252,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                 <button
                     onClick={() => void fetchData()}
                     disabled={loading}
-                    className="flex items-center gap-2 text-base font-bold text-(--theme-purple)/60 hover:text-(--theme-purple) disabled:opacity-50 transition-all"
+                    className="form-button flex items-center gap-2 text-base font-bold text-(--theme-purple)/60 hover:text-(--theme-purple) disabled:opacity-50 transition-all"
                 >
                     <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                     Lijst vernieuwen

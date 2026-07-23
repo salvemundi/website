@@ -170,7 +170,7 @@ export default function KroegentochtManagementIsland({
                         <button
                             onClick={handleRefresh}
                             disabled={isPending}
-                            className="p-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:border-(--beheer-accent)/30 transition-all active:scale-90 disabled:opacity-50"
+                            className="icon-button p-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:border-(--beheer-accent)/30 transition-all active:scale-90 disabled:opacity-50"
                             title="Vernieuwen"
                         >
                             <RefreshCw className={`h-4 w-4 ${isPending ? 'animate-spin' : ''}`} />
@@ -202,7 +202,7 @@ export default function KroegentochtManagementIsland({
                             {error}
                             <button
                                 onClick={handleRefresh}
-                                className="ml-auto underline"
+                                className="beheer-button ml-auto underline"
                             >
                                 Probeer opnieuw
                             </button>

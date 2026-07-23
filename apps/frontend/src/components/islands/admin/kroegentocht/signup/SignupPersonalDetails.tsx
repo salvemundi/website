@@ -64,7 +64,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
+                        className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
                         required
                         autoComplete="off"
                     />
@@ -78,7 +78,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
+                        className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
                         required
                         autoComplete="off"
                     />
@@ -94,7 +94,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                         type="text"
                         value={formData.association}
                         onChange={(e) => setFormData({ ...formData, association: e.target.value })}
-                        className="w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
+                        className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
                         autoComplete="off"
                     />
                 </div>
@@ -107,7 +107,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                         <button
                             type="button"
                             onClick={() => setIsPaymentOpen(!isPaymentOpen)}
-                            className="w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main) flex items-center justify-between hover:border-(--theme-purple)/30 text-left"
+                            className="beheer-button w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main) flex items-center justify-between hover:border-(--theme-purple)/30 text-left"
                         >
                             <span className="flex items-center gap-2">
                                 <span className={`h-2.5 w-2.5 rounded-full ${selectedPayment.color}`} />
@@ -127,7 +127,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                                                 setFormData({ ...formData, payment_status: opt.value });
                                                 setIsPaymentOpen(false);
                                             }}
-                                            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2.5 ${
+                                            className={`beheer-button w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2.5 ${
                                                 formData.payment_status === opt.value
                                                     ? 'bg-(--theme-purple) text-white'
                                                     : 'text-(--text-main) hover:bg-(--bg-main)'
@@ -155,7 +155,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                         <button
                             type="button"
                             onClick={() => setIsGroupOpen(!isGroupOpen)}
-                            className="w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main) flex items-center justify-between hover:border-(--theme-purple)/30 text-left"
+                            className="beheer-button w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main) flex items-center justify-between hover:border-(--theme-purple)/30 text-left"
                         >
                             <span className="truncate">
                                 {formData.group_name || 'Geen groep (nog niet ingedeeld)'}
@@ -172,7 +172,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                                             setFormData({ ...formData, group_name: null });
                                             setIsGroupOpen(false);
                                         }}
-                                        className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
+                                        className={`beheer-button w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
                                             !formData.group_name
                                                 ? 'bg-(--theme-purple) text-white'
                                                 : 'text-(--text-muted) hover:bg-(--bg-main) hover:text-(--text-main)'
@@ -188,7 +188,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                                                 setFormData({ ...formData, group_name: g });
                                                 setIsGroupOpen(false);
                                             }}
-                                            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
+                                            className={`beheer-button w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
                                                 formData.group_name === g
                                                     ? 'bg-(--theme-purple) text-white'
                                                     : 'text-(--text-main) hover:bg-(--bg-main)'

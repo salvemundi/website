@@ -142,7 +142,7 @@ export default function ActiviteitAanmeldingenIsland({
                         <button
                             onClick={() => exportSignupsToCSV(filteredSignups, event.name)}
                             disabled={filteredSignups.length === 0}
-                            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-xl text-xs font-semibold hover:border-(--beheer-accent)/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                            className="beheer-button flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-xl text-xs font-semibold hover:border-(--beheer-accent)/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                         >
                             <Download className="h-3.5 w-3.5" />
                             Exporteer
@@ -150,7 +150,7 @@ export default function ActiviteitAanmeldingenIsland({
                         {canAccessEdit && (
                             <button
                                 onClick={() => setIsManualModalOpen(true)}
-                                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-accent) text-white font-semibold text-xs rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10"
+                                className="beheer-button flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-accent) text-white font-semibold text-xs rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10"
                             >
                                 <UserPlus className="h-3.5 w-3.5" />
                                 Handmatig
@@ -160,7 +160,7 @@ export default function ActiviteitAanmeldingenIsland({
                             <button
                                 onClick={() => setIsMailModalOpen(true)}
                                 disabled={optimisticSignups.length === 0}
-                                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-xl text-xs font-semibold hover:border-(--beheer-accent)/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                                className="beheer-button flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-xl text-xs font-semibold hover:border-(--beheer-accent)/50 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                             >
                                 <Mail className="h-3.5 w-3.5" />
                                 Mail

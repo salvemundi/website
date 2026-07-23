@@ -54,7 +54,7 @@ export default function MailEditor({
                                     placeholder="Bijv: Belangrijke update over de reis..."
                                     value={subject}
                                     onChange={(e) => setSubject(e.target.value)}
-                                    className="w-full px-5 py-4 bg-(--bg-main)/50 border border-(--beheer-border)/50 rounded-2xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main) transition-all font-semibold shadow-inner outline-none placeholder:opacity-30"
+                                    className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border border-(--beheer-border)/50 rounded-2xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main) transition-all font-semibold shadow-inner outline-none placeholder:opacity-30"
                                 />
                             </div>
                             <div className="space-y-2">
@@ -64,7 +64,7 @@ export default function MailEditor({
                                     placeholder="Typ hier je bericht voor de deelnemers..."
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
-                                    className="w-full px-5 py-4 bg-(--bg-main)/50 border border-(--beheer-border)/50 rounded-2xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main) transition-all resize-none custom-scrollbar shadow-inner outline-none placeholder:opacity-30 leading-relaxed"
+                                    className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border border-(--beheer-border)/50 rounded-2xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main) transition-all resize-none custom-scrollbar shadow-inner outline-none placeholder:opacity-30 leading-relaxed"
                                 />
                             </div>
                         </div>
@@ -97,7 +97,7 @@ export default function MailEditor({
                         <button
                             onClick={onSend}
                             disabled={sending || filteredCount === 0 || (emailType === 'custom' && (!subject.trim() || !message.trim()))}
-                            className="w-full sm:w-auto px-10 py-4 bg-(--beheer-accent) text-white rounded-2xl font-semibold uppercase tracking-widest text-[10px] shadow-xl hover:opacity-90 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 group border border-white/10 transition-all"
+                            className="form-button w-full sm:w-auto px-10 py-4 bg-(--beheer-accent) text-white rounded-2xl font-semibold uppercase tracking-widest text-[10px] shadow-xl hover:opacity-90 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 group border border-white/10 transition-all"
                         >
                             {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />}
                             <span>Bericht Verzenden</span>

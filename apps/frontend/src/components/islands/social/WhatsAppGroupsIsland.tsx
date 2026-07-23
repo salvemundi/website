@@ -56,7 +56,7 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
                                         {group.name}
                                     </h3>
                                     {group.description && (
-                                        <p className="text-sm sm:text-base text-text-muted leading-relaxed whitespace-pre-line break-words">
+                                        <p className="text-sm sm:text-base text-text-muted leading-relaxed whitespace-pre-line wrap-break-word">
                                             {stripHtml(group.description)}
                                         </p>
                                     )}
@@ -72,7 +72,7 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
                                 </div>
                                 <button
                                     onClick={() => handleJoinGroup(group.invite_link)}
-                                    className="px-6 py-2 bg-purple-500 text-white rounded-full font-semibold shadow-md transition-transform hover:-translate-y-0.5 flex items-center gap-2"
+                                    className="form-button px-6 py-2 bg-purple-500 text-white rounded-full font-semibold shadow-md transition-transform hover:-translate-y-0.5 flex items-center gap-2"
                                 >
                                     <span>Word Lid</span>
                                     <ArrowRight className="h-4 w-4" />

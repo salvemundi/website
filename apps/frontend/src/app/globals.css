@@ -14,181 +14,169 @@
 @import "./styles/maps.css";
 @import "./styles/sponsors.css";
 @plugin "@tailwindcss/typography";
-/* Infinite-scroll sponsor banner            */
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   3. @theme  — Static Design Tokens (Tailwind 4 CSS-First)
-   These tokens compile into Tailwind utilities AND CSS custom properties.
-   Components reference them via var(--token) or bg-(--bg-main), etc.
-   ─────────────────────────────────────────────────────────────────────────── */
 @theme {
-   --color-text-main: var(--text-main);
-   --color-text-muted: var(--text-muted);
-   --color-bg-soft: var(--bg-soft);
-   --color-bg-card: var(--bg-card);
+    --color-text-main: var(--text-main);
+    --color-text-muted: var(--text-muted);
+    --color-bg-soft: var(--bg-soft);
+    --color-bg-card: var(--bg-card);
 
-   /* Brand Colors */
-   --color-paars: #5A3761;
-   --color-wit-paars: #F0F1F9;
-   --color-licht-paars: #936695;
-   --color-donker-blauw: #132A40;
-   --color-geel: #F8CF45;
+    --color-paars: #5A3761;
+    --color-wit-paars: #F0F1F9;
+    --color-licht-paars: #936695;
+    --color-donker-blauw: #132A40;
+    --color-geel: #F8CF45;
 
-   /* Semantic Aliases */
-   --color-theme-purple: var(--theme-purple);
-   --color-theme-purple-light: var(--theme-purple-light);
-   --color-theme-purple-dark: var(--theme-purple-dark);
-   --color-theme-purple-darker: var(--theme-purple-darker);
-   --color-theme-purple-lighter: var(--theme-purple-lighter);
-   --color-theme-text: var(--text-main);
-   --color-theme-bg: var(--bg-main);
+    --color-theme-purple: var(--theme-purple);
+    --color-theme-purple-light: var(--theme-purple-light);
+    --color-theme-purple-dark: var(--theme-purple-dark);
+    --color-theme-purple-darker: var(--theme-purple-darker);
+    --color-theme-purple-lighter: var(--theme-purple-lighter);
+    --color-theme-text: var(--text-main);
+    --color-theme-bg: var(--bg-main);
 
-   /* Layout & Containers */
-   --max-w-app: 80rem;
-   --header-padding: clamp(1rem, 5vw, 2.5rem);
-   --beheer-container-px: clamp(1rem, 3vw, 2rem);
+    --max-w-app: 80rem;
+    --header-padding: clamp(1rem, 5vw, 2.5rem);
+    --beheer-container-px: clamp(1rem, 3vw, 2rem);
 
-   /* Purple Palette based on brandguide colors */
-   --color-purple-50: #f6f3f7;
-   --color-purple-100: #ebdceb;
-   --color-purple-200: #d6b8d6;
-   --color-purple-300: #bd8fbe;
-   --color-purple-400: #a46fa5;
-   --color-purple-500: #936695;
-   --color-purple-600: #805481;
-   --color-purple-700: #6d446e;
-   --color-purple-800: #5A3761;
-   --color-purple-900: #46254c;
+    --color-purple-50: #f6f3f7;
+    --color-purple-100: #ebdceb;
+    --color-purple-200: #d6b8d6;
+    --color-purple-300: #bd8fbe;
+    --color-purple-400: #a46fa5;
+    --color-purple-500: #936695;
+    --color-purple-600: #805481;
+    --color-purple-700: #6d446e;
+    --color-purple-800: #5A3761;
+    --color-purple-900: #46254c;
 
-   /* RGB companions for rgba() usage */
-   --color-purple-500-rgb: 147,
-      102,
-      149;
-   --color-purple-400-rgb: 164,
-      111,
-      165;
+    --color-purple-500-rgb: 147, 102, 149;
+    --color-purple-400-rgb: 164, 111, 165;
 
-   /* Whites */
-   --color-white: #ffffff;
-   --color-white-soft: #F0F1F9;
-   --color-white-mute: #ebdceb;
+    --color-white: #ffffff;
+    --color-white-soft: #F0F1F9;
+    --color-white-mute: #ebdceb;
 
-   /* Brand */
-   --color-brand-primary: #5A3761;
-   --color-brand-secondary: #936695;
+    --color-brand-primary: #5A3761;
+    --color-brand-secondary: #936695;
 
-   /* Semantic Background — Light Mode defaults */
-   --bg-main: #F0F1F9;
-   --bg-soft: var(--color-white);
-   --bg-card: var(--color-white);
+    --bg-main: #F0F1F9;
+    --bg-soft: var(--color-white);
+    --bg-card: var(--color-white);
 
-   /* Semantic Text — Light Mode defaults */
-   --text-main: #5A3761;
-   --text-subtle: #6d446e;
-   --text-muted: #805481;
-   --text-light: #936695;
+    --text-main: #5A3761;
+    --text-subtle: #6d446e;
+    --text-muted: #805481;
+    --text-light: #936695;
 
-   /* Border */
-   --border-color: #d6b8d6;
-   --color-border-color: var(--border-color);
+    --border-color: #d6b8d6;
+    --color-border-color: var(--border-color);
 
-   /* Beheer Admin Tokens */
-   --color-beheer-active: var(--beheer-active);
-   --color-beheer-inactive: var(--beheer-inactive);
-   --color-beheer-accent: var(--beheer-accent);
+    --color-beheer-active: var(--beheer-active);
+    --color-beheer-inactive: var(--beheer-inactive);
+    --color-beheer-accent: var(--beheer-accent);
 
-   /* Shadows */
-   --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.1),
-      0 1px 2px rgba(16, 24, 40, 0.06);
-   --shadow-card-elevated: 0 8px 20px rgba(6, 4, 10, 0.45);
-   --shadow-glow: 0 0 15px rgba(90, 55, 97, 0.3);
+    --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.1), 0 1px 2px rgba(16, 24, 40, 0.06);
+    --shadow-card-elevated: 0 8px 20px rgba(6, 4, 10, 0.45);
+    --shadow-glow: 0 0 15px rgba(90, 55, 97, 0.3);
 
-   /* Gradients */
-   --gradient-start: #F0F1F9;
-   --gradient-end: #ebdceb;
+    --gradient-start: #F0F1F9;
+    --gradient-end: #ebdceb;
 
-   --bg-gradient-start: #ffffff;
-   --bg-gradient-end: #F0F1F9;
+    --bg-gradient-start: #ffffff;
+    --bg-gradient-end: #F0F1F9;
 
-   /* Status */
-   --theme-success: #16a34a;
-   --theme-warning: #F8CF45;
-   --theme-error: #dc2626;
-   --theme-info: #132A40;
+    --theme-success: #16a34a;
+    --theme-warning: #F8CF45;
+    --theme-error: #dc2626;
+    --theme-info: #132A40;
 
-   /* Radii */
-   --radius-xl: 0.75rem;
-   --radius-2xl: 1rem;
+    --radius-xl: 0.75rem;
+    --radius-2xl: 1rem;
 
-   /* Layout */
-   --header-height: 80px;
-   --impersonation-banner-height: 0px;
-   --header-total-height: calc(var(--impersonation-banner-height, 0px) + var(--header-height, 80px));
+    --header-height: 80px;
+    --impersonation-banner-height: 0px;
+    --header-total-height: calc(var(--impersonation-banner-height, 0px) + var(--header-height, 80px));
 
-   /* Typography Scale & Family */
-   --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-   /* Fluid Typography Scale */
-   --font-size-xs: clamp(0.65rem, 0.6rem + 0.25vw, 0.75rem);
-   --font-size-sm: clamp(0.75rem, 0.7rem + 0.375vw, 0.875rem);
-   --font-size-base: clamp(0.875rem, 0.8rem + 0.5vw, 1rem);
-   --font-size-lg: clamp(1rem, 0.9rem + 0.625vw, 1.125rem);
-   --font-size-xl: clamp(1.125rem, 1rem + 1.25vw, 1.25rem);
-   --font-size-2xl: clamp(1.25rem, 1.15rem + 1.5vw, 1.75rem);
-   --font-size-3xl: clamp(1.5rem, 1.3rem + 2vw, 2.25rem);
-   --font-size-4xl: clamp(2rem, 1.75rem + 3vw, 3.5rem);
-   --font-size-5xl: clamp(2.5rem, 2rem + 5vw, 4.5rem);
+    --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-size-xs: clamp(0.65rem, 0.6rem + 0.25vw, 0.75rem);
+    --font-size-sm: clamp(0.75rem, 0.7rem + 0.375vw, 0.875rem);
+    --font-size-base: clamp(0.875rem, 0.8rem + 0.5vw, 1rem);
+    --font-size-lg: clamp(1rem, 0.9rem + 0.625vw, 1.125rem);
+    --font-size-xl: clamp(1.125rem, 1rem + 1.25vw, 1.25rem);
+    --font-size-2xl: clamp(1.25rem, 1.15rem + 1.5vw, 1.75rem);
+    --font-size-3xl: clamp(1.5rem, 1.3rem + 2vw, 2.25rem);
+    --font-size-4xl: clamp(2rem, 1.75rem + 3vw, 3.5rem);
+    --font-size-5xl: clamp(2.5rem, 2rem + 5vw, 4.5rem);
 
-   /* Fluid Spacing Scale */
-   --spacing-fluid-xs: clamp(0.25rem, 0.2rem + 0.25vw, 0.5rem);
-   --spacing-fluid-sm: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
-   --spacing-fluid-md: clamp(1rem, 0.8rem + 1vw, 1.5rem);
-   --spacing-fluid-lg: clamp(1.5rem, 1.2rem + 1.5vw, 2.5rem);
-   --spacing-fluid-xl: clamp(2rem, 1.5rem + 2.5vw, 4rem);
+    --spacing-fluid-xs: clamp(0.25rem, 0.2rem + 0.25vw, 0.5rem);
+    --spacing-fluid-sm: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+    --spacing-fluid-md: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+    --spacing-fluid-lg: clamp(1.5rem, 1.2rem + 1.5vw, 2.5rem);
+    --spacing-fluid-xl: clamp(2rem, 1.5rem + 2.5vw, 4rem);
+}
+
+@utility form-button {
+    @apply w-full py-4 px-6 rounded-xl font-bold flex items-center justify-center gap-2 transition-all cursor-pointer border-none bg-(--theme-purple) text-white shadow-md hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+}
+@utility icon-button {
+    @apply inline-flex items-center justify-center transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+@utility form-input {
+    @apply w-full bg-(--bg-main)/50 border border-(--border-color)/30 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all outline-none;
+}
+
+@utility beheer-button {
+    @apply form-button;
+}
+
+@utility beheer-input {
+    @apply form-input;
 }
 
 @utility admin-container {
-   margin-left: auto;
-   margin-right: auto;
-   width: 100%;
-   max-width: var(--max-w-app);
-   padding-inline: var(--spacing-4);
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: var(--max-w-app);
+    padding-inline: var(--spacing-4);
 
-   @variant lg {
-      padding-inline: var(--spacing-6);
-   }
+    @variant lg {
+        padding-inline: var(--spacing-6);
+    }
 }
 
 @utility pt-safe {
-   padding-top: env(safe-area-inset-top, 0px);
+    padding-top: env(safe-area-inset-top, 0px);
 }
 
 @utility pb-safe {
-   padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 @utility pb-safe-4 {
-   padding-bottom: calc(var(--spacing-4) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(var(--spacing-4) + env(safe-area-inset-bottom, 0px));
 }
 
 @utility pl-safe {
-   padding-left: env(safe-area-inset-left, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
 }
 
 @utility pr-safe {
-   padding-right: env(safe-area-inset-right, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
 }
 
 @utility mt-safe {
-   margin-top: env(safe-area-inset-top, 0px);
+    margin-top: env(safe-area-inset-top, 0px);
 }
 
 @utility mb-safe {
-   margin-bottom: env(safe-area-inset-bottom, 0px);
+    margin-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 @utility pt-header-total {
-   padding-top: calc(var(--header-total-height, 80px) + env(safe-area-inset-top, 0px));
+    padding-top: calc(var(--header-total-height, 80px) + env(safe-area-inset-top, 0px));
 }
 
-/* Stabilize Autofill - Import at the absolute bottom to ensure it overrides defaults */
 @import "./styles/autofill.css";

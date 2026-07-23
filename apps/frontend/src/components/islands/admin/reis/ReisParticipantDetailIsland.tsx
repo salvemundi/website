@@ -153,7 +153,7 @@ export default function ReisParticipantDetailIsland({
                             void handleDelete();
                         }}
                         disabled={isPending}
-                        className="px-6 py-3 bg-(--beheer-inactive)/5 text-(--beheer-inactive) rounded-xl font-semibold text-base border border-(--beheer-inactive)/10 hover:bg-(--beheer-inactive)/10 transition-all flex items-center gap-2 shadow-sm active:scale-95"
+                        className="beheer-button px-6 py-3 bg-(--beheer-inactive)/5 text-(--beheer-inactive) rounded-xl font-semibold text-base border border-(--beheer-inactive)/10 hover:bg-(--beheer-inactive)/10 transition-all flex items-center gap-2 shadow-sm active:scale-95"
                     >
                         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash className="h-4 w-4" />}
                         <span>Verwijderen</span>
@@ -208,7 +208,7 @@ export default function ReisParticipantDetailIsland({
                             <button
                                 type="submit"
                                 disabled={isSaving}
-                                className="w-full py-5 bg-(--beheer-accent) hover:opacity-95 text-white rounded-2xl font-semibold text-base shadow-2xl shadow-(--beheer-accent)/30 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-4 group border border-white/10"
+                                className="beheer-button w-full py-5 bg-(--beheer-accent) hover:opacity-95 text-white rounded-2xl font-semibold text-base shadow-2xl shadow-(--beheer-accent)/30 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-4 group border border-white/10"
                             >
                                 {isSaving ? <Loader2 className="h-7 w-7 animate-spin" /> : <Save className="h-7 w-7 group-hover:scale-110 transition-transform" />}
                                 <span>Gegevens Opslaan</span>
@@ -218,7 +218,7 @@ export default function ReisParticipantDetailIsland({
                                 <button
                                     type="button"
                                     onClick={() => router.push('/beheer/reis')}
-                                    className="flex-1 py-4 bg-(--bg-main)/50 hover:bg-(--beheer-card-bg) text-(--beheer-text-muted) hover:text-(--beheer-text) rounded-2xl font-semibold text-base border border-(--beheer-border) transition-all flex items-center justify-center gap-3 active:scale-95"
+                                    className="beheer-button flex-1 py-4 bg-(--bg-main)/50 hover:bg-(--beheer-card-bg) text-(--beheer-text-muted) hover:text-(--beheer-text) rounded-2xl font-semibold text-base border border-(--beheer-border) transition-all flex items-center justify-center gap-3 active:scale-95"
                                 >
                                     <ArrowLeft className="h-4 w-4" />
                                     Annuleren
@@ -229,7 +229,7 @@ export default function ReisParticipantDetailIsland({
                                         void handleDelete();
                                     }}
                                     disabled={isPending}
-                                    className="p-4 bg-(--beheer-inactive)/5 hover:bg-(--beheer-inactive)/10 text-(--beheer-inactive) rounded-2xl border border-(--beheer-inactive)/20 transition-all shadow-sm active:scale-90"
+                                    className="icon-button p-4 bg-(--beheer-inactive)/5 hover:bg-(--beheer-inactive)/10 text-(--beheer-inactive) rounded-2xl border border-(--beheer-inactive)/20 transition-all shadow-sm active:scale-90"
                                 >
                                     {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash className="h-5 w-5" />}
                                 </button>

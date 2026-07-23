@@ -27,7 +27,7 @@ function FilterTab({ active, label, count, onClick, color = 'indigo' }: FilterTa
     return (
         <button
             onClick={onClick}
-            className={`w-full px-3 py-2 rounded-xl text-[11px] font-semibold transition-all whitespace-nowrap flex items-center justify-between border ${active
+            className={`beheer-button w-full px-3 py-2 rounded-xl text-[11px] font-semibold transition-all whitespace-nowrap flex items-center justify-between border ${active
                 ? `${colorVariants.get(color)} border-transparent shadow-sm`
                 : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) border-(--beheer-border)/50 hover:border-(--beheer-accent)/30 hover:text-(--beheer-text)'
                 }`}
@@ -104,7 +104,7 @@ export default function SyncMonitorIsland() {
                                 <div className="mt-4">
                                     <button
                                         onClick={() => setShowStack(!showStack)}
-                                        className="text-[11px] font-semibold text-(--theme-error) hover:underline transition-colors flex items-center gap-1"
+                                        className="beheer-button text-[11px] font-semibold text-(--theme-error) hover:underline transition-colors flex items-center gap-1"
                                     >
                                         {showStack ? 'Verberg details' : 'Bekijk technische details (Stack Trace)'}
                                     </button>
@@ -150,7 +150,7 @@ export default function SyncMonitorIsland() {
                     <FilterTab active={resultFilter === 'excluded'} label="Excluded" count={status?.excludedCount || 0} onClick={() => setResultFilter('excluded')} color="slate" />
                 </div>
 
-                <div className="min-h-[300px] border-t border-(--beheer-border)/30 pt-8">
+                <div className="min-h-75 border-t border-(--beheer-border)/30 pt-8">
                     <SyncLogs
                         status={status || {
                             successfulUsers: [], createdUsers: [], warnings: [],

@@ -170,7 +170,7 @@ export default function KroegentochtFormIsland({
                                         remove(fields.length - 1);
                                     }
                                 }}
-                                className="p-2 hover:bg-white dark:hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30"
+                                className="icon-button p-2 hover:bg-white dark:hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30"
                                 disabled={amount <= 1}
                             >
                                 <Minus className="w-4 h-4" />
@@ -184,7 +184,7 @@ export default function KroegentochtFormIsland({
                                         append({ name: '', initial: '' });
                                     }
                                 }}
-                                className="p-2 hover:bg-white dark:hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30"
+                                className="icon-button p-2 hover:bg-white dark:hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30"
                                 disabled={amount >= 10}
                             >
                                 <Plus className="w-4 h-4" />
@@ -192,7 +192,7 @@ export default function KroegentochtFormIsland({
                         </div>
                     </div>
 
-                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="space-y-4 max-h-100 overflow-y-auto pr-2 custom-scrollbar">
                         {fields.map((field, index) => (
                             <div key={field.id} className="bg-white dark:bg-white/5 rounded-xl p-4 border border-slate-100 dark:border-white/10 shadow-sm">
                                 <div className="flex items-center gap-2 mb-3">
@@ -235,7 +235,7 @@ export default function KroegentochtFormIsland({
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="w-full bg-theme-purple enabled:hover:bg-purple-600 text-white font-black py-4 rounded-xl sm:rounded-2xl transition-all shadow-lg shadow-purple-500/20 enabled:active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
+                    className="form-button w-full bg-theme-purple enabled:hover:bg-purple-600 text-white font-black py-4 rounded-xl sm:rounded-2xl transition-all shadow-lg shadow-purple-500/20 enabled:active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
                 >
                     {isPending ? (
                         <>
@@ -250,7 +250,7 @@ export default function KroegentochtFormIsland({
                 {/* Honeypot at bottom to avoid breaking browser autofill sections */}
                 <div className="opacity-0 absolute top-0 left-0 h-0 w-0 -z-10 pointer-events-none overflow-hidden" aria-hidden="true">
                     <label htmlFor="website">Website</label>
-                    <input {...register('website')} id="website" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
+                    <input {...register('website')} id="website" tabIndex={-1} autoComplete="off" className="hidden" suppressHydrationWarning />
                 </div>
             </form>
             <AdminToast toast={toast} onClose={hideToast} />

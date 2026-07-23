@@ -48,7 +48,7 @@ export default function KroegentochtEventDropdown({
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-3 px-4 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) text-(--beheer-text) hover:border-(--beheer-accent)/50 transition-all active:scale-95 group min-w-[200px]"
+                className="beheer-button flex items-center gap-3 px-4 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) text-(--beheer-text) hover:border-(--beheer-accent)/50 transition-all active:scale-95 group min-w-50"
             >
                 <div className="p-1.5 rounded-lg bg-(--beheer-accent)/10 text-(--beheer-accent)">
                     <Beer className="h-4 w-4" />
@@ -66,7 +66,7 @@ export default function KroegentochtEventDropdown({
                 <div
                     className="absolute right-0 mt-2 w-72 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) shadow-(--shadow-card-elevated) z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 ease-out"
                 >
-                    <div className="p-2 space-y-1 max-h-[300px] overflow-y-auto custom-scrollbar">
+                    <div className="p-2 space-y-1 max-h-75 overflow-y-auto custom-scrollbar">
                         {sortedEvents.map((event) => {
                             const eventDate = event.date ? new Date(event.date) : new Date(0);
                             const isUpcoming = event.date ? eventDate >= today : false;
@@ -79,7 +79,7 @@ export default function KroegentochtEventDropdown({
                                         onSelect(event);
                                         setIsOpen(false);
                                     }}
-                                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left group/item ${isSelected
+                                    className={`beheer-button w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left group/item ${isSelected
                                         ? 'bg-(--beheer-accent)/10 text-(--beheer-accent)'
                                         : 'hover:bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:text-(--beheer-text)'
                                         }`}

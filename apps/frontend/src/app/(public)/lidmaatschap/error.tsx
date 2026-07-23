@@ -37,7 +37,7 @@ export default function MembershipError({
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
                 <button
                     onClick={() => reset()}
-                    className="flex items-center gap-2 squircle bg-purple-500 text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-sm"
+                    className="form-button flex items-center gap-2 squircle bg-purple-500 text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-sm"
                 >
                     <RefreshCcw className="h-4 w-4" />
                     Opnieuw Proberen

@@ -2,9 +2,6 @@ import React from 'react';
 import { Search, Home, CheckCircle2 } from 'lucide-react';
 import BackButton from '@/components/ui/navigation/BackButton';
 
-/**
- * UI for when a payment link is invalid or expired.
- */
 export function TripAccessDenied({ error }: { error?: string }) {
     return (
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
@@ -35,9 +32,6 @@ export function TripAccessDenied({ error }: { error?: string }) {
     );
 }
 
-/**
- * UI for when a user is still on the waitlist.
- */
 export function TripWaitlisted() {
     return (
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
@@ -68,9 +62,6 @@ export function TripWaitlisted() {
     );
 }
 
-/**
- * UI for when a trip is already fully paid.
- */
 export function TripAlreadyPaid({ tripName }: { tripName: string }) {
     return (
         <div className="max-w-xl mx-auto py-32 px-6 text-center">
@@ -84,8 +75,8 @@ export function TripAlreadyPaid({ tripName }: { tripName: string }) {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <BackButton href="/reis" text="Terug naar Reizen" />
-                <a href="/profiel/lidmaatschap" className="px-8 py-4 bg-orange-500 text-white font-bold squircle shadow-xl shadow-orange-500/10 transition-all">
-                    Bekijk je profiel
+                <a href="/lidmaatschap" className="px-8 py-4 bg-orange-500 text-white font-bold squircle shadow-xl shadow-orange-500/10 transition-all">
+                    Bekijk je lidmaatschap
                 </a>
             </div>
         </div>

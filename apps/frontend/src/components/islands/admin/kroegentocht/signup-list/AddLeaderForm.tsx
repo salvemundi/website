@@ -94,7 +94,7 @@ export default function AddLeaderForm({
                         placeholder="Vul naam in..."
                         value={leaderName}
                         onChange={(e) => setLeaderName(e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-(--bg-card) border border-(--border-color)/30 rounded-lg text-xs font-semibold text-(--text-main) focus:ring-2 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) focus:outline-none"
+                        className="beheer-input w-full px-2.5 py-1.5 bg-(--bg-card) border border-(--border-color)/30 rounded-lg text-xs font-semibold text-(--text-main) focus:ring-2 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) focus:outline-none"
                     />
                 </div>
             )}
@@ -103,7 +103,7 @@ export default function AddLeaderForm({
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-2.5 py-1.5 bg-(--bg-card) hover:bg-(--bg-main) border border-(--border-color)/30 rounded-lg text-[10px] font-bold text-(--text-muted) transition-all cursor-pointer"
+                    className="beheer-button px-2.5 py-1.5 bg-(--bg-card) hover:bg-(--bg-main) border border-(--border-color)/30 rounded-lg text-[10px] font-bold text-(--text-muted) transition-all cursor-pointer"
                 >
                     Annuleren
                 </button>
@@ -111,7 +111,7 @@ export default function AddLeaderForm({
                     type="button"
                     onClick={handleAdd}
                     disabled={leaderType === 'signup' ? !leaderSignupId : !leaderName.trim()}
-                    className="px-3 py-1.5 bg-(--theme-purple) text-white hover:opacity-90 rounded-lg text-[10px] font-bold transition-all disabled:opacity-50 cursor-pointer"
+                    className="beheer-button px-3 py-1.5 bg-(--theme-purple) text-white hover:opacity-90 rounded-lg text-[10px] font-bold transition-all disabled:opacity-50 cursor-pointer"
                 >
                     Toevoegen
                 </button>

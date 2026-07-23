@@ -1,8 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import ActiveLink from '@/components/ui/ActiveLink';
-import { SiInstagram, SiFacebook, SiTiktok } from 'react-icons/si';
-import { FaLinkedin } from 'react-icons/fa';
+import { InstagramIcon as SiInstagram, FacebookIcon as SiFacebook, TiktokIcon as SiTiktok, LinkedinIcon as FaLinkedin } from '@/shared/icons/social';
 import { ROUTES } from '@/lib/config/routes';
 import type { Committee } from '@salvemundi/validations/schema/committees.zod';
 import type { Document } from '@salvemundi/validations/schema/website.zod';

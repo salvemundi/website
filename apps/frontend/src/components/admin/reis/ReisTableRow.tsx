@@ -55,7 +55,7 @@ export default function ReisTableRow({
                     <div className="flex items-center bg-(--bg-main)/50 p-1 rounded-xl border border-(--beheer-border)/20 shadow-inner shrink-0">
                         <button
                             onClick={(e) => { e.stopPropagation(); onSelect(signup, true); }}
-                            className="p-2 text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-white/5 rounded-lg transition-all"
+                            className="icon-button p-2 text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-white/5 rounded-lg transition-all"
                             title="Bewerken"
                         >
                             <Edit className="h-4 w-4" />
@@ -64,7 +64,7 @@ export default function ReisTableRow({
                         <button
                             onClick={(e) => { e.stopPropagation(); onDelete(signup.id); }}
                             disabled={isDeleteLoading}
-                            className="p-2 text-(--beheer-text-muted) hover:text-red-400 hover:bg-red-400/5 rounded-lg transition-all disabled:opacity-50"
+                            className="icon-button p-2 text-(--beheer-text-muted) hover:text-red-400 hover:bg-red-400/5 rounded-lg transition-all disabled:opacity-50"
                             title="Verwijderen"
                         >
                             {isDeleteLoading ? (
@@ -105,7 +105,7 @@ export default function ReisTableRow({
                 </div>
 
                 <div className="mt-auto pt-3 border-t border-(--beheer-border)/10 flex flex-wrap items-center justify-between gap-y-2 gap-x-3">
-                    <div className="flex-1 min-w-[120px]">
+                    <div className="flex-1 min-w-30">
                         {isStatusLoading ? (
                             <div className="flex items-center justify-center py-2">
                                 <Loader2 className="h-5 w-5 animate-spin text-(--beheer-accent)" />
@@ -158,7 +158,7 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
-                className={`
+                className={`beheer-button 
                     w-full flex items-center justify-between px-3 py-2 rounded-xl border-2 transition-all duration-300
                     ${isOpen ? 'border-(--beheer-accent) shadow-lg scale-[1.02] bg-(--beheer-card-bg)' : 'border-(--beheer-border)/40 hover:border-(--beheer-accent)/30'}
                 `}
@@ -174,7 +174,7 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
 
             {isOpen && (
                 <div
-                    className="absolute bottom-full left-0 mb-2 w-full min-w-[160px] bg-(--beheer-card-bg) border border-(--beheer-border)/60 rounded-2xl shadow-2xl z-100 overflow-hidden backdrop-blur-md animate-in fade-in zoom-in-95 slide-in-from-bottom-1 duration-150 ease-out"
+                    className="absolute bottom-full left-0 mb-2 w-full min-w-40 bg-(--beheer-card-bg) border border-(--beheer-border)/60 rounded-2xl shadow-2xl z-100 overflow-hidden backdrop-blur-md animate-in fade-in zoom-in-95 slide-in-from-bottom-1 duration-150 ease-out"
                 >
                     <div className="p-1.5 space-y-0.5">
                         {statuses.map((s) => (
@@ -185,7 +185,7 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
                                     onChange(s.value);
                                     setIsOpen(false);
                                 }}
-                                className={`
+                                className={`beheer-button 
                                     w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all text-left
                                     ${currentStatus === s.value
                                         ? 'bg-(--beheer-accent)/10 text-(--beheer-accent)'

@@ -36,7 +36,7 @@ export function TypeTab({ active, onClick, children }: { active: boolean, onClic
     return (
         <button 
             onClick={onClick}
-            className={`px-5 py-2.5 rounded-xl text-[10px] font-semibold uppercase tracking-widest transition-all active:scale-95 ${
+            className={`tab-button px-5 py-2.5 rounded-xl text-[10px] font-semibold uppercase tracking-widest transition-all active:scale-95 ${
                 active 
                     ? 'bg-(--beheer-accent) shadow-lg text-white' 
                     : 'text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg)'

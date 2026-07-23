@@ -71,7 +71,7 @@ export default function SignupTableView({
 
                                 return (
                                     <tr key={signup.id} className="hover:bg-(--bg-main)/30 transition-colors border-b border-(--border-color)/10 last:border-0">
-                                        <td className="px-6 py-3 min-w-[300px]">
+                                        <td className="px-6 py-3 min-w-75">
                                             <div className="flex flex-col gap-0.5">
                                                 <div className="flex items-center gap-2">
                                                     <a href={`mailto:${signup.email}`} className="text-sm font-semibold text-(--text-main) hover:text-(--theme-purple) transition-colors flex items-center gap-2" title={signup.email}>
@@ -94,7 +94,7 @@ export default function SignupTableView({
 
                                                             return (
                                                                 <div key={i} className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-(--bg-main)/80 rounded-md ring-1 ring-(--border-color)/30 text-[10px] font-medium text-(--text-light)">
-                                                                    <span className="text-(--text-muted) truncate max-w-[120px]">
+                                                                    <span className="text-(--text-muted) truncate max-w-30">
                                                                         {rawName}{rawInitial ? ` ${rawInitial}` : ''}
                                                                     </span>
                                                                 </div>
@@ -130,14 +130,14 @@ export default function SignupTableView({
                                                 <div className="flex items-center gap-1 shrink-0">
                                                     <button
                                                         onClick={() => signup.id && onEdit(signup.id)}
-                                                        className="p-1.5 rounded-md hover:bg-(--theme-purple)/10 text-(--text-muted) hover:text-(--theme-purple) transition-all cursor-pointer"
+                                                        className="icon-button p-1.5 rounded-md hover:bg-(--theme-purple)/10 text-(--text-muted) hover:text-(--theme-purple) transition-all cursor-pointer"
                                                         title="Inschrijving bewerken"
                                                     >
                                                         <Edit className="h-3.5 w-3.5" />
                                                     </button>
                                                     <button
                                                         onClick={() => signup.id && onDelete(signup.id)}
-                                                        className="p-1.5 rounded-md hover:bg-red-500/10 text-(--text-muted) hover:text-red-500 transition-all cursor-pointer"
+                                                        className="icon-button p-1.5 rounded-md hover:bg-red-500/10 text-(--text-muted) hover:text-red-500 transition-all cursor-pointer"
                                                         title="Inschrijving verwijderen"
                                                     >
                                                         <Trash className="h-3.5 w-3.5" />

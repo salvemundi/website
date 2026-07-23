@@ -69,7 +69,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
         initialStatus && !initialStatus.error ? new Date() : null
     );
 
-    const [selectedSyncFields, setSelectedSyncFields] = useState<string[]>(['membership_expiry', 'geboortedatum', 'phone_number', 'committees', 'profile_photo']);
+    const [selectedSyncFields, setSelectedSyncFields] = useState<string[]>([]);
     const [forceLink, setForceLink] = useState(false);
     const [activeOnly, setActiveOnly] = useState(false);
     const [sendExpiryEmails, setSendExpiryEmails] = useState(false);

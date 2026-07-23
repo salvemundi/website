@@ -78,7 +78,7 @@ export default function ReisCard({ trip, onEdit, onDelete, isDeleting }: ReisCar
                 <div className="grid grid-cols-2 gap-3 pt-4 border-t border-(--beheer-border)/50">
                     <button
                         onClick={onEdit}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-(--bg-main) hover:bg-(--beheer-border)/10 text-(--beheer-text) rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ring-1 ring-(--beheer-border)/50"
+                        className="beheer-button flex items-center justify-center gap-2 px-4 py-3 bg-(--bg-main) hover:bg-(--beheer-border)/10 text-(--beheer-text) rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ring-1 ring-(--beheer-border)/50"
                     >
                         <Pen className="h-3.5 w-3.5" />
                         Bewerken
@@ -86,7 +86,7 @@ export default function ReisCard({ trip, onEdit, onDelete, isDeleting }: ReisCar
                     <button
                         onClick={onDelete}
                         disabled={isDeleting}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-(--beheer-inactive)/5 hover:bg-(--beheer-inactive)/10 text-(--beheer-inactive) rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ring-1 ring-(--beheer-inactive)/20"
+                        className="beheer-button flex items-center justify-center gap-2 px-4 py-3 bg-(--beheer-inactive)/5 hover:bg-(--beheer-inactive)/10 text-(--beheer-inactive) rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ring-1 ring-(--beheer-inactive)/20"
                     >
                         {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash className="h-3.5 w-3.5" />}
                         Wissen

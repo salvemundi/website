@@ -21,9 +21,9 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
 
     return (
         <div className="@container space-y-12">
-            <header className="flex flex-col w-full @[900px]:flex-row items-center @[900px]:items-start gap-8 @[900px]:gap-20 pt-4">
-                <div className="flex-1 flex flex-col items-center @[900px]:items-start text-center @[900px]:text-left order-2 @[900px]:order-1 w-full @[900px]:pt-8">
-                    <h1 className="mb-4 text-5xl font-black tracking-tight text-theme-purple @[600px]:text-6xl @[900px]:text-7xl break-words leading-[1.1]">
+            <header className="grid grid-cols-1 @[900px]:grid-cols-[45%_10%_45%] w-full px-[5%] items-center @[900px]:items-start pt-4">
+                <div className="flex flex-col items-center @[900px]:items-start text-center @[900px]:text-left order-2 @[900px]:order-1 w-full min-w-0 @[900px]:pt-8">
+                    <h1 className="mb-4 text-2xl @[1000px]:text-4xl @[1200px]:text-5xl font-black tracking-tight text-theme-purple whitespace-nowrap leading-[1.1]">
                         {cleanedName}
                     </h1>
 
@@ -62,19 +62,21 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                     </div>
                 </div>
 
-                <div className="relative w-full max-w-[450px] @[900px]:w-[450px] aspect-square order-1 @[900px]:order-2 shrink-0 mx-auto @[900px]:ml-auto group">
+                <div className="hidden @[900px]:block order-1 @[900px]:order-2" />
+
+                <div className="relative w-full aspect-square order-1 @[900px]:order-3 shrink-0 mx-auto @[900px]:ml-auto group">
                     <div className="absolute inset-0 bg-purple-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl -z-10" />
                     {committee.image ? (
                         <Image
                             src={getImageUrl(committee.image)}
                             alt={cleanedName}
                             fill
-                            className="object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-[0_20px_50px_rgba(139,92,246,0.3)]"
+                            className="object-contain drop-shadow-[0_20px_50px_rgba(139,92,246,0.3)]"
                             unoptimized
                             priority
                         />
                     ) : (
-                        <FallbackLogo className="object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-[0_20px_50px_rgba(139,92,246,0.3)] opacity-60" />
+                        <FallbackLogo className="object-contain drop-shadow-[0_20px_50px_rgba(139,92,246,0.3)] opacity-60" />
                     )}
                 </div>
             </header>
@@ -85,7 +87,7 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                         <Users className="h-10 w-10 text-purple-500 dark:text-purple-400 shrink-0" />
                         {isBestuur ? 'Het Bestuur' : 'De Commissie'}
                     </h2>
-                    <div className="h-2 w-24 bg-gradient-to-r from-transparent via-purple-500 to-transparent rounded-full mt-6" />
+                    <div className="h-2 w-24 bg-linear-to-r from-transparent via-purple-500 to-transparent rounded-full mt-6" />
                 </div>
 
                 <div className="grid gap-12 grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))]">
@@ -109,7 +111,7 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                                     ) : (
                                         <FallbackLogo className="transition-all duration-700 group-hover:scale-110 object-contain p-4 opacity-45" />
                                     )}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
                                 <h4 className="text-center font-black text-text-main text-xl mb-2 group-hover:text-theme-purple transition-colors">
                                     {name}

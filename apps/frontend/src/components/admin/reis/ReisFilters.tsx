@@ -54,7 +54,7 @@ export default function ReisFilters({
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-2">
-                    <div className="w-full sm:w-[180px]">
+                    <div className="w-full sm:w-45">
                         <AdminSelect
                             value={statusFilter}
                             onChange={onStatusChange}
@@ -63,7 +63,7 @@ export default function ReisFilters({
                         />
                     </div>
 
-                    <div className="w-full sm:w-[150px]">
+                    <div className="w-full sm:w-37.5">
                         <AdminSelect
                             value={roleFilter}
                             onChange={onRoleChange}
@@ -89,7 +89,7 @@ export default function ReisFilters({
                         </Link>
                         <button
                             onClick={onDownloadCSV}
-                            className="flex items-center justify-center gap-2 px-6 py-2 bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm hover:bg-emerald-800 transition-all active:scale-95 border border-white/10 whitespace-nowrap"
+                            className="beheer-button flex items-center justify-center gap-2 px-6 py-2 bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm hover:bg-emerald-800 transition-all active:scale-95 border border-white/10 whitespace-nowrap"
                         >
                             <Download className="h-3.5 w-3.5" />
                             Exporteer CSV

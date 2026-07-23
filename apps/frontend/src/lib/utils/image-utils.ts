@@ -1,9 +1,4 @@
-/**
- * Helper to get the image URL for a Directus asset ID or object.
- * Routes through the internal /api/assets proxy to avoid permission issues.
- * Supports Directus image transformation parameters.
- * SAFE FOR CLIENT-SIDE USAGE.
- */
+
 import { BRAND_CONFIG } from '../config/brand';
 
 export function getImageUrl(
@@ -17,7 +12,6 @@ export function getImageUrl(
     const id = typeof idOrObject === 'string' ? idOrObject : idOrObject.id;
     if (!id) return DEFAULT_FALLBACK;
 
-    // If it's already a full URL, a data URL, a blob URL, or a root-relative path (not api), return it as-is
     if (id.startsWith('/api/assets/') || id.startsWith('http') || id.startsWith('data:') || id.startsWith('blob:') || (id.startsWith('/') && !id.startsWith('/api/'))) {
         return id;
     }

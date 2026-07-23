@@ -40,11 +40,11 @@ export default function GroupSelectDropdown({
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`flex items-center justify-between gap-1.5 rounded-lg border border-(--border-color)/30 bg-(--bg-main)/50 font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/40 focus:outline-none active:scale-98 ${
+                className={`beheer-button flex items-center justify-between gap-1.5 rounded-lg border border-(--border-color)/30 bg-(--bg-main)/50 font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/40 focus:outline-none active:scale-98 ${
                     size === 'xs' ? 'px-2 py-1 text-[10px]' : 'px-2.5 py-1.5 text-xs'
                 }`}
             >
-                <span className="truncate max-w-[120px]">{selectedLabel}</span>
+                <span className="truncate max-w-30">{selectedLabel}</span>
                 <ChevronDown className={`h-3 w-3 text-(--text-muted) transition-transform duration-200 ${isOpen ? 'rotate-180 text-(--theme-purple)' : ''}`} />
             </button>
 
@@ -57,7 +57,7 @@ export default function GroupSelectDropdown({
                                 onChange(null);
                                 setIsOpen(false);
                             }}
-                            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                            className={`beheer-button w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
                                 !value
                                     ? 'bg-(--theme-purple) text-white'
                                     : 'text-(--text-muted) hover:bg-(--bg-main) hover:text-(--text-main)'
@@ -73,7 +73,7 @@ export default function GroupSelectDropdown({
                                     onChange(option);
                                     setIsOpen(false);
                                 }}
-                                className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                                className={`beheer-button w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
                                     value === option
                                         ? 'bg-(--theme-purple) text-white'
                                         : 'text-(--text-main) hover:bg-(--bg-main)'

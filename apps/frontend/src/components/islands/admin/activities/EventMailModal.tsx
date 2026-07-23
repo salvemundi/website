@@ -120,7 +120,7 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
                     </h2>
                     <button
                         onClick={onClose}
-                        className="text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg) p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border border-transparent hover:border-(--beheer-border)"
+                        className="icon-button text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg) p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border border-transparent hover:border-(--beheer-border)"
                     >
                         <X className="h-5 w-5" />
                     </button>
@@ -148,7 +148,7 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
                                 placeholder="Bijv: Belangrijke update over de activiteit..."
                                 value={subject}
                                 onChange={(e) => setSubject(e.target.value)}
-                                className="w-full px-5 py-4 bg-(--bg-main)/50 border border-(--beheer-border)/50 rounded-2xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main) transition-all font-semibold shadow-inner outline-none placeholder:opacity-30"
+                                className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border border-(--beheer-border)/50 rounded-2xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main) transition-all font-semibold shadow-inner outline-none placeholder:opacity-30"
                             />
                         </div>
 
@@ -159,7 +159,7 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
                                 placeholder="Typ hier je bericht voor de deelnemers..."
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
-                                className="w-full px-5 py-4 bg-(--bg-main)/50 border border-(--beheer-border)/50 rounded-2xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main) transition-all resize-none custom-scrollbar shadow-inner outline-none placeholder:opacity-30 leading-relaxed"
+                                className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border border-(--beheer-border)/50 rounded-2xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main) transition-all resize-none custom-scrollbar shadow-inner outline-none placeholder:opacity-30 leading-relaxed"
                             />
                         </div>
 
@@ -185,7 +185,7 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="flex-1 h-14 rounded-2xl font-semibold tracking-widest text-[10px] border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-all active:scale-[0.98] cursor-pointer"
+                                className="beheer-button flex-1 h-14 rounded-2xl font-semibold tracking-widest text-[10px] border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-all active:scale-[0.98] cursor-pointer"
                                 disabled={isLoading}
                             >
                                 Annuleren
@@ -193,7 +193,7 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
                             <button
                                 type="submit"
                                 disabled={isLoading || recipients.length === 0 || !subject.trim() || !message.trim()}
-                                className="flex-[1.5] h-14 rounded-2xl font-semibold tracking-widest text-[10px] bg-(--beheer-accent) text-white shadow-(--shadow-glow) hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3 border border-white/10 group"
+                                className="form-button flex-[1.5] h-14 rounded-2xl font-semibold tracking-widest text-[10px] bg-(--beheer-accent) text-white shadow-(--shadow-glow) hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3 border border-white/10 group"
                             >
                                 {isLoading ? (
                                     <Loader2 className="h-5 w-5 animate-spin" />

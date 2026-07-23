@@ -138,4 +138,3 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
         </div>
     );
 }
-

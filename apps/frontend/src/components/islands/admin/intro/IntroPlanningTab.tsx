@@ -60,10 +60,10 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                     </Button>
                 )}
                 <div className="flex gap-1 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) p-1.5 ml-auto shadow-sm">
-                    <button onClick={() => setView('list')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${view === 'list' ? 'bg-(--beheer-accent) text-white shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
+                    <button onClick={() => setView('list')} className={`tab-button flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${view === 'list' ? 'bg-(--beheer-accent) text-white shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
                         <List className="h-4 w-4" /> Lijst
                     </button>
-                    <button onClick={() => setView('calendar')} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${view === 'calendar' ? 'bg-(--beheer-accent) text-white shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
+                    <button onClick={() => setView('calendar')} className={`tab-button flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${view === 'calendar' ? 'bg-(--beheer-accent) text-white shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
                         <LayoutGrid className="h-4 w-4" /> Kalender
                     </button>
                 </div>
@@ -75,7 +75,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         <h3 className="font-semibold text-xs text-(--beheer-text-muted)">
                             {editingPlanning.id ? 'Planning Bewerken' : 'Nieuw Planning Item'}
                         </h3>
-                        <button onClick={() => setEditingPlanning(null)} className="p-2 text-(--beheer-text-muted) hover:text-(--beheer-text) transition-colors">
+                        <button onClick={() => setEditingPlanning(null)} className="icon-button p-2 text-(--beheer-text-muted) hover:text-(--beheer-text) transition-colors">
                             <X className="h-5 w-5" />
                         </button>
                     </div>
@@ -101,15 +101,15 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         </Field>
                         <div className="md:col-span-2">
                             <Field label="Titel *">
-                                <input type="text" value={editingPlanning.title || ''} onChange={e => setEditingPlanning({ ...editingPlanning, title: e.target.value })} className={inputClass} placeholder="Activiteit titel..." />
+                                <input type="text" value={editingPlanning.title || ''} onChange={e => setEditingPlanning({ ...editingPlanning, title: e.target.value })} className={`beheer-input ${inputClass}`} placeholder="Activiteit titel..." />
                             </Field>
                         </div>
                         <Field label="Locatie">
-                            <input type="text" value={editingPlanning.location || ''} onChange={e => setEditingPlanning({ ...editingPlanning, location: e.target.value })} className={inputClass} placeholder="Bv. TU/e Gemini" />
+                            <input type="text" value={editingPlanning.location || ''} onChange={e => setEditingPlanning({ ...editingPlanning, location: e.target.value })} className={`beheer-input ${inputClass}`} placeholder="Bv. TU/e Gemini" />
                         </Field>
                         <div className="md:col-span-3">
                             <Field label="Beschrijving *">
-                                <textarea value={editingPlanning.description || ''} onChange={e => setEditingPlanning({ ...editingPlanning, description: e.target.value })} rows={4} className={inputClass} placeholder="Wat gaan we doen?" />
+                                <textarea value={editingPlanning.description || ''} onChange={e => setEditingPlanning({ ...editingPlanning, description: e.target.value })} rows={4} className={`beheer-input ${inputClass}`} placeholder="Wat gaan we doen?" />
                             </Field>
                         </div>
                     </div>

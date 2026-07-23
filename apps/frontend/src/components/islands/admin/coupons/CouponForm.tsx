@@ -61,7 +61,7 @@ export default function CouponForm({
                         name="coupon_code"
                         required
                         placeholder="BV. KORTING2025"
-                        className="w-full px-5 py-4 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) font-mono focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold"
+                        className="beheer-input w-full px-5 py-4 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) font-mono focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold"
                         onChange={e => e.target.value = e.target.value.toUpperCase()}
                     />
                 </div>
@@ -71,11 +71,11 @@ export default function CouponForm({
                     <label className="text-xs font-semibold text-(--beheer-text-muted)">Type Korting</label>
                     <div className="grid grid-cols-2 bg-(--beheer-card-soft) p-1 rounded-xl border border-(--beheer-border)">
                         <button type="button" onClick={() => setDiscountType('fixed')}
-                            className={`py-3 px-4 rounded-lg text-xs font-semibold transition-all cursor-pointer ${discountType === 'fixed' ? 'bg-(--beheer-accent) text-white shadow-lg' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
+                            className={`tab-button py-3 px-4 rounded-lg text-xs font-semibold transition-all cursor-pointer ${discountType === 'fixed' ? 'bg-(--beheer-accent) text-white shadow-lg' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
                             <Euro className="inline h-3.5 w-3.5 mr-2" /> Vast Bedrag
                         </button>
                         <button type="button" onClick={() => setDiscountType('percentage')}
-                            className={`py-3 px-4 rounded-lg text-xs font-semibold transition-all cursor-pointer ${discountType === 'percentage' ? 'bg-(--beheer-accent) text-white shadow-lg' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
+                            className={`tab-button py-3 px-4 rounded-lg text-xs font-semibold transition-all cursor-pointer ${discountType === 'percentage' ? 'bg-(--beheer-accent) text-white shadow-lg' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
                             <Percent className="inline h-3.5 w-3.5 mr-2" /> Percentage
                         </button>
                     </div>
@@ -93,7 +93,7 @@ export default function CouponForm({
                             max={discountType === 'percentage' ? 100 : undefined}
                             step="0.01"
                             placeholder={discountType === 'fixed' ? '12.34' : '20'}
-                            className="w-full px-5 py-4 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold"
+                            className="beheer-input w-full px-5 py-4 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold"
                         />
                         <div className="absolute right-5 top-1/2 -translate-y-1/2 text-(--beheer-text-muted) font-bold text-xs opacity-40">
                             {discountType === 'fixed' ? 'EUR' : '%'}
@@ -104,7 +104,7 @@ export default function CouponForm({
                 {/* Usage Limit */}
                 <div className="space-y-3">
                     <label className="text-xs font-semibold text-(--beheer-text-muted)">Gebruikslimiet</label>
-                    <input type="number" name="usage_limit" min="1" placeholder="Onbeperkt" className="w-full px-5 py-4 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold" />
+                    <input type="number" name="usage_limit" min="1" placeholder="Onbeperkt" className="beheer-input w-full px-5 py-4 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold" />
                 </div>
 
                 {/* Valid From */}
@@ -143,14 +143,14 @@ export default function CouponForm({
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-8 py-4 rounded-xl font-semibold text-sm border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-all cursor-pointer"
+                    className="beheer-button px-8 py-4 rounded-xl font-semibold text-sm border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-all cursor-pointer"
                 >
                     Annuleren
                 </button>
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="flex items-center justify-center gap-3 px-10 py-4 bg-(--beheer-accent) text-white font-semibold text-sm rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                    className="beheer-button flex items-center justify-center gap-3 px-10 py-4 bg-(--beheer-accent) text-white font-semibold text-sm rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
                 >
                     {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
                     <span>{isPending ? 'Bezig...' : 'Coupon Aanmaken'}</span>

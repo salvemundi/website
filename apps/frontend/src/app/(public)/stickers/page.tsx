@@ -2,8 +2,8 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import type { EnrichedUser } from '@/types/auth';
 import { getPublicStickers } from '@/server/actions/public/stickers.actions';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import StickerMapBridge from '@/components/islands/stickers/StickerMapBridge';
-import Leaderboard from '@/components/islands/stickers/Leaderboard';
+import StickerMapBridge from '@/features/stickers/islands/StickerMapBridge';
+import Leaderboard from '@/features/stickers/components/Leaderboard';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,7 +28,7 @@ export default async function StickersPage() {
             title="Stickerkaart"
             description="Onze leden reizen de hele wereld over. Bekijk hier waar de Salve Mundi stickers allemaal te vinden zijn!"
         >
-            <div className="w-full px-4 md:px-8 py-4 md:py-8 h-[calc(100vh-var(--header-total-height))] min-h-[600px]">
+            <div className="w-full px-4 md:px-8 py-4 md:py-8 h-[calc(100vh-var(--header-total-height))] min-h-150">
                 <div className="flex flex-col lg:flex-row gap-8 items-stretch h-full">
                     <div className={`flex-1 min-w-0 order-1 lg:h-full ${isLoggedIn ? 'h-[50vh]' : 'h-[80vh]'}`}>
                         <div className="h-full overflow-hidden squircle-lg">
@@ -41,7 +41,7 @@ export default async function StickersPage() {
                     </div>
 
                     {isLoggedIn && (
-                        <div className="w-full lg:w-[400px] shrink-0 order-2 h-[40vh] lg:h-full">
+                        <div className="w-full lg:w-100 shrink-0 order-2 h-[40vh] lg:h-full">
                             <Leaderboard
                                 stickers={stickers}
                                 currentUser={activeUser}

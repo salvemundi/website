@@ -39,7 +39,7 @@ export default function IntroFilters({
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
                     placeholder="Zoek op naam of titel..."
-                    className="block w-full pl-10 pr-3 py-2 border border-(--beheer-border) rounded-xl leading-5 bg-(--beheer-card-bg) text-(--beheer-text) placeholder-(--beheer-text-muted) focus:outline-none focus:ring-2 focus:ring-(--beheer-accent) focus:border-transparent transition-all shadow-sm"
+                    className="beheer-input block w-full pl-10 pr-3 py-2 border border-(--beheer-border) rounded-xl leading-5 bg-(--beheer-card-bg) text-(--beheer-text) placeholder-(--beheer-text-muted) focus:outline-none focus:ring-2 focus:ring-(--beheer-accent) focus:border-transparent transition-all shadow-sm"
                 />
             </div>
 
@@ -48,7 +48,7 @@ export default function IntroFilters({
                     <button
                         key={tab.id}
                         onClick={() => onTabChange(tab.id as TabType)}
-                        className={`flex items-center gap-2 px-4 py-1.5 text-sm font-semibold rounded-lg transition-all whitespace-nowrap ${activeTab === tab.id
+                        className={`tab-button flex items-center gap-2 px-4 py-1.5 text-sm font-semibold rounded-lg transition-all whitespace-nowrap ${activeTab === tab.id
                             ? 'bg-(--beheer-accent) text-white shadow-sm'
                             : 'text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-border)/30'
                             }`}
@@ -69,7 +69,7 @@ export default function IntroFilters({
                 {(activeTab === 'signups' || activeTab === 'parents') && (
                     <button
                         onClick={onExport}
-                        className="flex items-center gap-2 px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl text-sm font-semibold text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-colors shadow-sm active:scale-95"
+                        className="beheer-button flex items-center gap-2 px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl text-sm font-semibold text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-colors shadow-sm active:scale-95"
                     >
                         <Download className="w-4 h-4 text-(--beheer-text-muted)" />
                         <span className="hidden sm:inline">Exporteer CSV</span>

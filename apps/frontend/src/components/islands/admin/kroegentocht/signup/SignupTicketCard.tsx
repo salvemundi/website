@@ -38,7 +38,7 @@ export default function SignupTicketCard({
                             <button
                                 type="button"
                                 onClick={() => setEditingTicketId(Number(ticket.id))}
-                                className="p-1 text-(--text-muted) hover:text-(--theme-purple)"
+                                className="icon-button p-1 text-(--text-muted) hover:text-(--theme-purple)"
                                 title="Naam aanpassen"
                             >
                                 <Pen className="h-3 w-3" />
@@ -46,7 +46,7 @@ export default function SignupTicketCard({
                             <button
                                 type="button"
                                 onClick={() => handleDeleteTicket(Number(ticket.id))}
-                                className="p-1 text-(--text-muted) hover:text-red-500"
+                                className="icon-button p-1 text-(--text-muted) hover:text-red-500"
                                 title="Ticket verwijderen"
                             >
                                 <Trash className="h-3 w-3" />
@@ -56,7 +56,7 @@ export default function SignupTicketCard({
                         <button
                             type="button"
                             onClick={() => setEditingTicketId(null)}
-                            className="p-1 text-(--theme-purple) hover:text-(--text-main) transition-all"
+                            className="icon-button p-1 text-(--theme-purple) hover:text-(--text-main) transition-all"
                             title="Sluiten"
                         >
                             <X className="h-3 w-3" />
@@ -67,7 +67,7 @@ export default function SignupTicketCard({
                     type="button"
                     onClick={() => handleToggleCheckIn(Number(ticket.id), !!ticket.checked_in)}
                     disabled={!!togglingId}
-                    className="transition-all active:scale-95 disabled:opacity-50"
+                    className="beheer-button transition-all active:scale-95 disabled:opacity-50"
                 >
                     {ticket.checked_in ? (
                         <span className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 text-green-500 text-[9px] font-semibold rounded-full ring-1 ring-green-500/20 hover:bg-green-500/20 transition-all">
@@ -91,7 +91,7 @@ export default function SignupTicketCard({
                             type="text"
                             value={ticket.name}
                             onChange={(e) => handleTicketChange(Number(ticket.id), 'name', e.target.value)}
-                            className="w-full px-3 py-2 bg-(--bg-card) border border-(--border-color) rounded-lg text-xs font-semibold text-(--text-main) focus:border-(--theme-purple) transition-all"
+                            className="beheer-input w-full px-3 py-2 bg-(--bg-card) border border-(--border-color) rounded-lg text-xs font-semibold text-(--text-main) focus:border-(--theme-purple) transition-all"
                             autoFocus
                             autoComplete="off"
                         />
@@ -102,7 +102,7 @@ export default function SignupTicketCard({
                             type="text"
                             value={ticket.initial}
                             onChange={(e) => handleTicketChange(Number(ticket.id), 'initial', e.target.value)}
-                            className="w-full px-3 py-2 bg-(--bg-card) border border-(--border-color) rounded-lg text-xs font-semibold text-(--text-main) text-center focus:border-(--theme-purple) transition-all"
+                            className="beheer-input w-full px-3 py-2 bg-(--bg-card) border border-(--border-color) rounded-lg text-xs font-semibold text-(--text-main) text-center focus:border-(--theme-purple) transition-all"
                             maxLength={1}
                             autoComplete="off"
                         />

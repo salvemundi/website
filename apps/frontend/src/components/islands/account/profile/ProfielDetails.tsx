@@ -58,7 +58,7 @@ export default function ProfielDetails({
             onClick={() => {
                 void handleLogout();
             }}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-red-500 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 transition-all active:scale-95 group"
+            className="form-button flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-red-500 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 transition-all active:scale-95 group"
         >
             <LogOut className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
             <span>Uitloggen</span>
@@ -79,7 +79,7 @@ export default function ProfielDetails({
                             E-mailadres
                         </p>
                     </div>
-                    <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-[68px]">
+                    <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-17">
                         <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-300">
                             <Mail className="h-5 w-5" />
                         </div>
@@ -96,7 +96,7 @@ export default function ProfielDetails({
                                 Fontys e-mail
                             </p>
                         </div>
-                        <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-[68px]">
+                        <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-17">
                             <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-300">
                                 <Mail className="h-5 w-5" />
                             </div>
@@ -113,12 +113,12 @@ export default function ProfielDetails({
                             Telefoonnummer
                         </p>
                         {!isEditingPhoneNumber && (
-                            <button onClick={() => setIsEditingPhoneNumber(true)} className="text-text-muted hover:text-purple-500 p-1 rounded-md transition-colors">
+                            <button onClick={() => setIsEditingPhoneNumber(true)} className="icon-button text-text-muted hover:text-purple-500 p-1 rounded-md transition-colors">
                                 <Pen className="h-3.5 w-3.5" />
                             </button>
                         )}
                     </div>
-                    <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-[68px]">
+                    <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-17">
                         <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-300">
                             <Phone className="h-5 w-5" />
                         </div>
@@ -135,7 +135,7 @@ export default function ProfielDetails({
                                         {...registerPhone("phone_number")}
                                         className="flex-1 min-w-0 bg-white dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
                                     />
-                                    <button type="submit" disabled={isPending} className="shrink-0 p-1.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
+                                    <button type="submit" disabled={isPending} className="form-button shrink-0 p-1.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
                                         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                                     </button>
                                 </div>
@@ -154,7 +154,7 @@ export default function ProfielDetails({
                             Geboortedatum
                         </p>
                     </div>
-                    <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-[68px]">
+                    <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-17">
                         <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-300">
                             <Calendar className="h-5 w-5" />
                         </div>

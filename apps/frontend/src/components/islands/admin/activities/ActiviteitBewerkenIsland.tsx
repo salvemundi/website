@@ -141,7 +141,7 @@ export default function ActiviteitBewerkenIsland({
                                 <button
                                     type="submit"
                                     disabled={optimisticSaving}
-                                    className="w-full bg-(--beheer-accent) text-white px-8 py-4 rounded-xl font-semibold text-base shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 group border border-white/10"
+                                    className="form-button w-full bg-(--beheer-accent) text-white px-8 py-4 rounded-xl font-semibold text-base shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 group border border-white/10"
                                 >
                                     {optimisticSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 group-hover:scale-110 transition-transform" />}
                                     <span>{optimisticSaving ? 'Opslaan...' : 'Wijzigingen opslaan'}</span>
@@ -150,7 +150,7 @@ export default function ActiviteitBewerkenIsland({
                                 <button
                                     type="button"
                                     onClick={() => router.back()}
-                                    className="w-full px-8 py-4 rounded-xl font-semibold text-base border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-all cursor-pointer"
+                                    className="beheer-button w-full px-8 py-4 rounded-xl font-semibold text-base border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-all cursor-pointer"
                                 >
                                     Annuleren
                                 </button>
@@ -160,7 +160,7 @@ export default function ActiviteitBewerkenIsland({
                                         type="button"
                                         onClick={() => { void handleDelete(); }}
                                         disabled={isDeleting || optimisticSaving}
-                                        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all font-semibold text-base disabled:opacity-50 cursor-pointer active:scale-95 group border border-red-500/20"
+                                        className="beheer-button w-full flex items-center justify-center gap-2 px-6 py-4 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all font-semibold text-base disabled:opacity-50 cursor-pointer active:scale-95 group border border-red-500/20"
                                     >
                                         {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash className="h-4 w-4 group-hover:scale-110 transition-transform" />}
                                         Activiteit verwijderen

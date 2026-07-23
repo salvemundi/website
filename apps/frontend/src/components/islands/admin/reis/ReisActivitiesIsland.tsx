@@ -102,7 +102,7 @@ export default function ReisActivitiesIsland({
         <div className="w-full">
             <div className="flex flex-col gap-8">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                    <div className="min-w-[240px]">
+                    <div className="min-w-60">
                         <AdminSelect
                             value={selectedTripId}
                             onChange={handleTripChange}
@@ -116,7 +116,7 @@ export default function ReisActivitiesIsland({
 
                     <button
                         onClick={() => setEditingActivity({})}
-                        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-accent) text-white rounded-xl font-semibold text-xs shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10"
+                        className="beheer-button flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-accent) text-white rounded-xl font-semibold text-xs shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10"
                     >
                         <Plus className="h-3.5 w-3.5" />
                         <span>Nieuwe Activiteit</span>

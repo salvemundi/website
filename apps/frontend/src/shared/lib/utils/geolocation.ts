@@ -3,6 +3,8 @@ export interface NominatimAddress {
     town?: string;
     village?: string;
     suburb?: string;
+    municipality?: string;
+    county?: string;
     country?: string;
 }
 
@@ -38,7 +40,7 @@ export async function searchLocations(query: string): Promise<LocationSearchResu
                     lat: parseFloat(item.lat),
                     lng: parseFloat(item.lon),
                     displayName: item.display_name || '',
-                    city: addr.city || addr.town || addr.village || addr.suburb || '',
+                    city: addr.city || addr.town || addr.village || addr.suburb || addr.municipality || addr.county || '',
                     country: addr.country || ''
                 };
             })
@@ -57,15 +59,15 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`,
             { headers: { 'User-Agent': 'SalveMundi-Website' } }
         );
-        
+
         if (response.ok) {
             const geoData = (await response.json()) as NominatimResponse;
             const addr = geoData.address || {};
-            city = addr.city || addr.town || addr.village || addr.suburb || '';
+            city = addr.city || addr.town || addr.village || addr.suburb || addr.municipality || addr.county || '';
             country = addr.country || '';
         }
     } catch {
-        // Silently ignore geocoding errors to allow fallback to manual input
+        
     }
 
     return { city, country };

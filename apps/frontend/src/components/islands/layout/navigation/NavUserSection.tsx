@@ -62,7 +62,7 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                             callbackURL: searchParams.get('callbackURL') || ROUTES.MEMBERSHIP
                         });
                     }}
-                    className="flex cursor-pointer items-center justify-center gap-2 squircle font-semibold px-4 py-1.5 h-9 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg bg-purple-50 text-purple-700 shrink-0"
+                    className="form-button flex cursor-pointer items-center justify-center gap-2 squircle font-semibold px-4 py-1.5 h-9 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg bg-purple-50 text-purple-700 shrink-0"
                 >
                     Inloggen
                 </button>

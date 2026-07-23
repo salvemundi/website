@@ -26,7 +26,7 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
                 </h3>
                 <button
                     onClick={onClose}
-                    className="rounded-full p-1 text-(--text-muted) hover:bg-(--bg-soft)"
+                    className="icon-button rounded-full p-1 text-(--text-muted) hover:bg-(--bg-soft)"
                     aria-label="Sluiten"
                 >
                     <X className="h-5 w-5" />
@@ -58,7 +58,7 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
                                 {event.location && (
                                     <div className="flex items-center gap-1">
                                         <MapPin className="h-3 w-3" />
-                                        <span className="truncate max-w-[120px]">{event.location}</span>
+                                        <span className="truncate max-w-30">{event.location}</span>
                                     </div>
                                 )}
                             </div>

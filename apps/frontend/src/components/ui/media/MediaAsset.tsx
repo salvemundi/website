@@ -39,10 +39,11 @@ export default function MediaAsset({
     if (!url) return null;
 
     const isLocalPreview = typeof id === 'string' && (id.startsWith('data:') || id.startsWith('blob:'));
+    const isApiAsset = typeof url === 'string' && url.startsWith('/api/assets/');
     const isVideo = type?.startsWith('video/') ||
         (typeof id === 'string' && (id.includes('video') || id.match(/\.(mp4|webm|ogg|mov)$/i)));
 
-    const shouldOptimize = !unoptimized && !isLocalPreview;
+    const shouldOptimize = !unoptimized && !isLocalPreview && !isApiAsset;
 
     if (isVideo) {
         return (

@@ -69,7 +69,7 @@ export default function AdminReisSignupModalIsland({
                             onClick={onDelete}
                             disabled={isPending}
                             title="Verwijder Deelnemer"
-                            className="p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border text-red-500/60 hover:text-red-500 border-transparent hover:border-red-500/20 hover:bg-red-500/5"
+                            className="icon-button p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border text-red-500/60 hover:text-red-500 border-transparent hover:border-red-500/20 hover:bg-red-500/5"
                         >
                             {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash className="h-5 w-5" />}
                         </button>
@@ -77,13 +77,13 @@ export default function AdminReisSignupModalIsland({
                         <button
                             onClick={onToggleEdit}
                             title={isEditing ? "Terug naar weergave" : "Bewerken"}
-                            className={`p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border ${isEditing ? 'bg-(--beheer-accent) text-white border-(--beheer-accent) shadow-glow' : 'text-(--beheer-text-muted) hover:text-(--beheer-accent) border-transparent hover:border-(--beheer-border)'}`}
+                            className={`icon-button p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border ${isEditing ? 'bg-(--beheer-accent) text-white border-(--beheer-accent) shadow-glow' : 'text-(--beheer-text-muted) hover:text-(--beheer-accent) border-transparent hover:border-(--beheer-border)'}`}
                         >
                             <Pen className="h-5 w-5" />
                         </button>
                         <button
                             onClick={onClose}
-                            className="text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg) p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border border-transparent hover:border-(--beheer-border)"
+                            className="icon-button text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg) p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border border-transparent hover:border-(--beheer-border)"
                         >
                             <X className="h-5 w-5" />
                         </button>
@@ -154,7 +154,7 @@ export default function AdminReisSignupModalIsland({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-6 py-2.5 text-[10px] font-semibold text-(--beheer-text-muted) hover:text-(--beheer-text) transition-colors"
+                        className="beheer-button px-6 py-2.5 text-[10px] font-semibold text-(--beheer-text-muted) hover:text-(--beheer-text) transition-colors"
                     >
                         {isEditing ? 'Annuleren' : 'Sluiten'}
                     </button>
@@ -165,7 +165,7 @@ export default function AdminReisSignupModalIsland({
                                 if (formRef.current) formRef.current.requestSubmit();
                             }}
                             disabled={isPending}
-                            className="px-10 py-3 bg-(--beheer-accent) text-white rounded-2xl font-semibold text-[10px] shadow-lg shadow-(--beheer-accent)/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
+                            className="beheer-button px-10 py-3 bg-(--beheer-accent) text-white rounded-2xl font-semibold text-[10px] shadow-lg shadow-(--beheer-accent)/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
                         >
                             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                             <span>Gegevens Opslaan</span>
@@ -176,7 +176,7 @@ export default function AdminReisSignupModalIsland({
                                 type="button"
                                 onClick={() => onResendEmail(selectedSignup.id, 'deposit')}
                                 disabled={selectedSignup.deposit_paid || (sendingEmailTo?.signupId === selectedSignup.id && sendingEmailTo.type === 'deposit')}
-                                className={`px-5 py-2.5 rounded-xl text-[9px] font-semibold border transition-all ${selectedSignup.deposit_email_sent ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-(--beheer-accent) text-white border-white/10 shadow-lg shadow-(--beheer-accent)/20 hover:scale-[1.02]'} disabled:opacity-30 disabled:grayscale disabled:scale-100 disabled:cursor-not-allowed`}
+                                className={`beheer-button px-5 py-2.5 rounded-xl text-[9px] font-semibold border transition-all ${selectedSignup.deposit_email_sent ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-(--beheer-accent) text-white border-white/10 shadow-lg shadow-(--beheer-accent)/20 hover:scale-[1.02]'} disabled:opacity-30 disabled:grayscale disabled:scale-100 disabled:cursor-not-allowed`}
                             >
                                 Aanbetaling Mail
                             </button>
@@ -184,7 +184,7 @@ export default function AdminReisSignupModalIsland({
                                 type="button"
                                 onClick={() => onResendEmail(selectedSignup.id, 'final')}
                                 disabled={selectedSignup.full_payment_paid || !trip.allow_final_payments || (sendingEmailTo?.signupId === selectedSignup.id && sendingEmailTo.type === 'final')}
-                                className={`px-5 py-2.5 rounded-xl text-[9px] font-semibold border transition-all ${selectedSignup.final_email_sent ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-emerald-500 text-white border-white/10 shadow-lg shadow-emerald-500/20 hover:scale-[1.02] disabled:opacity-30 disabled:grayscale disabled:scale-100 disabled:cursor-not-allowed'}`}
+                                className={`beheer-button px-5 py-2.5 rounded-xl text-[9px] font-semibold border transition-all ${selectedSignup.final_email_sent ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-emerald-500 text-white border-white/10 shadow-lg shadow-emerald-500/20 hover:scale-[1.02] disabled:opacity-30 disabled:grayscale disabled:scale-100 disabled:cursor-not-allowed'}`}
                             >
                                 Restbetaling Mail
                             </button>

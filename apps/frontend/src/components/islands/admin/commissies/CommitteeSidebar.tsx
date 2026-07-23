@@ -53,13 +53,13 @@ export default function CommitteeSidebar({
                     <div className="flex p-1 bg-(--beheer-card-soft) rounded-xl border border-(--beheer-border)/50">
                         <button
                             onClick={() => onShowAllChange(false)}
-                            className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${!showAll ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
+                            className={`tab-button flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${!showAll ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
                         >
                             Kern
                         </button>
                         <button
                             onClick={() => onShowAllChange(true)}
-                            className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${showAll ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
+                            className={`tab-button flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${showAll ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
                         >
                             Alles
                         </button>
@@ -78,7 +78,7 @@ export default function CommitteeSidebar({
                         <button
                             key={c.id}
                             onClick={() => onSelect(c)}
-                            className={`w-full group flex items-center justify-between p-4 rounded-xl transition-all ${selectedId === c.id
+                            className={`beheer-button w-full group flex items-center justify-between p-4 rounded-xl transition-all ${selectedId === c.id
                                 ? 'bg-(--beheer-accent) text-white shadow-(--shadow-glow)'
                                 : 'hover:bg-(--beheer-card-soft) text-(--beheer-text) hover:translate-x-1'}`}
                         >

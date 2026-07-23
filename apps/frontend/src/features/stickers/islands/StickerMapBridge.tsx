@@ -10,7 +10,7 @@ const StickerMapIsland = dynamic(
     {
         ssr: false,
         loading: () => (
-            <div className="w-full h-[600px] bg-purple-950/5 border border-purple-500/10 rounded-2xl flex items-center justify-center animate-pulse">
+            <div className="w-full h-150 bg-purple-950/5 border border-purple-500/10 rounded-2xl flex items-center justify-center animate-pulse">
                 <span className="text-(--text-muted) text-sm font-semibold tracking-wide uppercase">Kaart aan het laden...</span>
             </div>
         )
@@ -28,4 +28,3 @@ interface StickerMapBridgeProps {
 export default function StickerMapBridge(props: StickerMapBridgeProps) {
     return <StickerMapIsland {...props} />;
 }
-

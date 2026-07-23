@@ -49,14 +49,14 @@ export default function StatusPending({ signupData, initialId, isLoggedIn }: Sta
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
                     onClick={() => window.location.reload()}
-                    className="inline-flex h-14 px-10 rounded-2xl bg-(--bg-soft) border border-(--border-color) text-(--text-main) font-semibold items-center justify-center gap-2 hover:bg-(--bg-soft)/80 transition-all"
+                    className="form-button inline-flex h-14 px-10 rounded-2xl bg-(--bg-soft) border border-(--border-color) text-(--text-main) font-semibold items-center justify-center gap-2 hover:bg-(--bg-soft)/80 transition-all"
                 >
                     <RefreshCw className="h-4 w-4" />
                     Check opnieuw
                 </button>
                 <button
                     onClick={() => { void handleRetry(); }}
-                    className="inline-flex h-14 px-10 rounded-2xl bg-(--theme-purple) text-white font-semibold items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-(--theme-purple)/20"
+                    className="form-button inline-flex h-14 px-10 rounded-2xl bg-(--theme-purple) text-white font-semibold items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-(--theme-purple)/20"
                 >
                     <CreditCard className="h-4 w-4" />
                     Betaal nu

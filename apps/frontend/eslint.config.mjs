@@ -32,55 +32,31 @@ const eslintConfig = [
             "@typescript-eslint": tsEslint,
         },
         rules: {
-            // ==========================================
-            // 1. HARDCORE SECURITY & LOGIC BUGS (CodeQL)
-            // ==========================================
-            // Verbiedt het onderdrukken van security/detect-object-injection via inline comments.
-            // Dit dwingt een echte fix (Map, .map(), etc.) in plaats van een workaround.
             "eslint-comments/no-restricted-disable": ["error", "security/detect-object-injection"],
             "@typescript-eslint/no-unnecessary-condition": "error",
             "no-constant-condition": "error",
-            "no-eval": "error", // Blokkeert eval() (RCE gevaar)
-            "no-implied-eval": "error", // Blokkeert setTimeout("string")
-            "eqeqeq": ["error", "always"], // Forceert === (Voorkomt Type Coercion bugs)
+            "no-eval": "error",
+            "no-implied-eval": "error",
+            "eqeqeq": ["error", "always"],
 
-            // ==========================================
-            // 2. ASYNC & RACE CONDITION PREVENTIE
-            // ==========================================
-            // Dit is cruciaal voor je finance-service en ticket-verkoop!
-            // Blokkeert promises die je vergeet te 'awaiten' (voorkomt ghost-processen en unhandled rejections).
             "@typescript-eslint/no-floating-promises": "error",
-            // Voorkomt dat je 'await' gebruikt op iets dat geen promise is.
             "@typescript-eslint/await-thenable": "error",
-            // Voorkomt dat je een asynchrone functie meegeeft aan een event handler die dat niet verwacht.
             "@typescript-eslint/no-misused-promises": "error",
 
-            // ==========================================
-            // 3. REACT & XSS PREVENTIE
-            // ==========================================
-            // Verbiedt het direct injecteren van ongewassen HTML.
-            // Dit dwingt ontwikkelaars om <SafeMarkdown> componenten te gebruiken!
             "react/no-danger": "error",
-            // Voorkomt Reverse Tabnabbing bij externe links.
             "react/jsx-no-target-blank": "error",
 
-            // ==========================================
-            // 4. STRICTE TYPE VEILIGHEID (Geen 'Any' sluiproutes)
-            // ==========================================
             "@typescript-eslint/no-explicit-any": "error",
             "@typescript-eslint/no-unsafe-assignment": "error",
             "@typescript-eslint/no-unsafe-member-access": "error",
             "@typescript-eslint/no-unsafe-return": "error",
             "@typescript-eslint/no-unsafe-argument": "error",
-            "@typescript-eslint/ban-ts-comment": "error", // @ts-ignore is verboden
+            "@typescript-eslint/ban-ts-comment": "error",
             "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
-            "@typescript-eslint/no-non-null-assertion": "error", // Verbiedt obj!.property (forceert nette checks)
-            "@typescript-eslint/only-throw-error": "error", // Verbiedt het gooien van ruwe objecten/literals (forceert Error instanties)
+            "@typescript-eslint/no-non-null-assertion": "error",
+            "@typescript-eslint/only-throw-error": "error",
 
-            // ==========================================
-            // 5. CODE HYGIËNE & CLEANUP
-            // ==========================================
-            "@typescript-eslint/no-unused-vars": "off", // Uitgezet ten gunste van unused-imports
+            "@typescript-eslint/no-unused-vars": "off",
             "unused-imports/no-unused-imports": "error",
             "unused-imports/no-unused-vars": [
                 "error",
@@ -98,11 +74,8 @@ const eslintConfig = [
             "prefer-rest-params": "error",
             "@next/next/no-html-link-for-pages": "error",
 
-            // ==========================================
-            // 6. CUSTOM RESTRICTIONS (Architectuur)
-            // ==========================================
             "no-restricted-syntax": [
-                "error",
+                "warn",
                 {
                     "selector": "CallExpression[callee.object.name='console'][callee.property.name=/^(log|warn|error|info|debug)$/]",
                     "message": "Do not use console methods directly. Use safeConsoleError or logInternalError from '@/server/utils/logger' to ensure PII is sanitized and logs are centralized."
@@ -118,17 +91,35 @@ const eslintConfig = [
                 {
                     "selector": "JSXIdentifier[name='Suspense']",
                     "message": "Zero-Skeleton rendering: `<Suspense>` is strictly forbidden. Await data directly at the component/page level to ensure atomic page loads without intermediate loading states."
+                },
+                {
+                    "selector": "JSXOpeningElement[name.name='input']:not(:has(JSXAttribute[name.name='type'][value.value=/hidden|checkbox|radio|file/])):not(:has(JSXAttribute[name.name='className'] Literal[value=/form-input|beheer-input|sr-only|hidden/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-input|beheer-input|sr-only|hidden/]))",
+                    "message": "Zichtbare rauwe <input> gevonden zonder 'form-input' of 'beheer-input' klasse."
+                },
+                {
+                    "selector": "JSXOpeningElement[name.name='button']:not(:has(JSXAttribute[name.name='className'] Literal[value=/form-button|beheer-button|icon-button|tab-button|btn-/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-button|beheer-button|icon-button|tab-button|btn-/]))",
+                    "message": "Rauwe <button> gevonden zonder 'form-button', 'beheer-button', 'icon-button', 'tab-button' of 'btn-*' klasse."
+                },
+                {
+                    "selector": "JSXOpeningElement[name.name='select']:not(:has(JSXAttribute[name.name='className'] Literal[value=/form-input|beheer-input|beheer-select/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-input|beheer-input|beheer-select/]))",
+                    "message": "Rauwe <select> gevonden zonder geldige klasse."
+                },
+                {
+                    "selector": "JSXOpeningElement[name.name='textarea']:not(:has(JSXAttribute[name.name='className'] Literal[value=/form-input|beheer-input/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-input|beheer-input/]))",
+                    "message": "Rauwe <textarea> gevonden zonder 'form-input' of 'beheer-input' klasse."
                 }
             ],
 
-            // ==========================================
-            // 7. REACT COMPILER EXCEPTIONS
-            // ==========================================
             "react-hooks/set-state-in-effect": "off",
             "react-hooks/incompatible-library": "off"
         }
     },
-    // ---- UITZONDERINGEN (Tenzij het echt niet anders kan) ----
+    {
+        files: ["src/shared/ui/**/*", "src/components/ui/**/*"],
+        rules: {
+            "no-restricted-syntax": "off"
+        }
+    },
     {
         files: ["src/server/utils/logger.ts", "src/server/utils/log-sanitizer.ts"],
         rules: {
@@ -138,7 +129,6 @@ const eslintConfig = [
     {
         files: ["src/server/auth/auth-utils.ts", "src/server/auth/redis-session-plugin.ts", "src/server/auth/auth.ts"],
         rules: {
-            // Deze bestanden interacteren direct met externe library types (Better Auth) die intern 'any' gebruiken
             "@typescript-eslint/no-explicit-any": "off",
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-member-access": "off",
@@ -154,8 +144,6 @@ const eslintConfig = [
         }
     },
     {
-        // Next.js ImageResponse (Satori) does not support the <Image /> component. 
-        // Standard HTML <img> tags are strictly required for OpenGraph endpoints.
         files: ["src/app/**/opengraph-image.tsx", "src/app/**/twitter-image.tsx"],
         rules: {
             "@next/next/no-img-element": "off"

@@ -119,16 +119,16 @@ export default function AdminWebshopProductsIsland({ initialDropWindows, initial
             <div className="admin-container py-4 md:py-8 space-y-12">
                 {/* Drop windows */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between border-l-4 border-(--beheer-active) pl-4 py-1">
+                    <div className="flex items-center justify-between border-l-4 border-(--beheer-accent) pl-4 py-1">
                         <h2 className="text-sm font-semibold text-(--beheer-text) flex items-center gap-3">
                             Drops
-                            <span className="px-2.5 py-0.5 rounded-full bg-(--beheer-active)/10 text-(--beheer-active) text-xs font-semibold border border-(--beheer-active)/20">
+                            <span className="px-2.5 py-0.5 rounded-full bg-(--beheer-accent)/10 text-(--beheer-accent) text-xs font-semibold border border-(--beheer-accent)/20">
                                 {dropWindows.length}
                             </span>
                         </h2>
                         <button
                             onClick={() => setDropWindowModal({ open: true, editing: null })}
-                            className="flex items-center justify-center gap-1.5 px-4 py-2 bg-theme-purple text-white rounded-xl text-xs font-semibold shadow-lg hover:opacity-90 transition-all active:scale-95"
+                            className="beheer-button w-fit shrink-0 flex items-center justify-center gap-2 px-5 py-2.5 bg-(--beheer-accent) text-white rounded-xl text-xs font-semibold shadow-md hover:opacity-95 transition-all active:scale-95 cursor-pointer"
                         >
                             <Plus className="h-4 w-4" />
                             <span>Nieuwe drop</span>
@@ -166,10 +166,10 @@ export default function AdminWebshopProductsIsland({ initialDropWindows, initial
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-end gap-2">
-                                                        <button onClick={() => setDropWindowModal({ open: true, editing: dw })} className="p-2 rounded-lg text-(--beheer-text-muted) hover:text-theme-purple hover:bg-theme-purple/10 transition-all" aria-label="Bewerken">
+                                                        <button onClick={() => setDropWindowModal({ open: true, editing: dw })} className="icon-button p-2 rounded-lg text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/10 transition-all cursor-pointer" aria-label="Bewerken">
                                                             <Edit2 className="h-4 w-4" />
                                                         </button>
-                                                        <button onClick={() => handleDeleteDropWindow(dw.id)} disabled={deletingId === dw.id} className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-all disabled:opacity-50" aria-label="Verwijderen">
+                                                        <button onClick={() => handleDeleteDropWindow(dw.id)} disabled={deletingId === dw.id} className="icon-button p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-all disabled:opacity-50 cursor-pointer" aria-label="Verwijderen">
                                                             <Trash2 className="h-4 w-4" />
                                                         </button>
                                                     </div>
@@ -185,10 +185,10 @@ export default function AdminWebshopProductsIsland({ initialDropWindows, initial
 
                 {/* Products */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between border-l-4 border-(--beheer-active) pl-4 py-1">
+                    <div className="flex items-center justify-between border-l-4 border-(--beheer-accent) pl-4 py-1">
                         <h2 className="text-sm font-semibold text-(--beheer-text) flex items-center gap-3">
                             Producten
-                            <span className="px-2.5 py-0.5 rounded-full bg-(--beheer-active)/10 text-(--beheer-active) text-xs font-semibold border border-(--beheer-active)/20">
+                            <span className="px-2.5 py-0.5 rounded-full bg-(--beheer-accent)/10 text-(--beheer-accent) text-xs font-semibold border border-(--beheer-accent)/20">
                                 {products.length}
                             </span>
                         </h2>
@@ -196,7 +196,7 @@ export default function AdminWebshopProductsIsland({ initialDropWindows, initial
                             onClick={() => setProductModal({ open: true, editing: null })}
                             disabled={dropWindows.length === 0}
                             title={dropWindows.length === 0 ? 'Maak eerst een drop aan' : undefined}
-                            className="flex items-center justify-center gap-1.5 px-4 py-2 bg-theme-purple text-white rounded-xl text-xs font-semibold shadow-lg hover:opacity-90 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="beheer-button w-fit shrink-0 flex items-center justify-center gap-2 px-5 py-2.5 bg-(--beheer-accent) text-white rounded-xl text-xs font-semibold shadow-md hover:opacity-95 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                         >
                             <Plus className="h-4 w-4" />
                             <span>Nieuw product</span>
@@ -232,16 +232,16 @@ export default function AdminWebshopProductsIsland({ initialDropWindows, initial
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-(--beheer-text-muted)">€{Number(product.price).toFixed(2)}</td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <button onClick={() => handleToggleActive(product)} disabled={togglingId === product.id} className="text-(--beheer-text-muted) hover:text-theme-purple transition-all disabled:opacity-50">
+                                                    <button onClick={() => handleToggleActive(product)} disabled={togglingId === product.id} className="icon-button text-(--beheer-text-muted) hover:text-(--beheer-accent) transition-all disabled:opacity-50 cursor-pointer">
                                                         {product.is_active ? <ToggleRight className="h-6 w-6 text-emerald-500 mx-auto" /> : <ToggleLeft className="h-6 w-6 mx-auto" />}
                                                     </button>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-end gap-2">
-                                                        <button onClick={() => setProductModal({ open: true, editing: product })} className="p-2 rounded-lg text-(--beheer-text-muted) hover:text-theme-purple hover:bg-theme-purple/10 transition-all" aria-label="Bewerken">
+                                                        <button onClick={() => setProductModal({ open: true, editing: product })} className="icon-button p-2 rounded-lg text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/10 transition-all cursor-pointer" aria-label="Bewerken">
                                                             <Edit2 className="h-4 w-4" />
                                                         </button>
-                                                        <button onClick={() => handleDeleteProduct(product.id)} disabled={deletingId === product.id} className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-all disabled:opacity-50" aria-label="Verwijderen">
+                                                        <button onClick={() => handleDeleteProduct(product.id)} disabled={deletingId === product.id} className="icon-button p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-all disabled:opacity-50 cursor-pointer" aria-label="Verwijderen">
                                                             <Trash2 className="h-4 w-4" />
                                                         </button>
                                                     </div>

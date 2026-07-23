@@ -57,14 +57,14 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         suppressHydrationWarning
-                        className="w-full pl-12 pr-4 py-3 bg-(--beheer-card-soft) border border-(--beheer-border) rounded-xl text-xs font-semibold focus:outline-none focus:border-(--beheer-accent) transition-all placeholder:text-(--beheer-text-muted)/40 text-(--beheer-text)"
+                        className="beheer-input w-full pl-12 pr-4 py-3 bg-(--beheer-card-soft) border border-(--beheer-border) rounded-xl text-xs font-semibold focus:outline-none focus:border-(--beheer-accent) transition-all placeholder:text-(--beheer-text-muted)/40 text-(--beheer-text)"
                     />
                 </div>
             </div>
 
             <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-sm border border-(--beheer-border) overflow-hidden">
                 <div className="overflow-x-auto custom-scrollbar">
-                    <table className="w-full text-left border-collapse min-w-[800px]">
+                    <table className="w-full text-left border-collapse min-w-200">
                         <thead>
                             <tr className="border-b border-(--beheer-border) bg-(--beheer-card-soft) text-xs font-semibold text-(--beheer-text-muted)">
                                 <th className="px-6 py-4">Locatie & Gebruiker</th>
@@ -144,7 +144,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                             {sticker.status !== 'published' && (
                                                 <button
                                                     onClick={() => onApprove(sticker.id)}
-                                                    className="p-2 bg-green-500/10 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-600 hover:text-white transition-all shadow-sm"
+                                                    className="icon-button p-2 bg-green-500/10 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-600 hover:text-white transition-all shadow-sm"
                                                     title="Publiceren"
                                                 >
                                                     <CheckCircle className="h-4 w-4" />
@@ -152,7 +152,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                             )}
                                             <button
                                                 onClick={() => onDelete(sticker.id)}
-                                                className="p-2 bg-red-500/10 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                                                className="icon-button p-2 bg-red-500/10 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm"
                                                 title="Verwijderen"
                                             >
                                                 <Trash className="h-4 w-4" />
@@ -188,7 +188,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                             />
                         </div>
                         <button
-                            className="absolute -top-4 -right-4 bg-(--beheer-card-bg) text-(--beheer-text) p-2 rounded-full shadow-lg hover:text-(--beheer-accent) transition-colors border border-(--beheer-border)"
+                            className="icon-button absolute -top-4 -right-4 bg-(--beheer-card-bg) text-(--beheer-text) p-2 rounded-full shadow-lg hover:text-(--beheer-accent) transition-colors border border-(--beheer-border)"
                             onClick={() => setSelectedImage(null)}
                         >
                             <X className="h-5 w-5" />

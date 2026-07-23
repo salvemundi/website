@@ -42,7 +42,7 @@ export default function ActivitySignupTable({
 }: ActivitySignupTableProps) {
     return (
         <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[800px]">
+            <table className="w-full text-left border-collapse min-w-200">
                 <thead>
                     <tr className="border-b border-(--beheer-border) bg-(--beheer-card-soft) text-[10px] font-semibold tracking-widest text-(--beheer-text-muted)">
                         <th className="px-6 py-4">Inchecken</th>
@@ -69,7 +69,7 @@ export default function ActivitySignupTable({
                                         <button
                                             onClick={() => onToggleCheckIn(signup.id, !!signup.checked_in)}
                                             disabled={!canAccessEdit}
-                                            className={`flex items-center gap-2 self-start px-3 py-2 rounded-xl transition-all font-semibold text-[10px] tracking-wider border shadow-sm active:scale-95 ${signup.checked_in
+                                            className={`beheer-button flex items-center gap-2 self-start px-3 py-2 rounded-xl transition-all font-semibold text-[10px] tracking-wider border shadow-sm active:scale-95 ${signup.checked_in
                                                 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30'
                                                 : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) border-(--beheer-border) hover:border-emerald-500/50 hover:text-emerald-500'
                                                 } ${!canAccessEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -123,7 +123,7 @@ export default function ActivitySignupTable({
                                     {canAccessEdit && (
                                         <button
                                             onClick={() => onDelete(signup.id, email)}
-                                            className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-(--beheer-text-muted) opacity-30 hover:opacity-100 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
+                                            className="icon-button inline-flex items-center justify-center w-10 h-10 rounded-xl text-(--beheer-text-muted) opacity-30 hover:opacity-100 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
                                             title="Verwijder aanmelding"
                                         >
                                             {isRowDeleting ? (

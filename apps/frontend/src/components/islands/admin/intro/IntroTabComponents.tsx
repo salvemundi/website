@@ -43,7 +43,7 @@ export function Button({
         <button
             onClick={onClick}
             disabled={disabled || loading}
-            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-(--beheer-radius) text-sm font-semibold transition-all active:scale-95 disabled:opacity-50 ${variants.get(variant) || ''} ${className}`}
+            className={`beheer-button flex items-center justify-center gap-2 px-6 py-3 rounded-(--beheer-radius) text-sm font-semibold transition-all active:scale-95 disabled:opacity-50 ${variants.get(variant) || ''} ${className}`}
         >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : Icon && <Icon className="h-4 w-4" />}
             {children}
@@ -77,7 +77,7 @@ export function ActionButton({
             onClick={onClick}
             disabled={disabled || loading}
             title={title}
-            className={`p-2.5 rounded-xl border transition-all active:scale-90 disabled:opacity-50 ${variants.get(variant) || ''}`}
+            className={`icon-button p-2.5 rounded-xl border transition-all active:scale-90 disabled:opacity-50 ${variants.get(variant) || ''}`}
         >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
         </button>

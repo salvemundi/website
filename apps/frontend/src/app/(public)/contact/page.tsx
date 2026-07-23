@@ -1,10 +1,10 @@
-
 import type { Metadata } from 'next';
+import { connection } from 'next/server';
 import ContactInfoCard from '@/components/ui/social/ContactInfoCard';
 import { getDocumenten } from '@/server/actions/public/website.actions';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { InstagramIcon as SiInstagram, FacebookIcon as SiFacebook, TiktokIcon as SiTiktok, LinkedinIcon as FaLinkedin } from '@/shared/icons/social';
 
-// SEO metadata conform de V7 standaard
 export const metadata: Metadata = {
     title: 'Contact | Salve Mundi',
     description:
@@ -12,16 +12,9 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'Contact | Salve Mundi',
         description:
-            'Neem contact op met studievereniging Salve Mundi voor vragen, suggesties of informatie.' } };
-
-/**
- * Contactpagina — pure Server Component.
- * Islands (WhatsApp, Safe Havens) worden client-side gehydrateerd.
- * NUCLEAR SSR: Alle data (documenten) wordt op de server opgehaald voordat de pagina geflushd wordt.
- */
-import { connection } from 'next/server';
-import { SiInstagram, SiFacebook, SiTiktok } from 'react-icons/si';
-import { FaLinkedin } from 'react-icons/fa';
+            'Neem contact op met studievereniging Salve Mundi voor vragen, suggesties of informatie.',
+    },
+};
 
 export default async function ContactPage() {
     return (
@@ -31,7 +24,6 @@ export default async function ContactPage() {
 
 async function ContactContent() {
     await connection();
-    // Haal alle benodigde data op voor de hele pagina (Nuclear SSR)
     const [documenten, session] = await Promise.all([
         getDocumenten(),
         getEnrichedSession()
@@ -44,7 +36,6 @@ async function ContactContent() {
             <div className="mx-auto max-w-7xl px-fluid-md py-fluid-lg">
                 <div className="max-w-6xl mx-auto flex w-full flex-col gap-8">
 
-                    {/* 2-koloms grid — Informatie | Contact */}
                     <ContactInfoCard 
                         documenten={documenten} 
                         isLoggedIn={!!session?.user}
@@ -62,7 +53,6 @@ async function ContactContent() {
                         </h2>
 
                         <div className="flex flex-wrap justify-center gap-4">
-                            {/* Instagram */}
                             <a
                                 href="https://www.instagram.com/sv.salvemundi/"
                                 target="_blank"
@@ -72,8 +62,6 @@ async function ContactContent() {
                                 <SiInstagram className="w-5 h-5" aria-hidden="true" />
                                 Instagram
                             </a>
-
-                            {/* Facebook */}
                             <a
                                 href="https://www.facebook.com/sv.salvemundi/?locale=nl_NL"
                                 target="_blank"
@@ -83,8 +71,6 @@ async function ContactContent() {
                                 <SiFacebook className="w-5 h-5" aria-hidden="true" />
                                 Facebook
                             </a>
-
-                            {/* LinkedIn */}
                             <a
                                 href="https://nl.linkedin.com/company/salve-mundi"
                                 target="_blank"
@@ -94,8 +80,6 @@ async function ContactContent() {
                                 <FaLinkedin className="w-5 h-5" aria-hidden="true" />
                                 LinkedIn
                             </a>
-
-                            {/* TikTok */}
                             <a
                                 href="https://www.tiktok.com/@salve.mundi"
                                 target="_blank"

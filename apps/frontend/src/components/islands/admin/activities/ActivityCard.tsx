@@ -43,7 +43,7 @@ export default function ActivityCard({
         <div
             className={`flex flex-col md:flex-row bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-lg transition-all border border-(--beheer-border) hover:shadow-2xl group/card relative overflow-hidden ${isPast ? 'opacity-60 grayscale-[0.5]' : ''}`}
         >
-            <div className="hidden md:block relative w-full md:w-48 lg:w-56 min-h-[160px] md:min-h-full bg-(--beheer-card-soft)/50 shrink-0 border-r border-(--beheer-border)">
+            <div className="hidden md:block relative w-full md:w-48 lg:w-56 min-h-40 md:min-h-full bg-(--beheer-card-soft)/50 shrink-0 border-r border-(--beheer-border)">
                 <div className="absolute inset-0 p-4">
                     <div className="relative w-full h-full">
                         <MediaAsset
@@ -123,7 +123,7 @@ export default function ActivityCard({
             <div className="flex flex-row md:flex-col gap-2 md:gap-3 justify-center items-stretch md:w-64 p-4 md:p-6 border-t md:border-t-0 md:border-l border-(--beheer-border) bg-(--beheer-card-soft)/20">
                 <button
                     onClick={() => onViewSignups(event.id)}
-                    className="flex-1 flex items-center justify-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-5 text-[11px] bg-(--beheer-accent)/10 text-(--beheer-accent) hover:bg-(--beheer-accent) hover:text-white rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
+                    className="beheer-button flex-1 flex items-center justify-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-5 text-[11px] bg-(--beheer-accent)/10 text-(--beheer-accent) hover:bg-(--beheer-accent) hover:text-white rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
                 >
                     <Eye className="h-5 w-5 group-hover/btn:scale-110 transition-transform" />
                     <span>Aanmeldingen</span>
@@ -131,7 +131,7 @@ export default function ActivityCard({
 
                 <button
                     onClick={() => onViewAttendance(event.id)}
-                    className="flex-1 flex items-center justify-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-5 text-[11px] bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
+                    className="beheer-button flex-1 flex items-center justify-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-5 text-[11px] bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
                 >
                     <Users className="h-5 w-5 group-hover/btn:scale-110 transition-transform" />
                     <span>Aanwezigheid</span>
@@ -140,7 +140,7 @@ export default function ActivityCard({
                 {canEdit && (
                     <button
                         onClick={() => onEdit(event.id)}
-                        className="flex-1 flex items-center justify-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-5 text-[11px] border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-border) rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
+                        className="beheer-button flex-1 flex items-center justify-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-5 text-[11px] border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-border) rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
                     >
                         <Edit className="h-5 w-5 group-hover/btn:rotate-12 transition-transform" />
                         <span>Bewerken</span>

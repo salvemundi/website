@@ -106,13 +106,13 @@ export default function ActiviteitGridCard({
                         {!isPast && (
                             <button
                                 onClick={handleSignupClick}
-                                className={`p-2 rounded-full transition-all duration-200
+                                className={`icon-button p-2 rounded-full transition-all duration-200
                                     ${cannotSignUp
                                         ? 'bg-(--bg-soft) text-(--text-muted)'
                                         : 'bg-(--theme-purple) text-white shadow-lg shadow-(--theme-purple)/20 hover:scale-105'
                                     }`}
                                 title={alreadySignedUp ? 'Al aangemeld' : 'Aanmelden'}
->
+                            >
                                 {alreadySignedUp ? (
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                         <polyline points="20 6 9 17 4 12" />
@@ -132,7 +132,7 @@ export default function ActiviteitGridCard({
                                 e.stopPropagation();
                                 onShowDetails?.();
                             }}
-                            className="p-2 rounded-full bg-(--bg-soft) text-(--theme-purple) hover:scale-105 transition-all"
+                            className="icon-button p-2 rounded-full bg-(--bg-soft) text-(--theme-purple)"
                             title="Meer info"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

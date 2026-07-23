@@ -39,14 +39,14 @@ export default function AvatarPreviewModal({
                     <button
                         onClick={onConfirm}
                         disabled={isPending}
-                        className="w-full py-4 squircle bg-purple-600 text-white font-black text-lg shadow-xl shadow-purple-600/20 transition-all hover:scale-[1.02] hover:bg-purple-500 active:scale-95 disabled:opacity-50"
+                        className="form-button w-full py-4 squircle bg-purple-600 text-white font-black text-lg shadow-xl shadow-purple-600/20 transition-all hover:scale-[1.02] hover:bg-purple-500 active:scale-95 disabled:opacity-50"
                     >
                         {isPending ? 'Uploaden...' : 'Opslaan'}
                     </button>
                     <button
                         onClick={onCancel}
                         disabled={isPending}
-                        className="w-full py-4 squircle border-2 border-white/10 text-white font-bold text-lg transition-all hover:bg-white/5 active:scale-95 disabled:opacity-50"
+                        className="form-button w-full py-4 squircle border-2 border-white/10 text-white font-bold text-lg transition-all hover:bg-white/5 active:scale-95 disabled:opacity-50"
                     >
                         Annuleren
                     </button>
