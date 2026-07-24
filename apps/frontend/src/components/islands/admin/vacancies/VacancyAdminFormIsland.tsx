@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,6 +33,8 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
     const [removeExistingImage, setRemoveExistingImage] = useState(false);
     const [documentFile, setDocumentFile] = useState<File | null>(null);
     const [removeExistingDocument, setRemoveExistingDocument] = useState(false);
+    const imageInputRef = useRef<HTMLInputElement>(null);
+    const documentInputRef = useRef<HTMLInputElement>(null);
 
     const {
         register,
@@ -202,12 +204,16 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                             <MediaAsset asset={imagePreview || initialData?.image} alt="Voorbeeld" fill objectFit="cover" unoptimized={!!imagePreview} />
                                         </div>
                                     )}
-                                    <label htmlFor="field-image" className="form-button flex-1 flex items-center gap-2 justify-center px-4 py-2.5 rounded-xl bg-(--bg-soft) text-(--text-muted) text-sm font-bold cursor-pointer hover:text-(--theme-purple) transition-colors">
+                                    <button
+                                        type="button"
+                                        onClick={() => imageInputRef.current?.click()}
+                                        className="btn-upload flex-1 flex items-center gap-2 justify-center px-4 py-2.5 rounded-xl bg-(--bg-soft) text-(--text-muted) text-sm font-bold cursor-pointer hover:text-(--theme-purple) transition-colors"
+                                    >
                                         <ImageIcon className="h-4 w-4" />
                                         {imageFile ? imageFile.name : 'Kies afbeelding'}
-                                    </label>
+                                    </button>
                                     <input
-                                        id="field-image"
+                                        ref={imageInputRef}
                                         type="file"
                                         accept="image/jpeg,image/jpg,image/png,image/webp"
                                         onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
@@ -228,12 +234,16 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
 
                             <FormField id="field-document" label="Stageopdracht (PDF/Word)">
                                 <div className="flex items-center gap-2">
-                                    <label htmlFor="field-document" className="form-button flex-1 flex items-center gap-2 justify-center px-4 py-2.5 rounded-xl bg-(--bg-soft) text-(--text-muted) text-sm font-bold cursor-pointer hover:text-(--theme-purple) transition-colors">
+                                    <button
+                                        type="button"
+                                        onClick={() => documentInputRef.current?.click()}
+                                        className="btn-upload flex-1 flex items-center gap-2 justify-center px-4 py-2.5 rounded-xl bg-(--bg-soft) text-(--text-muted) text-sm font-bold cursor-pointer hover:text-(--theme-purple) transition-colors"
+                                    >
                                         <FileText className="h-4 w-4" />
                                         {documentFile ? documentFile.name : 'Kies bestand'}
-                                    </label>
+                                    </button>
                                     <input
-                                        id="field-document"
+                                        ref={documentInputRef}
                                         type="file"
                                         accept="application/pdf,.doc,.docx"
                                         onChange={(e) => { setDocumentFile(e.target.files?.[0] || null); setRemoveExistingDocument(false); }}

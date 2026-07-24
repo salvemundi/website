@@ -45,10 +45,15 @@ function parseVacancyFormData(formData: FormData) {
 
 export async function getAdminVacancies() {
     await enforceFeatureAccess('vacatures');
-    return db.query.vacancies.findMany({
-        orderBy: (v, { desc }) => [desc(v.published_at)],
-        with: { vacancy_direction_links: { with: { vacancy_ict_direction: true } } }
-    });
+    try {
+        return await db.query.vacancies.findMany({
+            orderBy: (v, { desc }) => [desc(v.published_at)],
+            with: { vacancy_direction_links: { with: { vacancy_ict_direction: true } } }
+        });
+    } catch (error) {
+        safeConsoleError('[vacancies-admin.actions.ts][getAdminVacancies] ', error);
+        return [];
+    }
 }
 
 export async function getAdminVacancyById(id: number) {
@@ -82,36 +87,41 @@ export async function getAdminVacancyById(id: number) {
 
 export async function getPendingSubmissions(): Promise<VacancySubmissionDTO[]> {
     await enforceFeatureAccess('vacatures');
-    const rows = await db.query.vacancy_submissions.findMany({
-        orderBy: (s, { desc }) => [desc(s.created_at)],
-        with: { vacancy_submission_direction_links: { with: { vacancy_ict_direction: true } } }
-    });
+    try {
+        const rows = await db.query.vacancy_submissions.findMany({
+            orderBy: (s, { desc }) => [desc(s.created_at)],
+            with: { vacancy_submission_direction_links: { with: { vacancy_ict_direction: true } } }
+        });
 
-    return rows.map((row) => ({
-        id: row.id,
-        title: row.title,
-        company: row.company,
-        description: row.description,
-        type: row.type as VacancySubmissionDTO['type'],
-        contact_email: row.contact_email,
-        contact_phone: row.contact_phone,
-        contact_website: row.contact_website,
-        location: row.location,
-        salary: row.salary,
-        employment_type: row.employment_type,
-        working_hours: row.working_hours,
-        directions: row.vacancy_submission_direction_links.map((l) => l.vacancy_ict_direction.name),
-        skills: Array.isArray(row.skills) ? row.skills as string[] : [],
-        image: row.image,
-        document: row.document,
-        status: row.status as VacancySubmissionDTO['status'],
-        rejection_reason: row.rejection_reason,
-        reviewed_by: row.reviewed_by,
-        reviewed_at: row.reviewed_at,
-        approved_vacancy_id: row.approved_vacancy_id,
-        verified_at: row.verified_at,
-        created_at: row.created_at
-    }));
+        return rows.map((row) => ({
+            id: row.id,
+            title: row.title,
+            company: row.company,
+            description: row.description,
+            type: row.type as VacancySubmissionDTO['type'],
+            contact_email: row.contact_email,
+            contact_phone: row.contact_phone,
+            contact_website: row.contact_website,
+            location: row.location,
+            salary: row.salary,
+            employment_type: row.employment_type,
+            working_hours: row.working_hours,
+            directions: row.vacancy_submission_direction_links.map((l) => l.vacancy_ict_direction.name),
+            skills: Array.isArray(row.skills) ? row.skills as string[] : [],
+            image: row.image,
+            document: row.document,
+            status: row.status as VacancySubmissionDTO['status'],
+            rejection_reason: row.rejection_reason,
+            reviewed_by: row.reviewed_by,
+            reviewed_at: row.reviewed_at,
+            approved_vacancy_id: row.approved_vacancy_id,
+            verified_at: row.verified_at,
+            created_at: row.created_at
+        }));
+    } catch (error) {
+        safeConsoleError('[vacancies-admin.actions.ts][getPendingSubmissions] ', error);
+        return [];
+    }
 }
 
 export async function createVacancyAction(formData: FormData) {

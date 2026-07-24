@@ -31,7 +31,7 @@ interface AdminVacanciesIslandProps {
 
 type Tab = 'vacatures' | 'aanmeldingen';
 
-const STATUS_LABELS: Record<VacancySubmissionDTO['status'], { label: string; className: string }> = {
+const STATUS_LABELS: Partial<Record<string, { label: string; className: string }>> = {
     pending_verification: { label: 'Wacht op e-mailverificatie', className: 'bg-(--theme-warning)/15 text-(--theme-warning)' },
     pending_review: { label: 'Klaar voor beoordeling', className: 'bg-(--theme-purple)/15 text-(--theme-purple)' },
     approved: { label: 'Goedgekeurd', className: 'bg-(--theme-success)/15 text-(--theme-success)' },
@@ -185,7 +185,10 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                             <p className="text-(--text-muted) text-sm py-8 text-center">Nog geen aanmeldingen ontvangen.</p>
                         ) : (
                             submissions.map((submission) => {
-                                const statusMeta = STATUS_LABELS[submission.status];
+                                const statusMeta = STATUS_LABELS[submission.status] || {
+                                    label: String(submission.status),
+                                    className: 'bg-(--bg-soft) text-(--text-muted)'
+                                };
                                 return (
                                     <div key={submission.id} className="flex flex-col gap-3 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) p-4">
                                         <div className="flex items-start justify-between gap-4">
