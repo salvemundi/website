@@ -200,7 +200,7 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                             <FormField id="field-salary" label="Salaris / vergoeding" error={errors.salary?.message}>
                                 <Input {...register('salary')} id="field-salary" />
                             </FormField>
-                            <FormField id="field-employment-type" label="Dienstverband" error={errors.employment_type?.message}>
+                            <FormField id="field-employment-type" label="Dienstverband / StageType" error={errors.employment_type?.message}>
                                 <Input {...register('employment_type')} id="field-employment-type" />
                             </FormField>
                             <FormField id="field-working-hours" label="Werktijden" error={errors.working_hours?.message}>

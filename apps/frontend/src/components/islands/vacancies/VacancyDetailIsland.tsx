@@ -73,7 +73,7 @@ export default function VacancyDetailIsland({ vacancy }: VacancyDetailIslandProp
                             <div className="flex items-start gap-2">
                                 <Briefcase className="h-4 w-4 text-(--theme-purple) shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="text-[10px] font-bold uppercase text-(--text-muted)">Dienstverband</p>
+                                    <p className="text-[10px] font-bold uppercase text-(--text-muted)">Dienstverband/stagetype</p>
                                     <p className="text-sm font-semibold text-(--text-main)">{vacancy.employment_type}</p>
                                 </div>
                             </div>

@@ -227,7 +227,7 @@ export default function VacancySubmissionFormIsland() {
                     <FormField id="field-salary" label="Salaris / vergoeding" error={errors.salary?.message}>
                         <Input {...register('salary')} id="field-salary" placeholder="Bijv. €12,50 per uur" />
                     </FormField>
-                    <FormField id="field-employment-type" label="Dienstverband" error={errors.employment_type?.message}>
+                    <FormField id="field-employment-type" label="Dienstverband/stage type" error={errors.employment_type?.message}>
                         <Input {...register('employment_type')} id="field-employment-type" placeholder="Bijv. Fulltime" />
                     </FormField>
                     <FormField id="field-working-hours" label="Werktijden" error={errors.working_hours?.message}>
