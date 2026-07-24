@@ -8,6 +8,7 @@ import { Briefcase, Mail, Building2, MapPin, Image as ImageIcon, FileText, X } f
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { TagInput } from '@/shared/ui/TagInput';
+import { MarkdownEditor } from '@/shared/ui/MarkdownEditor';
 import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -137,9 +138,20 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                         </div>
 
                         <FormField id="field-description" label="Omschrijving" required error={errors.description?.message}>
-                            <textarea {...register('description')} id="field-description" rows={6} className="form-input" />
+                            <Controller
+                                control={control}
+                                name="description"
+                                render={({ field }) => (
+                                    <MarkdownEditor
+                                        id="field-description"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        rows={10}
+                                    />
+                                )}
+                            />
                             <p className="text-xs text-(--text-muted) mt-1">
-                                Opmaak met Markdown wordt ondersteund: **vet**, *cursief*, en een enter voor een nieuwe regel.
+                                Gebruik de knoppen voor opmaak, of klik op &quot;Voorbeeld&quot; om te zien hoe de omschrijving op de Bijbanenbank wordt weergegeven.
                             </p>
                         </FormField>
 

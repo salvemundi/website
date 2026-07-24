@@ -3,10 +3,11 @@
 import { useRef, useState, useTransition } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Building2, MapPin, Briefcase, CheckCircle2, Image as ImageIcon, FileText, X } from 'lucide-react';
+import { Mail, Building2, MapPin, Briefcase, CheckCircle2, Image as ImageIcon, FileText, X, Send, ShieldCheck, Users, Info } from 'lucide-react';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { TagInput } from '@/shared/ui/TagInput';
+import { MarkdownEditor } from '@/shared/ui/MarkdownEditor';
 import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { useAdminToast } from '@/hooks/use-admin-toast';
@@ -17,6 +18,34 @@ import {
     type VacancySubmissionForm,
     ICT_DIRECTIONS
 } from '@salvemundi/validations';
+
+const PROCESS_STEPS = [
+    { icon: <Send className="h-4 w-4" />, text: 'Je vult dit formulier in en verstuurt je aanmelding.' },
+    { icon: <Mail className="h-4 w-4" />, text: 'Je ontvangt direct een e-mail met een link om je e-mailadres te bevestigen.' },
+    { icon: <ShieldCheck className="h-4 w-4" />, text: 'Na bevestiging beoordeelt het bestuur van Salve Mundi je aanmelding.' },
+    { icon: <Users className="h-4 w-4" />, text: 'Na goedkeuring is je vacature zichtbaar voor ingelogde leden van Salve Mundi — niet voor externe bezoekers van de website.' }
+];
+
+function ProcessExplanation() {
+    return (
+        <div className="mb-6 rounded-2xl bg-(--bg-soft) border border-(--border-color) p-6 space-y-4">
+            <h2 className="text-sm font-bold text-(--text-main) flex items-center gap-2">
+                <Info className="h-4 w-4 text-(--theme-purple)" />
+                Hoe werkt het?
+            </h2>
+            <ol className="space-y-3">
+                {PROCESS_STEPS.map((step, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                        <span className="shrink-0 h-6 w-6 rounded-full bg-(--theme-purple) text-white text-xs font-bold flex items-center justify-center mt-0.5">
+                            {i + 1}
+                        </span>
+                        <p className="text-sm text-(--text-muted) leading-relaxed">{step.text}</p>
+                    </li>
+                ))}
+            </ol>
+        </div>
+    );
+}
 
 export default function VacancySubmissionFormIsland() {
     const { toast, showToast, hideToast } = useAdminToast();
@@ -97,19 +126,23 @@ export default function VacancySubmissionFormIsland() {
         return (
             <StandardFormCard title="Bedankt voor je aanmelding" icon={<CheckCircle2 className="w-8 h-8" />}>
                 <p className="text-(--text-main) leading-relaxed">
-                    We hebben je een e-mail gestuurd met een verificatielink. Zodra je je e-mailadres hebt
-                    bevestigd, komt je vacature in de beoordelingswachtrij voor onze commissie te staan.
+                    We hebben je een e-mail gestuurd met een link om je e-mailadres te bevestigen. Zodra je dit
+                    hebt gedaan, beoordeelt het bestuur van Salve Mundi je aanmelding. Na goedkeuring is je
+                    vacature zichtbaar voor ingelogde leden van Salve Mundi — niet voor externe bezoekers van de
+                    website.
                 </p>
             </StandardFormCard>
         );
     }
 
     return (
-        <StandardFormCard
-            title="Vacature aanmelden"
-            icon={<Briefcase className="w-8 h-8" />}
-            description="Meld een stage of bijbaan aan voor leden van Salve Mundi. Na verificatie van je e-mailadres wordt je aanmelding beoordeeld door onze commissie."
-        >
+        <>
+            <ProcessExplanation />
+            <StandardFormCard
+                title="Vacature aanmelden"
+                icon={<Briefcase className="w-8 h-8" />}
+                description="Meld een stage of bijbaan aan voor leden van Salve Mundi."
+            >
             <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6" autoComplete="off">
                 <FormField id="field-type" label="Type vacature" required error={errors.type?.message}>
                     <select {...register('type')} id="field-type" className="form-input" suppressHydrationWarning>
@@ -131,9 +164,21 @@ export default function VacancySubmissionFormIsland() {
                 </div>
 
                 <FormField id="field-description" label="Omschrijving" required error={errors.description?.message}>
-                    <textarea {...register('description')} id="field-description" rows={6} className="form-input" placeholder="Omschrijf de functie, verantwoordelijkheden en wat jullie zoeken in een kandidaat..." />
+                    <Controller
+                        control={control}
+                        name="description"
+                        render={({ field }) => (
+                            <MarkdownEditor
+                                id="field-description"
+                                value={field.value}
+                                onChange={field.onChange}
+                                rows={10}
+                                placeholder="Omschrijf de functie, verantwoordelijkheden en wat jullie zoeken in een kandidaat..."
+                            />
+                        )}
+                    />
                     <p className="text-xs text-(--text-muted) mt-1">
-                        Opmaak met Markdown wordt ondersteund: **vet**, *cursief*, en een enter voor een nieuwe regel.
+                        Gebruik de knoppen voor opmaak, of klik op &quot;Voorbeeld&quot; om te zien hoe je omschrijving straks op de Bijbanenbank wordt weergegeven.
                     </p>
                 </FormField>
 
@@ -281,7 +326,8 @@ export default function VacancySubmissionFormIsland() {
                     <input {...register('hp_confirm')} id="hp_confirm" tabIndex={-1} autoComplete="off" className="hidden" suppressHydrationWarning />
                 </div>
             </form>
-            <AdminToast toast={toast} onClose={hideToast} />
-        </StandardFormCard>
+                <AdminToast toast={toast} onClose={hideToast} />
+            </StandardFormCard>
+        </>
     );
 }
