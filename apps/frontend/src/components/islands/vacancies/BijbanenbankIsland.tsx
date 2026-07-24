@@ -39,7 +39,8 @@ function buildSearchIndex(vacancy: VacancyDTO): string {
         vacancy.salary,
         vacancy.employment_type,
         vacancy.working_hours,
-        ...vacancy.directions
+        ...vacancy.directions,
+        ...vacancy.skills
     ].filter(Boolean).join(' ').toLowerCase();
 }
 

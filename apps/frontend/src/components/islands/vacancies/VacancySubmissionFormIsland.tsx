@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Building2, MapPin, Briefcase, CheckCircle2 } from 'lucide-react';
+import { Mail, Building2, MapPin, Briefcase, CheckCircle2, Image as ImageIcon, FileText, X } from 'lucide-react';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
+import { TagInput } from '@/shared/ui/TagInput';
 import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import { submitVacancy } from '@/server/actions/vacancies/vacancies-submission.actions';
@@ -20,9 +22,13 @@ export default function VacancySubmissionFormIsland() {
     const { toast, showToast, hideToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
     const [submitted, setSubmitted] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [documentFile, setDocumentFile] = useState<File | null>(null);
 
     const {
         register,
+        control,
         watch,
         handleSubmit,
         formState: { errors }
@@ -41,6 +47,7 @@ export default function VacancySubmissionFormIsland() {
             employment_type: '',
             working_hours: '',
             directions: [],
+            skills: [],
             hp_confirm: ''
         }
     });
@@ -48,11 +55,34 @@ export default function VacancySubmissionFormIsland() {
     const type = watch('type');
     const selectedDirections = watch('directions');
 
+    const handleImageChange = (file: File | null) => {
+        setImageFile(file);
+        setImagePreview(file ? URL.createObjectURL(file) : null);
+    };
+
     const onSubmit = async (data: VacancySubmissionForm) => {
         if (data.hp_confirm) return;
 
+        const formData = new FormData();
+        formData.set('title', data.title);
+        formData.set('company', data.company);
+        formData.set('description', data.description);
+        formData.set('type', data.type);
+        formData.set('contact_email', data.contact_email);
+        formData.set('contact_phone', data.contact_phone || '');
+        formData.set('contact_website', data.contact_website || '');
+        formData.set('location', data.location);
+        formData.set('salary', data.salary || '');
+        formData.set('employment_type', data.employment_type || '');
+        formData.set('working_hours', data.working_hours || '');
+        formData.set('directions', JSON.stringify(data.directions));
+        formData.set('skills', JSON.stringify(data.skills));
+        formData.set('hp_confirm', data.hp_confirm || '');
+        if (imageFile) formData.set('imageFile', imageFile);
+        if (documentFile) formData.set('documentFile', documentFile);
+
         startTransition(async () => {
-            const result = await submitVacancy(data);
+            const result = await submitVacancy(formData);
             if (result.success) {
                 setSubmitted(true);
             } else {
@@ -100,6 +130,24 @@ export default function VacancySubmissionFormIsland() {
 
                 <FormField id="field-description" label="Omschrijving" required error={errors.description?.message}>
                     <textarea {...register('description')} id="field-description" rows={6} className="form-input" placeholder="Omschrijf de functie, verantwoordelijkheden en wat jullie zoeken in een kandidaat..." />
+                    <p className="text-xs text-(--text-muted) mt-1">
+                        Opmaak met Markdown wordt ondersteund: **vet**, *cursief*, en een enter voor een nieuwe regel.
+                    </p>
+                </FormField>
+
+                <FormField id="field-skills" label="Gewenste vaardigheden" error={errors.skills?.message}>
+                    <Controller
+                        control={control}
+                        name="skills"
+                        render={({ field }) => (
+                            <TagInput
+                                id="field-skills"
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Typ een vaardigheid en druk op enter (bijv. React, Communicatief)"
+                            />
+                        )}
+                    />
                 </FormField>
 
                 <FormField id="field-location" label="Locatie" required error={errors.location?.message}>
@@ -137,6 +185,50 @@ export default function VacancySubmissionFormIsland() {
                     </FormField>
                     <FormField id="field-working-hours" label="Werktijden" error={errors.working_hours?.message}>
                         <Input {...register('working_hours')} id="field-working-hours" placeholder="Bijv. 16-24 uur/week" />
+                    </FormField>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField id="field-image" label="Afbeelding (optioneel)">
+                        <div className="flex items-center gap-3">
+                            {imagePreview && (
+                                <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-(--bg-soft)">
+                                    <MediaAsset asset={imagePreview} alt="Voorbeeld" fill objectFit="cover" unoptimized />
+                                </div>
+                            )}
+                            <label htmlFor="field-image" className="form-button flex-1 flex items-center gap-2 justify-center px-4 py-2.5 rounded-xl bg-(--bg-soft) text-(--text-muted) text-sm font-bold cursor-pointer hover:text-(--theme-purple) transition-colors">
+                                <ImageIcon className="h-4 w-4" />
+                                {imageFile ? imageFile.name : 'Kies afbeelding'}
+                            </label>
+                            <input
+                                id="field-image"
+                                type="file"
+                                accept="image/jpeg,image/jpg,image/png,image/webp"
+                                onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
+                                className="hidden"
+                            />
+                        </div>
+                    </FormField>
+
+                    <FormField id="field-document" label="Stageopdracht (PDF/Word, optioneel)">
+                        <div className="flex items-center gap-2">
+                            <label htmlFor="field-document" className="form-button flex-1 flex items-center gap-2 justify-center px-4 py-2.5 rounded-xl bg-(--bg-soft) text-(--text-muted) text-sm font-bold cursor-pointer hover:text-(--theme-purple) transition-colors">
+                                <FileText className="h-4 w-4" />
+                                {documentFile ? documentFile.name : 'Kies bestand'}
+                            </label>
+                            <input
+                                id="field-document"
+                                type="file"
+                                accept="application/pdf,.doc,.docx"
+                                onChange={(e) => setDocumentFile(e.target.files?.[0] || null)}
+                                className="hidden"
+                            />
+                            {documentFile && (
+                                <button type="button" onClick={() => setDocumentFile(null)} className="icon-button p-2 rounded-lg bg-(--bg-soft) text-(--text-muted) hover:text-(--theme-error)" aria-label="Verwijder document">
+                                    <X className="h-4 w-4" />
+                                </button>
+                            )}
+                        </div>
                     </FormField>
                 </div>
 

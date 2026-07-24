@@ -7,7 +7,9 @@ import { vacancyAdminSchema, type VacancyAdminForm, type VacancySubmissionDTO } 
 import { enforceFeatureAccess } from '@/server/actions/admin/admin-utils.actions';
 import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
 import { safeConsoleError } from '@/server/utils/logger';
+import { uploadToDirectus, uploadDocumentToDirectus } from '@/server/utils/media';
 import { sendVacancyMail } from './vacancy-mail.utils';
+import { parseJsonArray } from './vacancy-form.utils';
 
 function revalidateVacancyPaths() {
     revalidatePath('/beheer/bijbanenbank');
@@ -20,6 +22,25 @@ async function resolveDirectionIds(names: string[]): Promise<number[]> {
         .from(schema.vacancy_ict_directions)
         .where(inArray(schema.vacancy_ict_directions.name, names));
     return rows.map((r) => r.id);
+}
+
+function parseVacancyFormData(formData: FormData) {
+    return vacancyAdminSchema.safeParse({
+        title: formData.get('title'),
+        company: formData.get('company'),
+        description: formData.get('description'),
+        type: formData.get('type'),
+        contact_email: formData.get('contact_email'),
+        contact_phone: formData.get('contact_phone'),
+        contact_website: formData.get('contact_website'),
+        location: formData.get('location'),
+        salary: formData.get('salary'),
+        employment_type: formData.get('employment_type'),
+        working_hours: formData.get('working_hours'),
+        directions: parseJsonArray(formData.get('directions')),
+        skills: parseJsonArray(formData.get('skills')),
+        is_visible: formData.get('is_visible') === 'true'
+    });
 }
 
 export async function getAdminVacancies() {
@@ -52,7 +73,10 @@ export async function getAdminVacancyById(id: number) {
         employment_type: row.employment_type ?? '',
         working_hours: row.working_hours ?? '',
         is_visible: row.is_visible,
-        directions: row.vacancy_direction_links.map((l) => l.vacancy_ict_direction.name)
+        directions: row.vacancy_direction_links.map((l) => l.vacancy_ict_direction.name),
+        skills: Array.isArray(row.skills) ? row.skills as string[] : [],
+        image: row.image,
+        document: row.document
     };
 }
 
@@ -77,6 +101,9 @@ export async function getPendingSubmissions(): Promise<VacancySubmissionDTO[]> {
         employment_type: row.employment_type,
         working_hours: row.working_hours,
         directions: row.vacancy_submission_direction_links.map((l) => l.vacancy_ict_direction.name),
+        skills: Array.isArray(row.skills) ? row.skills as string[] : [],
+        image: row.image,
+        document: row.document,
         status: row.status as VacancySubmissionDTO['status'],
         rejection_reason: row.rejection_reason,
         reviewed_by: row.reviewed_by,
@@ -87,14 +114,20 @@ export async function getPendingSubmissions(): Promise<VacancySubmissionDTO[]> {
     }));
 }
 
-export async function createVacancyAction(data: VacancyAdminForm) {
+export async function createVacancyAction(formData: FormData) {
     const { user } = await enforceFeatureAccess('vacatures');
 
-    const parsed = vacancyAdminSchema.safeParse(data);
+    const parsed = parseVacancyFormData(formData);
     if (!parsed.success) {
         return { success: false, error: 'Ongeldige invoer.', fieldErrors: parsed.error.flatten().fieldErrors };
     }
     const value = parsed.data;
+
+    const imageUpload = await uploadToDirectus(formData.get('imageFile') as File | null, 5 * 1024 * 1024);
+    if (!imageUpload.success) return { success: false, error: imageUpload.error };
+
+    const documentUpload = await uploadDocumentToDirectus(formData.get('documentFile') as File | null);
+    if (!documentUpload.success) return { success: false, error: documentUpload.error };
 
     try {
         const [inserted] = await db.insert(schema.vacancies).values({
@@ -110,6 +143,9 @@ export async function createVacancyAction(data: VacancyAdminForm) {
             employment_type: value.employment_type || null,
             working_hours: value.working_hours || null,
             is_visible: value.is_visible,
+            skills: value.skills,
+            image: imageUpload.id,
+            document: documentUpload.id,
             created_by: user.id
         }).returning({ id: schema.vacancies.id });
 
@@ -131,14 +167,23 @@ export async function createVacancyAction(data: VacancyAdminForm) {
     }
 }
 
-export async function updateVacancyAction(id: number, data: VacancyAdminForm) {
+export async function updateVacancyAction(id: number, formData: FormData) {
     await enforceFeatureAccess('vacatures');
 
-    const parsed = vacancyAdminSchema.safeParse(data);
+    const parsed = parseVacancyFormData(formData);
     if (!parsed.success) {
         return { success: false, error: 'Ongeldige invoer.', fieldErrors: parsed.error.flatten().fieldErrors };
     }
     const value = parsed.data;
+
+    const imageUpload = await uploadToDirectus(formData.get('imageFile') as File | null, 5 * 1024 * 1024);
+    if (!imageUpload.success) return { success: false, error: imageUpload.error };
+
+    const documentUpload = await uploadDocumentToDirectus(formData.get('documentFile') as File | null);
+    if (!documentUpload.success) return { success: false, error: documentUpload.error };
+
+    const removeImage = formData.get('removeImage') === 'true';
+    const removeDocument = formData.get('removeDocument') === 'true';
 
     try {
         await db.update(schema.vacancies).set({
@@ -154,6 +199,9 @@ export async function updateVacancyAction(id: number, data: VacancyAdminForm) {
             employment_type: value.employment_type || null,
             working_hours: value.working_hours || null,
             is_visible: value.is_visible,
+            skills: value.skills,
+            ...(imageUpload.id ? { image: imageUpload.id } : removeImage ? { image: null } : {}),
+            ...(documentUpload.id ? { document: documentUpload.id } : removeDocument ? { document: null } : {}),
             updated_at: new Date().toISOString()
         }).where(eq(schema.vacancies.id, id));
 
@@ -216,6 +264,9 @@ export async function approveSubmissionAction(submissionId: number) {
             salary: submission.salary,
             employment_type: submission.employment_type,
             working_hours: submission.working_hours,
+            skills: submission.skills,
+            image: submission.image,
+            document: submission.document,
             is_visible: true
         }).returning({ id: schema.vacancies.id });
 

@@ -33,6 +33,7 @@ const vacancyBaseSchema = z.object({
     employment_type: z.string().max(100).optional().or(z.literal('')),
     working_hours: z.string().max(255).optional().or(z.literal('')),
     directions: z.array(z.string()),
+    skills: z.array(z.string()),
 });
 
 // Public submission form: internships must select at least one ICT direction, plus a honeypot field.
@@ -75,6 +76,9 @@ export interface VacancyDTO {
     is_visible: boolean;
     published_at: string;
     directions: string[];
+    skills: string[];
+    image: string | null;
+    document: string | null;
 }
 
 export interface VacancySubmissionDTO extends Omit<VacancyDTO, 'id' | 'is_visible' | 'published_at'> {

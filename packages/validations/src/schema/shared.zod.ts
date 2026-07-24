@@ -34,3 +34,18 @@ export const imageUploadSchema = z
         (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
         'Alleen .jpg, .jpeg, .png en .webp bestanden worden geaccepteerd.'
     );
+
+export const MAX_DOCUMENT_UPLOAD_SIZE = 10 * 1024 * 1024;
+export const ACCEPTED_DOCUMENT_TYPES = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+];
+
+export const documentUploadSchema = z
+    .custom<File | Blob>((val) => val instanceof File || val instanceof Blob, 'Geen geldig bestand geüpload')
+    .refine((file) => file.size <= MAX_DOCUMENT_UPLOAD_SIZE, 'Bestand is te groot. Maximaal 10MB toegestaan.')
+    .refine(
+        (file) => ACCEPTED_DOCUMENT_TYPES.includes(file.type),
+        'Alleen .pdf, .doc en .docx bestanden worden geaccepteerd.'
+    );

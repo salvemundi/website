@@ -1890,6 +1890,9 @@ export const vacancies = pgTable("vacancies", {
 	working_hours: varchar({ length: 255 }),
 	is_visible: boolean().default(true).notNull(),
 	published_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	image: uuid(),
+	document: uuid(),
+	skills: jsonb().default([]),
 	created_by: uuid(),
 	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
@@ -1898,6 +1901,16 @@ export const vacancies = pgTable("vacancies", {
 			columns: [table.created_by],
 			foreignColumns: [directus_users.id],
 			name: "vacancies_created_by_directus_users_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.image],
+			foreignColumns: [directus_files.id],
+			name: "vacancies_image_directus_files_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.document],
+			foreignColumns: [directus_files.id],
+			name: "vacancies_document_directus_files_id_fk"
 		}).onDelete("set null"),
 ]);
 
@@ -1939,6 +1952,9 @@ export const vacancy_submissions = pgTable("vacancy_submissions", {
 	approved_vacancy_id: integer(),
 	submitter_ip: varchar({ length: 64 }),
 	verified_at: timestamp({ withTimezone: true, mode: 'string' }),
+	image: uuid(),
+	document: uuid(),
+	skills: jsonb().default([]),
 	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
@@ -1951,6 +1967,16 @@ export const vacancy_submissions = pgTable("vacancy_submissions", {
 			columns: [table.approved_vacancy_id],
 			foreignColumns: [vacancies.id],
 			name: "vacancy_submissions_approved_vacancy_id_vacancies_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.image],
+			foreignColumns: [directus_files.id],
+			name: "vacancy_submissions_image_directus_files_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.document],
+			foreignColumns: [directus_files.id],
+			name: "vacancy_submissions_document_directus_files_id_fk"
 		}).onDelete("set null"),
 ]);
 

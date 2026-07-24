@@ -1,22 +1,25 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Briefcase, Mail, Building2, MapPin } from 'lucide-react';
+import { Briefcase, Mail, Building2, MapPin, Image as ImageIcon, FileText, X } from 'lucide-react';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
+import { TagInput } from '@/shared/ui/TagInput';
 import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
+import MediaAsset from '@/components/ui/media/MediaAsset';
+import DocumentAsset from '@/components/ui/media/DocumentAsset';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { createVacancyAction, updateVacancyAction } from '@/server/actions/vacancies/vacancies-admin.actions';
 import { vacancyAdminSchema, type VacancyAdminForm, ICT_DIRECTIONS } from '@salvemundi/validations';
 
 interface VacancyAdminFormIslandProps {
     vacancyId?: number;
-    initialData?: Partial<VacancyAdminForm>;
+    initialData?: Partial<VacancyAdminForm> & { image?: string | null; document?: string | null };
 }
 
 export default function VacancyAdminFormIsland({ vacancyId, initialData }: VacancyAdminFormIslandProps) {
@@ -25,8 +28,15 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
     const [isPending, startTransition] = useTransition();
     const isEditing = typeof vacancyId === 'number';
 
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [removeExistingImage, setRemoveExistingImage] = useState(false);
+    const [documentFile, setDocumentFile] = useState<File | null>(null);
+    const [removeExistingDocument, setRemoveExistingDocument] = useState(false);
+
     const {
         register,
+        control,
         watch,
         handleSubmit,
         formState: { errors }
@@ -45,6 +55,7 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
             employment_type: initialData?.employment_type ?? '',
             working_hours: initialData?.working_hours ?? '',
             directions: initialData?.directions ?? [],
+            skills: initialData?.skills ?? [],
             is_visible: initialData?.is_visible ?? true
         }
     });
@@ -52,11 +63,37 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
     const type = watch('type');
     const selectedDirections = watch('directions');
 
+    const handleImageChange = (file: File | null) => {
+        setImageFile(file);
+        setImagePreview(file ? URL.createObjectURL(file) : null);
+        if (file) setRemoveExistingImage(false);
+    };
+
     const onSubmit = async (data: VacancyAdminForm) => {
+        const formData = new FormData();
+        formData.set('title', data.title);
+        formData.set('company', data.company);
+        formData.set('description', data.description);
+        formData.set('type', data.type);
+        formData.set('contact_email', data.contact_email);
+        formData.set('contact_phone', data.contact_phone || '');
+        formData.set('contact_website', data.contact_website || '');
+        formData.set('location', data.location);
+        formData.set('salary', data.salary || '');
+        formData.set('employment_type', data.employment_type || '');
+        formData.set('working_hours', data.working_hours || '');
+        formData.set('directions', JSON.stringify(data.directions));
+        formData.set('skills', JSON.stringify(data.skills));
+        formData.set('is_visible', String(data.is_visible));
+        if (imageFile) formData.set('imageFile', imageFile);
+        if (documentFile) formData.set('documentFile', documentFile);
+        formData.set('removeImage', String(removeExistingImage));
+        formData.set('removeDocument', String(removeExistingDocument));
+
         startTransition(async () => {
             const result = isEditing
-                ? await updateVacancyAction(vacancyId, data)
-                : await createVacancyAction(data);
+                ? await updateVacancyAction(vacancyId, formData)
+                : await createVacancyAction(formData);
 
             if (result.success) {
                 showToast(isEditing ? 'Vacature bijgewerkt.' : 'Vacature aangemaakt.', 'success');
@@ -99,6 +136,24 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
 
                         <FormField id="field-description" label="Omschrijving" required error={errors.description?.message}>
                             <textarea {...register('description')} id="field-description" rows={6} className="form-input" />
+                            <p className="text-xs text-(--text-muted) mt-1">
+                                Opmaak met Markdown wordt ondersteund: **vet**, *cursief*, en een enter voor een nieuwe regel.
+                            </p>
+                        </FormField>
+
+                        <FormField id="field-skills" label="Gewenste vaardigheden" error={errors.skills?.message}>
+                            <Controller
+                                control={control}
+                                name="skills"
+                                render={({ field }) => (
+                                    <TagInput
+                                        id="field-skills"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        placeholder="Typ een vaardigheid en druk op enter"
+                                    />
+                                )}
+                            />
                         </FormField>
 
                         <FormField id="field-location" label="Locatie" required error={errors.location?.message}>
@@ -136,6 +191,70 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                             </FormField>
                             <FormField id="field-working-hours" label="Werktijden" error={errors.working_hours?.message}>
                                 <Input {...register('working_hours')} id="field-working-hours" />
+                            </FormField>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField id="field-image" label="Afbeelding">
+                                <div className="flex items-center gap-3">
+                                    {(imagePreview || (initialData?.image && !removeExistingImage)) && (
+                                        <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-(--bg-soft)">
+                                            <MediaAsset asset={imagePreview || initialData?.image} alt="Voorbeeld" fill objectFit="cover" unoptimized={!!imagePreview} />
+                                        </div>
+                                    )}
+                                    <label htmlFor="field-image" className="form-button flex-1 flex items-center gap-2 justify-center px-4 py-2.5 rounded-xl bg-(--bg-soft) text-(--text-muted) text-sm font-bold cursor-pointer hover:text-(--theme-purple) transition-colors">
+                                        <ImageIcon className="h-4 w-4" />
+                                        {imageFile ? imageFile.name : 'Kies afbeelding'}
+                                    </label>
+                                    <input
+                                        id="field-image"
+                                        type="file"
+                                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                                        onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
+                                        className="hidden"
+                                    />
+                                    {(imagePreview || (initialData?.image && !removeExistingImage)) && (
+                                        <button
+                                            type="button"
+                                            onClick={() => { handleImageChange(null); setRemoveExistingImage(true); }}
+                                            className="icon-button p-2 rounded-lg bg-(--bg-soft) text-(--text-muted) hover:text-(--theme-error)"
+                                            aria-label="Verwijder afbeelding"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                </div>
+                            </FormField>
+
+                            <FormField id="field-document" label="Stageopdracht (PDF/Word)">
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="field-document" className="form-button flex-1 flex items-center gap-2 justify-center px-4 py-2.5 rounded-xl bg-(--bg-soft) text-(--text-muted) text-sm font-bold cursor-pointer hover:text-(--theme-purple) transition-colors">
+                                        <FileText className="h-4 w-4" />
+                                        {documentFile ? documentFile.name : 'Kies bestand'}
+                                    </label>
+                                    <input
+                                        id="field-document"
+                                        type="file"
+                                        accept="application/pdf,.doc,.docx"
+                                        onChange={(e) => { setDocumentFile(e.target.files?.[0] || null); setRemoveExistingDocument(false); }}
+                                        className="hidden"
+                                    />
+                                    {(documentFile || (initialData?.document && !removeExistingDocument)) && (
+                                        <button
+                                            type="button"
+                                            onClick={() => { setDocumentFile(null); setRemoveExistingDocument(true); }}
+                                            className="icon-button p-2 rounded-lg bg-(--bg-soft) text-(--text-muted) hover:text-(--theme-error)"
+                                            aria-label="Verwijder document"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                </div>
+                                {initialData?.document && !documentFile && !removeExistingDocument && (
+                                    <div className="mt-2">
+                                        <DocumentAsset id={initialData.document} label="Huidig document bekijken" />
+                                    </div>
+                                )}
                             </FormField>
                         </div>
 

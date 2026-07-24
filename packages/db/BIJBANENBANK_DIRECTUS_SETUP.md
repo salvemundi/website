@@ -55,6 +55,9 @@ External-company submissions, prior to approval.
 | `approved_vacancy_id` | M2O → `vacancies` (create after step 3) | — | optional, on delete: **Nullify** |
 | `submitter_ip` | string (varchar 64) | Input | optional |
 | `verified_at` | timestamp | Datetime | optional |
+| `image` | M2O → `directus_files` | Image | optional, on delete: **Nullify** |
+| `document` | M2O → `directus_files` | File | optional, on delete: **Nullify**; the internship-assignment PDF/Word document |
+| `skills` | json | Tags | optional, default `[]`; free-form skill tags |
 | `created_at` | timestamp | Datetime | default now, use Directus's standard "Date Created" field |
 | `updated_at` | timestamp | Datetime | use Directus's standard "Date Updated" field |
 
@@ -78,6 +81,9 @@ The live, browsable/admin-managed listings.
 | `working_hours` | string (varchar 255) | Input | optional |
 | `is_visible` | boolean | Toggle | default `true` |
 | `published_at` | timestamp | Datetime | default now |
+| `image` | M2O → `directus_files` | Image | optional, on delete: **Nullify** |
+| `document` | M2O → `directus_files` | File | optional, on delete: **Nullify**; the internship-assignment PDF/Word document |
+| `skills` | json | Tags | optional, default `[]`; free-form skill tags |
 | `created_by` | M2O → `directus_users` | User | optional, on delete: **Nullify**; set when an admin creates the vacancy directly |
 | `created_at` | timestamp | Datetime | standard "Date Created" |
 | `updated_at` | timestamp | Datetime | standard "Date Updated" |
