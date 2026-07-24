@@ -146,6 +146,7 @@ export async function createVacancyAction(formData: FormData) {
             skills: value.skills,
             image: imageUpload.id,
             document: documentUpload.id,
+            published_at: new Date().toISOString(),
             created_by: user.id
         }).returning({ id: schema.vacancies.id });
 
@@ -267,7 +268,8 @@ export async function approveSubmissionAction(submissionId: number) {
             skills: submission.skills,
             image: submission.image,
             document: submission.document,
-            is_visible: true
+            is_visible: true,
+            published_at: new Date().toISOString()
         }).returning({ id: schema.vacancies.id });
 
         const directionIds = submission.vacancy_submission_direction_links.map((l) => l.vacancy_ict_direction.id);

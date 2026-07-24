@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Pencil, Trash2, Check, X, Mail, ShieldCheck, Clock } from 'lucide-react';
+import { Plus, Pencil, Trash2, Check, X, Mail, ShieldCheck, Clock, Link2 } from 'lucide-react';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminModal from '@/components/ui/admin/AdminModal';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -73,6 +73,12 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
         });
     };
 
+    const handleCopySubmissionLink = async () => {
+        const link = `${window.location.origin}/bijbanenbank/plaatsen`;
+        await navigator.clipboard.writeText(link);
+        showToast('Aanmeldlink gekopieerd naar klembord', 'success');
+    };
+
     const handleReject = () => {
         if (!rejectTarget) return;
         startTransition(async () => {
@@ -94,13 +100,23 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                 title="Bijbanenbank Beheer"
                 backHref="/beheer"
                 actions={
-                    <Link
-                        href="/beheer/bijbanenbank/nieuw"
-                        className="flex items-center justify-center gap-1.5 px-4 py-2 bg-theme-purple text-white rounded-xl squircle text-xs font-semibold shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 whitespace-nowrap"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Nieuwe Vacature
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => { void handleCopySubmissionLink(); }}
+                            className="form-button flex items-center justify-center gap-1.5 px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-xl squircle text-xs font-semibold shadow-sm hover:border-(--beheer-accent)/50 transition-all active:scale-95 whitespace-nowrap"
+                        >
+                            <Link2 className="h-4 w-4" />
+                            Aanmeldlink kopiëren
+                        </button>
+                        <Link
+                            href="/beheer/bijbanenbank/nieuw"
+                            className="flex items-center justify-center gap-1.5 px-4 py-2 bg-theme-purple text-white rounded-xl squircle text-xs font-semibold shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 whitespace-nowrap"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Nieuwe Vacature
+                        </Link>
+                    </div>
                 }
             />
 
