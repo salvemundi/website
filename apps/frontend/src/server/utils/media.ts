@@ -3,10 +3,15 @@ import { safeConsoleError } from '@/server/utils/logger';
 type UploadResult = { success: true; id: string | null } | { success: false; error: string };
 
 async function postFileToDirectus(file: File, logLabel: string): Promise<UploadResult> {
-    const fileData = new FormData();
-    fileData.append('file', file);
-
     try {
+        // Re-materialize the file bytes into a fresh Blob rather than forwarding the
+        // File object as-is: a File received through the server action boundary can
+        // produce a truncated multipart body when re-appended to a second FormData,
+        // which Directus's upload endpoint rejects with "Unexpected end of form".
+        const arrayBuffer = await file.arrayBuffer();
+        const fileData = new FormData();
+        fileData.append('file', new Blob([arrayBuffer], { type: file.type }), file.name);
+
         const token = process.env.DIRECTUS_STATIC_TOKEN;
         const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
         const res = await fetch(`${directusUrl}/files`, {

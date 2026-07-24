@@ -11,7 +11,8 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 import {
     deleteVacancyAction,
     approveSubmissionAction,
-    rejectSubmissionAction
+    rejectSubmissionAction,
+    deleteSubmissionAction
 } from '@/server/actions/vacancies/vacancies-admin.actions';
 import type { VacancySubmissionDTO } from '@salvemundi/validations';
 
@@ -69,6 +70,19 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                 router.refresh();
             } else {
                 showToast(result.error || 'Goedkeuren mislukt.', 'error');
+            }
+        });
+    };
+
+    const handleDeleteSubmission = (submission: VacancySubmissionDTO) => {
+        if (!window.confirm(`Weet je zeker dat je de aanmelding "${submission.title}" wilt verwijderen?`)) return;
+        startTransition(async () => {
+            const result = await deleteSubmissionAction(submission.id);
+            if (result.success) {
+                showToast('Aanmelding verwijderd.', 'success');
+                router.refresh();
+            } else {
+                showToast(result.error || 'Verwijderen mislukt.', 'error');
             }
         });
     };
@@ -226,6 +240,19 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                                                         className="btn-reject flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--theme-error) text-white text-xs font-bold disabled:opacity-50"
                                                     >
                                                         <X className="h-3.5 w-3.5" /> Afwijzen
+                                                    </button>
+                                                </div>
+                                            )}
+                                            {submission.status === 'pending_verification' && (
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    <button
+                                                        type="button"
+                                                        disabled={isPending}
+                                                        onClick={() => handleDeleteSubmission(submission)}
+                                                        className="btn-reject flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--theme-error) text-white text-xs font-bold disabled:opacity-50"
+                                                        title="Verwijderen voordat het e-mailadres is bevestigd"
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5" /> Verwijderen
                                                     </button>
                                                 </div>
                                             )}
