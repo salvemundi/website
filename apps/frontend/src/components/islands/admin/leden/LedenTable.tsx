@@ -25,7 +25,35 @@ export default function LedenTable({
 
     return (
         <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-sm ring-1 ring-(--beheer-border) overflow-hidden">
-            <div className="overflow-x-auto custom-scrollbar">
+            {/* Mobile: stacked cards (avoids horizontal scrolling / clipped columns) */}
+            <div className="divide-y divide-slate-100 dark:divide-slate-700/50 md:hidden">
+                {members.map((member) => (
+                    <div
+                        key={member.id}
+                        onClick={() => router.push(`/beheer/leden/${member.id}`)}
+                        className="flex items-center gap-3 px-4 py-4 active:bg-slate-50/50 dark:active:bg-slate-700/20 transition-colors cursor-pointer"
+                    >
+                        <div className="h-10 w-10 shrink-0 rounded-2xl bg-(--beheer-accent)/10 flex items-center justify-center text-(--beheer-accent) font-semibold text-sm ring-2 ring-white dark:ring-slate-800 shadow-sm">
+                            {member.first_name?.[0]}{member.last_name?.[0]}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-slate-900 dark:text-white leading-tight truncate">
+                                {member.first_name} {member.last_name}
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">{member.email}</p>
+                        </div>
+                        <span suppressHydrationWarning className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold ${isMembershipActive(member)
+                            ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400'
+                            : 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400'
+                            }`}>
+                            Tot {formatDate(member.membership_expiry)}
+                        </span>
+                    </div>
+                ))}
+            </div>
+
+            {/* Desktop / tablet: full table */}
+            <div className="hidden md:block overflow-x-auto custom-scrollbar">
                 <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                         <tr className="border-b border-(--beheer-border) bg-(--beheer-card-soft) text-xs font-semibold text-(--beheer-text-muted)">
@@ -36,8 +64,8 @@ export default function LedenTable({
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
                         {members.map((member) => (
-                            <tr 
-                                key={member.id} 
+                            <tr
+                                key={member.id}
                                 onClick={() => router.push(`/beheer/leden/${member.id}`)}
                                 className="group hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors cursor-pointer"
                             >
@@ -54,11 +82,11 @@ export default function LedenTable({
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-8 py-5 text-sm font-medium text-slate-500 dark:text-slate-400">
+                                <td className="px-4 md:px-8 py-5 text-sm font-medium text-slate-500 dark:text-slate-400">
                                     <div className="flex items-center gap-2">
                                         <Mail className="h-4 w-4 text-slate-300 dark:text-slate-600" />
-                                        <a 
-                                            href={`mailto:${member.email}`} 
+                                        <a
+                                            href={`mailto:${member.email}`}
                                             className="hover:text-(--beheer-accent) transition-colors"
                                             onClick={(e) => e.stopPropagation()}
                                         >

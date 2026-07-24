@@ -1,0 +1,147 @@
+name: Monitoring Service Workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - acceptance
+    paths:
+      - "apps/services/monitoring-service/**"
+      - ".github/workflows/monitoring.yml"
+      - "docker-compose.yml"
+  pull_request:
+    branches:
+      - main
+      - acceptance
+    paths:
+      - "apps/services/monitoring-service/**"
+      - ".github/workflows/monitoring.yml"
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  NODE_OPTIONS: "--no-deprecation"
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check Monitoring Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+      - run: npm install -g pnpm@11.8.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter=@salvemundi/monitoring-service type-check
+      - run: pnpm --filter=@salvemundi/monitoring-service lint
+
+  build-monitoring:
+    needs: [lint-and-typecheck]
+    name: Build & Validate Monitoring Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+      - run: npm install -g pnpm@11.8.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter=@salvemundi/monitoring-service build
+
+  deploy-monitoring:
+    needs: [build-monitoring]
+    if: (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/acceptance') && github.event_name != 'pull_request'
+    name: Provision & Sync Uptime Kuma Monitors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+      - run: npm install -g pnpm@11.8.0
+      - run: pnpm install --frozen-lockfile
+
+      - name: Connect to NetBird VPN
+        uses: Alemiz112/netbird-connect@v1
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          management-url: https://vpn.salvemundi.nl
+
+      - name: Wait for VPN routing to be ready
+        run: |
+          echo "Waiting for SSH port on 100.77.182.130 to be reachable..."
+          for i in {1..30}; do
+            if timeout 1 bash -c 'cat < /dev/null > /dev/tcp/100.77.182.130/22' >/dev/null 2>&1; then
+              echo "VPS SSH port is reachable!"
+              exit 0
+            fi
+            echo "VPS SSH port not reachable yet, waiting 2 seconds... ($i/30)"
+            sleep 2
+          done
+          echo "Error: VPS SSH port remained unreachable after 60 seconds."
+          exit 1
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+
+      - name: Start Monitoring Container on Host
+        run: |
+          ENV_NAME="acc"
+          MONITORING_PORT="13006"
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            ENV_NAME="prod"
+            MONITORING_PORT="3006"
+          fi
+
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@100.77.182.130 bash << ENDSSH
+          set -e
+          cd /opt/salve-mundi-v7
+          docker compose --env-file .env.${ENV_NAME} up -d monitoring-service
+          ENDSSH
+
+      - name: Provision Uptime Kuma Monitors via NetBird VPN
+        env:
+          KUMA_URL: "http://100.77.182.130:13006"
+          KUMA_ADMIN_USER: ${{ secrets.KUMA_ADMIN_USER }}
+          KUMA_ADMIN_PASSWORD: ${{ secrets.KUMA_ADMIN_PASSWORD }}
+          DISCORD_MONITORING_WEBHOOK_URL: ${{ secrets.DISCORD_MONITORING_WEBHOOK_URL }}
+          FRONTEND_SERVICE_URL: "http://v7-acc-app:3000"
+          FINANCE_SERVICE_URL: "http://v7-acc-finance:3001"
+          AZURE_SYNC_SERVICE_URL: "http://v7-acc-sync:3002"
+          MAIL_SERVICE_URL: "http://v7-acc-mail:3003"
+          AZURE_MANAGEMENT_SERVICE_URL: "http://v7-acc-management:3004"
+          DB_HOST: "v7-core-db"
+          DB_PORT: "5432"
+          REDIS_HOST: "v7-core-redis"
+          REDIS_PORT: "6379"
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            export KUMA_URL="http://100.77.182.130:3006"
+            export FRONTEND_SERVICE_URL="http://v7-prod-app:3000"
+            export FINANCE_SERVICE_URL="http://v7-prod-finance:3001"
+            export AZURE_SYNC_SERVICE_URL="http://v7-prod-sync:3002"
+            export MAIL_SERVICE_URL="http://v7-prod-mail:3003"
+            export AZURE_MANAGEMENT_SERVICE_URL="http://v7-prod-management:3004"
+          fi
+
+          echo "[MONITORING] Waiting for Uptime Kuma socket to be ready at ${KUMA_URL}..."
+          for i in {1..30}; do
+            if curl -s -m 3 -I "${KUMA_URL}" | grep -iE "HTTP/.* (200|302)" >/dev/null; then
+              echo "[MONITORING] Uptime Kuma is ready!"
+              break
+            fi
+            echo "[MONITORING] Waiting for Uptime Kuma... ($i/30)"
+            sleep 2
+          done
+
+          pnpm --filter=@salvemundi/monitoring-service build
+          pnpm --filter=@salvemundi/monitoring-service provision

@@ -145,7 +145,7 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
                             <Divider />
                             <StatItem label="Restbetaling" value={stats.fullPaid} color="text-purple-500" />
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
                             <AdminReisSwitcher
                                 trips={trips}
                                 activeTripId={activeTripId as number}
