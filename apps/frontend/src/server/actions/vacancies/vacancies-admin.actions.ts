@@ -2,6 +2,7 @@
 
 import { eq, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { after } from 'next/server';
 import { db, schema } from '@salvemundi/db';
 import { vacancyAdminSchema, type VacancyAdminForm, type VacancySubmissionDTO } from '@salvemundi/validations';
 import { enforceFeatureAccess } from '@/server/actions/admin/admin-utils.actions';
@@ -344,5 +345,25 @@ export async function rejectSubmissionAction(submissionId: number, reason: strin
     } catch (error) {
         safeConsoleError('[vacancies-admin.actions.ts][rejectSubmissionAction] ', error);
         return { success: false, error: 'Afwijzen van de aanmelding is mislukt.' };
+    }
+}
+
+export async function deleteSubmissionAction(submissionId: number) {
+    await enforceFeatureAccess('vacatures');
+
+    try {
+        const submission = await db.query.vacancy_submissions.findFirst({
+            where: eq(schema.vacancy_submissions.id, submissionId)
+        });
+        if (!submission) return { success: false, error: 'Aanmelding niet gevonden.' };
+
+        await db.delete(schema.vacancy_submissions).where(eq(schema.vacancy_submissions.id, submissionId));
+
+        await logAdminAction('admin_vacancy_submission_deleted', 'SUCCESS', { context: 'vacature', context_name: submission.title, id: submissionId });
+        revalidateVacancyPaths();
+        return { success: true };
+    } catch (error) {
+        safeConsoleError('[vacancies-admin.actions.ts][deleteSubmissionAction] ', error);
+        return { success: false, error: 'Verwijderen van de aanmelding is mislukt.' };
     }
 }

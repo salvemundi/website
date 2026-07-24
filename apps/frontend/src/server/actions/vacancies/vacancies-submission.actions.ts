@@ -2,6 +2,7 @@
 
 import crypto from 'node:crypto';
 import { headers } from 'next/headers';
+import { after } from 'next/server';
 import { and, eq, gt, inArray } from 'drizzle-orm';
 import { db, schema } from '@salvemundi/db';
 import { vacancySubmissionSchema } from '@salvemundi/validations';
@@ -134,11 +135,12 @@ export async function submitVacancy(formData: FormData) {
         }
 
         const token = await issueVerificationToken(submissionId);
-        await sendVacancyMail(value.contact_email, 'vacancy_verification', {
+        const confirmationUrl = buildVerificationUrl(token);
+        after(() => sendVacancyMail(value.contact_email, 'vacancy_verification', {
             firstName: value.company,
             title: value.title,
-            confirmationUrl: buildVerificationUrl(token)
-        });
+            confirmationUrl
+        }));
 
         return { success: true };
     } catch (error) {
@@ -190,7 +192,7 @@ export async function verifySubmission(token: string) {
             .set({ status: 'pending_review', verified_at: now })
             .where(eq(schema.vacancy_submissions.id, row.submissionId));
 
-        await notifyAdminsOfPendingSubmission(row.title, row.company);
+        after(() => notifyAdminsOfPendingSubmission(row.title, row.company));
 
         return { success: true };
     } catch (error) {

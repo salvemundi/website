@@ -27,7 +27,7 @@ export default async function VerifyVacancyPage({ searchParams }: VerifyPageProp
                             door onze commissie. Zodra deze is goedgekeurd, verschijnt hij op de website en
                             ontvang je hiervan een bevestiging per e-mail.
                         </p>
-                        <Link href="/" className="form-button inline-block mt-6 text-theme-purple font-bold hover:underline">
+                        <Link href="/" className="form-button inline-block mt-6">
                             Terug naar de homepage
                         </Link>
                     </StandardFormCard>
@@ -36,7 +36,7 @@ export default async function VerifyVacancyPage({ searchParams }: VerifyPageProp
                         <p className="text-(--text-main) leading-relaxed">
                             {result.error || 'Deze verificatielink is ongeldig.'}
                         </p>
-                        <Link href="/bijbanenbank/plaatsen" className="form-button inline-block mt-6 text-theme-purple font-bold hover:underline">
+                        <Link href="/bijbanenbank/plaatsen" className="form-button inline-block mt-6">
                             Opnieuw aanmelden
                         </Link>
                     </StandardFormCard>
