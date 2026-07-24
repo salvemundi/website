@@ -20,6 +20,7 @@ export * from './schema/admin-webshop.zod.js';
 export * from './schema/shared.zod.js';
 export * from './schema/events.zod.js';
 export * from './schema/audit.zod.js';
+export * from './schema/vacancy.zod.js';
 export * as Directus from './directus/schema.js';
 export * from './utils/boolean-utils.js';
 

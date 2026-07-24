@@ -55,6 +55,7 @@ export interface FeatureRegistry {
     services: readonly string[];
     stickers: readonly string[];
     sync: readonly string[];
+    vacatures: readonly string[];
     webshop: readonly string[];
 }
 
@@ -70,6 +71,7 @@ export const FEATURE_ACCESS: FeatureRegistry = {
     coupons: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     leden: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     stickers: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
+    vacatures: [COMMITTEES.BESTUUR],
     // system group dashboard.  
     impersonate: [],
     logging: [],

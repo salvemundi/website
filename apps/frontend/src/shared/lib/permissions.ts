@@ -69,9 +69,9 @@ export function getPermissions(committees: Committee[] | undefined = []): string
     const permissions: string[] = [];
 
     const features: AdminFeature[] = [
-        'intro', 'reis', 'logging', 'sync', 'coupons', 'stickers', 
-        'kroegentocht', 'leden', 'commissies', 'activiteiten', 
-        'webshop', 'impersonate', 'services'
+        'intro', 'reis', 'logging', 'sync', 'coupons', 'stickers',
+        'kroegentocht', 'leden', 'commissies', 'activiteiten',
+        'webshop', 'impersonate', 'services', 'vacatures'
     ];
 
     for (const feature of features) {
@@ -82,6 +82,10 @@ export function getPermissions(committees: Committee[] | undefined = []): string
 
     if (isICT || isBoardOrKandi || (canAccess(safeCommittees, 'activiteiten') && isLeader)) {
         permissions.push('activiteiten:edit');
+    }
+
+    if (isICT || isBoardOrKandi) {
+        permissions.push('vacatures:edit');
     }
 
     if (isICT) permissions.push('ict');

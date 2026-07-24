@@ -1,7 +1,8 @@
 'use client';
 
-import { ChevronRight, CreditCard, MessageCircle } from 'lucide-react';
+import { ChevronRight, CreditCard, MessageCircle, Briefcase } from 'lucide-react';
 import { Tile, QuickLink } from './ProfielUI';
+import { ROUTES } from '@/lib/config/routes';
 
 interface ProfielQuickLinksProps {
     user?: {
@@ -29,6 +30,11 @@ export default function ProfielQuickLinks({ user = {} }: ProfielQuickLinksProps)
                     icon={<MessageCircle className="h-6 w-6" />}
                     href="/profiel/whatsapp"
                     locked={!isMember}
+                />
+                <QuickLink
+                    label="Bijbanenbank"
+                    icon={<Briefcase className="h-6 w-6" />}
+                    href={ROUTES.BIJBANENBANK}
                 />
             </div>
         </Tile>

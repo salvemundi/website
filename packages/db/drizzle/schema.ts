@@ -1859,3 +1859,131 @@ export const webshop_products = pgTable("webshop_products", {
 		}).onDelete("set null"),
 	unique("uq_webshop_products_slug").on(table.slug),
 ]);
+
+// --- Bijbanenbank (vacancy board) tables ---
+// PROVISIONAL: hand-written to match what `drizzle-kit pull` should produce once the
+// collections described in packages/db/BIJBANENBANK_DIRECTUS_SETUP.md exist in Directus.
+// Run `pnpm db:sync` after applying that guide and replace this block with the real
+// introspected output (column order / generated constraint names may differ slightly).
+
+export const vacancy_ict_directions = pgTable("vacancy_ict_directions", {
+	id: serial().primaryKey().notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	slug: varchar({ length: 255 }).notNull(),
+}, (table) => [
+	unique("vacancy_ict_directions_name_unique").on(table.name),
+	unique("vacancy_ict_directions_slug_unique").on(table.slug),
+]);
+
+export const vacancies = pgTable("vacancies", {
+	id: serial().primaryKey().notNull(),
+	title: varchar({ length: 255 }).notNull(),
+	company: varchar({ length: 255 }).notNull(),
+	description: text().notNull(),
+	type: varchar({ length: 20 }).notNull(),
+	contact_email: varchar({ length: 255 }).notNull(),
+	contact_phone: varchar({ length: 50 }),
+	contact_website: varchar({ length: 500 }),
+	location: varchar({ length: 255 }).notNull(),
+	salary: varchar({ length: 255 }),
+	employment_type: varchar({ length: 100 }),
+	working_hours: varchar({ length: 255 }),
+	is_visible: boolean().default(true).notNull(),
+	published_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	created_by: uuid(),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	foreignKey({
+			columns: [table.created_by],
+			foreignColumns: [directus_users.id],
+			name: "vacancies_created_by_directus_users_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const vacancy_direction_links = pgTable("vacancy_direction_links", {
+	id: serial().primaryKey().notNull(),
+	vacancies_id: integer().notNull(),
+	vacancy_ict_directions_id: integer().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.vacancies_id],
+			foreignColumns: [vacancies.id],
+			name: "vacancy_direction_links_vacancies_id_vacancies_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.vacancy_ict_directions_id],
+			foreignColumns: [vacancy_ict_directions.id],
+			name: "vacancy_direction_links_vacancy_ict_directions_id_vacancy_ict_directions_id_fk"
+		}).onDelete("cascade"),
+	unique("vacancy_direction_links_vacancies_id_vacancy_ict_directions_id_unique").on(table.vacancies_id, table.vacancy_ict_directions_id),
+]);
+
+export const vacancy_submissions = pgTable("vacancy_submissions", {
+	id: serial().primaryKey().notNull(),
+	title: varchar({ length: 255 }).notNull(),
+	company: varchar({ length: 255 }).notNull(),
+	description: text().notNull(),
+	type: varchar({ length: 20 }).notNull(),
+	contact_email: varchar({ length: 255 }).notNull(),
+	contact_phone: varchar({ length: 50 }),
+	contact_website: varchar({ length: 500 }),
+	location: varchar({ length: 255 }).notNull(),
+	salary: varchar({ length: 255 }),
+	employment_type: varchar({ length: 100 }),
+	working_hours: varchar({ length: 255 }),
+	status: varchar({ length: 30 }).default('pending_verification').notNull(),
+	rejection_reason: text(),
+	reviewed_by: uuid(),
+	reviewed_at: timestamp({ withTimezone: true, mode: 'string' }),
+	approved_vacancy_id: integer(),
+	submitter_ip: varchar({ length: 64 }),
+	verified_at: timestamp({ withTimezone: true, mode: 'string' }),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	foreignKey({
+			columns: [table.reviewed_by],
+			foreignColumns: [directus_users.id],
+			name: "vacancy_submissions_reviewed_by_directus_users_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.approved_vacancy_id],
+			foreignColumns: [vacancies.id],
+			name: "vacancy_submissions_approved_vacancy_id_vacancies_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const vacancy_submission_direction_links_ = pgTable("vacancy_submission_direction_links_", {
+	id: serial().primaryKey().notNull(),
+	vacancy_submissions_id: integer().notNull(),
+	vacancy_ict_directions_id: integer().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.vacancy_submissions_id],
+			foreignColumns: [vacancy_submissions.id],
+			name: "vacancy_submission_direction_links__vacancy_submissions_id_vacancy_submissions_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.vacancy_ict_directions_id],
+			foreignColumns: [vacancy_ict_directions.id],
+			name: "vacancy_submission_direction_links__vacancy_ict_directions_id_vacancy_ict_directions_id_fk"
+		}).onDelete("cascade"),
+	unique("vacancy_submission_direction_links__vacancy_submissions_id_vacancy_ict_directions_id_unique").on(table.vacancy_submissions_id, table.vacancy_ict_directions_id),
+]);
+
+export const vacancy_verification_tokens = pgTable("vacancy_verification_tokens", {
+	id: serial().primaryKey().notNull(),
+	submission_id: integer().notNull(),
+	token: varchar({ length: 255 }).notNull(),
+	expires_at: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+	used_at: timestamp({ withTimezone: true, mode: 'string' }),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.submission_id],
+			foreignColumns: [vacancy_submissions.id],
+			name: "vacancy_verification_tokens_submission_id_vacancy_submissions_id_fk"
+		}).onDelete("cascade"),
+	unique("vacancy_verification_tokens_token_unique").on(table.token),
+]);

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { clubs, club_members, directus_users, Stickers, directus_files, Board, Board_Members, contacts, directus_roles, directus_access, directus_policies, committees, directus_comments, directus_dashboards, directus_folders, directus_collections, directus_flows, directus_panels, directus_permissions, directus_presets, directus_activity, directus_revisions, directus_versions, directus_shares, directus_notifications, directus_operations, intro_blogs, documents, events, event_signups, events_directus_users, intro_blog_likes, events_members, hero_banners, intro_blog_gallery, pub_crawl_events, membership_history, pub_crawl_signups, pub_crawl_signups_transactions, transactions, push_notification, intro_planning, pub_crawl_tickets, intro_parent_signups, trips, trip_signups, trip_activities, trip_signup_activities, safe_havens, sponsors, directus_sessions, roles, role_permissions, permissions, webshop_preorders, auth_accounts, auth_sessions, committee_members, intro_planning_signups, intro_signups, directus_deployments, webshop_products, webshop_product_media, directus_deployment_projects, directus_settings, directus_deployment_runs, webshop_product_variants, webshop_drop_windows, webshop_preorder_lines } from "./schema";
+import { clubs, club_members, directus_users, Stickers, directus_files, Board, Board_Members, contacts, directus_roles, directus_access, directus_policies, committees, directus_comments, directus_dashboards, directus_folders, directus_collections, directus_flows, directus_panels, directus_permissions, directus_presets, directus_activity, directus_revisions, directus_versions, directus_shares, directus_notifications, directus_operations, intro_blogs, documents, events, event_signups, events_directus_users, intro_blog_likes, events_members, hero_banners, intro_blog_gallery, pub_crawl_events, membership_history, pub_crawl_signups, pub_crawl_signups_transactions, transactions, push_notification, intro_planning, pub_crawl_tickets, intro_parent_signups, trips, trip_signups, trip_activities, trip_signup_activities, safe_havens, sponsors, directus_sessions, roles, role_permissions, permissions, webshop_preorders, auth_accounts, auth_sessions, committee_members, intro_planning_signups, intro_signups, directus_deployments, webshop_products, webshop_product_media, directus_deployment_projects, directus_settings, directus_deployment_runs, webshop_product_variants, webshop_drop_windows, webshop_preorder_lines, vacancies, vacancy_ict_directions, vacancy_direction_links, vacancy_submissions, vacancy_submission_direction_links_, vacancy_verification_tokens } from "./schema";
 
 export const club_membersRelations = relations(club_members, ({one}) => ({
 	club: one(clubs, {
@@ -921,5 +921,66 @@ export const webshop_preorder_linesRelations = relations(webshop_preorder_lines,
 	webshop_product_variant: one(webshop_product_variants, {
 		fields: [webshop_preorder_lines.variant_id],
 		references: [webshop_product_variants.id]
+	}),
+}));
+
+// --- Bijbanenbank relations (provisional, see schema.ts note) ---
+
+export const vacanciesRelations = relations(vacancies, ({one, many}) => ({
+	directus_user_created_by: one(directus_users, {
+		fields: [vacancies.created_by],
+		references: [directus_users.id]
+	}),
+	vacancy_direction_links: many(vacancy_direction_links),
+	vacancy_submissions: many(vacancy_submissions, {
+		relationName: "vacancy_submissions_approved_vacancy_id_vacancies_id"
+	}),
+}));
+
+export const vacancy_ict_directionsRelations = relations(vacancy_ict_directions, ({many}) => ({
+	vacancy_direction_links: many(vacancy_direction_links),
+	vacancy_submission_direction_links: many(vacancy_submission_direction_links_),
+}));
+
+export const vacancy_direction_linksRelations = relations(vacancy_direction_links, ({one}) => ({
+	vacancy: one(vacancies, {
+		fields: [vacancy_direction_links.vacancies_id],
+		references: [vacancies.id]
+	}),
+	vacancy_ict_direction: one(vacancy_ict_directions, {
+		fields: [vacancy_direction_links.vacancy_ict_directions_id],
+		references: [vacancy_ict_directions.id]
+	}),
+}));
+
+export const vacancy_submissionsRelations = relations(vacancy_submissions, ({one, many}) => ({
+	directus_user_reviewed_by: one(directus_users, {
+		fields: [vacancy_submissions.reviewed_by],
+		references: [directus_users.id]
+	}),
+	vacancy_approved: one(vacancies, {
+		fields: [vacancy_submissions.approved_vacancy_id],
+		references: [vacancies.id],
+		relationName: "vacancy_submissions_approved_vacancy_id_vacancies_id"
+	}),
+	vacancy_submission_direction_links: many(vacancy_submission_direction_links_),
+	vacancy_verification_tokens: many(vacancy_verification_tokens),
+}));
+
+export const vacancy_submission_direction_links_Relations = relations(vacancy_submission_direction_links_, ({one}) => ({
+	vacancy_submission: one(vacancy_submissions, {
+		fields: [vacancy_submission_direction_links_.vacancy_submissions_id],
+		references: [vacancy_submissions.id]
+	}),
+	vacancy_ict_direction: one(vacancy_ict_directions, {
+		fields: [vacancy_submission_direction_links_.vacancy_ict_directions_id],
+		references: [vacancy_ict_directions.id]
+	}),
+}));
+
+export const vacancy_verification_tokensRelations = relations(vacancy_verification_tokens, ({one}) => ({
+	vacancy_submission: one(vacancy_submissions, {
+		fields: [vacancy_verification_tokens.submission_id],
+		references: [vacancy_submissions.id]
 	}),
 }));
