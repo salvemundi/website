@@ -30,7 +30,7 @@ export default async function StickersPage() {
         >
             <div className="w-full px-4 md:px-8 py-4 md:py-8 h-[calc(100vh-var(--header-total-height))] min-h-150">
                 <div className="flex flex-col lg:flex-row gap-8 items-stretch h-full">
-                    <div className={`flex-1 min-w-0 order-1 lg:h-full ${isLoggedIn ? 'h-[50vh]' : 'h-[80vh]'}`}>
+                    <div className={`flex-1 min-w-0 order-1 lg:h-full ${isLoggedIn ? 'h-[42vh]' : 'h-[80vh]'}`}>
                         <div className="h-full overflow-hidden squircle-lg">
                             <StickerMapBridge
                                 initialStickers={stickers}
@@ -41,7 +41,7 @@ export default async function StickersPage() {
                     </div>
 
                     {isLoggedIn && (
-                        <div className="w-full lg:w-100 shrink-0 order-2 h-[40vh] lg:h-full">
+                        <div className="w-full lg:w-100 shrink-0 order-2 h-[48vh] lg:h-full">
                             <Leaderboard
                                 stickers={stickers}
                                 currentUser={activeUser}

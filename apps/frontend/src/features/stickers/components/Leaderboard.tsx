@@ -40,7 +40,7 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
 
     return (
         <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-lg p-4 md:p-6 h-full flex flex-col border border-border-color/20">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-3 md:mb-8">
                 <div>
                     <h2 className="text-xl md:text-2xl font-black tracking-tight text-theme-purple mt-0.5">Leaderboard</h2>
                 </div>
@@ -54,7 +54,7 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
             ) : (
                 <>
                     {/* Podium Section */}
-                    <div className="grid grid-cols-3 gap-2 items-end mb-10 px-2">
+                    <div className="grid grid-cols-3 gap-2 items-end mb-4 md:mb-10 px-2">
                         {podiumDisplay.map((user, idx) => {
                             if (!user) return <div key={idx} />;
 

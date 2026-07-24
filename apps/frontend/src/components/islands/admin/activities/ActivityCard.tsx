@@ -120,7 +120,7 @@ export default function ActivityCard({
                 </div>
             </div>
 
-            <div className="flex flex-row md:flex-col gap-2 md:gap-3 justify-center items-stretch md:w-64 p-4 md:p-6 border-t md:border-t-0 md:border-l border-(--beheer-border) bg-(--beheer-card-soft)/20">
+            <div className="flex flex-col gap-2 md:gap-3 justify-center items-stretch md:w-64 p-4 md:p-6 border-t md:border-t-0 md:border-l border-(--beheer-border) bg-(--beheer-card-soft)/20">
                 <button
                     onClick={() => onViewSignups(event.id)}
                     className="beheer-button flex-1 flex items-center justify-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-5 text-[11px] bg-(--beheer-accent)/10 text-(--beheer-accent) hover:bg-(--beheer-accent) hover:text-white rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"

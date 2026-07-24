@@ -72,7 +72,7 @@ export default function ReisFilters({
                         />
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex flex-wrap items-center justify-center gap-1.5 w-full sm:w-auto">
                         <Link
                             href={`/beheer/reis/activiteiten?tripId=${tripId}`}
                             className="flex items-center justify-center gap-2 px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-xl text-xs font-semibold hover:border-(--beheer-accent)/50 hover:bg-(--beheer-accent)/5 transition-all shadow-sm whitespace-nowrap"
