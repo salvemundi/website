@@ -14,7 +14,8 @@ import {
     Zap,
     Settings,
     Layout,
-    ShoppingBag
+    ShoppingBag,
+    Briefcase
 } from 'lucide-react';
 import {
     ActionCard
@@ -54,6 +55,7 @@ export function DashboardHub({
                 { title: "Stickers", value: "Beheer", icon: <MapPin />, href: "/beheer/stickers", colorClass: "purple" as const, disabled: !permissions.includes('stickers') },
                 { title: "Coupons", value: stats.totalCoupons, icon: <Ticket />, href: "/beheer/coupons", colorClass: "amber" as const, disabled: !permissions.includes('coupons') },
                 { title: "Webshop", value: "Beheer", icon: <ShoppingBag />, href: "/beheer/webshop", colorClass: "purple" as const, disabled: !permissions.includes('webshop') },
+                { title: "Bijbanenbank", value: "Beheer", icon: <Briefcase />, href: "/beheer/bijbanenbank", colorClass: "red" as const, disabled: !permissions.includes('vacatures') },
             ].filter(i => !i.disabled)
         },
         {
@@ -76,7 +78,7 @@ export function DashboardHub({
         value?: string | number;
         icon: React.ReactNode;
         href: string;
-        colorClass: 'purple' | 'blue' | 'teal' | 'orange' | 'green' | 'amber';
+        colorClass: 'purple' | 'blue' | 'teal' | 'orange' | 'green' | 'amber' | 'red';
         disabled?: boolean;
         subtitle?: string;
     }
