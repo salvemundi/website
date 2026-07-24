@@ -1,12 +1,14 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Briefcase, Search, X, SlidersHorizontal, LayoutGrid, List } from 'lucide-react';
+import Link from 'next/link';
+import { Briefcase, Search, X, SlidersHorizontal, LayoutGrid, List, Lock } from 'lucide-react';
 import VacancyCard from './VacancyCard';
 import type { VacancyDTO } from '@salvemundi/validations';
 
 interface BijbanenbankIslandProps {
     vacancies: VacancyDTO[];
+    isLoggedIn: boolean;
 }
 
 type TypeTab = 'all' | 'parttime' | 'internship';
@@ -45,7 +47,7 @@ function buildSearchIndex(vacancy: VacancyDTO): string {
     ].filter(Boolean).join(' ').toLowerCase();
 }
 
-export default function BijbanenbankIsland({ vacancies }: BijbanenbankIslandProps) {
+export default function BijbanenbankIsland({ vacancies, isLoggedIn }: BijbanenbankIslandProps) {
     const [typeTab, setTypeTab] = useState<TypeTab>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [company, setCompany] = useState(ALL_VALUE);
@@ -119,6 +121,23 @@ export default function BijbanenbankIsland({ vacancies }: BijbanenbankIslandProp
 
     return (
         <div className="space-y-6">
+            {!isLoggedIn && (
+                <div className="flex items-center gap-3 flex-wrap justify-between p-4 rounded-2xl bg-(--theme-purple)/10 border border-(--theme-purple)/20">
+                    <div className="flex items-center gap-3">
+                        <Lock className="h-5 w-5 text-(--theme-purple) shrink-0" />
+                        <p className="text-sm font-semibold text-(--text-main)">
+                            Log in om bedrijfsnaam, omschrijving, locatie en contactgegevens te bekijken, en om te zoeken en filteren.
+                        </p>
+                    </div>
+                    <Link
+                        href="/?needLogin=true&callbackURL=/bijbanenbank"
+                        className="form-button shrink-0 px-4 py-2 rounded-xl bg-(--theme-purple) text-white text-sm font-bold whitespace-nowrap"
+                    >
+                        Inloggen
+                    </Link>
+                </div>
+            )}
+
             <div className="flex gap-2 flex-wrap" role="tablist" aria-label="Type vacature">
                 {TABS.map((tab) => (
                     <button
@@ -138,103 +157,107 @@ export default function BijbanenbankIsland({ vacancies }: BijbanenbankIslandProp
                 ))}
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex items-center gap-3 flex-1 min-w-0 sm:max-w-md px-4 py-2.5 bg-(--bg-card) border border-(--border-color) rounded-2xl shadow-sm focus-within:border-(--theme-purple) transition-colors">
-                    <Search className="h-4 w-4 shrink-0 text-(--text-muted)" />
-                    <input
-                        type="text"
-                        placeholder="Zoek op titel, bedrijf, locatie, ..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="form-input-unstyled bg-transparent text-(--text-main) placeholder:text-(--text-muted) outline-none border-none p-0 w-full font-semibold text-sm"
-                    />
-                </div>
+            {isLoggedIn && (
+                <>
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <div className="flex items-center gap-3 flex-1 min-w-0 sm:max-w-md px-4 py-2.5 bg-(--bg-card) border border-(--border-color) rounded-2xl shadow-sm focus-within:border-(--theme-purple) transition-colors">
+                            <Search className="h-4 w-4 shrink-0 text-(--text-muted)" />
+                            <input
+                                type="text"
+                                placeholder="Zoek op titel, bedrijf, locatie, ..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="form-input-unstyled bg-transparent text-(--text-main) placeholder:text-(--text-muted) outline-none border-none p-0 w-full font-semibold text-sm"
+                            />
+                        </div>
 
-                <button
-                    type="button"
-                    onClick={() => setShowFilters((prev) => !prev)}
-                    aria-expanded={showFilters}
-                    className="form-button md:hidden flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-(--bg-card) border border-(--border-color) text-(--text-main) text-sm font-bold shadow-sm"
-                >
-                    <SlidersHorizontal className="h-4 w-4" />
-                    Filters
-                    {filtersActive && <span className="h-1.5 w-1.5 rounded-full bg-(--theme-purple)" />}
-                </button>
-
-                <div className="flex items-center gap-1 p-1 bg-(--bg-card) border border-(--border-color) rounded-2xl shadow-sm shrink-0">
-                    <button
-                        type="button"
-                        aria-label="Kaartweergave"
-                        aria-pressed={viewMode === 'grid'}
-                        onClick={() => setViewMode('grid')}
-                        className={`icon-button p-2 rounded-xl transition-colors ${viewMode === 'grid' ? 'bg-(--theme-purple) text-white' : 'text-(--text-muted) hover:text-(--theme-purple)'}`}
-                    >
-                        <LayoutGrid className="h-4 w-4" />
-                    </button>
-                    <button
-                        type="button"
-                        aria-label="Lijstweergave"
-                        aria-pressed={viewMode === 'list'}
-                        onClick={() => setViewMode('list')}
-                        className={`icon-button p-2 rounded-xl transition-colors ${viewMode === 'list' ? 'bg-(--theme-purple) text-white' : 'text-(--text-muted) hover:text-(--theme-purple)'}`}
-                    >
-                        <List className="h-4 w-4" />
-                    </button>
-                </div>
-            </div>
-
-            <div className={`${showFilters ? 'flex' : 'hidden'} md:flex flex-col gap-4`}>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                    <select className="form-input text-sm" value={company} onChange={(e) => setCompany(e.target.value)}>
-                        <option value={ALL_VALUE}>Alle bedrijven</option>
-                        {companies.map((c) => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                    <select className="form-input text-sm" value={location} onChange={(e) => setLocation(e.target.value)}>
-                        <option value={ALL_VALUE}>Alle locaties</option>
-                        {locations.map((l) => <option key={l} value={l}>{l}</option>)}
-                    </select>
-                    <select className="form-input text-sm" value={employmentType} onChange={(e) => setEmploymentType(e.target.value)}>
-                        <option value={ALL_VALUE}>Alle dienstverbanden</option>
-                        {employmentTypes.map((t) => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                    <select className="form-input text-sm" value={workingHours} onChange={(e) => setWorkingHours(e.target.value)}>
-                        <option value={ALL_VALUE}>Alle werktijden</option>
-                        {workingHoursOptions.map((w) => <option key={w} value={w}>{w}</option>)}
-                    </select>
-                    {showDirectionFilter && (
-                        <select className="form-input text-sm" value={direction} onChange={(e) => setDirection(e.target.value)}>
-                            <option value={ALL_VALUE}>Alle ICT-richtingen</option>
-                            {directions.map((d) => <option key={d} value={d}>{d}</option>)}
-                        </select>
-                    )}
-                    <select className="form-input text-sm" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
-                        {SORT_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-                    </select>
-                </div>
-
-                <div className="flex items-center justify-between flex-wrap gap-3">
-                    <label className="flex items-center gap-2 text-sm font-semibold text-(--text-main) cursor-pointer">
-                        <input
-                            type="checkbox"
-                            checked={salaryOnly}
-                            onChange={(e) => setSalaryOnly(e.target.checked)}
-                            className="h-4 w-4 accent-(--theme-purple)"
-                        />
-                        Alleen met salaris/vergoeding
-                    </label>
-
-                    {filtersActive && (
                         <button
                             type="button"
-                            onClick={clearFilters}
-                            className="form-button flex items-center gap-1.5 text-xs font-bold text-(--text-muted) hover:text-(--theme-purple) transition-colors"
+                            onClick={() => setShowFilters((prev) => !prev)}
+                            aria-expanded={showFilters}
+                            className="form-button md:hidden flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-(--bg-card) border border-(--border-color) text-(--text-main) text-sm font-bold shadow-sm"
                         >
-                            <X className="h-3.5 w-3.5" />
-                            Filters wissen
+                            <SlidersHorizontal className="h-4 w-4" />
+                            Filters
+                            {filtersActive && <span className="h-1.5 w-1.5 rounded-full bg-(--theme-purple)" />}
                         </button>
-                    )}
-                </div>
-            </div>
+
+                        <div className="flex items-center gap-1 p-1 bg-(--bg-card) border border-(--border-color) rounded-2xl shadow-sm shrink-0">
+                            <button
+                                type="button"
+                                aria-label="Kaartweergave"
+                                aria-pressed={viewMode === 'grid'}
+                                onClick={() => setViewMode('grid')}
+                                className={`icon-button p-2 rounded-xl transition-colors ${viewMode === 'grid' ? 'bg-(--theme-purple) text-white' : 'text-(--text-muted) hover:text-(--theme-purple)'}`}
+                            >
+                                <LayoutGrid className="h-4 w-4" />
+                            </button>
+                            <button
+                                type="button"
+                                aria-label="Lijstweergave"
+                                aria-pressed={viewMode === 'list'}
+                                onClick={() => setViewMode('list')}
+                                className={`icon-button p-2 rounded-xl transition-colors ${viewMode === 'list' ? 'bg-(--theme-purple) text-white' : 'text-(--text-muted) hover:text-(--theme-purple)'}`}
+                            >
+                                <List className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className={`${showFilters ? 'flex' : 'hidden'} md:flex flex-col gap-4`}>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                            <select className="form-input text-sm" value={company} onChange={(e) => setCompany(e.target.value)}>
+                                <option value={ALL_VALUE}>Alle bedrijven</option>
+                                {companies.map((c) => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                            <select className="form-input text-sm" value={location} onChange={(e) => setLocation(e.target.value)}>
+                                <option value={ALL_VALUE}>Alle locaties</option>
+                                {locations.map((l) => <option key={l} value={l}>{l}</option>)}
+                            </select>
+                            <select className="form-input text-sm" value={employmentType} onChange={(e) => setEmploymentType(e.target.value)}>
+                                <option value={ALL_VALUE}>Alle dienstverbanden</option>
+                                {employmentTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+                            </select>
+                            <select className="form-input text-sm" value={workingHours} onChange={(e) => setWorkingHours(e.target.value)}>
+                                <option value={ALL_VALUE}>Alle werktijden</option>
+                                {workingHoursOptions.map((w) => <option key={w} value={w}>{w}</option>)}
+                            </select>
+                            {showDirectionFilter && (
+                                <select className="form-input text-sm" value={direction} onChange={(e) => setDirection(e.target.value)}>
+                                    <option value={ALL_VALUE}>Alle ICT-richtingen</option>
+                                    {directions.map((d) => <option key={d} value={d}>{d}</option>)}
+                                </select>
+                            )}
+                            <select className="form-input text-sm" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
+                                {SORT_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                            </select>
+                        </div>
+
+                        <div className="flex items-center justify-between flex-wrap gap-3">
+                            <label className="flex items-center gap-2 text-sm font-semibold text-(--text-main) cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={salaryOnly}
+                                    onChange={(e) => setSalaryOnly(e.target.checked)}
+                                    className="h-4 w-4 accent-(--theme-purple)"
+                                />
+                                Alleen met salaris/vergoeding
+                            </label>
+
+                            {filtersActive && (
+                                <button
+                                    type="button"
+                                    onClick={clearFilters}
+                                    className="form-button flex items-center gap-1.5 text-xs font-bold text-(--text-muted) hover:text-(--theme-purple) transition-colors"
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                    Filters wissen
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </>
+            )}
 
             <p className="text-sm text-(--text-muted) font-semibold">
                 {filteredVacancies.length} {filteredVacancies.length === 1 ? 'vacature' : 'vacatures'} gevonden
@@ -248,13 +271,13 @@ export default function BijbanenbankIsland({ vacancies }: BijbanenbankIslandProp
             ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     {filteredVacancies.map((vacancy) => (
-                        <VacancyCard key={vacancy.id} vacancy={vacancy} variant="grid" />
+                        <VacancyCard key={vacancy.id} vacancy={vacancy} variant="grid" isLoggedIn={isLoggedIn} />
                     ))}
                 </div>
             ) : (
                 <div className="flex flex-col gap-4">
                     {filteredVacancies.map((vacancy) => (
-                        <VacancyCard key={vacancy.id} vacancy={vacancy} variant="list" />
+                        <VacancyCard key={vacancy.id} vacancy={vacancy} variant="list" isLoggedIn={isLoggedIn} />
                     ))}
                 </div>
             )}

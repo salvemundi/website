@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Building2, MapPin, Calendar, Banknote, Clock, Briefcase, Mail, Globe, Phone } from 'lucide-react';
+import { Building2, MapPin, Calendar, Banknote, Clock, Briefcase, Mail, Globe, Phone, Lock } from 'lucide-react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
 import type { VacancyDTO } from '@salvemundi/validations';
@@ -9,16 +9,49 @@ import type { VacancyDTO } from '@salvemundi/validations';
 interface VacancyCardProps {
     vacancy: VacancyDTO;
     variant?: 'grid' | 'list';
+    isLoggedIn: boolean;
 }
 
 function formatPublishedDate(iso: string): string {
     return new Date(iso).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-export default function VacancyCard({ vacancy, variant = 'grid' }: VacancyCardProps) {
+export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: VacancyCardProps) {
     const router = useRouter();
     const isInternship = vacancy.type === 'internship';
     const isList = variant === 'list';
+
+    if (!isLoggedIn) {
+        const loginUrl = `/?needLogin=true&callbackURL=${encodeURIComponent('/bijbanenbank')}`;
+        return (
+            <div
+                onClick={() => router.push(loginUrl)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter') router.push(loginUrl); }}
+                className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-(--bg-card) dark:border dark:border-white/10 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 flex ${isList ? 'flex-col sm:flex-row sm:items-center' : 'flex-col'}`}
+            >
+                <div className={`relative overflow-hidden shrink-0 bg-(--bg-soft) ${isList ? 'w-full sm:w-40 aspect-video sm:aspect-square' : 'w-full aspect-video'}`}>
+                    {vacancy.image ? (
+                        <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                            <Briefcase className="h-10 w-10 text-(--theme-purple)/20" />
+                        </div>
+                    )}
+                </div>
+                <div className="p-5 flex items-center justify-between gap-3 flex-1 min-w-0">
+                    <h3 className="text-lg font-bold text-(--theme-purple)/90 leading-tight line-clamp-2 wrap-break-word">
+                        {vacancy.title}
+                    </h3>
+                    <span className="shrink-0 flex items-center gap-1.5 text-xs font-bold text-(--theme-purple)">
+                        <Lock className="h-3.5 w-3.5" />
+                        Inloggen
+                    </span>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div

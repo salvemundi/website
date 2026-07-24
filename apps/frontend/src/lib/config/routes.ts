@@ -29,6 +29,7 @@ export const PUBLIC_ROUTES: string[] = [
     ROUTES.INTRO,
     ROUTES.TRIP,
     ROUTES.WEBSHOP,
+    ROUTES.BIJBANENBANK,
     '/commissies/oud-besturen',
     '/api/assets',
     '/map',
