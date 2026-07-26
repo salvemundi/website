@@ -18,7 +18,7 @@ function revalidateVacancyPaths() {
 
 async function resolveDirectionIds(names: string[]): Promise<number[]> {
     if (names.length === 0) return [];
-    const rows = await db.select({ id: schema.vacancy_ict_directions.id, name: schema.vacancy_ict_directions.name })
+    const rows = await db.select({ id: schema.vacancy_ict_directions.id })
         .from(schema.vacancy_ict_directions)
         .where(inArray(schema.vacancy_ict_directions.name, names));
     return rows.map((r) => r.id);
@@ -66,19 +66,21 @@ export async function getAdminVacancyById(id: number) {
 
     return {
         id: row.id,
-        title: row.title,
-        company: row.company,
-        description: row.description,
-        type: row.type as VacancyAdminForm['type'],
-        contact_email: row.contact_email,
+        title: row.title ?? '',
+        company: row.company ?? '',
+        description: row.description ?? '',
+        type: (row.type ?? 'parttime') as VacancyAdminForm['type'],
+        contact_email: row.contact_email ?? '',
         contact_phone: row.contact_phone ?? '',
         contact_website: row.contact_website ?? '',
-        location: row.location,
+        location: row.location ?? '',
         salary: row.salary ?? '',
         employment_type: row.employment_type ?? '',
         working_hours: row.working_hours ?? '',
-        is_visible: row.is_visible,
-        directions: row.vacancy_direction_links.map((l) => l.vacancy_ict_direction.name),
+        is_visible: row.is_visible ?? false,
+        directions: row.vacancy_direction_links
+            .map((l) => l.vacancy_ict_direction?.name)
+            .filter((n): n is string => Boolean(n)),
         skills: Array.isArray(row.skills) ? row.skills as string[] : [],
         image: row.image,
         document: row.document
@@ -95,18 +97,20 @@ export async function getPendingSubmissions(): Promise<VacancySubmissionDTO[]> {
 
         return rows.map((row) => ({
             id: row.id,
-            title: row.title,
-            company: row.company,
-            description: row.description,
+            title: row.title ?? '',
+            company: row.company ?? '',
+            description: row.description ?? '',
             type: row.type as VacancySubmissionDTO['type'],
-            contact_email: row.contact_email,
+            contact_email: row.contact_email ?? '',
             contact_phone: row.contact_phone,
             contact_website: row.contact_website,
-            location: row.location,
+            location: row.location ?? '',
             salary: row.salary,
             employment_type: row.employment_type,
             working_hours: row.working_hours,
-            directions: row.vacancy_submission_direction_links.map((l) => l.vacancy_ict_direction.name),
+            directions: row.vacancy_submission_direction_links
+                .map((l) => l.vacancy_ict_direction?.name)
+                .filter((n): n is string => Boolean(n)),
             skills: Array.isArray(row.skills) ? row.skills as string[] : [],
             image: row.image,
             document: row.document,
@@ -116,7 +120,7 @@ export async function getPendingSubmissions(): Promise<VacancySubmissionDTO[]> {
             reviewed_at: row.reviewed_at,
             approved_vacancy_id: row.approved_vacancy_id,
             verified_at: row.verified_at,
-            created_at: row.created_at
+            created_at: row.created_at ?? ''
         }));
     } catch (error) {
         safeConsoleError('[vacancies-admin.actions.ts][getPendingSubmissions] ', error);
@@ -282,7 +286,9 @@ export async function approveSubmissionAction(submissionId: number) {
             published_at: new Date().toISOString()
         }).returning({ id: schema.vacancies.id });
 
-        const directionIds = submission.vacancy_submission_direction_links.map((l) => l.vacancy_ict_direction.id);
+        const directionIds = submission.vacancy_submission_direction_links
+            .map((l) => l.vacancy_ict_direction?.id)
+            .filter((id): id is number => typeof id === 'number');
         if (directionIds.length > 0) {
             await db.insert(schema.vacancy_direction_links).values(
                 directionIds.map((vacancy_ict_directions_id) => ({ vacancies_id: vacancy.id, vacancy_ict_directions_id }))
@@ -297,9 +303,9 @@ export async function approveSubmissionAction(submissionId: number) {
             reviewed_at: now
         }).where(eq(schema.vacancy_submissions.id, submissionId));
 
-        await sendVacancyMail(submission.contact_email, 'vacancy_approved', {
-            firstName: submission.company,
-            title: submission.title
+        await sendVacancyMail(submission.contact_email ?? '', 'vacancy_approved', {
+            firstName: submission.company ?? '',
+            title: submission.title ?? ''
         });
 
         await logAdminAction('admin_vacancy_submission_approved', 'SUCCESS', { context: 'vacature', context_name: submission.title, id: submissionId, vacancy_id: vacancy.id });
@@ -332,9 +338,9 @@ export async function rejectSubmissionAction(submissionId: number, reason: strin
             reviewed_at: now
         }).where(eq(schema.vacancy_submissions.id, submissionId));
 
-        await sendVacancyMail(submission.contact_email, 'vacancy_rejected', {
-            firstName: submission.company,
-            title: submission.title,
+        await sendVacancyMail(submission.contact_email ?? '', 'vacancy_rejected', {
+            firstName: submission.company ?? '',
+            title: submission.title ?? '',
             reason
         });
 

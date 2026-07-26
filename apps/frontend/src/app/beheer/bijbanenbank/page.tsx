@@ -11,11 +11,11 @@ export default async function BijbanenbankAdminPage() {
 
     const vacancyRows = vacancies.map((v) => ({
         id: v.id,
-        title: v.title,
-        company: v.company,
-        type: v.type,
-        is_visible: v.is_visible,
-        published_at: v.published_at
+        title: v.title ?? '',
+        company: v.company ?? '',
+        type: v.type ?? '',
+        is_visible: v.is_visible ?? false,
+        published_at: v.published_at ?? ''
     }));
 
     return (

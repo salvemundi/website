@@ -58,6 +58,15 @@ const serwist = new Serwist({
           }),
         ] }) },
     {
+      matcher: ({ url }) => {
+        return url.pathname.startsWith('/lidmaatschap') ||
+               url.pathname.startsWith('/profiel') ||
+               url.pathname.startsWith('/admin') ||
+               url.pathname.startsWith('/api');
+      },
+      handler: new NetworkOnly()
+    },
+    {
       matcher: ({ request }) => request.method === 'POST',
       handler: new NetworkOnly()
     },

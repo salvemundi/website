@@ -7,43 +7,45 @@ import { safeConsoleError } from '@/server/utils/logger';
 
 type VacancyWithDirections = {
     id: number;
-    title: string;
-    company: string;
-    description: string;
-    type: string;
-    contact_email: string;
+    title: string | null;
+    company: string | null;
+    description: string | null;
+    type: string | null;
+    contact_email: string | null;
     contact_phone: string | null;
     contact_website: string | null;
-    location: string;
+    location: string | null;
     salary: string | null;
     employment_type: string | null;
     working_hours: string | null;
-    is_visible: boolean;
-    published_at: string;
+    is_visible: boolean | null;
+    published_at: string | null;
     skills: unknown;
     image: string | null;
     document: string | null;
-    vacancy_direction_links: { vacancy_ict_direction: { name: string } }[];
+    vacancy_direction_links: { vacancy_ict_direction?: { name: string | null } | null }[];
 };
 
 function mapVacancy(row: VacancyWithDirections): VacancyDTO {
     return {
         id: row.id,
-        title: row.title,
-        company: row.company,
-        description: row.description,
-        type: row.type as VacancyDTO['type'],
-        contact_email: row.contact_email,
+        title: row.title ?? '',
+        company: row.company ?? '',
+        description: row.description ?? '',
+        type: (row.type ?? 'parttime') as VacancyDTO['type'],
+        contact_email: row.contact_email ?? '',
         contact_phone: row.contact_phone,
         contact_website: row.contact_website,
-        location: row.location,
+        location: row.location ?? '',
         salary: row.salary,
         employment_type: row.employment_type,
         working_hours: row.working_hours,
-        is_visible: row.is_visible,
-        published_at: row.published_at,
-        directions: row.vacancy_direction_links.map((link) => link.vacancy_ict_direction.name),
-        skills: Array.isArray(row.skills) ? row.skills as string[] : [],
+        is_visible: row.is_visible ?? false,
+        published_at: row.published_at ?? '',
+        directions: row.vacancy_direction_links
+            .map((link) => link.vacancy_ict_direction?.name)
+            .filter((n): n is string => Boolean(n)),
+        skills: Array.isArray(row.skills) ? (row.skills as string[]) : [],
         image: row.image,
         document: row.document
     };

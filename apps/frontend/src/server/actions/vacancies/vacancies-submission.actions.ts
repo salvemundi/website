@@ -29,7 +29,7 @@ function buildVerificationUrl(token: string): string {
 
 async function resolveDirectionIds(names: string[]): Promise<number[]> {
     if (names.length === 0) return [];
-    const rows = await db.select({ id: schema.vacancy_ict_directions.id, name: schema.vacancy_ict_directions.name })
+    const rows = await db.select({ id: schema.vacancy_ict_directions.id })
         .from(schema.vacancy_ict_directions)
         .where(inArray(schema.vacancy_ict_directions.name, names));
     return rows.map((r) => r.id);
@@ -127,7 +127,7 @@ export async function submitVacancy(formData: FormData) {
             if (value.type === 'internship' && value.directions.length > 0) {
                 const directionIds = await resolveDirectionIds(value.directions);
                 if (directionIds.length > 0) {
-                    await db.insert(schema.vacancy_submission_direction_links_).values(
+                    await db.insert(schema.vacancy_submission_direction_links).values(
                         directionIds.map((vacancy_ict_directions_id) => ({ vacancy_submissions_id: submissionId, vacancy_ict_directions_id }))
                     );
                 }
@@ -180,8 +180,12 @@ export async function verifySubmission(token: string) {
                 : { success: true, alreadyVerified: true };
         }
 
-        if (new Date(row.expiresAt).getTime() < Date.now()) {
+        if (!row.expiresAt || new Date(row.expiresAt).getTime() < Date.now()) {
             return { success: false, error: 'Deze verificatielink is verlopen. Vraag een nieuwe aan via het aanmeldformulier.' };
+        }
+
+        if (!row.submissionId) {
+            return { success: false, error: 'Deze verificatielink is ongeldig.' };
         }
 
         await db.update(schema.vacancy_verification_tokens)
@@ -192,7 +196,7 @@ export async function verifySubmission(token: string) {
             .set({ status: 'pending_review', verified_at: now })
             .where(eq(schema.vacancy_submissions.id, row.submissionId));
 
-        after(() => notifyAdminsOfPendingSubmission(row.title, row.company));
+        after(() => notifyAdminsOfPendingSubmission(row.title ?? '', row.company ?? ''));
 
         return { success: true };
     } catch (error) {

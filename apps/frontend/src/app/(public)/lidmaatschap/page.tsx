@@ -30,9 +30,8 @@ export default async function MembershipPage() {
         }
     }
 
-    const isExpired = user && user.membership_status !== 'active';
     const isCommitteeMember = committees.length > 0;
-    const baseAmount = (isCommitteeMember && isExpired) ? 10.00 : 20.00;
+    const baseAmount = isCommitteeMember ? 10.00 : 20.00;
 
     return (
         <PublicPageShell

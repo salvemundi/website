@@ -71,13 +71,13 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     const session = await getEnrichedSession();
 
     const user = session?.user as EnrichedUser | undefined;
-    const isExpired = user && user.membership_status !== 'active';
+    const isRenewal = !!user;
 
     const { fetchUserCommitteesDb } = await import('@/server/internal/leden/leden-db.utils');
     const committees = user ? await fetchUserCommitteesDb(user.id) : [];
     const isCommitteeMember = committees.length > 0;
 
-    const baseAmount = (isCommitteeMember && isExpired) ? 10.00 : 20.00;
+    const baseAmount = (isCommitteeMember && isRenewal) ? 10.00 : 20.00;
     let finalAmount = baseAmount;
     let couponClaimed = false;
 
@@ -104,10 +104,10 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
             headers: getInternalHeaders(),
             body: JSON.stringify({
                 amount: finalAmount,
-                description: isExpired ? 'Verlenging Salve Mundi Lidmaatschap' : 'Inschrijving Salve Mundi Lidmaatschap',
+                description: isRenewal ? 'Verlenging Salve Mundi Lidmaatschap' : 'Inschrijving Salve Mundi Lidmaatschap',
                 registrationType: 'membership',
                 isContribution: true,
-                isNewMember: !isExpired,
+                isNewMember: !isRenewal,
                 userId: user?.id || null,
                 firstName: parsed.data.voornaam,
                 lastName: parsed.data.achternaam,
@@ -115,7 +115,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
                 dateOfBirth: parsed.data.geboortedatum,
                 phoneNumber: parsed.data.telefoon,
                 couponCode: parsed.data.coupon,
-                redirectUrl: `${process.env.PUBLIC_URL}/lidmaatschap/bevestiging${isExpired ? '?type=renewal' : ''}`
+                redirectUrl: `${process.env.PUBLIC_URL}/lidmaatschap/bevestiging${isRenewal ? '?type=renewal' : ''}`
             })
         });
 

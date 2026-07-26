@@ -28,7 +28,7 @@ async function proxy(request: NextRequest) {
         const cspHeader = `
             default-src 'self';
             script-src 'self' 'nonce-${nonce}' https://static.cloudflareinsights.com ${origin.includes('localhost') ? "'unsafe-eval'" : ""};
-            style-src-elem 'self' 'nonce-${nonce}';
+            style-src-elem 'self' 'unsafe-inline';
             style-src-attr 'unsafe-inline';
             img-src 'self' blob: data: ${directusUrl} https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com;
             media-src 'self' blob: data: ${directusUrl};
