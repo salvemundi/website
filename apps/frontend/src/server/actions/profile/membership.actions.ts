@@ -12,7 +12,6 @@ import {
 } from '@salvemundi/validations/schema/membership.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type EnrichedUser } from '@/types/auth';
-import { revalidateTag } from 'next/cache';
 import { checkRateLimit } from '@/server/utils/ratelimit';
 import { getExpandedEnv } from '@/server/utils/env';
 import { getValidCoupon, claimCoupon, releaseCoupon } from '@/server/internal/coupon/coupon-db.utils';;
@@ -202,9 +201,6 @@ export async function getTransactionStatusAction(transactionId: string) {
         const transaction = rows[0] as { payment_status: string; user_id: string | null };
 
         if (transaction.payment_status === 'paid') {
-            if (transaction.user_id) {
-                revalidateTag(`user-${transaction.user_id}`, 'max');
-            }
             return { status: 'paid', user_id: transaction.user_id };
         } else if (['failed', 'canceled', 'expired'].includes(transaction.payment_status)) {
             return { status: 'failed', user_id: transaction.user_id };
@@ -220,9 +216,6 @@ export async function getTransactionStatusAction(transactionId: string) {
                 if (statusRes.ok) {
                     const liveData = await statusRes.json() as { payment_status?: string };
                     if (liveData.payment_status === 'paid') {
-                        if (transaction.user_id) {
-                            revalidateTag(`user-${transaction.user_id}`, 'max');
-                        }
                         return { status: 'paid', user_id: transaction.user_id };
                     } else if (liveData.payment_status && ['failed', 'canceled', 'expired'].includes(liveData.payment_status)) {
                         return { status: 'failed', user_id: transaction.user_id };
