@@ -12,7 +12,8 @@ export const ROUTES = {
     ACCOUNT: '/profiel',
     STICKERS: '/stickers',
     SAFE_HAVENS: '/safe-havens',
-    ADMIN: '/beheer'
+    ADMIN: '/beheer',
+    BIJBANENBANK: '/bijbanenbank'
 } as const;
 
 // De routes die zonder inloggen toegankelijk zijn (de (public) groep in src/app)
@@ -28,6 +29,7 @@ export const PUBLIC_ROUTES: string[] = [
     ROUTES.INTRO,
     ROUTES.TRIP,
     ROUTES.WEBSHOP,
+    ROUTES.BIJBANENBANK,
     '/commissies/oud-besturen',
     '/api/assets',
     '/map',

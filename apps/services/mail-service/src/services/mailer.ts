@@ -45,7 +45,11 @@ export class MailerService {
         ['membership_renewal', 'Lidmaatschap Verlengd'],
         ['pub_crawl_ticket', 'Je Tickets voor de Kroegentocht'],
         ['welcome_payment', 'Welkom bij Salve Mundi'],
-        ['event_signup', 'Inschrijving Bevestigd']
+        ['event_signup', 'Inschrijving Bevestigd'],
+        ['vacancy_verification', 'Bevestig je vacature'],
+        ['vacancy_approved', 'Vacature Goedgekeurd'],
+        ['vacancy_rejected', 'Vacature Beoordeeld'],
+        ['vacancy_admin_notification', 'Nieuwe Vacature ter Beoordeling']
     ]);
 
     private static templateCache = new Map<string, HandlebarsTemplateDelegate>();

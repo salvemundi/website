@@ -55,7 +55,8 @@ export default async function BeheerPage() {
         permissions.includes('coupons'),
         permissions.includes('stickers'),
         permissions.includes('kroegentocht'),
-        permissions.includes('webshop')
+        permissions.includes('webshop'),
+        permissions.includes('vacatures')
     ];
     const visibleCount = allPermissions.filter(Boolean).length;
     const isLimitedAccess = visibleCount <= 2;

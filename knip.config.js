@@ -13,11 +13,9 @@ const config = {
       ignoreExportsUsedInFile: false
     },
     "apps/services/*": {
-      entry: ["src/server.ts"]
+      entry: ["src/index.ts", "src/server.ts"]
     },
-    "packages/db": {
-      ignore: ["drizzle/**"]
-    },
+    "packages/db": {},
     "packages/validations": {
       ignoreDependencies: ["directus-ts-typegen"]
     }

@@ -1,39 +1,32 @@
 import { relations } from "drizzle-orm/relations";
-import { clubs, club_members, directus_users, Stickers, directus_files, Board, Board_Members, contacts, directus_roles, directus_access, directus_policies, committees, directus_comments, directus_dashboards, directus_folders, directus_collections, directus_flows, directus_panels, directus_permissions, directus_presets, directus_activity, directus_revisions, directus_versions, directus_shares, directus_notifications, directus_operations, intro_blogs, documents, events, event_signups, events_directus_users, intro_blog_likes, events_members, hero_banners, intro_blog_gallery, pub_crawl_events, membership_history, pub_crawl_signups, pub_crawl_signups_transactions, transactions, push_notification, intro_planning, pub_crawl_tickets, intro_parent_signups, trips, trip_signups, trip_activities, trip_signup_activities, safe_havens, sponsors, directus_sessions, roles, role_permissions, permissions, webshop_preorders, auth_accounts, auth_sessions, committee_members, intro_planning_signups, intro_signups, directus_deployments, webshop_products, webshop_product_media, directus_deployment_projects, directus_settings, directus_deployment_runs, webshop_product_variants, webshop_drop_windows, webshop_preorder_lines } from "./schema";
+import { directus_users, vacancy_submissions, directus_files, vacancies, clubs, club_members, Stickers, Board, Board_Members, contacts, directus_roles, directus_access, directus_policies, committees, directus_comments, directus_dashboards, directus_folders, directus_collections, directus_flows, directus_panels, directus_permissions, directus_presets, directus_activity, directus_revisions, directus_versions, directus_shares, directus_notifications, vacancy_verification_tokens, directus_operations, intro_blogs, vacancy_ict_directions, vacancies_vacancy_ict_directions, documents, events, event_signups, events_directus_users, intro_blog_likes, events_members, hero_banners, intro_blog_gallery, pub_crawl_events, membership_history, pub_crawl_signups, pub_crawl_signups_transactions, transactions, push_notification, vacancy_submission_direction_links, intro_planning, pub_crawl_tickets, intro_parent_signups, trips, vacancy_direction_links, trip_signups, trip_activities, trip_signup_activities, safe_havens, sponsors, directus_sessions, roles, role_permissions, permissions, webshop_preorders, auth_accounts, auth_sessions, committee_members, intro_planning_signups, intro_signups, directus_deployments, webshop_products, webshop_product_media, directus_deployment_projects, directus_settings, directus_deployment_runs, webshop_product_variants, webshop_drop_windows, webshop_preorder_lines } from "./schema";
 
-export const club_membersRelations = relations(club_members, ({one}) => ({
-	club: one(clubs, {
-		fields: [club_members.club_id],
-		references: [clubs.id]
+export const vacancy_submissionsRelations = relations(vacancy_submissions, ({one, many}) => ({
+	directus_user: one(directus_users, {
+		fields: [vacancy_submissions.reviewed_by],
+		references: [directus_users.id]
 	}),
-}));
-
-export const clubsRelations = relations(clubs, ({one, many}) => ({
-	club_members: many(club_members),
-	directus_file: one(directus_files, {
-		fields: [clubs.image],
-		references: [directus_files.id]
+	directus_file_image: one(directus_files, {
+		fields: [vacancy_submissions.image],
+		references: [directus_files.id],
+		relationName: "vacancy_submissions_image_directus_files_id"
 	}),
-}));
-
-export const StickersRelations = relations(Stickers, ({one}) => ({
-	directus_user_user_created: one(directus_users, {
-		fields: [Stickers.user_created],
-		references: [directus_users.id],
-		relationName: "Stickers_user_created_directus_users_id"
+	directus_file_document: one(directus_files, {
+		fields: [vacancy_submissions.document],
+		references: [directus_files.id],
+		relationName: "vacancy_submissions_document_directus_files_id"
 	}),
-	directus_user_user_updated: one(directus_users, {
-		fields: [Stickers.user_updated],
-		references: [directus_users.id],
-		relationName: "Stickers_user_updated_directus_users_id"
+	vacancy: one(vacancies, {
+		fields: [vacancy_submissions.approved_vacancy_id],
+		references: [vacancies.id]
 	}),
-	directus_file: one(directus_files, {
-		fields: [Stickers.image],
-		references: [directus_files.id]
-	}),
+	vacancy_verification_tokens: many(vacancy_verification_tokens),
+	vacancy_submission_direction_links: many(vacancy_submission_direction_links),
 }));
 
 export const directus_usersRelations = relations(directus_users, ({one, many}) => ({
+	vacancy_submissions: many(vacancy_submissions),
+	vacancies: many(vacancies),
 	Stickers_user_created: many(Stickers, {
 		relationName: "Stickers_user_created_directus_users_id"
 	}),
@@ -133,6 +126,18 @@ export const directus_usersRelations = relations(directus_users, ({one, many}) =
 }));
 
 export const directus_filesRelations = relations(directus_files, ({one, many}) => ({
+	vacancy_submissions_image: many(vacancy_submissions, {
+		relationName: "vacancy_submissions_image_directus_files_id"
+	}),
+	vacancy_submissions_document: many(vacancy_submissions, {
+		relationName: "vacancy_submissions_document_directus_files_id"
+	}),
+	vacancies_image: many(vacancies, {
+		relationName: "vacancies_image_directus_files_id"
+	}),
+	vacancies_document: many(vacancies, {
+		relationName: "vacancies_document_directus_files_id"
+	}),
 	Stickers: many(Stickers),
 	Boards: many(Board),
 	contacts: many(contacts),
@@ -174,6 +179,58 @@ export const directus_filesRelations = relations(directus_files, ({one, many}) =
 	}),
 	directus_settings_public_favicon: many(directus_settings, {
 		relationName: "directus_settings_public_favicon_directus_files_id"
+	}),
+}));
+
+export const vacanciesRelations = relations(vacancies, ({one, many}) => ({
+	vacancy_submissions: many(vacancy_submissions),
+	directus_user: one(directus_users, {
+		fields: [vacancies.created_by],
+		references: [directus_users.id]
+	}),
+	directus_file_image: one(directus_files, {
+		fields: [vacancies.image],
+		references: [directus_files.id],
+		relationName: "vacancies_image_directus_files_id"
+	}),
+	directus_file_document: one(directus_files, {
+		fields: [vacancies.document],
+		references: [directus_files.id],
+		relationName: "vacancies_document_directus_files_id"
+	}),
+	vacancies_vacancy_ict_directions: many(vacancies_vacancy_ict_directions),
+	vacancy_direction_links: many(vacancy_direction_links),
+}));
+
+export const club_membersRelations = relations(club_members, ({one}) => ({
+	club: one(clubs, {
+		fields: [club_members.club_id],
+		references: [clubs.id]
+	}),
+}));
+
+export const clubsRelations = relations(clubs, ({one, many}) => ({
+	club_members: many(club_members),
+	directus_file: one(directus_files, {
+		fields: [clubs.image],
+		references: [directus_files.id]
+	}),
+}));
+
+export const StickersRelations = relations(Stickers, ({one}) => ({
+	directus_user_user_created: one(directus_users, {
+		fields: [Stickers.user_created],
+		references: [directus_users.id],
+		relationName: "Stickers_user_created_directus_users_id"
+	}),
+	directus_user_user_updated: one(directus_users, {
+		fields: [Stickers.user_updated],
+		references: [directus_users.id],
+		relationName: "Stickers_user_updated_directus_users_id"
+	}),
+	directus_file: one(directus_files, {
+		fields: [Stickers.image],
+		references: [directus_files.id]
 	}),
 }));
 
@@ -412,6 +469,13 @@ export const directus_notificationsRelations = relations(directus_notifications,
 	}),
 }));
 
+export const vacancy_verification_tokensRelations = relations(vacancy_verification_tokens, ({one}) => ({
+	vacancy_submission: one(vacancy_submissions, {
+		fields: [vacancy_verification_tokens.submission_id],
+		references: [vacancy_submissions.id]
+	}),
+}));
+
 export const directus_operationsRelations = relations(directus_operations, ({one, many}) => ({
 	directus_flow: one(directus_flows, {
 		fields: [directus_operations.flow],
@@ -456,6 +520,23 @@ export const intro_blogsRelations = relations(intro_blogs, ({one, many}) => ({
 	}),
 	intro_blog_likes: many(intro_blog_likes),
 	intro_blog_galleries: many(intro_blog_gallery),
+}));
+
+export const vacancies_vacancy_ict_directionsRelations = relations(vacancies_vacancy_ict_directions, ({one}) => ({
+	vacancy_ict_direction: one(vacancy_ict_directions, {
+		fields: [vacancies_vacancy_ict_directions.vacancy_ict_directions_id],
+		references: [vacancy_ict_directions.id]
+	}),
+	vacancy: one(vacancies, {
+		fields: [vacancies_vacancy_ict_directions.vacancies_id],
+		references: [vacancies.id]
+	}),
+}));
+
+export const vacancy_ict_directionsRelations = relations(vacancy_ict_directions, ({many}) => ({
+	vacancies_vacancy_ict_directions: many(vacancies_vacancy_ict_directions),
+	vacancy_submission_direction_links: many(vacancy_submission_direction_links),
+	vacancy_direction_links: many(vacancy_direction_links),
 }));
 
 export const documentsRelations = relations(documents, ({one}) => ({
@@ -619,6 +700,17 @@ export const push_notificationRelations = relations(push_notification, ({one}) =
 	}),
 }));
 
+export const vacancy_submission_direction_linksRelations = relations(vacancy_submission_direction_links, ({one}) => ({
+	vacancy_ict_direction: one(vacancy_ict_directions, {
+		fields: [vacancy_submission_direction_links.vacancy_ict_directions_id],
+		references: [vacancy_ict_directions.id]
+	}),
+	vacancy_submission: one(vacancy_submissions, {
+		fields: [vacancy_submission_direction_links.vacancy_submissions_id],
+		references: [vacancy_submissions.id]
+	}),
+}));
+
 export const intro_planningRelations = relations(intro_planning, ({one, many}) => ({
 	directus_user_user_created: one(directus_users, {
 		fields: [intro_planning.user_created],
@@ -670,6 +762,17 @@ export const tripsRelations = relations(trips, ({one, many}) => ({
 	}),
 	trip_signups: many(trip_signups),
 	trip_activities: many(trip_activities),
+}));
+
+export const vacancy_direction_linksRelations = relations(vacancy_direction_links, ({one}) => ({
+	vacancy_ict_direction: one(vacancy_ict_directions, {
+		fields: [vacancy_direction_links.vacancy_ict_directions_id],
+		references: [vacancy_ict_directions.id]
+	}),
+	vacancy: one(vacancies, {
+		fields: [vacancy_direction_links.vacancies_id],
+		references: [vacancies.id]
+	}),
 }));
 
 export const trip_signupsRelations = relations(trip_signups, ({one, many}) => ({

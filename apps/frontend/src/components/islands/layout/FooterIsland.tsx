@@ -57,6 +57,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
         { label: 'Lidmaatschap', href: ROUTES.MEMBERSHIP },
         { label: 'Kroegentocht', href: ROUTES.PUB_CRAWL },
         { label: 'Reis', href: ROUTES.TRIP },
+        { label: 'Bijbanenbank', href: ROUTES.BIJBANENBANK },
     ];
 
     const pageLinks = allPageLinks.filter(link => !disabledRoutes.includes(link.href));

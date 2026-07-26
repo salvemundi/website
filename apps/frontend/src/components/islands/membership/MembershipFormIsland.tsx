@@ -72,10 +72,8 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
 
             if (result.success && result.checkoutUrl) {
                 window.location.href = result.checkoutUrl;
-            } else if (result.errors) {
-
             } else {
-                showToast(result.error || 'Er ging iets mis', 'error');
+                showToast(result.error || 'Er ging iets mis bij het starten van de inschrijving.', 'error');
             }
         });
     };
@@ -166,7 +164,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                         type="button"
                         onClick={() => { void handleCouponCheck(); }}
                         disabled={!couponValue || isPending}
-                        className="form-button !bg-theme-purple !text-white w-auto py-2 px-6 shadow-md shrink-0 enabled:active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="form-button bg-theme-purple! text-white! w-auto py-2 px-6 shadow-md shrink-0 enabled:active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isPending ? '...' : 'Check'}
                     </button>

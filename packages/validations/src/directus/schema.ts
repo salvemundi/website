@@ -26,7 +26,6 @@ export interface Schema {
   intro_planning: IntroPlanning[];
   intro_planning_signups: IntroPlanningSignup[];
   intro_signups: IntroSignup[];
-  jobs: Job[];
   permissions: Permission[];
   pub_crawl_events: PubCrawlEvent[];
   pub_crawl_signups: PubCrawlSignup[];
@@ -43,6 +42,13 @@ export interface Schema {
   trip_signup_activities: TripSignupActivity[];
   trip_signups: TripSignup[];
   trips: Trip[];
+  vacancies: Vacancy[];
+  vacancies_vacancy_ict_directions: VacancyVacancyIctDirection[];
+  vacancy_direction_links: VacancyDirectionLink[];
+  vacancy_ict_directions: VacancyIctDirection[];
+  vacancy_submission_direction_links: VacancySubmissionDirectionLink[];
+  vacancy_submissions: VacancySubmission[];
+  vacancy_verification_tokens: VacancyVerificationToken[];
   webshop_drop_windows: WebshopDropWindow[];
   webshop_preorder_lines: WebshopPreorderLine[];
   webshop_preorders: WebshopPreorder[];
@@ -385,17 +391,6 @@ export interface IntroSignup {
   approved: boolean | null;
 }
 
-export interface Job {
-  job_id: number;
-  name: string;
-  description: string | null;
-  pay: number | null;
-  location: string;
-  created_at: string | "datetime";
-  skills: string | null;
-  profile_description: string | null;
-}
-
 export interface Permission {
   id: number;
   name: string;
@@ -605,6 +600,84 @@ export interface Trip {
   allow_deposit_payments: boolean | null;
 }
 
+export interface Vacancy {
+  id: number;
+  created_by: string | DirectusUser<Schema> | null;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+  title: string | null;
+  company: string | null;
+  description: string | null;
+  type: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  contact_website: string | null;
+  location: string | null;
+  salary: string | null;
+  employment_type: string | null;
+  working_hours: string | null;
+  is_visible: boolean | null;
+  published_at: string | "datetime" | null;
+  image: string | DirectusFile<Schema> | null;
+  document: string | DirectusFile<Schema> | null;
+  skills: unknown | null;
+  ict_directions: number[] | VacancyDirectionLink[];
+}
+
+export interface VacancyVacancyIctDirection {
+  id: number;
+  vacancies_id: number | Vacancy | null;
+  vacancy_ict_directions_id: number | VacancyIctDirection | null;
+}
+
+export interface VacancyDirectionLink {
+  id: number;
+  vacancies_id: number | Vacancy | null;
+  vacancy_ict_directions_id: number | VacancyIctDirection | null;
+}
+
+export interface VacancyIctDirection {
+  id: number;
+  name: string | null;
+  slug: string | null;
+}
+
+export interface VacancySubmission {
+  id: number;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+  title: string | null;
+  company: string | null;
+  description: string | null;
+  type: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  contact_website: string | null;
+  location: string | null;
+  salary: string | null;
+  employment_type: string | null;
+  working_hours: string | null;
+  status: string | null;
+  rejection_reason: string | null;
+  reviewed_by: string | DirectusUser<Schema> | null;
+  reviewed_at: string | "datetime" | null;
+  submitter_ip: string | null;
+  verified_at: string | null;
+  approved_vacancy_id: number | Vacancy | null;
+  image: string | DirectusFile<Schema> | null;
+  document: string | DirectusFile<Schema> | null;
+  skills: unknown | null;
+}
+
+export interface VacancyVerificationToken {
+  id: number;
+  created_at: string | "datetime" | null;
+  submission_id: number | VacancySubmission | null;
+  token: string | null;
+  expires_at: string | "datetime" | null;
+  used_at: string | "datetime" | null;
+}
+
 export interface WebshopDropWindow {
   id: number;
   name: string;
@@ -786,4 +859,10 @@ export interface GeoJSONGeometryCollection {
     | GeoJSONMultiLineString
     | GeoJSONMultiPolygon
   >;
+}
+
+export interface VacancySubmissionDirectionLink {
+  id: number;
+  vacancy_submissions_id: number | VacancySubmission | null;
+  vacancy_ict_directions_id: number | VacancyIctDirection | null;
 }

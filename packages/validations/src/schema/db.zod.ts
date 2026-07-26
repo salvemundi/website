@@ -8,6 +8,18 @@
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import * as schema from '@salvemundi/db/schema';
 
+// --- vacancy_ict_directions ---
+export const insertVacancyIctDirectionsSchema = createInsertSchema(schema.vacancy_ict_directions);
+export const selectVacancyIctDirectionsSchema = createSelectSchema(schema.vacancy_ict_directions);
+
+// --- vacancy_submissions ---
+export const insertVacancySubmissionsSchema = createInsertSchema(schema.vacancy_submissions);
+export const selectVacancySubmissionsSchema = createSelectSchema(schema.vacancy_submissions);
+
+// --- vacancies ---
+export const insertVacanciesSchema = createInsertSchema(schema.vacancies);
+export const selectVacanciesSchema = createSelectSchema(schema.vacancies);
+
 // --- club_members ---
 export const insertClubMembersSchema = createInsertSchema(schema.club_members);
 export const selectClubMembersSchema = createSelectSchema(schema.club_members);
@@ -112,6 +124,10 @@ export const selectDirectusSharesSchema = createSelectSchema(schema.directus_sha
 export const insertDirectusNotificationsSchema = createInsertSchema(schema.directus_notifications);
 export const selectDirectusNotificationsSchema = createSelectSchema(schema.directus_notifications);
 
+// --- vacancy_verification_tokens ---
+export const insertVacancyVerificationTokensSchema = createInsertSchema(schema.vacancy_verification_tokens);
+export const selectVacancyVerificationTokensSchema = createSelectSchema(schema.vacancy_verification_tokens);
+
 // --- directus_policies ---
 export const insertDirectusPoliciesSchema = createInsertSchema(schema.directus_policies);
 export const selectDirectusPoliciesSchema = createSelectSchema(schema.directus_policies);
@@ -131,6 +147,10 @@ export const selectDirectusVersionsSchema = createSelectSchema(schema.directus_v
 // --- intro_blogs ---
 export const insertIntroBlogsSchema = createInsertSchema(schema.intro_blogs);
 export const selectIntroBlogsSchema = createSelectSchema(schema.intro_blogs);
+
+// --- vacancies_vacancy_ict_directions ---
+export const insertVacanciesVacancyIctDirectionsSchema = createInsertSchema(schema.vacancies_vacancy_ict_directions);
+export const selectVacanciesVacancyIctDirectionsSchema = createSelectSchema(schema.vacancies_vacancy_ict_directions);
 
 // --- documents ---
 export const insertDocumentsSchema = createInsertSchema(schema.documents);
@@ -176,10 +196,6 @@ export const selectPubCrawlEventsSchema = createSelectSchema(schema.pub_crawl_ev
 export const insertMembershipHistorySchema = createInsertSchema(schema.membership_history);
 export const selectMembershipHistorySchema = createSelectSchema(schema.membership_history);
 
-// --- jobs ---
-export const insertJobsSchema = createInsertSchema(schema.jobs);
-export const selectJobsSchema = createSelectSchema(schema.jobs);
-
 // --- pub_crawl_signups_transactions ---
 export const insertPubCrawlSignupsTransactionsSchema = createInsertSchema(schema.pub_crawl_signups_transactions);
 export const selectPubCrawlSignupsTransactionsSchema = createSelectSchema(schema.pub_crawl_signups_transactions);
@@ -191,6 +207,10 @@ export const selectPushNotificationSchema = createSelectSchema(schema.push_notif
 // --- permissions ---
 export const insertPermissionsSchema = createInsertSchema(schema.permissions);
 export const selectPermissionsSchema = createSelectSchema(schema.permissions);
+
+// --- vacancy_submission_direction_links ---
+export const insertVacancySubmissionDirectionLinksSchema = createInsertSchema(schema.vacancy_submission_direction_links);
+export const selectVacancySubmissionDirectionLinksSchema = createSelectSchema(schema.vacancy_submission_direction_links);
 
 // --- intro_signups ---
 export const insertIntroSignupsSchema = createInsertSchema(schema.intro_signups);
@@ -219,6 +239,10 @@ export const selectIntroParentSignupsSchema = createSelectSchema(schema.intro_pa
 // --- trips ---
 export const insertTripsSchema = createInsertSchema(schema.trips);
 export const selectTripsSchema = createSelectSchema(schema.trips);
+
+// --- vacancy_direction_links ---
+export const insertVacancyDirectionLinksSchema = createInsertSchema(schema.vacancy_direction_links);
+export const selectVacancyDirectionLinksSchema = createSelectSchema(schema.vacancy_direction_links);
 
 // --- whatsapp_groups ---
 export const insertWhatsappGroupsSchema = createInsertSchema(schema.whatsapp_groups);

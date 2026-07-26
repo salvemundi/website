@@ -94,9 +94,29 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                     )}
                 </div>
 
-                <p className="text-sm opacity-50 italic text-center">
-                    Je hoeft op dit moment geen actie te ondernemen.
-                </p>
+                <div className="bg-purple-50 dark:bg-white/5 border border-purple-100 dark:border-white/10 squircle-lg p-6 mb-4 text-center">
+                    <p className="text-sm font-bold text-theme-purple dark:text-purple-400 uppercase tracking-widest mb-2">Lidmaatschap Verlengen</p>
+                    <p className="text-sm opacity-80 mb-6">
+                        Wil je je lidmaatschap alvast met een jaar verlengen?
+                    </p>
+                    {baseAmount === 10 && (
+                        <div className="mb-4 p-3 bg-purple-500/10 border border-purple-500/20 squircle flex items-center justify-center gap-3">
+                            <span className="bg-purple-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Actief Lid</span>
+                            <p className="text-xs font-bold text-theme-purple dark:text-purple-400">
+                                Commissie-korting toegepast: Jouw verlenging kost slechts €10,00.
+                            </p>
+                        </div>
+                    )}
+                    <button
+                        onClick={() => { void handleRenewal(); }}
+                        disabled={isPending}
+                        className="form-button shadow-glow transition-transform active:scale-95"
+                    >
+                        {isPending ? 'Verwerken...' : `Nu Verlengen (€${baseAmount.toFixed(2).replace('.', ',')})`}
+                    </button>
+                </div>
+
+                <AdminToast toast={toast} onClose={hideToast} />
             </div>
         );
     }

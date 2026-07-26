@@ -205,6 +205,7 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 .insert(schema.transactions)
                 .values({
                     mollie_id: payment.id,
+                    transaction_id: payment.id,
                     amount,
                     payment_status: 'open',
                     product_name: description,
