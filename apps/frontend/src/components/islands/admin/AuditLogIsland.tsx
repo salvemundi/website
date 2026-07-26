@@ -102,7 +102,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
             const res = await approveSignupAction(id, type);
             if (res.success) {
                 setSignups(prev => prev.filter(s => s.id !== id));
-                showToast('Inschrijving goedgekeurd', 'success');
+                showToast(type === 'membership_renewal' ? 'Verlenging goedgekeurd' : 'Inschrijving goedgekeurd', 'success');
                 const adminLogsRes = await getSystemLogsAction(50, 'admin');
                 if (adminLogsRes.success) {
                     setAdminLogs(adminLogsRes.data);
@@ -119,13 +119,13 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
     };
 
     const handleReject = async (id: string, type: string) => {
-        if (!confirm('Weet je zeker dat je deze inschrijving wilt afwijzen?')) return;
+        if (!confirm(`Weet je zeker dat je deze ${type === 'membership_renewal' ? 'verlenging' : 'inschrijving'} wilt afwijzen?`)) return;
         setIsProcessing(id);
         try {
             const res = await rejectSignupAction(id, type);
             if (res.success) {
                 setSignups(prev => prev.filter(s => s.id !== id));
-                showToast('Inschrijving afgewezen', 'info');
+                showToast(type === 'membership_renewal' ? 'Verlenging afgewezen' : 'Inschrijving afgewezen', 'info');
                 const adminLogsRes = await getSystemLogsAction(50, 'admin');
                 if (adminLogsRes.success) {
                     setAdminLogs(adminLogsRes.data);

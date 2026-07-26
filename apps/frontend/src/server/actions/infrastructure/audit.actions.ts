@@ -127,6 +127,17 @@ export async function approveSignupAction(id: string, type: string) {
 
         if (!res.ok) throw new Error(`Finance approval failed: ${await res.text()}`);
 
+        if (type === 'membership_renewal') {
+            const tx = await db.query.transactions.findFirst({
+                columns: { user_id: true },
+                where: eq(schema.transactions.mollie_id, id)
+            });
+            if (tx?.user_id) {
+                const { renewMembershipAction } = await import('@/server/actions/admin/leden/admin-leden-membership.actions');
+                await renewMembershipAction(tx.user_id, 12);
+            }
+        }
+
         await logAdminAction('admin_signup_approved', 'SUCCESS', {
             context: 'lidmaatschap',
             signup_id: id,
