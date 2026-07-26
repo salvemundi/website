@@ -210,6 +210,29 @@ export async function getTransactionStatusAction(transactionId: string) {
             return { status: 'failed', user_id: transaction.user_id };
         }
 
+        // If status is still 'open' in DB, perform a live check against finance service (Mollie)
+        if (isUuid) {
+            try {
+                const statusRes = await fetch(`${getFinanceServiceUrl()}/api/finance/status/${idStr}`, {
+                    headers: getInternalHeaders(),
+                    signal: AbortSignal.timeout(5000)
+                });
+                if (statusRes.ok) {
+                    const liveData = await statusRes.json() as { payment_status?: string };
+                    if (liveData.payment_status === 'paid') {
+                        if (transaction.user_id) {
+                            revalidateTag(`user-${transaction.user_id}`, 'max');
+                        }
+                        return { status: 'paid', user_id: transaction.user_id };
+                    } else if (liveData.payment_status && ['failed', 'canceled', 'expired'].includes(liveData.payment_status)) {
+                        return { status: 'failed', user_id: transaction.user_id };
+                    }
+                }
+            } catch (liveErr) {
+                logInfo('[membership.actions.ts][getTransactionStatusAction]', `Live status check failed for token ${idStr}: ${liveErr instanceof Error ? liveErr.message : String(liveErr)}`);
+            }
+        }
+
         return { status: 'open', user_id: transaction.user_id };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
