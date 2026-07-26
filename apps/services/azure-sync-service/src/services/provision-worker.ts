@@ -2,6 +2,7 @@ import { safeConsoleError, logInfo } from '../utils/logger.js';
 import { type Redis } from 'ioredis';
 import { SyncJob } from './sync/sync-job.js';
 import { TokenService } from './token.service.js';
+import { DbService } from './db.service.js';
 import { z } from 'zod';
 
 export const ProvisionTaskSchema = z.object({
@@ -69,6 +70,39 @@ export class ProvisionWorkerService {
 
                     try {
                         logInfo('[provision-worker.ts][start] ', `Provisioning user ${task.userId}...`);
+
+                        const user = await DbService.getUserById(task.userId) || await DbService.getUserByEntraId(task.userId);
+                        if (user && task.paymentId) {
+                            const today = new Date();
+                            const currentExpiry = user.membership_expiry ? new Date(user.membership_expiry) : null;
+                            const baseDate = (currentExpiry && currentExpiry > today) ? currentExpiry : today;
+                            const newExpiry = new Date(baseDate);
+                            newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+                            const newExpiryStr = newExpiry.toISOString().split('T')[0];
+
+                            logInfo('[provision-worker.ts][start] ', `Extending membership_expiry for user ${user.id} (${user.email}) from ${user.membership_expiry || 'none'} to ${newExpiryStr}`);
+
+                            await DbService.updateUser(user.id, {
+                                membership_expiry: newExpiryStr,
+                                membership_status: 'active',
+                                status: 'active'
+                            });
+
+                            if (user.entra_id) {
+                                const mgmtUrl = process.env.AZURE_MANAGEMENT_SERVICE_URL;
+                                const mgmtToken = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
+                                if (mgmtUrl && mgmtToken) {
+                                    await fetch(`${mgmtUrl}/api/users/${encodeURIComponent(user.entra_id)}`, {
+                                        method: 'PATCH',
+                                        headers: {
+                                            'Authorization': `Bearer ${mgmtToken}`,
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({ membershipExpiry: newExpiryStr })
+                                    }).catch(err => safeConsoleError('[provision-worker.ts][start] ', `Failed to patch Entra ID membershipExpiry: ${err instanceof Error ? err.message : String(err)}`));
+                                }
+                            }
+                        }
 
                         const token = await TokenService.getAccessToken(redis);
                         await SyncJob.syncByEntraId(redis, task.userId, token);
