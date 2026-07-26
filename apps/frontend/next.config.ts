@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
         // cap get silently truncated, which server actions then see as a corrupt
         // multipart body ("Unexpected end of form") even though bodySizeLimit above
         // is high enough. Both need to allow at least image (5MB) + document (10MB).
-        middlewareClientMaxBodySize: '20mb'
+        proxyClientMaxBodySize: '20mb'
     },
     devIndicators: false,
     output: 'standalone',

@@ -17,7 +17,7 @@ import { checkRateLimit } from '@/server/utils/ratelimit';
 import { getExpandedEnv } from '@/server/utils/env';
 import { getValidCoupon, claimCoupon, releaseCoupon } from '@/server/internal/coupon/coupon-db.utils';;
 import { normalizeDate } from '@/lib/utils/date-utils';
-import { safeConsoleError } from '@/server/utils/logger';
+import { safeConsoleError, logInfo } from '@/server/utils/logger';
 
 const getFinanceServiceUrl = () => getExpandedEnv('FINANCE_SERVICE_URL');
 
@@ -57,21 +57,49 @@ export async function validateCouponAction(formData: FormData) {
 }
 
 export async function initiateMembershipPaymentAction(formData: SignupFormData) {
-    formData.geboortedatum = normalizeDate(formData.geboortedatum) as string;
-
-    const parsed = signupSchema.safeParse(formData);
-
-    if (!parsed.success) {
-        return { success: false, errors: z.flattenError(parsed.error).fieldErrors };
-    }
-
-    const rateLimitResult = await checkRateLimit('membership-signup', 3, 300, 'Te veel inschrijfpogingen. Probeer het over een paar minuten opnieuw.');
-    if (!rateLimitResult.success) return rateLimitResult;
-
     const session = await getEnrichedSession();
-
     const user = session?.user as EnrichedUser | undefined;
     const isRenewal = !!user;
+
+    let voornaam = formData.voornaam;
+    let achternaam = formData.achternaam;
+    let email = formData.email;
+    let telefoon = formData.telefoon;
+    let geboortedatum = formData.geboortedatum;
+    const couponCode = formData.coupon;
+
+    if (isRenewal) {
+        // For existing member renewals, prefill from authenticated user context
+        voornaam = user.first_name || voornaam;
+        achternaam = user.last_name || achternaam || '';
+        email = user.email || email;
+        telefoon = user.phone_number || telefoon || '';
+        geboortedatum = user.date_of_birth || geboortedatum || '';
+    } else {
+        // For new member signups, strictly validate registration schema
+        formData.geboortedatum = normalizeDate(formData.geboortedatum) as string;
+        const parsed = signupSchema.safeParse(formData);
+
+        if (!parsed.success) {
+            const formattedErrors = z.flattenError(parsed.error).fieldErrors;
+            const firstErrorMessage = Object.values(formattedErrors).flat()[0] || 'Ongeldige gegevens ingevuld.';
+            safeConsoleError('[membership.actions.ts][initiateMembershipPaymentAction] Validation failed for new signup:', formattedErrors);
+            return { success: false, error: firstErrorMessage, errors: formattedErrors };
+        }
+
+        voornaam = parsed.data.voornaam;
+        achternaam = parsed.data.achternaam;
+        email = parsed.data.email;
+        telefoon = parsed.data.telefoon;
+        geboortedatum = parsed.data.geboortedatum;
+    }
+
+    const rateLimitKey = isRenewal ? `membership-renewal-${user.id}` : 'membership-signup';
+    const rateLimitResult = await checkRateLimit(rateLimitKey, 5, 300, 'Te veel pogingen. Probeer het over een paar minuten opnieuw.');
+    if (!rateLimitResult.success) {
+        safeConsoleError('[membership.actions.ts][initiateMembershipPaymentAction] Rate limit triggered:', rateLimitResult);
+        return rateLimitResult;
+    }
 
     const { fetchUserCommitteesDb } = await import('@/server/internal/leden/leden-db.utils');
     const committees = user ? await fetchUserCommitteesDb(user.id) : [];
@@ -81,8 +109,8 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
     let finalAmount = baseAmount;
     let couponClaimed = false;
 
-    if (parsed.data.coupon) {
-        const result = await claimCoupon(parsed.data.coupon);
+    if (couponCode) {
+        const result = await claimCoupon(couponCode);
         if (result.valid && result.coupon) {
             couponClaimed = true;
             const { coupon } = result;
@@ -92,16 +120,19 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
 
             finalAmount = Math.max(0.01, Math.min(baseAmount, baseAmount - discountValue));
         } else {
+            safeConsoleError('[membership.actions.ts][initiateMembershipPaymentAction] Coupon claim failed:', result.error);
             return { success: false, error: result.error || 'Coupon is ongeldig of niet meer beschikbaar' };
         }
     }
 
     const url = `${getFinanceServiceUrl()}/api/finance/create`;
+    logInfo('[membership.actions.ts][initiateMembershipPaymentAction]', `Initiating ${isRenewal ? 'RENEWAL' : 'SIGNUP'} payment for ${email} (${finalAmount} EUR) to ${url}`);
 
     try {
         const response = await fetch(url, {
             method: 'POST',
             headers: getInternalHeaders(),
+            signal: AbortSignal.timeout(10000),
             body: JSON.stringify({
                 amount: finalAmount,
                 description: isRenewal ? 'Verlenging Salve Mundi Lidmaatschap' : 'Inschrijving Salve Mundi Lidmaatschap',
@@ -109,12 +140,12 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
                 isContribution: true,
                 isNewMember: !isRenewal,
                 userId: user?.id || null,
-                firstName: parsed.data.voornaam,
-                lastName: parsed.data.achternaam,
-                email: parsed.data.email,
-                dateOfBirth: parsed.data.geboortedatum,
-                phoneNumber: parsed.data.telefoon,
-                couponCode: parsed.data.coupon,
+                firstName: voornaam,
+                lastName: achternaam,
+                email: email,
+                dateOfBirth: geboortedatum,
+                phoneNumber: telefoon,
+                couponCode: couponCode,
                 redirectUrl: `${process.env.PUBLIC_URL}/lidmaatschap/bevestiging${isRenewal ? '?type=renewal' : ''}`
             })
         });
@@ -125,19 +156,19 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
             return { success: true, checkoutUrl: data.checkoutUrl };
         }
 
-        safeConsoleError('[membership.actions.ts][initiateMembershipPaymentAction] ', `Finance service returned status ${response.status}: ${JSON.stringify(data)}`);
+        safeConsoleError('[membership.actions.ts][initiateMembershipPaymentAction]', `Finance service returned status ${response.status}: ${JSON.stringify(data)}`);
 
-        if (couponClaimed && parsed.data.coupon) {
-            await releaseCoupon(parsed.data.coupon);
+        if (couponClaimed && couponCode) {
+            await releaseCoupon(couponCode);
         }
-        return { success: false, error: 'Er is een fout opgetreden bij het aanmaken van de betaling.' };
+        return { success: false, error: 'Er is een fout opgetreden bij het aanmaken van de betaling. Probeer het later opnieuw of neem contact op met het bestuur.' };
     } catch (error: unknown) {
-        if (couponClaimed && parsed.data.coupon) {
-            await releaseCoupon(parsed.data.coupon);
+        if (couponClaimed && couponCode) {
+            await releaseCoupon(couponCode);
         }
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('[membership.actions.ts][initiateMembershipPaymentAction] ', `Payment initiation failed: ${typedError.message}`);
-        return { success: false, error: 'Kan geen verbinding maken met betaalservice' };
+        safeConsoleError('[membership.actions.ts][initiateMembershipPaymentAction]', `Payment initiation failed: ${typedError.message}`);
+        return { success: false, error: 'Kan geen verbinding maken met de betaalservice. Probeer het later opnieuw.' };
     }
 }
 
