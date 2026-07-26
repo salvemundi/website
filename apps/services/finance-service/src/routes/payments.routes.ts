@@ -102,6 +102,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
 
             const insertData = {
                 mollie_id: payment.id,
+                transaction_id: payment.id,
                 amount: amount,
                 payment_status: 'open',
                 product_name: description,
