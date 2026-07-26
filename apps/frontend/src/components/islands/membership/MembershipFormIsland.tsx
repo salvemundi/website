@@ -72,10 +72,8 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
 
             if (result.success && result.checkoutUrl) {
                 window.location.href = result.checkoutUrl;
-            } else if (result.errors) {
-
             } else {
-                showToast(result.error || 'Er ging iets mis', 'error');
+                showToast(result.error || 'Er ging iets mis bij het starten van de inschrijving.', 'error');
             }
         });
     };
