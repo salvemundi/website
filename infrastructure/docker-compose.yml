@@ -122,6 +122,20 @@ services:
       - shared-network
       - proxy-network
 
+  glances:
+    image: nicolargo/glances:latest-full
+    container_name: v7-core-glances
+    restart: unless-stopped
+    pid: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - GLANCES_OPT=-w --disable-plugin cloud
+      - TZ=Europe/Amsterdam
+    networks:
+      - proxy-network
+
 networks:
   shared-network:
     name: salve-mundi-v7-shared

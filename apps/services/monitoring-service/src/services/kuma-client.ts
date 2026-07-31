@@ -16,6 +16,7 @@ export interface NotificationProvider {
     name: string;
     type: string;
     discordWebhookURL?: string;
+    discordWebhookUrl?: string;
     isDefault?: boolean;
 }
 
@@ -144,8 +145,10 @@ export class KumaClient {
             name,
             type,
             discordWebhookURL: webhookUrl,
+            discordWebhookUrl: webhookUrl,
             isDefault: true,
-        });
+            active: true,
+        }, null); // null = new notification (no existing ID)
         return res.id;
     }
 

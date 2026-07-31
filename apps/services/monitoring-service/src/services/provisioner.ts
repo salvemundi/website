@@ -46,7 +46,7 @@ export class MonitoringProvisioner {
         const notifications = await this.client.getNotificationList();
 
         const existing = notifications.find(
-            (n) => n.name === "Discord Tech Alerts" || n.discordWebhookURL === this.config.DISCORD_MONITORING_WEBHOOK_URL
+            (n) => n.name === "Discord Tech Alerts" || n.discordWebhookURL === this.config.DISCORD_MONITORING_WEBHOOK_URL || n.discordWebhookUrl === this.config.DISCORD_MONITORING_WEBHOOK_URL
         );
 
         if (existing) {
@@ -89,12 +89,15 @@ export class MonitoringProvisioner {
             url: service.url,
             hostname: service.hostname,
             port: service.port,
+            timeout: 30,
             interval: service.interval,
             retryInterval: service.retryInterval,
             maxretries: service.maxretries,
             description: service.description,
             notificationIDList: discordNotificationId ? { [String(discordNotificationId)]: true } : {},
             accepted_statuscodes: ["200-299"],
+            ...(service.keyword ? { keyword: service.keyword } : { keyword: "" }),
+            ...(service.expiryNotification !== undefined && { expiryNotification: service.expiryNotification }),
         };
 
         if (existing) {
@@ -102,6 +105,9 @@ export class MonitoringProvisioner {
             await this.client.editMonitor({
                 ...existing,
                 ...payload,
+                notificationIDList: discordNotificationId
+                    ? { ...(existing.notificationIDList ?? {}), [String(discordNotificationId)]: true }
+                    : (existing.notificationIDList ?? {}),
                 id: existing.id,
             });
         } else {
