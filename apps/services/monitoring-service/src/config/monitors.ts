@@ -1,6 +1,6 @@
 import { EnvConfig } from "./env.js";
 
-export type MonitorType = "http" | "port" | "ping";
+export type MonitorType = "http" | "port" | "ping" | "keyword";
 
 export interface MonitorDefinition {
     name: string;
@@ -13,6 +13,7 @@ export interface MonitorDefinition {
     maxretries: number;
     description: string;
     expiryNotification?: boolean;
+    keyword?: string;
 }
 
 export function createHttpMonitor(
@@ -59,11 +60,12 @@ export function createSslMonitor(
 ): MonitorDefinition {
     return {
         name,
-        type: "http",
+        type: "keyword",
         url: `https://${hostname}`,
+        keyword: "Salve Mundi",
         description,
         expiryNotification: true,
-        interval: options.interval ?? 3600,      // check every hour
+        interval: options.interval ?? 3600,
         retryInterval: options.retryInterval ?? 3600,
         maxretries: options.maxretries ?? 3,
     };
