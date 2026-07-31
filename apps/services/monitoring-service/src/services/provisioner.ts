@@ -104,6 +104,9 @@ export class MonitoringProvisioner {
             await this.client.editMonitor({
                 ...existing,
                 ...payload,
+                notificationIDList: discordNotificationId
+                    ? { ...(existing.notificationIDList ?? {}), [String(discordNotificationId)]: true }
+                    : (existing.notificationIDList ?? {}),
                 id: existing.id,
             });
         } else {
