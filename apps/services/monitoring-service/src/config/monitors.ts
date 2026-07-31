@@ -60,9 +60,8 @@ export function createSslMonitor(
 ): MonitorDefinition {
     return {
         name,
-        type: "keyword",
+        type: "http",
         url: `https://${hostname}`,
-        keyword: "Salve Mundi",
         description,
         expiryNotification: true,
         interval: options.interval ?? 3600,
