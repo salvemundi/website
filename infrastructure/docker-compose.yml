@@ -122,29 +122,17 @@ services:
       - shared-network
       - proxy-network
 
-  netdata:
-    image: netdata/netdata:stable
-    container_name: v7-core-netdata
-    hostname: salvemundi-vps
+  glances:
+    image: nicolargo/glances:latest-full
+    container_name: v7-core-glances
     restart: unless-stopped
     pid: host
-    cap_add:
-      - SYS_PTRACE
     volumes:
-      - v7_core_netdata_config:/etc/netdata
-      - v7_core_netdata_lib:/var/lib/netdata
-      - v7_core_netdata_cache:/var/cache/netdata
-      - /etc/passwd:/host/etc/passwd:ro
-      - /etc/group:/host/etc/group:ro
-      - /etc/localtime:/etc/localtime:ro
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /etc/os-release:/host/etc/os-release:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
     environment:
+      - GLANCES_OPT=-w --disable-plugin cloud
       - TZ=Europe/Amsterdam
-      - DO_NOT_TRACK=1
-      - NETDATA_DISABLE_CLOUD=1
     networks:
       - proxy-network
 
@@ -160,6 +148,3 @@ volumes:
   v7_core_redis_data:
   v7_core_directus_uploads:
   v7_core_redisinsight_data:
-  v7_core_netdata_config:
-  v7_core_netdata_lib:
-  v7_core_netdata_cache:
