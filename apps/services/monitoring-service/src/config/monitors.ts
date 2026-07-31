@@ -1,6 +1,6 @@
 import { EnvConfig } from "./env.js";
 
-export type MonitorType = "http" | "port" | "ping";
+export type MonitorType = "http" | "port" | "ping" | "ssl";
 
 export interface MonitorDefinition {
     name: string;
@@ -12,6 +12,7 @@ export interface MonitorDefinition {
     retryInterval: number;
     maxretries: number;
     description: string;
+    expiryNotification?: boolean;
 }
 
 export function createHttpMonitor(
@@ -50,6 +51,24 @@ export function createPortMonitor(
     };
 }
 
+export function createSslMonitor(
+    name: string,
+    hostname: string,
+    description: string,
+    options: Partial<Pick<MonitorDefinition, "interval" | "retryInterval" | "maxretries">> = {}
+): MonitorDefinition {
+    return {
+        name,
+        type: "ssl",
+        hostname,
+        description,
+        expiryNotification: true,
+        interval: options.interval ?? 3600,      // check every hour
+        retryInterval: options.retryInterval ?? 3600,
+        maxretries: options.maxretries ?? 3,
+    };
+}
+
 export function buildMonitoredServices(env: EnvConfig): MonitorDefinition[] {
     return [
         createHttpMonitor("Frontend (Next.js)", `${env.FRONTEND_SERVICE_URL}/favicon.ico`, "Salve Mundi v7 Main Web Application"),
@@ -59,5 +78,6 @@ export function buildMonitoredServices(env: EnvConfig): MonitorDefinition[] {
         createHttpMonitor("Azure Management Service", `${env.AZURE_MANAGEMENT_SERVICE_URL}/health`, "Azure Group & User Management Service"),
         createPortMonitor("PostgreSQL Database", env.DB_HOST, env.DB_PORT, "Main PostgreSQL Database Port Check"),
         createPortMonitor("Redis Cache", env.REDIS_HOST, env.REDIS_PORT, "Redis Session & Queue Store Port Check"),
+        createSslMonitor("SSL Certificate (salvemundi.nl)", "salvemundi.nl", "SSL/TLS Certificate Expiry Check for salvemundi.nl"),
     ];
 }
