@@ -95,7 +95,7 @@ export class MonitoringProvisioner {
             description: service.description,
             notificationIDList: discordNotificationId ? { [String(discordNotificationId)]: true } : {},
             accepted_statuscodes: ["200-299"],
-            ...(service.keyword !== undefined && { keyword: service.keyword }),
+            ...(service.keyword ? { keyword: service.keyword } : { keyword: "" }),
             ...(service.expiryNotification !== undefined && { expiryNotification: service.expiryNotification }),
         };
 

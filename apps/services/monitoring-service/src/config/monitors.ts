@@ -64,8 +64,8 @@ export function createSslMonitor(
         url: `https://${hostname}`,
         description,
         expiryNotification: true,
-        interval: options.interval ?? 3600,
-        retryInterval: options.retryInterval ?? 3600,
+        interval: options.interval ?? 60,
+        retryInterval: options.retryInterval ?? 60,
         maxretries: options.maxretries ?? 3,
     };
 }
