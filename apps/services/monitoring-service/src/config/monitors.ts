@@ -1,6 +1,6 @@
 import { EnvConfig } from "./env.js";
 
-export type MonitorType = "http" | "port" | "ping" | "ssl";
+export type MonitorType = "http" | "port" | "ping";
 
 export interface MonitorDefinition {
     name: string;
@@ -59,8 +59,8 @@ export function createSslMonitor(
 ): MonitorDefinition {
     return {
         name,
-        type: "ssl",
-        hostname,
+        type: "http",
+        url: `https://${hostname}`,
         description,
         expiryNotification: true,
         interval: options.interval ?? 3600,      // check every hour
