@@ -46,7 +46,7 @@ export class MonitoringProvisioner {
         const notifications = await this.client.getNotificationList();
 
         const existing = notifications.find(
-            (n) => n.name === "Discord Tech Alerts" || n.discordWebhookURL === this.config.DISCORD_MONITORING_WEBHOOK_URL
+            (n) => n.name === "Discord Tech Alerts" || n.discordWebhookURL === this.config.DISCORD_MONITORING_WEBHOOK_URL || n.discordWebhookUrl === this.config.DISCORD_MONITORING_WEBHOOK_URL
         );
 
         if (existing) {
