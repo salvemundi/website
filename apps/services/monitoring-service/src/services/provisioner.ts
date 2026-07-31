@@ -89,6 +89,7 @@ export class MonitoringProvisioner {
             url: service.url,
             hostname: service.hostname,
             port: service.port,
+            timeout: 30,
             interval: service.interval,
             retryInterval: service.retryInterval,
             maxretries: service.maxretries,
