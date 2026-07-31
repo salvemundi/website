@@ -145,7 +145,8 @@ export class KumaClient {
             type,
             discordWebhookURL: webhookUrl,
             isDefault: true,
-        });
+            active: true,
+        }, null); // null = new notification (no existing ID)
         return res.id;
     }
 
