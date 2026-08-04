@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Plus,
     Save,
@@ -8,10 +8,13 @@ import {
     Loader2,
     Euro,
     List,
-    Trash
+    Trash,
+    Upload,
+    Info
 } from 'lucide-react';
 import { Field, inputClass } from './ReisTabComponents';
 import { type ActivityOption } from '@/lib/reis';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 
 import { type TripActivity } from '@salvemundi/validations/schema/admin-trip.zod';
 
@@ -31,17 +34,32 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
         price: opt.price || 0
     }));
     const [options, setOptions] = useState<ActivityOption[]>(initialOptions);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [imagePreview, setImagePreview] = useState<string | { id: string; type?: string | null } | null>(null);
+    const [existingImageId, setExistingImageId] = useState<string | null>(null);
+    const [imageError, setImageError] = useState<string | null>(null);
 
-    // Sync options if activity prop changes (e.g. after failed submission with initialData)
+    // Sync options and image if activity prop changes (e.g. after failed submission with initialData)
     useEffect(() => {
-        if (activity?.options) {
-            setOptions((activity.options as ActivityOption[]).map((opt) => ({
-                id: opt.id || '',
-                name: opt.name || '',
-                price: opt.price || 0
-            })));
+        if (activity) {
+            if (activity.options) {
+                setOptions((activity.options as ActivityOption[]).map((opt) => ({
+                    id: opt.id || '',
+                    name: opt.name || '',
+                    price: opt.price || 0
+                })));
+            }
+            if (activity.image) {
+                const rawImage = activity.image as unknown as string | { id: string; type?: string | null } | null;
+                const imageId = rawImage && typeof rawImage === 'object' ? rawImage.id : (rawImage as string | null);
+                setImagePreview(rawImage);
+                setExistingImageId(imageId);
+            } else {
+                setImagePreview(null);
+                setExistingImageId(null);
+            }
         }
-    }, [activity?.options]);
+    }, [activity]);
 
     const addOption = () => setOptions([...options, { id: `opt-${options.length}`, name: '', price: 0 }]);
     const removeOption = (idx: number) => setOptions(options.filter((_, i) => i !== idx));
@@ -51,8 +69,34 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
         ));
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        setImageError(null);
+
+        if (file) {
+            const maxSizeBytes = 10 * 1024 * 1024;
+            if (file.size > maxSizeBytes) {
+                setImageError('Het geselecteerde bestand is te groot (maximaal 10MB).');
+                e.target.value = '';
+                return;
+            }
+
+            setExistingImageId(null);
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreview(reader.result as string);
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setImagePreview(null);
+        setImageError(null);
+        setExistingImageId(null);
+    };
+
     const handleSubmit = (e: React.SyntheticEvent) => {
         e.preventDefault();
+        if (imageError) return;
         const formData = new FormData(e.currentTarget as HTMLFormElement);
         void onSave(formData, options);
     };
@@ -73,6 +117,15 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
 
             <form onSubmit={handleSubmit} className="space-y-10 relative z-10">
                 {activity?.id && <input type="hidden" name="id" value={activity.id} />}
+                <input type="hidden" name="existing_image_id" value={existingImageId || ''} />
+
+                {imageError && (
+                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500 text-[10px] font-semibold tracking-widest uppercase">
+                        <Info className="h-4 w-4 shrink-0" />
+                        <span>{imageError}</span>
+                    </div>
+                )}
+
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                     <div className="lg:col-span-7 space-y-6">
                         <Field label="Naam *">
@@ -84,6 +137,32 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                     </div>
 
                     <div className="lg:col-span-5 grid grid-cols-2 gap-6">
+                        <div className="col-span-2">
+                            <Field label="Afbeelding">
+                                {!imagePreview ? (
+                                    <div onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center w-full min-h-32 border-2 border-dashed border-(--beheer-border) rounded-2xl cursor-pointer hover:border-(--beheer-accent) hover:bg-(--beheer-accent)/5 transition-all bg-(--beheer-card-soft)/30 group py-4">
+                                        <Upload className="h-5 w-5 mb-1.5 text-(--beheer-text-muted) group-hover:text-(--beheer-accent) transition-colors" />
+                                        <span className="text-[9px] font-semibold tracking-widest text-(--beheer-text-muted) group-hover:text-(--beheer-accent) text-center px-4">Upload afbeelding</span>
+                                        <input ref={fileInputRef} type="file" name="image_file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                                    </div>
+                                ) : (
+                                    <div className="relative group overflow-hidden rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft)/50 h-32 flex items-center justify-center">
+                                        <MediaAsset
+                                            asset={imagePreview}
+                                            alt="Preview"
+                                            fill
+                                            objectFit="contain"
+                                            unoptimized
+                                        />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                            <button type="button" onClick={() => fileInputRef.current?.click()} className="icon-button bg-white text-slate-900 p-2 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-4 w-4" /></button>
+                                            <button type="button" onClick={handleRemoveImage} className="icon-button bg-red-500 text-white p-2 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-4 w-4" /></button>
+                                        </div>
+                                        <input ref={fileInputRef} type="file" name="image_file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                                    </div>
+                                )}
+                            </Field>
+                        </div>
                         <div className="col-span-2">
                             <Field label="Basisprijs (€) *">
                                 <div className="relative">
@@ -128,7 +207,7 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                     <div className="flex flex-wrap gap-8 bg-(--beheer-card-bg)/50 p-6 rounded-2xl border border-(--beheer-border)/10 shadow-inner">
                         <label className="flex items-center gap-3 cursor-pointer group select-none">
                             <div className="relative flex items-center h-5">
-                                <input type="radio" name="max_selections" value="" defaultChecked={activity?.max_selections === null} className="sr-only peer" />
+                                <input type="radio" name="max_selections" value="" defaultChecked={activity?.max_selections === null || !activity?.id} className="sr-only peer" />
                                 <div className="h-5 w-5 rounded-lg border-2 border-(--beheer-border)/50 peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent) transition-all flex items-center justify-center shadow-sm">
                                     <div className="h-2 w-2 bg-white rounded-sm opacity-0 peer-checked:opacity-100 transition-opacity" />
                                 </div>

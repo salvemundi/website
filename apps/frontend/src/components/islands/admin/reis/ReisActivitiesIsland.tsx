@@ -11,6 +11,7 @@ import AdminToast from '@/components/ui/admin/AdminToast';
 
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminSelect from '@/components/ui/admin/AdminSelect';
+import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 
 import ReisActivityCard from './ReisActivityCard';
 import ReisActivityForm from './ReisActivityForm';
@@ -29,13 +30,15 @@ interface Props {
     initialActivities?: TripActivity[];
     initialSelectedTripId?: number;
     initialSignupsByActivity?: Record<number, Signup[]>;
+    tripName?: string;
 }
 
 export default function ReisActivitiesIsland({
     initialTrips = [],
     initialActivities = [],
     initialSelectedTripId = 0,
-    initialSignupsByActivity = {} }: Props) {
+    initialSignupsByActivity = {},
+    tripName = 'Onbekende reis' }: Props) {
     const router = useRouter();
     const { toast, showToast, hideToast } = useAdminToast();
     const [selectedTripId, setSelectedTripId] = useState<number>(initialSelectedTripId);
@@ -99,80 +102,93 @@ export default function ReisActivitiesIsland({
     // Calculated stats removed since they were unused
 
     return (
-        <div className="w-full">
-            <div className="flex flex-col gap-8">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                    <div className="min-w-60">
-                        <AdminSelect
-                            value={selectedTripId}
-                            onChange={handleTripChange}
-                            options={initialTrips.map(trip => ({
-                                value: trip.id,
-                                label: trip.name || 'Onbekende reis'
-                            }))}
-                            size="sm"
-                        />
-                    </div>
+        <>
+            {!editingActivity && (
+                <AdminToolbar
+                    title={`Reis Activiteiten — ${tripName}`}
+                    subtitle="Beheer activiteiten en inschrijvingen per activiteit"
+                    backHref="/beheer/reis"
+                />
+            )}
+            <div className="admin-container py-4 md:py-8 min-h-dvh">
+                <div className="w-full">
+                    <div className="flex flex-col gap-8">
+                        {!editingActivity && (
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+                                <div className="min-w-60">
+                                    <AdminSelect
+                                        value={selectedTripId}
+                                        onChange={handleTripChange}
+                                        options={initialTrips.map(trip => ({
+                                            value: trip.id,
+                                            label: trip.name || 'Onbekende reis'
+                                        }))}
+                                        size="sm"
+                                    />
+                                </div>
 
-                    <button
-                        onClick={() => setEditingActivity({})}
-                        className="beheer-button flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-accent) text-white rounded-xl font-semibold text-xs shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10"
-                    >
-                        <Plus className="h-3.5 w-3.5" />
-                        <span>Nieuwe Activiteit</span>
-                    </button>
+                                <button
+                                    onClick={() => setEditingActivity({})}
+                                    className="beheer-button flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-accent) text-white rounded-xl font-semibold text-xs shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10"
+                                >
+                                    <Plus className="h-3.5 w-3.5" />
+                                    <span>Nieuwe Activiteit</span>
+                                </button>
+                            </div>
+                        )}
+
+
+
+
+                        {editingActivity && (
+                            <ReisActivityForm
+                                activity={editingActivity}
+                                onSave={handleSave}
+                                onCancel={() => setEditingActivity(null)}
+                                pending={false}
+                            />
+                        )}
+
+                        {activities.length === 0 && !editingActivity ? (
+                            <div className="py-24 text-center bg-(--beheer-card-bg) rounded-3xl border-2 border-dashed border-(--beheer-border)/20">
+                                <Layers className="h-12 w-12 text-(--beheer-text-muted) mx-auto mb-4 opacity-10" />
+                                <p className="text-(--beheer-text-muted) font-semibold text-base opacity-60">
+                                    Nog geen activiteiten voor deze reis
+                                </p>
+                            </div>
+                        ) : (
+                            !editingActivity && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {activities.map(activity => (
+                                        <ReisActivityCard
+                                            key={activity.id}
+                                            activity={activity}
+                                            onEdit={setEditingActivity}
+                                            onDelete={(id) => { void handleDelete(id); }}
+                                            onViewSignups={setViewingSignupsId}
+                                        />
+                                    ))}
+                                </div>
+                            )
+                        )}
+
+                        {viewingSignupsId && (
+                            <ReisActivitySignupsModal
+                                activityName={activities.find(a => a.id === viewingSignupsId)?.name || ''}
+                                options={activities.find(a => a.id === viewingSignupsId)?.options}
+                                signups={signupsByActivity.get(viewingSignupsId) ?? []}
+                                loading={false}
+                                onClose={() => setViewingSignupsId(null)}
+                            />
+                        )}
+
+                    </div>
+                    <AdminToast
+                        toast={toast}
+                        onClose={hideToast}
+                    />
                 </div>
-
-
-
-
-                {editingActivity && (
-                    <ReisActivityForm
-                        activity={editingActivity}
-                        onSave={handleSave}
-                        onCancel={() => setEditingActivity(null)}
-                        pending={false}
-                    />
-                )}
-
-                {activities.length === 0 && !editingActivity ? (
-                    <div className="py-24 text-center bg-(--beheer-card-bg) rounded-3xl border-2 border-dashed border-(--beheer-border)/20">
-                        <Layers className="h-12 w-12 text-(--beheer-text-muted) mx-auto mb-4 opacity-10" />
-                        <p className="text-(--beheer-text-muted) font-semibold text-base opacity-60">
-                            Nog geen activiteiten voor deze reis
-                        </p>
-                    </div>
-                ) : (
-                    !editingActivity && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {activities.map(activity => (
-                                <ReisActivityCard
-                                    key={activity.id}
-                                    activity={activity}
-                                    onEdit={setEditingActivity}
-                                    onDelete={(id) => { void handleDelete(id); }}
-                                    onViewSignups={setViewingSignupsId}
-                                />
-                            ))}
-                        </div>
-                    )
-                )}
-
-                {viewingSignupsId && (
-                    <ReisActivitySignupsModal
-                        activityName={activities.find(a => a.id === viewingSignupsId)?.name || ''}
-                        options={activities.find(a => a.id === viewingSignupsId)?.options}
-                        signups={signupsByActivity.get(viewingSignupsId) ?? []}
-                        loading={false}
-                        onClose={() => setViewingSignupsId(null)}
-                    />
-                )}
-
             </div>
-            <AdminToast
-                toast={toast}
-                onClose={hideToast}
-            />
-        </div>
+        </>
     );
 }

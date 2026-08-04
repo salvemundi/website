@@ -6,6 +6,7 @@ interface AdminToolbarProps {
     title?: string;
     subtitle?: string;
     backHref?: string;
+    onBack?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
     actions?: React.ReactNode;
     centered?: boolean;
 }
@@ -18,6 +19,7 @@ export default function AdminToolbar({
     title,
     subtitle,
     backHref,
+    onBack,
     actions,
     centered = false
 }: AdminToolbarProps) {
@@ -32,6 +34,7 @@ export default function AdminToolbar({
                             <Link 
                                 href={backHref} 
                                 title="Terug"
+                                onClick={onBack}
                                 className="p-2 rounded-xl bg-bg-card border border-border-color text-text-muted hover:text-theme-purple transition-all active:scale-95 shadow-sm"
                             >
                                 <ChevronLeft className="h-4 w-4" />

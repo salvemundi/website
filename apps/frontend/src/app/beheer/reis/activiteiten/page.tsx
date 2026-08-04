@@ -91,16 +91,13 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
     const signupsByActivityObj = Object.fromEntries(signupsByActivity.entries()) as unknown as Record<number, Signup[]>;
 
     return (
-        <AdminPageShell
-            title={`Reis Activiteiten — ${activeTrip.name}`}
-            subtitle="Beheer activiteiten en inschrijvingen per activiteit"
-            backHref="/beheer/reis"
-        >
+        <AdminPageShell title="Reis Activiteiten" hideToolbar={true}>
             <ReisActivitiesIsland
                 initialTrips={trips}
                 initialActivities={activities}
                 initialSelectedTripId={activeTripId}
                 initialSignupsByActivity={signupsByActivityObj}
+                tripName={activeTrip.name || 'Onbekende reis'}
             />
         </AdminPageShell>
     );
