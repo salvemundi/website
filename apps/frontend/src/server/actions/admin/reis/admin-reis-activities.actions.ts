@@ -10,12 +10,30 @@ import { requireAdminResource } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { createTripActivityDb, updateTripActivityDb, deleteTripActivityDb } from '@/server/internal/reis/reis-activity-db.utils';;
 import { safeConsoleError } from '@/server/utils/logger';
+import { uploadToDirectus } from '@/server/utils/media';
+
+async function handleImageUpload(formData: FormData): Promise<string | null> {
+    const file = formData.get('image_file') as File | null;
+    if (!file || file.size === 0) return null;
+
+    const uploadResult = await uploadToDirectus(file);
+    if (!uploadResult.success) {
+        safeConsoleError('[trip-activities.actions.ts][handleImageUpload] Upload failed:', uploadResult.error);
+        return null;
+    }
+    
+    return uploadResult.id;
+}
 
 export async function createTripActivity(formData: FormData) {
     await requireAdminResource(AdminResource.Reis);
 
     const maxParticipantsRaw = formData.get('max_participants') as string;
     const maxSelectionsRaw = formData.get('max_selections') as string;
+
+    const newImageId = await handleImageUpload(formData);
+
+    const tripIdRaw = formData.get('trip_id');
 
     const rawData = {
         name: formData.get('name') as string,
@@ -25,7 +43,8 @@ export async function createTripActivity(formData: FormData) {
         display_order: formData.get('display_order') === '' ? 0 : parseInt(formData.get('display_order') as string),
         ...(maxParticipantsRaw && maxParticipantsRaw !== '' ? { max_participants: parseInt(maxParticipantsRaw) } : {}),
         ...(maxSelectionsRaw && maxSelectionsRaw !== '' ? { max_selections: parseInt(maxSelectionsRaw) } : {}),
-        trip_id: formData.get('trip_id') === '' ? null : parseInt(formData.get('trip_id') as string),
+        trip_id: tripIdRaw && tripIdRaw !== '' ? parseInt(tripIdRaw as string) : null,
+        image: newImageId || (formData.get('existing_image_id') as string) || null,
         options: (() => {
             try {
                 return JSON.parse(formData.get('options') as string || '[]') as unknown[];
@@ -74,6 +93,10 @@ export async function updateTripActivity(formData: FormData) {
     const maxParticipantsRaw = formData.get('max_participants') as string;
     const maxSelectionsRaw = formData.get('max_selections') as string;
 
+    const newImageId = await handleImageUpload(formData);
+
+    const tripIdRaw = formData.get('trip_id');
+
     const rawData = {
         name: formData.get('name') as string,
         description: formData.get('description') as string,
@@ -82,7 +105,8 @@ export async function updateTripActivity(formData: FormData) {
         display_order: formData.get('display_order') === '' ? 0 : parseInt(formData.get('display_order') as string),
         ...(maxParticipantsRaw && maxParticipantsRaw !== '' ? { max_participants: parseInt(maxParticipantsRaw) } : {}),
         ...(maxSelectionsRaw && maxSelectionsRaw !== '' ? { max_selections: parseInt(maxSelectionsRaw) } : {}),
-        trip_id: formData.get('trip_id') === '' ? null : parseInt(formData.get('trip_id') as string),
+        trip_id: tripIdRaw && tripIdRaw !== '' ? parseInt(tripIdRaw as string) : undefined,
+        image: newImageId || (formData.get('existing_image_id') as string) || null,
         options: (() => {
             try {
                 const opts = formData.get('options');

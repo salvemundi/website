@@ -260,6 +260,12 @@ export default function ReisPaymentFlowIsland({
                             <EnrichmentForm trip={trip} hideHeader={true} />
                         </div>
                         <div className={`animate-in fade-in duration-300 ${step === 2 ? 'block' : 'hidden'}`}>
+                            {paymentType === 'deposit' && (
+                                <div className="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center gap-2.5 animate-in slide-in-from-top-2 duration-300">
+                                    <AlertCircle className="w-4 h-4 shrink-0" />
+                                    <p className="text-xs font-medium">Let op: De getoonde prijzen voor de activiteiten zijn op dit moment een schatting en kunnen nog wijzigen.</p>
+                                </div>
+                            )}
                             <ActivitySelector
                                 activities={allActivities}
                                 selectedSelections={activitySelections}
