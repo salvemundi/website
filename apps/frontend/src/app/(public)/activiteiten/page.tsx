@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
     title: 'Activiteiten | Salve Mundi',
-    description: 'Bekijk alle komende en afgelopen activiteiten van studievereniging Salve Mundi.'
+    description: 'Bekijk alle aankomende en afgelopen activiteiten van studievereniging Salve Mundi.'
 };
 
 export default async function ActivitiesPage() {

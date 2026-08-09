@@ -7,7 +7,6 @@ export const metadata = {
     description: 'Bekijk al je actieve tickets voor aankomende activiteiten.' };
 
 export default async function TicketsPage() {
-    // NUCLEAR SSR: Fetch tickets at the top level
     const tickets = await getMyTickets();
 
     return (

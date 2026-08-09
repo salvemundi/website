@@ -11,8 +11,8 @@ services:
       start_period: 20s
     env_file:
       - .env.${ENV_NAME}
-    ports:
-      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
+    # ports:
+    #   - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
     environment:
       - PUBLIC_URL=${PUBLIC_URL}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
@@ -47,6 +47,9 @@ services:
     networks:
       - salve-mundi-v7-shared
       - proxy-network
+    deploy:
+      update_config:
+        order: start-first
 
   finance-service:
     container_name: ${COMPOSE_PROJECT_NAME}-finance
@@ -54,8 +57,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env.${ENV_NAME}
-    ports:
-      - "${VPN_IP}:${FINANCE_PORT:-3001}:3001"
+    # ports:
+    #   - "${VPN_IP}:${FINANCE_PORT:-3001}:3001"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - MOLLIE_API_KEY=${MOLLIE_API_KEY}
@@ -89,6 +92,9 @@ services:
       - /etc/timezone:/etc/timezone:ro
     networks:
       - salve-mundi-v7-shared
+    deploy:
+      update_config:
+        order: start-first
 
   sync-service:
     container_name: ${COMPOSE_PROJECT_NAME}-sync
@@ -96,8 +102,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env.${ENV_NAME}
-    ports:
-      - "${VPN_IP}:${SYNC_PORT:-3002}:3002"
+    # ports:
+    #   - "${VPN_IP}:${SYNC_PORT:-3002}:3002"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
@@ -135,6 +141,9 @@ services:
       - /etc/timezone:/etc/timezone:ro
     networks:
       - salve-mundi-v7-shared
+    deploy:
+      update_config:
+        order: start-first
 
   mail-service:
     container_name: ${COMPOSE_PROJECT_NAME}-mail
@@ -142,8 +151,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env.${ENV_NAME}
-    ports:
-      - "${VPN_IP}:${MAIL_PORT:-3003}:3003"
+    # ports:
+    #   - "${VPN_IP}:${MAIL_PORT:-3003}:3003"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_MAIL_CLIENT_ID=${AZURE_WEBSITEV7_MAIL_CLIENT_ID}
@@ -179,6 +188,9 @@ services:
       - /etc/timezone:/etc/timezone:ro
     networks:
       - salve-mundi-v7-shared
+    deploy:
+      update_config:
+        order: start-first
 
   management-service:
     container_name: ${COMPOSE_PROJECT_NAME}-management
@@ -186,8 +198,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env.${ENV_NAME}
-    ports:
-      - "${VPN_IP}:${MANAGEMENT_PORT:-3004}:3004"
+    # ports:
+    #   - "${VPN_IP}:${MANAGEMENT_PORT:-3004}:3004"
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - AZURE_WEBSITEV7_TENANT_ID=${AZURE_WEBSITEV7_TENANT_ID}
@@ -220,6 +232,9 @@ services:
       - /etc/timezone:/etc/timezone:ro
     networks:
       - salve-mundi-v7-shared
+    deploy:
+      update_config:
+        order: start-first
 
   monitoring-service:
     container_name: ${COMPOSE_PROJECT_NAME}-monitoring
