@@ -120,7 +120,7 @@ export default function ActivitiesProviderIsland({
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10 min-w-0">
                 <div className="space-y-1">
                     <h2 className="text-3xl md:text-4xl font-black text-theme-purple tracking-tight">
-                        {showPastActivities ? 'Alle Activiteiten' : 'Komende Activiteiten'}
+                        {showPastActivities ? 'Alle Activiteiten' : 'Aankomende Activiteiten'}
                     </h2>
                     <p className="text-sm font-medium text-text-muted opacity-70">
                         {filteredEvents.length} {filteredEvents.length === 1 ? 'activiteit' : 'activiteiten'} zichtbaar

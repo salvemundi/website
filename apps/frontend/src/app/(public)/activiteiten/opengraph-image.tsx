@@ -34,7 +34,7 @@ export default function Image() {
                         Onze Activiteiten
                     </h1>
                     <p style={{ fontSize: 32, color: '#495057', lineHeight: 1.5, maxWidth: 600 }}>
-                        Bekijk de komende evenementen, feesten en studiegerelateerde activiteiten van Salve Mundi.
+                        Bekijk de aankomende evenementen, feesten en studiegerelateerde activiteiten van Salve Mundi.
                     </p>
                     
                     {/* Logo bottom-left */}

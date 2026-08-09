@@ -29,7 +29,7 @@ export function ActiviteitenSection({ activities = [], count = 4 }: Activiteiten
             <div className="mx-auto max-w-app">
                 <div className="text-center mb-6 sm:mb-10">
                     <h2 className="text-3xl font-black text-gradient sm:text-4xl md:text-5xl">
-                        Komende activiteiten
+                        Aankomende activiteiten
                     </h2>
                     <p className="mx-auto max-w-xl mt-2 text-xs sm:text-sm font-medium text-(--text-muted) dark:text-white/60 leading-relaxed">
                         Van legendarische borrels tot verrijkende workshops en onvergetelijke studiereizen. Er is altijd een plek voor jou!
