@@ -8,6 +8,7 @@ import { SystemLog } from '@salvemundi/validations';
 import { acknowledgeSystemLogAction } from '@/server/actions/infrastructure/audit.actions';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { safeConsoleError } from '@/server/utils/logger';
+import { getLookupPrefix } from '@/shared/audit.config';
 
 const formatDuration = (ms: number) => {
     const totalSecs = Math.floor(ms / 1000);
@@ -93,21 +94,14 @@ export default function LogsTab({
         }
     };
 
-    const resolveIdToName = (key: string, val: unknown, context?: string) => {
+
+
+    const resolveIdToName = (key: string, val: unknown, context?: string, logType?: string) => {
         const valStr = String(val);
         if (!valStr || valStr === 'null' || valStr === 'undefined') return valStr;
 
-        let lookupKey = '';
-        if (key === 'committee_id') {
-            lookupKey = `committee_${valStr}`;
-        } else if (key === 'event_id' || (key === 'id' && context === 'activiteit')) {
-            lookupKey = `event_${valStr}`;
-        } else if (key === 'trip_id' || (key === 'id' && context === 'reis')) {
-            lookupKey = `trip_${valStr}`;
-        } else if (key === 'admin_id' || key === 'target_id' || key === 'user_id') {
-            lookupKey = `user_${valStr}`;
-        }
-
+        const prefix = getLookupPrefix(key, context, logType);
+        const lookupKey = prefix ? `${prefix}${valStr}` : '';
         const mappedName = lookupMap.get(lookupKey);
         if (lookupKey && mappedName) {
             return `${mappedName} (ID: ${valStr})`;
@@ -163,7 +157,7 @@ export default function LogsTab({
                             <th className="p-4">Datum</th>
                             <th className="p-4">Type</th>
                             <th className="p-4">Context</th>
-                            <th className="p-4">Admin</th>
+                            <th className="p-4">Uitgevoerd door</th>
                             <th className="p-4 min-w-5">Details</th>
                             <th className="p-4 text-center">Status</th>
                         </tr>
@@ -181,10 +175,21 @@ export default function LogsTab({
                                             {formatDate(log.created_at, 'dd-MM-yyyy HH:mm')}
                                         </td>
                                         <td className="p-4">
-                                            <div className="flex flex-col">
+                                            <div className="flex flex-col gap-1">
                                                 <span className="font-semibold text-(--beheer-text) tracking-tight text-xs capitalize">
                                                     {log.type}
                                                 </span>
+                                                {log.payload && typeof log.payload === 'object' && 'environment' in log.payload && (
+                                                    <span className={`inline-block px-1.5 py-0.5 text-[9px] font-bold rounded w-fit capitalize border ${
+                                                        String(log.payload.environment) === 'productie'
+                                                            ? 'bg-red-500/10 text-red-500 border-red-500/20'
+                                                            : String(log.payload.environment) === 'acceptatie'
+                                                                ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                                                : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                                    }`}>
+                                                        {String(log.payload.environment)}
+                                                    </span>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="p-4">
@@ -198,6 +203,43 @@ export default function LogsTab({
                                                     }
                                                     if ('context_name' in log.payload && log.payload.context_name) {
                                                         contextName = String(log.payload.context_name);
+                                                    } else {
+                                                        // Dynamically infer context name from ID keys if not explicitly provided
+                                                        if (context === 'reis') {
+                                                            if ('trip_id' in log.payload && log.payload.trip_id) {
+                                                                const resolved = lookupMap.get(`trip_${String(log.payload.trip_id)}`);
+                                                                if (resolved) contextName = resolved;
+                                                            } else if ('signup_id' in log.payload && log.payload.signup_id) {
+                                                                const resolved = lookupMap.get(`signup_${String(log.payload.signup_id)}`);
+                                                                if (resolved) contextName = resolved;
+                                                            }
+                                                        } else if (context === 'activiteit') {
+                                                            if ('event_id' in log.payload && log.payload.event_id) {
+                                                                const resolved = lookupMap.get(`event_${String(log.payload.event_id)}`);
+                                                                if (resolved) contextName = resolved;
+                                                            } else if ('id' in log.payload && log.payload.id) {
+                                                                const isSignupLog = ['admin_event_signup_checked_in', 'admin_event_signup_checked_out', 'admin_event_signup_deleted', 'admin_event_signup_manual_created', 'system_event_signup_checkin_rollback', 'system_event_signup_delete_failed'].includes(log.type);
+                                                                const prefix = isSignupLog ? 'event_signup_' : 'event_';
+                                                                const resolved = lookupMap.get(`${prefix}${String(log.payload.id)}`);
+                                                                if (resolved) contextName = resolved;
+                                                            }
+                                                        } else if (context === 'sticker') {
+                                                            if ('sticker_id' in log.payload && log.payload.sticker_id) {
+                                                                const resolved = lookupMap.get(`sticker_${String(log.payload.sticker_id)}`);
+                                                                if (resolved) contextName = resolved;
+                                                            }
+                                                        } else if (context === 'webshop') {
+                                                            if ('product_id' in log.payload && log.payload.product_id) {
+                                                                const resolved = lookupMap.get(`product_${String(log.payload.product_id)}`);
+                                                                if (resolved) contextName = resolved;
+                                                            } else if ('preorder_id' in log.payload && log.payload.preorder_id) {
+                                                                const resolved = lookupMap.get(`preorder_${String(log.payload.preorder_id)}`);
+                                                                if (resolved) contextName = resolved;
+                                                            } else if ('drop_window_id' in log.payload && log.payload.drop_window_id) {
+                                                                const resolved = lookupMap.get(`drop_window_${String(log.payload.drop_window_id)}`);
+                                                                if (resolved) contextName = resolved;
+                                                            }
+                                                        }
                                                     }
                                                 }
 
@@ -232,12 +274,12 @@ export default function LogsTab({
                                         <td className="p-4 text-xs font-semibold text-(--beheer-text-muted)">
                                             {(() => {
                                                 if (log.payload && typeof log.payload === 'object') {
-                                                    if ('admin_name' in log.payload && log.payload.admin_name) {
-                                                        return String(log.payload.admin_name);
-                                                    }
                                                     if ('admin_id' in log.payload && log.payload.admin_id) {
                                                         const resolved = lookupMap.get(`user_${String(log.payload.admin_id)}`);
                                                         if (resolved) return resolved;
+                                                    }
+                                                    if ('admin_name' in log.payload && log.payload.admin_name) {
+                                                        return String(log.payload.admin_name);
                                                     }
                                                 }
                                                 return 'Systeem';
@@ -299,9 +341,19 @@ export default function LogsTab({
                                                     ) : (
                                                         <div className="space-y-1">
                                                             {Object.entries(log.payload)
-                                                                .filter(([key]) => !['admin_id', 'admin_name', 'timestamp', 'context', 'context_name'].includes(key))
+                                                                .filter(([key]) => !['admin_id', 'admin_name', 'timestamp', 'context', 'context_name', 'impersonated_by_id', 'impersonated_by_name', 'impersonated_target_id', 'impersonated_target_name'].includes(key))
                                                                 .map(([key, val]) => {
-                                                                    const isComplex = typeof val === 'object' && val !== null;
+                                                                    const isArray = Array.isArray(val);
+                                                                    const isComplex = typeof val === 'object' && val !== null && !isArray;
+                                                                    const resolvedArray = isArray ? (val as unknown[]).map(item => {
+                                                                        const itemStr = String(item);
+                                                                        let lookupKey = '';
+                                                                        if (key === 'activity_ids' || key === 'trip_activity_id') {
+                                                                            lookupKey = `trip_activity_${itemStr}`;
+                                                                        }
+                                                                        const mappedName = lookupKey ? lookupMap.get(lookupKey) : null;
+                                                                        return mappedName ? `${mappedName} (ID: ${itemStr})` : itemStr;
+                                                                    }) : [];
                                                                     return (
                                                                         <div key={key} className="flex flex-col gap-0.5">
                                                                             <div className="flex flex-wrap items-center gap-1">
@@ -316,8 +368,12 @@ export default function LogsTab({
                                                                                     >
                                                                                         {expandedLogs.has(log.id) ? 'Verberg details' : 'Toon details'}
                                                                                     </button>
+                                                                                ) : isArray ? (
+                                                                                    <span className="text-(--beheer-text) break-all">
+                                                                                        {resolvedArray.length > 0 ? resolvedArray.join(', ') : 'Geen'}
+                                                                                    </span>
                                                                                 ) : (
-                                                                                    <span className="text-(--beheer-text) break-all">{resolveIdToName(key, val, (log.payload && typeof log.payload === 'object' && 'context' in log.payload) ? String(log.payload.context) : undefined)}</span>
+                                                                                    <span className="text-(--beheer-text) break-all">{resolveIdToName(key, val, (log.payload && typeof log.payload === 'object' && 'context' in log.payload) ? String(log.payload.context) : undefined, log.type)}</span>
                                                                                 )}
                                                                             </div>
                                                                         </div>

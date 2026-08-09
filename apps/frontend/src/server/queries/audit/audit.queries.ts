@@ -2,19 +2,11 @@ import 'server-only';
 import { z } from 'zod';
 import { db, schema } from '@salvemundi/db';
 import { eq, and, desc, sql, or, ilike, notIlike, inArray, notInArray } from 'drizzle-orm';
-import { unionAll } from 'drizzle-orm/pg-core';
 import { type PendingSignup } from '@salvemundi/validations/schema/audit.zod';
 import { safeConsoleError } from '@/server/utils/logger';
 
-const SystemLogSchema = z.object({
-    id: z.string(),
-    type: z.string(),
-    status: z.string(),
-    payload: z.record(z.string(), z.unknown()),
-    created_at: z.string(),
-    acknowledged_at: z.string().nullable().optional()
-});
-export type SystemLog = z.infer<typeof SystemLogSchema>;
+import { type SystemLog, SystemLogSchema } from '@salvemundi/validations';
+export type { SystemLog };
 
 export async function getPendingSignupsInternal(): Promise<PendingSignup[]> {
     try {
@@ -105,7 +97,7 @@ export async function getSystemLogsInternal(limit: number = 50, source: 'admin' 
                 id: r.id,
                 type: r.type,
                 status: r.status,
-                created_at: r.created_at,
+                created_at: r.created_at || new Date().toISOString(),
                 acknowledged_at: r.acknowledged_at || null,
                 payload: parsedPayload
             });
@@ -136,6 +128,22 @@ export async function insertSystemLogInternal(data: {
             };
         }
 
+        const environment = process.env.ENV_NAME === 'prod' 
+            ? 'productie' 
+            : (process.env.ENV_NAME === 'acc' ? 'acceptatie' : 'ontwikkeling');
+
+        if (payload && typeof payload === 'object') {
+            payload = {
+                ...(payload as Record<string, unknown>),
+                environment
+            };
+        } else {
+            payload = {
+                value: payload,
+                environment
+            };
+        }
+
         await db.insert(schema.system_logs).values({
             type: data.type,
             status: data.status,
@@ -148,37 +156,201 @@ export async function insertSystemLogInternal(data: {
     }
 }
 
-export async function getIdNameLookupInternal(): Promise<Record<string, string>> {
+export async function getDynamicIdNameLookup(idsToFetch: { prefix: string, id: string }[]): Promise<Record<string, string>> {
     try {
-        const committeesQ = db.select({
-            key: sql<string>`'committee_' || ${schema.committees.id}::text`,
-            name: sql<string>`COALESCE(${schema.committees.name}, '')`
-        }).from(schema.committees);
+        if (idsToFetch.length === 0) return {};
 
-        const eventsQ = db.select({
-            key: sql<string>`'event_' || ${schema.events.id}::text`,
-            name: sql<string>`COALESCE(${schema.events.name}, '')`
-        }).from(schema.events);
+        const idsByPrefix = idsToFetch.reduce((acc, { prefix, id }) => {
+            const list = acc.get(prefix) ?? [];
+            list.push(id);
+            acc.set(prefix, list);
+            return acc;
+        }, new Map<string, string[]>());
 
-        const tripsQ = db.select({
-            key: sql<string>`'trip_' || ${schema.trips.id}::text`,
-            name: sql<string>`COALESCE(${schema.trips.name}, '')`
-        }).from(schema.trips);
+        const queries: Promise<{ key: string; name: string }[]>[] = [];
 
-        const usersQ = db.select({
-            key: sql<string>`'user_' || ${schema.directus_users.id}::text`,
-            name: sql<string>`COALESCE(NULLIF(TRIM(COALESCE(${schema.directus_users.first_name}, '') || ' ' || COALESCE(${schema.directus_users.last_name}, '')), ''), ${schema.directus_users.email})::text`
-        }).from(schema.directus_users);
+        const committeeIds = idsByPrefix.get('committee_');
+        if (committeeIds && committeeIds.length > 0) {
+            const validIds = committeeIds.map(Number).filter(id => !isNaN(id) && isFinite(id));
+            if (validIds.length > 0) {
+                queries.push(db.select({
+                    key: sql<string>`'committee_' || ${schema.committees.id}::text`,
+                    name: sql<string>`COALESCE(${schema.committees.name}, '')`
+                }).from(schema.committees)
+                .where(inArray(schema.committees.id, validIds)));
+            }
+        }
 
-        const rows = await unionAll(committeesQ, eventsQ, tripsQ, usersQ);
+        const eventIds = idsByPrefix.get('event_');
+        if (eventIds && eventIds.length > 0) {
+            const validIds = eventIds.map(Number).filter(id => !isNaN(id) && isFinite(id));
+            if (validIds.length > 0) {
+                queries.push(db.select({
+                    key: sql<string>`'event_' || ${schema.events.id}::text`,
+                    name: sql<string>`COALESCE(${schema.events.name}, '')`
+                }).from(schema.events)
+                .where(inArray(schema.events.id, validIds)));
+            }
+        }
+
+        const tripIds = idsByPrefix.get('trip_');
+        if (tripIds && tripIds.length > 0) {
+            const validIds = tripIds.map(Number).filter(id => !isNaN(id) && isFinite(id));
+            if (validIds.length > 0) {
+                queries.push(db.select({
+                    key: sql<string>`'trip_' || ${schema.trips.id}::text`,
+                    name: sql<string>`COALESCE(${schema.trips.name}, '')`
+                }).from(schema.trips)
+                .where(inArray(schema.trips.id, validIds)));
+            }
+        }
+
+        const userIds = idsByPrefix.get('user_');
+        if (userIds && userIds.length > 0) {
+            const validUserIds = userIds.filter(id => 
+                /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+            );
+            if (validUserIds.length > 0) {
+                queries.push(db.select({
+                    key: sql<string>`'user_' || ${schema.directus_users.id}::text`,
+                    name: sql<string>`COALESCE(NULLIF(TRIM(COALESCE(${schema.directus_users.first_name}, '') || ' ' || COALESCE(${schema.directus_users.last_name}, '')), ''), ${schema.directus_users.email})::text || COALESCE(' (' || (
+                        SELECT string_agg("committees"."name", ', ')
+                        FROM "committee_members"
+                        JOIN "committees" ON "committees"."id" = "committee_members"."committee_id"
+                        WHERE "committee_members"."user_id" = "directus_users"."id"
+                    ) || ')', '')`
+                }).from(schema.directus_users)
+                .where(inArray(schema.directus_users.id, validUserIds)));
+            }
+        }
+
+        const stickerIds = idsByPrefix.get('sticker_');
+        if (stickerIds && stickerIds.length > 0) {
+            const validIds = stickerIds.map(Number).filter(id => !isNaN(id) && isFinite(id));
+            if (validIds.length > 0) {
+                queries.push(db.select({
+                    key: sql<string>`'sticker_' || ${schema.Stickers.id}::text`,
+                    name: sql<string>`COALESCE(${schema.Stickers.location_name}, '')`
+                }).from(schema.Stickers)
+                .where(inArray(schema.Stickers.id, validIds)));
+            }
+        }
+
+        const dropWindowIds = idsByPrefix.get('drop_window_');
+        if (dropWindowIds && dropWindowIds.length > 0) {
+            const validIds = dropWindowIds.map(Number).filter(id => !isNaN(id) && isFinite(id));
+            if (validIds.length > 0) {
+                queries.push(db.select({
+                    key: sql<string>`'drop_window_' || ${schema.webshop_drop_windows.id}::text`,
+                    name: sql<string>`COALESCE(${schema.webshop_drop_windows.name}, '')`
+                }).from(schema.webshop_drop_windows)
+                .where(inArray(schema.webshop_drop_windows.id, validIds)));
+            }
+        }
+
+        const preorderIds = idsByPrefix.get('preorder_');
+        if (preorderIds && preorderIds.length > 0) {
+            const validIds = preorderIds.map(Number).filter(id => !isNaN(id) && isFinite(id));
+            if (validIds.length > 0) {
+                queries.push(db.select({
+                    key: sql<string>`'preorder_' || ${schema.webshop_preorders.id}::text`,
+                    name: sql<string>`(COALESCE(NULLIF(TRIM(COALESCE(${schema.webshop_preorders.first_name}, '') || ' ' || COALESCE(${schema.webshop_preorders.last_name}, '')), ''), ${schema.webshop_preorders.email}) || ' (' || COALESCE(${schema.webshop_drop_windows.name}, 'Onbekende drop') || ')')::text`
+                })
+                .from(schema.webshop_preorders)
+                .leftJoin(schema.webshop_drop_windows, eq(schema.webshop_preorders.drop_window_id, schema.webshop_drop_windows.id))
+                .where(inArray(schema.webshop_preorders.id, validIds)));
+            }
+        }
+
+        const productIds = idsByPrefix.get('product_');
+        if (productIds && productIds.length > 0) {
+            const validIds = productIds.map(Number).filter(id => !isNaN(id) && isFinite(id));
+            if (validIds.length > 0) {
+                queries.push(db.select({
+                    key: sql<string>`'product_' || ${schema.webshop_products.id}::text`,
+                    name: sql<string>`COALESCE(${schema.webshop_products.name}, '')`
+                }).from(schema.webshop_products)
+                .where(inArray(schema.webshop_products.id, validIds)));
+            }
+        }
+
+        const signupIds = idsByPrefix.get('signup_');
+        if (signupIds && signupIds.length > 0) {
+            const validIds = signupIds.map(Number).filter(id => !isNaN(id) && isFinite(id));
+            if (validIds.length > 0) {
+                queries.push(db.select({
+                    key: sql<string>`'signup_' || ${schema.trip_signups.id}::text`,
+                    name: sql<string>`(COALESCE(NULLIF(TRIM(COALESCE(${schema.trip_signups.first_name}, '') || ' ' || COALESCE(${schema.trip_signups.last_name}, '')), ''), ${schema.trip_signups.email}) || ' (' || COALESCE(${schema.trips.name}, 'Onbekende reis') || ')')::text`
+                })
+                .from(schema.trip_signups)
+                .leftJoin(schema.trips, eq(schema.trip_signups.trip_id, schema.trips.id))
+                .where(inArray(schema.trip_signups.id, validIds)));
+            }
+        }
+
+        const tripActivityIds = idsByPrefix.get('trip_activity_');
+        if (tripActivityIds && tripActivityIds.length > 0) {
+            const validIds = tripActivityIds.map(Number).filter(id => !isNaN(id) && isFinite(id));
+            if (validIds.length > 0) {
+                queries.push(db.select({
+                    key: sql<string>`'trip_activity_' || ${schema.trip_activities.id}::text`,
+                    name: sql<string>`COALESCE(${schema.trip_activities.name}, '')`
+                }).from(schema.trip_activities)
+                .where(inArray(schema.trip_activities.id, validIds)));
+            }
+        }
+
+        const eventSignupIds = idsByPrefix.get('event_signup_');
+        if (eventSignupIds && eventSignupIds.length > 0) {
+            const validIds = eventSignupIds.map(Number).filter(id => !isNaN(id) && isFinite(id));
+            if (validIds.length > 0) {
+                queries.push(db.select({
+                    key: sql<string>`'event_signup_' || ${schema.event_signups.id}::text`,
+                    name: sql<string>`(COALESCE(NULLIF(TRIM(${schema.event_signups.participant_name}), ''), ${schema.event_signups.participant_email}) || ' (' || COALESCE(${schema.events.name}, 'Onbekend evenement') || ')')::text`
+                })
+                .from(schema.event_signups)
+                .leftJoin(schema.events, eq(schema.event_signups.event_id, schema.events.id))
+                .where(inArray(schema.event_signups.id, validIds)));
+            }
+        }
+
+        const vacancyIds = idsByPrefix.get('vacancy_');
+        if (vacancyIds && vacancyIds.length > 0) {
+            const validIds = vacancyIds.map(Number).filter(id => !isNaN(id) && isFinite(id));
+            if (validIds.length > 0) {
+                queries.push(db.select({
+                    key: sql<string>`'vacancy_' || ${schema.vacancies.id}::text`,
+                    name: sql<string>`COALESCE(${schema.vacancies.title}, '')`
+                }).from(schema.vacancies)
+                .where(inArray(schema.vacancies.id, validIds)));
+            }
+        }
+
+        const vacancySubmissionIds = idsByPrefix.get('vacancy_submission_');
+        if (vacancySubmissionIds && vacancySubmissionIds.length > 0) {
+            const validIds = vacancySubmissionIds.map(Number).filter(id => !isNaN(id) && isFinite(id));
+            if (validIds.length > 0) {
+                queries.push(db.select({
+                    key: sql<string>`'vacancy_submission_' || ${schema.vacancy_submissions.id}::text`,
+                    name: sql<string>`COALESCE(${schema.vacancy_submissions.title}, '')`
+                }).from(schema.vacancy_submissions)
+                .where(inArray(schema.vacancy_submissions.id, validIds)));
+            }
+        }
+
+        if (queries.length === 0) return {};
+
+        const results = await Promise.all(queries);
+        const rows = results.flat();
+        
         const lookup: Record<string, string> = {};
-        for (const row of rows as { key: string; name: string }[]) {
+        for (const row of rows) {
             lookup[row.key] = row.name;
         }
         return lookup;
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
-        safeConsoleError('[audit.queries.ts][getIdNameLookupInternal] ', `Failed to fetch ID name lookup: ${typedError.message}`);
+        safeConsoleError('[audit.queries.ts][getDynamicIdNameLookup] ', `Failed to fetch dynamic ID name lookup: ${typedError.message}`);
         return {};
     }
 }

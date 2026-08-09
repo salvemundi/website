@@ -11,10 +11,6 @@ interface AdminToolbarProps {
     centered?: boolean;
 }
 
-/**
- * A standardized header/toolbar for all admin pages.
- * Replaces the old "Hero Banners" with a compact horizontal layout.
- */
 export default function AdminToolbar({
     title,
     subtitle,

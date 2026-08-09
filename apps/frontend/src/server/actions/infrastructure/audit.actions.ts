@@ -4,11 +4,12 @@ import { revalidateTag, revalidatePath, unstable_noStore as noStore } from "next
 import { canAccess } from "@/shared/lib/permissions";
 import { db, schema } from '@salvemundi/db';
 import { eq, sql } from 'drizzle-orm';
+import { getLookupPrefix } from '@/shared/audit.config';
 import {
     getPendingSignupsInternal,
     getSystemLogsInternal,
     insertSystemLogInternal,
-    getIdNameLookupInternal,
+    getDynamicIdNameLookup,
     type SystemLog
 } from "@/server/queries/audit/audit.queries";
 import { type PendingSignup } from "@salvemundi/validations/schema/audit.zod";
@@ -17,7 +18,7 @@ import { getEnrichedSession } from "@/server/auth/auth-utils";
 import { sanitizePayload } from "@/server/utils/log-sanitizer";
 
 type ActionResponse<T> = { success: true; data: T } | { success: false; error: string };
-type LogsResponse = { success: true; data: SystemLog[]; totalCount: number } | { success: false; error: string };
+type LogsResponse = { success: true; data: SystemLog[]; totalCount: number; resolvedNames?: Record<string, string> } | { success: false; error: string };
 
 interface QueueStatusData {
     queues: {
@@ -125,23 +126,51 @@ export async function approveSignupAction(id: string, type: string) {
             body: JSON.stringify({ mollieId: id })
         });
 
-        if (!res.ok) throw new Error(`Finance approval failed: ${await res.text()}`);
+        if (!res.ok) {
+            let errorMsg = 'Goedkeuren mislukt.';
+            try {
+                const responseData = await res.json() as { message?: string };
+                if (responseData.message) {
+                    errorMsg = responseData.message;
+                }
+            } catch {
+                // fall back to default
+            }
+            return { success: false, error: errorMsg };
+        }
+
+        let userName = 'Onbekend';
+        let email = '';
+        const tx = await db.query.transactions.findFirst({
+            columns: { user_id: true, email: true, first_name: true, last_name: true },
+            where: eq(schema.transactions.mollie_id, id)
+        });
+
+        if (tx) {
+            email = tx.email || '';
+            if (tx.first_name || tx.last_name) {
+                userName = `${tx.first_name || ''} ${tx.last_name || ''}`.trim();
+            }
+        }
 
         if (type === 'membership_renewal') {
-            const tx = await db.query.transactions.findFirst({
-                columns: { user_id: true },
-                where: eq(schema.transactions.mollie_id, id)
-            });
             if (tx?.user_id) {
                 const { renewMembershipAction } = await import('@/server/actions/admin/leden/admin-leden-membership.actions');
                 await renewMembershipAction(tx.user_id, 12);
             }
         }
 
+        await db.update(schema.transactions)
+            .set({ approval_status: 'approved' })
+            .where(eq(schema.transactions.mollie_id, id));
+
         await logAdminAction('admin_signup_approved', 'SUCCESS', {
             context: 'lidmaatschap',
             signup_id: id,
-            type: type
+            type: type,
+            lid_naam: userName,
+            lid_email: email,
+            ...(type === 'membership_renewal' ? { duur: '12 maanden' } : {})
         });
 
         revalidatePath('/beheer/logging');
@@ -179,6 +208,10 @@ export async function getAuditSettingsAction(): Promise<ActionResponse<{ manual_
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
+    if (process.env.ENV_NAME === 'acc') {
+        return { success: true, data: { manual_approval: true } };
+    }
+
     try {
         const rows = await db.select({
             is_active: schema.feature_flags.is_active
@@ -195,6 +228,10 @@ export async function getAuditSettingsAction(): Promise<ActionResponse<{ manual_
 export async function updateAuditSettingsAction(manualApproval: boolean) {
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
+
+    if (process.env.ENV_NAME === 'acc') {
+        return { success: false, error: "Handmatige goedkeuring is verplicht op de acceptatie-omgeving." };
+    }
 
     try {
         const rows = await db.select({
@@ -233,7 +270,45 @@ export async function getSystemLogsAction(limit: number = 50, source: 'admin' | 
 
     try {
         const result = await getSystemLogsInternal(limit, source);
-        return { success: true, data: result.logs, totalCount: result.totalCount };
+        const logs = result.logs;
+
+        interface LogPayload {
+            context?: unknown;
+            [key: string]: unknown;
+        }
+
+        const idsToFetch: { prefix: string, id: string }[] = [];
+        for (const log of logs) {
+            const payload = log.payload as LogPayload | null;
+            if (!payload) continue;
+
+            const context = String(payload.context || '');
+            const logType = log.type;
+
+            for (const [key, value] of Object.entries(payload)) {
+                if (value === null || value === undefined) continue;
+
+                if (Array.isArray(value)) {
+                    for (const v of value) {
+                        const prefix = getLookupPrefix(key, context, logType);
+                        if (prefix) idsToFetch.push({ prefix, id: String(v) });
+                    }
+                } else {
+                    const prefix = getLookupPrefix(key, context, logType);
+                    if (prefix) idsToFetch.push({ prefix, id: String(value) });
+                }
+            }
+        }
+
+        const uniqueIdsMap = new Map<string, { prefix: string, id: string }>();
+        for (const item of idsToFetch) {
+            uniqueIdsMap.set(`${item.prefix}:${item.id}`, item);
+        }
+        
+        const uniqueIds = Array.from(uniqueIdsMap.values());
+        const resolvedNames = await getDynamicIdNameLookup(uniqueIds);
+
+        return { success: true, data: logs, totalCount: result.totalCount, resolvedNames };
     } catch (error: unknown) {
         safeConsoleError('[audit.actions.ts][getSystemLogsAction] Failed to fetch system logs:', error);
         return { success: false, error: "Kon logs niet ophalen." };
@@ -304,18 +379,5 @@ export async function acknowledgeSystemLogAction(logId: string) {
     } catch (error: unknown) {
         safeConsoleError(`[audit.actions.ts][acknowledgeSystemLogAction] Failed to acknowledge system log ${logId}:`, error);
         return { success: false, error: "Markeren als gezien mislukt." };
-    }
-}
-
-export async function getIdNameLookupAction(): Promise<ActionResponse<{ [key: string]: string }>> {
-    const admin = await checkAuditAccess();
-    if (!admin) return { success: false, error: "Unauthorized" };
-
-    try {
-        const result = await getIdNameLookupInternal();
-        return { success: true, data: result };
-    } catch (error: unknown) {
-        safeConsoleError('[audit.actions.ts][getIdNameLookupAction] Failed to fetch ID name lookup map:', error);
-        return { success: false, error: "Kon ID-namen mapping niet ophalen." };
     }
 }
