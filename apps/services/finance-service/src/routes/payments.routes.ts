@@ -209,6 +209,14 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
         } catch (error: unknown) {
             const err = error as Error;
             fastify.log.error(error as Error, `[payments.routes.ts][paymentRoutes] Approval failed for ${mollieId}`);
+            
+            if (err.message && err.message.includes('wrong mode is used')) {
+                return reply.status(400).send({ 
+                    error: 'Approval failed', 
+                    message: 'Deze betaling is gedaan in een andere modus (live/test) dan de actieve API-key van deze container. Schakel over naar de juiste omgeving.' 
+                });
+            }
+            
             return reply.status(500).send({ error: 'Approval failed', message: err.message });
         }
     });

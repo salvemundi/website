@@ -11,7 +11,10 @@ export class AuditService {
                 payload: {
                     ...payload,
                     admin_name: 'Systeem',
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
+                    environment: process.env.ENV_NAME === 'prod' 
+                        ? 'productie' 
+                        : (process.env.ENV_NAME === 'acc' ? 'acceptatie' : 'ontwikkeling')
                 }
             }));
         } catch (error: unknown) {

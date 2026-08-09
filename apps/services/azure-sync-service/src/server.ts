@@ -47,35 +47,42 @@ const start = async () => {
             safeConsoleError('[server.ts][start] ', err);
         });
 
-        ProvisionWorkerService.start(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][start] ', error);
-            process.exit(1);
-        });
+        const disableJobs = process.env.DISABLE_BACKGROUND_JOBS === 'true' || 
+                            process.env.ENV_NAME === 'acc';
 
-        EventListenerService.start(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][start] ', error);
-            process.exit(1);
-        });
+        if (disableJobs) {
+            logInfo('[server.ts][start] Background/Sync jobs are DISABLED for this environment.');
+        } else {
+            ProvisionWorkerService.start(fastify.redis).catch((error: unknown) => {
+                safeConsoleError('[server.ts][start] ', error);
+                process.exit(1);
+            });
 
-        ExpiryCheckJob.start(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][start] ', error);
-            process.exit(1);
-        });
+            EventListenerService.start(fastify.redis).catch((error: unknown) => {
+                safeConsoleError('[server.ts][start] ', error);
+                process.exit(1);
+            });
 
-        EventReminderJob.start(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][start] ', error);
-            process.exit(1);
-        });
+            ExpiryCheckJob.start(fastify.redis).catch((error: unknown) => {
+                safeConsoleError('[server.ts][start] ', error);
+                process.exit(1);
+            });
 
-        FullSyncJob.start(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][start] ', error);
-            process.exit(1);
-        });
+            EventReminderJob.start(fastify.redis).catch((error: unknown) => {
+                safeConsoleError('[server.ts][start] ', error);
+                process.exit(1);
+            });
 
-        PendingUpnWorkerService.start(fastify.redis).catch((error: unknown) => {
-            safeConsoleError('[server.ts][start] ', error);
-            process.exit(1);
-        });
+            FullSyncJob.start(fastify.redis).catch((error: unknown) => {
+                safeConsoleError('[server.ts][start] ', error);
+                process.exit(1);
+            });
+
+            PendingUpnWorkerService.start(fastify.redis).catch((error: unknown) => {
+                safeConsoleError('[server.ts][start] ', error);
+                process.exit(1);
+            });
+        }
 
     } catch (error: unknown) {
         safeConsoleError('[server.ts][start] ', error);

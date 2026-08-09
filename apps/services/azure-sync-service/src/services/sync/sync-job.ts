@@ -221,6 +221,9 @@ export class SyncJob {
                     duration_ms: status.startTime ? (Date.now() - new Date(status.startTime).getTime()) : null,
                     moved_active_users: status.movedActiveUsers,
                     moved_expired_users: status.movedExpiredUsers,
+                    environment: process.env.ENV_NAME === 'prod' 
+                        ? 'productie' 
+                        : (process.env.ENV_NAME === 'acc' ? 'acceptatie' : 'ontwikkeling')
                 })
             });
         try {

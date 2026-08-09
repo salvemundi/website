@@ -42,6 +42,8 @@ interface AuditLogIslandProps {
 export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [activeTab, setActiveTab] = useState<'pending' | 'admin_logs' | 'system_logs' | 'queues'>('admin_logs');
+    
+    const [idNameLookup, setIdNameLookup] = useState<Record<string, string>>(initialData.idNameLookup);
 
     const [signups, setSignups] = useState<PendingSignup[]>(initialData.signups);
     const [adminLogs, setAdminLogs] = useState<SystemLog[]>(initialData.adminLogs);
@@ -67,10 +69,12 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
         if (adminLogsRes.success) {
             setAdminLogs(adminLogsRes.data);
             setAdminLogsTotalCount(adminLogsRes.totalCount);
+            setIdNameLookup(prev => ({ ...prev, ...(adminLogsRes.resolvedNames || {}) }));
         }
         if (systemLogsRes.success) {
             setSystemLogs(systemLogsRes.data);
             setSystemLogsTotalCount(systemLogsRes.totalCount);
+            setIdNameLookup(prev => ({ ...prev, ...(systemLogsRes.resolvedNames || {}) }));
         }
     };
 
@@ -81,6 +85,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
         if (res.success) {
             setAdminLogs(res.data);
             setAdminLogsTotalCount(res.totalCount);
+            setIdNameLookup(prev => ({ ...prev, ...(res.resolvedNames || {}) }));
         }
     };
 
@@ -91,6 +96,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
         if (res.success) {
             setSystemLogs(res.data);
             setSystemLogsTotalCount(res.totalCount);
+            setIdNameLookup(prev => ({ ...prev, ...(res.resolvedNames || {}) }));
         }
     };
 
@@ -107,6 +113,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                 if (adminLogsRes.success) {
                     setAdminLogs(adminLogsRes.data);
                     setAdminLogsTotalCount(adminLogsRes.totalCount);
+                    setIdNameLookup(prev => ({ ...prev, ...(adminLogsRes.resolvedNames || {}) }));
                 }
             } else {
                 showToast(res.error || 'Goedkeuren mislukt', 'error');
@@ -130,6 +137,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                 if (adminLogsRes.success) {
                     setAdminLogs(adminLogsRes.data);
                     setAdminLogsTotalCount(adminLogsRes.totalCount);
+                    setIdNameLookup(prev => ({ ...prev, ...(adminLogsRes.resolvedNames || {}) }));
                 }
             } else {
                 showToast(res.error || 'Afwijzen mislukt', 'error');
@@ -198,7 +206,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
             showToast(`Automatische goedkeuring ${newValue ? 'uitgeschakeld' : 'ingeschakeld'}`, 'success');
             await refreshLogs();
         } else {
-            showToast('Fout bij bijwerken instellingen', 'error');
+            showToast(res.error || 'Fout bij bijwerken instellingen', 'error');
             setManualApproval(!newValue);
         }
     };
@@ -227,7 +235,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                     <div className="flex gap-1 bg-(--beheer-card-soft) p-1 rounded-2xl w-fit border border-(--beheer-border)">
                         {[
                             { id: 'pending', label: 'Wachtrij', icon: Clock },
-                            { id: 'admin_logs', label: 'Beheerder', icon: Shield },
+                            { id: 'admin_logs', label: 'Commissie', icon: Shield },
                             { id: 'system_logs', label: 'Systeem', icon: Server },
                             { id: 'queues', label: 'Wachtrijen', icon: RefreshCw },
                         ].map(tab => (
@@ -282,8 +290,8 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         totalCount={adminLogsTotalCount}
                         onRefresh={() => { void refreshLogs(); }}
                         onLoadMore={() => { void loadMoreAdminLogs(); }}
-                        title="Beheerder Acties"
-                        idNameLookup={initialData.idNameLookup}
+                        title="Commissie Acties"
+                        idNameLookup={idNameLookup}
                     />
                 )}
 
@@ -294,7 +302,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         onRefresh={() => { void refreshLogs(); }}
                         onLoadMore={() => { void loadMoreSystemLogs(); }}
                         title="Systeem Events"
-                        idNameLookup={initialData.idNameLookup}
+                        idNameLookup={idNameLookup}
                         actions={
                             <a
                                 href="/beheer/sync"

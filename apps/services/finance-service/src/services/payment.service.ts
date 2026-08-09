@@ -94,15 +94,19 @@ export class PaymentService {
             let approvalStatus = transaction.approval_status;
             if (approvalStatus === 'auto_approved') {
                 let manualApproval = false;
-                try {
-                    const directus = this.getDirectusClient();
-                    const flags = await directus.request(readItems('feature_flags', {
-                        filter: { name: { _eq: 'manual_approval' } },
-                        fields: ['is_active']
-                    })) as unknown as { is_active: boolean }[];
-                    manualApproval = flags[0]?.is_active ?? false;
-                } catch (authErr) {
-                    fastify.log.error({ err: authErr }, `[payment-service][manual-approval] Failed to check manual_approval flag: ${authErr instanceof Error ? authErr.message : String(authErr)}`);
+                if (process.env.ENV_NAME === 'acc') {
+                    manualApproval = true;
+                } else {
+                    try {
+                        const directus = this.getDirectusClient();
+                        const flags = await directus.request(readItems('feature_flags', {
+                            filter: { name: { _eq: 'manual_approval' } },
+                            fields: ['is_active']
+                        })) as unknown as { is_active: boolean }[];
+                        manualApproval = flags[0]?.is_active ?? false;
+                    } catch (authErr) {
+                        fastify.log.error({ err: authErr }, `[payment-service][manual-approval] Failed to check manual_approval flag: ${authErr instanceof Error ? authErr.message : String(authErr)}`);
+                    }
                 }
 
                 approvalStatus = (isContribution && manualApproval) ? 'pending' : 'approved';

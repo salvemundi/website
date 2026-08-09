@@ -80,7 +80,7 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
                         >
                             <div className="flex flex-col md:flex-row">
                                 {activity.image && (
-                                    <div className="relative w-full md:w-48 h-48 md:h-auto min-h-[12rem] md:min-h-0 bg-slate-950 shrink-0 overflow-hidden border-b md:border-b-0 md:border-r border-border-color/10">
+                                    <div className="relative w-full md:w-48 h-48 md:h-auto min-h-48 md:min-h-0 bg-slate-950 shrink-0 overflow-hidden border-b md:border-b-0 md:border-r border-border-color/10">
                                         <MediaAsset asset={activity.image} alt={activity.name} fill objectFit="contain" />
                                     </div>
                                 )}
