@@ -21,12 +21,12 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
             <div className="mx-auto max-w-app px-6">
                 <div className="text-center mb-6 sm:mb-8">
                     <h2 className="text-2xl font-black text-gradient sm:text-3xl">
-                        Onze sponsors
+                        Onze sponsoren
                     </h2>
                 </div>
 
                 {!hasSponsors ? (
-                    <div className="w-full min-h-[120px] flex items-center justify-center">
+                    <div className="w-full min-h-30 flex items-center justify-center">
                         <p className="text-center text-sm text-(--text-muted) italic">Binnenkort meer informatie.</p>
                     </div>
                 ) : (
