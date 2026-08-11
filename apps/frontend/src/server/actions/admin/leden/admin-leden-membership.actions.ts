@@ -151,6 +151,7 @@ export async function renewMembershipAction(
             context: 'lidmaatschap',
             member_id: directusUserId,
             months_added: months,
+            old_expiry: user.membership_expiry || 'geen',
             new_expiry: newExpiryStr
         });
 

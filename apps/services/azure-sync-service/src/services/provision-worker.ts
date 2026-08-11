@@ -3,6 +3,7 @@ import { type Redis } from 'ioredis';
 import { SyncJob } from './sync/sync-job.js';
 import { TokenService } from './token.service.js';
 import { DbService } from './db.service.js';
+import { AuditService } from './audit.service.js';
 import { z } from 'zod';
 
 export const ProvisionTaskSchema = z.object({
@@ -102,6 +103,8 @@ export class ProvisionWorkerService {
                                     }).catch(err => safeConsoleError('[provision-worker.ts][start] ', `Failed to patch Entra ID membershipExpiry: ${err instanceof Error ? err.message : String(err)}`));
                                 }
                             }
+
+                            await AuditService.logMembershipRenewal(user.email || '', user.id, task.paymentId, user.membership_expiry, newExpiryStr);
                         }
 
                         const token = await TokenService.getAccessToken(redis);

@@ -59,11 +59,13 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [adminLogsLimit, setAdminLogsLimit] = useState(50);
     const [systemLogsLimit, setSystemLogsLimit] = useState(50);
+    const [adminSearch, setAdminSearch] = useState('');
+    const [systemSearch, setSystemSearch] = useState('');
 
     const refreshLogs = async () => {
         const [adminLogsRes, systemLogsRes] = await Promise.all([
-            getSystemLogsAction(adminLogsLimit, 'admin'),
-            getSystemLogsAction(systemLogsLimit, 'system')
+            getSystemLogsAction(adminLogsLimit, 'admin', adminSearch),
+            getSystemLogsAction(systemLogsLimit, 'system', systemSearch)
         ]);
 
         if (adminLogsRes.success) {
@@ -81,7 +83,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
     const loadMoreAdminLogs = async () => {
         const newLimit = adminLogsLimit + 50;
         setAdminLogsLimit(newLimit);
-        const res = await getSystemLogsAction(newLimit, 'admin');
+        const res = await getSystemLogsAction(newLimit, 'admin', adminSearch);
         if (res.success) {
             setAdminLogs(res.data);
             setAdminLogsTotalCount(res.totalCount);
@@ -92,7 +94,27 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
     const loadMoreSystemLogs = async () => {
         const newLimit = systemLogsLimit + 50;
         setSystemLogsLimit(newLimit);
-        const res = await getSystemLogsAction(newLimit, 'system');
+        const res = await getSystemLogsAction(newLimit, 'system', systemSearch);
+        if (res.success) {
+            setSystemLogs(res.data);
+            setSystemLogsTotalCount(res.totalCount);
+            setIdNameLookup(prev => ({ ...prev, ...(res.resolvedNames || {}) }));
+        }
+    };
+
+    const handleAdminSearch = async (query: string) => {
+        setAdminSearch(query);
+        const res = await getSystemLogsAction(adminLogsLimit, 'admin', query);
+        if (res.success) {
+            setAdminLogs(res.data);
+            setAdminLogsTotalCount(res.totalCount);
+            setIdNameLookup(prev => ({ ...prev, ...(res.resolvedNames || {}) }));
+        }
+    };
+
+    const handleSystemSearch = async (query: string) => {
+        setSystemSearch(query);
+        const res = await getSystemLogsAction(systemLogsLimit, 'system', query);
         if (res.success) {
             setSystemLogs(res.data);
             setSystemLogsTotalCount(res.totalCount);
@@ -290,6 +312,8 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         totalCount={adminLogsTotalCount}
                         onRefresh={() => { void refreshLogs(); }}
                         onLoadMore={() => { void loadMoreAdminLogs(); }}
+                        onSearch={(q) => { void handleAdminSearch(q); }}
+                        searchQuery={adminSearch}
                         title="Commissie Acties"
                         idNameLookup={idNameLookup}
                     />
@@ -301,6 +325,8 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         totalCount={systemLogsTotalCount}
                         onRefresh={() => { void refreshLogs(); }}
                         onLoadMore={() => { void loadMoreSystemLogs(); }}
+                        onSearch={(q) => { void handleSystemSearch(q); }}
+                        searchQuery={systemSearch}
                         title="Systeem Events"
                         idNameLookup={idNameLookup}
                         actions={
