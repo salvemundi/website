@@ -14,5 +14,7 @@ export const EXCLUDED_EMAILS = [
     'noreply@salvemundi.nl',
     'extern@salvemundi.nl',
     'commissaris.administratie@salvemundi.nl',
-    'apibot@salvemundi.nl'
+    'apibot@salvemundi.nl',
+    'admin@salvemundi.nl',
+    'mediarequests@lid.salvemundi.nl'
 ];
