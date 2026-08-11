@@ -1,5 +1,5 @@
 import { type FastifyInstance } from 'fastify';
-import { createDirectus, rest, staticToken, readItems, readUser } from '@directus/sdk';
+import { createDirectus, rest, staticToken, readItems} from '@directus/sdk';
 import {
     PaymentSuccessEventSchema,
     type MolliePaymentMetadata,
@@ -7,7 +7,6 @@ import {
 } from '@salvemundi/validations';
 import { schema, eq, sql } from '@salvemundi/db';
 import { RegistrationService } from './registration.service.js';
-import { AzureRetryService } from './azure-retry.service.js';
 import { CacheInvalidationService } from './cache-invalidation.js';
 
 export interface FinanceMolliePaymentMetadata extends MolliePaymentMetadata {
@@ -214,30 +213,6 @@ export class PaymentService {
             fastify.log.info(`[payment-service][event] Published PAYMENT_SUCCESS event for ${paymentId}`);
         } catch (eventErr) {
             fastify.log.error({ err: eventErr }, `[payment-service][event] Event validation failed for ${paymentId}`);
-        }
-
-        if (isContribution && userId) {
-            await this.triggerAzureSync(fastify, userId);
-        }
-    }
-
-    private static async triggerAzureSync(fastify: FastifyInstance, userId: string) {
-        try {
-            const directus = this.getDirectusClient();
-            const user = await directus.request(readUser(userId, { fields: ['id', 'entra_id'] })) as { entra_id?: string | null };
-
-            if (user.entra_id) {
-                const now = new Date();
-                const expiry = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-
-                await AzureRetryService.queueUpdate(fastify.redis, user.entra_id, {
-                    membershipExpiry: expiry.toISOString().split('T')[0],
-                    originalPaymentDate: now.toISOString().split('T')[0]
-                });
-                fastify.log.info(`[payment-service][azure-sync] Queued Azure membership update for user ${userId}`);
-            }
-        } catch (error) {
-            fastify.log.error({ err: error }, `[payment-service][azure-sync] Azure sync trigger failed for user ${userId}`);
         }
     }
 }
