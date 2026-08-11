@@ -5,7 +5,8 @@ import {
     User as UserIcon,
     History,
     Settings,
-    Mail
+    Mail,
+    CreditCard
 } from 'lucide-react';
 import { manageAzureMembershipAction, provisionAzureAccountAction } from '@/server/actions/admin/leden/admin-leden-azure.actions';
 import { updateMemberProfileAction } from '@/server/actions/admin/leden/admin-leden-profile.actions';
@@ -25,11 +26,13 @@ export { type CommitteeMembership };
 import MemberProfileTab from './MemberProfileTab';
 import MemberActivitiesTab from './MemberActivitiesTab';
 import MemberAdminTab from './MemberAdminTab';
+import MemberTransactionsTab, { type MemberTransaction } from './MemberTransactionsTab';
 
 interface Props {
     member?: AdminMember;
     initialMemberships?: CommitteeMembership[];
     signups?: AdminSignup[];
+    transactions?: MemberTransaction[];
     allCommittees?: { id: string; name: string; is_visible: boolean; azure_group_id?: string | null | undefined }[];
     hasAccess?: boolean;
 }
@@ -38,11 +41,12 @@ export default function LedenDetailIsland({
     member = {} as AdminMember,
     initialMemberships = [],
     signups = [],
+    transactions = [],
     allCommittees = [],
     hasAccess = false
 }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
-    const [activeTab, setActiveTab] = useState<'profiel' | 'activiteiten' | 'beheer'>('profiel');
+    const [activeTab, setActiveTab] = useState<'profiel' | 'activiteiten' | 'transacties' | 'beheer'>('profiel');
 
     // We negeren de isPending waarde door de komma vooraan te gebruiken
     const [, startTransition] = useTransition();
@@ -182,7 +186,7 @@ export default function LedenDetailIsland({
                     </div>
                 </div>
                 <div className="space-y-3 min-w-0">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-(--beheer-text) leading-tight break-words">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-(--beheer-text) leading-tight wrap-break-word">
                         {localMember.first_name} {localMember.last_name}
                     </h1>
                     <div className="flex flex-wrap items-center gap-4">
@@ -203,6 +207,7 @@ export default function LedenDetailIsland({
                 {[
                     { id: 'profiel', label: 'Profiel', icon: UserIcon },
                     { id: 'activiteiten', label: 'Activiteiten', icon: History },
+                    { id: 'transacties', label: 'Transacties', icon: CreditCard },
                     { id: 'beheer', label: 'Beheer', icon: Settings, adminOnly: true }
                 ].map(tab => (
                     (!tab.adminOnly || hasAccess) && (
@@ -234,6 +239,10 @@ export default function LedenDetailIsland({
 
                 {activeTab === 'activiteiten' && (
                     <MemberActivitiesTab signups={signups} />
+                )}
+
+                {activeTab === 'transacties' && (
+                    <MemberTransactionsTab transactions={transactions} />
                 )}
 
                 {activeTab === 'beheer' && hasAccess && (

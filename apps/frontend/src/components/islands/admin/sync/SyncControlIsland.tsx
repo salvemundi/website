@@ -14,6 +14,8 @@ export default function SyncControlIsland() {
         userId, setUserId, handleUserSync, syncFieldOptions, status
     } = useSync();
 
+    const isBusy = isStartingSync || isStopping || isResetting || isUserSyncLoading;
+
     const toggles = [
         { label: 'Forceer Entra Link', value: forceLink, setValue: setForceLink },
         { label: 'Alleen Actieve Leden', value: activeOnly, setValue: setActiveOnly },
@@ -22,7 +24,7 @@ export default function SyncControlIsland() {
     ];
 
     return (
-        <div className="flex flex-col gap-6 mb-8">
+        <div className={`flex flex-col gap-6 mb-8 ${isBusy ? 'opacity-70 pointer-events-none' : ''}`}>
             <div className="bg-(--beheer-card-bg) p-6 rounded-(--beheer-radius) border border-(--beheer-border) shadow-sm">
                 <div className="flex items-center gap-4 mb-6">
                     <div className="p-2.5 bg-(--beheer-accent)/10 rounded-xl text-(--beheer-accent)">
@@ -41,6 +43,7 @@ export default function SyncControlIsland() {
                                     <button
                                         key={field.id}
                                         onClick={() => toggleField(field.id)}
+                                        disabled={isBusy}
                                         className={`beheer-button px-3.5 py-2 rounded-xl text-xs font-semibold transition-all border ${
                                             isSelected 
                                                 ? 'bg-(--beheer-accent) text-white border-(--beheer-accent) shadow-sm' 
@@ -59,6 +62,7 @@ export default function SyncControlIsland() {
                             <button
                                 key={idx}
                                 onClick={() => item.setValue(!item.value)}
+                                disabled={isBusy}
                                 className={`beheer-button flex items-center justify-between p-3.5 rounded-xl border transition-all ${item.value ? 'border-(--beheer-accent) bg-(--beheer-card-soft)' : 'border-(--beheer-border) bg-(--beheer-card-bg) hover:border-(--beheer-accent)/30 group'}`}
                             >
                                 <span className={`text-[11px] font-semibold transition-colors ${item.value ? 'text-(--beheer-text)' : 'text-(--beheer-text-muted) group-hover:text-(--beheer-text)'}`}>
@@ -116,7 +120,7 @@ export default function SyncControlIsland() {
                 </div>
 
                 <p className="text-[11px] font-semibold text-(--beheer-text-muted) mb-6 leading-relaxed opacity-70">
-                    Synchroniseer een specifieke gebruiker op basis van hun Entra ID (UUID).
+                    Synchroniseer een specifieke gebruiker op basis van their Entra ID (UUID).
                 </p>
 
                 <form onSubmit={(e) => { void handleUserSync(e); }} className="space-y-3">
@@ -125,6 +129,7 @@ export default function SyncControlIsland() {
                         value={userId}
                         autoComplete="off"
                         suppressHydrationWarning
+                        disabled={isBusy}
                         onChange={(e) => setUserId(e.target.value)}
                         placeholder="Entra ID (UUID)..."
                         className="beheer-input w-full px-5 py-3.5 bg-(--beheer-card-soft) border border-(--beheer-border) rounded-xl text-xs font-semibold focus:outline-none focus:border-(--beheer-accent) transition-all placeholder:text-(--beheer-text-muted)/30 text-(--beheer-text)"

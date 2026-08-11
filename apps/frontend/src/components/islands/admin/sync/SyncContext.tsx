@@ -122,6 +122,27 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
 
     const handleFullSync = async () => {
         setIsStartingSync(true);
+        // Optimistically clear current status to indicate restart to the user
+        setStatus(prev => prev ? {
+            ...prev,
+            status: 'starting',
+            active: true,
+            processed: 0,
+            total: 0,
+            successCount: 0,
+            errorCount: 0,
+            warningCount: 0,
+            createdCount: 0,
+            missingDataCount: 0,
+            movedExpiredCount: 0,
+            excludedCount: 0,
+            successfulUsers: [],
+            createdUsers: [],
+            warnings: [],
+            missingData: [],
+            errors: [],
+            excludedUsers: []
+        } : null);
         try {
             const result = await triggerFullSyncAction({
                 fields: selectedSyncFields,

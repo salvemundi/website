@@ -140,13 +140,11 @@ export async function insertSystemLogInternal(data: {
             };
         }
 
-        const environment = process.env.ENV_NAME === 'prod' 
-            ? 'productie' 
-            : (process.env.ENV_NAME === 'acc' ? 'acceptatie' : 'ontwikkeling');
+        const environment = process.env.ENV_NAME;
 
         if (payload && typeof payload === 'object') {
             payload = {
-                ...(payload as Record<string, unknown>),
+                ...(payload as { [key: string]: unknown }),
                 environment
             };
         } else {

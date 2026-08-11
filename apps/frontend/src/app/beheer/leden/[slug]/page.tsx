@@ -10,7 +10,8 @@ import {
 } from '@salvemundi/validations';
 import { safeConsoleError } from '@/server/utils/logger';
 import { db, schema } from "@salvemundi/db";
-import { eq } from "drizzle-orm";
+import { eq, or, desc } from "drizzle-orm";
+import { type MemberTransaction } from '@/components/islands/admin/leden/MemberTransactionsTab';
 
 interface AzureUserGroupsResponse {
     success: boolean;
@@ -29,6 +30,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
     let signups: EventSignup[] = [];
     let userCommittees: CommitteeMember[] = [];
     let allCommittees: DirectusCommittee[] = [];
+    let transactions: MemberTransaction[] = [];
 
     try {
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(decodedSlug);
@@ -67,7 +69,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
         const id = memberData.id;
         const memberEmail = memberData.email || '';
 
-        const [userCommitteesResult, signupsResult, allCommitteesResult] = await Promise.allSettled([
+        const [userCommitteesResult, signupsResult, allCommitteesResult, transactionsResult] = await Promise.allSettled([
             db.select({
                 id: schema.committee_members.id,
                 is_leader: schema.committee_members.is_leader,
@@ -96,12 +98,30 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
 
             db.query.committees.findMany({
                 columns: { id: true, name: true, azure_group_id: true, is_visible: true }
-            })
+            }),
+
+            db.select({
+                id: schema.transactions.id,
+                created_at: schema.transactions.created_at,
+                product_name: schema.transactions.product_name,
+                amount: schema.transactions.amount,
+                payment_status: schema.transactions.payment_status,
+                mollie_id: schema.transactions.mollie_id,
+                product_type: schema.transactions.product_type
+            }).from(schema.transactions)
+            .where(
+                or(
+                    eq(schema.transactions.user_id, id),
+                    eq(schema.transactions.email, memberEmail)
+                )
+            )
+            .orderBy(desc(schema.transactions.created_at))
         ]);
 
         signups = signupsResult.status === 'fulfilled' ? signupsResult.value as unknown as EventSignup[] : [];
         userCommittees = userCommitteesResult.status === 'fulfilled' ? userCommitteesResult.value as unknown as CommitteeMember[] : [];
         allCommittees = allCommitteesResult.status === 'fulfilled' ? allCommitteesResult.value as unknown as DirectusCommittee[] : [];
+        transactions = transactionsResult.status === 'fulfilled' ? transactionsResult.value : [];
 
         const HARDCODED_AZURE_GROUPS = [
             { name: "AdviesRaad | Salve Mundi", id: "d30a8bfc-7cb6-4619-ac59-fcb307bbe6d4" },
@@ -172,6 +192,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                 member={memberData as unknown as Member}
                 initialMemberships={userCommittees as unknown as CommitteeMembership[]}
                 signups={signups as unknown as Signup[]}
+                transactions={transactions}
                 allCommittees={allCommittees.map(c => ({
                     id: String(c.id),
                     name: c.name,
