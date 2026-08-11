@@ -133,7 +133,22 @@ export class EventHandlers {
             const json = await res.json() as { data?: { first_name?: string; membership_expiry?: string } };
             mailData.firstName = json.data?.first_name || data.firstName || 'Lid';
             mailData.expiryDate = json.data?.membership_expiry || 'Onbekend';
-            mailData.amount = '20.00';
+            
+            let amountStr = '20.00';
+            try {
+                const txn = await db.select({ amount: schema.transactions.amount })
+                    .from(schema.transactions)
+                    .where(eq(schema.transactions.mollie_id, data.paymentId))
+                    .limit(1)
+                    .then(rows => rows[0] as { amount: number | null } | undefined);
+                if (txn && txn.amount !== null) {
+                    amountStr = txn.amount.toFixed(2);
+                }
+            } catch (dbErr) {
+                safeConsoleError('[event-handlers.ts][enrichMembershipRenewal] Failed to fetch transaction amount:', dbErr);
+            }
+            mailData.amount = amountStr;
+
             if (!mailData.confirmationUrl && data.paymentId) {
                 mailData.confirmationUrl = `${baseUrl}/lidmaatschap/bevestiging?transaction_id=${data.paymentId}&t=${data.accessToken || ''}`;
             }

@@ -198,9 +198,7 @@ export class PaymentService {
                 }
 
                 if (logType) {
-                    const environment = process.env.ENV_NAME === 'prod'
-                        ? 'productie'
-                        : (process.env.ENV_NAME === 'acc' ? 'acceptatie' : 'ontwikkeling');
+                    const environment = process.env.ENV_NAME;
 
                     await fastify.db.insert(schema.system_logs).values({
                         type: logType,

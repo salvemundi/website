@@ -55,7 +55,20 @@ export class SyncJob {
 
             const status: SyncStatus = {
                 ...getInitialStatus(), jobId, active: true, status: 'running',
-                total: azureUsers.length, startTime: new Date().toISOString(), lastHeartbeat: new Date().toISOString()
+                total: azureUsers.length, startTime: new Date().toISOString(), lastHeartbeat: new Date().toISOString(),
+                successfulUsers: [],
+                createdUsers: [],
+                warnings: [],
+                missingData: [],
+                errors: [],
+                excludedUsers: [],
+                successCount: 0,
+                createdCount: 0,
+                warningCount: 0,
+                missingDataCount: 0,
+                errorCount: 0,
+                excludedCount: 0,
+                processed: 0
             };
 
             const ctx: SyncContext & { membershipMap: Map<string, Map<number, boolean>> } = {
@@ -221,9 +234,7 @@ export class SyncJob {
                     duration_ms: status.startTime ? (Date.now() - new Date(status.startTime).getTime()) : null,
                     moved_active_users: status.movedActiveUsers,
                     moved_expired_users: status.movedExpiredUsers,
-                    environment: process.env.ENV_NAME === 'prod' 
-                        ? 'productie' 
-                        : (process.env.ENV_NAME === 'acc' ? 'acceptatie' : 'ontwikkeling')
+                    environment: process.env.ENV_NAME
                 })
             });
         try {

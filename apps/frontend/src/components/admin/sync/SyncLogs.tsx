@@ -115,6 +115,14 @@ interface SyncLogsProps {
 }
 
 export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 50;
+
+    // Reset pagination to page 1 whenever the filter changes
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [resultFilter]);
+
     const itemMap = new Map<string, React.ReactNode>();
 
     const addItem = (email: string, node: React.ReactNode, type: string) => {
@@ -194,19 +202,50 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
     }
 
     const items = Array.from(itemMap.values());
+    const totalItems = items.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedItems = items.slice(startIndex, startIndex + itemsPerPage);
 
     return (
-        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-sm">
+        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-sm flex flex-col">
             <div className="max-h-120 overflow-y-auto custom-scrollbar">
-                {items.length === 0 ? (
+                {paginatedItems.length === 0 ? (
                     <div className="flex flex-col items-center justify-center p-20 text-(--beheer-text-muted)">
                         <Users className="h-12 w-12 mb-4 opacity-20" />
                         <p className="text-base font-semibold text-center">Geen resultaten gevonden voor dit filter.</p>
                     </div>
                 ) : (
-                    <div className="divide-y divide-(--beheer-border)/10">{items}</div>
+                    <div className="divide-y divide-(--beheer-border)/10">{paginatedItems}</div>
                 )}
             </div>
+            
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-(--beheer-border)/20 px-6 py-4 bg-(--beheer-card-soft)">
+                    <span className="text-[11px] font-semibold text-(--beheer-text-muted)">
+                        Rij {startIndex + 1} t/m {Math.min(startIndex + itemsPerPage, totalItems)} van {totalItems}
+                    </span>
+                    <div className="flex items-center gap-2">
+                        <button
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            className="beheer-button px-3.5 py-1.5 rounded-lg border border-(--beheer-border) text-[11px] font-bold text-(--beheer-text) hover:border-(--beheer-accent) transition-all disabled:opacity-40"
+                        >
+                            Vorige
+                        </button>
+                        <span className="text-[11px] font-bold text-(--beheer-text) px-2">
+                            {currentPage} / {totalPages}
+                        </span>
+                        <button
+                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            className="beheer-button px-3.5 py-1.5 rounded-lg border border-(--beheer-border) text-[11px] font-bold text-(--beheer-text) hover:border-(--beheer-accent) transition-all disabled:opacity-40"
+                        >
+                            Volgende
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

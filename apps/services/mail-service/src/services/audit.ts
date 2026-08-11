@@ -45,9 +45,7 @@ export class AuditService {
                         template_id: templateId,
                         error_details: error || `Email ${templateId} successfully dispatched`,
                         timestamp: new Date().toISOString(),
-                        environment: process.env.ENV_NAME === 'prod' 
-                            ? 'productie' 
-                            : (process.env.ENV_NAME === 'acc' ? 'acceptatie' : 'ontwikkeling'),
+                        environment: process.env.ENV_NAME,
                         ...extraPayload
                     }
                 })

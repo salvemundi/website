@@ -182,9 +182,7 @@ export class ProvisionWorkerService {
                                                 name: `${task.firstName} ${task.lastName}`,
                                                 error: errorMessage,
                                                 timestamp: new Date().toISOString(),
-                                                environment: process.env.ENV_NAME === 'prod' 
-                                                    ? 'productie' 
-                                                    : (process.env.ENV_NAME === 'acc' ? 'acceptatie' : 'ontwikkeling')
+                                                environment: process.env.ENV_NAME
                                             }
                                         })
                                     });

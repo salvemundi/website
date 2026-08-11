@@ -74,19 +74,34 @@ export class ProvisionWorkerService {
 
                         const user = await DbService.getUserById(task.userId) || await DbService.getUserByEntraId(task.userId);
                         if (user && task.paymentId) {
+                            const alreadyProcessed = await DbService.hasPaymentBeenProcessed(task.paymentId);
+                            if (alreadyProcessed) {
+                                logInfo('[provision-worker.ts][start] ', `Payment ${task.paymentId} has already been processed for user ${user.id}, skipping renewal.`);
+                                await redis.zrem(this.QUEUE_KEY, taskJson);
+                                continue;
+                            }
+
                             const today = new Date();
+                            const todayStr = today.toISOString().split('T')[0];
+
+                            const transaction = await DbService.getTransactionByMollieId(task.paymentId);
+                            const paymentDateStr = transaction.created_at
+                                ? new Date(transaction.created_at).toISOString().split('T')[0]
+                                : todayStr;
+
                             const currentExpiry = user.membership_expiry ? new Date(user.membership_expiry) : null;
                             const baseDate = (currentExpiry && currentExpiry > today) ? currentExpiry : today;
                             const newExpiry = new Date(baseDate);
                             newExpiry.setFullYear(newExpiry.getFullYear() + 1);
                             const newExpiryStr = newExpiry.toISOString().split('T')[0];
 
-                            logInfo('[provision-worker.ts][start] ', `Extending membership_expiry for user ${user.id} (${user.email}) from ${user.membership_expiry || 'none'} to ${newExpiryStr}`);
+                            logInfo('[provision-worker.ts][start] ', `Extending membership_expiry for user ${user.id} (${user.email}) from ${user.membership_expiry || 'none'} to ${newExpiryStr} and setting originalPaymentDate to ${paymentDateStr}`);
 
                             await DbService.updateUser(user.id, {
                                 membership_expiry: newExpiryStr,
                                 membership_status: 'active',
-                                status: 'active'
+                                status: 'active',
+                                originele_betaaldatum: paymentDateStr
                             });
 
                             if (user.entra_id) {
@@ -99,7 +114,10 @@ export class ProvisionWorkerService {
                                             'Authorization': `Bearer ${mgmtToken}`,
                                             'Content-Type': 'application/json'
                                         },
-                                        body: JSON.stringify({ membershipExpiry: newExpiryStr })
+                                        body: JSON.stringify({ 
+                                            membershipExpiry: newExpiryStr,
+                                            originalPaymentDate: paymentDateStr
+                                        })
                                     }).catch(err => safeConsoleError('[provision-worker.ts][start] ', `Failed to patch Entra ID membershipExpiry: ${err instanceof Error ? err.message : String(err)}`));
                                 }
                             }

@@ -1,5 +1,5 @@
 import { db, schema } from '@salvemundi/db';
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, and } from 'drizzle-orm';
 import { safeConsoleError } from '../utils/logger.js';
 
 export class DbService {
@@ -18,6 +18,24 @@ export class DbService {
             .from(schema.directus_users)
             .where(sql`LOWER(${schema.directus_users.email}) = ${email.toLowerCase()}`)
             .limit(1);
+        return rows[0] || null;
+    }
+
+    static async hasPaymentBeenProcessed(paymentId: string): Promise<boolean> {
+        const rows = await db.select({ id: schema.system_logs.id })
+            .from(schema.system_logs)
+            .where(
+                and(
+                    eq(schema.system_logs.type, 'membership_renewal'),
+                    sql`${schema.system_logs.payload}->>'payment_id' = ${paymentId}`
+                )
+            )
+            .limit(1);
+        return rows.length > 0;
+    }
+
+    static async getTransactionByMollieId(mollieId: string) {
+        const rows = await db.select().from(schema.transactions).where(eq(schema.transactions.mollie_id, mollieId)).limit(1);
         return rows[0] || null;
     }
 
