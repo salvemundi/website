@@ -67,7 +67,7 @@ export class MailWorkerService {
                         const success = await MailerService.send(redis, task.to, task.templateId, task.data);
 
                         if (success) {
-                            await AuditService.logMail(task.to, task.templateId, 'SUCCESS');
+                            await AuditService.logMail(task.to, task.templateId, 'SUCCESS', undefined, task.data);
                         } else {
                             throw new Error('MailerService returned false');
                         }
@@ -76,7 +76,7 @@ export class MailWorkerService {
 
                         task.retries += 1;
                         if (task.retries >= task.maxRetries) {
-                            await AuditService.logMail(task.to, task.templateId, 'FAILED', 'Max retries reached');
+                            await AuditService.logMail(task.to, task.templateId, 'FAILED', 'Max retries reached', task.data);
                         } else {
                             const delay = 60000 * Math.pow(task.retries, 2);
                             const newScore = Date.now() + delay;

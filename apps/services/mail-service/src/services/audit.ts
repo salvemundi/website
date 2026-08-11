@@ -7,12 +7,30 @@ export class AuditService {
         return { url, token };
     }
 
-    static async logMail(to: string, templateId: string, status: 'SUCCESS' | 'FAILED', error?: string) {
+    static async logMail(to: string, templateId: string, status: 'SUCCESS' | 'FAILED', error?: string, data?: Record<string, unknown>) {
         const { url, token } = this.getDirectusConfig();
 
         if (!token || !url) return;
 
         try {
+            const extraPayload: Record<string, unknown> = {};
+            if (data && typeof data === 'object') {
+                if ('expiryDate' in data) {
+                    extraPayload.membership_expiry = data.expiryDate;
+                }
+                if ('daysLeft' in data) {
+                    extraPayload.days_left = data.daysLeft;
+                    const days = Number(data.daysLeft);
+                    if (days === 30) {
+                        extraPayload.milestone = '30 dagen tot verloop';
+                    } else if (days === 7) {
+                        extraPayload.milestone = '7 dagen tot verloop';
+                    } else if (days === 0) {
+                        extraPayload.milestone = 'verlopen (0 tot -14 dagen)';
+                    }
+                }
+            }
+
             await fetch(`${url}/items/system_logs`, {
                 method: 'POST',
                 headers: {
@@ -29,7 +47,8 @@ export class AuditService {
                         timestamp: new Date().toISOString(),
                         environment: process.env.ENV_NAME === 'prod' 
                             ? 'productie' 
-                            : (process.env.ENV_NAME === 'acc' ? 'acceptatie' : 'ontwikkeling')
+                            : (process.env.ENV_NAME === 'acc' ? 'acceptatie' : 'ontwikkeling'),
+                        ...extraPayload
                     }
                 })
             });

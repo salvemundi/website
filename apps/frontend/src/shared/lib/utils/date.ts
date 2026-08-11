@@ -21,12 +21,18 @@ export function formatDate(
         case 'yyyy-MM-dd':
             return d.toISOString().split('T')[0];
         case 'dd-MM-yyyy HH:mm': {
-            const day = String(d.getDate()).padStart(2, '0');
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const year = d.getFullYear();
-            const hours = String(d.getHours()).padStart(2, '0');
-            const minutes = String(d.getMinutes()).padStart(2, '0');
-            return `${day}-${month}-${year} ${hours}:${minutes}`;
+            const formatter = new Intl.DateTimeFormat('nl-NL', {
+                timeZone: 'Europe/Amsterdam',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+            const parts = formatter.formatToParts(d);
+            const partMap = Object.fromEntries(parts.map(p => [p.type, p.value]));
+            return `${partMap.day}-${partMap.month}-${partMap.year} ${partMap.hour}:${partMap.minute}`;
         }
         case 'd MMMM yyyy HH:mm':
             return new Intl.DateTimeFormat('nl-NL', {

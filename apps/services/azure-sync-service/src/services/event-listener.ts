@@ -69,7 +69,6 @@ export class EventListenerService {
                 if (data.registrationType === 'membership') {
                     if (data.userId) {
                         await ProvisionWorkerService.queueProvisioning(redis, data.userId, data.paymentId);
-                        await AuditService.logMembershipRenewal(data.email, data.userId, data.paymentId);
                         logInfo('[event-listener.ts][handleEvent] ', `Queued renewal for user ${data.userId}`);
                     } else {
                         const { managementUrl, token } = this.getConfig();

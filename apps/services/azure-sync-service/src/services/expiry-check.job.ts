@@ -21,7 +21,7 @@ export class ExpiryCheckJob {
                 await this.runCheck(redis);
 
                 const now = new Date();
-                const nextRun = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 0, 0);
+                const nextRun = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 7, 0, 0);
                 const delay = nextRun.getTime() - now.getTime();
 
                 logInfo('[expiry-check.job.ts][start] ', `Next check scheduled in ${Math.round(delay / 1000 / 60 / 60)} hours.`);

@@ -23,13 +23,15 @@ export class AuditService {
         }
     }
 
-    static async logMembershipRenewal(email: string, userId?: string, paymentId?: string) {
+    static async logMembershipRenewal(email: string, userId?: string, paymentId?: string, oldExpiry?: string | null, newExpiry?: string | null) {
         await this.logSystemAction('membership_renewal', 'SUCCESS', {
             lid: email,
             email,
             user_id: userId || '',
             payment_id: paymentId || '',
-            details: 'Lidmaatschap verlengd'
+            old_expiry: oldExpiry || 'geen',
+            new_expiry: newExpiry || '',
+            details: `Lidmaatschap verlengd (van ${oldExpiry || 'geen'} naar ${newExpiry || ''})`
         });
     }
 

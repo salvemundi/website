@@ -264,12 +264,12 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
     }
 }
 
-export async function getSystemLogsAction(limit: number = 50, source: 'admin' | 'system' = 'admin'): Promise<LogsResponse> {
+export async function getSystemLogsAction(limit: number = 50, source: 'admin' | 'system' = 'admin', search: string = ''): Promise<LogsResponse> {
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
     try {
-        const result = await getSystemLogsInternal(limit, source);
+        const result = await getSystemLogsInternal(limit, source, search);
         const logs = result.logs;
 
         interface LogPayload {

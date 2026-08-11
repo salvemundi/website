@@ -42,7 +42,9 @@ export class PaymentService {
                 first_name: schema.transactions.first_name,
                 last_name: schema.transactions.last_name,
                 product_type: schema.transactions.product_type,
-                coupon_code: schema.transactions.coupon_code
+                coupon_code: schema.transactions.coupon_code,
+                product_name: schema.transactions.product_name,
+                amount: schema.transactions.amount
             })
             .from(schema.transactions)
             .where(eq(schema.transactions.mollie_id, paymentId))
@@ -152,6 +154,8 @@ export class PaymentService {
                 first_name: string | null;
                 last_name: string | null;
                 product_type: string | null;
+                product_name?: string | null;
+                amount?: string | number | null;
             };
         }
     ) {
@@ -169,6 +173,53 @@ export class PaymentService {
                     },
                     fastify.log
                 );
+
+                // Write audit system log for this automated payment completion
+                let contextStr = '';
+                let logType = '';
+                let idPayload: Record<string, unknown> = {};
+
+                if (registrationType === 'event_signup') {
+                    contextStr = 'activiteit';
+                    logType = 'system_event_signup_payment';
+                    idPayload = { id: Number(registrationId) };
+                } else if (registrationType === 'trip_signup') {
+                    contextStr = 'reis';
+                    logType = 'system_trip_signup_payment';
+                    idPayload = { signup_id: Number(registrationId) };
+                } else if (registrationType === 'webshop_preorder') {
+                    contextStr = 'webshop';
+                    logType = 'system_webshop_preorder_payment';
+                    idPayload = { preorder_id: Number(registrationId) };
+                } else if (registrationType === 'pub_crawl_signup') {
+                    contextStr = 'kroegentocht';
+                    logType = 'system_pub_crawl_signup_payment';
+                    idPayload = { signup_id: Number(registrationId) };
+                }
+
+                if (logType) {
+                    const environment = process.env.ENV_NAME === 'prod'
+                        ? 'productie'
+                        : (process.env.ENV_NAME === 'acc' ? 'acceptatie' : 'ontwikkeling');
+
+                    await fastify.db.insert(schema.system_logs).values({
+                        type: logType,
+                        status: 'SUCCESS',
+                        payload: {
+                            context: contextStr,
+                            payment_id: paymentId,
+                            email: transaction.email || metadata?.email || null,
+                            naam: `${transaction.first_name || metadata?.firstName || ''} ${transaction.last_name || metadata?.lastName || ''}`.trim() || 'Onbekend',
+                            product: transaction.product_name || null,
+                            amount: transaction.amount ? Number(transaction.amount) : null,
+                            ...idPayload,
+                            details: `Betaling ontvangen via Mollie. Inschrijving status bijgewerkt.`,
+                            admin_name: 'Systeem',
+                            environment
+                        }
+                    });
+                    fastify.log.info(`[payment-service][audit-log] Logged success payment event ${logType} for ${paymentId}`);
+                }
             } catch (regErr) {
                 fastify.log.error({ err: regErr }, `[payment-service][registration] Failed to update registration for ${paymentId}`);
             }

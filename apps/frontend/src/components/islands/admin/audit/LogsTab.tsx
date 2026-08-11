@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Fragment, useMemo } from 'react';
+import { useState, Fragment, useMemo, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { formatDate } from '@/shared/lib/utils/date';
@@ -35,6 +35,8 @@ interface LogsTabProps {
     totalCount: number;
     onRefresh: () => void;
     onLoadMore: () => void;
+    onSearch: (query: string) => void;
+    searchQuery: string;
     title?: string;
     actions?: ReactNode;
     idNameLookup?: Record<string, string>;
@@ -46,15 +48,22 @@ export default function LogsTab({
     totalCount,
     onRefresh,
     onLoadMore,
+    onSearch,
+    searchQuery,
     title = "Activiteitslogboek",
     actions,
     idNameLookup = {},
     defaultStatusFilter = 'ALL'
 }: LogsTabProps) {
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'SUCCESS' | 'ERROR' | 'WARNING' | 'INFO'>(defaultStatusFilter);
+    const [localQuery, setLocalQuery] = useState(searchQuery);
     const [acknowledging, setAcknowledging] = useState<string | null>(null);
     const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
     const { showToast } = useAdminToast();
+
+    useEffect(() => {
+        setLocalQuery(searchQuery);
+    }, [searchQuery]);
 
     const lookupMap = useMemo(() => new Map(Object.entries(idNameLookup)), [idNameLookup]);
 
@@ -116,25 +125,39 @@ export default function LogsTab({
             <div className="p-6 border-b border-(--beheer-border)/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h3 className="text-lg font-semibold text-(--beheer-text) tracking-tight">{title}</h3>
-                    <div className="flex items-center gap-2 mt-2">
-                        {[
-                            { id: 'ALL', label: 'Alles' },
-                            { id: 'SUCCESS', label: 'Succes' },
-                            { id: 'ERROR', label: 'Fouten' },
-                            { id: 'WARNING', label: 'Waarschuwingen' },
-                            { id: 'INFO', label: 'Info' }
-                        ].map(f => (
-                            <button
-                                key={f.id}
-                                onClick={() => setStatusFilter(f.id as typeof statusFilter)}
-                                className={`tab-button px-3 py-1 rounded-lg text-[11px] font-semibold transition-all border ${statusFilter === f.id
-                                    ? 'bg-(--beheer-accent)/10 text-(--beheer-accent) border-(--beheer-accent)/20'
-                                    : 'text-(--beheer-text-muted) border-transparent hover:bg-(--beheer-card-soft)'
-                                    }`}
-                            >
-                                {f.label}
-                            </button>
-                        ))}
+                    <div className="flex flex-wrap items-center gap-4 mt-2">
+                        <div className="flex items-center gap-2">
+                            {[
+                                { id: 'ALL', label: 'Alles' },
+                                { id: 'SUCCESS', label: 'Succes' },
+                                { id: 'ERROR', label: 'Fouten' },
+                                { id: 'WARNING', label: 'Waarschuwingen' },
+                                { id: 'INFO', label: 'Info' }
+                            ].map(f => (
+                                <button
+                                    key={f.id}
+                                    onClick={() => setStatusFilter(f.id as typeof statusFilter)}
+                                    className={`tab-button px-3 py-1 rounded-lg text-[11px] font-semibold transition-all border ${statusFilter === f.id
+                                        ? 'bg-(--beheer-accent)/10 text-(--beheer-accent) border-(--beheer-accent)/20'
+                                        : 'text-(--beheer-text-muted) border-transparent hover:bg-(--beheer-card-soft)'
+                                        }`}
+                                >
+                                    {f.label}
+                                </button>
+                            ))}
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Zoeken..."
+                            value={localQuery}
+                            onChange={(e) => setLocalQuery(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    onSearch(localQuery);
+                                }
+                            }}
+                            className="beheer-input px-3 py-1 text-xs rounded-lg border border-(--beheer-border)/50 bg-(--beheer-card-soft) text-(--beheer-text) placeholder-(--beheer-text-muted)/50 focus:outline-none focus:border-(--beheer-accent) w-48 md:w-64 transition-all"
+                        />
                     </div>
                 </div>
                 <div className="flex items-center gap-2">

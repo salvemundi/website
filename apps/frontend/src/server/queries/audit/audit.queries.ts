@@ -52,7 +52,7 @@ export async function getPendingSignupsInternal(): Promise<PendingSignup[]> {
     }
 }
 
-export async function getSystemLogsInternal(limit: number = 50, source: 'admin' | 'system' = 'admin'): Promise<{ logs: SystemLog[]; totalCount: number }> {
+export async function getSystemLogsInternal(limit: number = 50, source: 'admin' | 'system' = 'admin', search: string = ''): Promise<{ logs: SystemLog[]; totalCount: number }> {
     try {
         const legacyAdminTypes = [
             'impersonation_active',
@@ -70,9 +70,21 @@ export async function getSystemLogsInternal(limit: number = 50, source: 'admin' 
             'sticker_deleted'
         ];
 
-        const filterCond = source === 'admin'
+        let filterCond = source === 'admin'
             ? or(ilike(schema.system_logs.type, 'admin_%'), inArray(schema.system_logs.type, legacyAdminTypes))
             : and(notIlike(schema.system_logs.type, 'admin_%'), notInArray(schema.system_logs.type, legacyAdminTypes));
+
+        if (search.trim()) {
+            const query = `%${search.toLowerCase().trim()}%`;
+            filterCond = and(
+                filterCond,
+                or(
+                    ilike(schema.system_logs.type, query),
+                    ilike(schema.system_logs.status, query),
+                    sql`LOWER(${schema.system_logs.payload}::text) LIKE ${query}`
+                )
+            );
+        }
 
         const [logsResult, countResult] = await Promise.all([
             db.select().from(schema.system_logs).where(filterCond).orderBy(desc(schema.system_logs.created_at)).limit(limit),
