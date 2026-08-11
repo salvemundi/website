@@ -262,6 +262,11 @@ export default function LogsTab({
                                                                 const resolved = lookupMap.get(`drop_window_${String(log.payload.drop_window_id)}`);
                                                                 if (resolved) contextName = resolved;
                                                             }
+                                                        } else if (context === 'lidmaatschap') {
+                                                            if ('member_id' in log.payload && log.payload.member_id) {
+                                                                const resolved = lookupMap.get(`user_${String(log.payload.member_id)}`);
+                                                                if (resolved) contextName = resolved;
+                                                            }
                                                         }
                                                     }
                                                 }
