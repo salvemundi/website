@@ -68,7 +68,7 @@ export default async function QRCodePage() {
                             <ShieldCheck className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-2xl sm:text-3xl font-black text-theme-purple">Vertrouwenspersonen</h2>
+                            <h2 className="text-xl sm:text-3xl font-black text-theme-purple break-words">Vertrouwenspersonen</h2>
                             <p className="mt-2 text-sm sm:text-base text-text-muted">
                                 Loopt iets niet lekker tijdens de introweek? Deze mensen staan voor je klaar en denken met je mee.
                             </p>
@@ -95,7 +95,7 @@ export default async function QRCodePage() {
                             <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-2xl sm:text-3xl font-black text-theme-purple">Groepsapp</h2>
+                            <h2 className="text-xl sm:text-3xl font-black text-theme-purple break-words">Groepsapp</h2>
                             <p className="mt-2 text-sm sm:text-base text-text-muted">
                                 Sluit je aan bij de groepsapp om op de hoogte te blijven en contact te leggen met je mede-introducees.
                             </p>
