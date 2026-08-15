@@ -224,6 +224,14 @@ export const selectPubCrawlSignupsSchema = createSelectSchema(schema.pub_crawl_s
 export const insertIntroPlanningSchema = createInsertSchema(schema.intro_planning);
 export const selectIntroPlanningSchema = createSelectSchema(schema.intro_planning);
 
+// --- intro_confidants ---
+export const insertIntroConfidantsSchema = createInsertSchema(schema.intro_confidants);
+export const selectIntroConfidantsSchema = createSelectSchema(schema.intro_confidants);
+
+// --- intro_settings ---
+export const insertIntroSettingsSchema = createInsertSchema(schema.intro_settings);
+export const selectIntroSettingsSchema = createSelectSchema(schema.intro_settings);
+
 // --- pub_crawl_tickets ---
 export const insertPubCrawlTicketsSchema = createInsertSchema(schema.pub_crawl_tickets);
 export const selectPubCrawlTicketsSchema = createSelectSchema(schema.pub_crawl_tickets);

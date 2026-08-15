@@ -5,14 +5,18 @@ import {
     introParentSignupFormSchema,
     type IntroSignupForm,
     type IntroParentSignupForm,
-    type IntroBlog
+    type IntroBlog,
+    type IntroPlanningItem,
+    type IntroConfidant
 } from '@salvemundi/validations/schema/intro.zod';
+import { type WhatsAppGroup } from '@salvemundi/validations/schema/profiel.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { db, schema } from '@salvemundi/db';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { normalizeDate } from '@/lib/utils/date-utils';
 import { safeConsoleError } from '@/server/utils/logger';
+import { getIntroPlanningInternal, getIntroConfidantsInternal, getIntroPlanningImageInternal } from '@/server/queries/intro/admin-intro.queries';
 
 interface ParentSignupRecord {
     id: number;
@@ -250,5 +254,37 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
     } catch (error: unknown) {
         safeConsoleError('[intro.actions.ts][submitIntroParentSignup] Error details:', error);
         return { success: false, error: 'Er is een fout opgetreden bij uw aanmelding' };
+    }
+}
+
+export async function getIntroPlanningPublic(): Promise<IntroPlanningItem[]> {
+    return getIntroPlanningInternal();
+}
+
+export async function getIntroConfidantsPublic(): Promise<IntroConfidant[]> {
+    return getIntroConfidantsInternal(true);
+}
+
+export async function getIntroPlanningImagePublic(): Promise<string | null> {
+    return getIntroPlanningImageInternal();
+}
+
+export async function getIntroGroupsAppLinks(): Promise<WhatsAppGroup[]> {
+    try {
+        const rows = await db.select({
+            id: schema.whatsapp_groups.id,
+            name: schema.whatsapp_groups.name,
+            description: schema.whatsapp_groups.description,
+            invite_link: schema.whatsapp_groups.invite_link,
+            is_active: schema.whatsapp_groups.is_active
+        }).from(schema.whatsapp_groups)
+        .where(and(
+            eq(schema.whatsapp_groups.is_active, true),
+            eq(schema.whatsapp_groups.requires_membership, false)
+        ));
+        return rows as unknown as WhatsAppGroup[];
+    } catch (error: unknown) {
+        safeConsoleError('[intro.actions.ts][getIntroGroupsAppLinks] Error while fetching intro group links:', error);
+        return [];
     }
 }

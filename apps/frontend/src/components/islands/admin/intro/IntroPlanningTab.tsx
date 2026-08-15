@@ -9,13 +9,19 @@ import {
     Trash,
     List,
     LayoutGrid,
-    Calendar
+    Calendar,
+    Image as ImageIcon,
+    Camera,
+    Trash2,
+    Loader2
 } from 'lucide-react';
 import { formatDate } from '@/shared/lib/utils/date';
 import type { IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import { ActionButton, EmptyState, Field, inputClass, Button } from './IntroTabComponents';
 import { AdminDatepicker } from '@/components/ui/forms/AdminDatepicker';
 import { AdminTimepicker } from '@/components/ui/forms/AdminTimepicker';
+import { getImageUrl } from '@/lib/utils/image-utils';
+import { uploadIntroPlanningImage, removeIntroPlanningImage } from '@/server/actions/admin/intro/admin-intro-core.actions';
 
 const toISODateString = (date: Date | null): string => {
     if (!date) return '';
@@ -31,11 +37,55 @@ interface Props {
     onDelete: (id: number) => Promise<void>;
     saving: boolean;
     deletingId: number | null;
+    initialPlanningImage: string | null;
 }
 
-export default function IntroPlanningTab({ planning, onSave, onDelete, saving, deletingId }: Props) {
+export default function IntroPlanningTab({ planning, onSave, onDelete, saving, deletingId, initialPlanningImage }: Props) {
     const [editingPlanning, setEditingPlanning] = useState<Partial<IntroPlanningItem> | null>(null);
     const [view, setView] = useState<'calendar' | 'list'>('list');
+
+    const [planningImage, setPlanningImage] = useState<string | null>(initialPlanningImage);
+    const [imagePreview, setImagePreview] = useState<string | null>(
+        initialPlanningImage ? getImageUrl(initialPlanningImage, { width: 1200, fit: 'inside' }) : null
+    );
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [imageUploadError, setImageUploadError] = useState<string | null>(null);
+
+    const handlePlanningImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file) return;
+
+        setImagePreview(URL.createObjectURL(file));
+        setUploadingImage(true);
+        setImageUploadError(null);
+
+        const formData = new FormData();
+        formData.append('image', file);
+        const result = await uploadIntroPlanningImage(formData);
+        setUploadingImage(false);
+
+        if (!result.success) {
+            setImageUploadError(result.error);
+            setImagePreview(planningImage ? getImageUrl(planningImage, { width: 1200, fit: 'inside' }) : null);
+            return;
+        }
+        setPlanningImage(result.data);
+        setImagePreview(getImageUrl(result.data, { width: 1200, fit: 'inside' }));
+    };
+
+    const handleRemovePlanningImage = async () => {
+        setUploadingImage(true);
+        setImageUploadError(null);
+        const result = await removeIntroPlanningImage();
+        setUploadingImage(false);
+        if (!result.success) {
+            setImageUploadError(result.error || 'Verwijderen mislukt');
+            return;
+        }
+        setPlanningImage(null);
+        setImagePreview(null);
+    };
 
     const handleSave = async () => {
         if (!editingPlanning) return;
@@ -50,6 +100,57 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
 
     return (
         <div>
+            <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 mb-8 shadow-sm">
+                <h3 className="font-semibold text-xs text-(--beheer-text-muted) mb-4">Planning-afbeelding (bovenaan de publieke QR-code pagina)</h3>
+                <div className="flex flex-col sm:flex-row items-start gap-5">
+                    <div className="relative w-full sm:w-64 aspect-video shrink-0 rounded-xl overflow-hidden bg-(--beheer-card-soft) ring-1 ring-(--beheer-border) flex items-center justify-center">
+                        {imagePreview ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={imagePreview} alt="Voorbeeld" className="h-full w-full object-cover" />
+                        ) : (
+                            <ImageIcon className="h-6 w-6 text-(--beheer-text-muted) opacity-40" />
+                        )}
+                        {uploadingImage && (
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <Loader2 className="h-5 w-5 text-white animate-spin" />
+                            </div>
+                        )}
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => { void handlePlanningImageChange(e); }}
+                            className="hidden"
+                            id="planning-image-upload"
+                        />
+                        <label
+                            htmlFor="planning-image-upload"
+                            className="btn-upload-photo cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-(--beheer-accent)/10 text-(--beheer-accent) border border-(--beheer-accent)/20 text-sm font-semibold hover:bg-(--beheer-accent)/20 transition-all w-fit"
+                        >
+                            <Camera className="h-4 w-4" />
+                            {imagePreview ? 'Andere afbeelding kiezen' : 'Afbeelding uploaden'}
+                        </label>
+                        {imagePreview && (
+                            <button
+                                type="button"
+                                onClick={() => { void handleRemovePlanningImage(); }}
+                                className="btn-remove-photo inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-all w-fit"
+                            >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                Verwijderen
+                            </button>
+                        )}
+                        {imageUploadError && (
+                            <p className="text-xs font-semibold text-red-500">{imageUploadError}</p>
+                        )}
+                        {!imagePreview && !imageUploadError && (
+                            <p className="text-xs text-(--beheer-text-muted) opacity-70 max-w-sm">Optioneel. Bijv. een ontworpen posterafbeelding van de planning. Als je niets uploadt, toont de pagina alleen de live planning hieronder.</p>
+                        )}
+                    </div>
+                </div>
+            </div>
+
             <div className="flex items-center justify-between mb-8">
                 {editingPlanning === null && (
                     <Button

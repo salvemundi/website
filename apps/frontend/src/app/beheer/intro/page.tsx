@@ -4,7 +4,9 @@ import {
     getIntroSignups,
     getIntroParentSignups,
     getIntroBlogs,
-    getIntroPlanning
+    getIntroPlanning,
+    getIntroConfidants,
+    getIntroPlanningImage
 } from '@/server/actions/admin/intro/admin-intro-core.actions';
 import { getIntroSettings } from '@/server/actions/public/intro.actions';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
@@ -15,12 +17,14 @@ export const metadata: Metadata = {
 };
 
 export default async function BeheerIntroPage() {
-    const [signups, parents, blogs, planning, settings] = await Promise.all([
+    const [signups, parents, blogs, planning, confidants, settings, planningImage] = await Promise.all([
         getIntroSignups(),
         getIntroParentSignups(),
         getIntroBlogs(),
         getIntroPlanning(),
+        getIntroConfidants(),
         getIntroSettings(),
+        getIntroPlanningImage(),
     ]);
 
     const introVisible = settings.show;
@@ -36,7 +40,9 @@ export default async function BeheerIntroPage() {
                 initialParents={parents}
                 initialBlogs={blogs}
                 initialPlanning={planning}
+                initialConfidants={confidants}
                 initialIntroVisible={introVisible}
+                initialPlanningImage={planningImage}
             />
         </AdminPageShell>
     );
