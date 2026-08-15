@@ -48,6 +48,17 @@ export const introBlogSchema = selectIntroBlogsSchema.omit({
     date_updated: true,
     user_created: true,
     user_updated: true,
+}).partial({
+    status: true,
+    sort: true,
+    slug: true,
+    excerpt: true,
+    meta_title: true,
+    meta_description: true,
+    views_count: true,
+    created_at: true,
+    updated_at: true,
+    likes: true,
 }).extend({
     id: z.coerce.number().optional(),
     title: z.string().min(1, 'Titel is verplicht'),

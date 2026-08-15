@@ -1,6 +1,6 @@
 'use client';
 
-import { Save, X, Eye } from 'lucide-react';
+import { Save, X, Eye, Send } from 'lucide-react';
 import type { IntroBlog } from '@salvemundi/validations/schema/intro.zod';
 import { Button, Field, inputClass } from './IntroTabComponents';
 import { toLocalISOString } from '@/lib/utils/date-utils';
@@ -19,11 +19,12 @@ interface Props {
     data: Partial<IntroBlog>;
     onChange: (data: Partial<IntroBlog>) => void;
     onSave: () => void;
+    onPublish: () => void;
     onCancel: () => void;
     saving: boolean;
 }
 
-export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, saving }: Props) {
+export default function BlogEditForm({ blog, data, onChange, onSave, onPublish, onCancel, saving }: Props) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 text-[11px] font-semibold text-(--beheer-text-muted)">
             <div className="lg:col-span-2 space-y-6 sm:space-y-8">
@@ -31,8 +32,11 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                     <p className="text-[10px] font-semibold text-(--beheer-accent)">
                         {blog.id && blog.id !== -1 ? 'Blog Bewerken' : 'Nieuwe Blog'}
                     </p>
-                    <div className="flex gap-2">
-                        <Button onClick={onSave} loading={saving} icon={Save} variant="success">Opslaan</Button>
+                    <div className="flex flex-wrap gap-2">
+                        <Button onClick={onSave} loading={saving} icon={Save} variant="secondary">Opslaan</Button>
+                        {!data.is_published && (
+                            <Button onClick={onPublish} loading={saving} icon={Send} variant="success">Publiceren</Button>
+                        )}
                         <Button onClick={onCancel} variant="ghost" icon={X}>Annuleren</Button>
                     </div>
                 </div>

@@ -42,9 +42,9 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
         if (!expandedRows.includes(blogId)) setExpandedRows(prev => [...prev, blogId]);
     };
 
-    const handleSave = async () => {
+    const handleSave = async (overrides?: Partial<IntroBlog>) => {
         // Remove empty strings for required fields to ensure clean validation
-        const sanitized = { ...editData };
+        const sanitized = { ...editData, ...overrides };
         if (sanitized.title === '') delete sanitized.title;
         if (sanitized.content === '') delete sanitized.content;
 
@@ -83,6 +83,7 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                         data={editData}
                         onChange={setEditData}
                         onSave={() => { void handleSave(); }}
+                        onPublish={() => { void handleSave({ is_published: true }); }}
                         onCancel={() => setEditingId(null)}
                         saving={saving}
                     />
@@ -157,6 +158,7 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                                             data={editData}
                                             onChange={setEditData}
                                             onSave={() => { void handleSave(); }}
+                                            onPublish={() => { void handleSave({ is_published: true }); }}
                                             onCancel={() => setEditingId(null)}
                                             saving={saving}
                                         />
