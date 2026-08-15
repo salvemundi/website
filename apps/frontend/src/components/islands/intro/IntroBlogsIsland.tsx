@@ -11,8 +11,6 @@ interface Props {
 }
 
 export function IntroBlogsIsland({ blogs }: Props) {
-    if (blogs.length === 0) return null;
-
     return (
         <section className="mt-20 animate-in fade-in slide-in-from-bottom-8 duration-1000">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
