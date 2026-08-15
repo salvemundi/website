@@ -95,7 +95,8 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                     const blogId = blog.id ?? 0;
                     const isExpanded = expandedRows.includes(blogId);
                     const isEditing = editingId === blog.id;
-                    const typeInfo = blogTypes[blog.blog_type as keyof typeof blogTypes];
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- DB rows can bypass Zod validation via the safeParse fallback path, so blog_type isn't guaranteed to be a known key at runtime
+                    const typeInfo = blogTypes[blog.blog_type as keyof typeof blogTypes] ?? blogTypes.update;
                     const date = blog.created_at;
 
                     return (
