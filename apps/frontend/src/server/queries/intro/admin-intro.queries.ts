@@ -155,3 +155,18 @@ export async function getIntroPlanningImageInternal(): Promise<string | null> {
         return null;
     }
 }
+
+export async function getIntroInfoBookletInternal(): Promise<string | null> {
+    try {
+        const rows = await db
+            .select({ info_booklet: schema.intro_settings.info_booklet })
+            .from(schema.intro_settings)
+            .orderBy(asc(schema.intro_settings.id))
+            .limit(1);
+
+        return rows[0]?.info_booklet ?? null;
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getIntroInfoBookletInternal] failed:', error);
+        return null;
+    }
+}

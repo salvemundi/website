@@ -1176,12 +1176,18 @@ export const intro_planning = pgTable("intro_planning", {
 export const intro_settings = pgTable("intro_settings", {
 	id: serial().primaryKey().notNull(),
 	planning_image: uuid(),
+	info_booklet: uuid(),
 	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
 	foreignKey({
 			columns: [table.planning_image],
 			foreignColumns: [directus_files.id],
 			name: "intro_settings_planning_image_foreign"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.info_booklet],
+			foreignColumns: [directus_files.id],
+			name: "intro_settings_info_booklet_foreign"
 		}).onDelete("set null"),
 ]);
 

@@ -87,3 +87,15 @@ export async function uploadIntroPlanningImage(formData: FormData) {
 export async function removeIntroPlanningImage() {
     return settings.removeIntroPlanningImage();
 }
+
+export async function getIntroInfoBooklet() {
+    return settings.getIntroInfoBooklet();
+}
+
+export async function uploadIntroInfoBooklet(formData: FormData) {
+    return settings.uploadIntroInfoBooklet(formData);
+}
+
+export async function removeIntroInfoBooklet() {
+    return settings.removeIntroInfoBooklet();
+}

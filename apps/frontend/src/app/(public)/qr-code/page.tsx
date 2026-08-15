@@ -1,16 +1,18 @@
 import * as nextServer from 'next/server';
-import { ShieldCheck, MessageCircle } from 'lucide-react';
+import { ShieldCheck, MessageCircle, BookOpen } from 'lucide-react';
 
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import IntroConfidantCard from '@/components/ui/social/IntroConfidantCard';
 import IntroGroupsAppButtons from '@/components/ui/social/IntroGroupsAppButtons';
 import IntroPlanningLiveIsland from '@/components/islands/intro/IntroPlanningLiveIsland';
+import DocumentAsset from '@/components/ui/media/DocumentAsset';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import {
     getIntroPlanningPublic,
     getIntroConfidantsPublic,
     getIntroGroupsAppLinks,
-    getIntroPlanningImagePublic
+    getIntroPlanningImagePublic,
+    getIntroInfoBookletPublic
 } from '@/server/actions/public/intro.actions';
 
 export const metadata = {
@@ -37,11 +39,12 @@ function BentoCard({ children, className = '' }: { children: React.ReactNode; cl
 export default async function QRCodePage() {
     await nextServer.connection();
 
-    const [planning, confidants, groups, planningImage] = await Promise.all([
+    const [planning, confidants, groups, planningImage, infoBooklet] = await Promise.all([
         getIntroPlanningPublic(),
         getIntroConfidantsPublic(),
         getIntroGroupsAppLinks(),
-        getIntroPlanningImagePublic()
+        getIntroPlanningImagePublic(),
+        getIntroInfoBookletPublic()
     ]);
 
     const planningImageUrl = planningImage ? getImageUrl(planningImage, { width: 1600, fit: 'inside' }) : null;
@@ -61,6 +64,21 @@ export default async function QRCodePage() {
                 </header>
 
                 <IntroPlanningLiveIsland planning={planning} planningImageUrl={planningImageUrl} />
+
+                {infoBooklet && (
+                    <BentoCard className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+                        <div className="flex items-center gap-4 sm:gap-6 flex-1 min-w-0">
+                            <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-600 flex items-center justify-center shrink-0 shadow-lg">
+                                <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+                            </div>
+                            <div className="min-w-0">
+                                <h2 className="text-xl sm:text-2xl font-black text-theme-purple break-words">Infoboekje</h2>
+                                <p className="mt-1 text-sm text-text-muted">Alle praktische info voor de introweek op een rijtje.</p>
+                            </div>
+                        </div>
+                        <DocumentAsset id={infoBooklet} label="Download infoboekje" className="shrink-0" />
+                    </BentoCard>
+                )}
 
                 <BentoCard>
                     <div className="flex items-start gap-4 sm:gap-6 mb-6">

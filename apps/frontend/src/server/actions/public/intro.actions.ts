@@ -16,7 +16,7 @@ import { eq, desc, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { normalizeDate } from '@/lib/utils/date-utils';
 import { safeConsoleError } from '@/server/utils/logger';
-import { getIntroPlanningInternal, getIntroConfidantsInternal, getIntroPlanningImageInternal } from '@/server/queries/intro/admin-intro.queries';
+import { getIntroPlanningInternal, getIntroConfidantsInternal, getIntroPlanningImageInternal, getIntroInfoBookletInternal } from '@/server/queries/intro/admin-intro.queries';
 
 interface ParentSignupRecord {
     id: number;
@@ -263,6 +263,10 @@ export async function getIntroPlanningPublic(): Promise<IntroPlanningItem[]> {
 
 export async function getIntroConfidantsPublic(): Promise<IntroConfidant[]> {
     return getIntroConfidantsInternal(true);
+}
+
+export async function getIntroInfoBookletPublic(): Promise<string | null> {
+    return getIntroInfoBookletInternal();
 }
 
 export async function getIntroPlanningImagePublic(): Promise<string | null> {

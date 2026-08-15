@@ -36,9 +36,10 @@ interface Props {
     initialConfidants: IntroConfidant[];
     initialIntroVisible: boolean;
     initialPlanningImage: string | null;
+    initialInfoBooklet: string | null;
 }
 
-export default function IntroManagementIsland({ initialSignups, initialParents, initialBlogs, initialPlanning, initialConfidants, initialPlanningImage }: Props) {
+export default function IntroManagementIsland({ initialSignups, initialParents, initialBlogs, initialPlanning, initialConfidants, initialPlanningImage, initialInfoBooklet }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
 
     const [activeTab, setActiveTab] = useState<TabType>('signups');
@@ -290,6 +291,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                         saving={savingPlanning}
                         deletingId={deletingPlanningId}
                         initialPlanningImage={initialPlanningImage}
+                        initialInfoBooklet={initialInfoBooklet}
                     />
                 )}
                 {activeTab === 'confidants' && (
