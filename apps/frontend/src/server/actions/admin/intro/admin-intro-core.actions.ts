@@ -99,3 +99,7 @@ export async function uploadIntroInfoBooklet(formData: FormData) {
 export async function removeIntroInfoBooklet() {
     return settings.removeIntroInfoBooklet();
 }
+
+export async function getIntroQrScanCount() {
+    return settings.getIntroQrScanCount();
+}

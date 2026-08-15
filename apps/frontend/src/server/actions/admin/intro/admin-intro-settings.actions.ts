@@ -9,7 +9,7 @@ import { asc, eq } from 'drizzle-orm';
 import { checkIntroAdminAccess } from './admin-intro-signup.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 import { uploadToDirectus, uploadDocumentToDirectus } from '@/server/utils/media';
-import { getIntroPlanningImageInternal, getIntroInfoBookletInternal } from '@/server/queries/intro/admin-intro.queries';
+import { getIntroPlanningImageInternal, getIntroInfoBookletInternal, getIntroQrScanCountInternal } from '@/server/queries/intro/admin-intro.queries';
 
 export async function toggleIntroVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
     await checkIntroAdminAccess();
@@ -154,4 +154,9 @@ export async function removeIntroInfoBooklet(): Promise<{ success: boolean; erro
         safeConsoleError('[admin-intro-settings.actions.ts][removeIntroInfoBooklet] Failed to remove document:', error);
         return { success: false, error: 'Verwijderen mislukt' };
     }
+}
+
+export async function getIntroQrScanCount(): Promise<number> {
+    await checkIntroAdminAccess();
+    return getIntroQrScanCountInternal();
 }

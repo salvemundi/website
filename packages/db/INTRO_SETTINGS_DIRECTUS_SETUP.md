@@ -13,6 +13,7 @@ Configure this collection in Directus as a **Singleton** (Data Model → intro_s
 | `id` | integer, auto-increment | — | primary key; always row `1` in practice |
 | `planning_image` | M2O → `directus_files` | Image | optional, on delete: **Nullify**; full-width banner image shown above the live planning on the public QR-code page |
 | `info_booklet` | M2O → `directus_files` | File | optional, on delete: **Nullify**; downloadable PDF (intro info booklet) shown on the public QR-code page |
+| `qr_scan_count` | integer | Input | required, default `0`; incremented on every load of `/qr-code`, shown as a stat in `/beheer/intro` — counts page views, not unique scans |
 | `updated_at` | timestamp | Datetime | standard "Date Updated" |
 
 No `created_at` needed — there is only ever one row, created lazily by the app on first save (get-or-create pattern), the same as `feature_flags` rows.

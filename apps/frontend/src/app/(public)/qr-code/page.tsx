@@ -12,7 +12,8 @@ import {
     getIntroConfidantsPublic,
     getIntroGroupsAppLinks,
     getIntroPlanningImagePublic,
-    getIntroInfoBookletPublic
+    getIntroInfoBookletPublic,
+    incrementIntroQrScanCount
 } from '@/server/actions/public/intro.actions';
 
 export const metadata = {
@@ -39,12 +40,13 @@ function BentoCard({ children, className = '' }: { children: React.ReactNode; cl
 export default async function QRCodePage() {
     await nextServer.connection();
 
-    const [planning, confidants, groups, planningImage, infoBooklet] = await Promise.all([
+    const [planning, confidants, groups, planningImage, infoBooklet, scanCount] = await Promise.all([
         getIntroPlanningPublic(),
         getIntroConfidantsPublic(),
         getIntroGroupsAppLinks(),
         getIntroPlanningImagePublic(),
-        getIntroInfoBookletPublic()
+        getIntroInfoBookletPublic(),
+        incrementIntroQrScanCount()
     ]);
 
     const planningImageUrl = planningImage ? getImageUrl(planningImage, { width: 1600, fit: 'inside' }) : null;
@@ -122,6 +124,10 @@ export default async function QRCodePage() {
 
                     <IntroGroupsAppButtons groups={groups} />
                 </BentoCard>
+
+                <p className="text-center text-xs text-text-muted opacity-50">
+                    {scanCount.toLocaleString('nl-NL')} keer bekeken
+                </p>
             </div>
         </PublicPageShell>
     );

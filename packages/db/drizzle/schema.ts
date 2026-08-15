@@ -1177,6 +1177,7 @@ export const intro_settings = pgTable("intro_settings", {
 	id: serial().primaryKey().notNull(),
 	planning_image: uuid(),
 	info_booklet: uuid(),
+	qr_scan_count: integer().default(0).notNull(),
 	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
 	foreignKey({
