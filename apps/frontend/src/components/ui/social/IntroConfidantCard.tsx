@@ -11,14 +11,14 @@ interface IntroConfidantCardProps {
 
 export default function IntroConfidantCard({ confidant }: IntroConfidantCardProps) {
     const imageUrl = confidant.image
-        ? getImageUrl(confidant.image, { width: 640, height: 360, fit: 'cover' })
+        ? getImageUrl(confidant.image, { width: 640, height: 480, fit: 'cover' })
         : null;
 
     return (
         <div className="flex flex-col squircle-lg bg-bg-main/30 border border-border-color overflow-hidden transition-all duration-300 hover:border-purple-300 dark:hover:border-white/20 shadow-sm hover:shadow-md h-full">
-            <div className="relative w-full aspect-[16/9] shrink-0 bg-bg-main">
+            <div className="relative w-full aspect-[4/3] shrink-0 bg-bg-main">
                 {imageUrl ? (
-                    <Image src={imageUrl} alt={confidant.name} fill unoptimized className="object-cover" />
+                    <Image src={imageUrl} alt={confidant.name} fill unoptimized className="object-cover object-top" />
                 ) : (
                     <>
                         <Image src={BRAND_CONFIG.logoFallbackLight} alt={confidant.name} fill unoptimized className="object-cover dark:hidden" />
