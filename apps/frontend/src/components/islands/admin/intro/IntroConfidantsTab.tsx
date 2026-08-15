@@ -235,7 +235,7 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
                                 </div>
                             </div>
                             {item.bio && <p className="text-sm text-(--beheer-text-muted) mt-4 font-medium leading-relaxed line-clamp-3">{item.bio}</p>}
-                            <div className="flex gap-2 mt-4 pt-4 border-t border-(--beheer-border)/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex gap-2 mt-4 pt-4 border-t border-(--beheer-border)/50 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                 <ActionButton icon={Edit} onClick={() => startEditing(item)} title="Bewerken" />
                                 <ActionButton
                                     icon={Trash}

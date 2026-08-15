@@ -350,7 +350,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                 </p>
                                 {item.description && <p className="text-sm text-(--beheer-text-muted) mt-4 font-medium leading-relaxed">{item.description}</p>}
                             </div>
-                            <div className="flex gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex gap-2 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                 <ActionButton
                                     icon={Edit}
                                     onClick={() => setEditingPlanning(item)}
@@ -400,7 +400,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                                     <p className="font-semibold text-sm text-(--beheer-text) mb-1">{item.title as React.ReactNode}</p>
                                                     <p className="text-xs font-medium text-(--beheer-text-muted) opacity-70">{item.time_start ? String(item.time_start) : ''}{item.time_end ? ` - ${String(item.time_end)}` : ''}</p>
                                                 </div>
-                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                                     <ActionButton
                                                         icon={Edit}
                                                         onClick={() => setEditingPlanning(item)}
