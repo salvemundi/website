@@ -25,9 +25,9 @@ interface Props {
 
 export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, saving }: Props) {
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-[11px] font-semibold text-(--beheer-text-muted)">
-            <div className="lg:col-span-2 space-y-8">
-                <div className="flex items-center justify-between">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 text-[11px] font-semibold text-(--beheer-text-muted)">
+            <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                     <p className="text-[10px] font-semibold text-(--beheer-accent)">
                         {blog.id && blog.id !== -1 ? 'Blog Bewerken' : 'Nieuwe Blog'}
                     </p>
@@ -81,7 +81,7 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onCancel, s
                 </div>
             </div>
 
-            <div className="space-y-8 lg:border-l lg:border-(--beheer-border)/10 lg:pl-12">
+            <div className="space-y-6 sm:space-y-8 lg:border-l lg:border-(--beheer-border)/10 lg:pl-8 xl:pl-12">
                 <div className="space-y-6">
                     <p className="text-[10px] font-semibold text-(--beheer-accent)">Instellingen</p>
 
