@@ -70,7 +70,7 @@ export async function upsertIntroConfidant(item: Partial<IntroConfidant>): Promi
             result = inserted[0];
         }
         revalidatePath('/beheer/intro');
-        revalidatePath('/intro/qr-code');
+        revalidatePath('/qr-code');
         return {
             success: true,
             data: {
@@ -96,7 +96,7 @@ export async function deleteIntroConfidant(id: number): Promise<{ success: boole
     try {
         await db.delete(schema.intro_confidants).where(eq(schema.intro_confidants.id, id));
         revalidatePath('/beheer/intro');
-        revalidatePath('/intro/qr-code');
+        revalidatePath('/qr-code');
         return { success: true };
     } catch {
         return { success: false, error: 'Verwijderen mislukt' };

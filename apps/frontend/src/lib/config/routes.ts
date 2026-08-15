@@ -2,6 +2,7 @@
 export const ROUTES = {
     HOME: '/',
     INTRO: '/intro',
+    INTRO_QR_CODE: '/qr-code',
     MEMBERSHIP: '/lidmaatschap',
     ACTIVITIES: '/activiteiten',
     COMMITTEES: '/commissies',
@@ -27,6 +28,7 @@ export const PUBLIC_ROUTES: string[] = [
     ROUTES.ACTIVITIES,
     ROUTES.PUB_CRAWL,
     ROUTES.INTRO,
+    ROUTES.INTRO_QR_CODE,
     ROUTES.TRIP,
     ROUTES.WEBSHOP,
     ROUTES.BIJBANENBANK,

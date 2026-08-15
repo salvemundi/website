@@ -82,7 +82,7 @@ async function setIntroPlanningImage(imageId: string | null): Promise<void> {
     }
 
     revalidatePath('/beheer/intro');
-    revalidatePath('/intro/qr-code');
+    revalidatePath('/qr-code');
 }
 
 export async function uploadIntroPlanningImage(formData: FormData): Promise<{ success: true; data: string } | { success: false; error: string }> {
