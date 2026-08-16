@@ -148,7 +148,7 @@ export const introGroupMemberSchema = selectIntroGroupMembersSchema.extend({
 
 export type IntroGroupMember = z.infer<typeof introGroupMemberSchema>;
 
-export const introGroupAttendanceStatusEnum = z.enum(['not_reported', 'present', 'went_home', 'staying_out']);
+export const introGroupAttendanceStatusEnum = z.enum(['not_reported', 'present', 'went_home', 'home', 'staying_out']);
 export type IntroGroupAttendanceStatus = z.infer<typeof introGroupAttendanceStatusEnum>;
 
 export const introGroupAttendanceSchema = selectIntroGroupAttendanceSchema.extend({

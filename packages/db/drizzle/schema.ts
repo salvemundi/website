@@ -1273,7 +1273,7 @@ export const intro_group_attendance = pgTable("intro_group_attendance", {
 			name: "intro_group_attendance_status_by_fkey"
 		}).onDelete("set null"),
 	unique("intro_group_attendance_member_date_key").on(table.intro_group_member_id, table.date),
-	check("intro_group_attendance_status_check", sql`(status)::text = ANY ((ARRAY['not_reported'::character varying, 'present'::character varying, 'went_home'::character varying, 'staying_out'::character varying])::text[])`),
+	check("intro_group_attendance_status_check", sql`(status)::text = ANY ((ARRAY['not_reported'::character varying, 'present'::character varying, 'went_home'::character varying, 'home'::character varying, 'staying_out'::character varying])::text[])`),
 ]);
 
 export const intro_group_member_notes = pgTable("intro_group_member_notes", {

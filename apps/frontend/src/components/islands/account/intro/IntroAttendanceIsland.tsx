@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, Trash2, Check, Home, MoonStar, HelpCircle, Loader2, Pencil, MessageSquarePlus, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, Check, Home, LogOut, MoonStar, HelpCircle, Loader2, Pencil, MessageSquarePlus, ChevronDown } from 'lucide-react';
 import type { IntroGroupWithDetails, IntroGroupMemberWithAttendance, IntroGroupAttendanceStatus, IntroGroupMemberNoteWithAuthor } from '@salvemundi/validations/schema/intro.zod';
 import {
     getGroupAttendanceForDate,
@@ -34,14 +34,16 @@ const formatTime = (iso: string) => new Intl.DateTimeFormat('nl-NL', {
 const STATUS_OPTIONS: { value: IntroGroupAttendanceStatus; label: string; icon: typeof HelpCircle }[] = [
     { value: 'not_reported', label: 'Niet gemeld', icon: HelpCircle },
     { value: 'present', label: 'Aanwezig', icon: Check },
-    { value: 'went_home', label: 'Naar huis', icon: Home },
+    { value: 'went_home', label: 'Onderweg naar huis', icon: LogOut },
+    { value: 'home', label: 'Thuis', icon: Home },
     { value: 'staying_out', label: 'Blijft na 22:00', icon: MoonStar }
 ];
 
 const STATUS_SINCE_LABEL: Record<IntroGroupAttendanceStatus, string> = {
     not_reported: '',
     present: 'Aanwezig sinds',
-    went_home: 'Thuis sinds',
+    went_home: 'Onderweg sinds',
+    home: 'Thuis sinds',
     staying_out: 'Buiten sinds'
 };
 
