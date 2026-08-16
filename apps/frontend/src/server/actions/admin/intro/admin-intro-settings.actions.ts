@@ -85,6 +85,33 @@ async function setIntroSettingsField(field: 'planning_image' | 'info_booklet', v
     revalidatePath('/qr-code');
 }
 
+export async function toggleIntroAttendanceVisibility(): Promise<{ success: boolean; visible?: boolean; error?: string }> {
+    await checkIntroAdminAccess();
+    try {
+        const rows = await db
+            .select({ id: schema.intro_settings.id, attendance_visible: schema.intro_settings.attendance_visible })
+            .from(schema.intro_settings)
+            .orderBy(asc(schema.intro_settings.id))
+            .limit(1);
+
+        const oldStatus = rows.length > 0 ? !!rows[0].attendance_visible : false;
+        const newStatus = !oldStatus;
+
+        if (rows.length > 0) {
+            await db.update(schema.intro_settings).set({ attendance_visible: newStatus, updated_at: new Date().toISOString() }).where(eq(schema.intro_settings.id, rows[0].id));
+        } else {
+            await db.insert(schema.intro_settings).values({ attendance_visible: newStatus });
+        }
+
+        revalidatePath('/beheer/intro');
+        revalidatePath('/profiel');
+        return { success: true, visible: newStatus };
+    } catch (error) {
+        safeConsoleError(`[intro-settings.actions.ts][toggleIntroAttendanceVisibility] Failed to toggle attendance visibility:`, error);
+        return { success: false, error: 'Bijwerken mislukt' };
+    }
+}
+
 export async function uploadIntroPlanningImage(formData: FormData): Promise<{ success: true; data: string } | { success: false; error: string }> {
     await checkIntroAdminAccess();
     const result = await uploadFormDataFile(formData, 'image', 'image');

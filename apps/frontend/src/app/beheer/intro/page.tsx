@@ -9,18 +9,22 @@ import {
     getIntroConfidants,
     getIntroPlanningImage,
     getIntroInfoBooklet,
-    getIntroQrScanCount
+    getIntroQrScanCount,
+    getIntroGroupsForAdmin,
+    getApprovedOudersForPicker
 } from '@/server/actions/admin/intro/admin-intro-core.actions';
 import { getIntroSettings } from '@/server/actions/public/intro.actions';
+import { getIntroAttendanceVisible } from '@/server/actions/public/intro-attendance.actions';
 import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import IntroVisibilityIsland from '@/components/islands/admin/intro/IntroVisibilityIsland';
+import IntroAttendanceVisibilityIsland from '@/components/islands/admin/intro/IntroAttendanceVisibilityIsland';
 
 export const metadata: Metadata = {
     title: 'Intro Beheer | SV Salve Mundi'
 };
 
 export default async function BeheerIntroPage() {
-    const [signups, parents, blogs, planning, confidants, settings, planningImage, infoBooklet, qrScanCount] = await Promise.all([
+    const [signups, parents, blogs, planning, confidants, settings, planningImage, infoBooklet, qrScanCount, groups, approvedOuders, attendanceVisible] = await Promise.all([
         getIntroSignups(),
         getIntroParentSignups(),
         getIntroBlogs(),
@@ -30,6 +34,9 @@ export default async function BeheerIntroPage() {
         getIntroPlanningImage(),
         getIntroInfoBooklet(),
         getIntroQrScanCount(),
+        getIntroGroupsForAdmin(),
+        getApprovedOudersForPicker(),
+        getIntroAttendanceVisible(),
     ]);
 
     const introVisible = settings.show;
@@ -47,6 +54,7 @@ export default async function BeheerIntroPage() {
                         </span>
                     </div>
                     <IntroVisibilityIsland initialVisible={introVisible} />
+                    <IntroAttendanceVisibilityIsland initialVisible={attendanceVisible} />
                 </>
             }
         >
@@ -56,6 +64,8 @@ export default async function BeheerIntroPage() {
                 initialBlogs={blogs}
                 initialPlanning={planning}
                 initialConfidants={confidants}
+                initialGroups={groups}
+                initialApprovedOuders={approvedOuders}
                 initialIntroVisible={introVisible}
                 initialPlanningImage={planningImage}
                 initialInfoBooklet={infoBooklet}

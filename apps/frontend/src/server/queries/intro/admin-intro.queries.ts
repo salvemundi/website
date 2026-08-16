@@ -1,10 +1,13 @@
 import 'server-only';
 import { db, schema } from "@salvemundi/db";
-import { desc, asc, eq, sql } from 'drizzle-orm';
+import { desc, asc, eq, sql, inArray } from 'drizzle-orm';
 import {
     type IntroBlog,
     type IntroPlanningItem,
     type IntroConfidant,
+    type IntroGroupWithDetails,
+    type IntroGroupMemberWithAttendance,
+    type IntroGroupAttendanceStatus,
     introBlogSchema,
     introPlanningSchema,
     introConfidantSchema
@@ -207,5 +210,172 @@ export async function incrementIntroQrScanCountInternal(): Promise<number> {
     } catch (error) {
         safeConsoleError('[admin-intro.queries.ts][incrementIntroQrScanCountInternal] failed:', error);
         return 0;
+    }
+}
+
+export async function getIntroAttendanceVisibleInternal(): Promise<boolean> {
+    try {
+        const rows = await db
+            .select({ attendance_visible: schema.intro_settings.attendance_visible })
+            .from(schema.intro_settings)
+            .orderBy(asc(schema.intro_settings.id))
+            .limit(1);
+
+        return rows[0]?.attendance_visible ?? false;
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getIntroAttendanceVisibleInternal] failed:', error);
+        return false;
+    }
+}
+
+export async function getApprovedOudersInternal(): Promise<{ user_id: string; first_name: string; last_name: string; email: string }[]> {
+    try {
+        const rows = await db
+            .select({
+                user_id: schema.intro_parent_signups.user_id,
+                first_name: schema.intro_parent_signups.first_name,
+                last_name: schema.intro_parent_signups.last_name,
+                email: schema.intro_parent_signups.email
+            })
+            .from(schema.intro_parent_signups)
+            .where(eq(schema.intro_parent_signups.approved, true))
+            .orderBy(asc(schema.intro_parent_signups.first_name));
+
+        return rows;
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getApprovedOudersInternal] failed:', error);
+        return [];
+    }
+}
+
+export async function getIntroGroupsForAdminInternal(): Promise<IntroGroupWithDetails[]> {
+    try {
+        const groups = await db
+            .select()
+            .from(schema.intro_groups)
+            .orderBy(asc(schema.intro_groups.name));
+
+        if (groups.length === 0) return [];
+        const groupIds = groups.map(g => g.id);
+
+        const leaderRows = await db
+            .select({
+                group_id: schema.intro_group_leaders.intro_group_id,
+                user_id: schema.intro_group_leaders.user_id,
+                first_name: schema.intro_parent_signups.first_name,
+                last_name: schema.intro_parent_signups.last_name
+            })
+            .from(schema.intro_group_leaders)
+            .leftJoin(schema.intro_parent_signups, eq(schema.intro_parent_signups.user_id, schema.intro_group_leaders.user_id))
+            .where(inArray(schema.intro_group_leaders.intro_group_id, groupIds));
+
+        const memberCountRows = await db
+            .select({
+                group_id: schema.intro_group_members.intro_group_id,
+                count: sql<number>`count(*)::int`
+            })
+            .from(schema.intro_group_members)
+            .where(inArray(schema.intro_group_members.intro_group_id, groupIds))
+            .groupBy(schema.intro_group_members.intro_group_id);
+
+        const memberCounts = new Map(memberCountRows.map(r => [r.group_id, r.count]));
+
+        return groups.map(g => ({
+            id: g.id,
+            name: g.name,
+            notes: g.notes,
+            user_created: g.user_created,
+            created_at: g.created_at,
+            updated_at: g.updated_at,
+            leaders: leaderRows
+                .filter(l => l.group_id === g.id)
+                .map(l => ({
+                    user_id: l.user_id,
+                    first_name: l.first_name || '',
+                    last_name: l.last_name || ''
+                })),
+            member_count: memberCounts.get(g.id) ?? 0
+        }));
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getIntroGroupsForAdminInternal] failed:', error);
+        throw new Error('Kon groepjes niet ophalen');
+    }
+}
+
+export async function getUserLedGroupIdsInternal(userId: string): Promise<number[]> {
+    try {
+        const rows = await db
+            .select({ group_id: schema.intro_group_leaders.intro_group_id })
+            .from(schema.intro_group_leaders)
+            .where(eq(schema.intro_group_leaders.user_id, userId));
+        return rows.map(r => r.group_id);
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getUserLedGroupIdsInternal] failed:', error);
+        return [];
+    }
+}
+
+export async function getGroupsByIdsInternal(groupIds: number[]): Promise<IntroGroupWithDetails[]> {
+    if (groupIds.length === 0) return [];
+    try {
+        const all = await getIntroGroupsForAdminInternal();
+        const idSet = new Set(groupIds);
+        return all.filter(g => idSet.has(g.id));
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getGroupsByIdsInternal] failed:', error);
+        return [];
+    }
+}
+
+export async function getGroupAttendanceForDateInternal(groupId: number, date: string): Promise<IntroGroupMemberWithAttendance[]> {
+    try {
+        const rows = await db
+            .select({
+                id: schema.intro_group_members.id,
+                intro_group_id: schema.intro_group_members.intro_group_id,
+                name: schema.intro_group_members.name,
+                added_by: schema.intro_group_members.added_by,
+                created_at: schema.intro_group_members.created_at,
+                attendance_id: schema.intro_group_attendance.id,
+                present: schema.intro_group_attendance.present,
+                present_at: schema.intro_group_attendance.present_at,
+                present_by: schema.intro_group_attendance.present_by,
+                evening_status: schema.intro_group_attendance.evening_status,
+                evening_status_at: schema.intro_group_attendance.evening_status_at,
+                evening_status_by: schema.intro_group_attendance.evening_status_by,
+                attendance_created_at: schema.intro_group_attendance.created_at,
+                attendance_updated_at: schema.intro_group_attendance.updated_at
+            })
+            .from(schema.intro_group_members)
+            .leftJoin(
+                schema.intro_group_attendance,
+                sql`${schema.intro_group_attendance.intro_group_member_id} = ${schema.intro_group_members.id} AND ${schema.intro_group_attendance.date} = ${date}`
+            )
+            .where(eq(schema.intro_group_members.intro_group_id, groupId))
+            .orderBy(asc(schema.intro_group_members.name));
+
+        return rows.map(r => ({
+            id: r.id,
+            intro_group_id: r.intro_group_id,
+            name: r.name,
+            added_by: r.added_by,
+            created_at: r.created_at,
+            attendance: r.attendance_id ? {
+                id: r.attendance_id,
+                intro_group_member_id: r.id,
+                date,
+                present: r.present ?? false,
+                present_at: r.present_at,
+                present_by: r.present_by,
+                evening_status: r.evening_status as IntroGroupAttendanceStatus,
+                evening_status_at: r.evening_status_at,
+                evening_status_by: r.evening_status_by,
+                created_at: r.attendance_created_at,
+                updated_at: r.attendance_updated_at
+            } : null
+        }));
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getGroupAttendanceForDateInternal] failed:', error);
+        throw new Error('Kon aanwezigheid niet ophalen');
     }
 }

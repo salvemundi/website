@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronRight, CreditCard, MessageCircle, Briefcase } from 'lucide-react';
+import { ChevronRight, CreditCard, MessageCircle, Briefcase, ClipboardCheck } from 'lucide-react';
 import { Tile, QuickLink } from './ProfielUI';
 import { ROUTES } from '@/lib/config/routes';
 
@@ -8,9 +8,10 @@ interface ProfielQuickLinksProps {
     user?: {
         membership_status?: string | null;
     };
+    introAttendance?: { visible: boolean; hasAccess: boolean };
 }
 
-export default function ProfielQuickLinks({ user = {} }: ProfielQuickLinksProps) {
+export default function ProfielQuickLinks({ user = {}, introAttendance }: ProfielQuickLinksProps) {
     const isMember = user.membership_status === 'active';
     return (
         <Tile title="Snelle links" icon={<ChevronRight className="h-5 w-5" />} className="h-fit">
@@ -36,6 +37,14 @@ export default function ProfielQuickLinks({ user = {} }: ProfielQuickLinksProps)
                     icon={<Briefcase className="h-6 w-6" />}
                     href={ROUTES.BIJBANENBANK}
                 />
+                {introAttendance?.visible && (
+                    <QuickLink
+                        label="Groepje Aanwezigheid"
+                        icon={<ClipboardCheck className="h-6 w-6" />}
+                        href="/profiel/intro-attendance"
+                        locked={!introAttendance.hasAccess}
+                    />
+                )}
             </div>
         </Tile>
     );

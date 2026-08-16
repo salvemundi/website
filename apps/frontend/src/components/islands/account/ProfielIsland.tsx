@@ -26,12 +26,14 @@ interface ProfielIslandProps {
     initialSignups?: EventSignup[];
     pubCrawlSignups?: EnrichedPubCrawlSignup[];
     user?: SessionUser;
+    introAttendance?: { visible: boolean; hasAccess: boolean };
 }
 
 export const ProfielIsland: React.FC<ProfielIslandProps> = ({
     initialSignups = [],
     pubCrawlSignups = [],
-    user: initialUser = {} as SessionUser
+    user: initialUser = {} as SessionUser,
+    introAttendance
 }) => {
     const { toast, showToast, hideToast } = useAdminToast();
     const { data: session, refetch } = authClient.useSession();
@@ -107,6 +109,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
                 />
                 <ProfielQuickLinks
                     user={optimisticUser}
+                    introAttendance={introAttendance}
                 />
             </div>
 

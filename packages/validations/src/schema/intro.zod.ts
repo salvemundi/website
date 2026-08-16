@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.js';
-import { selectIntroSignupsSchema, selectIntroParentSignupsSchema, selectIntroBlogsSchema, selectIntroPlanningSchema, selectIntroConfidantsSchema } from './db.zod.js';
+import { selectIntroSignupsSchema, selectIntroParentSignupsSchema, selectIntroBlogsSchema, selectIntroPlanningSchema, selectIntroConfidantsSchema, selectIntroGroupsSchema, selectIntroGroupLeadersSchema, selectIntroGroupMembersSchema, selectIntroGroupAttendanceSchema } from './db.zod.js';
 
 export const introSignupFormSchema = z.object({
     voornaam: z.string().min(1, 'Voornaam is verplicht'),
@@ -120,4 +120,58 @@ export const introConfidantSchema = selectIntroConfidantsSchema.omit({
 export const introConfidantFormSchema = introConfidantSchema.omit({ id: true });
 export type IntroConfidant = z.infer<typeof introConfidantSchema>;
 export type IntroConfidantForm = z.infer<typeof introConfidantFormSchema>;
+
+// --- Intro Groups (aanwezigheid) ---
+
+export const introGroupSchema = selectIntroGroupsSchema.extend({
+    id: z.coerce.number(),
+    name: z.string().min(1, 'Naam is verplicht'),
+    notes: z.string().nullable().optional(),
+});
+
+export const introGroupFormSchema = introGroupSchema.omit({ id: true, created_at: true, updated_at: true, user_created: true });
+export type IntroGroup = z.infer<typeof introGroupSchema>;
+export type IntroGroupForm = z.infer<typeof introGroupFormSchema>;
+
+export const introGroupLeaderSchema = selectIntroGroupLeadersSchema.extend({
+    id: z.coerce.number(),
+    intro_group_id: z.coerce.number(),
+});
+
+export type IntroGroupLeader = z.infer<typeof introGroupLeaderSchema>;
+
+export const introGroupMemberSchema = selectIntroGroupMembersSchema.extend({
+    id: z.coerce.number(),
+    intro_group_id: z.coerce.number(),
+    name: z.string().min(1, 'Naam is verplicht'),
+});
+
+export type IntroGroupMember = z.infer<typeof introGroupMemberSchema>;
+
+export const introGroupAttendanceStatusEnum = z.enum(['unknown', 'went_home', 'staying_out']);
+export type IntroGroupAttendanceStatus = z.infer<typeof introGroupAttendanceStatusEnum>;
+
+export const introGroupAttendanceSchema = selectIntroGroupAttendanceSchema.extend({
+    id: z.coerce.number(),
+    intro_group_member_id: z.coerce.number(),
+    date: z.string().min(1, 'Datum is verplicht'),
+    evening_status: introGroupAttendanceStatusEnum,
+});
+
+export type IntroGroupAttendance = z.infer<typeof introGroupAttendanceSchema>;
+
+export interface IntroGroupLeaderInfo {
+    user_id: string;
+    first_name: string;
+    last_name: string;
+}
+
+export interface IntroGroupMemberWithAttendance extends IntroGroupMember {
+    attendance: IntroGroupAttendance | null;
+}
+
+export interface IntroGroupWithDetails extends IntroGroup {
+    leaders: IntroGroupLeaderInfo[];
+    member_count: number;
+}
 

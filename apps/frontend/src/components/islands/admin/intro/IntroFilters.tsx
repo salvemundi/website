@@ -1,8 +1,8 @@
 'use client';
 
-import { Search, Download, Users, Heart, FileText, Calendar, ShieldCheck } from 'lucide-react';
+import { Search, Download, Users, Heart, FileText, Calendar, ShieldCheck, Users2 } from 'lucide-react';
 
-export type TabType = 'signups' | 'parents' | 'blogs' | 'planning' | 'confidants';
+export type TabType = 'signups' | 'parents' | 'blogs' | 'planning' | 'confidants' | 'groups';
 
 interface IntroFiltersProps {
     searchQuery: string;
@@ -26,7 +26,8 @@ export default function IntroFilters({
         { id: 'parents', label: 'Ouders', count: counts.parents, icon: Heart },
         { id: 'blogs', label: 'Blogs', count: counts.blogs, icon: FileText },
         { id: 'planning', label: 'Planning', count: counts.planning, icon: Calendar },
-        { id: 'confidants', label: 'Vertrouwenspersonen', count: counts.confidants, icon: ShieldCheck }
+        { id: 'confidants', label: 'Vertrouwenspersonen', count: counts.confidants, icon: ShieldCheck },
+        { id: 'groups', label: 'Groepen', count: counts.groups, icon: Users2 }
     ] as const;
 
     return (
