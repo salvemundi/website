@@ -62,10 +62,10 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
         setCreating(false);
     };
 
-    const availableOuders = (group: IntroGroupWithDetails) => {
-        const leaderIds = new Set(group.leaders.map(l => l.user_id));
-        return approvedOuders.filter(o => !leaderIds.has(o.user_id));
-    };
+    // An ouder leads at most one groepje, so once assigned anywhere they should
+    // disappear from every other groepje's picker, not just this one's.
+    const allLeaderIds = new Set(groups.flatMap(g => g.leaders.map(l => l.user_id)));
+    const availableOuders = () => approvedOuders.filter(o => !allLeaderIds.has(o.user_id));
 
     return (
         <div>
@@ -214,7 +214,7 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                                     }}
                                                 >
                                                     <option value="" disabled>Kies een goedgekeurde ouder...</option>
-                                                    {availableOuders(group).map(o => (
+                                                    {availableOuders().map(o => (
                                                         <option key={o.user_id} value={o.user_id}>{o.first_name} {o.last_name} ({o.email})</option>
                                                     ))}
                                                 </select>

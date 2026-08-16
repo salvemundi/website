@@ -206,22 +206,31 @@ export default function IntroAttendanceIsland({ groups, initialGroupId }: Props)
     return (
         <div>
             {groups.length > 1 && (
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-6">
-                    {groups.map(g => (
-                        <button
-                            key={g.id}
-                            onClick={() => setSelectedGroupId(g.id)}
-                            className={`form-button shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${selectedGroupId === g.id ? 'bg-theme-purple text-white shadow-md' : 'bg-(--bg-card) border border-(--border-color) text-(--text-muted) hover:text-(--text-main)'}`}
-                        >
-                            {g.name}
-                        </button>
-                    ))}
+                <div className="mb-4">
+                    <p className="text-xs font-semibold text-(--text-muted) uppercase tracking-wide mb-2">Kies een groepje</p>
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                        {groups.map(g => (
+                            <button
+                                key={g.id}
+                                onClick={() => setSelectedGroupId(g.id)}
+                                className={`form-button shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${selectedGroupId === g.id ? 'bg-theme-purple text-white shadow-md' : 'bg-(--bg-card) border border-(--border-color) text-(--text-muted) hover:text-(--text-main)'}`}
+                            >
+                                {g.name}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {selectedGroup && (
+                <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-semibold text-(--text-muted) uppercase tracking-wide">Je bekijkt</span>
                 </div>
             )}
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
-                {selectedGroup && groups.length === 1 && (
-                    <h2 className="text-lg font-bold text-(--text-main)">{selectedGroup.name}</h2>
+                {selectedGroup && (
+                    <h2 className="text-xl font-bold text-theme-purple">{selectedGroup.name}</h2>
                 )}
                 <input
                     type="date"

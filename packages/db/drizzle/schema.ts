@@ -1227,6 +1227,7 @@ export const intro_group_leaders = pgTable("intro_group_leaders", {
 			name: "intro_group_leaders_user_id_fkey"
 		}).onDelete("cascade"),
 	unique("intro_group_leaders_group_user_key").on(table.intro_group_id, table.user_id),
+	unique("intro_group_leaders_user_id_key").on(table.user_id),
 ]);
 
 export const intro_group_members = pgTable("intro_group_members", {

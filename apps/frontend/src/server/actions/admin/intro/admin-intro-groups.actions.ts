@@ -109,6 +109,19 @@ export async function deleteGroup(id: number): Promise<{ success: boolean; error
 export async function addGroupLeader(groupId: number, userId: string): Promise<{ success: boolean; error?: string }> {
     await checkIntroAdminAccess();
     try {
+        // An ouder leads at most one groepje, so check for an existing assignment
+        // elsewhere first and return a clear error instead of relying only on the
+        // DB unique constraint to reject it silently.
+        const existing = await db
+            .select({ intro_group_id: schema.intro_group_leaders.intro_group_id })
+            .from(schema.intro_group_leaders)
+            .where(eq(schema.intro_group_leaders.user_id, userId))
+            .limit(1);
+
+        if (existing.length > 0 && existing[0].intro_group_id !== groupId) {
+            return { success: false, error: 'Deze ouder is al gekoppeld aan een ander groepje' };
+        }
+
         await db.insert(schema.intro_group_leaders)
             .values({ intro_group_id: groupId, user_id: userId })
             .onConflictDoNothing();
