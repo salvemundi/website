@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, Trash2, Check, Home, LogOut, MoonStar, HelpCircle, Loader2, Pencil, MessageSquarePlus, ChevronDown, History } from 'lucide-react';
+import { Plus, Trash2, Check, Home, LogOut, MoonStar, HelpCircle, Loader2, Pencil, MessageSquarePlus, ChevronDown, History, Search, X } from 'lucide-react';
 import type { IntroGroupWithDetails, IntroGroupMemberWithAttendance, IntroGroupAttendanceStatus, IntroGroupMemberNoteWithAuthor, IntroGroupAttendanceLogWithAuthor } from '@salvemundi/validations/schema/intro.zod';
 import {
     getGroupAttendanceForDate,
@@ -63,6 +63,24 @@ const STATUS_CARD_STYLE: Record<IntroGroupAttendanceStatus, string> = {
     staying_out: 'bg-purple-500/10 border-purple-500/30'
 };
 
+const STATUS_ICON: Record<IntroGroupAttendanceStatus, typeof HelpCircle> = {
+    not_reported: HelpCircle,
+    present: Check,
+    went_home: LogOut,
+    home: Home,
+    staying_out: MoonStar
+};
+
+const STATUS_BADGE_STYLE: Record<IntroGroupAttendanceStatus, string> = {
+    not_reported: 'bg-(--bg-soft) text-(--text-muted)',
+    present: 'bg-sky-500/15 text-sky-600 dark:text-sky-400',
+    went_home: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
+    home: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
+    staying_out: 'bg-purple-500/15 text-purple-600 dark:text-purple-400'
+};
+
+const STATUS_ORDER: IntroGroupAttendanceStatus[] = ['not_reported', 'present', 'went_home', 'home', 'staying_out'];
+
 export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const initialValid = initialGroupId !== null && initialGroupId !== undefined && groups.some(g => g.id === initialGroupId);
@@ -70,6 +88,9 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
     const [selectedDate, setSelectedDate] = useState(todayIso());
     const [members, setMembers] = useState<IntroGroupMemberWithAttendance[]>([]);
     const [loading, setLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState<IntroGroupAttendanceStatus | null>(null);
+    const [showAddInput, setShowAddInput] = useState(false);
     const [newName, setNewName] = useState('');
     const [addingMember, setAddingMember] = useState(false);
     const [pendingMemberId, setPendingMemberId] = useState<number | null>(null);
@@ -114,6 +135,14 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
     }
 
     const selectedGroup = groups.find(g => g.id === selectedGroupId);
+    const filteredMembers = members
+        .filter(m => !searchQuery.trim() || m.name.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+        .filter(m => !statusFilter || (m.attendance?.status ?? 'not_reported') === statusFilter);
+    const statusCounts = new Map<IntroGroupAttendanceStatus, number>();
+    for (const member of members) {
+        const s = member.attendance?.status ?? 'not_reported';
+        statusCounts.set(s, (statusCounts.get(s) ?? 0) + 1);
+    }
 
     const handleAddMember = async () => {
         const trimmed = newName.trim();
@@ -279,7 +308,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                 </div>
             )}
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
                 {selectedGroup && (
                     <h2 className="text-xl font-bold text-theme-purple">{selectedGroup.name}</h2>
                 )}
@@ -291,24 +320,81 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                 />
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-6">
+            {members.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5 mb-4">
+                    {STATUS_ORDER.filter(s => (statusCounts.get(s) ?? 0) > 0).map(s => {
+                        const Icon = STATUS_ICON[s];
+                        const isActive = statusFilter === s;
+                        return (
+                            <button
+                                key={s}
+                                onClick={() => setStatusFilter(prev => prev === s ? null : s)}
+                                className={`form-button flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold transition-all ${STATUS_BADGE_STYLE[s]} ${isActive ? 'ring-2 ring-offset-1 ring-theme-purple ring-offset-(--bg-main)' : 'opacity-80 hover:opacity-100'}`}
+                            >
+                                <Icon className="h-3 w-3" />
+                                {statusCounts.get(s)} {STATUS_LABEL[s]}
+                            </button>
+                        );
+                    })}
+                    {statusFilter && (
+                        <button
+                            onClick={() => setStatusFilter(null)}
+                            className="form-button flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold text-(--text-muted) hover:text-(--text-main) transition-colors"
+                        >
+                            <X className="h-3 w-3" />
+                            Filter wissen
+                        </button>
+                    )}
+                </div>
+            )}
+
+            <div className="flex items-center gap-3 px-4 py-2.5 mb-3 rounded-xl bg-(--bg-card) border border-(--border-color) focus-within:ring-2 focus-within:ring-theme-purple transition-all">
+                <Search className="h-4 w-4 shrink-0 text-(--text-muted)" />
                 <input
                     type="text"
-                    value={newName}
-                    onChange={e => setNewName(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') void handleAddMember(); }}
-                    placeholder="Naam van kiddo..."
-                    className="form-input flex-1 px-4 py-3 rounded-xl bg-(--bg-card) border border-(--border-color) text-(--text-main) text-sm font-semibold outline-none focus:ring-2 focus:ring-theme-purple placeholder:text-(--text-muted)/50"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Zoek op naam..."
+                    className="form-input bg-transparent border-none p-0 w-full text-(--text-main) text-sm font-semibold outline-none placeholder:text-(--text-muted)/50"
                 />
-                <button
-                    onClick={() => { void handleAddMember(); }}
-                    disabled={!newName.trim() || addingMember}
-                    className="form-button flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-theme-purple text-white text-sm font-semibold disabled:opacity-50 hover:opacity-90 transition-all active:scale-95"
-                >
-                    {addingMember ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                    Toevoegen
-                </button>
             </div>
+
+            {showAddInput ? (
+                <div className="flex items-stretch gap-2 mb-6">
+                    <input
+                        type="text"
+                        value={newName}
+                        onChange={e => setNewName(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') void handleAddMember(); }}
+                        placeholder="Naam van kiddo..."
+                        autoFocus
+                        className="form-input flex-1 px-4 py-3 rounded-xl bg-(--bg-card) border border-(--border-color) text-(--text-main) text-sm font-semibold outline-none focus:ring-2 focus:ring-theme-purple placeholder:text-(--text-muted)/50"
+                    />
+                    <button
+                        onClick={() => { void handleAddMember(); }}
+                        disabled={!newName.trim() || addingMember}
+                        className="form-button shrink-0 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-theme-purple text-white text-sm font-semibold disabled:opacity-50 hover:opacity-90 transition-all active:scale-95"
+                        title="Toevoegen"
+                    >
+                        {addingMember ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                    </button>
+                    <button
+                        onClick={() => { setShowAddInput(false); setNewName(''); }}
+                        className="form-button shrink-0 flex items-center justify-center p-3 rounded-xl text-(--text-muted) hover:text-(--text-main) bg-(--bg-card) border border-(--border-color) transition-colors"
+                        title="Annuleren"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
+                </div>
+            ) : (
+                <button
+                    onClick={() => setShowAddInput(true)}
+                    className="form-button flex items-center justify-center gap-2 px-4 py-3 mb-6 rounded-xl bg-theme-purple text-white text-sm font-semibold hover:opacity-90 transition-all active:scale-95 w-full sm:w-auto"
+                >
+                    <Plus className="h-4 w-4" />
+                    Kiddo toevoegen
+                </button>
+            )}
 
             {loading ? (
                 <div className="flex justify-center py-16">
@@ -318,9 +404,19 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                 <div className="text-center py-16 text-(--text-muted)">
                     <p className="font-semibold">Nog geen kiddos in dit groepje.</p>
                 </div>
+            ) : filteredMembers.length === 0 ? (
+                <div className="text-center py-16 text-(--text-muted)">
+                    <p className="font-semibold">
+                        {searchQuery.trim() && statusFilter
+                            ? <>Geen kiddo gevonden voor &quot;{searchQuery}&quot; met status &quot;{STATUS_LABEL[statusFilter]}&quot;.</>
+                            : searchQuery.trim()
+                                ? <>Geen kiddo gevonden voor &quot;{searchQuery}&quot;.</>
+                                : <>Geen kiddo met status &quot;{statusFilter ? STATUS_LABEL[statusFilter] : ''}&quot;.</>}
+                    </p>
+                </div>
             ) : (
                 <div className="grid gap-2">
-                    {members.map(member => {
+                    {filteredMembers.map(member => {
                         const isPending = pendingMemberId === member.id;
                         const status = member.attendance?.status ?? 'not_reported';
                         const statusAt = member.attendance?.status_at;
