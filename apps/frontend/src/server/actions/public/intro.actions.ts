@@ -159,7 +159,12 @@ export async function getIntroBlogsPublic(): Promise<IntroBlog[]> {
         .where(eq(schema.intro_blogs.is_published, true))
         .orderBy(desc(schema.intro_blogs.id))
         .limit(6);
-        return rows as unknown as IntroBlog[];
+
+        return rows.map(r => ({
+            ...r,
+            blog_type: (r.blog_type ?? 'update') as IntroBlog['blog_type'],
+            is_published: r.is_published ?? true
+        }));
     } catch (error: unknown) {
         safeConsoleError(`[intro.actions.ts][getIntroBlogsPublic] Error while fetching intro blogs:`, error);
         throw new Error('Er is een fout opgetreden bij het ophalen van de intro blogs');
@@ -182,7 +187,12 @@ export async function getAllIntroBlogsPublic(): Promise<IntroBlog[]> {
         }).from(schema.intro_blogs)
         .where(eq(schema.intro_blogs.is_published, true))
         .orderBy(desc(schema.intro_blogs.id));
-        return rows as unknown as IntroBlog[];
+
+        return rows.map(r => ({
+            ...r,
+            blog_type: (r.blog_type ?? 'update') as IntroBlog['blog_type'],
+            is_published: r.is_published ?? true
+        }));
     } catch (error: unknown) {
         safeConsoleError(`[intro.actions.ts][getAllIntroBlogsPublic] Error while fetching all intro blogs:`, error);
         throw new Error('Er is een fout opgetreden bij het ophalen van de intro blogs');
@@ -191,7 +201,6 @@ export async function getAllIntroBlogsPublic(): Promise<IntroBlog[]> {
 
 export async function getIntroBlogBySlug(slug: string): Promise<IntroBlog | null> {
     try {
-        const { and } = await import('drizzle-orm');
         const rows = await db.select({
             id: schema.intro_blogs.id,
             title: schema.intro_blogs.title,
@@ -209,7 +218,15 @@ export async function getIntroBlogBySlug(slug: string): Promise<IntroBlog | null
             eq(schema.intro_blogs.is_published, true)
         ))
         .limit(1);
-        return rows.length > 0 ? (rows[0] as unknown as IntroBlog) : null;
+
+        if (rows.length === 0) return null;
+
+        const r = rows[0];
+        return {
+            ...r,
+            blog_type: (r.blog_type ?? 'update') as IntroBlog['blog_type'],
+            is_published: r.is_published ?? true
+        };
     } catch (error: unknown) {
         safeConsoleError(`[intro.actions.ts][getIntroBlogBySlug] Error while fetching intro blog by slug:`, error);
         throw new Error('Er is een fout opgetreden bij het ophalen van de intro blog');
@@ -293,7 +310,7 @@ export async function getIntroGroupsAppLinks(): Promise<WhatsAppGroup[]> {
             eq(schema.whatsapp_groups.is_active, true),
             eq(schema.whatsapp_groups.requires_membership, false)
         ));
-        return rows as unknown as WhatsAppGroup[];
+        return rows;
     } catch (error: unknown) {
         safeConsoleError('[intro.actions.ts][getIntroGroupsAppLinks] Error while fetching intro group links:', error);
         return [];

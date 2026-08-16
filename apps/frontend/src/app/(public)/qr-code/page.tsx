@@ -71,11 +71,11 @@ export default async function QRCodePage() {
                 {infoBooklet && (
                     <BentoCard className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
                         <div className="flex items-center gap-4 sm:gap-6 flex-1 min-w-0">
-                            <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-600 flex items-center justify-center shrink-0 shadow-lg">
-                                <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+                            <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 border border-purple-500/10 dark:border-purple-400/10 flex items-center justify-center shrink-0 shadow-sm">
+                                <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 text-purple-500 dark:text-purple-400" />
                             </div>
                             <div className="min-w-0">
-                                <h2 className="text-xl sm:text-2xl font-black text-theme-purple break-words">Infoboekje</h2>
+                                <h2 className="text-xl sm:text-2xl font-black text-purple-700 dark:text-purple-300 wrap-break-word">Infoboekje</h2>
                                 <p className="mt-1 text-sm text-text-muted">Alle praktische info voor de introweek op een rijtje.</p>
                             </div>
                         </div>
@@ -85,17 +85,17 @@ export default async function QRCodePage() {
 
                 <BentoCard className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
                     <div className="flex items-center gap-4 sm:gap-6 flex-1 min-w-0">
-                        <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-600 flex items-center justify-center shrink-0 shadow-lg">
-                            <Newspaper className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+                        <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 border border-purple-500/10 dark:border-purple-400/10 flex items-center justify-center shrink-0 shadow-sm">
+                            <Newspaper className="h-6 w-6 sm:h-7 sm:w-7 text-purple-500 dark:text-purple-400" />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-xl sm:text-2xl font-black text-theme-purple break-words">Nieuws &amp; updates</h2>
+                            <h2 className="text-xl sm:text-2xl font-black text-purple-700 dark:text-purple-300 wrap-break-word">Nieuws &amp; updates</h2>
                             <p className="mt-1 text-sm text-text-muted">Blijf op de hoogte van het laatste nieuws over de introweek.</p>
                         </div>
                     </div>
                     <Link
                         href="/intro/blogs"
-                        className="form-button shrink-0 inline-flex items-center justify-center gap-2 squircle bg-purple-600 text-white px-4 py-2.5 text-sm font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
+                        className="form-button shrink-0 inline-flex items-center justify-center gap-2 squircle bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 text-sm font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
                     >
                         Bekijk het laatste nieuws
                         <ArrowRight className="h-4 w-4" />
@@ -104,11 +104,11 @@ export default async function QRCodePage() {
 
                 <BentoCard>
                     <div className="flex items-start gap-4 sm:gap-6 mb-6">
-                        <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-600 flex items-center justify-center shrink-0 shadow-lg">
-                            <ShieldCheck className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+                        <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 border border-purple-500/10 dark:border-purple-400/10 flex items-center justify-center shrink-0 shadow-sm">
+                            <ShieldCheck className="h-6 w-6 sm:h-7 sm:w-7 text-purple-500 dark:text-purple-400" />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-xl sm:text-3xl font-black text-theme-purple break-words">Vertrouwenspersonen</h2>
+                            <h2 className="text-xl sm:text-3xl font-black text-purple-700 dark:text-purple-300 wrap-break-word">Vertrouwenscontactpersonen</h2>
                             <p className="mt-2 text-sm sm:text-base text-text-muted">
                                 Loopt iets niet lekker tijdens de introweek? Deze mensen staan voor je klaar en denken met je mee.
                             </p>
@@ -131,11 +131,11 @@ export default async function QRCodePage() {
 
                 <BentoCard>
                     <div className="flex items-start gap-4 sm:gap-6 mb-6">
-                        <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-600 flex items-center justify-center shrink-0 shadow-lg">
-                            <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+                        <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 border border-purple-500/10 dark:border-purple-400/10 flex items-center justify-center shrink-0 shadow-sm">
+                            <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7 text-purple-500 dark:text-purple-400" />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-xl sm:text-3xl font-black text-theme-purple break-words">Groepsapp</h2>
+                            <h2 className="text-xl sm:text-3xl font-black text-purple-700 dark:text-purple-300 wrap-break-word">Groepsapp</h2>
                             <p className="mt-2 text-sm sm:text-base text-text-muted">
                                 Sluit je aan bij de groepsapp om op de hoogte te blijven en contact te leggen met je mede-introducees.
                             </p>

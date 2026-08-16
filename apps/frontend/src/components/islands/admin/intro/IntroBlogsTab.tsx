@@ -13,6 +13,9 @@ import { ActionButton, EmptyState, Button } from './IntroTabComponents';
 import BlogEditForm from './BlogEditForm';
 import { getImageUrl } from '@/lib/utils/image-utils';
 
+import { INTRO_BLOG_TYPES } from '@/shared/lib/constants/intro.constants';
+import { formatDate } from '@/shared/lib/utils/date';
+
 interface Props {
     blogs: IntroBlog[];
     onSave: (blog: Partial<IntroBlog>) => Promise<void>;
@@ -60,13 +63,6 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
         setExpandedRows([tempId]);
     };
 
-    const blogTypes = {
-        update: { label: 'Update', color: 'blue' },
-        pictures: { label: 'Foto\'s', color: 'pink' },
-        event: { label: 'Evenement', color: 'amber' },
-        announcement: { label: 'Aankondiging', color: 'emerald' }
-    };
-
     return (
         <div>
             <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
@@ -96,8 +92,7 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                     const blogId = blog.id ?? 0;
                     const isExpanded = expandedRows.includes(blogId);
                     const isEditing = editingId === blog.id;
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- DB rows can bypass Zod validation via the safeParse fallback path, so blog_type isn't guaranteed to be a known key at runtime
-                    const typeInfo = blogTypes[blog.blog_type as keyof typeof blogTypes] ?? blogTypes.update;
+                    const typeInfo = INTRO_BLOG_TYPES[blog.blog_type];
                     const date = blog.created_at;
 
                     return (
@@ -135,10 +130,10 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                                         )}
                                     </div>
                                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-(--beheer-text-muted) opacity-70">
-                                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded bg-${typeInfo.color}-500/10 text-${typeInfo.color}-500 border border-${typeInfo.color}-500/20`}>
+                                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${typeInfo.badgeClass}`}>
                                             {typeInfo.label}
                                         </span>
-                                        <span>{date ? new Date(date).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}</span>
+                                        <span>{date ? formatDate(date, 'dd-MM-yyyy') : '-'}</span>
                                     </div>
                                 </div>
 

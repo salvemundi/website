@@ -8,7 +8,7 @@ import { db, schema } from '@salvemundi/db';
 import { asc, eq } from 'drizzle-orm';
 import { checkIntroAdminAccess } from './admin-intro-signup.actions';
 import { safeConsoleError } from '@/server/utils/logger';
-import { uploadToDirectus, uploadDocumentToDirectus } from '@/server/utils/media';
+import { uploadFormDataFile } from '@/server/utils/media';
 import { getIntroPlanningImageInternal, getIntroInfoBookletInternal, getIntroQrScanCountInternal } from '@/server/queries/intro/admin-intro.queries';
 
 export async function toggleIntroVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
@@ -87,24 +87,11 @@ async function setIntroSettingsField(field: 'planning_image' | 'info_booklet', v
 
 export async function uploadIntroPlanningImage(formData: FormData): Promise<{ success: true; data: string } | { success: false; error: string }> {
     await checkIntroAdminAccess();
-
-    const file = formData.get('image') as File | null;
-    if (!file) return { success: false, error: 'Geen bestand gevonden in upload.' };
-
-    try {
-        const uploadResult = await uploadToDirectus(file);
-        if (!uploadResult.success) {
-            return { success: false, error: uploadResult.error };
-        }
-        if (!uploadResult.id) {
-            return { success: false, error: 'Afbeelding uploaden mislukt op de server (geen ID teruggekregen).' };
-        }
-        await setIntroSettingsField('planning_image', uploadResult.id);
-        return { success: true, data: uploadResult.id };
-    } catch (error: unknown) {
-        safeConsoleError('[admin-intro-settings.actions.ts][uploadIntroPlanningImage] Failed to upload image:', error);
-        return { success: false, error: 'Afbeelding uploaden mislukt op de server.' };
+    const result = await uploadFormDataFile(formData, 'image', 'image');
+    if (result.success) {
+        await setIntroSettingsField('planning_image', result.data);
     }
+    return result;
 }
 
 export async function removeIntroPlanningImage(): Promise<{ success: boolean; error?: string }> {
@@ -125,24 +112,11 @@ export async function getIntroInfoBooklet(): Promise<string | null> {
 
 export async function uploadIntroInfoBooklet(formData: FormData): Promise<{ success: true; data: string } | { success: false; error: string }> {
     await checkIntroAdminAccess();
-
-    const file = formData.get('document') as File | null;
-    if (!file) return { success: false, error: 'Geen bestand gevonden in upload.' };
-
-    try {
-        const uploadResult = await uploadDocumentToDirectus(file);
-        if (!uploadResult.success) {
-            return { success: false, error: uploadResult.error };
-        }
-        if (!uploadResult.id) {
-            return { success: false, error: 'Bestand uploaden mislukt op de server (geen ID teruggekregen).' };
-        }
-        await setIntroSettingsField('info_booklet', uploadResult.id);
-        return { success: true, data: uploadResult.id };
-    } catch (error: unknown) {
-        safeConsoleError('[admin-intro-settings.actions.ts][uploadIntroInfoBooklet] Failed to upload document:', error);
-        return { success: false, error: 'Bestand uploaden mislukt op de server.' };
+    const result = await uploadFormDataFile(formData, 'document', 'document');
+    if (result.success) {
+        await setIntroSettingsField('info_booklet', result.data);
     }
+    return result;
 }
 
 export async function removeIntroInfoBooklet(): Promise<{ success: boolean; error?: string }> {

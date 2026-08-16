@@ -14,7 +14,7 @@ import { eq } from 'drizzle-orm';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { checkIntroAdminAccess } from './admin-intro-signup.actions';
 import { safeConsoleError } from '@/server/utils/logger';
-import { uploadToDirectus } from '@/server/utils/media';
+import { uploadFormDataFile } from '@/server/utils/media';
 
 interface DirectusBlogRow {
     id: string | number;
@@ -30,29 +30,12 @@ interface DirectusBlogRow {
 
 export async function getIntroBlogs(): Promise<IntroBlog[]> {
     await checkIntroAdminAccess();
-    const data = await getIntroBlogsInternal();
-    return data as unknown as IntroBlog[];
+    return getIntroBlogsInternal();
 }
 
 export async function uploadIntroBlogImage(formData: FormData): Promise<{ success: true; data: string } | { success: false; error: string }> {
     await checkIntroAdminAccess();
-
-    const file = formData.get('image') as File | null;
-    if (!file) return { success: false, error: 'Geen bestand gevonden in upload.' };
-
-    try {
-        const uploadResult = await uploadToDirectus(file);
-        if (!uploadResult.success) {
-            return { success: false, error: uploadResult.error };
-        }
-        if (!uploadResult.id) {
-            return { success: false, error: 'Afbeelding uploaden mislukt op de server (geen ID teruggekregen).' };
-        }
-        return { success: true, data: uploadResult.id };
-    } catch (error: unknown) {
-        safeConsoleError('[admin-intro-blog.actions.ts][uploadIntroBlogImage] Failed to upload image:', error);
-        return { success: false, error: 'Afbeelding uploaden mislukt op de server.' };
-    }
+    return uploadFormDataFile(formData, 'image', 'image');
 }
 
 export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ success: boolean; data?: IntroBlog; error?: string; fieldErrors?: Record<string, string[] | undefined> }> {

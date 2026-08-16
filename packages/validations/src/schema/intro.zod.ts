@@ -91,14 +91,16 @@ export const introPlanningSchema = selectIntroPlanningSchema.omit({
     is_mandatory: true,
     description: true,
 }).extend({
-    id: z.coerce.number().optional(),
+    id: z.coerce.number(),
     date: z.string().min(1, 'Datum is verplicht'),
     time_start: z.string().min(1, 'Starttijd is verplicht'),
     title: z.string().min(1, 'Titel is verplicht'),
     description: z.string().nullable().optional(),
 });
 
+export const introPlanningFormSchema = introPlanningSchema.omit({ id: true });
 export type IntroPlanningItem = z.infer<typeof introPlanningSchema>;
+export type IntroPlanningForm = z.infer<typeof introPlanningFormSchema>;
 
 export const introConfidantSchema = selectIntroConfidantsSchema.omit({
     created_at: true,
@@ -109,10 +111,13 @@ export const introConfidantSchema = selectIntroConfidantsSchema.omit({
     sort_order: true,
     is_active: true,
 }).extend({
-    id: z.coerce.number().optional(),
+    id: z.coerce.number(),
     name: z.string().min(1, 'Naam is verplicht'),
     email: z.string().email('Ongeldig e-mailadres').nullable().optional().or(z.literal('')),
     bio: z.string().nullable().optional(),
 });
 
+export const introConfidantFormSchema = introConfidantSchema.omit({ id: true });
 export type IntroConfidant = z.infer<typeof introConfidantSchema>;
+export type IntroConfidantForm = z.infer<typeof introConfidantFormSchema>;
+

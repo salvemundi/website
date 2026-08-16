@@ -10,12 +10,7 @@ import { AdminDatetimepicker } from '@/components/ui/forms/AdminDatetimepicker';
 import AdminSelect from '@/components/ui/admin/AdminSelect';
 import { uploadIntroBlogImage } from '@/server/actions/admin/intro/admin-intro-core.actions';
 
-const blogTypeOptions = [
-    { value: 'update', label: 'Update' },
-    { value: 'pictures', label: "Foto's" },
-    { value: 'event', label: 'Evenement' },
-    { value: 'announcement', label: 'Aankondiging' }
-];
+import { INTRO_BLOG_TYPE_OPTIONS } from '@/shared/lib/constants/intro.constants';
 
 interface Props {
     blog: Partial<IntroBlog>;
@@ -179,7 +174,7 @@ export default function BlogEditForm({ blog, data, onChange, onSave, onPublish, 
                         <AdminSelect
                             value={data.blog_type || 'update'}
                             onChange={val => onChange({ ...data, blog_type: val as IntroBlog['blog_type'] })}
-                            options={blogTypeOptions}
+                            options={INTRO_BLOG_TYPE_OPTIONS}
                             size="sm"
                         />
                     </Field>

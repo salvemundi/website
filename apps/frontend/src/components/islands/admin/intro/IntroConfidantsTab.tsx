@@ -239,7 +239,7 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
                                 <ActionButton icon={Edit} onClick={() => startEditing(item)} title="Bewerken" />
                                 <ActionButton
                                     icon={Trash}
-                                    onClick={() => { if (item.id !== undefined) void onDelete(item.id); }}
+                                    onClick={() => { void onDelete(item.id); }}
                                     variant="danger"
                                     disabled={deletingId === item.id}
                                     title="Verwijderen"

@@ -5,7 +5,7 @@ import { z } from 'zod';
 import 'server-only';
 import { revalidatePath } from "next/cache";
 import {
-    introPlanningSchema,
+    introPlanningFormSchema,
     type IntroPlanningItem
 } from '@salvemundi/validations/schema/intro.zod';
 import { getIntroPlanningInternal } from '@/server/queries/intro/admin-intro.queries';
@@ -26,8 +26,7 @@ interface IntroPlanningDbResult {
 
 export async function getIntroPlanning(): Promise<IntroPlanningItem[]> {
     await checkIntroAdminAccess();
-    const data = await getIntroPlanningInternal();
-    return data as unknown as IntroPlanningItem[];
+    return getIntroPlanningInternal();
 }
 
 export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Promise<{ success: boolean; data?: IntroPlanningItem; error?: string; fieldErrors?: Record<string, string[] | undefined> }> {
@@ -36,7 +35,7 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
     // Note: null is a valid, intentional value here (e.g. clearing a field) and
     // must be preserved so Drizzle's .set() actually clears the column instead
     // of silently skipping it.
-    const validated = introPlanningSchema.safeParse(item);
+    const validated = introPlanningFormSchema.safeParse(item);
     if (!validated.success) {
         const fieldErrors = z.flattenError(validated.error).fieldErrors;
         return {
@@ -46,7 +45,8 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
         };
     }
 
-    const { id, date, ...rest } = validated.data;
+    const { date, ...rest } = validated.data;
+    const id = item.id ? Number(item.id) : undefined;
 
     let day = rest.day || 'Onbekend';
     if (date) {

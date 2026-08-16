@@ -18,6 +18,7 @@ import {
     Upload
 } from 'lucide-react';
 import { formatDate } from '@/shared/lib/utils/date';
+import { toISODate } from '@/lib/utils/date-utils';
 import type { IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import { ActionButton, EmptyState, Field, inputClass, Button } from './IntroTabComponents';
 import { AdminDatepicker } from '@/components/ui/forms/AdminDatepicker';
@@ -29,14 +30,6 @@ import {
     uploadIntroInfoBooklet,
     removeIntroInfoBooklet
 } from '@/server/actions/admin/intro/admin-intro-core.actions';
-
-const toISODateString = (date: Date | null): string => {
-    if (!date) return '';
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-};
 
 interface Props {
     planning: IntroPlanningItem[];
@@ -291,7 +284,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         <Field label="Datum *">
                             <AdminDatepicker
                                 value={editingPlanning.date ? new Date(editingPlanning.date) : null}
-                                onChange={(date) => setEditingPlanning({ ...editingPlanning, date: date ? toISODateString(date) : '' })}
+                                onChange={(date) => setEditingPlanning({ ...editingPlanning, date: toISODate(date) })}
                             />
                         </Field>
                         <Field label="Starttijd *">
@@ -364,9 +357,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                 <ActionButton
                                     icon={Trash}
                                     onClick={() => {
-                                        if (item.id !== undefined) {
-                                            void onDelete(item.id);
-                                        }
+                                        void onDelete(item.id);
                                     }}
                                     variant="danger"
                                     disabled={deletingId === item.id}
@@ -414,9 +405,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                                     <ActionButton
                                                         icon={Trash}
                                                         onClick={() => {
-                                                            if (item.id !== undefined) {
-                                                                void onDelete(item.id);
-                                                            }
+                                                            void onDelete(item.id);
                                                         }}
                                                         variant="danger"
                                                         disabled={deletingId === item.id}

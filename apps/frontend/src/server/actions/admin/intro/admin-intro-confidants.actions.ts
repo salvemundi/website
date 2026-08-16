@@ -5,7 +5,7 @@ import { z } from 'zod';
 import 'server-only';
 import { revalidatePath } from "next/cache";
 import {
-    introConfidantSchema,
+    introConfidantFormSchema,
     type IntroConfidant
 } from '@salvemundi/validations/schema/intro.zod';
 import { getIntroConfidantsInternal } from '@/server/queries/intro/admin-intro.queries';
@@ -13,7 +13,7 @@ import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
 import { checkIntroAdminAccess } from './admin-intro-signup.actions';
 import { safeConsoleError } from '@/server/utils/logger';
-import { uploadToDirectus } from '@/server/utils/media';
+import { uploadFormDataFile } from '@/server/utils/media';
 
 export async function getIntroConfidants(): Promise<IntroConfidant[]> {
     await checkIntroAdminAccess();
@@ -22,23 +22,7 @@ export async function getIntroConfidants(): Promise<IntroConfidant[]> {
 
 export async function uploadIntroConfidantImage(formData: FormData): Promise<{ success: true; data: string } | { success: false; error: string }> {
     await checkIntroAdminAccess();
-
-    const file = formData.get('image') as File | null;
-    if (!file) return { success: false, error: 'Geen bestand gevonden in upload.' };
-
-    try {
-        const uploadResult = await uploadToDirectus(file);
-        if (!uploadResult.success) {
-            return { success: false, error: uploadResult.error };
-        }
-        if (!uploadResult.id) {
-            return { success: false, error: 'Afbeelding uploaden mislukt op de server (geen ID teruggekregen).' };
-        }
-        return { success: true, data: uploadResult.id };
-    } catch (error: unknown) {
-        safeConsoleError('[admin-intro-confidants.actions.ts][uploadIntroConfidantImage] Failed to upload image:', error);
-        return { success: false, error: 'Afbeelding uploaden mislukt op de server.' };
-    }
+    return uploadFormDataFile(formData, 'image', 'image');
 }
 
 export async function upsertIntroConfidant(item: Partial<IntroConfidant>): Promise<{ success: boolean; data?: IntroConfidant; error?: string; fieldErrors?: Record<string, string[] | undefined> }> {
@@ -48,7 +32,7 @@ export async function upsertIntroConfidant(item: Partial<IntroConfidant>): Promi
         Object.entries(item).map(([key, value]) => [key, (value as unknown) === '' ? undefined : value])
     );
 
-    const validated = introConfidantSchema.safeParse(sanitized);
+    const validated = introConfidantFormSchema.safeParse(sanitized);
     if (!validated.success) {
         const fieldErrors = z.flattenError(validated.error).fieldErrors;
         return {
@@ -58,7 +42,8 @@ export async function upsertIntroConfidant(item: Partial<IntroConfidant>): Promi
         };
     }
 
-    const { id, ...rest } = validated.data;
+    const rest = validated.data;
+    const id = item.id ? Number(item.id) : undefined;
 
     try {
         let result: typeof schema.intro_confidants.$inferSelect;
