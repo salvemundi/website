@@ -77,13 +77,13 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
     const [editingTimeMemberId, setEditingTimeMemberId] = useState<number | null>(null);
     const [editingTimeValue, setEditingTimeValue] = useState('');
 
-    const [expandedNotesIds, setExpandedNotesIds] = useState<number[]>([]);
+    const [expandedDetailsIds, setExpandedDetailsIds] = useState<number[]>([]);
+
     const [notesByMember, setNotesByMember] = useState<Map<number, IntroGroupMemberNoteWithAuthor[]>>(new Map());
     const [loadingNotesId, setLoadingNotesId] = useState<number | null>(null);
     const [newNoteByMember, setNewNoteByMember] = useState<Map<number, string>>(new Map());
     const [addingNoteId, setAddingNoteId] = useState<number | null>(null);
 
-    const [expandedLogIds, setExpandedLogIds] = useState<number[]>([]);
     const [logByMember, setLogByMember] = useState<Map<string, IntroGroupAttendanceLogWithAuthor[]>>(new Map());
     const [loadingLogId, setLoadingLogId] = useState<number | null>(null);
 
@@ -191,23 +191,16 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
         setEditingTimeMemberId(null);
     };
 
-    const toggleNotes = async (memberId: number) => {
-        const isExpanded = expandedNotesIds.includes(memberId);
-        if (isExpanded) {
-            setExpandedNotesIds(prev => prev.filter(id => id !== memberId));
-            return;
+    const loadNotesIfNeeded = async (memberId: number) => {
+        if (notesByMember.has(memberId)) return;
+        setLoadingNotesId(memberId);
+        try {
+            const notes = await getMemberNotes(memberId);
+            setNotesByMember(prev => new Map(prev).set(memberId, notes));
+        } catch {
+            showToast('Kon notities niet ophalen', 'error');
         }
-        setExpandedNotesIds(prev => [...prev, memberId]);
-        if (!notesByMember.has(memberId)) {
-            setLoadingNotesId(memberId);
-            try {
-                const notes = await getMemberNotes(memberId);
-                setNotesByMember(prev => new Map(prev).set(memberId, notes));
-            } catch {
-                showToast('Kon notities niet ophalen', 'error');
-            }
-            setLoadingNotesId(null);
-        }
+        setLoadingNotesId(null);
     };
 
     const handleAddNote = async (memberId: number) => {
@@ -237,24 +230,28 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
         }
     };
 
-    const toggleLog = async (memberId: number) => {
-        const isExpanded = expandedLogIds.includes(memberId);
+    const loadLogIfNeeded = async (memberId: number) => {
+        const key = `${memberId}:${selectedDate}`;
+        if (logByMember.has(key)) return;
+        setLoadingLogId(memberId);
+        try {
+            const log = await getMemberAttendanceLog(memberId, selectedDate);
+            setLogByMember(prev => new Map(prev).set(key, log));
+        } catch {
+            showToast('Kon logboek niet ophalen', 'error');
+        }
+        setLoadingLogId(null);
+    };
+
+    const toggleDetails = (memberId: number) => {
+        const isExpanded = expandedDetailsIds.includes(memberId);
         if (isExpanded) {
-            setExpandedLogIds(prev => prev.filter(id => id !== memberId));
+            setExpandedDetailsIds(prev => prev.filter(id => id !== memberId));
             return;
         }
-        setExpandedLogIds(prev => [...prev, memberId]);
-        const key = `${memberId}:${selectedDate}`;
-        if (!logByMember.has(key)) {
-            setLoadingLogId(memberId);
-            try {
-                const log = await getMemberAttendanceLog(memberId, selectedDate);
-                setLogByMember(prev => new Map(prev).set(key, log));
-            } catch {
-                showToast('Kon logboek niet ophalen', 'error');
-            }
-            setLoadingLogId(null);
-        }
+        setExpandedDetailsIds(prev => [...prev, memberId]);
+        void loadNotesIfNeeded(memberId);
+        if (isCrew) void loadLogIfNeeded(memberId);
     };
 
     return (
@@ -322,117 +319,118 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                     <p className="font-semibold">Nog geen kiddos in dit groepje.</p>
                 </div>
             ) : (
-                <div className="grid gap-3">
+                <div className="grid gap-2">
                     {members.map(member => {
                         const isPending = pendingMemberId === member.id;
                         const status = member.attendance?.status ?? 'not_reported';
                         const statusAt = member.attendance?.status_at;
                         const isEditingTime = editingTimeMemberId === member.id;
-                        const notesExpanded = expandedNotesIds.includes(member.id);
+                        const detailsExpanded = expandedDetailsIds.includes(member.id);
                         const notes = notesByMember.get(member.id) || [];
 
                         return (
-                            <div key={member.id} className={`border rounded-2xl p-4 transition-colors ${STATUS_CARD_STYLE[status]}`}>
-                                <div className="flex items-center justify-between gap-3 mb-3">
-                                    <span className="font-semibold text-(--text-main) break-words">{member.name}</span>
+                            <div key={member.id} className={`border rounded-xl p-2.5 transition-colors ${STATUS_CARD_STYLE[status]}`}>
+                                <div className="flex items-center justify-between gap-2 mb-1.5">
+                                    <span className="font-semibold text-sm text-(--text-main) truncate">{member.name}</span>
                                     <button
                                         onClick={() => { void handleRemoveMember(member.id, member.name); }}
                                         disabled={isPending}
-                                        className="form-button shrink-0 p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                                        className="form-button shrink-0 p-1.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                                         title="Verwijderen"
                                     >
-                                        {isPending && !isEditingTime ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                        {isPending && !isEditingTime ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                                     </button>
                                 </div>
 
-                                <div className="flex flex-wrap gap-1.5 mb-2">
+                                <div className="flex flex-wrap gap-1">
                                     {STATUS_OPTIONS.map(opt => (
                                         <button
                                             key={opt.value}
                                             onClick={() => { void handleSetStatus(member, opt.value); }}
                                             disabled={isPending}
-                                            className={`form-button flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 ${status === opt.value ? 'bg-theme-purple text-white' : 'bg-(--bg-soft) text-(--text-muted) border border-(--border-color) hover:text-(--text-main)'}`}
+                                            className={`form-button flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-50 ${status === opt.value ? 'bg-theme-purple text-white' : 'bg-(--bg-soft) text-(--text-muted) border border-(--border-color) hover:text-(--text-main)'}`}
                                         >
-                                            <opt.icon className="h-3.5 w-3.5" />
+                                            <opt.icon className="h-3 w-3" />
                                             {opt.label}
                                         </button>
                                     ))}
-                                </div>
-
-                                {status === 'went_home' && (
-                                    <div className="mb-2">
+                                    {status === 'went_home' && (
                                         <button
                                             onClick={() => { void handleSetStatus(member, 'home'); }}
                                             disabled={isPending}
-                                            className="form-button flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/20"
+                                            className="form-button flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-50 bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/20"
                                         >
-                                            <Home className="h-3.5 w-3.5" />
-                                            Thuis gemeld
+                                            <Home className="h-3 w-3" />
+                                            Thuis
                                         </button>
-                                    </div>
-                                )}
-
-                                {status !== 'not_reported' && statusAt && (
-                                    <div className="flex items-center gap-2 text-xs text-(--text-muted) mb-2">
-                                        {isEditingTime ? (
-                                            <>
-                                                <input
-                                                    type="time"
-                                                    value={editingTimeValue}
-                                                    onChange={e => setEditingTimeValue(e.target.value)}
-                                                    className="form-input px-2 py-1 rounded-lg bg-(--bg-soft) border border-(--border-color) text-(--text-main) text-xs font-semibold outline-none focus:ring-2 focus:ring-theme-purple"
-                                                />
-                                                <button
-                                                    onClick={() => { void handleSaveTime(member); }}
-                                                    disabled={isPending}
-                                                    className="form-button px-2.5 py-1 rounded-lg bg-theme-purple text-white text-xs font-semibold disabled:opacity-50"
-                                                >
-                                                    Opslaan
-                                                </button>
-                                                <button
-                                                    onClick={() => setEditingTimeMemberId(null)}
-                                                    className="form-button px-2.5 py-1 rounded-lg text-(--text-muted) text-xs font-semibold hover:text-(--text-main)"
-                                                >
-                                                    Annuleren
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span>{STATUS_SINCE_LABEL[status]} {formatTime(statusAt)}</span>
-                                                <button
-                                                    onClick={() => startEditTime(member)}
-                                                    className="form-button p-1 rounded text-(--text-muted) hover:text-theme-purple transition-colors"
-                                                    title="Tijd aanpassen"
-                                                >
-                                                    <Pencil className="h-3 w-3" />
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
-                                )}
+                                    )}
+                                </div>
 
                                 <button
-                                    onClick={() => { void toggleNotes(member.id); }}
-                                    className="form-button flex items-center gap-1.5 text-xs font-semibold text-(--text-muted) hover:text-theme-purple transition-colors mt-1"
+                                    onClick={() => toggleDetails(member.id)}
+                                    className="form-button flex items-center gap-1 text-[11px] font-semibold text-(--text-muted) hover:text-theme-purple transition-colors mt-1.5"
                                 >
-                                    <MessageSquarePlus className="h-3.5 w-3.5" />
-                                    Notities{notes.length > 0 ? ` (${notes.length})` : ''}
-                                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${notesExpanded ? 'rotate-180' : ''}`} />
+                                    <ChevronDown className={`h-3 w-3 transition-transform ${detailsExpanded ? 'rotate-180' : ''}`} />
+                                    Details
+                                    {notes.length > 0 && ` · ${notes.length} notitie${notes.length === 1 ? '' : 's'}`}
                                 </button>
 
-                                {notesExpanded && (
-                                    <div className="mt-3 pt-3 border-t border-(--border-color) space-y-3">
-                                        {loadingNotesId === member.id ? (
-                                            <div className="flex justify-center py-4">
-                                                <Loader2 className="h-4 w-4 animate-spin text-theme-purple" />
-                                            </div>
-                                        ) : (
-                                            <>
-                                                {notes.length === 0 ? (
-                                                    <p className="text-xs text-(--text-muted) opacity-60">Nog geen notities.</p>
+                                {detailsExpanded && (
+                                    <div className="mt-2 pt-2 border-t border-(--border-color) space-y-3">
+                                        {status !== 'not_reported' && statusAt && (
+                                            <div className="flex items-center gap-2 text-xs text-(--text-muted)">
+                                                {isEditingTime ? (
+                                                    <>
+                                                        <input
+                                                            type="time"
+                                                            value={editingTimeValue}
+                                                            onChange={e => setEditingTimeValue(e.target.value)}
+                                                            className="form-input px-2 py-1 rounded-lg bg-(--bg-soft) border border-(--border-color) text-(--text-main) text-xs font-semibold outline-none focus:ring-2 focus:ring-theme-purple"
+                                                        />
+                                                        <button
+                                                            onClick={() => { void handleSaveTime(member); }}
+                                                            disabled={isPending}
+                                                            className="form-button px-2.5 py-1 rounded-lg bg-theme-purple text-white text-xs font-semibold disabled:opacity-50"
+                                                        >
+                                                            Opslaan
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setEditingTimeMemberId(null)}
+                                                            className="form-button px-2.5 py-1 rounded-lg text-(--text-muted) text-xs font-semibold hover:text-(--text-main)"
+                                                        >
+                                                            Annuleren
+                                                        </button>
+                                                    </>
                                                 ) : (
-                                                    <div className="space-y-2">
-                                                        {notes.map(note => (
+                                                    <>
+                                                        <span>{STATUS_SINCE_LABEL[status]} {formatTime(statusAt)}</span>
+                                                        <button
+                                                            onClick={() => startEditTime(member)}
+                                                            className="form-button p-1 rounded text-(--text-muted) hover:text-theme-purple transition-colors"
+                                                            title="Tijd aanpassen"
+                                                        >
+                                                            <Pencil className="h-3 w-3" />
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        <div>
+                                            <p className="flex items-center gap-1.5 text-xs font-semibold text-(--text-main) mb-2">
+                                                <MessageSquarePlus className="h-3.5 w-3.5" />
+                                                Notities
+                                            </p>
+                                            {loadingNotesId === member.id ? (
+                                                <div className="flex justify-center py-4">
+                                                    <Loader2 className="h-4 w-4 animate-spin text-theme-purple" />
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    {notes.length === 0 ? (
+                                                        <p className="text-xs text-(--text-muted) opacity-60">Nog geen notities.</p>
+                                                    ) : (
+                                                        notes.map(note => (
                                                             <div key={note.id} className="bg-(--bg-soft) rounded-lg p-3">
                                                                 <p className="text-sm text-(--text-main) whitespace-pre-wrap">{note.note}</p>
                                                                 <div className="flex items-center justify-between mt-1.5">
@@ -447,44 +445,35 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                                     </button>
                                                                 </div>
                                                             </div>
-                                                        ))}
+                                                        ))
+                                                    )}
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="text"
+                                                            value={newNoteByMember.get(member.id) || ''}
+                                                            onChange={e => setNewNoteByMember(prev => new Map(prev).set(member.id, e.target.value))}
+                                                            onKeyDown={e => { if (e.key === 'Enter') void handleAddNote(member.id); }}
+                                                            placeholder="Notitie toevoegen..."
+                                                            className="form-input flex-1 px-3 py-2 rounded-lg bg-(--bg-soft) border border-(--border-color) text-(--text-main) text-xs font-medium outline-none focus:ring-2 focus:ring-theme-purple placeholder:text-(--text-muted)/50"
+                                                        />
+                                                        <button
+                                                            onClick={() => { void handleAddNote(member.id); }}
+                                                            disabled={!(newNoteByMember.get(member.id) || '').trim() || addingNoteId === member.id}
+                                                            className="form-button shrink-0 px-3 py-2 rounded-lg bg-theme-purple text-white text-xs font-semibold disabled:opacity-50"
+                                                        >
+                                                            {addingNoteId === member.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Toevoegen'}
+                                                        </button>
                                                     </div>
-                                                )}
-                                                <div className="flex items-center gap-2">
-                                                    <input
-                                                        type="text"
-                                                        value={newNoteByMember.get(member.id) || ''}
-                                                        onChange={e => setNewNoteByMember(prev => new Map(prev).set(member.id, e.target.value))}
-                                                        onKeyDown={e => { if (e.key === 'Enter') void handleAddNote(member.id); }}
-                                                        placeholder="Notitie toevoegen..."
-                                                        className="form-input flex-1 px-3 py-2 rounded-lg bg-(--bg-soft) border border-(--border-color) text-(--text-main) text-xs font-medium outline-none focus:ring-2 focus:ring-theme-purple placeholder:text-(--text-muted)/50"
-                                                    />
-                                                    <button
-                                                        onClick={() => { void handleAddNote(member.id); }}
-                                                        disabled={!(newNoteByMember.get(member.id) || '').trim() || addingNoteId === member.id}
-                                                        className="form-button shrink-0 px-3 py-2 rounded-lg bg-theme-purple text-white text-xs font-semibold disabled:opacity-50"
-                                                    >
-                                                        {addingNoteId === member.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Toevoegen'}
-                                                    </button>
                                                 </div>
-                                            </>
-                                        )}
-                                    </div>
-                                )}
+                                            )}
+                                        </div>
 
-                                {isCrew && (
-                                    <>
-                                        <button
-                                            onClick={() => { void toggleLog(member.id); }}
-                                            className="form-button flex items-center gap-1.5 text-xs font-semibold text-(--text-muted) hover:text-theme-purple transition-colors mt-2"
-                                        >
-                                            <History className="h-3.5 w-3.5" />
-                                            Logboek
-                                            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${expandedLogIds.includes(member.id) ? 'rotate-180' : ''}`} />
-                                        </button>
-
-                                        {expandedLogIds.includes(member.id) && (
-                                            <div className="mt-3 pt-3 border-t border-(--border-color)">
+                                        {isCrew && (
+                                            <div>
+                                                <p className="flex items-center gap-1.5 text-xs font-semibold text-(--text-main) mb-2">
+                                                    <History className="h-3.5 w-3.5" />
+                                                    Logboek
+                                                </p>
                                                 {loadingLogId === member.id ? (
                                                     <div className="flex justify-center py-4">
                                                         <Loader2 className="h-4 w-4 animate-spin text-theme-purple" />
@@ -510,7 +499,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                 )}
                                             </div>
                                         )}
-                                    </>
+                                    </div>
                                 )}
                             </div>
                         );
