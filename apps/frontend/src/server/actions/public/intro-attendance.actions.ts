@@ -13,6 +13,7 @@ import {
     type IntroGroupMemberWithAttendance,
     type IntroGroupAttendanceStatus,
     type IntroGroupMemberNoteWithAuthor,
+    type IntroGroupAttendanceLogWithAuthor,
     introGroupAttendanceStatusEnum
 } from '@salvemundi/validations/schema/intro.zod';
 import {
@@ -21,7 +22,8 @@ import {
     getUserLedGroupIdsInternal,
     getGroupAttendanceForDateInternal,
     getIntroAttendanceVisibleInternal,
-    getMemberNotesInternal
+    getMemberNotesInternal,
+    getMemberAttendanceLogInternal
 } from '@/server/queries/intro/admin-intro.queries';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -167,6 +169,16 @@ export async function setMemberStatus(memberId: number, date: string, status: In
                 }
             });
 
+        // Append-only audit trail: every status change (including time corrections)
+        // gets its own log row, independent of the single current-state row above.
+        await db.insert(schema.intro_group_attendance_log).values({
+            intro_group_member_id: memberId,
+            date,
+            status: validated.data,
+            status_at: statusAt,
+            changed_by: userId
+        });
+
         revalidatePath('/profiel/intro-attendance');
         return { success: true };
     } catch (error: unknown) {
@@ -174,6 +186,12 @@ export async function setMemberStatus(memberId: number, date: string, status: In
         safeConsoleError('[intro-attendance.actions.ts][setMemberStatus] Failed:', error);
         return { success: false, error: message };
     }
+}
+
+export async function getMemberAttendanceLog(memberId: number, date: string): Promise<IntroGroupAttendanceLogWithAuthor[]> {
+    const { isCrew } = await getIntroAttendanceAccess();
+    if (!isCrew) return [];
+    return getMemberAttendanceLogInternal(memberId, date);
 }
 
 export async function getMemberNotes(memberId: number): Promise<IntroGroupMemberNoteWithAuthor[]> {

@@ -9,6 +9,7 @@ import {
     type IntroGroupMemberWithAttendance,
     type IntroGroupAttendanceStatus,
     type IntroGroupMemberNoteWithAuthor,
+    type IntroGroupAttendanceLogWithAuthor,
     introBlogSchema,
     introPlanningSchema,
     introConfidantSchema
@@ -405,5 +406,42 @@ export async function getMemberNotesInternal(memberId: number): Promise<IntroGro
     } catch (error) {
         safeConsoleError('[admin-intro.queries.ts][getMemberNotesInternal] failed:', error);
         throw new Error('Kon notities niet ophalen');
+    }
+}
+
+export async function getMemberAttendanceLogInternal(memberId: number, date: string): Promise<IntroGroupAttendanceLogWithAuthor[]> {
+    try {
+        const rows = await db
+            .select({
+                id: schema.intro_group_attendance_log.id,
+                intro_group_member_id: schema.intro_group_attendance_log.intro_group_member_id,
+                date: schema.intro_group_attendance_log.date,
+                status: schema.intro_group_attendance_log.status,
+                status_at: schema.intro_group_attendance_log.status_at,
+                changed_by: schema.intro_group_attendance_log.changed_by,
+                changed_at: schema.intro_group_attendance_log.changed_at,
+                author_first_name: schema.directus_users.first_name,
+                author_last_name: schema.directus_users.last_name
+            })
+            .from(schema.intro_group_attendance_log)
+            .leftJoin(schema.directus_users, eq(schema.directus_users.id, schema.intro_group_attendance_log.changed_by))
+            .where(sql`${schema.intro_group_attendance_log.intro_group_member_id} = ${memberId} AND ${schema.intro_group_attendance_log.date} = ${date}`)
+            .orderBy(asc(schema.intro_group_attendance_log.changed_at));
+
+        return rows.map(r => ({
+            id: r.id,
+            intro_group_member_id: r.intro_group_member_id,
+            date,
+            status: r.status as IntroGroupAttendanceStatus,
+            status_at: r.status_at,
+            changed_by: r.changed_by,
+            changed_at: r.changed_at,
+            author_name: r.author_first_name || r.author_last_name
+                ? `${r.author_first_name || ''} ${r.author_last_name || ''}`.trim()
+                : null
+        }));
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getMemberAttendanceLogInternal] failed:', error);
+        throw new Error('Kon logboek niet ophalen');
     }
 }

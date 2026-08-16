@@ -252,6 +252,10 @@ export const selectIntroGroupAttendanceSchema = createSelectSchema(schema.intro_
 export const insertIntroGroupMemberNotesSchema = createInsertSchema(schema.intro_group_member_notes);
 export const selectIntroGroupMemberNotesSchema = createSelectSchema(schema.intro_group_member_notes);
 
+// --- intro_group_attendance_log ---
+export const insertIntroGroupAttendanceLogSchema = createInsertSchema(schema.intro_group_attendance_log);
+export const selectIntroGroupAttendanceLogSchema = createSelectSchema(schema.intro_group_attendance_log);
+
 // --- pub_crawl_tickets ---
 export const insertPubCrawlTicketsSchema = createInsertSchema(schema.pub_crawl_tickets);
 export const selectPubCrawlTicketsSchema = createSelectSchema(schema.pub_crawl_tickets);

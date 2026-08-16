@@ -1296,6 +1296,29 @@ export const intro_group_member_notes = pgTable("intro_group_member_notes", {
 		}).onDelete("set null"),
 ]);
 
+export const intro_group_attendance_log = pgTable("intro_group_attendance_log", {
+	id: serial().primaryKey().notNull(),
+	intro_group_member_id: integer().notNull(),
+	date: date().notNull(),
+	status: varchar({ length: 20 }).notNull(),
+	status_at: timestamp({ withTimezone: true, mode: 'string' }),
+	changed_by: uuid(),
+	changed_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_intro_group_attendance_log_member_date").using("btree", table.intro_group_member_id.asc().nullsLast().op("int4_ops"), table.date.asc().nullsLast().op("date_ops")),
+	foreignKey({
+			columns: [table.intro_group_member_id],
+			foreignColumns: [intro_group_members.id],
+			name: "intro_group_attendance_log_intro_group_member_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.changed_by],
+			foreignColumns: [directus_users.id],
+			name: "intro_group_attendance_log_changed_by_fkey"
+		}).onDelete("set null"),
+	check("intro_group_attendance_log_status_check", sql`(status)::text = ANY ((ARRAY['not_reported'::character varying, 'present'::character varying, 'went_home'::character varying, 'home'::character varying, 'staying_out'::character varying])::text[])`),
+]);
+
 export const intro_confidants = pgTable("intro_confidants", {
 	id: serial().primaryKey().notNull(),
 	name: varchar({ length: 255 }).notNull(),

@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, Trash2, Check, Home, LogOut, MoonStar, HelpCircle, Loader2, Pencil, MessageSquarePlus, ChevronDown } from 'lucide-react';
-import type { IntroGroupWithDetails, IntroGroupMemberWithAttendance, IntroGroupAttendanceStatus, IntroGroupMemberNoteWithAuthor } from '@salvemundi/validations/schema/intro.zod';
+import { Plus, Trash2, Check, Home, LogOut, MoonStar, HelpCircle, Loader2, Pencil, MessageSquarePlus, ChevronDown, History } from 'lucide-react';
+import type { IntroGroupWithDetails, IntroGroupMemberWithAttendance, IntroGroupAttendanceStatus, IntroGroupMemberNoteWithAuthor, IntroGroupAttendanceLogWithAuthor } from '@salvemundi/validations/schema/intro.zod';
 import {
     getGroupAttendanceForDate,
     addGroupMember,
@@ -10,7 +10,8 @@ import {
     setMemberStatus,
     getMemberNotes,
     addMemberNote,
-    deleteMemberNote
+    deleteMemberNote,
+    getMemberAttendanceLog
 } from '@/server/actions/public/intro-attendance.actions';
 import { formatDate } from '@/shared/lib/utils/date';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -46,7 +47,23 @@ const STATUS_SINCE_LABEL: Record<IntroGroupAttendanceStatus, string> = {
     staying_out: 'Buiten sinds'
 };
 
-export default function IntroAttendanceIsland({ groups, initialGroupId }: Props) {
+const STATUS_LABEL: Record<IntroGroupAttendanceStatus, string> = {
+    not_reported: 'Niet gemeld',
+    present: 'Aanwezig',
+    went_home: 'Onderweg naar huis',
+    home: 'Thuis',
+    staying_out: 'Blijft na 22:00'
+};
+
+const STATUS_CARD_STYLE: Record<IntroGroupAttendanceStatus, string> = {
+    not_reported: 'bg-(--bg-card) border-(--border-color)',
+    present: 'bg-sky-500/10 border-sky-500/30',
+    went_home: 'bg-amber-500/10 border-amber-500/30',
+    home: 'bg-emerald-500/10 border-emerald-500/30',
+    staying_out: 'bg-purple-500/10 border-purple-500/30'
+};
+
+export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const initialValid = initialGroupId !== null && initialGroupId !== undefined && groups.some(g => g.id === initialGroupId);
     const [selectedGroupId, setSelectedGroupId] = useState<number | null>(initialValid ? (initialGroupId as number) : (groups[0]?.id ?? null));
@@ -65,6 +82,10 @@ export default function IntroAttendanceIsland({ groups, initialGroupId }: Props)
     const [loadingNotesId, setLoadingNotesId] = useState<number | null>(null);
     const [newNoteByMember, setNewNoteByMember] = useState<Map<number, string>>(new Map());
     const [addingNoteId, setAddingNoteId] = useState<number | null>(null);
+
+    const [expandedLogIds, setExpandedLogIds] = useState<number[]>([]);
+    const [logByMember, setLogByMember] = useState<Map<string, IntroGroupAttendanceLogWithAuthor[]>>(new Map());
+    const [loadingLogId, setLoadingLogId] = useState<number | null>(null);
 
     const loadAttendance = useCallback(async (groupId: number, date: string) => {
         setLoading(true);
@@ -123,11 +144,22 @@ export default function IntroAttendanceIsland({ groups, initialGroupId }: Props)
         setPendingMemberId(null);
     };
 
+    const invalidateLog = (memberId: number) => {
+        const key = `${memberId}:${selectedDate}`;
+        setLogByMember(prev => {
+            if (!prev.has(key)) return prev;
+            const next = new Map(prev);
+            next.delete(key);
+            return next;
+        });
+    };
+
     const handleSetStatus = async (member: IntroGroupMemberWithAttendance, status: IntroGroupAttendanceStatus) => {
         setPendingMemberId(member.id);
         const res = await setMemberStatus(member.id, selectedDate, status);
         if (res.success) {
             await loadAttendance(selectedGroupId, selectedDate);
+            invalidateLog(member.id);
         } else {
             showToast(res.error || 'Bijwerken mislukt', 'error');
         }
@@ -150,6 +182,7 @@ export default function IntroAttendanceIsland({ groups, initialGroupId }: Props)
         const res = await setMemberStatus(member.id, selectedDate, member.attendance.status, combined.toISOString());
         if (res.success) {
             await loadAttendance(selectedGroupId, selectedDate);
+            invalidateLog(member.id);
             showToast('Tijd aangepast', 'success');
         } else {
             showToast(res.error || 'Bijwerken mislukt', 'error');
@@ -201,6 +234,26 @@ export default function IntroAttendanceIsland({ groups, initialGroupId }: Props)
             showToast('Notitie verwijderd', 'success');
         } else {
             showToast(res.error || 'Verwijderen mislukt', 'error');
+        }
+    };
+
+    const toggleLog = async (memberId: number) => {
+        const isExpanded = expandedLogIds.includes(memberId);
+        if (isExpanded) {
+            setExpandedLogIds(prev => prev.filter(id => id !== memberId));
+            return;
+        }
+        setExpandedLogIds(prev => [...prev, memberId]);
+        const key = `${memberId}:${selectedDate}`;
+        if (!logByMember.has(key)) {
+            setLoadingLogId(memberId);
+            try {
+                const log = await getMemberAttendanceLog(memberId, selectedDate);
+                setLogByMember(prev => new Map(prev).set(key, log));
+            } catch {
+                showToast('Kon logboek niet ophalen', 'error');
+            }
+            setLoadingLogId(null);
         }
     };
 
@@ -279,7 +332,7 @@ export default function IntroAttendanceIsland({ groups, initialGroupId }: Props)
                         const notes = notesByMember.get(member.id) || [];
 
                         return (
-                            <div key={member.id} className="bg-(--bg-card) border border-(--border-color) rounded-2xl p-4">
+                            <div key={member.id} className={`border rounded-2xl p-4 transition-colors ${STATUS_CARD_STYLE[status]}`}>
                                 <div className="flex items-center justify-between gap-3 mb-3">
                                     <span className="font-semibold text-(--text-main) break-words">{member.name}</span>
                                     <button
@@ -417,6 +470,47 @@ export default function IntroAttendanceIsland({ groups, initialGroupId }: Props)
                                             </>
                                         )}
                                     </div>
+                                )}
+
+                                {isCrew && (
+                                    <>
+                                        <button
+                                            onClick={() => { void toggleLog(member.id); }}
+                                            className="form-button flex items-center gap-1.5 text-xs font-semibold text-(--text-muted) hover:text-theme-purple transition-colors mt-2"
+                                        >
+                                            <History className="h-3.5 w-3.5" />
+                                            Logboek
+                                            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${expandedLogIds.includes(member.id) ? 'rotate-180' : ''}`} />
+                                        </button>
+
+                                        {expandedLogIds.includes(member.id) && (
+                                            <div className="mt-3 pt-3 border-t border-(--border-color)">
+                                                {loadingLogId === member.id ? (
+                                                    <div className="flex justify-center py-4">
+                                                        <Loader2 className="h-4 w-4 animate-spin text-theme-purple" />
+                                                    </div>
+                                                ) : (
+                                                    (() => {
+                                                        const log = logByMember.get(`${member.id}:${selectedDate}`) || [];
+                                                        return log.length === 0 ? (
+                                                            <p className="text-xs text-(--text-muted) opacity-60">Nog geen wijzigingen op deze dag.</p>
+                                                        ) : (
+                                                            <div className="space-y-1.5">
+                                                                {log.map(entry => (
+                                                                    <div key={entry.id} className="flex items-center justify-between gap-2 text-[11px] text-(--text-muted)">
+                                                                        <span className="font-semibold text-(--text-main)">{STATUS_LABEL[entry.status]}</span>
+                                                                        <span className="opacity-70">
+                                                                            {entry.status_at ? formatTime(entry.status_at) : '-'} · {entry.author_name || 'onbekend'}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        );
+                                                    })()
+                                                )}
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         );

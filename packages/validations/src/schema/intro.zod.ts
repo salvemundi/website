@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.js';
-import { selectIntroSignupsSchema, selectIntroParentSignupsSchema, selectIntroBlogsSchema, selectIntroPlanningSchema, selectIntroConfidantsSchema, selectIntroGroupsSchema, selectIntroGroupLeadersSchema, selectIntroGroupMembersSchema, selectIntroGroupAttendanceSchema, selectIntroGroupMemberNotesSchema } from './db.zod.js';
+import { selectIntroSignupsSchema, selectIntroParentSignupsSchema, selectIntroBlogsSchema, selectIntroPlanningSchema, selectIntroConfidantsSchema, selectIntroGroupsSchema, selectIntroGroupLeadersSchema, selectIntroGroupMembersSchema, selectIntroGroupAttendanceSchema, selectIntroGroupMemberNotesSchema, selectIntroGroupAttendanceLogSchema } from './db.zod.js';
 
 export const introSignupFormSchema = z.object({
     voornaam: z.string().min(1, 'Voornaam is verplicht'),
@@ -169,6 +169,19 @@ export const introGroupMemberNoteSchema = selectIntroGroupMemberNotesSchema.exte
 export type IntroGroupMemberNote = z.infer<typeof introGroupMemberNoteSchema>;
 
 export interface IntroGroupMemberNoteWithAuthor extends IntroGroupMemberNote {
+    author_name: string | null;
+}
+
+export const introGroupAttendanceLogSchema = selectIntroGroupAttendanceLogSchema.extend({
+    id: z.coerce.number(),
+    intro_group_member_id: z.coerce.number(),
+    date: z.string().min(1, 'Datum is verplicht'),
+    status: introGroupAttendanceStatusEnum,
+});
+
+export type IntroGroupAttendanceLog = z.infer<typeof introGroupAttendanceLogSchema>;
+
+export interface IntroGroupAttendanceLogWithAuthor extends IntroGroupAttendanceLog {
     author_name: string | null;
 }
 
