@@ -163,16 +163,18 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         setDeletingBlogId(null);
     };
 
-    const handleSavePlanning = async (item: Partial<IntroPlanningItem>) => {
+    const handleSavePlanning = async (item: Partial<IntroPlanningItem>): Promise<number | null> => {
         setSavingPlanning(true);
         const res = await upsertIntroPlanning(item);
         if (res.success) {
             await reloadPlanning();
             showToast('Planning item opgeslagen', 'success');
-        } else {
-            showToast(res.error || 'Opslaan mislukt', 'error');
+            setSavingPlanning(false);
+            return res.data?.id ?? null;
         }
+        showToast(res.error || 'Opslaan mislukt', 'error');
         setSavingPlanning(false);
+        return null;
     };
 
     const handleDeletePlanning = async (id: number) => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     Plus,
     X,
@@ -33,13 +33,15 @@ import {
 
 interface Props {
     planning: IntroPlanningItem[];
-    onSave: (item: Partial<IntroPlanningItem>) => Promise<void>;
+    onSave: (item: Partial<IntroPlanningItem>) => Promise<number | null>;
     onDelete: (id: number) => Promise<void>;
     saving: boolean;
     deletingId: number | null;
     initialPlanningImage: string | null;
     initialInfoBooklet: string | null;
 }
+
+const DAY_ORDER = ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag'];
 
 export default function IntroPlanningTab({ planning, onSave, onDelete, saving, deletingId, initialPlanningImage, initialInfoBooklet }: Props) {
     const [editingPlanning, setEditingPlanning] = useState<Partial<IntroPlanningItem> | null>(null);
@@ -128,18 +130,59 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
         setBookletFileName(null);
     };
 
+    const [scrollToId, setScrollToId] = useState<number | null>(null);
+
     const handleSave = async () => {
         if (!editingPlanning) return;
-        await onSave(editingPlanning);
+        const savedId = await onSave(editingPlanning);
         setEditingPlanning(null);
+        setScrollToId(savedId);
     };
 
     const editFormRef = useRef<HTMLDivElement>(null);
+    const editingKeyRef = useRef<number | 'new' | null>(null);
     useEffect(() => {
-        if (editingPlanning !== null) {
+        const key = editingPlanning ? (editingPlanning.id ?? 'new') : null;
+        if (key !== null && key !== editingKeyRef.current) {
             editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+        editingKeyRef.current = key;
     }, [editingPlanning]);
+
+    const itemRefs = useRef(new Map<number, HTMLDivElement>());
+    const setItemRef = (id: number | undefined) => (el: HTMLDivElement | null) => {
+        if (id === undefined) return;
+        if (el) itemRefs.current.set(id, el);
+        else itemRefs.current.delete(id);
+    };
+    useEffect(() => {
+        if (scrollToId === null) return;
+        const el = itemRefs.current.get(scrollToId);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        setScrollToId(null);
+    }, [scrollToId, planning]);
+
+    const [dayFilter, setDayFilter] = useState<string | null>(null);
+    const availableDays = useMemo(() => {
+        const days = new Set<string>();
+        planning.forEach(item => {
+            if (item.day) days.add(item.day.toLowerCase());
+        });
+        return Array.from(days).sort((a, b) => {
+            const ai = DAY_ORDER.indexOf(a);
+            const bi = DAY_ORDER.indexOf(b);
+            if (ai === -1 && bi === -1) return a.localeCompare(b);
+            if (ai === -1) return 1;
+            if (bi === -1) return -1;
+            return ai - bi;
+        });
+    }, [planning]);
+    const filteredPlanningList = useMemo(() => {
+        if (!dayFilter) return planning;
+        return planning.filter(item => (item.day || '').toLowerCase() === dayFilter);
+    }, [planning, dayFilter]);
 
     return (
         <div>
@@ -269,6 +312,26 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                 </div>
             </div>
 
+            {availableDays.length > 0 && (
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-6 -mx-1 px-1">
+                    <button
+                        onClick={() => setDayFilter(null)}
+                        className={`tab-button shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold capitalize transition-all whitespace-nowrap ${dayFilter === null ? 'bg-(--beheer-accent) text-white shadow-md' : 'bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
+                    >
+                        Alle dagen
+                    </button>
+                    {availableDays.map(day => (
+                        <button
+                            key={day}
+                            onClick={() => setDayFilter(day)}
+                            className={`tab-button shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold capitalize transition-all whitespace-nowrap ${dayFilter === day ? 'bg-(--beheer-accent) text-white shadow-md' : 'bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
+                        >
+                            {day}
+                        </button>
+                    ))}
+                </div>
+            )}
+
             {editingPlanning !== null && (
                 <div ref={editFormRef} className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-8 mb-8 shadow-2xl scroll-mt-24">
                     <div className="flex items-center justify-between mb-8">
@@ -335,8 +398,8 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
 
             {view === 'list' && (
                 <div className="grid gap-4">
-                    {planning.map(item => (
-                        <div key={item.id} className="group bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 flex items-start justify-between gap-6 hover:border-(--beheer-accent)/30 transition-all shadow-sm hover:shadow-xl">
+                    {filteredPlanningList.map(item => (
+                        <div key={item.id} ref={setItemRef(item.id)} className="group bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 flex items-start justify-between gap-6 hover:border-(--beheer-accent)/30 transition-all shadow-sm hover:shadow-xl scroll-mt-24">
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
                                     <span className="text-xs font-semibold text-(--beheer-accent) bg-(--beheer-accent)/5 px-2 py-0.5 rounded">{item.day || ''}</span>
@@ -366,6 +429,9 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                             </div>
                         </div>
                     ))}
+                    {filteredPlanningList.length === 0 && planning.length > 0 && (
+                        <EmptyState icon={Calendar} text="Geen activiteiten op deze dag" />
+                    )}
                     {planning.length === 0 && (
                         <EmptyState icon={Calendar} text="Nog geen planning items aangemaakt" />
                     )}
@@ -373,7 +439,6 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
             )}
 
             {view === 'calendar' && planning.length > 0 && (() => {
-                const dayOrder = ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag'];
                 const byDay = planning.reduce((acc, item) => {
                     const key = (item.day || 'overig').toLowerCase();
                     const group = acc.get(key) || [];
@@ -382,7 +447,9 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                     return acc;
                 }, new Map<string, IntroPlanningItem[]>());
 
-                const sorted = Array.from(byDay.keys()).sort((a, b) => dayOrder.indexOf(a as string) - dayOrder.indexOf(b as string));
+                const sorted = Array.from(byDay.keys())
+                    .filter(day => !dayFilter || day === dayFilter)
+                    .sort((a, b) => DAY_ORDER.indexOf(a as string) - DAY_ORDER.indexOf(b as string));
                 return (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {sorted.map(day => (
@@ -390,7 +457,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                 <h3 className="font-semibold text-(--beheer-accent) text-xs mb-6 capitalize pb-3 border-b border-(--beheer-border)">{day as string}</h3>
                                 <div className="space-y-3">
                                     {(byDay.get(day) || []).sort((a, b) => (String(a.time_start || '')).localeCompare(String(b.time_start || ''))).map(item => (
-                                        <div key={item.id as string | number} className="group bg-(--beheer-card-soft) rounded-xl p-4 border border-transparent hover:border-(--beheer-accent)/20 transition-all">
+                                        <div key={item.id as string | number} ref={setItemRef(item.id)} className="group bg-(--beheer-card-soft) rounded-xl p-4 border border-transparent hover:border-(--beheer-accent)/20 transition-all scroll-mt-24">
                                             <div className="flex items-start justify-between gap-2">
                                                 <div>
                                                     <p className="font-semibold text-sm text-(--beheer-text) mb-1">{item.title as React.ReactNode}</p>
