@@ -8,6 +8,7 @@ import {
     type IntroGroupWithDetails,
     type IntroGroupMemberWithAttendance,
     type IntroGroupAttendanceStatus,
+    type IntroGroupMemberNoteWithAuthor,
     introBlogSchema,
     introPlanningSchema,
     introConfidantSchema
@@ -337,12 +338,9 @@ export async function getGroupAttendanceForDateInternal(groupId: number, date: s
                 added_by: schema.intro_group_members.added_by,
                 created_at: schema.intro_group_members.created_at,
                 attendance_id: schema.intro_group_attendance.id,
-                present: schema.intro_group_attendance.present,
-                present_at: schema.intro_group_attendance.present_at,
-                present_by: schema.intro_group_attendance.present_by,
-                evening_status: schema.intro_group_attendance.evening_status,
-                evening_status_at: schema.intro_group_attendance.evening_status_at,
-                evening_status_by: schema.intro_group_attendance.evening_status_by,
+                status: schema.intro_group_attendance.status,
+                status_at: schema.intro_group_attendance.status_at,
+                status_by: schema.intro_group_attendance.status_by,
                 attendance_created_at: schema.intro_group_attendance.created_at,
                 attendance_updated_at: schema.intro_group_attendance.updated_at
             })
@@ -364,12 +362,9 @@ export async function getGroupAttendanceForDateInternal(groupId: number, date: s
                 id: r.attendance_id,
                 intro_group_member_id: r.id,
                 date,
-                present: r.present ?? false,
-                present_at: r.present_at,
-                present_by: r.present_by,
-                evening_status: r.evening_status as IntroGroupAttendanceStatus,
-                evening_status_at: r.evening_status_at,
-                evening_status_by: r.evening_status_by,
+                status: r.status as IntroGroupAttendanceStatus,
+                status_at: r.status_at,
+                status_by: r.status_by,
                 created_at: r.attendance_created_at,
                 updated_at: r.attendance_updated_at
             } : null
@@ -377,5 +372,38 @@ export async function getGroupAttendanceForDateInternal(groupId: number, date: s
     } catch (error) {
         safeConsoleError('[admin-intro.queries.ts][getGroupAttendanceForDateInternal] failed:', error);
         throw new Error('Kon aanwezigheid niet ophalen');
+    }
+}
+
+export async function getMemberNotesInternal(memberId: number): Promise<IntroGroupMemberNoteWithAuthor[]> {
+    try {
+        const rows = await db
+            .select({
+                id: schema.intro_group_member_notes.id,
+                intro_group_member_id: schema.intro_group_member_notes.intro_group_member_id,
+                note: schema.intro_group_member_notes.note,
+                created_by: schema.intro_group_member_notes.created_by,
+                created_at: schema.intro_group_member_notes.created_at,
+                author_first_name: schema.directus_users.first_name,
+                author_last_name: schema.directus_users.last_name
+            })
+            .from(schema.intro_group_member_notes)
+            .leftJoin(schema.directus_users, eq(schema.directus_users.id, schema.intro_group_member_notes.created_by))
+            .where(eq(schema.intro_group_member_notes.intro_group_member_id, memberId))
+            .orderBy(desc(schema.intro_group_member_notes.created_at));
+
+        return rows.map(r => ({
+            id: r.id,
+            intro_group_member_id: r.intro_group_member_id,
+            note: r.note,
+            created_by: r.created_by,
+            created_at: r.created_at,
+            author_name: r.author_first_name || r.author_last_name
+                ? `${r.author_first_name || ''} ${r.author_last_name || ''}`.trim()
+                : null
+        }));
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getMemberNotesInternal] failed:', error);
+        throw new Error('Kon notities niet ophalen');
     }
 }

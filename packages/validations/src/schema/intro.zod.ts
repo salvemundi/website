@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.js';
-import { selectIntroSignupsSchema, selectIntroParentSignupsSchema, selectIntroBlogsSchema, selectIntroPlanningSchema, selectIntroConfidantsSchema, selectIntroGroupsSchema, selectIntroGroupLeadersSchema, selectIntroGroupMembersSchema, selectIntroGroupAttendanceSchema } from './db.zod.js';
+import { selectIntroSignupsSchema, selectIntroParentSignupsSchema, selectIntroBlogsSchema, selectIntroPlanningSchema, selectIntroConfidantsSchema, selectIntroGroupsSchema, selectIntroGroupLeadersSchema, selectIntroGroupMembersSchema, selectIntroGroupAttendanceSchema, selectIntroGroupMemberNotesSchema } from './db.zod.js';
 
 export const introSignupFormSchema = z.object({
     voornaam: z.string().min(1, 'Voornaam is verplicht'),
@@ -148,17 +148,29 @@ export const introGroupMemberSchema = selectIntroGroupMembersSchema.extend({
 
 export type IntroGroupMember = z.infer<typeof introGroupMemberSchema>;
 
-export const introGroupAttendanceStatusEnum = z.enum(['unknown', 'went_home', 'staying_out']);
+export const introGroupAttendanceStatusEnum = z.enum(['not_reported', 'present', 'went_home', 'staying_out']);
 export type IntroGroupAttendanceStatus = z.infer<typeof introGroupAttendanceStatusEnum>;
 
 export const introGroupAttendanceSchema = selectIntroGroupAttendanceSchema.extend({
     id: z.coerce.number(),
     intro_group_member_id: z.coerce.number(),
     date: z.string().min(1, 'Datum is verplicht'),
-    evening_status: introGroupAttendanceStatusEnum,
+    status: introGroupAttendanceStatusEnum,
 });
 
 export type IntroGroupAttendance = z.infer<typeof introGroupAttendanceSchema>;
+
+export const introGroupMemberNoteSchema = selectIntroGroupMemberNotesSchema.extend({
+    id: z.coerce.number(),
+    intro_group_member_id: z.coerce.number(),
+    note: z.string().min(1, 'Notitie mag niet leeg zijn'),
+});
+
+export type IntroGroupMemberNote = z.infer<typeof introGroupMemberNoteSchema>;
+
+export interface IntroGroupMemberNoteWithAuthor extends IntroGroupMemberNote {
+    author_name: string | null;
+}
 
 export interface IntroGroupLeaderInfo {
     user_id: string;

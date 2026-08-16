@@ -1253,12 +1253,9 @@ export const intro_group_attendance = pgTable("intro_group_attendance", {
 	id: serial().primaryKey().notNull(),
 	intro_group_member_id: integer().notNull(),
 	date: date().notNull(),
-	present: boolean().default(false).notNull(),
-	present_at: timestamp({ withTimezone: true, mode: 'string' }),
-	present_by: uuid(),
-	evening_status: varchar({ length: 20 }).default('unknown').notNull(),
-	evening_status_at: timestamp({ withTimezone: true, mode: 'string' }),
-	evening_status_by: uuid(),
+	status: varchar({ length: 20 }).default('not_reported').notNull(),
+	status_at: timestamp({ withTimezone: true, mode: 'string' }),
+	status_by: uuid(),
 	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 	updated_at: timestamp({ withTimezone: true, mode: 'string' }),
 }, (table) => [
@@ -1270,17 +1267,32 @@ export const intro_group_attendance = pgTable("intro_group_attendance", {
 			name: "intro_group_attendance_intro_group_member_id_fkey"
 		}).onDelete("cascade"),
 	foreignKey({
-			columns: [table.present_by],
+			columns: [table.status_by],
 			foreignColumns: [directus_users.id],
-			name: "intro_group_attendance_present_by_fkey"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.evening_status_by],
-			foreignColumns: [directus_users.id],
-			name: "intro_group_attendance_evening_status_by_fkey"
+			name: "intro_group_attendance_status_by_fkey"
 		}).onDelete("set null"),
 	unique("intro_group_attendance_member_date_key").on(table.intro_group_member_id, table.date),
-	check("intro_group_attendance_evening_status_check", sql`(evening_status)::text = ANY ((ARRAY['unknown'::character varying, 'went_home'::character varying, 'staying_out'::character varying])::text[])`),
+	check("intro_group_attendance_status_check", sql`(status)::text = ANY ((ARRAY['not_reported'::character varying, 'present'::character varying, 'went_home'::character varying, 'staying_out'::character varying])::text[])`),
+]);
+
+export const intro_group_member_notes = pgTable("intro_group_member_notes", {
+	id: serial().primaryKey().notNull(),
+	intro_group_member_id: integer().notNull(),
+	note: text().notNull(),
+	created_by: uuid(),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_intro_group_member_notes_member").using("btree", table.intro_group_member_id.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.intro_group_member_id],
+			foreignColumns: [intro_group_members.id],
+			name: "intro_group_member_notes_intro_group_member_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.created_by],
+			foreignColumns: [directus_users.id],
+			name: "intro_group_member_notes_created_by_fkey"
+		}).onDelete("set null"),
 ]);
 
 export const intro_confidants = pgTable("intro_confidants", {
