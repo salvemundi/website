@@ -149,7 +149,7 @@ export function HorizontalInput({ label, name, ...props }: React.InputHTMLAttrib
                     {...props} 
                     id={id}
                     name={name}
-                    className={`beheer-input w-full bg-transparent text-xs text-(--beheer-text) font-semibold outline-none placeholder:opacity-20 h-7 ${props.className || ''}`}
+                    className={`beheer-input w-full bg-transparent text-xs text-(--beheer-text) font-semibold outline-none border-none p-0 focus:ring-0 placeholder:opacity-20 h-7 ${props.className || ''}`}
                 />
             </div>
         </div>

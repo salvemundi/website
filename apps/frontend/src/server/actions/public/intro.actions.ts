@@ -5,14 +5,18 @@ import {
     introParentSignupFormSchema,
     type IntroSignupForm,
     type IntroParentSignupForm,
-    type IntroBlog
+    type IntroBlog,
+    type IntroPlanningItem,
+    type IntroConfidant
 } from '@salvemundi/validations/schema/intro.zod';
+import { type WhatsAppGroup } from '@salvemundi/validations/schema/profiel.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { db, schema } from '@salvemundi/db';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { normalizeDate } from '@/lib/utils/date-utils';
 import { safeConsoleError } from '@/server/utils/logger';
+import { getIntroPlanningInternal, getIntroConfidantsInternal, getIntroPlanningImageInternal, getIntroInfoBookletInternal, incrementIntroQrScanCountInternal } from '@/server/queries/intro/admin-intro.queries';
 
 interface ParentSignupRecord {
     id: number;
@@ -146,6 +150,7 @@ export async function getIntroBlogsPublic(): Promise<IntroBlog[]> {
             content: schema.intro_blogs.content,
             slug: schema.intro_blogs.slug,
             excerpt: schema.intro_blogs.excerpt,
+            blog_type: schema.intro_blogs.blog_type,
             image: schema.intro_blogs.image,
             is_published: schema.intro_blogs.is_published,
             created_at: schema.intro_blogs.created_at,
@@ -154,7 +159,12 @@ export async function getIntroBlogsPublic(): Promise<IntroBlog[]> {
         .where(eq(schema.intro_blogs.is_published, true))
         .orderBy(desc(schema.intro_blogs.id))
         .limit(6);
-        return rows as unknown as IntroBlog[];
+
+        return rows.map(r => ({
+            ...r,
+            blog_type: (r.blog_type ?? 'update') as IntroBlog['blog_type'],
+            is_published: r.is_published ?? true
+        }));
     } catch (error: unknown) {
         safeConsoleError(`[intro.actions.ts][getIntroBlogsPublic] Error while fetching intro blogs:`, error);
         throw new Error('Er is een fout opgetreden bij het ophalen van de intro blogs');
@@ -169,6 +179,7 @@ export async function getAllIntroBlogsPublic(): Promise<IntroBlog[]> {
             content: schema.intro_blogs.content,
             slug: schema.intro_blogs.slug,
             excerpt: schema.intro_blogs.excerpt,
+            blog_type: schema.intro_blogs.blog_type,
             image: schema.intro_blogs.image,
             is_published: schema.intro_blogs.is_published,
             created_at: schema.intro_blogs.created_at,
@@ -176,7 +187,12 @@ export async function getAllIntroBlogsPublic(): Promise<IntroBlog[]> {
         }).from(schema.intro_blogs)
         .where(eq(schema.intro_blogs.is_published, true))
         .orderBy(desc(schema.intro_blogs.id));
-        return rows as unknown as IntroBlog[];
+
+        return rows.map(r => ({
+            ...r,
+            blog_type: (r.blog_type ?? 'update') as IntroBlog['blog_type'],
+            is_published: r.is_published ?? true
+        }));
     } catch (error: unknown) {
         safeConsoleError(`[intro.actions.ts][getAllIntroBlogsPublic] Error while fetching all intro blogs:`, error);
         throw new Error('Er is een fout opgetreden bij het ophalen van de intro blogs');
@@ -185,13 +201,13 @@ export async function getAllIntroBlogsPublic(): Promise<IntroBlog[]> {
 
 export async function getIntroBlogBySlug(slug: string): Promise<IntroBlog | null> {
     try {
-        const { and } = await import('drizzle-orm');
         const rows = await db.select({
             id: schema.intro_blogs.id,
             title: schema.intro_blogs.title,
             content: schema.intro_blogs.content,
             slug: schema.intro_blogs.slug,
             excerpt: schema.intro_blogs.excerpt,
+            blog_type: schema.intro_blogs.blog_type,
             image: schema.intro_blogs.image,
             is_published: schema.intro_blogs.is_published,
             created_at: schema.intro_blogs.created_at,
@@ -202,7 +218,15 @@ export async function getIntroBlogBySlug(slug: string): Promise<IntroBlog | null
             eq(schema.intro_blogs.is_published, true)
         ))
         .limit(1);
-        return rows.length > 0 ? (rows[0] as unknown as IntroBlog) : null;
+
+        if (rows.length === 0) return null;
+
+        const r = rows[0];
+        return {
+            ...r,
+            blog_type: (r.blog_type ?? 'update') as IntroBlog['blog_type'],
+            is_published: r.is_published ?? true
+        };
     } catch (error: unknown) {
         safeConsoleError(`[intro.actions.ts][getIntroBlogBySlug] Error while fetching intro blog by slug:`, error);
         throw new Error('Er is een fout opgetreden bij het ophalen van de intro blog');
@@ -250,5 +274,45 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
     } catch (error: unknown) {
         safeConsoleError('[intro.actions.ts][submitIntroParentSignup] Error details:', error);
         return { success: false, error: 'Er is een fout opgetreden bij uw aanmelding' };
+    }
+}
+
+export async function getIntroPlanningPublic(): Promise<IntroPlanningItem[]> {
+    return getIntroPlanningInternal();
+}
+
+export async function getIntroConfidantsPublic(): Promise<IntroConfidant[]> {
+    return getIntroConfidantsInternal(true);
+}
+
+export async function getIntroInfoBookletPublic(): Promise<string | null> {
+    return getIntroInfoBookletInternal();
+}
+
+export async function getIntroPlanningImagePublic(): Promise<string | null> {
+    return getIntroPlanningImageInternal();
+}
+
+export async function incrementIntroQrScanCount(): Promise<number> {
+    return incrementIntroQrScanCountInternal();
+}
+
+export async function getIntroGroupsAppLinks(): Promise<WhatsAppGroup[]> {
+    try {
+        const rows = await db.select({
+            id: schema.whatsapp_groups.id,
+            name: schema.whatsapp_groups.name,
+            description: schema.whatsapp_groups.description,
+            invite_link: schema.whatsapp_groups.invite_link,
+            is_active: schema.whatsapp_groups.is_active
+        }).from(schema.whatsapp_groups)
+        .where(and(
+            eq(schema.whatsapp_groups.is_active, true),
+            eq(schema.whatsapp_groups.requires_membership, false)
+        ));
+        return rows;
+    } catch (error: unknown) {
+        safeConsoleError('[intro.actions.ts][getIntroGroupsAppLinks] Error while fetching intro group links:', error);
+        return [];
     }
 }

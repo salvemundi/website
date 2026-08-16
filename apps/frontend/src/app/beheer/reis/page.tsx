@@ -145,14 +145,14 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
                             <Divider />
                             <StatItem label="Restbetaling" value={stats.fullPaid} color="text-purple-500" />
                         </div>
-                        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                        <div className="flex flex-wrap items-stretch sm:items-center gap-2 w-full md:w-auto">
                             <AdminReisSwitcher
                                 trips={trips}
                                 activeTripId={activeTripId as number}
                             />
                             <Link
                                 href="/beheer/reis/instellingen"
-                                className="flex items-center justify-center gap-2 px-4 py-2 bg-bg-card border border-border-color text-text-main rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-bg-card border border-border-color text-text-main rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm"
                             >
                                 <Settings2 className="h-3.5 w-3.5" />
                                 <span className="hidden sm:inline">Instellingen</span>

@@ -5,7 +5,7 @@ import { z } from 'zod';
 import 'server-only';
 import { revalidatePath } from "next/cache";
 import {
-    introPlanningSchema,
+    introPlanningFormSchema,
     type IntroPlanningItem
 } from '@salvemundi/validations/schema/intro.zod';
 import { getIntroPlanningInternal } from '@/server/queries/intro/admin-intro.queries';
@@ -26,18 +26,16 @@ interface IntroPlanningDbResult {
 
 export async function getIntroPlanning(): Promise<IntroPlanningItem[]> {
     await checkIntroAdminAccess();
-    const data = await getIntroPlanningInternal();
-    return data as unknown as IntroPlanningItem[];
+    return getIntroPlanningInternal();
 }
 
 export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Promise<{ success: boolean; data?: IntroPlanningItem; error?: string; fieldErrors?: Record<string, string[] | undefined> }> {
     await checkIntroAdminAccess();
 
-    const sanitized = Object.fromEntries(
-        Object.entries(item).map(([key, value]) => [key, (value as unknown) === null ? undefined : value])
-    );
-
-    const validated = introPlanningSchema.safeParse(sanitized);
+    // Note: null is a valid, intentional value here (e.g. clearing a field) and
+    // must be preserved so Drizzle's .set() actually clears the column instead
+    // of silently skipping it.
+    const validated = introPlanningFormSchema.safeParse(item);
     if (!validated.success) {
         const fieldErrors = z.flattenError(validated.error).fieldErrors;
         return {
@@ -47,7 +45,8 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
         };
     }
 
-    const { id, date, ...rest } = validated.data;
+    const { date, ...rest } = validated.data;
+    const id = item.id ? Number(item.id) : undefined;
 
     let day = rest.day || 'Onbekend';
     if (date) {
@@ -73,6 +72,7 @@ export async function upsertIntroPlanning(item: Partial<IntroPlanningItem>): Pro
             result = inserted[0] as unknown as IntroPlanningDbResult;
         }
         revalidatePath('/beheer/intro');
+        revalidatePath('/qr-code');
         return {
             success: true, data: {
                 id: Number(result.id),
@@ -96,6 +96,7 @@ export async function deleteIntroPlanning(id: number): Promise<{ success: boolea
     try {
         await db.delete(schema.intro_planning).where(eq(schema.intro_planning.id, id));
         revalidatePath('/beheer/intro');
+        revalidatePath('/qr-code');
         return { success: true };
     } catch {
         return { success: false, error: 'Verwijderen mislukt' };

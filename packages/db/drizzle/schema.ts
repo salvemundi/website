@@ -1173,6 +1173,44 @@ export const intro_planning = pgTable("intro_planning", {
 		}).onDelete("set null"),
 ]);
 
+export const intro_settings = pgTable("intro_settings", {
+	id: serial().primaryKey().notNull(),
+	planning_image: uuid(),
+	info_booklet: uuid(),
+	qr_scan_count: integer().default(0).notNull(),
+	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	foreignKey({
+			columns: [table.planning_image],
+			foreignColumns: [directus_files.id],
+			name: "intro_settings_planning_image_foreign"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.info_booklet],
+			foreignColumns: [directus_files.id],
+			name: "intro_settings_info_booklet_foreign"
+		}).onDelete("set null"),
+]);
+
+export const intro_confidants = pgTable("intro_confidants", {
+	id: serial().primaryKey().notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	email: varchar({ length: 255 }),
+	phone_number: varchar({ length: 20 }),
+	image: uuid(),
+	bio: text(),
+	sort_order: integer().default(0),
+	is_active: boolean().default(true),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+	updated_at: timestamp({ withTimezone: true, mode: 'string' }),
+}, (table) => [
+	foreignKey({
+			columns: [table.image],
+			foreignColumns: [directus_files.id],
+			name: "intro_confidants_image_foreign"
+		}).onDelete("set null"),
+]);
+
 export const pub_crawl_tickets = pgTable("pub_crawl_tickets", {
 	id: bigserial({ mode: "bigint" }).primaryKey().notNull(),
 	signup_id: integer(),

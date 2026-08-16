@@ -5,9 +5,11 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { getRedis } from '@/server/auth/redis-client';
 import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
 import { db, schema } from '@salvemundi/db';
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import { checkIntroAdminAccess } from './admin-intro-signup.actions';
 import { safeConsoleError } from '@/server/utils/logger';
+import { uploadFormDataFile } from '@/server/utils/media';
+import { getIntroPlanningImageInternal, getIntroInfoBookletInternal, getIntroQrScanCountInternal } from '@/server/queries/intro/admin-intro.queries';
 
 export async function toggleIntroVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
     await checkIntroAdminAccess();
@@ -59,4 +61,76 @@ export async function toggleIntroVisibility(): Promise<{ success: boolean; show?
         safeConsoleError(`[intro-settings.actions.ts][toggleIntroVisibility] Failed to toggle intro visibility:`, error);
         return { success: false, error: 'Bijwerken mislukt' };
     }
+}
+
+export async function getIntroPlanningImage(): Promise<string | null> {
+    await checkIntroAdminAccess();
+    return getIntroPlanningImageInternal();
+}
+
+async function setIntroSettingsField(field: 'planning_image' | 'info_booklet', value: string | null): Promise<void> {
+    const rows = await db
+        .select({ id: schema.intro_settings.id })
+        .from(schema.intro_settings)
+        .orderBy(asc(schema.intro_settings.id))
+        .limit(1);
+
+    if (rows.length > 0) {
+        await db.update(schema.intro_settings).set({ [field]: value, updated_at: new Date().toISOString() }).where(eq(schema.intro_settings.id, rows[0].id));
+    } else {
+        await db.insert(schema.intro_settings).values({ [field]: value });
+    }
+
+    revalidatePath('/beheer/intro');
+    revalidatePath('/qr-code');
+}
+
+export async function uploadIntroPlanningImage(formData: FormData): Promise<{ success: true; data: string } | { success: false; error: string }> {
+    await checkIntroAdminAccess();
+    const result = await uploadFormDataFile(formData, 'image', 'image');
+    if (result.success) {
+        await setIntroSettingsField('planning_image', result.data);
+    }
+    return result;
+}
+
+export async function removeIntroPlanningImage(): Promise<{ success: boolean; error?: string }> {
+    await checkIntroAdminAccess();
+    try {
+        await setIntroSettingsField('planning_image', null);
+        return { success: true };
+    } catch (error: unknown) {
+        safeConsoleError('[admin-intro-settings.actions.ts][removeIntroPlanningImage] Failed to remove image:', error);
+        return { success: false, error: 'Verwijderen mislukt' };
+    }
+}
+
+export async function getIntroInfoBooklet(): Promise<string | null> {
+    await checkIntroAdminAccess();
+    return getIntroInfoBookletInternal();
+}
+
+export async function uploadIntroInfoBooklet(formData: FormData): Promise<{ success: true; data: string } | { success: false; error: string }> {
+    await checkIntroAdminAccess();
+    const result = await uploadFormDataFile(formData, 'document', 'document');
+    if (result.success) {
+        await setIntroSettingsField('info_booklet', result.data);
+    }
+    return result;
+}
+
+export async function removeIntroInfoBooklet(): Promise<{ success: boolean; error?: string }> {
+    await checkIntroAdminAccess();
+    try {
+        await setIntroSettingsField('info_booklet', null);
+        return { success: true };
+    } catch (error: unknown) {
+        safeConsoleError('[admin-intro-settings.actions.ts][removeIntroInfoBooklet] Failed to remove document:', error);
+        return { success: false, error: 'Verwijderen mislukt' };
+    }
+}
+
+export async function getIntroQrScanCount(): Promise<number> {
+    await checkIntroAdminAccess();
+    return getIntroQrScanCountInternal();
 }

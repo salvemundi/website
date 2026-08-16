@@ -61,6 +61,16 @@ const nextConfig: NextConfig = {
             },
         ],
     },
+    async redirects() {
+        return [
+            {
+                source: '/intro/qr-code',
+                destination: '/qr-code',
+                permanent: true,
+            },
+        ];
+    },
+
     async headers() {
         return [
             {

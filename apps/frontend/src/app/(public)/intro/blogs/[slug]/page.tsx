@@ -1,9 +1,13 @@
 import React from 'react';
+import Image from 'next/image';
 import { getIntroBlogBySlug } from '@/server/actions/public/intro.actions';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { notFound } from 'next/navigation';
 import { Calendar, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { getImageUrl } from '@/lib/utils/image-utils';
+import { INTRO_BLOG_TYPES } from '@/shared/lib/constants/intro.constants';
+import { formatDate } from '@/shared/lib/utils/date';
 
 interface Props {
     params: Promise<{ slug: string }>;
@@ -16,15 +20,9 @@ export async function generateMetadata({ params }: Props) {
 
     return {
         title: `${blog.title} | Salve Mundi Introductie`,
-        description: blog.excerpt || 'Lees meer over de introductie van Salve Mundi.' };
+        description: blog.excerpt || 'Lees meer over de introductie van Salve Mundi.'
+    };
 }
-
-const typeConfig: Record<string, { label: string; color: string }> = {
-    update: { label: 'Update', color: 'blue' },
-    pictures: { label: 'Foto\'s', color: 'pink' },
-    event: { label: 'Evenement', color: 'amber' },
-    announcement: { label: 'Aankondiging', color: 'emerald' }
-};
 
 export default async function BlogDetailPage({ params }: Props) {
     const { slug } = await params;
@@ -34,7 +32,7 @@ export default async function BlogDetailPage({ params }: Props) {
         notFound();
     }
 
-    const config = typeConfig[blog.blog_type];
+    const config = INTRO_BLOG_TYPES[blog.blog_type];
     const date = blog.created_at;
 
     return (
@@ -42,7 +40,7 @@ export default async function BlogDetailPage({ params }: Props) {
             <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-10 py-12 lg:py-24">
                 <Link 
                     href="/intro/blogs" 
-                    className="inline-flex items-center gap-2 text-xs font-semibold text-(--beheer-text-muted) hover:text-(--beheer-accent) transition-colors group mb-12"
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-text-muted hover:text-purple-600 dark:hover:text-purple-400 transition-colors group mb-12"
                 >
                     <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                     Terug naar overzicht
@@ -50,45 +48,57 @@ export default async function BlogDetailPage({ params }: Props) {
 
                 <header className="mb-12">
                     <div className="flex flex-wrap items-center gap-4 mb-6">
-                         <span className={`text-[10px] font-bold px-4 py-1.5 rounded-full bg-${config.color}-500/10 text-${config.color}-500 border border-${config.color}-500/20`}>
+                         <span className={`text-[10px] font-bold px-4 py-1.5 rounded-full ${config.badgeClass}`}>
                             {config.label}
                         </span>
                         {date && (
-                            <div className="flex items-center gap-2 text-(--beheer-text-muted)">
-                                <Calendar className="h-4 w-4" />
-                                <span className="text-[10px] font-semibold text-(--beheer-text-muted)">
-                                    {new Date(date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            <div className="flex items-center gap-2 text-text-muted">
+                                <Calendar className="h-4 w-4 text-purple-500 dark:text-purple-400" />
+                                <span className="text-[10px] font-semibold text-text-muted">
+                                    {formatDate(date, 'd MMMM yyyy')}
                                 </span>
                             </div>
                         )}
                     </div>
 
-                    <h1 className="text-4xl lg:text-7xl font-black tracking-tight text-theme dark:text-white leading-[1.1] mb-8">
+                    <h1 className="text-4xl lg:text-7xl font-black tracking-tight text-text-main leading-[1.1] mb-8">
                         {blog.title}
                     </h1>
 
                     {blog.excerpt && (
-                        <p className="text-xl lg:text-2xl text-(--beheer-text-muted) font-medium leading-relaxed italic border-l-4 border-(--beheer-accent)/30 pl-6">
+                        <p className="text-xl lg:text-2xl text-text-muted font-medium leading-relaxed italic border-l-4 border-purple-500/40 pl-6">
                             {blog.excerpt}
                         </p>
                     )}
                 </header>
 
-                <div className="prose prose-invert max-w-none">
-                    <div className="text-lg lg:text-xl text-theme dark:text-white/90 leading-relaxed whitespace-pre-wrap font-medium">
+                {blog.image && (
+                    <div className="relative w-full aspect-video mb-12 squircle-lg overflow-hidden border border-border-color dark:border-white/10 shadow-lg">
+                        <Image
+                            src={getImageUrl(blog.image as string, { width: 1600, fit: 'inside' })}
+                            alt={blog.title}
+                            fill
+                            unoptimized
+                            className="object-cover"
+                        />
+                    </div>
+                )}
+
+                <div className="prose dark:prose-invert max-w-none">
+                    <div className="text-lg lg:text-xl text-text-main leading-relaxed whitespace-pre-wrap font-medium">
                         {blog.content}
                     </div>
                 </div>
 
-                <footer className="mt-20 pt-10 border-t border-(--beheer-border)/10">
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-8 bg-(--beheer-accent)/5 p-8 lg:p-12 squircle-lg border border-(--beheer-accent)/10">
+                <footer className="mt-20 pt-10 border-t border-border-color/20">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-8 bg-bg-card border border-border-color dark:border-white/10 p-8 lg:p-12 squircle-lg shadow-lg">
                         <div className="space-y-2 text-center sm:text-left">
-                            <h4 className="text-xl font-black text-theme dark:text-white">Wil je niets missen?</h4>
-                            <p className="text-sm text-(--beheer-text-muted)">Houd deze pagina en onze socials in de gaten voor meer updates.</p>
+                            <h4 className="text-xl font-black text-theme-purple">Wil je niets missen?</h4>
+                            <p className="text-sm text-text-muted">Houd deze pagina en onze socials in de gaten voor meer updates.</p>
                         </div>
                         <Link 
                             href="/intro" 
-                            className="px-8 py-4 bg-(--beheer-accent) text-white squircle font-bold text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-(--beheer-accent)/20"
+                            className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white squircle font-bold text-xs hover:scale-105 active:scale-95 transition-all shadow-lg shadow-purple-600/20"
                         >
                             Naar de Introductie
                         </Link>
@@ -98,3 +108,4 @@ export default async function BlogDetailPage({ params }: Props) {
         </PublicPageShell>
     );
 }
+

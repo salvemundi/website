@@ -14,6 +14,7 @@ import { eq } from 'drizzle-orm';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { checkIntroAdminAccess } from './admin-intro-signup.actions';
 import { safeConsoleError } from '@/server/utils/logger';
+import { uploadFormDataFile } from '@/server/utils/media';
 
 interface DirectusBlogRow {
     id: string | number;
@@ -24,22 +25,27 @@ interface DirectusBlogRow {
     created_at: string | Date | null;
     slug: string | null;
     excerpt: string | null;
+    image: string | null;
 }
 
 export async function getIntroBlogs(): Promise<IntroBlog[]> {
     await checkIntroAdminAccess();
-    const data = await getIntroBlogsInternal();
-    return data as unknown as IntroBlog[];
+    return getIntroBlogsInternal();
+}
+
+export async function uploadIntroBlogImage(formData: FormData): Promise<{ success: true; data: string } | { success: false; error: string }> {
+    await checkIntroAdminAccess();
+    return uploadFormDataFile(formData, 'image', 'image');
 }
 
 export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ success: boolean; data?: IntroBlog; error?: string; fieldErrors?: Record<string, string[] | undefined> }> {
     await checkIntroAdminAccess();
 
-    const sanitized = Object.fromEntries(
-        Object.entries(blog).map(([key, value]) => [key, value === null ? undefined : value])
-    );
-
-    const validated = introBlogSchema.safeParse(sanitized);
+    // Note: null is a valid, intentional value here (e.g. "remove image"/"clear slug")
+    // and must be preserved so Drizzle's .set() actually clears the column instead of
+    // skipping it — do not convert null to undefined like some sibling actions do for
+    // form-input sanitization.
+    const validated = introBlogSchema.safeParse(blog);
     if (!validated.success) {
         const fieldErrors = z.flattenError(validated.error).fieldErrors;
         return {
@@ -66,6 +72,9 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
             result = inserted[0] as unknown as DirectusBlogRow;
         }
         revalidatePath('/beheer/intro');
+        revalidatePath('/intro');
+        revalidatePath('/intro/blogs');
+        revalidatePath('/intro/blogs/[slug]', 'page');
 
         return {
             success: true,
@@ -77,7 +86,8 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
                 is_published: !!result.is_published,
                 created_at: result.created_at ? toLocalISOString(result.created_at, true) ?? null : null,
                 slug: result.slug || '',
-                excerpt: result.excerpt || ''
+                excerpt: result.excerpt || '',
+                image: result.image || null
             } as IntroBlog
         };
     } catch (error: unknown) {

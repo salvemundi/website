@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.js';
-import { selectIntroSignupsSchema, selectIntroParentSignupsSchema, selectIntroBlogsSchema, selectIntroPlanningSchema } from './db.zod.js';
+import { selectIntroSignupsSchema, selectIntroParentSignupsSchema, selectIntroBlogsSchema, selectIntroPlanningSchema, selectIntroConfidantsSchema } from './db.zod.js';
 
 export const introSignupFormSchema = z.object({
     voornaam: z.string().min(1, 'Voornaam is verplicht'),
@@ -48,6 +48,17 @@ export const introBlogSchema = selectIntroBlogsSchema.omit({
     date_updated: true,
     user_created: true,
     user_updated: true,
+}).partial({
+    status: true,
+    sort: true,
+    slug: true,
+    excerpt: true,
+    meta_title: true,
+    meta_description: true,
+    views_count: true,
+    created_at: true,
+    updated_at: true,
+    likes: true,
 }).extend({
     id: z.coerce.number().optional(),
     title: z.string().min(1, 'Titel is verplicht'),
@@ -64,12 +75,49 @@ export const introPlanningSchema = selectIntroPlanningSchema.omit({
     date_updated: true,
     user_created: true,
     user_updated: true,
+}).partial({
+    status: true,
+    sort: true,
+    day: true,
+    time_end: true,
+    location: true,
+    sort_order: true,
+    color: true,
+    capacity: true,
+    signup_required: true,
+    created_at: true,
+    updated_at: true,
+    icon: true,
+    is_mandatory: true,
+    description: true,
 }).extend({
-    id: z.coerce.number().optional(),
+    id: z.coerce.number(),
     date: z.string().min(1, 'Datum is verplicht'),
     time_start: z.string().min(1, 'Starttijd is verplicht'),
     title: z.string().min(1, 'Titel is verplicht'),
-    description: z.string().min(1, 'Beschrijving is verplicht'),
+    description: z.string().nullable().optional(),
 });
 
+export const introPlanningFormSchema = introPlanningSchema.omit({ id: true });
 export type IntroPlanningItem = z.infer<typeof introPlanningSchema>;
+export type IntroPlanningForm = z.infer<typeof introPlanningFormSchema>;
+
+export const introConfidantSchema = selectIntroConfidantsSchema.omit({
+    created_at: true,
+    updated_at: true,
+}).partial({
+    phone_number: true,
+    image: true,
+    sort_order: true,
+    is_active: true,
+}).extend({
+    id: z.coerce.number(),
+    name: z.string().min(1, 'Naam is verplicht'),
+    email: z.string().email('Ongeldig e-mailadres').nullable().optional().or(z.literal('')),
+    bio: z.string().nullable().optional(),
+});
+
+export const introConfidantFormSchema = introConfidantSchema.omit({ id: true });
+export type IntroConfidant = z.infer<typeof introConfidantSchema>;
+export type IntroConfidantForm = z.infer<typeof introConfidantFormSchema>;
+

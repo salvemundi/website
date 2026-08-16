@@ -27,7 +27,7 @@ export default function AdminReisSwitcher({ trips, activeTripId }: AdminReisSwit
     }));
 
     return (
-        <div className="min-w-[180px]">
+        <div className="w-full sm:w-auto sm:min-w-[180px] flex-1 sm:flex-initial">
             <AdminSelect
                 value={activeTripId}
                 onChange={handleSwitch}

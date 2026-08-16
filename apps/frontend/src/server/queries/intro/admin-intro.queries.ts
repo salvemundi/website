@@ -1,11 +1,13 @@
 import 'server-only';
 import { db, schema } from "@salvemundi/db";
-import { desc, asc } from 'drizzle-orm';
+import { desc, asc, eq, sql } from 'drizzle-orm';
 import {
     type IntroBlog,
     type IntroPlanningItem,
+    type IntroConfidant,
     introBlogSchema,
-    introPlanningSchema
+    introPlanningSchema,
+    introConfidantSchema
 } from '@salvemundi/validations/schema/intro.zod';
 import { z } from 'zod';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -103,5 +105,107 @@ export async function getIntroPlanningInternal(): Promise<IntroPlanningItem[]> {
     } catch (error) {
         safeConsoleError('[admin-intro.queries.ts][getIntroPlanningInternal] failed:', error);
         throw new Error('Kon planning niet ophalen');
+    }
+}
+
+export async function getIntroConfidantsInternal(activeOnly = false): Promise<IntroConfidant[]> {
+    try {
+        const rows = await db
+            .select()
+            .from(schema.intro_confidants)
+            .where(activeOnly ? eq(schema.intro_confidants.is_active, true) : undefined)
+            .orderBy(asc(schema.intro_confidants.sort_order), asc(schema.intro_confidants.id))
+            .limit(100);
+
+        const mapped = rows.map(i => ({
+            ...i,
+            id: Number(i.id),
+            name: typeof i.name === 'string' ? i.name : '',
+            email: i.email ?? null,
+            phone_number: i.phone_number ?? null,
+            image: i.image ?? null,
+            bio: i.bio ?? null,
+            sort_order: i.sort_order ?? 0,
+            is_active: i.is_active ?? true
+        }));
+
+        const parsed = z.array(introConfidantSchema).safeParse(mapped);
+        if (!parsed.success) {
+            safeConsoleError('[admin-intro.queries.ts][getIntroConfidantsInternal] validation failed:', parsed.error);
+            return mapped as IntroConfidant[];
+        }
+        return parsed.data;
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getIntroConfidantsInternal] failed:', error);
+        throw new Error('Kon vertrouwenspersonen niet ophalen');
+    }
+}
+
+export async function getIntroPlanningImageInternal(): Promise<string | null> {
+    try {
+        const rows = await db
+            .select({ planning_image: schema.intro_settings.planning_image })
+            .from(schema.intro_settings)
+            .orderBy(asc(schema.intro_settings.id))
+            .limit(1);
+
+        return rows[0]?.planning_image ?? null;
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getIntroPlanningImageInternal] failed:', error);
+        return null;
+    }
+}
+
+export async function getIntroInfoBookletInternal(): Promise<string | null> {
+    try {
+        const rows = await db
+            .select({ info_booklet: schema.intro_settings.info_booklet })
+            .from(schema.intro_settings)
+            .orderBy(asc(schema.intro_settings.id))
+            .limit(1);
+
+        return rows[0]?.info_booklet ?? null;
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getIntroInfoBookletInternal] failed:', error);
+        return null;
+    }
+}
+
+export async function getIntroQrScanCountInternal(): Promise<number> {
+    try {
+        const rows = await db
+            .select({ qr_scan_count: schema.intro_settings.qr_scan_count })
+            .from(schema.intro_settings)
+            .orderBy(asc(schema.intro_settings.id))
+            .limit(1);
+
+        return rows[0]?.qr_scan_count ?? 0;
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getIntroQrScanCountInternal] failed:', error);
+        return 0;
+    }
+}
+
+export async function incrementIntroQrScanCountInternal(): Promise<number> {
+    try {
+        const rows = await db
+            .select({ id: schema.intro_settings.id })
+            .from(schema.intro_settings)
+            .orderBy(asc(schema.intro_settings.id))
+            .limit(1);
+
+        if (rows.length > 0) {
+            const updated = await db.update(schema.intro_settings)
+                .set({ qr_scan_count: sql`${schema.intro_settings.qr_scan_count} + 1` })
+                .where(eq(schema.intro_settings.id, rows[0].id))
+                .returning({ qr_scan_count: schema.intro_settings.qr_scan_count });
+            return updated[0]?.qr_scan_count ?? 0;
+        }
+
+        const inserted = await db.insert(schema.intro_settings).values({ qr_scan_count: 1 }).returning({ qr_scan_count: schema.intro_settings.qr_scan_count });
+        return inserted[0]?.qr_scan_count ?? 1;
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][incrementIntroQrScanCountInternal] failed:', error);
+        return 0;
     }
 }

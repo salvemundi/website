@@ -75,3 +75,33 @@ export async function uploadDocumentToDirectus(file: File | null, maxSizeBytes: 
 
     return postFileToDirectus(file, 'uploadDocumentToDirectus');
 }
+
+export async function uploadFormDataFile(
+    formData: FormData,
+    fieldName: string,
+    type: 'image' | 'document' = 'image'
+): Promise<{ success: true; data: string } | { success: false; error: string }> {
+    const file = formData.get(fieldName) as File | null;
+    if (!file || file.size === 0) {
+        return { success: false, error: 'Geen bestand gevonden in upload.' };
+    }
+
+    try {
+        const uploadResult = type === 'document'
+            ? await uploadDocumentToDirectus(file)
+            : await uploadToDirectus(file);
+
+        if (!uploadResult.success) {
+            return { success: false, error: uploadResult.error };
+        }
+        if (!uploadResult.id) {
+            return { success: false, error: 'Bestand uploaden mislukt op de server (geen ID teruggekregen).' };
+        }
+        return { success: true, data: uploadResult.id };
+    } catch (error: unknown) {
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('[media.ts][uploadFormDataFile]', `Failed to upload ${type}: ${typedError.message}`);
+        return { success: false, error: 'Bestand uploaden mislukt op de server.' };
+    }
+}
+

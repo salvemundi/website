@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 
@@ -19,16 +21,42 @@ export default function AdminToolbar({
     actions,
     centered = false
 }: AdminToolbarProps) {
+    const [hidden, setHidden] = useState(false);
+    const lastScrollY = useRef(0);
+
+    useEffect(() => {
+        lastScrollY.current = window.scrollY;
+
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            const delta = currentScrollY - lastScrollY.current;
+
+            if (currentScrollY < 80) {
+                setHidden(false);
+            } else if (delta > 4) {
+                setHidden(true);
+            } else if (delta < -4) {
+                setHidden(false);
+            }
+
+            lastScrollY.current = currentScrollY;
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
-        <header 
-            className="bg-bg-card border-b border-border-color sticky top-(--header-total-height) z-30 w-full transition-all"
+        <header
+            className="bg-bg-card border-b border-border-color sticky top-(--header-total-height) z-30 w-full transition-transform duration-300"
+            style={{ transform: hidden ? 'translateY(calc(-100% - var(--header-total-height)))' : 'translateY(0)' }}
         >
             <div className="admin-container py-4">
                 <div className={`flex flex-col ${centered ? 'items-center text-center mx-auto' : 'md:flex-row justify-between items-start md:items-center'} gap-4`}>
                     <div className={`flex items-center gap-4 ${centered ? 'flex-col' : ''}`}>
                         {backHref && (
-                            <Link 
-                                href={backHref} 
+                            <Link
+                                href={backHref}
                                 title="Terug"
                                 onClick={onBack}
                                 className="p-2 rounded-xl bg-bg-card border border-border-color text-text-muted hover:text-theme-purple transition-all active:scale-95 shadow-sm"
@@ -58,4 +86,3 @@ export default function AdminToolbar({
         </header>
     );
 }
-

@@ -54,7 +54,7 @@ export default function ReisFilters({
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-2">
-                    <div className="w-full sm:w-45">
+                    <div className="w-full sm:w-[180px]">
                         <AdminSelect
                             value={statusFilter}
                             onChange={onStatusChange}
@@ -63,7 +63,7 @@ export default function ReisFilters({
                         />
                     </div>
 
-                    <div className="w-full sm:w-37.5">
+                    <div className="w-full sm:w-[150px]">
                         <AdminSelect
                             value={roleFilter}
                             onChange={onRoleChange}
