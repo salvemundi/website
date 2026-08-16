@@ -29,7 +29,7 @@ export default function IntroConfidantCard({ confidant }: IntroConfidantCardProp
 
             <div className="flex flex-col flex-1 p-3.5 sm:p-4">
                 <h3 className="text-sm sm:text-base font-bold text-theme-purple truncate">{confidant.name}</h3>
-                <p className="text-[11px] sm:text-xs font-semibold text-purple-500">Vertrouwenspersoon</p>
+                <p className="text-[11px] sm:text-xs font-semibold text-purple-500">Vertrouwenscontactpersoon</p>
 
                 {confidant.bio && (
                     <p className="mt-2 text-xs text-text-muted leading-relaxed line-clamp-2">{confidant.bio}</p>
