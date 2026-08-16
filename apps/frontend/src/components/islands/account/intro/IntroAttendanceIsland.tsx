@@ -35,7 +35,6 @@ const STATUS_OPTIONS: { value: IntroGroupAttendanceStatus; label: string; icon: 
     { value: 'not_reported', label: 'Niet gemeld', icon: HelpCircle },
     { value: 'present', label: 'Aanwezig', icon: Check },
     { value: 'went_home', label: 'Onderweg naar huis', icon: LogOut },
-    { value: 'home', label: 'Thuis', icon: Home },
     { value: 'staying_out', label: 'Blijft na 22:00', icon: MoonStar }
 ];
 
@@ -306,6 +305,19 @@ export default function IntroAttendanceIsland({ groups, initialGroupId }: Props)
                                         </button>
                                     ))}
                                 </div>
+
+                                {status === 'went_home' && (
+                                    <div className="mb-2">
+                                        <button
+                                            onClick={() => { void handleSetStatus(member, 'home'); }}
+                                            disabled={isPending}
+                                            className="form-button flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/20"
+                                        >
+                                            <Home className="h-3.5 w-3.5" />
+                                            Thuis gemeld
+                                        </button>
+                                    </div>
+                                )}
 
                                 {status !== 'not_reported' && statusAt && (
                                     <div className="flex items-center gap-2 text-xs text-(--text-muted) mb-2">
