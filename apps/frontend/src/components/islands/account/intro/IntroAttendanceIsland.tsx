@@ -16,6 +16,7 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 interface Props {
     groups: IntroGroupWithDetails[];
     isCrew: boolean;
+    initialGroupId?: number | null;
 }
 
 const todayIso = () => new Date().toISOString().split('T')[0];
@@ -26,9 +27,10 @@ const EVENING_OPTIONS: { value: IntroGroupAttendanceStatus; label: string; icon:
     { value: 'staying_out', label: 'Blijft na 22:00', icon: MoonStar }
 ];
 
-export default function IntroAttendanceIsland({ groups }: Props) {
+export default function IntroAttendanceIsland({ groups, initialGroupId }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
-    const [selectedGroupId, setSelectedGroupId] = useState<number | null>(groups[0]?.id ?? null);
+    const initialValid = initialGroupId !== null && initialGroupId !== undefined && groups.some(g => g.id === initialGroupId);
+    const [selectedGroupId, setSelectedGroupId] = useState<number | null>(initialValid ? (initialGroupId as number) : (groups[0]?.id ?? null));
     const [selectedDate, setSelectedDate] = useState(todayIso());
     const [members, setMembers] = useState<IntroGroupMemberWithAttendance[]>([]);
     const [loading, setLoading] = useState(false);

@@ -8,12 +8,20 @@ export const metadata: Metadata = {
     title: 'Groepje Aanwezigheid | SV Salve Mundi'
 };
 
-export default async function IntroAttendancePage() {
+interface Props {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function IntroAttendancePage({ searchParams }: Props) {
     const { isCrew, ledGroupIds } = await getIntroAttendanceAccess();
 
     if (!isCrew && ledGroupIds.length === 0) {
         redirect('/profiel');
     }
+
+    const resolvedSearchParams = await searchParams;
+    const groupParam = typeof resolvedSearchParams.group === 'string' ? Number(resolvedSearchParams.group) : undefined;
+    const initialGroupId = groupParam !== undefined && !Number.isNaN(groupParam) ? groupParam : null;
 
     const groups = await getAttendanceGroupsForUser();
 
@@ -32,7 +40,7 @@ export default async function IntroAttendancePage() {
             </header>
 
             <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
-                <IntroAttendanceIsland groups={groups} isCrew={isCrew} />
+                <IntroAttendanceIsland groups={groups} isCrew={isCrew} initialGroupId={initialGroupId} />
             </div>
         </div>
     );
