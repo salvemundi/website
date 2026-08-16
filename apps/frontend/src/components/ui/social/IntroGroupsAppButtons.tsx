@@ -15,25 +15,25 @@ export default function IntroGroupsAppButtons({ groups }: IntroGroupsAppButtonsP
     }
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3">
             {groups.map(group => (
                 <a
                     key={group.id}
                     href={group.invite_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center justify-between gap-3 squircle bg-purple-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl hover:scale-[1.02]"
+                    className="group flex items-start justify-between gap-3 squircle bg-purple-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl hover:scale-[1.01]"
                 >
-                    <span className="flex items-center gap-3 min-w-0">
-                        <MessageCircle className="h-5 w-5 shrink-0" />
+                    <span className="flex items-start gap-3 min-w-0">
+                        <MessageCircle className="h-5 w-5 shrink-0 mt-0.5" />
                         <span className="min-w-0">
-                            <span className="block font-semibold text-sm truncate">{group.name}</span>
+                            <span className="block font-semibold text-sm">{group.name}</span>
                             {group.description && (
-                                <span className="block text-xs text-white/80 truncate">{group.description}</span>
+                                <span className="block mt-1 text-xs text-white/80 leading-relaxed whitespace-pre-wrap">{group.description}</span>
                             )}
                         </span>
                     </span>
-                    <ExternalLink className="h-4 w-4 opacity-70 group-hover:opacity-100 shrink-0" />
+                    <ExternalLink className="h-4 w-4 opacity-70 group-hover:opacity-100 shrink-0 mt-0.5" />
                 </a>
             ))}
         </div>
