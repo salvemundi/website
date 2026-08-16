@@ -1,9 +1,11 @@
 import React from 'react';
+import Image from 'next/image';
 import { getIntroBlogBySlug } from '@/server/actions/public/intro.actions';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { notFound } from 'next/navigation';
 import { Calendar, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { getImageUrl } from '@/lib/utils/image-utils';
 
 interface Props {
     params: Promise<{ slug: string }>;
@@ -73,6 +75,18 @@ export default async function BlogDetailPage({ params }: Props) {
                         </p>
                     )}
                 </header>
+
+                {blog.image && (
+                    <div className="relative w-full aspect-video mb-12 squircle-lg overflow-hidden">
+                        <Image
+                            src={getImageUrl(blog.image as string, { width: 1600, fit: 'inside' })}
+                            alt={blog.title}
+                            fill
+                            unoptimized
+                            className="object-cover"
+                        />
+                    </div>
+                )}
 
                 <div className="prose prose-invert max-w-none">
                     <div className="text-lg lg:text-xl text-theme dark:text-white/90 leading-relaxed whitespace-pre-wrap font-medium">

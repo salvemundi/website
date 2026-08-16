@@ -1,7 +1,8 @@
 import { connection } from 'next/server';
+import Link from 'next/link';
+import { CalendarClock, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { hasParentSignup, getIntroBlogsPublic } from '@/server/actions/public/intro.actions';
-import { CheckCircle2 } from 'lucide-react';
 import { IntroStudentIsland } from '@/components/islands/intro/IntroStudentIsland';
 import { IntroParentIsland } from '@/components/islands/intro/IntroParentIsland';
 import { IntroLightboxIsland } from '@/components/islands/intro/IntroLightboxIsland';
@@ -100,6 +101,24 @@ export default async function IntroPage() {
             <h1 className="sr-only">Introductie</h1>
 
             <section className="px-fluid-md py-fluid-lg">
+                <div className="max-w-7xl mx-auto w-full mb-8">
+                    <Link
+                        href="/qr-code"
+                        className="group flex items-center justify-between gap-4 squircle-lg bg-purple-600 text-white px-6 py-5 sm:px-8 sm:py-6 shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="h-11 w-11 sm:h-12 sm:w-12 squircle bg-white/15 flex items-center justify-center shrink-0">
+                                <CalendarClock className="h-5 w-5 sm:h-6 sm:w-6" />
+                            </div>
+                            <div>
+                                <p className="font-black text-base sm:text-lg leading-tight">Bekijk de planning van de introweek</p>
+                                <p className="text-xs sm:text-sm text-white/80 font-medium">Live schema, contact en meer</p>
+                            </div>
+                        </div>
+                        <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                </div>
+
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 max-w-7xl mx-auto w-full items-start lg:items-stretch">
                     <div className="flex-1 space-y-6 flex flex-col">
                         <div className="bg-bg-card dark:border dark:border-white/10 squircle-xl shadow-xl p-fluid-md sm:p-10 flex-1 flex flex-col">

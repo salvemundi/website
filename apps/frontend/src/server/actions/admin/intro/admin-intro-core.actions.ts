@@ -36,6 +36,10 @@ export async function deleteIntroBlog(id: number) {
     return blogs.deleteIntroBlog(id);
 }
 
+export async function uploadIntroBlogImage(formData: FormData) {
+    return blogs.uploadIntroBlogImage(formData);
+}
+
 export async function getIntroPlanning(): Promise<IntroPlanningItem[]> {
     return planning.getIntroPlanning();
 }

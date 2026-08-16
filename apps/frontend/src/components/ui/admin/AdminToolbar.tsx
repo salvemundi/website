@@ -48,7 +48,8 @@ export default function AdminToolbar({
 
     return (
         <header
-            className={`bg-bg-card border-b border-border-color sticky top-(--header-total-height) z-30 w-full transition-transform duration-300 ${hidden ? '-translate-y-[calc(100%+var(--header-total-height))]' : 'translate-y-0'}`}
+            className="bg-bg-card border-b border-border-color sticky top-(--header-total-height) z-30 w-full transition-transform duration-300"
+            style={{ transform: hidden ? 'translateY(calc(-100% - var(--header-total-height)))' : 'translateY(0)' }}
         >
             <div className="admin-container py-4">
                 <div className={`flex flex-col ${centered ? 'items-center text-center mx-auto' : 'md:flex-row justify-between items-start md:items-center'} gap-4`}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     Plus,
     X,
@@ -137,14 +137,16 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
 
     const handleSave = async () => {
         if (!editingPlanning) return;
-
-        const sanitized = Object.fromEntries(
-            Object.entries(editingPlanning).filter(([_, value]) => value !== '')
-        );
-
-        await onSave(sanitized as Partial<IntroPlanningItem>);
+        await onSave(editingPlanning);
         setEditingPlanning(null);
     };
+
+    const editFormRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (editingPlanning !== null) {
+            editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, [editingPlanning]);
 
     return (
         <div>
@@ -275,7 +277,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
             </div>
 
             {editingPlanning !== null && (
-                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-8 mb-8 shadow-2xl">
+                <div ref={editFormRef} className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-8 mb-8 shadow-2xl scroll-mt-24">
                     <div className="flex items-center justify-between mb-8">
                         <h3 className="font-semibold text-xs text-(--beheer-text-muted)">
                             {editingPlanning.id ? 'Planning Bewerken' : 'Nieuw Planning Item'}
@@ -313,8 +315,11 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                             <input type="text" value={editingPlanning.location || ''} onChange={e => setEditingPlanning({ ...editingPlanning, location: e.target.value })} className={`beheer-input ${inputClass}`} placeholder="Bv. TU/e Gemini" />
                         </Field>
                         <div className="md:col-span-3">
-                            <Field label="Beschrijving *">
+                            <Field label="Beschrijving">
                                 <textarea value={editingPlanning.description || ''} onChange={e => setEditingPlanning({ ...editingPlanning, description: e.target.value })} rows={4} className={`beheer-input ${inputClass}`} placeholder="Wat gaan we doen?" />
+                                <p className="mt-1.5 text-xs text-(--beheer-text-muted) opacity-60">
+                                    Opmaak: **vet**, *cursief*, __onderstreept__. Enters blijven behouden.
+                                </p>
                             </Field>
                         </div>
                     </div>
@@ -324,7 +329,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                             onClick={() => { void handleSave(); }}
                             loading={saving}
                             icon={Save}
-                            disabled={!editingPlanning.date || !editingPlanning.time_start || !editingPlanning.title || !editingPlanning.description}
+                            disabled={!editingPlanning.date || !editingPlanning.time_start || !editingPlanning.title}
                         >
                             Opslaan
                         </Button>

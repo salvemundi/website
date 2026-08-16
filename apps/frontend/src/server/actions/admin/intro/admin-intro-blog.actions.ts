@@ -14,6 +14,7 @@ import { eq } from 'drizzle-orm';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { checkIntroAdminAccess } from './admin-intro-signup.actions';
 import { safeConsoleError } from '@/server/utils/logger';
+import { uploadToDirectus } from '@/server/utils/media';
 
 interface DirectusBlogRow {
     id: string | number;
@@ -24,6 +25,7 @@ interface DirectusBlogRow {
     created_at: string | Date | null;
     slug: string | null;
     excerpt: string | null;
+    image: string | null;
 }
 
 export async function getIntroBlogs(): Promise<IntroBlog[]> {
@@ -32,14 +34,35 @@ export async function getIntroBlogs(): Promise<IntroBlog[]> {
     return data as unknown as IntroBlog[];
 }
 
+export async function uploadIntroBlogImage(formData: FormData): Promise<{ success: true; data: string } | { success: false; error: string }> {
+    await checkIntroAdminAccess();
+
+    const file = formData.get('image') as File | null;
+    if (!file) return { success: false, error: 'Geen bestand gevonden in upload.' };
+
+    try {
+        const uploadResult = await uploadToDirectus(file);
+        if (!uploadResult.success) {
+            return { success: false, error: uploadResult.error };
+        }
+        if (!uploadResult.id) {
+            return { success: false, error: 'Afbeelding uploaden mislukt op de server (geen ID teruggekregen).' };
+        }
+        return { success: true, data: uploadResult.id };
+    } catch (error: unknown) {
+        safeConsoleError('[admin-intro-blog.actions.ts][uploadIntroBlogImage] Failed to upload image:', error);
+        return { success: false, error: 'Afbeelding uploaden mislukt op de server.' };
+    }
+}
+
 export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ success: boolean; data?: IntroBlog; error?: string; fieldErrors?: Record<string, string[] | undefined> }> {
     await checkIntroAdminAccess();
 
-    const sanitized = Object.fromEntries(
-        Object.entries(blog).map(([key, value]) => [key, value === null ? undefined : value])
-    );
-
-    const validated = introBlogSchema.safeParse(sanitized);
+    // Note: null is a valid, intentional value here (e.g. "remove image"/"clear slug")
+    // and must be preserved so Drizzle's .set() actually clears the column instead of
+    // skipping it — do not convert null to undefined like some sibling actions do for
+    // form-input sanitization.
+    const validated = introBlogSchema.safeParse(blog);
     if (!validated.success) {
         const fieldErrors = z.flattenError(validated.error).fieldErrors;
         return {
@@ -66,6 +89,9 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
             result = inserted[0] as unknown as DirectusBlogRow;
         }
         revalidatePath('/beheer/intro');
+        revalidatePath('/intro');
+        revalidatePath('/intro/blogs');
+        revalidatePath('/intro/blogs/[slug]', 'page');
 
         return {
             success: true,
@@ -77,7 +103,8 @@ export async function upsertIntroBlog(blog: Partial<IntroBlog>): Promise<{ succe
                 is_published: !!result.is_published,
                 created_at: result.created_at ? toLocalISOString(result.created_at, true) ?? null : null,
                 slug: result.slug || '',
-                excerpt: result.excerpt || ''
+                excerpt: result.excerpt || '',
+                image: result.image || null
             } as IntroBlog
         };
     } catch (error: unknown) {

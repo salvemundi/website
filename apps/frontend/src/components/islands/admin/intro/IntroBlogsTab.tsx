@@ -11,6 +11,7 @@ import {
 import type { IntroBlog } from '@salvemundi/validations/schema/intro.zod';
 import { ActionButton, EmptyState, Button } from './IntroTabComponents';
 import BlogEditForm from './BlogEditForm';
+import { getImageUrl } from '@/lib/utils/image-utils';
 
 interface Props {
     blogs: IntroBlog[];
@@ -112,6 +113,15 @@ export default function IntroBlogsTab({ blogs, onSave, onDelete, saving, deletin
                                 className="w-full flex items-center gap-3 sm:gap-4 p-4 sm:p-6 text-left cursor-pointer group"
                             >
                                 <div className={`h-2.5 w-2.5 rounded-full shrink-0 shadow-[0_0_10px_rgba(0,0,0,0.1)] transition-all ${blog.is_published ? 'bg-emerald-500 shadow-emerald-500/40' : 'bg-(--beheer-border) opacity-30'}`} />
+
+                                {blog.image && (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src={getImageUrl(blog.image as string, { width: 96, height: 96, fit: 'cover' })}
+                                        alt=""
+                                        className="h-10 w-10 rounded-lg object-cover shrink-0"
+                                    />
+                                )}
 
                                 <div className="min-w-0 flex-1">
                                     <div className="flex flex-wrap items-center gap-2">

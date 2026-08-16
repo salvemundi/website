@@ -1,10 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { Clock, MapPin, Download, Rss, Check, Calendar, PartyPopper, ImageOff, X, ZoomIn } from 'lucide-react';
+import { Clock, MapPin, Download, Rss, Check, Calendar, PartyPopper, ImageOff, X, ZoomIn, Sunrise } from 'lucide-react';
 import type { IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import { toLocalISOString } from '@/lib/utils/date-utils';
+import { formatDate } from '@/shared/lib/utils/date';
+
+const TOMORROW_OVERVIEW_HOUR = 22;
 
 interface Props {
     planning: IntroPlanningItem[];
@@ -30,6 +34,47 @@ function formatTimeRange(item: IntroPlanningItem): string {
     const start = item.time_start.slice(0, 5);
     if (!item.time_end) return start;
     return `${start} - ${item.time_end.slice(0, 5)}`;
+}
+
+// Minimal inline formatting for activity descriptions: **bold**, __underline__,
+// *italic*, and line breaks. Built as plain React nodes (never innerHTML) so
+// there's no HTML-injection surface even though the text comes from admins.
+const INLINE_FORMAT_PATTERN = /(\*\*.+?\*\*|__.+?__|\*.+?\*)/g;
+
+function renderInlineFormatting(line: string): React.ReactNode[] {
+    return line.split(INLINE_FORMAT_PATTERN).filter(part => part !== '').map((part, idx) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={idx}>{part.slice(2, -2)}</strong>;
+        }
+        if (part.startsWith('__') && part.endsWith('__')) {
+            return <u key={idx}>{part.slice(2, -2)}</u>;
+        }
+        if (part.startsWith('*') && part.endsWith('*')) {
+            return <em key={idx}>{part.slice(1, -1)}</em>;
+        }
+        return part;
+    });
+}
+
+function FormattedText({ text }: { text: string }) {
+    const lines = text.split('\n');
+    return (
+        <>
+            {lines.map((line, idx) => (
+                <Fragment key={idx}>
+                    {idx > 0 && <br />}
+                    {renderInlineFormatting(line)}
+                </Fragment>
+            ))}
+        </>
+    );
+}
+
+function addDays(dateStr: string, days: number): string {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    dt.setUTCDate(dt.getUTCDate() + days);
+    return dt.toISOString().slice(0, 10);
 }
 
 function ActivityCard({
@@ -67,7 +112,7 @@ function ActivityCard({
                         {item.location && <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 shrink-0" />{item.location}</span>}
                     </div>
                     {item.description && (
-                        <p className={`mt-3 text-sm leading-relaxed ${accent === 'live' ? 'text-white/80' : 'text-text-muted'}`}>{item.description}</p>
+                        <p className={`mt-3 text-sm leading-relaxed ${accent === 'live' ? 'text-white/80' : 'text-text-muted'}`}><FormattedText text={item.description} /></p>
                     )}
                 </div>
             ) : (
@@ -81,6 +126,9 @@ function ActivityCard({
 }
 
 export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: Props) {
+    const searchParams = useSearchParams();
+    const previewTomorrow = searchParams.get('previewTomorrow') === '1';
+
     const [now, setNow] = useState('');
     const [copied, setCopied] = useState(false);
     const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -125,6 +173,25 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
         return sorted.find(item => startKey(item) > now) || null;
     }, [sorted, now]);
 
+    const showTomorrowOverview = useMemo(() => {
+        if (previewTomorrow) return true;
+        if (!now) return false;
+        return Number(now.slice(11, 13)) >= TOMORROW_OVERVIEW_HOUR;
+    }, [now, previewTomorrow]);
+
+    const tomorrowItems = useMemo(() => {
+        // In preview mode "today" (the real date) is likely outside the intro week,
+        // so there's nothing at real-tomorrow to show — fall back to the schedule's
+        // first day so the preview actually renders something.
+        if (previewTomorrow) {
+            const firstDate = sorted[0]?.date;
+            return firstDate ? sorted.filter(item => item.date === firstDate) : [];
+        }
+        if (!now) return [];
+        const tomorrowDate = addDays(now.slice(0, 10), 1);
+        return sorted.filter(item => item.date === tomorrowDate);
+    }, [sorted, now, previewTomorrow]);
+
     const handleSubscribe = async () => {
         const webcalUrl = `webcal://${window.location.host}/api/intro/planning.ics`;
         try {
@@ -143,6 +210,51 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                 <ActivityCard label="Nu bezig" item={current} accent="live" icon={PartyPopper} />
                 <ActivityCard label="Volgende activiteit" item={next} accent="next" icon={Calendar} />
             </div>
+
+            {showTomorrowOverview && tomorrowItems.length > 0 && (
+                <div className="squircle-lg bg-bg-card border border-border-color dark:border-white/10 shadow-lg p-5 sm:p-8">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="h-10 w-10 squircle bg-purple-600 flex items-center justify-center shrink-0">
+                            <Sunrise className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl sm:text-2xl font-black text-theme-purple leading-tight">Planning voor morgen</h2>
+                            <p className="text-sm text-text-muted font-medium capitalize">{formatDate(tomorrowItems[0].date, 'EEEE d MMMM')}</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        {tomorrowItems.map((item, idx) => {
+                            const isLast = idx === tomorrowItems.length - 1;
+                            const isCurrentOrNext = current?.id === item.id || next?.id === item.id;
+                            return (
+                                <div key={item.id} className="grid grid-cols-[3.25rem_auto] sm:grid-cols-[4rem_auto] gap-x-3 sm:gap-x-4">
+                                    <div className={`relative text-right pr-3 sm:pr-4 border-r-2 ${isCurrentOrNext ? 'border-purple-500' : 'border-border-color dark:border-white/10'}`}>
+                                        <span className={`text-xs sm:text-sm font-black leading-tight ${isCurrentOrNext ? 'text-purple-500' : 'text-text-main'}`}>
+                                            {item.time_start.slice(0, 5)}
+                                        </span>
+                                        <span
+                                            className={`absolute top-1 -right-[7px] h-3 w-3 rounded-full ring-4 ring-bg-card ${isCurrentOrNext ? 'bg-purple-500' : 'bg-border-color dark:bg-white/20'}`}
+                                        />
+                                    </div>
+                                    <div className={isLast ? 'pb-1' : 'pb-6'}>
+                                        <p className="font-bold text-text-main leading-snug">{item.title}</p>
+                                        {item.time_end && (
+                                            <p className="mt-0.5 text-xs font-semibold text-text-muted">tot {item.time_end.slice(0, 5)}</p>
+                                        )}
+                                        {item.location && (
+                                            <p className="mt-1.5 text-xs font-semibold text-text-muted flex items-center gap-1"><MapPin className="h-3.5 w-3.5 shrink-0" />{item.location}</p>
+                                        )}
+                                        {item.description && (
+                                            <p className="mt-1.5 text-sm text-text-muted leading-relaxed"><FormattedText text={item.description} /></p>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             <div className="squircle-lg bg-bg-card border border-border-color dark:border-white/10 shadow-lg p-5 sm:p-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">

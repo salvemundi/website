@@ -71,7 +71,7 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
     }, []);
 
     // Hide header on certain routes
-    if (pathname.startsWith('/intro/blog') || pathname.startsWith('/intro/planning')) {
+    if (pathname.startsWith('/intro/planning')) {
         return null;
     }
 

@@ -1,10 +1,12 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { Calendar, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 import type { IntroBlog } from '@salvemundi/validations/schema/intro.zod';
+import { getImageUrl } from '@/lib/utils/image-utils';
 
 interface Props {
     blogs: IntroBlog[];
@@ -39,6 +41,17 @@ export function IntroBlogGrid({ blogs }: Props) {
                             className="group relative flex flex-col h-full bg-white dark:bg-white/5 squircle-lg border border-border-color/40 hover:border-theme-purple/50 transition-all duration-500 shadow-sm hover:shadow-2xl hover:-translate-y-2 overflow-hidden"
                             style={{ animationDelay: `${idx * 100}ms` }}
                         >
+                            {blog.image && (
+                                <div className="relative w-full h-40 sm:h-48 shrink-0 bg-bg-main">
+                                    <Image
+                                        src={getImageUrl(blog.image as string, { width: 700, height: 300, fit: 'cover' })}
+                                        alt={blog.title}
+                                        fill
+                                        unoptimized
+                                        className="object-cover"
+                                    />
+                                </div>
+                            )}
                             <div className="p-8 flex flex-col h-full">
                                 <div className="flex items-center justify-between mb-6">
                                     <span className={`text-[10px] font-semibold px-3 py-1 rounded-full bg-${config.color}-500/10 text-${config.color}-500 border border-${config.color}-500/20`}>
