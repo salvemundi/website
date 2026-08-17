@@ -1,9 +1,9 @@
 'use client';
 
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { Clock, MapPin, Download, Rss, Check, Calendar, PartyPopper, ImageOff, X, ZoomIn, Sunrise } from 'lucide-react';
+import { Clock, MapPin, Download, Rss, Check, Calendar, CalendarPlus, ChevronDown, PartyPopper, ImageOff, X, ZoomIn, Sunrise } from 'lucide-react';
 import type { IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { formatDate } from '@/shared/lib/utils/date';
@@ -132,12 +132,32 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
     const [now, setNow] = useState('');
     const [copied, setCopied] = useState(false);
     const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [subscribeMenuOpen, setSubscribeMenuOpen] = useState(false);
+    const subscribeMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setNow(nowKey());
         const id = setInterval(() => setNow(nowKey()), 30000);
         return () => clearInterval(id);
     }, []);
+
+    useEffect(() => {
+        if (!subscribeMenuOpen) return;
+        const onClickOutside = (e: MouseEvent) => {
+            if (subscribeMenuRef.current && !subscribeMenuRef.current.contains(e.target as Node)) {
+                setSubscribeMenuOpen(false);
+            }
+        };
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setSubscribeMenuOpen(false);
+        };
+        document.addEventListener('mousedown', onClickOutside);
+        document.addEventListener('keydown', onKeyDown);
+        return () => {
+            document.removeEventListener('mousedown', onClickOutside);
+            document.removeEventListener('keydown', onKeyDown);
+        };
+    }, [subscribeMenuOpen]);
 
     useEffect(() => {
         if (!lightboxOpen) return;
@@ -192,7 +212,11 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
         return sorted.filter(item => item.date === tomorrowDate);
     }, [sorted, now, previewTomorrow]);
 
-    const handleSubscribe = async () => {
+    // Apple Calendar (iOS/macOS) has a registered handler for the webcal: scheme
+    // and opens it directly in Calendar.app. Chrome/Android have no such handler,
+    // so the same link there just does nothing — those apps need their own
+    // "subscribe by URL" deep link instead (handled below per app).
+    const handleAppleCalendar = async () => {
         const webcalUrl = `webcal://${window.location.host}/api/intro/planning.ics`;
         try {
             await navigator.clipboard.writeText(webcalUrl);
@@ -202,6 +226,21 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
             // clipboard not available, fall through to direct navigation
         }
         window.location.href = webcalUrl;
+        setSubscribeMenuOpen(false);
+    };
+
+    const handleGoogleCalendar = () => {
+        const webcalUrl = `webcal://${window.location.host}/api/intro/planning.ics`;
+        const url = `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(webcalUrl)}`;
+        window.open(url, '_blank', 'noopener,noreferrer');
+        setSubscribeMenuOpen(false);
+    };
+
+    const handleOutlookCalendar = () => {
+        const icsUrl = `${window.location.origin}/api/intro/planning.ics`;
+        const url = `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(icsUrl)}&name=${encodeURIComponent('Salve Mundi Introductie')}`;
+        window.open(url, '_blank', 'noopener,noreferrer');
+        setSubscribeMenuOpen(false);
     };
 
     return (
@@ -267,17 +306,50 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                             <Download className="h-4 w-4 shrink-0" />
                             <span className="whitespace-nowrap">Download .ics</span>
                         </a>
-                        <button
-                            type="button"
-                            onClick={() => { void handleSubscribe(); }}
-                            className="btn-subscribe inline-flex items-center justify-center gap-1.5 sm:gap-2 squircle bg-bg-main border border-border-color dark:border-white/10 text-text-main px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold shadow-sm hover:shadow-md transition-all"
-                        >
-                            {copied ? <Check className="h-4 w-4 text-emerald-500 shrink-0" /> : <Rss className="h-4 w-4 shrink-0" />}
-                            <span className="whitespace-nowrap">
-                                <span className="sm:hidden">{copied ? 'Gekopieerd' : 'Abonneren'}</span>
-                                <span className="hidden sm:inline">{copied ? 'Link gekopieerd' : 'Abonneer op agenda'}</span>
-                            </span>
-                        </button>
+                        <div className="relative" ref={subscribeMenuRef}>
+                            <button
+                                type="button"
+                                onClick={() => setSubscribeMenuOpen(open => !open)}
+                                aria-expanded={subscribeMenuOpen}
+                                className="btn-subscribe inline-flex items-center justify-center gap-1.5 sm:gap-2 squircle bg-bg-main border border-border-color dark:border-white/10 text-text-main px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold shadow-sm hover:shadow-md transition-all"
+                            >
+                                {copied ? <Check className="h-4 w-4 text-emerald-500 shrink-0" /> : <Rss className="h-4 w-4 shrink-0" />}
+                                <span className="whitespace-nowrap">
+                                    <span className="sm:hidden">{copied ? 'Gekopieerd' : 'Abonneren'}</span>
+                                    <span className="hidden sm:inline">{copied ? 'Link gekopieerd' : 'Abonneer op agenda'}</span>
+                                </span>
+                                <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${subscribeMenuOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {subscribeMenuOpen && (
+                                <div className="absolute right-0 z-20 mt-2 w-56 squircle bg-bg-card border border-border-color dark:border-white/10 shadow-xl overflow-hidden">
+                                    <button
+                                        type="button"
+                                        onClick={() => { void handleAppleCalendar(); }}
+                                        className="btn-subscribe-apple flex w-full items-center gap-2.5 px-4 py-3 text-sm font-semibold text-text-main hover:bg-bg-main transition-colors text-left"
+                                    >
+                                        <CalendarPlus className="h-4 w-4 shrink-0 text-purple-500" />
+                                        Apple Kalender (iPhone/Mac)
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleGoogleCalendar}
+                                        className="btn-subscribe-google flex w-full items-center gap-2.5 px-4 py-3 text-sm font-semibold text-text-main hover:bg-bg-main transition-colors text-left border-t border-border-color dark:border-white/10"
+                                    >
+                                        <CalendarPlus className="h-4 w-4 shrink-0 text-purple-500" />
+                                        Google Calendar
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleOutlookCalendar}
+                                        className="btn-subscribe-outlook flex w-full items-center gap-2.5 px-4 py-3 text-sm font-semibold text-text-main hover:bg-bg-main transition-colors text-left border-t border-border-color dark:border-white/10"
+                                    >
+                                        <CalendarPlus className="h-4 w-4 shrink-0 text-purple-500" />
+                                        Outlook
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
