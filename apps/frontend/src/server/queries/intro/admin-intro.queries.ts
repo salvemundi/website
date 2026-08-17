@@ -230,6 +230,28 @@ export async function getIntroAttendanceVisibleInternal(): Promise<boolean> {
     }
 }
 
+export async function getIntroSignupSettingsInternal(): Promise<{ student_signups_open: boolean; parent_signups_open: boolean }> {
+    try {
+        const rows = await db
+            .select({
+                student_signups_open: schema.intro_settings.student_signups_open,
+                parent_signups_open: schema.intro_settings.parent_signups_open
+            })
+            .from(schema.intro_settings)
+            .orderBy(asc(schema.intro_settings.id))
+            .limit(1);
+
+        return {
+            student_signups_open: rows[0]?.student_signups_open ?? false,
+            parent_signups_open: rows[0]?.parent_signups_open ?? false
+        };
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getIntroSignupSettingsInternal] failed:', error);
+        return { student_signups_open: false, parent_signups_open: false };
+    }
+}
+
+
 export async function getApprovedOudersInternal(): Promise<{ user_id: string; first_name: string; last_name: string; email: string }[]> {
     try {
         const rows = await db

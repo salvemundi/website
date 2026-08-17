@@ -11,7 +11,8 @@ import {
     getIntroInfoBooklet,
     getIntroQrScanCount,
     getIntroGroupsForAdmin,
-    getApprovedOudersForPicker
+    getApprovedOudersForPicker,
+    getIntroSignupSettings
 } from '@/server/actions/admin/intro/admin-intro-core.actions';
 import { getIntroSettings } from '@/server/actions/public/intro.actions';
 import { getIntroAttendanceVisible } from '@/server/actions/public/intro-attendance.actions';
@@ -19,12 +20,14 @@ import AdminPageShell from '@/components/ui/admin/AdminPageShell';
 import IntroVisibilityIsland from '@/components/islands/admin/intro/IntroVisibilityIsland';
 import IntroAttendanceVisibilityIsland from '@/components/islands/admin/intro/IntroAttendanceVisibilityIsland';
 
+
+
 export const metadata: Metadata = {
     title: 'Intro Beheer | SV Salve Mundi'
 };
 
 export default async function BeheerIntroPage() {
-    const [signups, parents, blogs, planning, confidants, settings, planningImage, infoBooklet, qrScanCount, groups, approvedOuders, attendanceVisible] = await Promise.all([
+    const [signups, parents, blogs, planning, confidants, settings, planningImage, infoBooklet, qrScanCount, groups, approvedOuders, attendanceVisible, signupSettings] = await Promise.all([
         getIntroSignups(),
         getIntroParentSignups(),
         getIntroBlogs(),
@@ -37,6 +40,7 @@ export default async function BeheerIntroPage() {
         getIntroGroupsForAdmin(),
         getApprovedOudersForPicker(),
         getIntroAttendanceVisible(),
+        getIntroSignupSettings(),
     ]);
 
     const introVisible = settings.show;
@@ -71,7 +75,10 @@ export default async function BeheerIntroPage() {
                 initialIntroVisible={introVisible}
                 initialPlanningImage={planningImage}
                 initialInfoBooklet={infoBooklet}
+                initialStudentSignupsOpen={signupSettings.student_signups_open}
+                initialParentSignupsOpen={signupSettings.parent_signups_open}
             />
         </AdminPageShell>
     );
 }
+

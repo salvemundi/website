@@ -113,6 +113,19 @@ export async function toggleIntroAttendanceVisibility() {
     return settings.toggleIntroAttendanceVisibility();
 }
 
+export async function getIntroSignupSettings() {
+    return settings.getIntroSignupSettings();
+}
+
+export async function toggleIntroStudentSignups() {
+    return settings.toggleIntroStudentSignups();
+}
+
+export async function toggleIntroParentSignups() {
+    return settings.toggleIntroParentSignups();
+}
+
+
 export async function getIntroGroupsForAdmin() {
     return groups.getIntroGroupsForAdmin();
 }

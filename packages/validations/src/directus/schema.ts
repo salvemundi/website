@@ -5,6 +5,7 @@ export interface Schema {
   Board_Members: BoardMember[];
   Stickers: Sticker[];
   auth_accounts: AuthAccount[];
+  auth_sessions: AuthSession[];
   club_members: ClubMember[];
   clubs: Club[];
   committee_members: CommitteeMember[];
@@ -22,10 +23,19 @@ export interface Schema {
   intro_blog_gallery: IntroBlogGallery[];
   intro_blog_likes: IntroBlogLike[];
   intro_blogs: IntroBlog[];
+  intro_confidants: IntroConfidant[];
+  intro_group_attendance: IntroGroupAttendance[];
+  intro_group_attendance_log: IntroGroupAttendanceLog[];
+  intro_group_leaders: IntroGroupLeader[];
+  intro_group_member_notes: IntroGroupMemberNote[];
+  intro_group_members: IntroGroupMember[];
+  intro_groups: IntroGroup[];
   intro_parent_signups: IntroParentSignup[];
   intro_planning: IntroPlanning[];
   intro_planning_signups: IntroPlanningSignup[];
+  intro_settings: IntroSetting[];
   intro_signups: IntroSignup[];
+  membership_history: MembershipHistory[];
   permissions: Permission[];
   pub_crawl_events: PubCrawlEvent[];
   pub_crawl_signups: PubCrawlSignup[];
@@ -49,6 +59,7 @@ export interface Schema {
   vacancy_submission_direction_links: VacancySubmissionDirectionLink[];
   vacancy_submissions: VacancySubmission[];
   vacancy_verification_tokens: VacancyVerificationToken[];
+  verification: Verification[];
   webshop_drop_windows: WebshopDropWindow[];
   webshop_preorder_lines: WebshopPreorderLine[];
   webshop_preorders: WebshopPreorder[];
@@ -58,9 +69,6 @@ export interface Schema {
   whatsapp_groups: WhatsappGroup[];
   directus_users: CustomDirectusUser;
   directus_deployments: CustomDirectusDeployment;
-  auth_sessions: AuthSession[];
-  membership_history: MembershipHistory[];
-  verification: Verification[];
 }
 
 export interface Board {
@@ -116,6 +124,17 @@ export interface AuthAccount {
   password: string | null;
   createdAt: string | "datetime";
   updatedAt: string | "datetime";
+}
+
+export interface AuthSession {
+  id: string;
+  expiresAt: string | "datetime";
+  token: string;
+  createdAt: string | "datetime";
+  updatedAt: string | "datetime";
+  ipAddress: string | null;
+  userAgent: string | null;
+  userId: string;
 }
 
 export interface ClubMember {
@@ -317,6 +336,72 @@ export interface IntroBlog {
   date_updated: string | "datetime" | null;
 }
 
+export interface IntroConfidant {
+  id: number;
+  name: string;
+  email: string | null;
+  phone_number: string | null;
+  image: string | null;
+  bio: string | null;
+  sort_order: number | null;
+  is_active: boolean | null;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+}
+
+export interface IntroGroupAttendance {
+  id: number;
+  intro_group_member_id: number;
+  date: string | "datetime";
+  status_at: string | "datetime" | null;
+  status_by: string | null;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+  status: string;
+}
+
+export interface IntroGroupAttendanceLog {
+  id: number;
+  intro_group_member_id: number;
+  date: string | "datetime";
+  status: string;
+  status_at: string | "datetime" | null;
+  changed_by: string | null;
+  changed_at: string | "datetime" | null;
+}
+
+export interface IntroGroupLeader {
+  id: number;
+  intro_group_id: number;
+  user_id: string;
+  created_at: string | "datetime" | null;
+}
+
+export interface IntroGroupMemberNote {
+  id: number;
+  intro_group_member_id: number;
+  note: string;
+  created_by: string | null;
+  created_at: string | "datetime" | null;
+}
+
+export interface IntroGroupMember {
+  id: number;
+  intro_group_id: number;
+  name: string;
+  added_by: string | null;
+  created_at: string | "datetime" | null;
+}
+
+export interface IntroGroup {
+  id: number;
+  name: string;
+  notes: string | null;
+  user_created: string | null;
+  created_at: string | "datetime" | null;
+  updated_at: string | "datetime" | null;
+}
+
 export interface IntroParentSignup {
   id: number;
   status: string | null;
@@ -377,6 +462,17 @@ export interface IntroPlanningSignup {
   date_updated: string | "datetime" | null;
 }
 
+export interface IntroSetting {
+  id: number;
+  planning_image: string | null;
+  updated_at: string | "datetime" | null;
+  info_booklet: string | null;
+  qr_scan_count: number;
+  attendance_visible: boolean;
+  student_signups_open: boolean | null;
+  parent_signups_open: boolean | null;
+}
+
 export interface IntroSignup {
   id: number;
   first_name: string | null;
@@ -389,6 +485,14 @@ export interface IntroSignup {
   created_at: string | "datetime" | null;
   status: string | null;
   approved: boolean | null;
+}
+
+export interface MembershipHistory {
+  id: string;
+  user_id: string | null;
+  previous_status: string | null;
+  new_status: string | null;
+  changed_at: string | "datetime" | null;
 }
 
 export interface Permission {
@@ -642,6 +746,12 @@ export interface VacancyIctDirection {
   slug: string | null;
 }
 
+export interface VacancySubmissionDirectionLink {
+  id: number;
+  vacancy_submissions_id: number | VacancySubmission | null;
+  vacancy_ict_directions_id: number | VacancyIctDirection | null;
+}
+
 export interface VacancySubmission {
   id: number;
   created_at: string | "datetime" | null;
@@ -667,6 +777,7 @@ export interface VacancySubmission {
   image: string | DirectusFile<Schema> | null;
   document: string | DirectusFile<Schema> | null;
   skills: unknown | null;
+  ict_directions: number[] | VacancySubmissionDirectionLink[];
 }
 
 export interface VacancyVerificationToken {
@@ -676,6 +787,15 @@ export interface VacancyVerificationToken {
   token: string | null;
   expires_at: string | "datetime" | null;
   used_at: string | "datetime" | null;
+}
+
+export interface Verification {
+  id: string;
+  identifier: string;
+  value: string;
+  expiresAt: string | "datetime";
+  createdAt: string | "datetime" | null;
+  updatedAt: string | "datetime" | null;
 }
 
 export interface WebshopDropWindow {
@@ -789,34 +909,6 @@ export interface CustomDirectusDeployment {
   webhook_secret: string | null;
 }
 
-export interface AuthSession {
-  id: string;
-  expiresAt: string | "datetime";
-  token: string;
-  createdAt: string | "datetime";
-  updatedAt: string | "datetime";
-  ipAddress: string | null;
-  userAgent: string | null;
-  userId: string;
-}
-
-export interface MembershipHistory {
-  id: string;
-  user_id: string | null;
-  previous_status: string | null;
-  new_status: string | null;
-  changed_at: string | "datetime" | null;
-}
-
-export interface Verification {
-  id: string;
-  identifier: string;
-  value: string;
-  expiresAt: string | "datetime";
-  createdAt: string | "datetime" | null;
-  updatedAt: string | "datetime" | null;
-}
-
 // GeoJSON Types
 
 export interface GeoJSONPoint {
@@ -859,10 +951,4 @@ export interface GeoJSONGeometryCollection {
     | GeoJSONMultiLineString
     | GeoJSONMultiPolygon
   >;
-}
-
-export interface VacancySubmissionDirectionLink {
-  id: number;
-  vacancy_submissions_id: number | VacancySubmission | null;
-  vacancy_ict_directions_id: number | VacancyIctDirection | null;
 }

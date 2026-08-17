@@ -14,9 +14,13 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { db, schema } from '@salvemundi/db';
 import { eq, desc, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+
 import { normalizeDate } from '@/lib/utils/date-utils';
 import { safeConsoleError } from '@/server/utils/logger';
-import { getIntroPlanningInternal, getIntroConfidantsInternal, getIntroPlanningImageInternal, getIntroInfoBookletInternal, incrementIntroQrScanCountInternal } from '@/server/queries/intro/admin-intro.queries';
+import { getIntroPlanningInternal, getIntroConfidantsInternal, getIntroPlanningImageInternal, getIntroInfoBookletInternal, incrementIntroQrScanCountInternal, getIntroSignupSettingsInternal } from '@/server/queries/intro/admin-intro.queries';
+
+
+
 
 interface ParentSignupRecord {
     id: number;
@@ -63,6 +67,14 @@ export async function getIntroSettings() {
     }
 }
 
+export async function getIntroSignupStatusPublic(): Promise<{ studentSignupsOpen: boolean; parentSignupsOpen: boolean }> {
+    const settings = await getIntroSignupSettingsInternal();
+    return {
+        studentSignupsOpen: settings.student_signups_open,
+        parentSignupsOpen: settings.parent_signups_open
+    };
+}
+
 export async function hasParentSignup(): Promise<boolean> {
     const check = await checkParentSignupInternal();
     return check.exists;
@@ -92,6 +104,11 @@ async function checkParentSignupInternal(): Promise<{ exists: boolean; record?: 
 }
 
 export async function submitIntroSignup(data: IntroSignupForm): Promise<{ success: boolean; error?: string }> {
+    const settings = await getIntroSignupSettingsInternal();
+    if (!settings.student_signups_open) {
+        return { success: false, error: 'De inschrijvingen voor intro leden zijn momenteel gesloten.' };
+    }
+
     const normalizedGeboorte = normalizeDate(data.geboortedatum);
     data.geboortedatum = normalizedGeboorte ?? data.geboortedatum;
 
@@ -99,6 +116,7 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
     if (!parsed.success) {
         return { success: false, error: 'Validatie mislukt' };
     }
+
 
     const { checkRateLimit } = await import('@/server/utils/ratelimit');
     const rateLimitResult = await checkRateLimit('intro-signup', 3, 300, 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het later opnieuw.');
@@ -240,10 +258,16 @@ export async function submitIntroParentSignup(data: IntroParentSignupForm): Prom
         return { success: false, error: 'Je moet ingelogd zijn als lid om je aan te melden als Intro Ouder' };
     }
 
+    const settings = await getIntroSignupSettingsInternal();
+    if (!settings.parent_signups_open) {
+        return { success: false, error: 'De inschrijvingen voor intro ouders zijn momenteel gesloten.' };
+    }
+
     const check = await checkParentSignupInternal();
     if (check.exists && check.record) {
         return { success: true };
     }
+
 
     const { checkRateLimit } = await import('@/server/utils/ratelimit');
     const rateLimitResult = await checkRateLimit('intro-parent-signup', 3, 300, 'Te veel aanmeldingen. Probeer het over een paar minuten opnieuw.');

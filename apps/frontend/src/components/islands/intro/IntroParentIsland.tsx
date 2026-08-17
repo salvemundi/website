@@ -6,7 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { submitIntroParentSignup } from '@/server/actions/public/intro.actions';
 import { FormField } from '@/shared/ui/FormField';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
-import { Heart } from 'lucide-react';
+import { Heart, Lock } from 'lucide-react';
+
 import { introParentSignupFormSchema, type IntroParentSignupForm } from '@salvemundi/validations/schema/intro.zod';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
 import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
@@ -14,9 +15,11 @@ import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 interface IntroParentIslandProps {
     initialPhone: string;
     className?: string;
+    isOpen?: boolean;
 }
 
-export const IntroParentIsland = ({ initialPhone, className = '' }: IntroParentIslandProps) => {
+export const IntroParentIsland = ({ initialPhone, className = '', isOpen = true }: IntroParentIslandProps) => {
+
     const [submitted, setSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -61,6 +64,21 @@ export const IntroParentIsland = ({ initialPhone, className = '' }: IntroParentI
         }
     };
 
+    if (!isOpen) {
+        return (
+            <div className={`bg-bg-card dark:bg-gradient-theme border border-border-color squircle-xl p-10 shadow-xl text-center flex flex-col items-center justify-center min-h-75 ${className}`}>
+                <div className="w-20 h-20 bg-purple-100 dark:bg-white/20 rounded-full flex items-center justify-center mb-6">
+
+                    <Lock className="w-10 h-10 text-brand-primary dark:text-white" />
+                </div>
+                <h3 className="text-3xl font-black text-text-main dark:text-white mb-4 tracking-tight">Inschrijvingen Gesloten</h3>
+                <p className="text-text-muted dark:text-white/80 font-medium max-w-sm">
+                    De inschrijvingen voor Intro Ouders zijn momenteel gesloten.
+                </p>
+            </div>
+        );
+    }
+
     if (submitted) {
         return (
             <div className="bg-bg-card dark:bg-gradient-theme border border-border-color squircle-lg p-6 lg:p-8 shadow-lg text-center">
@@ -71,6 +89,7 @@ export const IntroParentIsland = ({ initialPhone, className = '' }: IntroParentI
             </div>
         );
     }
+
 
     return (
         <StandardFormCard

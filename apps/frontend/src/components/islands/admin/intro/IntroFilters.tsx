@@ -1,6 +1,6 @@
-'use client';
-
 import { Download, Users, Heart, FileText, Calendar, ShieldCheck, Users2 } from 'lucide-react';
+import IntroStudentSignupToggleIsland from './IntroStudentSignupToggleIsland';
+import IntroParentSignupToggleIsland from './IntroParentSignupToggleIsland';
 
 export type TabType = 'signups' | 'parents' | 'blogs' | 'planning' | 'confidants' | 'groups';
 
@@ -9,13 +9,17 @@ interface IntroFiltersProps {
     onTabChange: (tab: TabType) => void;
     onExport: () => void;
     counts: Record<TabType, number>;
+    studentSignupsOpen: boolean;
+    parentSignupsOpen: boolean;
 }
 
 export default function IntroFilters({
     activeTab,
     onTabChange,
     onExport,
-    counts
+    counts,
+    studentSignupsOpen,
+    parentSignupsOpen
 }: IntroFiltersProps) {
     const tabs = [
         { id: 'signups', label: 'Aanmeldingen', count: counts.signups, icon: Users },
@@ -31,7 +35,13 @@ export default function IntroFilters({
     return (
         <div className="flex flex-col gap-4 mb-6">
             <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex items-center gap-2 sm:ml-auto">
+                <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+                    {activeTab === 'signups' && (
+                        <IntroStudentSignupToggleIsland initialOpen={studentSignupsOpen} />
+                    )}
+                    {activeTab === 'parents' && (
+                        <IntroParentSignupToggleIsland initialOpen={parentSignupsOpen} />
+                    )}
                     {(activeTab === 'signups' || activeTab === 'parents') && (
                         <button
                             onClick={onExport}
@@ -43,6 +53,7 @@ export default function IntroFilters({
                     )}
                 </div>
             </div>
+
 
             {/* Compact dropdown for narrow screens, where a full tab row doesn't fit */}
             <div className="lg:hidden">

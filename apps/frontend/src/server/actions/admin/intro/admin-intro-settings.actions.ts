@@ -9,7 +9,8 @@ import { asc, eq } from 'drizzle-orm';
 import { checkIntroAdminAccess } from './admin-intro-signup.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 import { uploadFormDataFile } from '@/server/utils/media';
-import { getIntroPlanningImageInternal, getIntroInfoBookletInternal, getIntroQrScanCountInternal } from '@/server/queries/intro/admin-intro.queries';
+import { getIntroPlanningImageInternal, getIntroInfoBookletInternal, getIntroQrScanCountInternal, getIntroSignupSettingsInternal } from '@/server/queries/intro/admin-intro.queries';
+
 
 export async function toggleIntroVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
     await checkIntroAdminAccess();
@@ -161,3 +162,63 @@ export async function getIntroQrScanCount(): Promise<number> {
     await checkIntroAdminAccess();
     return getIntroQrScanCountInternal();
 }
+
+export async function getIntroSignupSettings(): Promise<{ student_signups_open: boolean; parent_signups_open: boolean }> {
+    await checkIntroAdminAccess();
+    return getIntroSignupSettingsInternal();
+}
+
+export async function toggleIntroStudentSignups(): Promise<{ success: boolean; open?: boolean; error?: string }> {
+    await checkIntroAdminAccess();
+    try {
+        const rows = await db
+            .select({ id: schema.intro_settings.id, student_signups_open: schema.intro_settings.student_signups_open })
+            .from(schema.intro_settings)
+            .orderBy(asc(schema.intro_settings.id))
+            .limit(1);
+
+        const oldStatus = rows.length > 0 ? !!rows[0].student_signups_open : false;
+        const newStatus = !oldStatus;
+
+        if (rows.length > 0) {
+            await db.update(schema.intro_settings).set({ student_signups_open: newStatus, updated_at: new Date().toISOString() }).where(eq(schema.intro_settings.id, rows[0].id));
+        } else {
+            await db.insert(schema.intro_settings).values({ student_signups_open: newStatus });
+        }
+
+        revalidatePath('/beheer/intro');
+        revalidatePath('/intro');
+        return { success: true, open: newStatus };
+    } catch (error) {
+        safeConsoleError(`[intro-settings.actions.ts][toggleIntroStudentSignups] Failed to toggle student signups:`, error);
+        return { success: false, error: 'Bijwerken mislukt' };
+    }
+}
+
+export async function toggleIntroParentSignups(): Promise<{ success: boolean; open?: boolean; error?: string }> {
+    await checkIntroAdminAccess();
+    try {
+        const rows = await db
+            .select({ id: schema.intro_settings.id, parent_signups_open: schema.intro_settings.parent_signups_open })
+            .from(schema.intro_settings)
+            .orderBy(asc(schema.intro_settings.id))
+            .limit(1);
+
+        const oldStatus = rows.length > 0 ? !!rows[0].parent_signups_open : false;
+        const newStatus = !oldStatus;
+
+        if (rows.length > 0) {
+            await db.update(schema.intro_settings).set({ parent_signups_open: newStatus, updated_at: new Date().toISOString() }).where(eq(schema.intro_settings.id, rows[0].id));
+        } else {
+            await db.insert(schema.intro_settings).values({ parent_signups_open: newStatus });
+        }
+
+        revalidatePath('/beheer/intro');
+        revalidatePath('/intro');
+        return { success: true, open: newStatus };
+    } catch (error) {
+        safeConsoleError(`[intro-settings.actions.ts][toggleIntroParentSignups] Failed to toggle parent signups:`, error);
+        return { success: false, error: 'Bijwerken mislukt' };
+    }
+}
+
