@@ -55,3 +55,4 @@ minimumReleaseAgeExclude:
 
 patchedDependencies:
   brace-expansion@5.0.6: patches/brace-expansion@5.0.6.patch
+  flowbite-react@0.12.17: patches/flowbite-react@0.12.17.patch
