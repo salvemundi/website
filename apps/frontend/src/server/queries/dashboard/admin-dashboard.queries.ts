@@ -126,12 +126,16 @@ export async function getRecentActivitiesInternal(): Promise<RecentActivity[]> {
         const { db, schema } = await import('@/lib/database/db');
         const { desc, sql } = await import('drizzle-orm');
         const { events, event_signups } = schema;
-        
+
+        // "events"."id" is spelled out instead of interpolating events.id: with a
+        // single-table select Drizzle renders that interpolation as a bare "id",
+        // which inside this correlated subquery resolves to event_signups' own id
+        // column instead of the outer event, silently zeroing every count.
         const rows = await db.select({
             id: events.id,
             name: events.name,
             event_date: events.event_date,
-            signups: sql<number>`(SELECT COUNT(*) FROM ${event_signups} es WHERE es.event_id = ${events.id} AND es.payment_status = 'paid')`.mapWith(Number)
+            signups: sql<number>`(SELECT COUNT(*) FROM ${event_signups} es WHERE es.event_id = "events"."id" AND es.payment_status = 'paid')`.mapWith(Number)
         })
         .from(events)
         .orderBy(desc(events.event_date))
