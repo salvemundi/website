@@ -5,8 +5,9 @@ import * as blogs from './admin-intro-blog.actions';
 import * as planning from './admin-intro-planning.actions';
 import * as confidants from './admin-intro-confidants.actions';
 import * as settings from './admin-intro-settings.actions';
+import * as groups from './admin-intro-groups.actions';
 import type { IntroSignup, IntroParentSignup } from '@salvemundi/validations/directus/schema';
-import { type IntroBlog, type IntroPlanningItem, type IntroConfidant } from '@salvemundi/validations/schema/intro.zod';
+import { type IntroBlog, type IntroPlanningItem, type IntroConfidant, type IntroGroup } from '@salvemundi/validations/schema/intro.zod';
 
 export async function getIntroSignups(): Promise<IntroSignup[]> {
     return signups.getIntroSignups();
@@ -106,4 +107,49 @@ export async function removeIntroInfoBooklet() {
 
 export async function getIntroQrScanCount() {
     return settings.getIntroQrScanCount();
+}
+
+export async function toggleIntroAttendanceVisibility() {
+    return settings.toggleIntroAttendanceVisibility();
+}
+
+export async function getIntroSignupSettings() {
+    return settings.getIntroSignupSettings();
+}
+
+export async function toggleIntroStudentSignups() {
+    return settings.toggleIntroStudentSignups();
+}
+
+export async function toggleIntroParentSignups() {
+    return settings.toggleIntroParentSignups();
+}
+
+
+export async function getIntroGroupsForAdmin() {
+    return groups.getIntroGroupsForAdmin();
+}
+
+export async function getApprovedOudersForPicker() {
+    return groups.getApprovedOudersForPicker();
+}
+
+export async function createGroup(data: Partial<IntroGroup>) {
+    return groups.createGroup(data);
+}
+
+export async function updateGroup(id: number, data: Partial<IntroGroup>) {
+    return groups.updateGroup(id, data);
+}
+
+export async function deleteGroup(id: number) {
+    return groups.deleteGroup(id);
+}
+
+export async function addGroupLeader(groupId: number, userId: string) {
+    return groups.addGroupLeader(groupId, userId);
+}
+
+export async function removeGroupLeader(groupId: number, userId: string) {
+    return groups.removeGroupLeader(groupId, userId);
 }

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
-import type { IntroBlog, IntroPlanningItem, IntroConfidant } from '@salvemundi/validations/schema/intro.zod';
+import { useState, useCallback } from 'react';
+import type { IntroBlog, IntroPlanningItem, IntroConfidant, IntroGroup, IntroGroupWithDetails } from '@salvemundi/validations/schema/intro.zod';
 import {
     deleteIntroSignup,
     deleteIntroParentSignup,
@@ -15,7 +15,13 @@ import {
     deleteIntroPlanning,
     getIntroConfidants,
     upsertIntroConfidant,
-    deleteIntroConfidant
+    deleteIntroConfidant,
+    getIntroGroupsForAdmin,
+    createGroup,
+    updateGroup,
+    deleteGroup,
+    addGroupLeader,
+    removeGroupLeader
 } from '@/server/actions/admin/intro/admin-intro-core.actions';
 import { type IntroSignup as IntroSignupRow, type IntroParentSignup as IntroParentRow } from '@salvemundi/validations/directus/schema';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -26,7 +32,15 @@ import IntroParentsTab from './intro/IntroParentsTab';
 import IntroBlogsTab from './intro/IntroBlogsTab';
 import IntroPlanningTab from './intro/IntroPlanningTab';
 import IntroConfidantsTab from './intro/IntroConfidantsTab';
+import IntroGroupsTab from './intro/IntroGroupsTab';
 import IntroFilters, { type TabType } from './intro/IntroFilters';
+
+interface ApprovedOuder {
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+}
 
 interface Props {
     initialSignups: IntroSignupRow[];
@@ -34,63 +48,45 @@ interface Props {
     initialBlogs: IntroBlog[];
     initialPlanning: IntroPlanningItem[];
     initialConfidants: IntroConfidant[];
+    initialGroups: IntroGroupWithDetails[];
+    initialApprovedOuders: ApprovedOuder[];
     initialIntroVisible: boolean;
     initialPlanningImage: string | null;
     initialInfoBooklet: string | null;
+    initialStudentSignupsOpen: boolean;
+    initialParentSignupsOpen: boolean;
 }
 
-export default function IntroManagementIsland({ initialSignups, initialParents, initialBlogs, initialPlanning, initialConfidants, initialPlanningImage, initialInfoBooklet }: Props) {
+export default function IntroManagementIsland({ initialSignups, initialParents, initialBlogs, initialPlanning, initialConfidants, initialGroups, initialApprovedOuders, initialPlanningImage, initialInfoBooklet, initialStudentSignupsOpen, initialParentSignupsOpen }: Props) {
+
     const { toast, showToast, hideToast } = useAdminToast();
 
     const [activeTab, setActiveTab] = useState<TabType>('signups');
-    const [searchQuery, setSearchQuery] = useState('');
 
     const [signups, setSignups] = useState(initialSignups);
     const [parents, setParents] = useState(initialParents);
     const [blogs, setBlogs] = useState(initialBlogs);
     const [planning, setPlanning] = useState(initialPlanning);
     const [confidants, setConfidants] = useState(initialConfidants);
+    const [groups, setGroups] = useState(initialGroups);
+    const [approvedOuders] = useState(initialApprovedOuders);
 
     const [savingBlog, setSavingBlog] = useState(false);
     const [savingPlanning, setSavingPlanning] = useState(false);
     const [savingConfidant, setSavingConfidant] = useState(false);
+    const [savingGroup, setSavingGroup] = useState(false);
 
     const [deletingSignupId, setDeletingSignupId] = useState<number | null>(null);
     const [deletingParentId, setDeletingParentId] = useState<number | null>(null);
     const [deletingBlogId, setDeletingBlogId] = useState<number | null>(null);
     const [deletingPlanningId, setDeletingPlanningId] = useState<number | null>(null);
     const [deletingConfidantId, setDeletingConfidantId] = useState<number | null>(null);
+    const [deletingGroupId, setDeletingGroupId] = useState<number | null>(null);
 
     const reloadBlogs = useCallback(async () => setBlogs(await getIntroBlogs()), []);
     const reloadPlanning = useCallback(async () => setPlanning(await getIntroPlanning()), []);
     const reloadConfidants = useCallback(async () => setConfidants(await getIntroConfidants()), []);
-
-    const filteredSignups = useMemo(() => {
-        if (!searchQuery) return signups;
-        const q = searchQuery.toLowerCase();
-        return signups.filter(s => `${s.first_name} ${s.last_name}`.toLowerCase().includes(q) || (s.email || '').toLowerCase().includes(q));
-    }, [signups, searchQuery]);
-
-    const filteredParents = useMemo(() => {
-        if (!searchQuery) return parents;
-        const q = searchQuery.toLowerCase();
-        return parents.filter(p => `${p.first_name} ${p.last_name}`.toLowerCase().includes(q) || p.email.toLowerCase().includes(q));
-    }, [parents, searchQuery]);
-
-    const filteredBlogs = useMemo(() => {
-        if (!searchQuery) return blogs;
-        return blogs.filter(b => b.title.toLowerCase().includes(searchQuery.toLowerCase()));
-    }, [blogs, searchQuery]);
-
-    const filteredPlanning = useMemo(() => {
-        if (!searchQuery) return planning;
-        return planning.filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()));
-    }, [planning, searchQuery]);
-
-    const filteredConfidants = useMemo(() => {
-        if (!searchQuery) return confidants;
-        return confidants.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    }, [confidants, searchQuery]);
+    const reloadGroups = useCallback(async () => setGroups(await getIntroGroupsForAdmin()), []);
 
     const handleDeleteSignup = async (id: number) => {
         if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen?')) return;
@@ -163,16 +159,18 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         setDeletingBlogId(null);
     };
 
-    const handleSavePlanning = async (item: Partial<IntroPlanningItem>) => {
+    const handleSavePlanning = async (item: Partial<IntroPlanningItem>): Promise<number | null> => {
         setSavingPlanning(true);
         const res = await upsertIntroPlanning(item);
         if (res.success) {
             await reloadPlanning();
             showToast('Planning item opgeslagen', 'success');
-        } else {
-            showToast(res.error || 'Opslaan mislukt', 'error');
+            setSavingPlanning(false);
+            return res.data?.id ?? null;
         }
+        showToast(res.error || 'Opslaan mislukt', 'error');
         setSavingPlanning(false);
+        return null;
     };
 
     const handleDeletePlanning = async (id: number) => {
@@ -213,11 +211,67 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         setDeletingConfidantId(null);
     };
 
+    const handleCreateGroup = async (data: Partial<IntroGroup>) => {
+        setSavingGroup(true);
+        const res = await createGroup(data);
+        if (res.success) {
+            await reloadGroups();
+            showToast('Groepje aangemaakt', 'success');
+        } else {
+            showToast(res.error || 'Aanmaken mislukt', 'error');
+        }
+        setSavingGroup(false);
+    };
+
+    const handleUpdateGroup = async (id: number, data: Partial<IntroGroup>) => {
+        setSavingGroup(true);
+        const res = await updateGroup(id, data);
+        if (res.success) {
+            await reloadGroups();
+            showToast('Groepje bijgewerkt', 'success');
+        } else {
+            showToast(res.error || 'Bijwerken mislukt', 'error');
+        }
+        setSavingGroup(false);
+    };
+
+    const handleDeleteGroup = async (id: number) => {
+        setDeletingGroupId(id);
+        const res = await deleteGroup(id);
+        if (res.success) {
+            setGroups(prev => prev.filter(g => g.id !== id));
+            showToast('Groepje verwijderd', 'success');
+        } else {
+            showToast(res.error || 'Verwijderen mislukt', 'error');
+        }
+        setDeletingGroupId(null);
+    };
+
+    const handleAddGroupLeader = async (groupId: number, userId: string) => {
+        const res = await addGroupLeader(groupId, userId);
+        if (res.success) {
+            await reloadGroups();
+            showToast('Ouder toegevoegd', 'success');
+        } else {
+            showToast(res.error || 'Toevoegen mislukt', 'error');
+        }
+    };
+
+    const handleRemoveGroupLeader = async (groupId: number, userId: string) => {
+        const res = await removeGroupLeader(groupId, userId);
+        if (res.success) {
+            await reloadGroups();
+            showToast('Ouder verwijderd', 'success');
+        } else {
+            showToast(res.error || 'Verwijderen mislukt', 'error');
+        }
+    };
+
     const handleExport = () => {
         const dateStr = new Date().toISOString().split('T')[0];
 
         if (activeTab === 'signups') {
-            const data = filteredSignups.map(s => ({
+            const data = signups.map(s => ({
                 Voornaam: s.first_name,
                 Achternaam: s.last_name,
                 Email: s.email,
@@ -227,7 +281,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
             }));
             downloadCSV(data, `intro-aanmeldingen-${dateStr}.csv`);
         } else if (activeTab === 'parents') {
-            const data = filteredParents.map(p => ({
+            const data = parents.map(p => ({
                 Voornaam: p.first_name || '',
                 Achternaam: p.last_name || '',
                 Email: p.email || '',
@@ -241,24 +295,26 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
     return (
         <div className="w-full">
             <IntroFilters
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
                 onExport={handleExport}
                 counts={{
-                    signups: filteredSignups.length,
-                    parents: filteredParents.length,
-                    blogs: filteredBlogs.length,
-                    planning: filteredPlanning.length,
-                    confidants: filteredConfidants.length
+                    signups: signups.length,
+                    parents: parents.length,
+                    blogs: blogs.length,
+                    planning: planning.length,
+                    confidants: confidants.length,
+                    groups: groups.length
                 }}
+                studentSignupsOpen={initialStudentSignupsOpen}
+                parentSignupsOpen={initialParentSignupsOpen}
             />
+
 
             <div className="w-full mt-2">
                 {activeTab === 'signups' && (
                     <IntroSignupsTab
-                        signups={filteredSignups}
+                        signups={signups}
                         onDelete={handleDeleteSignup}
                         onUpdate={handleUpdateSignup}
                         onExport={handleExport}
@@ -267,7 +323,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 )}
                 {activeTab === 'parents' && (
                     <IntroParentsTab
-                        parents={filteredParents}
+                        parents={parents}
                         onDelete={handleDeleteParent}
                         onUpdate={handleUpdateParentSignup}
                         onExport={handleExport}
@@ -276,7 +332,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 )}
                 {activeTab === 'blogs' && (
                     <IntroBlogsTab
-                        blogs={filteredBlogs}
+                        blogs={blogs}
                         onSave={handleSaveBlog}
                         onDelete={handleDeleteBlog}
                         saving={savingBlog}
@@ -285,7 +341,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 )}
                 {activeTab === 'planning' && (
                     <IntroPlanningTab
-                        planning={filteredPlanning}
+                        planning={planning}
                         onSave={handleSavePlanning}
                         onDelete={handleDeletePlanning}
                         saving={savingPlanning}
@@ -296,11 +352,24 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 )}
                 {activeTab === 'confidants' && (
                     <IntroConfidantsTab
-                        confidants={filteredConfidants}
+                        confidants={confidants}
                         onSave={handleSaveConfidant}
                         onDelete={handleDeleteConfidant}
                         saving={savingConfidant}
                         deletingId={deletingConfidantId}
+                    />
+                )}
+                {activeTab === 'groups' && (
+                    <IntroGroupsTab
+                        groups={groups}
+                        approvedOuders={approvedOuders}
+                        onCreate={handleCreateGroup}
+                        onUpdate={handleUpdateGroup}
+                        onDelete={handleDeleteGroup}
+                        onAddLeader={handleAddGroupLeader}
+                        onRemoveLeader={handleRemoveGroupLeader}
+                        saving={savingGroup}
+                        deletingId={deletingGroupId}
                     />
                 )}
             </div>

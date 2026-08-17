@@ -7,6 +7,7 @@ import { ChevronLeft } from 'lucide-react';
 interface AdminToolbarProps {
     title?: string;
     subtitle?: string;
+    titleBadge?: React.ReactNode;
     backHref?: string;
     onBack?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
     actions?: React.ReactNode;
@@ -16,6 +17,7 @@ interface AdminToolbarProps {
 export default function AdminToolbar({
     title,
     subtitle,
+    titleBadge,
     backHref,
     onBack,
     actions,
@@ -65,9 +67,12 @@ export default function AdminToolbar({
                             </Link>
                         )}
                         <div className={`flex flex-col ${centered ? 'items-center' : ''}`}>
-                            <h1 className="text-xl md:text-2xl font-semibold text-theme-purple tracking-tight leading-tight">
-                                {title}
-                            </h1>
+                            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                                <h1 className="text-xl md:text-2xl font-semibold text-theme-purple tracking-tight leading-tight">
+                                    {title}
+                                </h1>
+                                {titleBadge}
+                            </div>
                             {subtitle && (
                                 <p className="text-sm text-text-muted font-medium leading-tight mt-0.5">
                                     {subtitle}
@@ -77,7 +82,7 @@ export default function AdminToolbar({
                     </div>
 
                     {actions && (
-                        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
                             {actions}
                         </div>
                     )}

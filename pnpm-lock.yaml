@@ -37,6 +37,7 @@ overrides:
 
 patchedDependencies:
   brace-expansion@5.0.6: 9670826f62d10ba297440289d2e9a7af7560e0fee50b953938d5c512e997330e
+  flowbite-react@0.12.17: d7a82e5a6ad38c49bf0f4e042c7315abbea584896aadafc4c606ac2f67f2c4d0
 
 importers:
 
@@ -83,7 +84,7 @@ importers:
         version: 0.45.2(@types/pg@8.20.0)(kysely@0.28.17)(pg@8.22.0)(postgres@3.4.9)
       flowbite-react:
         specifier: ^0.12.17
-        version: 0.12.17(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(tailwindcss@4.3.3)
+        version: 0.12.17(patch_hash=d7a82e5a6ad38c49bf0f4e042c7315abbea584896aadafc4c606ac2f67f2c4d0)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(tailwindcss@4.3.3)
       html-to-image:
         specifier: ^1.11.13
         version: 1.11.13
@@ -8193,7 +8194,7 @@ snapshots:
 
   flatted@3.4.2: {}
 
-  flowbite-react@0.12.17(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(tailwindcss@4.3.3):
+  flowbite-react@0.12.17(patch_hash=d7a82e5a6ad38c49bf0f4e042c7315abbea584896aadafc4c606ac2f67f2c4d0)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(tailwindcss@4.3.3):
     dependencies:
       '@floating-ui/core': 1.7.4
       '@floating-ui/react': 0.27.17(react-dom@19.2.8(react@19.2.8))(react@19.2.8)

@@ -1,0 +1,24 @@
+diff --git a/dist/components/Datepicker/Datepicker.cjs b/dist/components/Datepicker/Datepicker.cjs
+index f895e9c9ec2ae6e2c4b004513cecaa02f3028281..670144c60500bda9f6c77423d112d16c27c5274d 100644
+--- a/dist/components/Datepicker/Datepicker.cjs
++++ b/dist/components/Datepicker/Datepicker.cjs
+@@ -191,7 +191,6 @@ const Datepicker = React.forwardRef((props, ref) => {
+               setIsOpen(true);
+             },
+             value: displayValue,
+-            defaultValue: initialDate ? helpers.getFormattedDate(language, initialDate) : label,
+             readOnly: true,
+             ...restProps
+           }
+diff --git a/dist/components/Datepicker/Datepicker.js b/dist/components/Datepicker/Datepicker.js
+index 906681e907f07fbfa136199c92e1c2158e8d19f0..cb6abab6dcb5746215d1c0756a09aac28a1609e9 100644
+--- a/dist/components/Datepicker/Datepicker.js
++++ b/dist/components/Datepicker/Datepicker.js
+@@ -189,7 +189,6 @@ const Datepicker = forwardRef((props, ref) => {
+               setIsOpen(true);
+             },
+             value: displayValue,
+-            defaultValue: initialDate ? getFormattedDate(language, initialDate) : label,
+             readOnly: true,
+             ...restProps
+           }

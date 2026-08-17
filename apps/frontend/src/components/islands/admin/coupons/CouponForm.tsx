@@ -130,7 +130,7 @@ export default function CouponForm({
             </div>
 
             {/* Active toggle */}
-            <div className="flex items-center gap-4 relative z-10 p-2">
+            <div className="flex items-center gap-4 p-2">
                 <div className="relative flex items-center justify-center">
                     <input type="checkbox" id="is_active" name="is_active" defaultChecked className="peer sr-only" />
                     <div className="w-6 h-6 border-2 border-(--beheer-border) rounded-lg peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent) transition-all"></div>
@@ -139,7 +139,7 @@ export default function CouponForm({
                 <label htmlFor="is_active" className="text-xs font-semibold text-(--beheer-text-muted) cursor-pointer hover:text-(--beheer-text) transition-colors">Direct actief stellen</label>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-end gap-4 pt-8 border-t border-(--beheer-border) relative z-10">
+            <div className="flex flex-col sm:flex-row justify-end gap-4 pt-8 border-t border-(--beheer-border)">
                 <button
                     type="button"
                     onClick={onCancel}

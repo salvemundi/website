@@ -9,7 +9,8 @@ import { asc, eq } from 'drizzle-orm';
 import { checkIntroAdminAccess } from './admin-intro-signup.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 import { uploadFormDataFile } from '@/server/utils/media';
-import { getIntroPlanningImageInternal, getIntroInfoBookletInternal, getIntroQrScanCountInternal } from '@/server/queries/intro/admin-intro.queries';
+import { getIntroPlanningImageInternal, getIntroInfoBookletInternal, getIntroQrScanCountInternal, getIntroSignupSettingsInternal } from '@/server/queries/intro/admin-intro.queries';
+
 
 export async function toggleIntroVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
     await checkIntroAdminAccess();
@@ -85,6 +86,33 @@ async function setIntroSettingsField(field: 'planning_image' | 'info_booklet', v
     revalidatePath('/qr-code');
 }
 
+export async function toggleIntroAttendanceVisibility(): Promise<{ success: boolean; visible?: boolean; error?: string }> {
+    await checkIntroAdminAccess();
+    try {
+        const rows = await db
+            .select({ id: schema.intro_settings.id, attendance_visible: schema.intro_settings.attendance_visible })
+            .from(schema.intro_settings)
+            .orderBy(asc(schema.intro_settings.id))
+            .limit(1);
+
+        const oldStatus = rows.length > 0 ? !!rows[0].attendance_visible : false;
+        const newStatus = !oldStatus;
+
+        if (rows.length > 0) {
+            await db.update(schema.intro_settings).set({ attendance_visible: newStatus, updated_at: new Date().toISOString() }).where(eq(schema.intro_settings.id, rows[0].id));
+        } else {
+            await db.insert(schema.intro_settings).values({ attendance_visible: newStatus });
+        }
+
+        revalidatePath('/beheer/intro');
+        revalidatePath('/profiel');
+        return { success: true, visible: newStatus };
+    } catch (error) {
+        safeConsoleError(`[intro-settings.actions.ts][toggleIntroAttendanceVisibility] Failed to toggle attendance visibility:`, error);
+        return { success: false, error: 'Bijwerken mislukt' };
+    }
+}
+
 export async function uploadIntroPlanningImage(formData: FormData): Promise<{ success: true; data: string } | { success: false; error: string }> {
     await checkIntroAdminAccess();
     const result = await uploadFormDataFile(formData, 'image', 'image');
@@ -134,3 +162,63 @@ export async function getIntroQrScanCount(): Promise<number> {
     await checkIntroAdminAccess();
     return getIntroQrScanCountInternal();
 }
+
+export async function getIntroSignupSettings(): Promise<{ student_signups_open: boolean; parent_signups_open: boolean }> {
+    await checkIntroAdminAccess();
+    return getIntroSignupSettingsInternal();
+}
+
+export async function toggleIntroStudentSignups(): Promise<{ success: boolean; open?: boolean; error?: string }> {
+    await checkIntroAdminAccess();
+    try {
+        const rows = await db
+            .select({ id: schema.intro_settings.id, student_signups_open: schema.intro_settings.student_signups_open })
+            .from(schema.intro_settings)
+            .orderBy(asc(schema.intro_settings.id))
+            .limit(1);
+
+        const oldStatus = rows.length > 0 ? !!rows[0].student_signups_open : false;
+        const newStatus = !oldStatus;
+
+        if (rows.length > 0) {
+            await db.update(schema.intro_settings).set({ student_signups_open: newStatus, updated_at: new Date().toISOString() }).where(eq(schema.intro_settings.id, rows[0].id));
+        } else {
+            await db.insert(schema.intro_settings).values({ student_signups_open: newStatus });
+        }
+
+        revalidatePath('/beheer/intro');
+        revalidatePath('/intro');
+        return { success: true, open: newStatus };
+    } catch (error) {
+        safeConsoleError(`[intro-settings.actions.ts][toggleIntroStudentSignups] Failed to toggle student signups:`, error);
+        return { success: false, error: 'Bijwerken mislukt' };
+    }
+}
+
+export async function toggleIntroParentSignups(): Promise<{ success: boolean; open?: boolean; error?: string }> {
+    await checkIntroAdminAccess();
+    try {
+        const rows = await db
+            .select({ id: schema.intro_settings.id, parent_signups_open: schema.intro_settings.parent_signups_open })
+            .from(schema.intro_settings)
+            .orderBy(asc(schema.intro_settings.id))
+            .limit(1);
+
+        const oldStatus = rows.length > 0 ? !!rows[0].parent_signups_open : false;
+        const newStatus = !oldStatus;
+
+        if (rows.length > 0) {
+            await db.update(schema.intro_settings).set({ parent_signups_open: newStatus, updated_at: new Date().toISOString() }).where(eq(schema.intro_settings.id, rows[0].id));
+        } else {
+            await db.insert(schema.intro_settings).values({ parent_signups_open: newStatus });
+        }
+
+        revalidatePath('/beheer/intro');
+        revalidatePath('/intro');
+        return { success: true, open: newStatus };
+    } catch (error) {
+        safeConsoleError(`[intro-settings.actions.ts][toggleIntroParentSignups] Failed to toggle parent signups:`, error);
+        return { success: false, error: 'Bijwerken mislukt' };
+    }
+}
+
