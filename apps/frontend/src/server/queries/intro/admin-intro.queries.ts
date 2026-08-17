@@ -398,6 +398,41 @@ export async function getGroupAttendanceForDateInternal(groupId: number, date: s
     }
 }
 
+const EMPTY_ATTENDANCE_SUMMARY: Record<IntroGroupAttendanceStatus, number> = {
+    not_reported: 0,
+    present: 0,
+    went_home: 0,
+    home: 0,
+    staying_out: 0
+};
+
+export async function getAttendanceSummaryForDateInternal(date: string): Promise<Record<IntroGroupAttendanceStatus, number>> {
+    try {
+        const statusExpr = sql<string>`coalesce(${schema.intro_group_attendance.status}, 'not_reported')`;
+
+        const rows = await db
+            .select({
+                status: statusExpr,
+                count: sql<number>`count(*)::int`
+            })
+            .from(schema.intro_group_members)
+            .leftJoin(
+                schema.intro_group_attendance,
+                sql`${schema.intro_group_attendance.intro_group_member_id} = ${schema.intro_group_members.id} AND ${schema.intro_group_attendance.date} = ${date}`
+            )
+            .groupBy(statusExpr);
+
+        const summary = { ...EMPTY_ATTENDANCE_SUMMARY };
+        for (const row of rows) {
+            summary[row.status as IntroGroupAttendanceStatus] = row.count;
+        }
+        return summary;
+    } catch (error) {
+        safeConsoleError('[admin-intro.queries.ts][getAttendanceSummaryForDateInternal] failed:', error);
+        return { ...EMPTY_ATTENDANCE_SUMMARY };
+    }
+}
+
 export async function getMemberNotesInternal(memberId: number): Promise<IntroGroupMemberNoteWithAuthor[]> {
     try {
         const rows = await db

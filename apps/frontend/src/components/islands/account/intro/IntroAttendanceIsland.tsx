@@ -5,6 +5,7 @@ import { Plus, Trash2, Check, Home, LogOut, MoonStar, HelpCircle, Loader2, Penci
 import type { IntroGroupWithDetails, IntroGroupMemberWithAttendance, IntroGroupAttendanceStatus, IntroGroupMemberNoteWithAuthor, IntroGroupAttendanceLogWithAuthor } from '@salvemundi/validations/schema/intro.zod';
 import {
     getGroupAttendanceForDate,
+    getAttendanceSummaryForDate,
     addGroupMember,
     removeGroupMember,
     setMemberStatus,
@@ -109,6 +110,21 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
     const [logByMember, setLogByMember] = useState<Map<string, IntroGroupAttendanceLogWithAuthor[]>>(new Map());
     const [loadingLogId, setLoadingLogId] = useState<number | null>(null);
 
+    const [totalSummary, setTotalSummary] = useState<Record<IntroGroupAttendanceStatus, number> | null>(null);
+    const [loadingSummary, setLoadingSummary] = useState(false);
+
+    useEffect(() => {
+        if (!isCrew) return;
+        let cancelled = false;
+        setLoadingSummary(true);
+        getAttendanceSummaryForDate(selectedDate)
+            .then(summary => { if (!cancelled) setTotalSummary(summary); })
+            .catch(() => { if (!cancelled) showToast('Kon totaaloverzicht niet ophalen', 'error'); })
+            .finally(() => { if (!cancelled) setLoadingSummary(false); });
+        return () => { cancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isCrew, selectedDate]);
+
     const loadAttendance = useCallback(async (groupId: number, date: string) => {
         setLoading(true);
         try {
@@ -155,6 +171,9 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
             setMembers(prev => [...prev, { ...newMember, attendance: null }].sort((a, b) => a.name.localeCompare(b.name)));
             setNewName('');
             showToast('Toegevoegd', 'success');
+            if (isCrew) {
+                setTotalSummary(prev => prev && { ...prev, not_reported: prev.not_reported + 1 });
+            }
         } else {
             showToast(res.error || 'Toevoegen mislukt', 'error');
         }
@@ -163,11 +182,15 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
 
     const handleRemoveMember = async (memberId: number, name: string) => {
         if (!confirm(`"${name}" verwijderen uit dit groepje?`)) return;
+        const removedStatus = members.find(m => m.id === memberId)?.attendance?.status ?? 'not_reported';
         setPendingMemberId(memberId);
         const res = await removeGroupMember(memberId);
         if (res.success) {
             setMembers(prev => prev.filter(m => m.id !== memberId));
             showToast('Verwijderd', 'success');
+            if (isCrew) {
+                setTotalSummary(prev => prev && { ...prev, [removedStatus]: Math.max(0, prev[removedStatus] - 1) });
+            }
         } else {
             showToast(res.error || 'Verwijderen mislukt', 'error');
         }
@@ -185,6 +208,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
     };
 
     const handleSetStatus = async (member: IntroGroupMemberWithAttendance, status: IntroGroupAttendanceStatus) => {
+        const previousStatus = member.attendance?.status ?? 'not_reported';
         setPendingMemberId(member.id);
         const res = await setMemberStatus(member.id, selectedDate, status);
         if (res.success && res.data) {
@@ -193,6 +217,13 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
             invalidateLog(member.id);
             setJustUpdatedId(member.id);
             setTimeout(() => setJustUpdatedId(prev => prev === member.id ? null : prev), 500);
+            if (isCrew && previousStatus !== status) {
+                setTotalSummary(prev => prev && {
+                    ...prev,
+                    [previousStatus]: Math.max(0, prev[previousStatus] - 1),
+                    [status]: prev[status] + 1
+                });
+            }
         } else {
             showToast(res.error || 'Bijwerken mislukt', 'error');
         }
@@ -290,6 +321,37 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
 
     return (
         <div>
+            {isCrew && (
+                <div className="mb-4 p-3 rounded-xl bg-(--bg-card) border border-(--border-color)">
+                    <p className="text-xs font-semibold text-(--text-muted) uppercase tracking-wide mb-2">
+                        Totaal alle groepjes &middot; {formatDate(selectedDate, 'd MMMM')}
+                    </p>
+                    {loadingSummary && !totalSummary ? (
+                        <div className="flex justify-center py-2">
+                            <Loader2 className="h-4 w-4 animate-spin text-theme-purple" />
+                        </div>
+                    ) : totalSummary && (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-xs font-bold text-(--text-main) mr-1">
+                                {STATUS_ORDER.reduce((sum, s) => sum + totalSummary[s], 0)} kiddos
+                            </span>
+                            {STATUS_ORDER.filter(s => totalSummary[s] > 0).map(s => {
+                                const Icon = STATUS_ICON[s];
+                                return (
+                                    <span
+                                        key={s}
+                                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold ${STATUS_BADGE_STYLE[s]}`}
+                                    >
+                                        <Icon className="h-3 w-3" />
+                                        {totalSummary[s]} {STATUS_LABEL[s]}
+                                    </span>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
+
             {groups.length > 1 && (
                 <div className="mb-4">
                     <p className="text-xs font-semibold text-(--text-muted) uppercase tracking-wide mb-2">Kies een groepje</p>

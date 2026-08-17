@@ -21,6 +21,7 @@ import {
     getGroupsByIdsInternal,
     getUserLedGroupIdsInternal,
     getGroupAttendanceForDateInternal,
+    getAttendanceSummaryForDateInternal,
     getIntroAttendanceVisibleInternal,
     getMemberNotesInternal,
     getMemberAttendanceLogInternal
@@ -62,6 +63,14 @@ export async function getAttendanceGroupsForUser(): Promise<IntroGroupWithDetail
 export async function getGroupAttendanceForDate(groupId: number, date: string): Promise<IntroGroupMemberWithAttendance[]> {
     await assertGroupAccess(groupId);
     return getGroupAttendanceForDateInternal(groupId, date);
+}
+
+export async function getAttendanceSummaryForDate(date: string): Promise<Record<IntroGroupAttendanceStatus, number>> {
+    const { isCrew } = await getIntroAttendanceAccess();
+    if (!isCrew) {
+        return { not_reported: 0, present: 0, went_home: 0, home: 0, staying_out: 0 };
+    }
+    return getAttendanceSummaryForDateInternal(date);
 }
 
 export async function addGroupMember(groupId: number, name: string): Promise<{ success: boolean; data?: IntroGroupMember; error?: string }> {
