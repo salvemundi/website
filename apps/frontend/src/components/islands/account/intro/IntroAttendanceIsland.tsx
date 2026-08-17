@@ -187,8 +187,9 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
     const handleSetStatus = async (member: IntroGroupMemberWithAttendance, status: IntroGroupAttendanceStatus) => {
         setPendingMemberId(member.id);
         const res = await setMemberStatus(member.id, selectedDate, status);
-        if (res.success) {
-            await loadAttendance(selectedGroupId, selectedDate);
+        if (res.success && res.data) {
+            const attendance = res.data;
+            setMembers(prev => prev.map(m => m.id === member.id ? { ...m, attendance } : m));
             invalidateLog(member.id);
             setJustUpdatedId(member.id);
             setTimeout(() => setJustUpdatedId(prev => prev === member.id ? null : prev), 500);
@@ -212,8 +213,9 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
         }
         setPendingMemberId(member.id);
         const res = await setMemberStatus(member.id, selectedDate, member.attendance.status, combined.toISOString());
-        if (res.success) {
-            await loadAttendance(selectedGroupId, selectedDate);
+        if (res.success && res.data) {
+            const attendance = res.data;
+            setMembers(prev => prev.map(m => m.id === member.id ? { ...m, attendance } : m));
             invalidateLog(member.id);
             showToast('Tijd aangepast', 'success');
         } else {
@@ -433,7 +435,15 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                 className={`fade-in border rounded-xl p-2.5 transition-all duration-300 ${STATUS_CARD_STYLE[status]} ${justUpdatedId === member.id ? 'scale-[1.02] ring-2 ring-theme-purple/50 shadow-md' : 'scale-100'}`}
                             >
                                 <div className="flex items-center justify-between gap-2 mb-1.5">
-                                    <span className="font-semibold text-sm text-(--text-main) truncate">{member.name}</span>
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                        <span className="font-semibold text-sm text-(--text-main) truncate">{member.name}</span>
+                                        {status === 'home' && (
+                                            <span className="fade-in shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white">
+                                                <Home className="h-2.5 w-2.5" />
+                                                Thuis
+                                            </span>
+                                        )}
+                                    </div>
                                     <button
                                         onClick={() => toggleDetails(member.id)}
                                         className="form-button shrink-0 flex items-center gap-1 text-[11px] font-semibold text-(--text-muted) hover:text-theme-purple transition-colors"

@@ -11,6 +11,7 @@ import {
     type IntroGroupMember,
     type IntroGroupMemberWithAttendance,
     type IntroGroupAttendanceStatus,
+    type IntroGroupAttendance,
     type IntroGroupMemberNoteWithAuthor,
     type IntroGroupAttendanceLogWithAuthor,
     introGroupAttendanceStatusEnum
@@ -133,7 +134,7 @@ async function getMemberGroupId(memberId: number): Promise<number | null> {
  * `statusAtIso`: optional full ISO timestamp, built client-side (so the browser's
  * local timezone is respected instead of guessing it server-side). Defaults to now.
  */
-export async function setMemberStatus(memberId: number, date: string, status: IntroGroupAttendanceStatus, statusAtIso?: string): Promise<{ success: boolean; error?: string }> {
+export async function setMemberStatus(memberId: number, date: string, status: IntroGroupAttendanceStatus, statusAtIso?: string): Promise<{ success: boolean; error?: string; data?: IntroGroupAttendance }> {
     const validated = introGroupAttendanceStatusEnum.safeParse(status);
     if (!validated.success) {
         return { success: false, error: 'Ongeldige status' };
@@ -148,7 +149,7 @@ export async function setMemberStatus(memberId: number, date: string, status: In
         const userId = session?.user.id ?? null;
         const statusAt = statusAtIso && !Number.isNaN(Date.parse(statusAtIso)) ? statusAtIso : new Date().toISOString();
 
-        await db.insert(schema.intro_group_attendance)
+        const upserted = await db.insert(schema.intro_group_attendance)
             .values({
                 intro_group_member_id: memberId,
                 date,
@@ -164,7 +165,8 @@ export async function setMemberStatus(memberId: number, date: string, status: In
                     status_by: userId,
                     updated_at: new Date().toISOString()
                 }
-            });
+            })
+            .returning();
 
         // Append-only audit trail: every status change (including time corrections)
         // gets its own log row, independent of the single current-state row above.
@@ -176,7 +178,20 @@ export async function setMemberStatus(memberId: number, date: string, status: In
             changed_by: userId
         });
 
-        return { success: true };
+        const row = upserted[0];
+        return {
+            success: true,
+            data: {
+                id: row.id,
+                intro_group_member_id: row.intro_group_member_id,
+                date,
+                status: row.status as IntroGroupAttendanceStatus,
+                status_at: row.status_at,
+                status_by: row.status_by,
+                created_at: row.created_at,
+                updated_at: row.updated_at
+            }
+        };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Bijwerken mislukt';
         safeConsoleError('[intro-attendance.actions.ts][setMemberStatus] Failed:', error);
