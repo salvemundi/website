@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import type { IntroBlog, IntroPlanningItem, IntroConfidant, IntroGroup, IntroGroupWithDetails } from '@salvemundi/validations/schema/intro.zod';
 import {
     deleteIntroSignup,
@@ -59,7 +59,6 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
     const { toast, showToast, hideToast } = useAdminToast();
 
     const [activeTab, setActiveTab] = useState<TabType>('signups');
-    const [searchQuery, setSearchQuery] = useState('');
 
     const [signups, setSignups] = useState(initialSignups);
     const [parents, setParents] = useState(initialParents);
@@ -85,38 +84,6 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
     const reloadPlanning = useCallback(async () => setPlanning(await getIntroPlanning()), []);
     const reloadConfidants = useCallback(async () => setConfidants(await getIntroConfidants()), []);
     const reloadGroups = useCallback(async () => setGroups(await getIntroGroupsForAdmin()), []);
-
-    const filteredSignups = useMemo(() => {
-        if (!searchQuery) return signups;
-        const q = searchQuery.toLowerCase();
-        return signups.filter(s => `${s.first_name} ${s.last_name}`.toLowerCase().includes(q) || (s.email || '').toLowerCase().includes(q));
-    }, [signups, searchQuery]);
-
-    const filteredParents = useMemo(() => {
-        if (!searchQuery) return parents;
-        const q = searchQuery.toLowerCase();
-        return parents.filter(p => `${p.first_name} ${p.last_name}`.toLowerCase().includes(q) || p.email.toLowerCase().includes(q));
-    }, [parents, searchQuery]);
-
-    const filteredBlogs = useMemo(() => {
-        if (!searchQuery) return blogs;
-        return blogs.filter(b => b.title.toLowerCase().includes(searchQuery.toLowerCase()));
-    }, [blogs, searchQuery]);
-
-    const filteredPlanning = useMemo(() => {
-        if (!searchQuery) return planning;
-        return planning.filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase()));
-    }, [planning, searchQuery]);
-
-    const filteredConfidants = useMemo(() => {
-        if (!searchQuery) return confidants;
-        return confidants.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    }, [confidants, searchQuery]);
-
-    const filteredGroups = useMemo(() => {
-        if (!searchQuery) return groups;
-        return groups.filter(g => g.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    }, [groups, searchQuery]);
 
     const handleDeleteSignup = async (id: number) => {
         if (!confirm('Weet je zeker dat je deze aanmelding wilt verwijderen?')) return;
@@ -301,7 +268,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         const dateStr = new Date().toISOString().split('T')[0];
 
         if (activeTab === 'signups') {
-            const data = filteredSignups.map(s => ({
+            const data = signups.map(s => ({
                 Voornaam: s.first_name,
                 Achternaam: s.last_name,
                 Email: s.email,
@@ -311,7 +278,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
             }));
             downloadCSV(data, `intro-aanmeldingen-${dateStr}.csv`);
         } else if (activeTab === 'parents') {
-            const data = filteredParents.map(p => ({
+            const data = parents.map(p => ({
                 Voornaam: p.first_name || '',
                 Achternaam: p.last_name || '',
                 Email: p.email || '',
@@ -325,25 +292,23 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
     return (
         <div className="w-full">
             <IntroFilters
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
                 onExport={handleExport}
                 counts={{
-                    signups: filteredSignups.length,
-                    parents: filteredParents.length,
-                    blogs: filteredBlogs.length,
-                    planning: filteredPlanning.length,
-                    confidants: filteredConfidants.length,
-                    groups: filteredGroups.length
+                    signups: signups.length,
+                    parents: parents.length,
+                    blogs: blogs.length,
+                    planning: planning.length,
+                    confidants: confidants.length,
+                    groups: groups.length
                 }}
             />
 
             <div className="w-full mt-2">
                 {activeTab === 'signups' && (
                     <IntroSignupsTab
-                        signups={filteredSignups}
+                        signups={signups}
                         onDelete={handleDeleteSignup}
                         onUpdate={handleUpdateSignup}
                         onExport={handleExport}
@@ -352,7 +317,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 )}
                 {activeTab === 'parents' && (
                     <IntroParentsTab
-                        parents={filteredParents}
+                        parents={parents}
                         onDelete={handleDeleteParent}
                         onUpdate={handleUpdateParentSignup}
                         onExport={handleExport}
@@ -361,7 +326,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 )}
                 {activeTab === 'blogs' && (
                     <IntroBlogsTab
-                        blogs={filteredBlogs}
+                        blogs={blogs}
                         onSave={handleSaveBlog}
                         onDelete={handleDeleteBlog}
                         saving={savingBlog}
@@ -370,7 +335,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 )}
                 {activeTab === 'planning' && (
                     <IntroPlanningTab
-                        planning={filteredPlanning}
+                        planning={planning}
                         onSave={handleSavePlanning}
                         onDelete={handleDeletePlanning}
                         saving={savingPlanning}
@@ -381,7 +346,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 )}
                 {activeTab === 'confidants' && (
                     <IntroConfidantsTab
-                        confidants={filteredConfidants}
+                        confidants={confidants}
                         onSave={handleSaveConfidant}
                         onDelete={handleDeleteConfidant}
                         saving={savingConfidant}
@@ -390,7 +355,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 )}
                 {activeTab === 'groups' && (
                     <IntroGroupsTab
-                        groups={filteredGroups}
+                        groups={groups}
                         approvedOuders={approvedOuders}
                         onCreate={handleCreateGroup}
                         onUpdate={handleUpdateGroup}

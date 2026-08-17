@@ -77,7 +77,7 @@ export default function AdminToolbar({
                     </div>
 
                     {actions && (
-                        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
                             {actions}
                         </div>
                     )}

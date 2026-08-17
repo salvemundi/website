@@ -1,12 +1,10 @@
 'use client';
 
-import { Search, Download, Users, Heart, FileText, Calendar, ShieldCheck, Users2 } from 'lucide-react';
+import { Download, Users, Heart, FileText, Calendar, ShieldCheck, Users2 } from 'lucide-react';
 
 export type TabType = 'signups' | 'parents' | 'blogs' | 'planning' | 'confidants' | 'groups';
 
 interface IntroFiltersProps {
-    searchQuery: string;
-    onSearchChange: (val: string) => void;
     activeTab: TabType;
     onTabChange: (tab: TabType) => void;
     onExport: () => void;
@@ -14,8 +12,6 @@ interface IntroFiltersProps {
 }
 
 export default function IntroFilters({
-    searchQuery,
-    onSearchChange,
     activeTab,
     onTabChange,
     onExport,
@@ -35,18 +31,6 @@ export default function IntroFilters({
     return (
         <div className="flex flex-col gap-4 mb-6">
             <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex items-center gap-3 grow max-w-md px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl shadow-sm focus-within:border-(--beheer-accent) focus-within:ring-2 focus-within:ring-(--beheer-accent)/20 transition-all">
-                    <Search className="h-4 w-4 shrink-0 text-(--beheer-text-muted)" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        placeholder="Zoek op naam of titel..."
-                        className="beheer-input bg-transparent text-(--beheer-text) placeholder:text-(--beheer-text-muted) outline-none border-none p-0 w-full font-semibold text-xs"
-                        autoComplete="off"
-                    />
-                </div>
-
                 <div className="flex items-center gap-2 sm:ml-auto">
                     {(activeTab === 'signups' || activeTab === 'parents') && (
                         <button
