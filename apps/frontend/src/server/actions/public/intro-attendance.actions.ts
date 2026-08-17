@@ -1,7 +1,6 @@
 'use server';
 
 import 'server-only';
-import { revalidatePath } from 'next/cache';
 import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
@@ -80,7 +79,6 @@ export async function addGroupMember(groupId: number, name: string): Promise<{ s
             added_by: session?.user.id ?? null
         }).returning();
 
-        revalidatePath('/profiel/intro-attendance');
         const result = inserted[0];
         return {
             success: true,
@@ -114,7 +112,6 @@ export async function removeGroupMember(memberId: number): Promise<{ success: bo
         await assertGroupAccess(member[0].intro_group_id);
 
         await db.delete(schema.intro_group_members).where(eq(schema.intro_group_members.id, memberId));
-        revalidatePath('/profiel/intro-attendance');
         return { success: true };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Verwijderen mislukt';
@@ -179,7 +176,6 @@ export async function setMemberStatus(memberId: number, date: string, status: In
             changed_by: userId
         });
 
-        revalidatePath('/profiel/intro-attendance');
         return { success: true };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Bijwerken mislukt';
@@ -219,7 +215,6 @@ export async function addMemberNote(memberId: number, note: string): Promise<{ s
             created_by: session?.user.id ?? null
         });
 
-        revalidatePath('/profiel/intro-attendance');
         return { success: true };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Toevoegen mislukt';
@@ -247,7 +242,6 @@ export async function deleteMemberNote(noteId: number): Promise<{ success: boole
         await assertGroupAccess(groupId);
 
         await db.delete(schema.intro_group_member_notes).where(eq(schema.intro_group_member_notes.id, noteId));
-        revalidatePath('/profiel/intro-attendance');
         return { success: true };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Verwijderen mislukt';
