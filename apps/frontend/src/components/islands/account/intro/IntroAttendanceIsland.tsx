@@ -94,6 +94,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
     const [newName, setNewName] = useState('');
     const [addingMember, setAddingMember] = useState(false);
     const [pendingMemberId, setPendingMemberId] = useState<number | null>(null);
+    const [justUpdatedId, setJustUpdatedId] = useState<number | null>(null);
 
     const [editingTimeMemberId, setEditingTimeMemberId] = useState<number | null>(null);
     const [editingTimeValue, setEditingTimeValue] = useState('');
@@ -189,6 +190,8 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
         if (res.success) {
             await loadAttendance(selectedGroupId, selectedDate);
             invalidateLog(member.id);
+            setJustUpdatedId(member.id);
+            setTimeout(() => setJustUpdatedId(prev => prev === member.id ? null : prev), 500);
         } else {
             showToast(res.error || 'Bijwerken mislukt', 'error');
         }
@@ -329,7 +332,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                             <button
                                 key={s}
                                 onClick={() => setStatusFilter(prev => prev === s ? null : s)}
-                                className={`form-button flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold transition-all ${STATUS_BADGE_STYLE[s]} ${isActive ? 'ring-2 ring-offset-1 ring-theme-purple ring-offset-(--bg-main)' : 'opacity-80 hover:opacity-100'}`}
+                                className={`form-button flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold transition-all active:scale-90 ${STATUS_BADGE_STYLE[s]} ${isActive ? 'ring-2 ring-offset-1 ring-theme-purple ring-offset-(--bg-main) scale-105' : 'opacity-80 hover:opacity-100'}`}
                             >
                                 <Icon className="h-3 w-3" />
                                 {statusCounts.get(s)} {STATUS_LABEL[s]}
@@ -425,16 +428,19 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                         const notes = notesByMember.get(member.id) || [];
 
                         return (
-                            <div key={member.id} className={`border rounded-xl p-2.5 transition-colors ${STATUS_CARD_STYLE[status]}`}>
+                            <div
+                                key={member.id}
+                                className={`fade-in border rounded-xl p-2.5 transition-all duration-300 ${STATUS_CARD_STYLE[status]} ${justUpdatedId === member.id ? 'scale-[1.02] ring-2 ring-theme-purple/50 shadow-md' : 'scale-100'}`}
+                            >
                                 <div className="flex items-center justify-between gap-2 mb-1.5">
                                     <span className="font-semibold text-sm text-(--text-main) truncate">{member.name}</span>
                                     <button
-                                        onClick={() => { void handleRemoveMember(member.id, member.name); }}
-                                        disabled={isPending}
-                                        className="form-button shrink-0 p-1.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                                        title="Verwijderen"
+                                        onClick={() => toggleDetails(member.id)}
+                                        className="form-button shrink-0 flex items-center gap-1 text-[11px] font-semibold text-(--text-muted) hover:text-theme-purple transition-colors"
                                     >
-                                        {isPending && !isEditingTime ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                                        Details
+                                        {notes.length > 0 && ` · ${notes.length}`}
+                                        <ChevronDown className={`h-3 w-3 transition-transform ${detailsExpanded ? 'rotate-180' : ''}`} />
                                     </button>
                                 </div>
 
@@ -444,7 +450,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                             key={opt.value}
                                             onClick={() => { void handleSetStatus(member, opt.value); }}
                                             disabled={isPending}
-                                            className={`form-button flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-50 ${status === opt.value ? 'bg-theme-purple text-white' : 'bg-(--bg-soft) text-(--text-muted) border border-(--border-color) hover:text-(--text-main)'}`}
+                                            className={`form-button flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 active:scale-90 disabled:opacity-50 ${status === opt.value ? 'bg-theme-purple text-white scale-105 shadow-sm' : 'bg-(--bg-soft) text-(--text-muted) border border-(--border-color) hover:text-(--text-main)'}`}
                                         >
                                             <opt.icon className="h-3 w-3" />
                                             {opt.label}
@@ -454,7 +460,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                         <button
                                             onClick={() => { void handleSetStatus(member, 'home'); }}
                                             disabled={isPending}
-                                            className="form-button flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-50 bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/20"
+                                            className="fade-in form-button flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-all active:scale-90 disabled:opacity-50 bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/20"
                                         >
                                             <Home className="h-3 w-3" />
                                             Thuis
@@ -462,17 +468,8 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                     )}
                                 </div>
 
-                                <button
-                                    onClick={() => toggleDetails(member.id)}
-                                    className="form-button flex items-center gap-1 text-[11px] font-semibold text-(--text-muted) hover:text-theme-purple transition-colors mt-1.5"
-                                >
-                                    <ChevronDown className={`h-3 w-3 transition-transform ${detailsExpanded ? 'rotate-180' : ''}`} />
-                                    Details
-                                    {notes.length > 0 && ` · ${notes.length} notitie${notes.length === 1 ? '' : 's'}`}
-                                </button>
-
                                 {detailsExpanded && (
-                                    <div className="mt-2 pt-2 border-t border-(--border-color) space-y-3">
+                                    <div className="fade-in mt-2 pt-2 border-t border-(--border-color) space-y-3">
                                         {status !== 'not_reported' && statusAt && (
                                             <div className="flex items-center gap-2 text-xs text-(--text-muted)">
                                                 {isEditingTime ? (
@@ -595,6 +592,17 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                 )}
                                             </div>
                                         )}
+
+                                        <div className="pt-2 border-t border-(--border-color)">
+                                            <button
+                                                onClick={() => { void handleRemoveMember(member.id, member.name); }}
+                                                disabled={isPending}
+                                                className="form-button flex items-center gap-1.5 text-[11px] font-semibold text-red-500 hover:text-red-600 transition-colors disabled:opacity-50"
+                                            >
+                                                {isPending && !isEditingTime ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                                                Kiddo verwijderen
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
