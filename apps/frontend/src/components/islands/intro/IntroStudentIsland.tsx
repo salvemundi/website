@@ -8,15 +8,17 @@ import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { DateInput } from '@/shared/ui/DateInput';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
-import { CheckCircle2, Send } from 'lucide-react';
+import { CheckCircle2, Send, Lock } from 'lucide-react';
 import { introSignupFormSchema, type IntroSignupForm } from '@salvemundi/validations/schema/intro.zod';
 import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 
 interface IntroStudentIslandProps {
     className?: string;
+    isOpen?: boolean;
 }
 
-export const IntroStudentIsland = ({ className = '' }: IntroStudentIslandProps) => {
+export const IntroStudentIsland = ({ className = '', isOpen = true }: IntroStudentIslandProps) => {
+
     const [submitted, setSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -65,6 +67,21 @@ export const IntroStudentIsland = ({ className = '' }: IntroStudentIslandProps) 
         }
     };
 
+    if (!isOpen) {
+        return (
+            <div className={`bg-bg-card dark:bg-gradient-theme border border-border-color squircle-xl p-10 shadow-xl text-center flex flex-col items-center justify-center min-h-75 ${className}`}>
+                <div className="w-20 h-20 bg-purple-100 dark:bg-white/20 rounded-full flex items-center justify-center mb-6">
+
+                    <Lock className="w-10 h-10 text-brand-primary dark:text-white" />
+                </div>
+                <h3 className="text-3xl font-black text-text-main dark:text-white mb-4 tracking-tight">Inschrijvingen Gesloten</h3>
+                <p className="text-text-muted dark:text-white/80 font-medium max-w-sm">
+                    De inschrijvingen voor de introductie zijn momenteel gesloten.
+                </p>
+            </div>
+        );
+    }
+
     if (submitted) {
         return (
             <div className="bg-bg-card dark:bg-gradient-theme border border-border-color squircle-lg p-6 lg:p-8 text-center shadow-lg">
@@ -76,6 +93,7 @@ export const IntroStudentIsland = ({ className = '' }: IntroStudentIslandProps) 
             </div>
         );
     }
+
 
     return (
         <StandardFormCard

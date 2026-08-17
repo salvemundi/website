@@ -2,7 +2,7 @@ import { connection } from 'next/server';
 import Link from 'next/link';
 import { CalendarClock, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { hasParentSignup, getIntroBlogsPublic } from '@/server/actions/public/intro.actions';
+import { hasParentSignup, getIntroBlogsPublic, getIntroSignupStatusPublic } from '@/server/actions/public/intro.actions';
 import { IntroStudentIsland } from '@/components/islands/intro/IntroStudentIsland';
 import { IntroParentIsland } from '@/components/islands/intro/IntroParentIsland';
 import { IntroLightboxIsland } from '@/components/islands/intro/IntroLightboxIsland';
@@ -93,8 +93,11 @@ export default async function IntroPage() {
 
     const session = await getEnrichedSession();
     const user = session?.user;
-    const isAlreadyParent = user ? await hasParentSignup() : false;
-    const blogs = await getIntroBlogsPublic();
+    const [isAlreadyParent, blogs, signupStatus] = await Promise.all([
+        user ? hasParentSignup() : Promise.resolve(false),
+        getIntroBlogsPublic(),
+        getIntroSignupStatusPublic()
+    ]);
 
     return (
         <PublicPageShell>
@@ -130,7 +133,7 @@ export default async function IntroPage() {
                     <div className="flex-1 w-full flex flex-col">
                         {user ? (
                             isAlreadyParent ? (
-                                <div className="bg-bg-card dark:bg-gradient-theme border border-border-color squircle-xl p-10 shadow-xl text-center flex flex-col items-center justify-center min-h-[300px] flex-1">
+                                <div className="bg-bg-card dark:bg-gradient-theme border border-border-color squircle-xl p-10 shadow-xl text-center flex flex-col items-center justify-center min-h-75 flex-1">
                                     <div className="w-20 h-20 bg-purple-100 dark:bg-white/20 rounded-full flex items-center justify-center mb-6">
                                         <CheckCircle2 className="w-10 h-10 text-brand-primary dark:text-white" />
                                     </div>
@@ -141,15 +144,20 @@ export default async function IntroPage() {
                                 </div>
                             ) : (
                                 <IntroParentIsland
+                                    isOpen={signupStatus.parentSignupsOpen}
                                     initialPhone={user.phone_number || ''}
                                     className="flex-1"
                                 />
                             )
                         ) : (
-                            <IntroStudentIsland className="flex-1" />
+                            <IntroStudentIsland
+                                isOpen={signupStatus.studentSignupsOpen}
+                                className="flex-1"
+                            />
                         )}
                     </div>
                 </div>
+
 
                 <div className="max-w-7xl mx-auto w-full mt-12">
                     <IntroBlogsIsland blogs={blogs} />

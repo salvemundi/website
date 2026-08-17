@@ -53,9 +53,12 @@ interface Props {
     initialIntroVisible: boolean;
     initialPlanningImage: string | null;
     initialInfoBooklet: string | null;
+    initialStudentSignupsOpen: boolean;
+    initialParentSignupsOpen: boolean;
 }
 
-export default function IntroManagementIsland({ initialSignups, initialParents, initialBlogs, initialPlanning, initialConfidants, initialGroups, initialApprovedOuders, initialPlanningImage, initialInfoBooklet }: Props) {
+export default function IntroManagementIsland({ initialSignups, initialParents, initialBlogs, initialPlanning, initialConfidants, initialGroups, initialApprovedOuders, initialPlanningImage, initialInfoBooklet, initialStudentSignupsOpen, initialParentSignupsOpen }: Props) {
+
     const { toast, showToast, hideToast } = useAdminToast();
 
     const [activeTab, setActiveTab] = useState<TabType>('signups');
@@ -303,7 +306,10 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                     confidants: confidants.length,
                     groups: groups.length
                 }}
+                studentSignupsOpen={initialStudentSignupsOpen}
+                parentSignupsOpen={initialParentSignupsOpen}
             />
+
 
             <div className="w-full mt-2">
                 {activeTab === 'signups' && (
