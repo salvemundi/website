@@ -1,4 +1,4 @@
-import { pgTable, unique, serial, varchar, foreignKey, timestamp, text, uuid, integer, json, boolean, index, doublePrecision, real, bigint, date, numeric, time, inet, jsonb, bigserial } from "drizzle-orm/pg-core"
+import { pgTable, unique, serial, varchar, foreignKey, timestamp, text, uuid, integer, json, boolean, index, doublePrecision, real, bigint, date, numeric, time, inet, jsonb, bigserial, check } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -1179,6 +1179,7 @@ export const intro_settings = pgTable("intro_settings", {
 	info_booklet: uuid(),
 	qr_scan_count: integer().default(0).notNull(),
 	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+	attendance_visible: boolean().default(false).notNull(),
 }, (table) => [
 	foreignKey({
 			columns: [table.planning_image],
@@ -1190,6 +1191,132 @@ export const intro_settings = pgTable("intro_settings", {
 			foreignColumns: [directus_files.id],
 			name: "intro_settings_info_booklet_foreign"
 		}).onDelete("set null"),
+]);
+
+export const intro_groups = pgTable("intro_groups", {
+	id: serial().primaryKey().notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	notes: text(),
+	user_created: uuid(),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+	updated_at: timestamp({ withTimezone: true, mode: 'string' }),
+}, (table) => [
+	foreignKey({
+			columns: [table.user_created],
+			foreignColumns: [directus_users.id],
+			name: "intro_groups_user_created_fkey"
+		}).onDelete("set null"),
+]);
+
+export const intro_group_leaders = pgTable("intro_group_leaders", {
+	id: serial().primaryKey().notNull(),
+	intro_group_id: integer().notNull(),
+	user_id: uuid().notNull(),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_intro_group_leaders_user").using("btree", table.user_id.asc().nullsLast().op("uuid_ops")),
+	index("idx_intro_group_leaders_group").using("btree", table.intro_group_id.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.intro_group_id],
+			foreignColumns: [intro_groups.id],
+			name: "intro_group_leaders_intro_group_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.user_id],
+			foreignColumns: [directus_users.id],
+			name: "intro_group_leaders_user_id_fkey"
+		}).onDelete("cascade"),
+	unique("intro_group_leaders_group_user_key").on(table.intro_group_id, table.user_id),
+	unique("intro_group_leaders_user_id_key").on(table.user_id),
+]);
+
+export const intro_group_members = pgTable("intro_group_members", {
+	id: serial().primaryKey().notNull(),
+	intro_group_id: integer().notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	added_by: uuid(),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_intro_group_members_group").using("btree", table.intro_group_id.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.intro_group_id],
+			foreignColumns: [intro_groups.id],
+			name: "intro_group_members_intro_group_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.added_by],
+			foreignColumns: [directus_users.id],
+			name: "intro_group_members_added_by_fkey"
+		}).onDelete("set null"),
+]);
+
+export const intro_group_attendance = pgTable("intro_group_attendance", {
+	id: serial().primaryKey().notNull(),
+	intro_group_member_id: integer().notNull(),
+	date: date().notNull(),
+	status: varchar({ length: 20 }).default('not_reported').notNull(),
+	status_at: timestamp({ withTimezone: true, mode: 'string' }),
+	status_by: uuid(),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+	updated_at: timestamp({ withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_intro_group_attendance_date").using("btree", table.date.asc().nullsLast().op("date_ops")),
+	index("idx_intro_group_attendance_member").using("btree", table.intro_group_member_id.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.intro_group_member_id],
+			foreignColumns: [intro_group_members.id],
+			name: "intro_group_attendance_intro_group_member_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.status_by],
+			foreignColumns: [directus_users.id],
+			name: "intro_group_attendance_status_by_fkey"
+		}).onDelete("set null"),
+	unique("intro_group_attendance_member_date_key").on(table.intro_group_member_id, table.date),
+	check("intro_group_attendance_status_check", sql`(status)::text = ANY ((ARRAY['not_reported'::character varying, 'present'::character varying, 'went_home'::character varying, 'home'::character varying, 'staying_out'::character varying])::text[])`),
+]);
+
+export const intro_group_member_notes = pgTable("intro_group_member_notes", {
+	id: serial().primaryKey().notNull(),
+	intro_group_member_id: integer().notNull(),
+	note: text().notNull(),
+	created_by: uuid(),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_intro_group_member_notes_member").using("btree", table.intro_group_member_id.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.intro_group_member_id],
+			foreignColumns: [intro_group_members.id],
+			name: "intro_group_member_notes_intro_group_member_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.created_by],
+			foreignColumns: [directus_users.id],
+			name: "intro_group_member_notes_created_by_fkey"
+		}).onDelete("set null"),
+]);
+
+export const intro_group_attendance_log = pgTable("intro_group_attendance_log", {
+	id: serial().primaryKey().notNull(),
+	intro_group_member_id: integer().notNull(),
+	date: date().notNull(),
+	status: varchar({ length: 20 }).notNull(),
+	status_at: timestamp({ withTimezone: true, mode: 'string' }),
+	changed_by: uuid(),
+	changed_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_intro_group_attendance_log_member_date").using("btree", table.intro_group_member_id.asc().nullsLast().op("int4_ops"), table.date.asc().nullsLast().op("date_ops")),
+	foreignKey({
+			columns: [table.intro_group_member_id],
+			foreignColumns: [intro_group_members.id],
+			name: "intro_group_attendance_log_intro_group_member_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.changed_by],
+			foreignColumns: [directus_users.id],
+			name: "intro_group_attendance_log_changed_by_fkey"
+		}).onDelete("set null"),
+	check("intro_group_attendance_log_status_check", sql`(status)::text = ANY ((ARRAY['not_reported'::character varying, 'present'::character varying, 'went_home'::character varying, 'home'::character varying, 'staying_out'::character varying])::text[])`),
 ]);
 
 export const intro_confidants = pgTable("intro_confidants", {

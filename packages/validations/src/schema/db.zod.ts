@@ -232,6 +232,30 @@ export const selectIntroConfidantsSchema = createSelectSchema(schema.intro_confi
 export const insertIntroSettingsSchema = createInsertSchema(schema.intro_settings);
 export const selectIntroSettingsSchema = createSelectSchema(schema.intro_settings);
 
+// --- intro_groups ---
+export const insertIntroGroupsSchema = createInsertSchema(schema.intro_groups);
+export const selectIntroGroupsSchema = createSelectSchema(schema.intro_groups);
+
+// --- intro_group_leaders ---
+export const insertIntroGroupLeadersSchema = createInsertSchema(schema.intro_group_leaders);
+export const selectIntroGroupLeadersSchema = createSelectSchema(schema.intro_group_leaders);
+
+// --- intro_group_members ---
+export const insertIntroGroupMembersSchema = createInsertSchema(schema.intro_group_members);
+export const selectIntroGroupMembersSchema = createSelectSchema(schema.intro_group_members);
+
+// --- intro_group_attendance ---
+export const insertIntroGroupAttendanceSchema = createInsertSchema(schema.intro_group_attendance);
+export const selectIntroGroupAttendanceSchema = createSelectSchema(schema.intro_group_attendance);
+
+// --- intro_group_member_notes ---
+export const insertIntroGroupMemberNotesSchema = createInsertSchema(schema.intro_group_member_notes);
+export const selectIntroGroupMemberNotesSchema = createSelectSchema(schema.intro_group_member_notes);
+
+// --- intro_group_attendance_log ---
+export const insertIntroGroupAttendanceLogSchema = createInsertSchema(schema.intro_group_attendance_log);
+export const selectIntroGroupAttendanceLogSchema = createSelectSchema(schema.intro_group_attendance_log);
+
 // --- pub_crawl_tickets ---
 export const insertPubCrawlTicketsSchema = createInsertSchema(schema.pub_crawl_tickets);
 export const selectPubCrawlTicketsSchema = createSelectSchema(schema.pub_crawl_tickets);

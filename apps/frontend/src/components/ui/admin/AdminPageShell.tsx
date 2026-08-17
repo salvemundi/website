@@ -4,6 +4,7 @@ import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 interface AdminPageShellProps {
     title: string;
     subtitle?: string;
+    titleBadge?: React.ReactNode;
     backHref?: string;
     actions?: React.ReactNode;
     children: React.ReactNode;
@@ -18,6 +19,7 @@ interface AdminPageShellProps {
 export default function AdminPageShell({
     title,
     subtitle,
+    titleBadge,
     backHref,
     actions,
     children,
@@ -28,9 +30,10 @@ export default function AdminPageShell({
         <>
             {!hideToolbar && (
                 <>
-                    <AdminToolbar 
+                    <AdminToolbar
                         title={title}
                         subtitle={subtitle}
+                        titleBadge={titleBadge}
                         backHref={backHref}
                         actions={actions}
                         centered={centered}

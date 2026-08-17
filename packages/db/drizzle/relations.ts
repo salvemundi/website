@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { directus_users, vacancy_submissions, directus_files, vacancies, clubs, club_members, Stickers, Board, Board_Members, contacts, directus_roles, directus_access, directus_policies, committees, directus_comments, directus_dashboards, directus_folders, directus_collections, directus_flows, directus_panels, directus_permissions, directus_presets, directus_activity, directus_revisions, directus_versions, directus_shares, directus_notifications, vacancy_verification_tokens, directus_operations, intro_blogs, vacancy_ict_directions, vacancies_vacancy_ict_directions, documents, events, event_signups, events_directus_users, intro_blog_likes, events_members, hero_banners, intro_blog_gallery, pub_crawl_events, membership_history, pub_crawl_signups, pub_crawl_signups_transactions, transactions, push_notification, vacancy_submission_direction_links, intro_planning, pub_crawl_tickets, intro_parent_signups, trips, vacancy_direction_links, trip_signups, trip_activities, trip_signup_activities, safe_havens, sponsors, directus_sessions, roles, role_permissions, permissions, webshop_preorders, auth_accounts, auth_sessions, committee_members, intro_planning_signups, intro_signups, directus_deployments, webshop_products, webshop_product_media, directus_deployment_projects, directus_settings, directus_deployment_runs, webshop_product_variants, webshop_drop_windows, webshop_preorder_lines } from "./schema";
+import { directus_users, vacancy_submissions, directus_files, vacancies, clubs, club_members, Stickers, Board, Board_Members, contacts, directus_roles, directus_access, directus_policies, committees, directus_comments, directus_dashboards, directus_folders, directus_collections, directus_flows, directus_panels, directus_permissions, directus_presets, directus_activity, directus_revisions, directus_versions, directus_shares, directus_notifications, vacancy_verification_tokens, directus_operations, intro_blogs, vacancy_ict_directions, vacancies_vacancy_ict_directions, documents, events, event_signups, events_directus_users, intro_blog_likes, events_members, hero_banners, intro_blog_gallery, pub_crawl_events, membership_history, pub_crawl_signups, pub_crawl_signups_transactions, transactions, push_notification, vacancy_submission_direction_links, intro_planning, pub_crawl_tickets, intro_parent_signups, trips, vacancy_direction_links, trip_signups, trip_activities, trip_signup_activities, safe_havens, sponsors, directus_sessions, roles, role_permissions, permissions, webshop_preorders, auth_accounts, auth_sessions, committee_members, intro_planning_signups, intro_signups, directus_deployments, webshop_products, webshop_product_media, directus_deployment_projects, directus_settings, directus_deployment_runs, webshop_product_variants, webshop_drop_windows, webshop_preorder_lines, intro_groups, intro_group_leaders, intro_group_members, intro_group_attendance, intro_group_member_notes, intro_group_attendance_log } from "./schema";
 
 export const vacancy_submissionsRelations = relations(vacancy_submissions, ({one, many}) => ({
 	directus_user: one(directus_users, {
@@ -1024,5 +1024,77 @@ export const webshop_preorder_linesRelations = relations(webshop_preorder_lines,
 	webshop_product_variant: one(webshop_product_variants, {
 		fields: [webshop_preorder_lines.variant_id],
 		references: [webshop_product_variants.id]
+	}),
+}));
+
+export const intro_groupsRelations = relations(intro_groups, ({one, many}) => ({
+	directus_user_user_created: one(directus_users, {
+		fields: [intro_groups.user_created],
+		references: [directus_users.id],
+		relationName: "intro_groups_user_created_directus_users_id"
+	}),
+	intro_group_leaders: many(intro_group_leaders),
+	intro_group_members: many(intro_group_members),
+}));
+
+export const intro_group_leadersRelations = relations(intro_group_leaders, ({one}) => ({
+	intro_group: one(intro_groups, {
+		fields: [intro_group_leaders.intro_group_id],
+		references: [intro_groups.id]
+	}),
+	directus_user: one(directus_users, {
+		fields: [intro_group_leaders.user_id],
+		references: [directus_users.id]
+	}),
+}));
+
+export const intro_group_membersRelations = relations(intro_group_members, ({one, many}) => ({
+	intro_group: one(intro_groups, {
+		fields: [intro_group_members.intro_group_id],
+		references: [intro_groups.id]
+	}),
+	directus_user_added_by: one(directus_users, {
+		fields: [intro_group_members.added_by],
+		references: [directus_users.id],
+		relationName: "intro_group_members_added_by_directus_users_id"
+	}),
+	intro_group_attendance: many(intro_group_attendance),
+	intro_group_member_notes: many(intro_group_member_notes),
+	intro_group_attendance_log: many(intro_group_attendance_log),
+}));
+
+export const intro_group_attendanceRelations = relations(intro_group_attendance, ({one}) => ({
+	intro_group_member: one(intro_group_members, {
+		fields: [intro_group_attendance.intro_group_member_id],
+		references: [intro_group_members.id]
+	}),
+	directus_user_status_by: one(directus_users, {
+		fields: [intro_group_attendance.status_by],
+		references: [directus_users.id],
+		relationName: "intro_group_attendance_status_by_directus_users_id"
+	}),
+}));
+
+export const intro_group_member_notesRelations = relations(intro_group_member_notes, ({one}) => ({
+	intro_group_member: one(intro_group_members, {
+		fields: [intro_group_member_notes.intro_group_member_id],
+		references: [intro_group_members.id]
+	}),
+	directus_user_created_by: one(directus_users, {
+		fields: [intro_group_member_notes.created_by],
+		references: [directus_users.id],
+		relationName: "intro_group_member_notes_created_by_directus_users_id"
+	}),
+}));
+
+export const intro_group_attendance_logRelations = relations(intro_group_attendance_log, ({one}) => ({
+	intro_group_member: one(intro_group_members, {
+		fields: [intro_group_attendance_log.intro_group_member_id],
+		references: [intro_group_members.id]
+	}),
+	directus_user_changed_by: one(directus_users, {
+		fields: [intro_group_attendance_log.changed_by],
+		references: [directus_users.id],
+		relationName: "intro_group_attendance_log_changed_by_directus_users_id"
 	}),
 }));

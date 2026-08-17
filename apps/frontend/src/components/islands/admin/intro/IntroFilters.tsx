@@ -1,12 +1,10 @@
 'use client';
 
-import { Search, Download, Users, Heart, FileText, Calendar, ShieldCheck } from 'lucide-react';
+import { Download, Users, Heart, FileText, Calendar, ShieldCheck, Users2 } from 'lucide-react';
 
-export type TabType = 'signups' | 'parents' | 'blogs' | 'planning' | 'confidants';
+export type TabType = 'signups' | 'parents' | 'blogs' | 'planning' | 'confidants' | 'groups';
 
 interface IntroFiltersProps {
-    searchQuery: string;
-    onSearchChange: (val: string) => void;
     activeTab: TabType;
     onTabChange: (tab: TabType) => void;
     onExport: () => void;
@@ -14,8 +12,6 @@ interface IntroFiltersProps {
 }
 
 export default function IntroFilters({
-    searchQuery,
-    onSearchChange,
     activeTab,
     onTabChange,
     onExport,
@@ -26,24 +22,46 @@ export default function IntroFilters({
         { id: 'parents', label: 'Ouders', count: counts.parents, icon: Heart },
         { id: 'blogs', label: 'Blogs', count: counts.blogs, icon: FileText },
         { id: 'planning', label: 'Planning', count: counts.planning, icon: Calendar },
-        { id: 'confidants', label: 'Vertrouwenspersonen', count: counts.confidants, icon: ShieldCheck }
+        { id: 'confidants', label: 'Vertrouwenspersonen', count: counts.confidants, icon: ShieldCheck },
+        { id: 'groups', label: 'Groepen', count: counts.groups, icon: Users2 }
     ] as const;
 
+    const activeTabInfo = tabs.find(t => t.id === activeTab);
+
     return (
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="flex items-center gap-3 grow max-w-md px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl shadow-sm focus-within:border-(--beheer-accent) focus-within:ring-2 focus-within:ring-(--beheer-accent)/20 transition-all">
-                <Search className="h-4 w-4 shrink-0 text-(--beheer-text-muted)" />
-                <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => onSearchChange(e.target.value)}
-                    placeholder="Zoek op naam of titel..."
-                    className="beheer-input bg-transparent text-(--beheer-text) placeholder:text-(--beheer-text-muted) outline-none border-none p-0 w-full font-semibold text-xs"
-                    autoComplete="off"
-                />
+        <div className="flex flex-col gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex items-center gap-2 sm:ml-auto">
+                    {(activeTab === 'signups' || activeTab === 'parents') && (
+                        <button
+                            onClick={onExport}
+                            className="beheer-button flex items-center gap-2 px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl text-sm font-semibold text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-colors shadow-sm active:scale-95"
+                        >
+                            <Download className="w-4 h-4 text-(--beheer-text-muted)" />
+                            <span className="hidden sm:inline">Exporteer CSV</span>
+                        </button>
+                    )}
+                </div>
             </div>
 
-            <div className="flex bg-(--beheer-card-soft) p-1 rounded-xl border border-(--beheer-border)/50 overflow-x-auto hide-scrollbar">
+            {/* Compact dropdown for narrow screens, where a full tab row doesn't fit */}
+            <div className="lg:hidden">
+                <div className="relative flex items-center gap-3 px-4 py-3 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl shadow-sm">
+                    {activeTabInfo && <activeTabInfo.icon className="h-4 w-4 shrink-0 text-(--beheer-accent)" />}
+                    <select
+                        value={activeTab}
+                        onChange={(e) => onTabChange(e.target.value as TabType)}
+                        className="beheer-input bg-transparent text-(--beheer-text) outline-none border-none p-0 w-full font-semibold text-sm appearance-none"
+                    >
+                        {tabs.map(tab => (
+                            <option key={tab.id} value={tab.id}>{tab.label} ({tab.count})</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            {/* Full tab row, only shown once there's enough width for all labels */}
+            <div className="hidden lg:flex bg-(--beheer-card-soft) p-1 rounded-xl border border-(--beheer-border)/50 overflow-x-auto">
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
@@ -54,7 +72,7 @@ export default function IntroFilters({
                             }`}
                     >
                         <tab.icon className="w-4 h-4" />
-                        <span className="hidden sm:inline">{tab.label}</span>
+                        {tab.label}
                         <span className={`ml-1 text-[10px] py-0.5 px-1.5 rounded-full ${activeTab === tab.id
                             ? 'bg-white/20 text-white'
                             : 'bg-(--beheer-border)/50 text-(--beheer-text)'
@@ -63,18 +81,6 @@ export default function IntroFilters({
                         </span>
                     </button>
                 ))}
-            </div>
-
-            <div className="flex items-center gap-2 ml-auto">
-                {(activeTab === 'signups' || activeTab === 'parents') && (
-                    <button
-                        onClick={onExport}
-                        className="beheer-button flex items-center gap-2 px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl text-sm font-semibold text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-colors shadow-sm active:scale-95"
-                    >
-                        <Download className="w-4 h-4 text-(--beheer-text-muted)" />
-                        <span className="hidden sm:inline">Exporteer CSV</span>
-                    </button>
-                )}
             </div>
         </div>
     );
