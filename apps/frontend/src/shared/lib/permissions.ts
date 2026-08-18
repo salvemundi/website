@@ -50,7 +50,8 @@ const resourceToFeature = new Map<string, AdminFeature>([
     ['admin:kroegentocht', 'kroegentocht'],
     ['admin:activities:view', 'activiteiten'],
     ['admin:activities:edit', 'activiteiten'],
-    ['admin:webshop', 'webshop']
+    ['admin:webshop', 'webshop'],
+    ['admin:nda', 'nda']
 ]);
 
 export function hasPermission(committees: Committee[] | undefined, resource: string): boolean {
@@ -71,7 +72,7 @@ export function getPermissions(committees: Committee[] | undefined = []): string
     const features: AdminFeature[] = [
         'intro', 'reis', 'logging', 'sync', 'coupons', 'stickers',
         'kroegentocht', 'leden', 'commissies', 'activiteiten',
-        'webshop', 'impersonate', 'services', 'vacatures'
+        'webshop', 'impersonate', 'services', 'vacatures', 'nda'
     ];
 
     for (const feature of features) {

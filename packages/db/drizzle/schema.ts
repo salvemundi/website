@@ -2178,3 +2178,98 @@ export const intro_group_members = pgTable("intro_group_members", {
 			name: "intro_group_members_added_by_fkey"
 		}).onDelete("set null"),
 ]);
+
+export const nda_templates = pgTable("nda_templates", {
+	id: serial().primaryKey().notNull(),
+	committee_id: integer().notNull(),
+	year: integer().notNull(),
+	document: uuid(),
+	status: varchar({ length: 20 }).default('draft').notNull(),
+	secretary_user_id: uuid(),
+	secretary_signed_at: timestamp({ withTimezone: true, mode: 'string' }),
+	user_created: uuid(),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updated_at: timestamp({ withTimezone: true, mode: 'string' }),
+}, (table) => [
+	foreignKey({
+			columns: [table.committee_id],
+			foreignColumns: [committees.id],
+			name: "nda_templates_committee_id_committees_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.document],
+			foreignColumns: [directus_files.id],
+			name: "nda_templates_document_directus_files_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.secretary_user_id],
+			foreignColumns: [directus_users.id],
+			name: "nda_templates_secretary_user_id_directus_users_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.user_created],
+			foreignColumns: [directus_users.id],
+			name: "nda_templates_user_created_directus_users_id_fk"
+		}).onDelete("set null"),
+	unique("nda_templates_committee_id_year_key").on(table.committee_id, table.year),
+]);
+
+export const nda_signatures = pgTable("nda_signatures", {
+	id: serial().primaryKey().notNull(),
+	nda_template_id: integer(),
+	committee_id: integer().notNull(),
+	user_id: uuid().notNull(),
+	status: varchar({ length: 20 }).default('pending').notNull(),
+	is_legacy: boolean().default(false).notNull(),
+	member_signature: uuid(),
+	signed_at: timestamp({ withTimezone: true, mode: 'string' }),
+	signed_location: varchar({ length: 255 }),
+	expires_at: date(),
+	signed_document: uuid(),
+	sent_at: timestamp({ withTimezone: true, mode: 'string' }),
+	reminder_sent_at: timestamp({ withTimezone: true, mode: 'string' }),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updated_at: timestamp({ withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_nda_signatures_user_status").using("btree", table.user_id.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("text_ops")),
+	index("idx_nda_signatures_expires_at").using("btree", table.expires_at.asc().nullsLast().op("date_ops")),
+	foreignKey({
+			columns: [table.nda_template_id],
+			foreignColumns: [nda_templates.id],
+			name: "nda_signatures_nda_template_id_nda_templates_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.committee_id],
+			foreignColumns: [committees.id],
+			name: "nda_signatures_committee_id_committees_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.user_id],
+			foreignColumns: [directus_users.id],
+			name: "nda_signatures_user_id_directus_users_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.member_signature],
+			foreignColumns: [directus_files.id],
+			name: "nda_signatures_member_signature_directus_files_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.signed_document],
+			foreignColumns: [directus_files.id],
+			name: "nda_signatures_signed_document_directus_files_id_fk"
+		}).onDelete("set null"),
+]);
+
+export const nda_settings = pgTable("nda_settings", {
+	id: serial().primaryKey().notNull(),
+	secretary_user_id: uuid(),
+	reminder_days_before: integer().default(30).notNull(),
+	is_active: boolean().default(false).notNull(),
+	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	foreignKey({
+			columns: [table.secretary_user_id],
+			foreignColumns: [directus_users.id],
+			name: "nda_settings_secretary_user_id_directus_users_id_fk"
+		}).onDelete("set null"),
+]);

@@ -15,7 +15,8 @@ import {
     Settings,
     Layout,
     ShoppingBag,
-    Briefcase
+    Briefcase,
+    FileSignature
 } from 'lucide-react';
 import {
     ActionCard
@@ -56,6 +57,7 @@ export function DashboardHub({
                 { title: "Coupons", value: stats.totalCoupons, icon: <Ticket />, href: "/beheer/coupons", colorClass: "amber" as const, disabled: !permissions.includes('coupons') },
                 { title: "Webshop", value: "Beheer", icon: <ShoppingBag />, href: "/beheer/webshop", colorClass: "purple" as const, disabled: !permissions.includes('webshop') },
                 { title: "Bijbanenbank", value: "Beheer", icon: <Briefcase />, href: "/beheer/bijbanenbank", colorClass: "red" as const, disabled: !permissions.includes('vacatures') },
+                { title: "NDA's", value: "Beheer", icon: <FileSignature />, href: "/beheer/nda", colorClass: "teal" as const, disabled: !permissions.includes('nda') },
             ].filter(i => !i.disabled)
         },
         {

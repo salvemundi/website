@@ -29,6 +29,7 @@
     "lucide-react": "^0.475.0",
     "maplibre-gl": "5.24.0",
     "next": "16.2.11",
+    "pdf-lib": "^1.17.1",
     "pg": "^8.22.0",
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",
@@ -43,6 +44,7 @@
     "remark-gfm": "^4.0.1",
     "server-only": "^0.0.1",
     "sharp": "0.35.3",
+    "signature_pad": "^5.1.4",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3"
   },

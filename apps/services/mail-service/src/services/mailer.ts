@@ -49,7 +49,12 @@ export class MailerService {
         ['vacancy_verification', 'Bevestig je vacature'],
         ['vacancy_approved', 'Vacature Goedgekeurd'],
         ['vacancy_rejected', 'Vacature Beoordeeld'],
-        ['vacancy_admin_notification', 'Nieuwe Vacature ter Beoordeling']
+        ['vacancy_admin_notification', 'Nieuwe Vacature ter Beoordeling'],
+        ['nda-invite', 'NDA Ondertekenen'],
+        ['nda-signed-confirmation', 'NDA Ondertekend'],
+        ['nda-renewal-reminder', 'NDA Verloopt Binnenkort'],
+        ['nda-secretary-batch-sent', 'NDA\'s Verstuurd'],
+        ['nda-secretary-missing-template', 'NDA Upload Vereist']
     ]);
 
     private static templateCache = new Map<string, HandlebarsTemplateDelegate>();

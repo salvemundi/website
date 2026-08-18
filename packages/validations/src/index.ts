@@ -11,6 +11,7 @@ export * from './schema/mail.zod.js';
 export * from './schema/admin-trip.zod.js';
 export * from './schema/trip.zod.js';
 export * from './schema/intro.zod.js';
+export * from './schema/nda.zod.js';
 export * from './schema/membership.zod.js';
 export * from './schema/pub-crawl.zod.js';
 export * from './schema/admin.zod.js';
