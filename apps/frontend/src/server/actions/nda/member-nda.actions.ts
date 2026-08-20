@@ -7,9 +7,10 @@ import { revalidatePath } from 'next/cache';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { safeConsoleError } from '@/server/utils/logger';
 import { uploadToDirectus, uploadBufferToDirectus } from '@/server/utils/media';
-import { appendSignatureBlockToPdf } from '@/server/utils/nda-pdf';
+import { fillMemberSignatureOnPdf } from '@/server/utils/nda-pdf';
 import { sendNdaMail } from '@/server/actions/admin/nda/nda-mail.utils';
 import { getNdaSettingsInternal } from '@/server/queries/nda/admin-nda.queries';
+import { ndaSignatureLayoutSchema } from '@salvemundi/validations';
 
 export async function isNdaSystemActive(): Promise<boolean> {
     const settings = await getNdaSettingsInternal();
@@ -131,6 +132,11 @@ export async function signMyNda(
         return { success: false, error: 'Deze NDA is nog niet klaar om ondertekend te worden' };
     }
 
+    const layoutParse = ndaSignatureLayoutSchema.safeParse(template.signature_layout);
+    if (!layoutParse.success) {
+        return { success: false, error: 'De handtekeningplek voor deze NDA is nog niet ingesteld door de secretaris' };
+    }
+
     const signatureFile = formData.get('signature') as File | null;
     const signatureUpload = await uploadToDirectus(signatureFile);
     if (!signatureUpload.success || !signatureUpload.id) {
@@ -145,11 +151,11 @@ export async function signMyNda(
     expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
     try {
-        const signedBuffer = await appendSignatureBlockToPdf(template.document, {
-            heading: session.user.name,
-            name: session.user.email,
+        const signedBuffer = await fillMemberSignatureOnPdf(template.document, layoutParse.data, {
+            name: session.user.name,
+            date: now.toLocaleDateString('nl-NL'),
+            location: city,
             signaturePngFileId: signatureUpload.id,
-            extraLines: [`Datum: ${now.toLocaleDateString('nl-NL')}`, `Locatie: ${city}`],
         });
 
         const uploadResult = await uploadBufferToDirectus(signedBuffer, `nda-${committeeName}-${session.user.name}.pdf`, 'application/pdf');

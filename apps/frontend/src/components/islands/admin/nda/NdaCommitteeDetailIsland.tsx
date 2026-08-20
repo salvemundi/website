@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload, FileText, Send, Loader2, RefreshCw, CheckCircle2, Eye, Bell } from 'lucide-react';
+import { Upload, FileText, Send, Loader2, RefreshCw, CheckCircle2, Eye, Bell, MapPin } from 'lucide-react';
 import type { NdaCommitteeDetail, NdaMemberStatusRow, DerivedNdaStatus } from '@/server/queries/nda/admin-nda.queries';
 import { uploadNdaTemplate, confirmNdaTemplateReady } from '@/server/actions/admin/nda/admin-nda-templates.actions';
 import { sendNdaToCommitteeMembers, resendNdaInvite, recordHistoricalNdaSignature, sendRenewalReminderToMember } from '@/server/actions/admin/nda/admin-nda-signatures.actions';
 import { Button, ActionButton } from '@/components/islands/admin/intro/IntroTabComponents';
+import NdaSignatureLayoutEditor from '@/components/islands/admin/nda/NdaSignatureLayoutEditor';
 
 interface Props {
     detail: NdaCommitteeDetail;
@@ -39,6 +40,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
     const [savingHistoricalFor, setSavingHistoricalFor] = useState<string | null>(null);
     const [reminderId, setReminderId] = useState<number | null>(null);
     const [reminderError, setReminderError] = useState<string | null>(null);
+    const [editingLayout, setEditingLayout] = useState(false);
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -144,7 +146,37 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                 </div>
             </div>
 
-            {template?.status === 'draft' && template.document && (
+            {template?.document && (
+                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-xs text-(--beheer-text-muted)">Handtekeningplek instellen</h3>
+                        {template.signatureLayout && !editingLayout && (
+                            <button
+                                type="button"
+                                onClick={() => setEditingLayout(true)}
+                                className="btn-edit-nda-layout text-xs font-semibold text-(--beheer-accent) hover:underline"
+                            >
+                                Opnieuw instellen
+                            </button>
+                        )}
+                    </div>
+                    {template.signatureLayout && !editingLayout ? (
+                        <p className="text-sm text-(--beheer-text-muted) flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-emerald-500" />
+                            De plek voor locatie, datum, naam en handtekening van het commissielid is ingesteld.
+                        </p>
+                    ) : (
+                        <NdaSignatureLayoutEditor
+                            templateId={template.id}
+                            documentFileId={template.document}
+                            initialLayout={template.signatureLayout}
+                            onSaved={() => window.location.reload()}
+                        />
+                    )}
+                </div>
+            )}
+
+            {template?.status === 'draft' && template.document && template.signatureLayout && (
                 <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 shadow-sm">
                     <h3 className="font-semibold text-xs text-(--beheer-text-muted) mb-4">Bevestigen en klaarzetten</h3>
                     {isSecretary ? (

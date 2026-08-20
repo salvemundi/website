@@ -2187,6 +2187,7 @@ export const nda_templates = pgTable("nda_templates", {
 	status: varchar({ length: 20 }).default('draft').notNull(),
 	secretary_user_id: uuid(),
 	secretary_signed_at: timestamp({ withTimezone: true, mode: 'string' }),
+	signature_layout: jsonb(),
 	user_created: uuid(),
 	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updated_at: timestamp({ withTimezone: true, mode: 'string' }),

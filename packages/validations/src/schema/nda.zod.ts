@@ -11,6 +11,7 @@ export const ndaTemplateSchema = selectNdaTemplatesSchema.partial({
     document: true,
     secretary_user_id: true,
     secretary_signed_at: true,
+    signature_layout: true,
     user_created: true,
     updated_at: true,
 }).extend({
@@ -21,6 +22,30 @@ export const ndaTemplateSchema = selectNdaTemplatesSchema.partial({
 });
 
 export type NdaTemplate = z.infer<typeof ndaTemplateSchema>;
+
+const ndaLayoutTextBoxSchema = z.object({
+    x: z.number(),
+    y: z.number(),
+    maxWidth: z.number(),
+});
+
+const ndaLayoutSignatureBoxSchema = z.object({
+    x: z.number(),
+    y: z.number(),
+    width: z.number(),
+    height: z.number(),
+});
+
+export const ndaSignatureLayoutSchema = z.object({
+    pageWidth: z.number(),
+    pageHeight: z.number(),
+    location: ndaLayoutTextBoxSchema,
+    date: ndaLayoutTextBoxSchema,
+    name: ndaLayoutTextBoxSchema,
+    signature: ndaLayoutSignatureBoxSchema,
+});
+
+export type NdaSignatureLayout = z.infer<typeof ndaSignatureLayoutSchema>;
 
 export const ndaTemplateUploadSchema = z.object({
     committeeId: z.coerce.number(),

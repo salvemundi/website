@@ -4,6 +4,7 @@ import { db, schema } from '@salvemundi/db';
 import { eq, asc, desc } from 'drizzle-orm';
 import { getCommittees, type Committee } from '@/server/queries/commissies/admin-commissies.queries';
 import { COMMITTEES } from '@/shared/lib/permissions-config';
+import { ndaSignatureLayoutSchema, type NdaSignatureLayout } from '@salvemundi/validations';
 
 export type DerivedNdaStatus = 'none' | 'pending' | 'signed' | 'expiring_soon' | 'expired';
 
@@ -155,6 +156,7 @@ export interface NdaCommitteeDetail {
         document: string | null;
         secretaryUserId: string | null;
         secretarySignedAt: string | null;
+        signatureLayout: NdaSignatureLayout | null;
     } | null;
     members: NdaMemberStatusRow[];
     reminderDaysBefore: number;
@@ -195,6 +197,7 @@ export async function getCommitteeNdaDetailInternal(committeeId: number): Promis
     });
 
     const template = templateRows.length > 0 ? templateRows[0] : null;
+    const layoutParse = template ? ndaSignatureLayoutSchema.safeParse(template.signature_layout) : null;
 
     return {
         committee,
@@ -205,6 +208,7 @@ export async function getCommitteeNdaDetailInternal(committeeId: number): Promis
             document: template.document,
             secretaryUserId: template.secretary_user_id,
             secretarySignedAt: template.secretary_signed_at,
+            signatureLayout: layoutParse?.success ? layoutParse.data : null,
         } : null,
         members: memberRows,
         reminderDaysBefore: settings.reminderDaysBefore,

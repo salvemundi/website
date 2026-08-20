@@ -8,6 +8,7 @@ import { requireAdminResource } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { safeConsoleError } from '@/server/utils/logger';
 import { uploadDocumentToDirectus } from '@/server/utils/media';
+import { ndaSignatureLayoutSchema, type NdaSignatureLayout } from '@salvemundi/validations';
 import {
     getNdaOverviewInternal,
     getCommitteeNdaDetailInternal,
@@ -54,7 +55,7 @@ export async function uploadNdaTemplate(
                 return { success: false, error: `Er is al een getekende NDA voor ${year} bij deze commissie. Deze kan niet meer vervangen worden.` };
             }
             await db.update(schema.nda_templates)
-                .set({ document: uploadResult.id, updated_at: new Date().toISOString() })
+                .set({ document: uploadResult.id, signature_layout: null, updated_at: new Date().toISOString() })
                 .where(eq(schema.nda_templates.id, existing[0].id));
         } else {
             await db.insert(schema.nda_templates).values({
@@ -72,6 +73,40 @@ export async function uploadNdaTemplate(
     } catch (error) {
         safeConsoleError('[admin-nda-templates.actions.ts][uploadNdaTemplate] Failed to save template:', error);
         return { success: false, error: 'Opslaan van de NDA mislukt' };
+    }
+}
+
+export async function saveNdaSignatureLayout(
+    templateId: number,
+    layout: NdaSignatureLayout
+): Promise<{ success: true } | { success: false; error: string }> {
+    await requireAdminResource(AdminResource.Nda);
+
+    const parsed = ndaSignatureLayoutSchema.safeParse(layout);
+    if (!parsed.success) {
+        return { success: false, error: 'Ongeldige handtekeningplek' };
+    }
+
+    const templateRows = await db.select().from(schema.nda_templates).where(eq(schema.nda_templates.id, templateId)).limit(1);
+    if (templateRows.length === 0) {
+        return { success: false, error: 'NDA-template niet gevonden' };
+    }
+    const template = templateRows[0];
+    if (!template.document) {
+        return { success: false, error: 'Upload eerst een NDA-document voordat je de handtekeningplek instelt' };
+    }
+
+    try {
+        await db.update(schema.nda_templates).set({
+            signature_layout: parsed.data,
+            updated_at: new Date().toISOString(),
+        }).where(eq(schema.nda_templates.id, templateId));
+
+        revalidatePath(`/beheer/nda/${template.committee_id}`);
+        return { success: true };
+    } catch (error) {
+        safeConsoleError('[admin-nda-templates.actions.ts][saveNdaSignatureLayout] Failed to save layout:', error);
+        return { success: false, error: 'Opslaan van de handtekeningplek mislukt' };
     }
 }
 
@@ -98,6 +133,9 @@ export async function confirmNdaTemplateReady(
     const template = templateRows[0];
     if (template.status !== 'draft' || !template.document) {
         return { success: false, error: 'Deze NDA is al bevestigd of er is nog geen document geüpload' };
+    }
+    if (!template.signature_layout) {
+        return { success: false, error: 'Stel eerst de handtekeningplek voor het commissielid in voordat je bevestigt' };
     }
 
     try {
