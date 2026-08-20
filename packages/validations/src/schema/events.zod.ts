@@ -13,12 +13,12 @@ export const PaymentSuccessEventSchema = BaseEventSchema.extend({
     registrationType: z.enum(['event_signup', 'pub_crawl_signup', 'trip_signup', 'membership']).optional(),
     isContribution: z.boolean().optional(),
     isNewMember: z.boolean().optional(),
-    qrToken: z.string().optional(),
-    accessToken: z.string().optional(),
-    firstName: z.string().optional(),
-    lastName: z.string().optional(),
-    phoneNumber: z.string().optional(),
-    dateOfBirth: z.string().optional(),
+    qrToken: z.string().nullable().optional(),
+    accessToken: z.string().nullable().optional(),
+    firstName: z.string().nullable().optional(),
+    lastName: z.string().nullable().optional(),
+    phoneNumber: z.string().nullable().optional(),
+    dateOfBirth: z.string().nullable().optional(),
 });
 
 export const ActivitySignupEventSchema = BaseEventSchema.extend({
@@ -27,8 +27,8 @@ export const ActivitySignupEventSchema = BaseEventSchema.extend({
     eventName: z.string(),
     eventDate: z.string(),
     signupId: z.union([z.string(), z.number()]),
-    qrToken: z.string().optional(),
-    accessToken: z.string().optional(),
+    qrToken: z.string().nullable().optional(),
+    accessToken: z.string().nullable().optional(),
 });
 
 export type BaseEvent = z.infer<typeof BaseEventSchema>;
