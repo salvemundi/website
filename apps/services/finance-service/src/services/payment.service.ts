@@ -86,7 +86,7 @@ export class PaymentService {
             const userId = metadata?.userId || transaction.user_id;
             const isContribution = !!metadata?.isContribution || transaction.product_type === 'membership';
             const registrationId = metadata?.registrationId;
-            const registrationType = metadata?.registrationType;
+            const registrationType = metadata?.registrationType || (isContribution ? 'membership' : undefined);
 
             if (userId) {
                 await CacheInvalidationService.queueInvalidation(fastify.redis, userId);
