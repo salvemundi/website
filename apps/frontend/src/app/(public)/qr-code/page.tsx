@@ -105,6 +105,22 @@ export default async function QRCodePage() {
                 <BentoCard>
                     <div className="flex items-start gap-4 sm:gap-6 mb-6">
                         <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 border border-purple-500/10 dark:border-purple-400/10 flex items-center justify-center shrink-0 shadow-sm">
+                            <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7 text-purple-500 dark:text-purple-400" />
+                        </div>
+                        <div className="min-w-0">
+                            <h2 className="text-xl sm:text-3xl font-black text-purple-700 dark:text-purple-300 wrap-break-word">Groepsapp</h2>
+                            <p className="mt-2 text-sm sm:text-base text-text-muted">
+                                Sluit je aan bij de groepsapp om op de hoogte te blijven en contact te leggen met je mede-introducees.
+                            </p>
+                        </div>
+                    </div>
+
+                    <IntroGroupsAppButtons groups={groups} />
+                </BentoCard>
+
+                <BentoCard>
+                    <div className="flex items-start gap-4 sm:gap-6 mb-6">
+                        <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 border border-purple-500/10 dark:border-purple-400/10 flex items-center justify-center shrink-0 shadow-sm">
                             <ShieldCheck className="h-6 w-6 sm:h-7 sm:w-7 text-purple-500 dark:text-purple-400" />
                         </div>
                         <div className="min-w-0">
@@ -127,22 +143,6 @@ export default async function QRCodePage() {
                             </div>
                         )}
                     </div>
-                </BentoCard>
-
-                <BentoCard>
-                    <div className="flex items-start gap-4 sm:gap-6 mb-6">
-                        <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 border border-purple-500/10 dark:border-purple-400/10 flex items-center justify-center shrink-0 shadow-sm">
-                            <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7 text-purple-500 dark:text-purple-400" />
-                        </div>
-                        <div className="min-w-0">
-                            <h2 className="text-xl sm:text-3xl font-black text-purple-700 dark:text-purple-300 wrap-break-word">Groepsapp</h2>
-                            <p className="mt-2 text-sm sm:text-base text-text-muted">
-                                Sluit je aan bij de groepsapp om op de hoogte te blijven en contact te leggen met je mede-introducees.
-                            </p>
-                        </div>
-                    </div>
-
-                    <IntroGroupsAppButtons groups={groups} />
                 </BentoCard>
 
                 <p className="text-center text-xs text-text-muted opacity-50">
