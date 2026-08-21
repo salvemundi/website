@@ -2,7 +2,6 @@ import 'server-only';
 import { db, schema } from "@salvemundi/db";
 import { desc, asc, eq, sql, inArray } from 'drizzle-orm';
 import {
-    type IntroBlog,
     type IntroPlanningItem,
     type IntroConfidant,
     type IntroGroupWithDetails,
@@ -10,7 +9,6 @@ import {
     type IntroGroupAttendanceStatus,
     type IntroGroupMemberNoteWithAuthor,
     type IntroGroupAttendanceLogWithAuthor,
-    introBlogSchema,
     introPlanningSchema,
     introConfidantSchema
 } from '@salvemundi/validations/schema/intro.zod';
@@ -40,35 +38,6 @@ export async function getIntroParentSignupsInternal() {
     } catch (error) {
         safeConsoleError('[admin-intro.queries.ts][getIntroParentSignupsInternal] failed:', error);
         throw new Error('Kon ouder-aanmeldingen niet ophalen');
-    }
-}
-
-export async function getIntroBlogsInternal(): Promise<IntroBlog[]> {
-    try {
-        const rows = await db
-            .select()
-            .from(schema.intro_blogs)
-            .orderBy(desc(schema.intro_blogs.id))
-            .limit(200);
-
-        const mapped = rows.map(i => ({
-            ...i,
-            id: Number(i.id),
-            title: typeof i.title === 'string' ? i.title : '',
-            content: typeof i.content === 'string' ? i.content : '',
-            blog_type: (typeof i.blog_type === 'string' ? i.blog_type : 'update') as IntroBlog['blog_type'],
-            is_published: !!i.is_published
-        }));
-
-        const parsed = z.array(introBlogSchema).safeParse(mapped);
-        if (!parsed.success) {
-            safeConsoleError('[admin-intro.queries.ts][getIntroBlogsInternal] validation failed:', parsed.error);
-            return mapped as IntroBlog[];
-        }
-        return parsed.data;
-    } catch (error) {
-        safeConsoleError('[admin-intro.queries.ts][getIntroBlogsInternal] failed:', error);
-        throw new Error('Kon blogs niet ophalen');
     }
 }
 

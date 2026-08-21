@@ -2,11 +2,10 @@ import { connection } from 'next/server';
 import Link from 'next/link';
 import { CalendarClock, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { hasParentSignup, getIntroBlogsPublic, getIntroSignupStatusPublic } from '@/server/actions/public/intro.actions';
+import { hasParentSignup, getIntroSignupStatusPublic } from '@/server/actions/public/intro.actions';
 import { IntroStudentIsland } from '@/components/islands/intro/IntroStudentIsland';
 import { IntroParentIsland } from '@/components/islands/intro/IntroParentIsland';
 import { IntroLightboxIsland } from '@/components/islands/intro/IntroLightboxIsland';
-import { IntroBlogsIsland } from '@/components/islands/intro/IntroBlogsIsland';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
 export const metadata = {
@@ -93,9 +92,8 @@ export default async function IntroPage() {
 
     const session = await getEnrichedSession();
     const user = session?.user;
-    const [isAlreadyParent, blogs, signupStatus] = await Promise.all([
+    const [isAlreadyParent, signupStatus] = await Promise.all([
         user ? hasParentSignup() : Promise.resolve(false),
-        getIntroBlogsPublic(),
         getIntroSignupStatusPublic()
     ]);
 
@@ -156,11 +154,6 @@ export default async function IntroPage() {
                             />
                         )}
                     </div>
-                </div>
-
-
-                <div className="max-w-7xl mx-auto w-full mt-12">
-                    <IntroBlogsIsland blogs={blogs} />
                 </div>
             </section>
         </PublicPageShell>

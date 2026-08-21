@@ -1,15 +1,12 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import type { IntroBlog, IntroPlanningItem, IntroConfidant, IntroGroup, IntroGroupWithDetails } from '@salvemundi/validations/schema/intro.zod';
+import type { IntroPlanningItem, IntroConfidant, IntroGroup, IntroGroupWithDetails } from '@salvemundi/validations/schema/intro.zod';
 import {
     deleteIntroSignup,
     deleteIntroParentSignup,
     updateIntroSignup,
     updateIntroParentSignup,
-    getIntroBlogs,
-    upsertIntroBlog,
-    deleteIntroBlog,
     getIntroPlanning,
     upsertIntroPlanning,
     deleteIntroPlanning,
@@ -29,7 +26,6 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 import { downloadCSV } from '@/lib/utils/export';
 import IntroSignupsTab from './intro/IntroSignupsTab';
 import IntroParentsTab from './intro/IntroParentsTab';
-import IntroBlogsTab from './intro/IntroBlogsTab';
 import IntroPlanningTab from './intro/IntroPlanningTab';
 import IntroConfidantsTab from './intro/IntroConfidantsTab';
 import IntroGroupsTab from './intro/IntroGroupsTab';
@@ -45,7 +41,6 @@ interface ApprovedOuder {
 interface Props {
     initialSignups: IntroSignupRow[];
     initialParents: IntroParentRow[];
-    initialBlogs: IntroBlog[];
     initialPlanning: IntroPlanningItem[];
     initialConfidants: IntroConfidant[];
     initialGroups: IntroGroupWithDetails[];
@@ -57,7 +52,7 @@ interface Props {
     initialParentSignupsOpen: boolean;
 }
 
-export default function IntroManagementIsland({ initialSignups, initialParents, initialBlogs, initialPlanning, initialConfidants, initialGroups, initialApprovedOuders, initialPlanningImage, initialInfoBooklet, initialStudentSignupsOpen, initialParentSignupsOpen }: Props) {
+export default function IntroManagementIsland({ initialSignups, initialParents, initialPlanning, initialConfidants, initialGroups, initialApprovedOuders, initialPlanningImage, initialInfoBooklet, initialStudentSignupsOpen, initialParentSignupsOpen }: Props) {
 
     const { toast, showToast, hideToast } = useAdminToast();
 
@@ -65,25 +60,21 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
 
     const [signups, setSignups] = useState(initialSignups);
     const [parents, setParents] = useState(initialParents);
-    const [blogs, setBlogs] = useState(initialBlogs);
     const [planning, setPlanning] = useState(initialPlanning);
     const [confidants, setConfidants] = useState(initialConfidants);
     const [groups, setGroups] = useState(initialGroups);
     const [approvedOuders] = useState(initialApprovedOuders);
 
-    const [savingBlog, setSavingBlog] = useState(false);
     const [savingPlanning, setSavingPlanning] = useState(false);
     const [savingConfidant, setSavingConfidant] = useState(false);
     const [savingGroup, setSavingGroup] = useState(false);
 
     const [deletingSignupId, setDeletingSignupId] = useState<number | null>(null);
     const [deletingParentId, setDeletingParentId] = useState<number | null>(null);
-    const [deletingBlogId, setDeletingBlogId] = useState<number | null>(null);
     const [deletingPlanningId, setDeletingPlanningId] = useState<number | null>(null);
     const [deletingConfidantId, setDeletingConfidantId] = useState<number | null>(null);
     const [deletingGroupId, setDeletingGroupId] = useState<number | null>(null);
 
-    const reloadBlogs = useCallback(async () => setBlogs(await getIntroBlogs()), []);
     const reloadPlanning = useCallback(async () => setPlanning(await getIntroPlanning()), []);
     const reloadConfidants = useCallback(async () => setConfidants(await getIntroConfidants()), []);
     const reloadGroups = useCallback(async () => setGroups(await getIntroGroupsForAdmin()), []);
@@ -132,31 +123,6 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
         } else {
             showToast(res.error || 'Bijwerken mislukt', 'error');
         }
-    };
-
-    const handleSaveBlog = async (blog: Partial<IntroBlog>) => {
-        setSavingBlog(true);
-        const res = await upsertIntroBlog(blog);
-        if (res.success) {
-            await reloadBlogs();
-            showToast('Blog opgeslagen', 'success');
-        } else {
-            showToast(res.error || 'Opslaan mislukt', 'error');
-        }
-        setSavingBlog(false);
-    };
-
-    const handleDeleteBlog = async (id: number) => {
-        if (!confirm('Weet je zeker dat je deze blog wilt verwijderen?')) return;
-        setDeletingBlogId(id);
-        const res = await deleteIntroBlog(id);
-        if (res.success) {
-            setBlogs(prev => prev.filter(b => b.id !== id));
-            showToast('Blog verwijderd', 'success');
-        } else {
-            showToast(res.error || 'Verwijderen mislukt', 'error');
-        }
-        setDeletingBlogId(null);
     };
 
     const handleSavePlanning = async (item: Partial<IntroPlanningItem>): Promise<number | null> => {
@@ -301,7 +267,6 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                 counts={{
                     signups: signups.length,
                     parents: parents.length,
-                    blogs: blogs.length,
                     planning: planning.length,
                     confidants: confidants.length,
                     groups: groups.length
@@ -328,15 +293,6 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                         onUpdate={handleUpdateParentSignup}
                         onExport={handleExport}
                         deletingId={deletingParentId}
-                    />
-                )}
-                {activeTab === 'blogs' && (
-                    <IntroBlogsTab
-                        blogs={blogs}
-                        onSave={handleSaveBlog}
-                        onDelete={handleDeleteBlog}
-                        saving={savingBlog}
-                        deletingId={deletingBlogId}
                     />
                 )}
                 {activeTab === 'planning' && (

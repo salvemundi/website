@@ -4,7 +4,6 @@ import IntroManagementIsland from '@/components/islands/admin/IntroManagementIsl
 import {
     getIntroSignups,
     getIntroParentSignups,
-    getIntroBlogs,
     getIntroPlanning,
     getIntroConfidants,
     getIntroPlanningImage,
@@ -27,10 +26,9 @@ export const metadata: Metadata = {
 };
 
 export default async function BeheerIntroPage() {
-    const [signups, parents, blogs, planning, confidants, settings, planningImage, infoBooklet, qrScanCount, groups, approvedOuders, attendanceVisible, signupSettings] = await Promise.all([
+    const [signups, parents, planning, confidants, settings, planningImage, infoBooklet, qrScanCount, groups, approvedOuders, attendanceVisible, signupSettings] = await Promise.all([
         getIntroSignups(),
         getIntroParentSignups(),
-        getIntroBlogs(),
         getIntroPlanning(),
         getIntroConfidants(),
         getIntroSettings(),
@@ -67,7 +65,6 @@ export default async function BeheerIntroPage() {
             <IntroManagementIsland
                 initialSignups={signups}
                 initialParents={parents}
-                initialBlogs={blogs}
                 initialPlanning={planning}
                 initialConfidants={confidants}
                 initialGroups={groups}

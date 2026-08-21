@@ -5,14 +5,13 @@ import {
     introParentSignupFormSchema,
     type IntroSignupForm,
     type IntroParentSignupForm,
-    type IntroBlog,
     type IntroPlanningItem,
     type IntroConfidant
 } from '@salvemundi/validations/schema/intro.zod';
 import { type WhatsAppGroup } from '@salvemundi/validations/schema/profiel.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { db, schema } from '@salvemundi/db';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 import { normalizeDate } from '@/lib/utils/date-utils';
@@ -158,97 +157,6 @@ export async function submitIntroSignup(data: IntroSignupForm): Promise<{ succes
         safeConsoleError(`[intro.actions.ts][submitIntroSignup] Error while triggering mail microservice:`, error);
     });
     return { success: true };
-}
-
-export async function getIntroBlogsPublic(): Promise<IntroBlog[]> {
-    try {
-        const rows = await db.select({
-            id: schema.intro_blogs.id,
-            title: schema.intro_blogs.title,
-            content: schema.intro_blogs.content,
-            slug: schema.intro_blogs.slug,
-            excerpt: schema.intro_blogs.excerpt,
-            blog_type: schema.intro_blogs.blog_type,
-            image: schema.intro_blogs.image,
-            is_published: schema.intro_blogs.is_published,
-            created_at: schema.intro_blogs.created_at,
-            updated_at: schema.intro_blogs.updated_at
-        }).from(schema.intro_blogs)
-        .where(eq(schema.intro_blogs.is_published, true))
-        .orderBy(desc(schema.intro_blogs.id))
-        .limit(6);
-
-        return rows.map(r => ({
-            ...r,
-            blog_type: (r.blog_type ?? 'update') as IntroBlog['blog_type'],
-            is_published: r.is_published ?? true
-        }));
-    } catch (error: unknown) {
-        safeConsoleError(`[intro.actions.ts][getIntroBlogsPublic] Error while fetching intro blogs:`, error);
-        throw new Error('Er is een fout opgetreden bij het ophalen van de intro blogs');
-    }
-}
-
-export async function getAllIntroBlogsPublic(): Promise<IntroBlog[]> {
-    try {
-        const rows = await db.select({
-            id: schema.intro_blogs.id,
-            title: schema.intro_blogs.title,
-            content: schema.intro_blogs.content,
-            slug: schema.intro_blogs.slug,
-            excerpt: schema.intro_blogs.excerpt,
-            blog_type: schema.intro_blogs.blog_type,
-            image: schema.intro_blogs.image,
-            is_published: schema.intro_blogs.is_published,
-            created_at: schema.intro_blogs.created_at,
-            updated_at: schema.intro_blogs.updated_at
-        }).from(schema.intro_blogs)
-        .where(eq(schema.intro_blogs.is_published, true))
-        .orderBy(desc(schema.intro_blogs.id));
-
-        return rows.map(r => ({
-            ...r,
-            blog_type: (r.blog_type ?? 'update') as IntroBlog['blog_type'],
-            is_published: r.is_published ?? true
-        }));
-    } catch (error: unknown) {
-        safeConsoleError(`[intro.actions.ts][getAllIntroBlogsPublic] Error while fetching all intro blogs:`, error);
-        throw new Error('Er is een fout opgetreden bij het ophalen van de intro blogs');
-    }
-}
-
-export async function getIntroBlogBySlug(slug: string): Promise<IntroBlog | null> {
-    try {
-        const rows = await db.select({
-            id: schema.intro_blogs.id,
-            title: schema.intro_blogs.title,
-            content: schema.intro_blogs.content,
-            slug: schema.intro_blogs.slug,
-            excerpt: schema.intro_blogs.excerpt,
-            blog_type: schema.intro_blogs.blog_type,
-            image: schema.intro_blogs.image,
-            is_published: schema.intro_blogs.is_published,
-            created_at: schema.intro_blogs.created_at,
-            updated_at: schema.intro_blogs.updated_at
-        }).from(schema.intro_blogs)
-        .where(and(
-            eq(schema.intro_blogs.slug, slug),
-            eq(schema.intro_blogs.is_published, true)
-        ))
-        .limit(1);
-
-        if (rows.length === 0) return null;
-
-        const r = rows[0];
-        return {
-            ...r,
-            blog_type: (r.blog_type ?? 'update') as IntroBlog['blog_type'],
-            is_published: r.is_published ?? true
-        };
-    } catch (error: unknown) {
-        safeConsoleError(`[intro.actions.ts][getIntroBlogBySlug] Error while fetching intro blog by slug:`, error);
-        throw new Error('Er is een fout opgetreden bij het ophalen van de intro blog');
-    }
 }
 
 export async function submitIntroParentSignup(data: IntroParentSignupForm): Promise<{ success: boolean; error?: string }> {

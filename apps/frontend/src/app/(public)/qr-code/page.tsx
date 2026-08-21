@@ -1,6 +1,5 @@
 import * as nextServer from 'next/server';
-import Link from 'next/link';
-import { ShieldCheck, MessageCircle, BookOpen, Newspaper, ArrowRight } from 'lucide-react';
+import { ShieldCheck, MessageCircle, BookOpen } from 'lucide-react';
 
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import IntroConfidantCard from '@/components/ui/social/IntroConfidantCard';
@@ -82,25 +81,6 @@ export default async function QRCodePage() {
                         <DocumentAsset id={infoBooklet} label="Download infoboekje" className="shrink-0" />
                     </BentoCard>
                 )}
-
-                <BentoCard className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-                    <div className="flex items-center gap-4 sm:gap-6 flex-1 min-w-0">
-                        <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 border border-purple-500/10 dark:border-purple-400/10 flex items-center justify-center shrink-0 shadow-sm">
-                            <Newspaper className="h-6 w-6 sm:h-7 sm:w-7 text-purple-500 dark:text-purple-400" />
-                        </div>
-                        <div className="min-w-0">
-                            <h2 className="text-xl sm:text-2xl font-black text-purple-700 dark:text-purple-300 wrap-break-word">Nieuws &amp; updates</h2>
-                            <p className="mt-1 text-sm text-text-muted">Blijf op de hoogte van het laatste nieuws over de introweek.</p>
-                        </div>
-                    </div>
-                    <Link
-                        href="/intro/blogs"
-                        className="form-button shrink-0 inline-flex items-center justify-center gap-2 squircle bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 text-sm font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
-                    >
-                        Bekijk het laatste nieuws
-                        <ArrowRight className="h-4 w-4" />
-                    </Link>
-                </BentoCard>
 
                 <BentoCard>
                     <div className="flex items-start gap-4 sm:gap-6 mb-6">

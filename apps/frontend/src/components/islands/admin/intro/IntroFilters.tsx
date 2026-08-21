@@ -1,8 +1,8 @@
-import { Download, Users, Heart, FileText, Calendar, ShieldCheck, Users2 } from 'lucide-react';
+import { Download, Users, Heart, Calendar, ShieldCheck, Users2 } from 'lucide-react';
 import IntroStudentSignupToggleIsland from './IntroStudentSignupToggleIsland';
 import IntroParentSignupToggleIsland from './IntroParentSignupToggleIsland';
 
-export type TabType = 'signups' | 'parents' | 'blogs' | 'planning' | 'confidants' | 'groups';
+export type TabType = 'signups' | 'parents' | 'planning' | 'confidants' | 'groups';
 
 interface IntroFiltersProps {
     activeTab: TabType;
@@ -24,7 +24,6 @@ export default function IntroFilters({
     const tabs = [
         { id: 'signups', label: 'Aanmeldingen', count: counts.signups, icon: Users },
         { id: 'parents', label: 'Ouders', count: counts.parents, icon: Heart },
-        { id: 'blogs', label: 'Blogs', count: counts.blogs, icon: FileText },
         { id: 'planning', label: 'Planning', count: counts.planning, icon: Calendar },
         { id: 'confidants', label: 'Vertrouwenspersonen', count: counts.confidants, icon: ShieldCheck },
         { id: 'groups', label: 'Groepen', count: counts.groups, icon: Users2 }
