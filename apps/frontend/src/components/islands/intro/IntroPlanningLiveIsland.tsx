@@ -190,6 +190,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
     const [fullPlanningOpen, setFullPlanningOpen] = useState(false);
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
+    const [selectedGridItemId, setSelectedGridItemId] = useState<number | null>(null);
 
     useEffect(() => {
         setNow(nowKey());
@@ -318,11 +319,17 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
 
     const totalHeight = Math.max(endHour - startHour, 1) * HOUR_HEIGHT;
 
+    const selectedGridItem = useMemo(
+        () => sorted.find(item => item.id === selectedGridItemId) || null,
+        [sorted, selectedGridItemId]
+    );
+
     const openFullPlanning = () => {
         const today = now.slice(0, 10);
         setSelectedDay(prev =>
             prev && planningDates.includes(prev) ? prev : (planningDates.find(d => d >= today) || planningDates[0] || null)
         );
+        setSelectedGridItemId(null);
         setFullPlanningOpen(true);
     };
 
@@ -389,40 +396,29 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                         </div>
                     </div>
 
-                    <div>
-                        {tomorrowItems.map((item, idx) => {
-                            const isLast = idx === tomorrowItems.length - 1;
+                    <div className="space-y-3">
+                        {tomorrowItems.map(item => {
                             const isCurrentOrNext = current?.id === item.id || next?.id === item.id;
                             return (
-                                <div key={item.id} className="grid grid-cols-[3.25rem_auto] sm:grid-cols-[4rem_auto] gap-x-3 sm:gap-x-4">
-                                    <div className={`relative text-right pr-3 sm:pr-4 border-r-2 ${isCurrentOrNext ? 'border-purple-500' : 'border-border-color dark:border-white/10'}`}>
-                                        <span className={`text-xs sm:text-sm font-black leading-tight ${isCurrentOrNext ? 'text-purple-500' : 'text-text-main'}`}>
-                                            {item.time_start.slice(0, 5)}
-                                        </span>
-                                        <span
-                                            className={`absolute top-1 -right-[7px] h-3 w-3 rounded-full ring-4 ring-bg-card ${isCurrentOrNext ? 'bg-purple-500' : 'bg-border-color dark:bg-white/20'}`}
-                                        />
-                                    </div>
-                                    <div className={isLast ? '' : 'mb-3'}>
-                                        <div
-                                            className={`squircle border px-3 py-2.5 ${
-                                                isCurrentOrNext
-                                                    ? 'bg-purple-500/10 border-purple-500/30'
-                                                    : 'bg-bg-main/60 border-border-color dark:border-white/10'
-                                            }`}
-                                        >
-                                            <p className="font-bold text-text-main leading-snug">{item.title}</p>
-                                            {item.time_end && (
-                                                <p className="mt-0.5 text-xs font-semibold text-text-muted">tot {item.time_end.slice(0, 5)}</p>
-                                            )}
-                                            {item.location && (
-                                                <p className="mt-1.5 text-xs font-semibold text-text-muted flex items-center gap-1"><MapPin className="h-3.5 w-3.5 shrink-0" />{item.location}</p>
-                                            )}
-                                            {item.description && (
-                                                <p className="mt-1.5 text-sm text-text-muted leading-relaxed"><FormattedText text={item.description} /></p>
-                                            )}
-                                        </div>
-                                    </div>
+                                <div
+                                    key={item.id}
+                                    className={`squircle border px-3.5 py-3 ${
+                                        isCurrentOrNext
+                                            ? 'bg-purple-500/10 border-purple-500/30'
+                                            : 'bg-bg-main/60 border-border-color dark:border-white/10'
+                                    }`}
+                                >
+                                    <span className={`inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wide ${isCurrentOrNext ? 'text-purple-500' : 'text-text-muted'}`}>
+                                        <Clock className="h-3.5 w-3.5 shrink-0" />
+                                        {formatTimeRange(item)}
+                                    </span>
+                                    <p className="mt-1.5 font-bold text-text-main leading-snug">{item.title}</p>
+                                    {item.location && (
+                                        <p className="mt-1.5 text-xs font-semibold text-text-muted flex items-center gap-1"><MapPin className="h-3.5 w-3.5 shrink-0" />{item.location}</p>
+                                    )}
+                                    {item.description && (
+                                        <p className="mt-1.5 text-sm text-text-muted leading-relaxed"><FormattedText text={item.description} /></p>
+                                    )}
                                 </div>
                             );
                         })}
@@ -574,63 +570,52 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                             </div>
                         )}
 
-                        <div className="sm:hidden flex-1 overflow-y-auto px-5 sm:px-6 py-5">
+                        <div className="sm:hidden flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 sm:px-6 py-5">
                             {selectedDay ? (
                                 <>
                                     <p className="text-sm font-bold text-text-muted capitalize mb-4">
                                         {formatDate(selectedDay, 'EEEE d MMMM')}
                                     </p>
-                                    <div>
-                                        {(planningByDate.get(selectedDay) || []).map((item, idx, arr) => {
-                                            const isLast = idx === arr.length - 1;
+                                    <div className="space-y-2.5">
+                                        {(planningByDate.get(selectedDay) || []).map(item => {
                                             const isCurrentOrNext = current?.id === item.id || next?.id === item.id;
                                             const hasDescription = Boolean(item.description);
                                             const isExpanded = hasDescription && expandedIds.has(item.id);
                                             return (
-                                                <div key={item.id} className="grid grid-cols-[3.25rem_auto] gap-x-3">
-                                                    <div className={`relative text-right pr-3 border-r-2 ${isCurrentOrNext ? 'border-purple-500' : 'border-border-color dark:border-white/10'}`}>
-                                                        <span className={`text-xs font-black leading-tight ${isCurrentOrNext ? 'text-purple-500' : 'text-text-main'}`}>
-                                                            {item.time_start.slice(0, 5)}
-                                                        </span>
-                                                        <span
-                                                            className={`absolute top-1 -right-[7px] h-3 w-3 rounded-full ring-4 ring-bg-card ${isCurrentOrNext ? 'bg-purple-500' : 'bg-border-color dark:bg-white/20'}`}
-                                                        />
-                                                    </div>
-                                                    <div className={isLast ? '' : 'mb-2.5'}>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => hasDescription && toggleExpanded(item.id)}
-                                                            aria-expanded={hasDescription ? isExpanded : undefined}
-                                                            className={`btn-timeline-item w-full text-left squircle border px-3 py-2 transition-colors ${
-                                                                isCurrentOrNext
-                                                                    ? 'bg-purple-500/10 border-purple-500/30'
-                                                                    : 'bg-bg-main/60 border-border-color dark:border-white/10'
-                                                            } ${hasDescription ? 'cursor-pointer hover:bg-bg-main active:bg-bg-main' : 'cursor-default'}`}
-                                                        >
-                                                            <div className="flex items-start justify-between gap-2">
-                                                                <div className="min-w-0">
-                                                                    <p className="font-bold text-text-main leading-snug">{item.title}</p>
-                                                                    {item.time_end && (
-                                                                        <p className="mt-0.5 text-xs font-semibold text-text-muted">tot {item.time_end.slice(0, 5)}</p>
-                                                                    )}
-                                                                    {item.location && (
-                                                                        <p className="mt-1.5 text-xs font-semibold text-text-muted flex items-center gap-1"><MapPin className="h-3.5 w-3.5 shrink-0" />{item.location}</p>
-                                                                    )}
-                                                                </div>
-                                                                {hasDescription && (
-                                                                    <ChevronDown className={`h-4 w-4 shrink-0 text-text-muted mt-1 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                                                                )}
-                                                            </div>
-                                                            {item.description && (
-                                                                <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${isExpanded ? 'grid-rows-[1fr] mt-2' : 'grid-rows-[0fr]'}`}>
-                                                                    <div className="overflow-hidden">
-                                                                        <p className="text-sm text-text-muted leading-relaxed"><FormattedText text={item.description} /></p>
-                                                                    </div>
-                                                                </div>
+                                                <button
+                                                    key={item.id}
+                                                    type="button"
+                                                    onClick={() => hasDescription && toggleExpanded(item.id)}
+                                                    aria-expanded={hasDescription ? isExpanded : undefined}
+                                                    className={`btn-timeline-item w-full text-left squircle border px-3.5 py-3 transition-colors ${
+                                                        isCurrentOrNext
+                                                            ? 'bg-purple-500/10 border-purple-500/30'
+                                                            : 'bg-bg-main/60 border-border-color dark:border-white/10'
+                                                    } ${hasDescription ? 'cursor-pointer hover:bg-bg-main active:bg-bg-main' : 'cursor-default'}`}
+                                                >
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <div className="min-w-0">
+                                                            <span className={`inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wide ${isCurrentOrNext ? 'text-purple-500' : 'text-text-muted'}`}>
+                                                                <Clock className="h-3.5 w-3.5 shrink-0" />
+                                                                {formatTimeRange(item)}
+                                                            </span>
+                                                            <p className="mt-1.5 font-bold text-text-main leading-snug">{item.title}</p>
+                                                            {item.location && (
+                                                                <p className="mt-1.5 text-xs font-semibold text-text-muted flex items-center gap-1"><MapPin className="h-3.5 w-3.5 shrink-0" />{item.location}</p>
                                                             )}
-                                                        </button>
+                                                        </div>
+                                                        {hasDescription && (
+                                                            <ChevronDown className={`h-4 w-4 shrink-0 text-text-muted mt-1 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                                        )}
                                                     </div>
-                                                </div>
+                                                    {item.description && (
+                                                        <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${isExpanded ? 'grid-rows-[1fr] mt-2' : 'grid-rows-[0fr]'}`}>
+                                                            <div className="overflow-hidden">
+                                                                <p className="text-sm text-text-muted leading-relaxed"><FormattedText text={item.description} /></p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </button>
                                             );
                                         })}
                                     </div>
@@ -641,7 +626,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                         </div>
 
                         {/* Desktop: full week as a calendar grid — every day side by side on a shared hour axis. */}
-                        <div className="hidden sm:block flex-1 overflow-auto">
+                        <div className="hidden sm:block flex-1 min-h-0 overflow-auto overscroll-contain">
                             {planningDates.length > 0 ? (
                                 <>
                                     <div className="flex sticky top-0 z-10 bg-bg-card border-b border-border-color dark:border-white/10">
@@ -694,10 +679,15 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                                     ))}
                                                     {dayLayout.map(({ item, top, height, col, cols }) => {
                                                         const isCurrentOrNext = current?.id === item.id || next?.id === item.id;
+                                                        const isSelected = selectedGridItemId === item.id;
                                                         return (
-                                                            <div
+                                                            <button
                                                                 key={item.id}
-                                                                className={`absolute rounded-lg pl-2 pr-1.5 py-1 overflow-hidden text-left border border-l-4 shadow-sm ${
+                                                                type="button"
+                                                                onClick={() => setSelectedGridItemId(prev => (prev === item.id ? null : item.id))}
+                                                                className={`btn-grid-item absolute rounded-lg pl-2 pr-1.5 py-1 overflow-hidden text-left border border-l-4 shadow-sm cursor-pointer transition-shadow hover:shadow-md hover:brightness-110 ${
+                                                                    isSelected ? 'ring-2 ring-purple-400 z-10' : ''
+                                                                } ${
                                                                     isCurrentOrNext
                                                                         ? 'bg-purple-600 border-purple-500 border-l-purple-200 text-white shadow-md'
                                                                         : 'bg-bg-card border-border-color dark:border-white/10 border-l-purple-500 text-text-main'
@@ -716,7 +706,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                                                     {item.time_start.slice(0, 5)}
                                                                 </p>
                                                                 <p className="text-[11px] font-bold leading-snug line-clamp-2">{item.title}</p>
-                                                            </div>
+                                                            </button>
                                                         );
                                                     })}
                                                 </div>
@@ -728,6 +718,32 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                 <p className="text-sm text-text-muted text-center py-10">Geen planning beschikbaar.</p>
                             )}
                         </div>
+
+                        {selectedGridItem && (
+                            <div className="hidden sm:flex items-start gap-3 border-t border-border-color dark:border-white/10 bg-bg-card px-5 sm:px-6 py-4 shrink-0">
+                                <div className="min-w-0 flex-1">
+                                    <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wide text-purple-500">
+                                        <Clock className="h-3.5 w-3.5 shrink-0" />
+                                        {formatTimeRange(selectedGridItem)}
+                                    </span>
+                                    <h3 className="mt-1 text-base sm:text-lg font-black text-text-main leading-snug">{selectedGridItem.title}</h3>
+                                    {selectedGridItem.location && (
+                                        <p className="mt-1.5 text-xs font-semibold text-text-muted flex items-center gap-1"><MapPin className="h-3.5 w-3.5 shrink-0" />{selectedGridItem.location}</p>
+                                    )}
+                                    {selectedGridItem.description && (
+                                        <p className="mt-1.5 text-sm text-text-muted leading-relaxed"><FormattedText text={selectedGridItem.description} /></p>
+                                    )}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedGridItemId(null)}
+                                    aria-label="Sluiten"
+                                    className="btn-close-grid-item shrink-0 squircle bg-bg-main hover:bg-border-color/40 text-text-main p-2 transition-colors"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
