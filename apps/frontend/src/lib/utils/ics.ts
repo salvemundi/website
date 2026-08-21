@@ -20,6 +20,12 @@ function toUtcStamp(date: string, time: string): string | null {
     return utc.replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
 }
 
+function addOneDay(date: string): string {
+    const dt = new Date(`${date}T00:00:00Z`);
+    dt.setUTCDate(dt.getUTCDate() + 1);
+    return dt.toISOString().slice(0, 10);
+}
+
 function escapeIcsText(value: string): string {
     return value
         .replace(/\\/g, '\\\\')
@@ -58,7 +64,13 @@ export function buildIcsCalendar(events: IcsEvent[], calendarName: string): stri
     for (const event of events) {
         const dtStart = toUtcStamp(event.date, event.timeStart);
         if (!dtStart) continue;
-        const dtEnd = event.timeEnd ? toUtcStamp(event.date, event.timeEnd) : null;
+        // An end time not after the start time (e.g. "00:00") means the event
+        // runs past midnight — attribute it to the following calendar date so
+        // DTEND never lands before DTSTART, which some importers (Google) reject.
+        const endDate = event.timeEnd && event.timeEnd.slice(0, 5) <= event.timeStart.slice(0, 5)
+            ? addOneDay(event.date)
+            : event.date;
+        const dtEnd = event.timeEnd ? toUtcStamp(endDate, event.timeEnd) : null;
 
         lines.push('BEGIN:VEVENT');
         lines.push(`UID:${event.uid}@salvemundi.nl`);
