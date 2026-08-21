@@ -2,15 +2,10 @@ import { safeConsoleError } from '@/server/utils/logger';
 
 type UploadResult = { success: true; id: string | null } | { success: false; error: string };
 
-async function postFileToDirectus(file: File, logLabel: string): Promise<UploadResult> {
+async function postBlobToDirectus(blob: Blob, filename: string, logLabel: string): Promise<UploadResult> {
     try {
-        // Re-materialize the file bytes into a fresh Blob rather than forwarding the
-        // File object as-is: a File received through the server action boundary can
-        // produce a truncated multipart body when re-appended to a second FormData,
-        // which Directus's upload endpoint rejects with "Unexpected end of form".
-        const arrayBuffer = await file.arrayBuffer();
         const fileData = new FormData();
-        fileData.append('file', new Blob([arrayBuffer], { type: file.type }), file.name);
+        fileData.append('file', blob, filename);
 
         const token = process.env.DIRECTUS_STATIC_TOKEN;
         const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
@@ -34,6 +29,24 @@ async function postFileToDirectus(file: File, logLabel: string): Promise<UploadR
         safeConsoleError(`[media.ts][${logLabel}]`, `Uploaden van bestand mislukt: ${typedError.message}`);
         return { success: false, error: "Uploaden van het bestand is mislukt." };
     }
+}
+
+async function postFileToDirectus(file: File, logLabel: string): Promise<UploadResult> {
+    // Re-materialize the file bytes into a fresh Blob rather than forwarding the
+    // File object as-is: a File received through the server action boundary can
+    // produce a truncated multipart body when re-appended to a second FormData,
+    // which Directus's upload endpoint rejects with "Unexpected end of form".
+    const arrayBuffer = await file.arrayBuffer();
+    return postBlobToDirectus(new Blob([arrayBuffer], { type: file.type }), file.name, logLabel);
+}
+
+export async function uploadBufferToDirectus(
+    buffer: Buffer,
+    filename: string,
+    mimeType: string,
+    logLabel = 'uploadBufferToDirectus'
+): Promise<UploadResult> {
+    return postBlobToDirectus(new Blob([new Uint8Array(buffer)], { type: mimeType }), filename, logLabel);
 }
 
 export async function uploadToDirectus(file: File | null, maxSizeBytes: number = 10 * 1024 * 1024): Promise<UploadResult> {
@@ -74,6 +87,22 @@ export async function uploadDocumentToDirectus(file: File | null, maxSizeBytes: 
     }
 
     return postFileToDirectus(file, 'uploadDocumentToDirectus');
+}
+
+export async function fetchDirectusAssetBuffer(fileId: string): Promise<Buffer> {
+    const token = process.env.DIRECTUS_STATIC_TOKEN;
+    const directusUrl = process.env.INTERNAL_DIRECTUS_URL;
+
+    const res = await fetch(`${directusUrl}/assets/${fileId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) {
+        throw new Error(`Kan bestand ${fileId} niet ophalen bij Directus (status ${res.status}).`);
+    }
+
+    const arrayBuffer = await res.arrayBuffer();
+    return Buffer.from(arrayBuffer);
 }
 
 export async function uploadFormDataFile(

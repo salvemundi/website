@@ -16,7 +16,8 @@ export enum AdminResource {
     Kroegentocht = 'admin:kroegentocht',
     ActivitiesView = 'admin:activities:view',
     ActivitiesEdit = 'admin:activities:edit',
-    Webshop = 'admin:webshop'
+    Webshop = 'admin:webshop',
+    Nda = 'admin:nda'
 }
 
 export interface PermissionRequirement {
@@ -51,6 +52,7 @@ export interface FeatureRegistry {
     kroegentocht: readonly string[];
     leden: readonly string[];
     logging: readonly string[];
+    nda: readonly string[];
     reis: readonly string[];
     services: readonly string[];
     stickers: readonly string[];
@@ -70,6 +72,7 @@ export const FEATURE_ACCESS: FeatureRegistry = {
     commissies: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     coupons: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     leden: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
+    nda: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     stickers: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     vacatures: [COMMITTEES.BESTUUR],
     // system group dashboard.  

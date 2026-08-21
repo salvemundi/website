@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronRight, CreditCard, MessageCircle, Briefcase } from 'lucide-react';
+import { ChevronRight, CreditCard, MessageCircle, Briefcase, FileSignature } from 'lucide-react';
 import { Tile, QuickLink } from './ProfielUI';
 import { ROUTES } from '@/lib/config/routes';
 
@@ -35,6 +35,11 @@ export default function ProfielQuickLinks({ user = {} }: ProfielQuickLinksProps)
                     label="Bijbanenbank"
                     icon={<Briefcase className="h-6 w-6" />}
                     href={ROUTES.BIJBANENBANK}
+                />
+                <QuickLink
+                    label="Mijn NDA's"
+                    icon={<FileSignature className="h-6 w-6" />}
+                    href="/profiel/nda"
                 />
             </div>
         </Tile>
