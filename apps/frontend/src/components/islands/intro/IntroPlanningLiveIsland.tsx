@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { Clock, MapPin, Download, Rss, Check, Calendar, CalendarDays, CalendarPlus, ChevronDown, PartyPopper, ImageOff, X, ZoomIn, Sunrise } from 'lucide-react';
+import { Clock, MapPin, Download, Rss, Check, Calendar, CalendarDays, CalendarPlus, ChevronDown, PartyPopper, ImageOff, X, ZoomIn, Sunrise, Copy } from 'lucide-react';
 import type { IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { formatDate } from '@/shared/lib/utils/date';
@@ -184,6 +184,9 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
 
     const [now, setNow] = useState('');
     const [copied, setCopied] = useState(false);
+    const [googleInstructionsOpen, setGoogleInstructionsOpen] = useState(false);
+    const [googleLinkCopied, setGoogleLinkCopied] = useState(false);
+    const [googleIcsUrl, setGoogleIcsUrl] = useState('');
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [subscribeMenuOpen, setSubscribeMenuOpen] = useState(false);
     const subscribeMenuRef = useRef<HTMLDivElement>(null);
@@ -359,15 +362,32 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
         setSubscribeMenuOpen(false);
     };
 
-    // Google's cid= import fetches the feed itself and doesn't understand the
-    // webcal: scheme (Apple/macOS rewrite that locally before fetching) — an
-    // https URL is required here or Google fails to reach it and reports the
-    // resulting synthetic import calendar as inaccessible.
-    const handleGoogleCalendar = () => {
+    // The calendar/render?cid= deep link is unreliable — Google intermittently
+    // rejects perfectly valid feeds through it with a generic "kan agenda niet
+    // toevoegen" error. Manually pasting the same URL into Google's own
+    // "Add calendar > From URL" settings page works every time, so we send
+    // people there instead and copy the link for them to paste.
+    const handleGoogleCalendar = async () => {
         const icsUrl = `${window.location.origin}/api/intro/planning.ics`;
-        const url = `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(icsUrl)}`;
-        window.open(url, '_blank', 'noopener,noreferrer');
+        setGoogleIcsUrl(icsUrl);
+        try {
+            await navigator.clipboard.writeText(icsUrl);
+            setGoogleLinkCopied(true);
+        } catch {
+            setGoogleLinkCopied(false);
+        }
+        window.open('https://calendar.google.com/calendar/r/settings/addbyurl', '_blank', 'noopener,noreferrer');
+        setGoogleInstructionsOpen(true);
         setSubscribeMenuOpen(false);
+    };
+
+    const handleCopyGoogleIcsUrl = async () => {
+        try {
+            await navigator.clipboard.writeText(googleIcsUrl);
+            setGoogleLinkCopied(true);
+        } catch {
+            // clipboard not available; the URL is still shown as plain text to copy manually
+        }
     };
 
     const handleOutlookCalendar = () => {
@@ -474,7 +494,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={handleGoogleCalendar}
+                                        onClick={() => { void handleGoogleCalendar(); }}
                                         className="btn-subscribe-google flex w-full items-center gap-2.5 px-4 py-3 text-sm font-semibold text-text-main hover:bg-bg-main transition-colors text-left border-t border-border-color dark:border-white/10"
                                     >
                                         <CalendarPlus className="h-4 w-4 shrink-0 text-purple-500" />
@@ -493,6 +513,43 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                         </div>
                     </div>
                 </div>
+
+                {googleInstructionsOpen && (
+                    <div className="mt-4 squircle border border-purple-500/30 bg-purple-500/5 p-4 sm:p-5">
+                        <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start gap-2.5">
+                                <CalendarPlus className="h-4 w-4 shrink-0 text-purple-500 mt-0.5" />
+                                <div className="text-sm text-text-main">
+                                    <p className="font-bold">We hebben Google Agenda voor je geopend</p>
+                                    <p className="mt-1 text-text-muted">
+                                        {googleLinkCopied ? 'De link is al gekopieerd — plak' : 'Kopieer de link hieronder en plak'} &apos;m daar in het veld &quot;Van URL&quot; en klik op toevoegen.
+                                    </p>
+                                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                                        <code className="squircle bg-bg-main border border-border-color dark:border-white/10 px-2.5 py-1.5 text-xs text-text-muted break-all">
+                                            {googleIcsUrl}
+                                        </code>
+                                        <button
+                                            type="button"
+                                            onClick={() => { void handleCopyGoogleIcsUrl(); }}
+                                            className="btn-copy-google-ics inline-flex items-center gap-1.5 squircle bg-purple-600 text-white px-3 py-1.5 text-xs font-semibold shadow-sm hover:shadow-md transition-all"
+                                        >
+                                            {googleLinkCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                                            {googleLinkCopied ? 'Gekopieerd' : 'Kopieer link'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setGoogleInstructionsOpen(false)}
+                                aria-label="Sluiten"
+                                className="btn-close-google-instructions shrink-0 text-text-muted hover:text-text-main transition-colors"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {planningImageUrl ? (
                     <button
