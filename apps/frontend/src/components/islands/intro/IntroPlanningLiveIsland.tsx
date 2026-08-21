@@ -229,9 +229,13 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
         setSubscribeMenuOpen(false);
     };
 
+    // Google's cid= import fetches the feed itself and doesn't understand the
+    // webcal: scheme (Apple/macOS rewrite that locally before fetching) — an
+    // https URL is required here or Google fails to reach it and reports the
+    // resulting synthetic import calendar as inaccessible.
     const handleGoogleCalendar = () => {
-        const webcalUrl = `webcal://${window.location.host}/api/intro/planning.ics`;
-        const url = `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(webcalUrl)}`;
+        const icsUrl = `${window.location.origin}/api/intro/planning.ics`;
+        const url = `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(icsUrl)}`;
         window.open(url, '_blank', 'noopener,noreferrer');
         setSubscribeMenuOpen(false);
     };
