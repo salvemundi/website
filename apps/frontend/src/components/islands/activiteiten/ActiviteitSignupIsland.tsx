@@ -10,12 +10,14 @@ import { safeConsoleError } from '@/server/utils/logger';
 import StatusSignedUp from './signup/StatusSignedUp';
 import StatusPast from './signup/StatusPast';
 import StatusDeadlinePassed from './signup/StatusDeadlinePassed';
+import StatusFull from './signup/StatusFull';
 import SignupFormContent from './signup/SignupFormContent';
 
 interface ActiviteitSignupIslandProps {
     id?: number | string;
     isPast?: boolean;
     isDeadlinePassed?: boolean;
+    isFull?: boolean;
     eventId?: number;
     price?: number;
     eventDate?: string;
@@ -35,6 +37,7 @@ export default function ActiviteitSignupIsland({
     isPast: serverIsPast = false,
     isPast: clientIsPast = false,
     isDeadlinePassed = false,
+    isFull = false,
     eventName = 'Activiteit',
     initialUser,
     verifiedPaymentStatus,
@@ -131,6 +134,10 @@ export default function ActiviteitSignupIsland({
 
     if (isDeadlinePassed) {
         return <StatusDeadlinePassed />;
+    }
+
+    if (isFull) {
+        return <StatusFull />;
     }
 
     if (isMembersOnly && !isMember) {

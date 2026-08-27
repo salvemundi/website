@@ -1,6 +1,6 @@
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { notFound } from 'next/navigation';
-import { getActivityBySlug, checkUserSignupStatus } from '@/server/actions/events/activiteiten/activiteiten-public.actions';
+import { getActivityBySlug, checkUserSignupStatus, getActivitySignupCount } from '@/server/actions/events/activiteiten/activiteiten-public.actions';
 import { getSignupStatus } from '@/server/actions/events/activiteiten/activiteiten-status.actions';
 import ActivityDetailIsland from '@/components/islands/activiteiten/ActivityDetailIsland';
 import ActiviteitSignupIsland from '@/components/islands/activiteiten/ActiviteitSignupIsland';
@@ -61,6 +61,10 @@ async function ActivityContent({ params, searchParams }: PageProps) {
         ? new Date(activity.registration_deadline) < new Date()
         : false;
 
+    const isFull = activity.max_sign_ups !== null
+        ? (await getActivitySignupCount(Number(activity.id))) >= activity.max_sign_ups
+        : false;
+
     const user = session?.user as MembershipUserData | undefined;
     const isMember = user?.membership_status === 'active';
     const price = isMember ? activity.price_members : activity.price_non_members;
@@ -109,6 +113,7 @@ async function ActivityContent({ params, searchParams }: PageProps) {
                     id={signupId}
                     isPast={isEventPast}
                     isDeadlinePassed={isDeadlinePassed}
+                    isFull={isFull}
                     isMembersOnly={!!activity.only_members}
                     isMember={isMember}
                 />
