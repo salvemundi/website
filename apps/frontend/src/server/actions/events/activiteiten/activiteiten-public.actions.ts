@@ -60,6 +60,22 @@ export async function getActivityBySlug(slug: string): Promise<Activiteit | null
     return await getActivityBySlugInternal(slug);
 }
 
+export async function getActivitySignupCount(eventId: number): Promise<number> {
+    const { db, schema } = await import('@salvemundi/db');
+    const { eq, and, inArray, count } = await import('drizzle-orm');
+
+    const countRows = await db.select({ value: count() })
+        .from(schema.event_signups)
+        .where(
+            and(
+                eq(schema.event_signups.event_id, eventId),
+                inArray(schema.event_signups.payment_status, ['paid', 'open'])
+            )
+        );
+
+    return countRows[0]?.value ?? 0;
+}
+
 export async function checkUserSignupStatus(eventId: number, email: string, userId?: string | null) {
     try {
         const { db, schema } = await import('@salvemundi/db');
@@ -118,6 +134,26 @@ export async function signupForActivity(data: EventSignupForm) {
         return { success: false, error: 'Spam detected' };
     }
 
+    const { getRedis } = await import('@/server/auth/redis-client');
+    const redis = await getRedis();
+    const lockKey = `lock:event:${parsed.data.event_id}:signup`;
+    const lockToken = Math.random().toString(36).substring(2);
+    let lockAcquired = false;
+
+    // Spin-lock with backoff so two concurrent signups can't both slip past the capacity check.
+    for (let i = 0; i < 10; i++) {
+        const result = await redis.set(lockKey, lockToken, 'PX', 10000, 'NX'); // 10s TTL
+        if (result === 'OK') {
+            lockAcquired = true;
+            break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300));
+    }
+
+    if (!lockAcquired) {
+        return { success: false, error: 'De server is momenteel erg druk. Probeer het over een paar seconden opnieuw.' };
+    }
+
     try {
         const session = await getEnrichedSession();
         const userId = session?.user.id;
@@ -129,6 +165,13 @@ export async function signupForActivity(data: EventSignupForm) {
             const deadline = new Date(activity.registration_deadline);
             if (new Date() > deadline) {
                 return { success: false, error: 'De inschrijfdeadline voor deze activiteit is verstreken.' };
+            }
+        }
+
+        if (activity.max_sign_ups !== null) {
+            const currentSignupCount = await getActivitySignupCount(parsed.data.event_id);
+            if (currentSignupCount >= activity.max_sign_ups) {
+                return { success: false, error: 'Deze activiteit is helaas vol.' };
             }
         }
 
@@ -212,9 +255,6 @@ export async function signupForActivity(data: EventSignupForm) {
 
             return { success: false, error: 'Er is een fout opgetreden bij het aanmelden voor deze activiteit' };
         } else {
-            const { getRedis } = await import('@/server/auth/redis-client');
-            const redis = await getRedis();
-
             const eventPayload = {
                 event: 'ACTIVITY_SIGNUP_SUCCESS',
                 timestamp: new Date().toISOString(),
@@ -245,6 +285,11 @@ export async function signupForActivity(data: EventSignupForm) {
         safeConsoleError('[public-activiteit.actions.ts][signupForActivity] ', `Unexpected error: ${typedError.message} - ${String(error)}`);
 
         return { success: false, error: 'Er is een fout opgetreden bij die inschrijving.' };
+    } finally {
+        const currentToken = await redis.get(lockKey);
+        if (currentToken === lockToken) {
+            await redis.del(lockKey);
+        }
     }
 }
 
