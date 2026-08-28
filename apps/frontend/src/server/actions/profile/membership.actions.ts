@@ -117,7 +117,7 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
                 ? (baseAmount * coupon.discount_value / 100)
                 : coupon.discount_value;
 
-            finalAmount = Math.max(0.01, Math.min(baseAmount, baseAmount - discountValue));
+            finalAmount = Math.round(Math.max(0, Math.min(baseAmount, baseAmount - discountValue)) * 100) / 100;
         } else {
             safeConsoleError('[membership.actions.ts][initiateMembershipPaymentAction] Coupon claim failed:', result.error);
             return { success: false, error: result.error || 'Coupon is ongeldig of niet meer beschikbaar' };

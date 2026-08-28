@@ -1,6 +1,7 @@
 import { type FastifyInstance } from 'fastify';
 import { type MolliePaymentMetadata } from '@salvemundi/validations';
 import { getMollieClient } from '../services/mollie.service.js';
+import { PaymentService } from '../services/payment.service.js';
 import crypto from 'node:crypto';
 import { verifyInternalToken } from '../middleware/auth.js';
 import { schema, eq } from '@salvemundi/db';
@@ -51,45 +52,62 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             paymentType
         } = request.body;
 
-        if (!amount || !description || !redirectUrl) {
+        if (!Number.isFinite(amount) || amount < 0 || !description || !redirectUrl) {
             return reply.status(400).send({ error: 'Missing required fields (amount, description, redirectUrl)' });
         }
 
+        // A coupon can discount a registration down to 0. Mollie doesn't support 0-value
+        // payments, so we skip the checkout entirely and finalize the transaction as paid
+        // right away instead of forcing the user through a real (e.g. 1 cent) payment.
+        const isFree = amount <= 0;
+
         try {
-            const mollie = getMollieClient();
-
-            const webhookUrl = process.env.PUBLIC_URL && !process.env.PUBLIC_URL.includes('localhost')
-                ? `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`
-                : undefined;
-
-            fastify.log.info(`[payments.routes.ts][paymentRoutes] Creating Mollie payment with webhookUrl: ${webhookUrl || 'undefined'}`);
-
             const accessToken = crypto.randomUUID();
             const separator = redirectUrl.includes('?') ? '&' : '?';
             const finalRedirectUrl = `${redirectUrl}${separator}t=${accessToken}`;
 
-            const payment = await mollie.payments.create({
-                amount: {
-                    currency: 'EUR',
-                    value: amount.toFixed(2)
-                },
-                description,
-                redirectUrl: finalRedirectUrl,
-                ...(webhookUrl ? { webhookUrl } : {}),
-                metadata: {
-                    registrationId,
-                    registrationType,
-                    userId,
-                    email,
-                    firstName,
-                    lastName,
-                    phoneNumber,
-                    dateOfBirth,
-                    isContribution,
-                    couponCode,
-                    paymentType
-                }
-            });
+            const metadata: MolliePaymentMetadata = {
+                registrationId,
+                registrationType,
+                userId,
+                email,
+                firstName,
+                lastName,
+                phoneNumber,
+                dateOfBirth,
+                isContribution,
+                couponCode,
+                paymentType
+            };
+
+            let molliePaymentId: string;
+            let checkoutUrl: string | undefined;
+
+            if (isFree) {
+                molliePaymentId = `free_${crypto.randomUUID()}`;
+            } else {
+                const mollie = getMollieClient();
+
+                const webhookUrl = process.env.PUBLIC_URL && !process.env.PUBLIC_URL.includes('localhost')
+                    ? `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`
+                    : undefined;
+
+                fastify.log.info(`[payments.routes.ts][paymentRoutes] Creating Mollie payment with webhookUrl: ${webhookUrl || 'undefined'}`);
+
+                const payment = await mollie.payments.create({
+                    amount: {
+                        currency: 'EUR',
+                        value: amount.toFixed(2)
+                    },
+                    description,
+                    redirectUrl: finalRedirectUrl,
+                    ...(webhookUrl ? { webhookUrl } : {}),
+                    metadata
+                });
+
+                molliePaymentId = payment.id;
+                checkoutUrl = payment._links.checkout?.href;
+            }
 
             let productType = 'Overig';
             if (isContribution) {
@@ -101,8 +119,8 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
             }
 
             const insertData = {
-                mollie_id: payment.id,
-                transaction_id: payment.id,
+                mollie_id: molliePaymentId,
+                transaction_id: molliePaymentId,
                 amount: amount,
                 payment_status: 'open',
                 product_name: description,
@@ -148,7 +166,13 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 fastify.log.info(`[payments.routes.ts][paymentRoutes] Linked transaction ${transactionDbId} to pub_crawl_signup ${registrationId}`);
             }
 
-            return { checkoutUrl: payment._links.checkout?.href, mollie_id: payment.id, access_token: accessToken };
+            if (isFree) {
+                await PaymentService.finalizePayment(fastify, molliePaymentId, 'paid', metadata, accessToken);
+                fastify.log.info(`[payments.routes.ts][paymentRoutes] Finalized free (coupon-covered) transaction ${transactionDbId} without Mollie checkout`);
+                return { checkoutUrl: finalRedirectUrl, mollie_id: molliePaymentId, access_token: accessToken, free: true };
+            }
+
+            return { checkoutUrl, mollie_id: molliePaymentId, access_token: accessToken };
         } catch (error: unknown) {
             const err = error as { message?: string; code?: string; detail?: string };
             fastify.log.error({ error, message: err.message, code: err.code, detail: err.detail }, '[payments.routes.ts][paymentRoutes] Error creating payment');
