@@ -119,7 +119,13 @@ export async function getNdaOverviewInternal(): Promise<NdaCommitteeOverview[]> 
         };
         for (const member of members) {
             const status = deriveStatus(latestPerUser.get(member.userId), settings.reminderDaysBefore);
-            statusCounts[status]++;
+            switch (status) {
+                case 'none': statusCounts.none++; break;
+                case 'pending': statusCounts.pending++; break;
+                case 'signed': statusCounts.signed++; break;
+                case 'expiring_soon': statusCounts.expiring_soon++; break;
+                case 'expired': statusCounts.expired++; break;
+            }
         }
 
         const template = templateRows.length > 0 ? templateRows[0] : null;

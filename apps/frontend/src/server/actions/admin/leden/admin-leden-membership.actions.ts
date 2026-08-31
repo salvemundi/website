@@ -96,11 +96,12 @@ export async function renewMembershipAction(
         newExpiry.setMonth(newExpiry.getMonth() + months);
         const { toLocalISOString } = await import("@/lib/utils/date-utils");
         const newExpiryStr = toLocalISOString(newExpiry) as string;
-
-        await db.update(schema.directus_users).set({ membership_expiry: newExpiryStr }).where(eq(schema.directus_users.id, directusUserId));
+        await db.update(schema.directus_users).set({
+            membership_expiry: newExpiryStr,
+            membership_status: 'active'
+        }).where(eq(schema.directus_users.id, directusUserId));
 
         if (user.entra_id && AZURE_MGMT_URL && INTERNAL_TOKEN) {
-            // Update Entra ID custom security attributes (membershipExpiry)
             await fetch(`${AZURE_MGMT_URL}/api/users/${encodeURIComponent(user.entra_id)}`, {
                 method: 'PATCH',
                 headers: {
@@ -114,7 +115,6 @@ export async function renewMembershipAction(
                 safeConsoleError(`[admin-leden-membership.actions.ts][renewMembershipAction] Failed to update Entra ID custom attribute for ${directusUserId}:`, error);
             });
 
-            // Add user to active group
             const firstCommittee = await db.query.committees.findFirst({
                 columns: { azure_group_id: true },
                 where: eq(schema.committees.name, 'Leden_Actief_Lidmaatschap')

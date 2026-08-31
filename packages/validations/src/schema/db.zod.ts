@@ -32,6 +32,18 @@ export const selectVacanciesSchema = createSelectSchema(schema.vacancies);
 export const insertIntroGroupAttendanceLogSchema = createInsertSchema(schema.intro_group_attendance_log);
 export const selectIntroGroupAttendanceLogSchema = createSelectSchema(schema.intro_group_attendance_log);
 
+// --- nda_signatures ---
+export const insertNdaSignaturesSchema = createInsertSchema(schema.nda_signatures);
+export const selectNdaSignaturesSchema = createSelectSchema(schema.nda_signatures);
+
+// --- nda_settings ---
+export const insertNdaSettingsSchema = createInsertSchema(schema.nda_settings);
+export const selectNdaSettingsSchema = createSelectSchema(schema.nda_settings);
+
+// --- nda_templates ---
+export const insertNdaTemplatesSchema = createInsertSchema(schema.nda_templates);
+export const selectNdaTemplatesSchema = createSelectSchema(schema.nda_templates);
+
 // --- club_members ---
 export const insertClubMembersSchema = createInsertSchema(schema.club_members);
 export const selectClubMembersSchema = createSelectSchema(schema.club_members);
@@ -387,16 +399,4 @@ export const selectIntroGroupLeadersSchema = createSelectSchema(schema.intro_gro
 // --- intro_group_members ---
 export const insertIntroGroupMembersSchema = createInsertSchema(schema.intro_group_members);
 export const selectIntroGroupMembersSchema = createSelectSchema(schema.intro_group_members);
-
-// --- nda_templates ---
-export const insertNdaTemplatesSchema = createInsertSchema(schema.nda_templates);
-export const selectNdaTemplatesSchema = createSelectSchema(schema.nda_templates);
-
-// --- nda_signatures ---
-export const insertNdaSignaturesSchema = createInsertSchema(schema.nda_signatures);
-export const selectNdaSignaturesSchema = createSelectSchema(schema.nda_signatures);
-
-// --- nda_settings ---
-export const insertNdaSettingsSchema = createInsertSchema(schema.nda_settings);
-export const selectNdaSettingsSchema = createSelectSchema(schema.nda_settings);
 

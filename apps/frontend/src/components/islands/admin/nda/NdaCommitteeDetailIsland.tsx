@@ -36,7 +36,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
     const [sending, setSending] = useState(false);
     const [sendResult, setSendResult] = useState<string | null>(null);
     const [resendingId, setResendingId] = useState<number | null>(null);
-    const [historicalDates, setHistoricalDates] = useState<Record<string, string>>({});
+    const [historicalDates, setHistoricalDates] = useState<Map<string, string>>(() => new Map());
     const [savingHistoricalFor, setSavingHistoricalFor] = useState<string | null>(null);
     const [reminderId, setReminderId] = useState<number | null>(null);
     const [reminderError, setReminderError] = useState<string | null>(null);
@@ -102,7 +102,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
     };
 
     const handleSaveHistorical = async (userId: string) => {
-        const date = historicalDates[userId];
+        const date = historicalDates.get(userId);
         if (!date) return;
         setSavingHistoricalFor(userId);
         const result = await recordHistoricalNdaSignature(committee.id, userId, date);
@@ -267,13 +267,16 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                                                 <div className="flex items-center gap-2">
                                                     <input
                                                         type="date"
-                                                        value={historicalDates[member.userId] ?? ''}
-                                                        onChange={(e) => setHistoricalDates((prev) => ({ ...prev, [member.userId]: e.target.value }))}
+                                                        value={historicalDates.get(member.userId) ?? ''}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            setHistoricalDates((prev) => new Map(prev).set(member.userId, val));
+                                                        }}
                                                         className="beheer-input text-xs py-1.5"
                                                     />
                                                     <button
                                                         type="button"
-                                                        disabled={!historicalDates[member.userId] || savingHistoricalFor === member.userId}
+                                                        disabled={!historicalDates.get(member.userId) || savingHistoricalFor === member.userId}
                                                         onClick={() => { void handleSaveHistorical(member.userId); }}
                                                         className="btn-save-historical text-xs font-semibold text-(--beheer-accent) hover:underline disabled:opacity-40"
                                                     >

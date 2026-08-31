@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, useTransition } from 'react';
+import { useState, useMemo, useTransition } from 'react';
 import { downloadCSV } from '@/lib/utils/export';
 import { sendMembershipReminderAction } from '@/server/actions/admin/leden/admin-leden-membership.actions';
 import LedenFilters from './LedenFilters';
@@ -9,14 +9,13 @@ import { useAdminToast } from '@/hooks/use-admin-toast';
 import LedenTable from './LedenTable';
 import { type AdminMember } from '@salvemundi/validations';
 import { safeConsoleError } from '@/server/utils/logger';
+import { isMembershipActive } from '@/lib/leden/leden-utils';
 
 export type Member = AdminMember;
 
 interface LedenOverzichtIslandProps {
     initialMembers?: Member[];
 }
-
-const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
 const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return 'Onbekend';
@@ -43,20 +42,6 @@ export default function LedenOverzichtIsland({
     const [isSendingReminder, setIsSendingReminder] = useState(false);
     const [activeTab, setActiveTab] = useState<'active' | 'inactive'>('active');
 
-    const isMembershipActive = useCallback((m: Member) => {
-        if (!m.membership_expiry) return false;
-        try {
-            const expiryDate = new Date(m.membership_expiry);
-            if (isNaN(expiryDate.getTime())) return false;
-
-            const today = startOfDay(new Date());
-            return startOfDay(expiryDate) >= today;
-        } catch (error) {
-            safeConsoleError('[LedenOverzichtIsland.tsx][LedenOverzichtIsland] ', error);
-            return false;
-        }
-    }, []);
-
     const members = initialMembers;
 
     const filteredMembers = useMemo(() => {
@@ -72,7 +57,7 @@ export default function LedenOverzichtIsland({
 
             return matchesTab && (fullName.includes(searchLower) || email.includes(searchLower));
         });
-    }, [members, activeTab, searchQuery, isMembershipActive]);
+    }, [members, activeTab, searchQuery]);
 
     const handleSendReminder = () => {
         if (!confirm('Herinnering sturen naar alle leden (binnen 30 dagen verlenging)?')) return;

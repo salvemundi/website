@@ -18,6 +18,7 @@ import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { type AdminMember, type CommitteeMembership, type AdminSignup } from '@salvemundi/validations';
 import { safeConsoleError } from '@/server/utils/logger';
+import { isMembershipActive as checkIsMembershipActive } from '@/lib/leden/leden-utils';
 
 export type Member = AdminMember;
 export type Signup = AdminSignup;
@@ -83,21 +84,8 @@ export default function LedenDetailIsland({
     }, [optimisticMemberships]);
 
     const isMembershipActive = useMemo(() => {
-        if (!localMember.membership_expiry) return false;
-        try {
-            const expiryDate = new Date(localMember.membership_expiry);
-            if (isNaN(expiryDate.getTime())) return false;
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            expiryDate.setHours(0, 0, 0, 0);
-
-            return expiryDate >= today;
-        } catch (error) {
-            safeConsoleError('[LedenDetailIsland.tsx][LedenDetailIsland] ', error);
-            return false;
-        }
-    }, [localMember.membership_expiry]);
+        return checkIsMembershipActive(localMember);
+    }, [localMember]);
 
     const handleUpdateProfile = async (data: Partial<AdminMember>) => {
         const cleanData = { ...data };
@@ -105,12 +93,17 @@ export default function LedenDetailIsland({
         if (cleanData.last_name === null) delete cleanData.last_name;
         if (cleanData.phone_number === null) delete cleanData.phone_number;
 
-        const res = await updateMemberProfileAction(localMember.id, cleanData as Parameters<typeof updateMemberProfileAction>[1]);
-        if (res.success) {
-            setLocalMember(prev => ({ ...prev, ...data }));
-            return true;
+        try {
+            const res = await updateMemberProfileAction(localMember.id, cleanData as Parameters<typeof updateMemberProfileAction>[1]);
+            if (res.success) {
+                setLocalMember(prev => ({ ...prev, ...data }));
+                return true;
+            }
+            return false;
+        } catch (error) {
+            safeConsoleError('[LedenDetailIsland.tsx][handleUpdateProfile] ', error);
+            return false;
         }
-        return false;
     };
 
     const handleMembershipChange = async (azureGroupId: string, action: 'add' | 'remove', committeeName: string) => {
@@ -124,35 +117,56 @@ export default function LedenDetailIsland({
 
         setIsActionInProgress(`${action}-${azureGroupId}`);
         startTransition(async () => {
-            const res = await manageAzureMembershipAction(entraId, azureGroupId, action, localMember.id);
-            if (!res.success) showToast(res.error || "Fout bij het bijwerken van lidmaatschap", "error");
-            else showToast(`Lidmaatschap succesvol ${action === 'add' ? 'toegevoegd' : 'verwijderd'}`, "success");
+            try {
+                const res = await manageAzureMembershipAction(entraId, azureGroupId, action, localMember.id);
+                if (!res.success) showToast(res.error || "Fout bij het bijwerken van lidmaatschap", "error");
+                else showToast(`Lidmaatschap succesvol ${action === 'add' ? 'toegevoegd' : 'verwijderd'}`, "success");
+            } catch (error) {
+                safeConsoleError('[LedenDetailIsland.tsx][handleMembershipChange] ', error);
+                showToast("Er is een onverwachte fout opgetreden", "error");
+            } finally {
+                setIsActionInProgress(null);
+            }
         });
-        setIsActionInProgress(null);
     };
 
     const handleRenewMembership = async (months: number) => {
         if (!confirm(`Weet je zeker dat je het lidmaatschap met ${months} maand(en) wilt verlengen?`)) return null;
-        const res = await renewMembershipAction(localMember.id, months);
-        if (res.success) {
-            setLocalMember(prev => ({ ...prev, membership_expiry: res.newExpiry ?? prev.membership_expiry }));
-            return { success: true, message: `Verlengd tot ${res.newExpiry}` };
+        try {
+            const res = await renewMembershipAction(localMember.id, months);
+            if (res.success) {
+                setLocalMember(prev => ({ ...prev, membership_expiry: res.newExpiry ?? prev.membership_expiry }));
+                return { success: true, message: `Verlengd tot ${res.newExpiry}` };
+            }
+            return { success: false, message: res.error || 'Fout bij verlengen' };
+        } catch (error) {
+            safeConsoleError('[LedenDetailIsland.tsx][handleRenewMembership] ', error);
+            return { success: false, message: 'Er is een onverwachte fout opgetreden' };
         }
-        return { success: false, message: res.error || 'Fout bij verlengen' };
     };
 
     const handleForceSync = async () => {
         if (!localMember.entra_id) {
             return { success: false, message: 'Dit lid heeft geen gekoppeld Azure account.' };
         }
-        const res = await triggerUserSyncAction(localMember.entra_id);
-        return { success: res.success, message: res.success ? 'Synchronisatie gestart' : (res.error || 'Sync mislukt') };
+        try {
+            const res = await triggerUserSyncAction(localMember.entra_id);
+            return { success: res.success, message: res.success ? 'Synchronisatie gestart' : (res.error || 'Sync mislukt') };
+        } catch (error) {
+            safeConsoleError('[LedenDetailIsland.tsx][handleForceSync] ', error);
+            return { success: false, message: 'Er is een onverwachte fout opgetreden' };
+        }
     };
 
     const handleProvisionAzure = async () => {
         if (!confirm(`Weet je zeker dat je een Azure account wilt aanmaken?`)) return null;
-        const res = await provisionAzureAccountAction(localMember.id);
-        return { success: res.success, message: res.success ? 'Aanvraag ingediend!' : (res.error || 'Provisioning mislukt') };
+        try {
+            const res = await provisionAzureAccountAction(localMember.id);
+            return { success: res.success, message: res.success ? 'Aanvraag ingediend!' : (res.error || 'Provisioning mislukt') };
+        } catch (error) {
+            safeConsoleError('[LedenDetailIsland.tsx][handleProvisionAzure] ', error);
+            return { success: false, message: 'Er is een onverwachte fout opgetreden' };
+        }
     };
 
     const availableCommittees = useMemo(() => {
