@@ -68,6 +68,11 @@ const nextConfig: NextConfig = {
                 destination: '/qr-code',
                 permanent: true,
             },
+            {
+                source: '/declaratie',
+                destination: 'https://forms.cloud.microsoft/r/kN2T95wzRm',
+                permanent: false,
+            },
         ];
     },
 
