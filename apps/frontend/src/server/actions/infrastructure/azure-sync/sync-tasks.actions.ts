@@ -119,7 +119,7 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
                 'Authorization': `Bearer ${INTERNAL_TOKEN}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(options || { fields: ['membership_expiry', 'geboortedatum', 'phone_number', 'committees', 'profile_photo', 'membership_status'], convertUpn: true }),
+            body: JSON.stringify(options || { fields: ['membership_expiry', 'originele_betaaldatum', 'geboortedatum', 'phone_number', 'committees', 'profile_photo', 'membership_status'], convertUpn: true }),
             signal: controller.signal
         });
         clearTimeout(timeoutId);

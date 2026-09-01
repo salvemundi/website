@@ -4,6 +4,8 @@ import { SyncJob } from './sync/sync-job.js';
 import { TokenService } from './token.service.js';
 import { DbService } from './db.service.js';
 import { AuditService } from './audit.service.js';
+import { ManagementService } from './management.service.js';
+import { GROUP_ACTIVE_LID, GROUP_EXPIRED_LID } from './sync/sync-types.js';
 import { z } from 'zod';
 
 export const ProvisionTaskSchema = z.object({
@@ -120,13 +122,20 @@ export class ProvisionWorkerService {
                                         })
                                     }).catch(err => safeConsoleError('[provision-worker.ts][start] ', `Failed to patch Entra ID membershipExpiry: ${err instanceof Error ? err.message : String(err)}`));
                                 }
+
+                                if (GROUP_ACTIVE_LID) {
+                                    await ManagementService.addGroupMember(GROUP_ACTIVE_LID, user.entra_id).catch(err => safeConsoleError('[provision-worker.ts][start] ', `Failed to add user to active group: ${err instanceof Error ? err.message : String(err)}`));
+                                }
+                                if (GROUP_EXPIRED_LID) {
+                                    await ManagementService.removeGroupMember(GROUP_EXPIRED_LID, user.entra_id).catch(() => {});
+                                }
                             }
 
                             await AuditService.logMembershipRenewal(user.email || '', user.id, task.paymentId, user.membership_expiry, newExpiryStr);
+                        } else if (user) {
+                            const token = await TokenService.getAccessToken(redis);
+                            await SyncJob.syncByEntraId(redis, task.userId, token);
                         }
-
-                        const token = await TokenService.getAccessToken(redis);
-                        await SyncJob.syncByEntraId(redis, task.userId, token);
 
                         await redis.zrem(this.QUEUE_KEY, taskJson);
                         logInfo('[provision-worker.ts][start] ', `Successfully provisioned user ${task.userId}`);

@@ -168,7 +168,11 @@ export class SyncProcessor {
         if (fields.includes('membership_expiry')) {
             const date = csa?.VerloopdatumStr || csa?.Verloopdatum;
             const parsed = date ? sanitizeAzureDate(parseAzureDate(date)) : null;
-            if (parsed) updatePayload.membership_expiry = parsed;
+            if (parsed) {
+                if (!currentUser.membership_expiry || new Date(parsed).getTime() >= new Date(currentUser.membership_expiry).getTime()) {
+                    updatePayload.membership_expiry = parsed;
+                }
+            }
         }
 
         if (fields.includes('geboortedatum')) {
