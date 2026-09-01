@@ -21,6 +21,10 @@ export const userBasicSchema = selectDirectusUsersSchema.pick({
     email: true,
     avatar: true,
     membership_status: true,
+}).partial({
+    last_name: true,
+    avatar: true,
+    membership_status: true,
 });
 
 export type UserBasic = z.infer<typeof userBasicSchema>;
