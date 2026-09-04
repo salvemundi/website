@@ -47,15 +47,18 @@ export function MemberBadge({ signup }: { signup: Signup }) {
     );
 }
 
+const formatAmount = (amount: number) =>
+    new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(amount);
+
 /**
- * Renders a payment status badge.
+ * Renders a payment status badge, including the amount paid (or owed) when known.
  */
-export function PaymentBadge({ status }: { status: string }) {
+export function PaymentBadge({ status, amount }: { status: string; amount?: number | null }) {
     if (status === 'paid') {
         return (
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-(--beheer-accent)/10 text-(--beheer-accent) text-[9px] font-semibold tracking-wider border border-(--beheer-accent)/20">
                 <CheckCircle2 className="h-3 w-3" />
-                <span>Betaald</span>
+                <span>{typeof amount === 'number' ? formatAmount(amount) : 'Betaald'}</span>
             </div>
         );
     }
@@ -63,7 +66,7 @@ export function PaymentBadge({ status }: { status: string }) {
         return (
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[9px] font-semibold tracking-wider border border-amber-500/20">
                 <CreditCard className="h-3 w-3" />
-                <span>Open</span>
+                <span>{typeof amount === 'number' ? `Open · ${formatAmount(amount)}` : 'Open'}</span>
             </div>
         );
     }

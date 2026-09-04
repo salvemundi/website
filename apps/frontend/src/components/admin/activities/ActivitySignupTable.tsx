@@ -111,7 +111,7 @@ export default function ActivitySignupTable({
                                 <td className="px-6 py-5">
                                     <div className="flex flex-wrap gap-2 mb-2">
                                         <MemberBadge signup={signup} />
-                                        <PaymentBadge status={signup.payment_status || 'open'} />
+                                        <PaymentBadge status={signup.payment_status || 'open'} amount={signup.amount_paid} />
                                     </div>
                                     <div className="text-[10px] text-(--beheer-text-muted) font-bold tracking-widest">
                                         {createdAt && !isNaN(createdAt.getTime())
