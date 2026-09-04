@@ -1,7 +1,10 @@
-import { MessageCircle } from 'lucide-react';
+import { Lock, MessageCircle } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { stripHtmlToText } from '@/lib/utils/html-utils';
+import { DiscordIcon } from '@/shared/icons/social';
+import { ROUTES } from '@/lib/config/routes';
 import type { Club } from '@salvemundi/validations/schema/clubs.zod';
 
 import { BRAND_CONFIG } from '@/lib/config/brand';
@@ -9,9 +12,10 @@ import { BRAND_CONFIG } from '@/lib/config/brand';
 interface ClubCardProps {
     club: Club;
     index?: number;
+    isActiveMember?: boolean;
 }
 
-export const ClubCard = ({ club, index = 0 }: ClubCardProps) => {
+export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardProps) => {
     const hasImage = !!club.image;
     const imageUrl = getImageUrl(club.image);
     const description = club.description ? stripHtmlToText(club.description) : null;
@@ -79,16 +83,43 @@ export const ClubCard = ({ club, index = 0 }: ClubCardProps) => {
                     )
                 )}
 
-                {club.whatsapp_link && (
-                    <a
-                        href={club.whatsapp_link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-green-500/10 px-4 py-3 text-sm font-bold text-green-600 dark:text-green-400 transition hover:bg-green-500/20"
-                    >
-                        <MessageCircle className="h-4 w-4" />
-                        WhatsApp groep
-                    </a>
+                {(club.whatsapp_link || club.discord_link) && (
+                    <div className="mt-auto flex flex-col gap-2">
+                        {club.whatsapp_link && (
+                            isActiveMember ? (
+                                <a
+                                    href={club.whatsapp_link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-500/10 px-4 py-3 text-sm font-bold text-green-600 dark:text-green-400 transition hover:bg-green-500/20"
+                                >
+                                    <MessageCircle className="h-4 w-4" />
+                                    WhatsApp groep
+                                </a>
+                            ) : (
+                                <Link
+                                    href={ROUTES.MEMBERSHIP}
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-bg-soft px-4 py-3 text-sm font-bold text-text-muted transition hover:bg-bg-soft/70"
+                                    title="Alleen zichtbaar voor leden met een actief lidmaatschap"
+                                >
+                                    <Lock className="h-4 w-4" />
+                                    Alleen voor leden
+                                </Link>
+                            )
+                        )}
+
+                        {club.discord_link && (
+                            <a
+                                href={club.discord_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-500/10 px-4 py-3 text-sm font-bold text-indigo-600 dark:text-indigo-400 transition hover:bg-indigo-500/20"
+                            >
+                                <DiscordIcon className="h-4 w-4" />
+                                Discord
+                            </a>
+                        )}
+                    </div>
                 )}
             </div>
         </div>

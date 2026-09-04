@@ -8,12 +8,20 @@ export const metadata: Metadata = {
 };
 
 import { getClubs } from '@/server/actions/public/clubs.actions';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
+import type { EnrichedUser } from '@/types/auth';
 
 import { connection } from 'next/server';
 
 export default async function ClubsPage() {
     await connection();
-    const clubs = await getClubs();
+    const [clubs, session] = await Promise.all([
+        getClubs(),
+        getEnrichedSession()
+    ]);
+
+    const currentUser = session?.user ? (session.user as unknown as EnrichedUser) : null;
+    const isActiveMember = currentUser?.membership_status === 'active';
 
     return (
         <PublicPageShell>
@@ -27,7 +35,7 @@ export default async function ClubsPage() {
                     </p>
                     <div className="h-1 w-24 bg-linear-to-r from-transparent via-purple-500 to-transparent rounded-full mt-6" />
                 </div>
-                <ClubsList initialClubs={clubs} />
+                <ClubsList initialClubs={clubs} isActiveMember={isActiveMember} />
             </div>
         </PublicPageShell>
     );
