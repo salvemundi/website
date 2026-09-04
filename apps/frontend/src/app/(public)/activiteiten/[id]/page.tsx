@@ -10,6 +10,7 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import BackButton from '@/components/ui/navigation/BackButton';
 import { type Metadata } from 'next';
 import { connection } from 'next/server';
+import { isEventPast } from '@/shared/lib/utils/date';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -56,7 +57,11 @@ async function ActivityContent({ params, searchParams }: PageProps) {
 
     if (!activity) notFound();
 
-    const isEventPast = new Date(activity.event_date) < new Date();
+    const isPastEvent = isEventPast(
+        activity.event_date_end || activity.event_date,
+        activity.event_time_end || activity.event_time,
+        !!activity.event_time_end
+    );
     const isDeadlinePassed = activity.registration_deadline
         ? new Date(activity.registration_deadline) < new Date()
         : false;
@@ -111,7 +116,7 @@ async function ActivityContent({ params, searchParams }: PageProps) {
                     initialQrToken={qrToken}
                     initialIsSignedUp={isSignedUp}
                     id={signupId}
-                    isPast={isEventPast}
+                    isPast={isPastEvent}
                     isDeadlinePassed={isDeadlinePassed}
                     isFull={isFull}
                     isMembersOnly={!!activity.only_members}
