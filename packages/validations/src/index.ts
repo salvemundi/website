@@ -7,6 +7,7 @@ export * from './schema/activity.zod.js';
 export * from './schema/azure-sync.zod.js';
 export * from './schema/profiel.zod.js';
 export * from './schema/committees.zod.js';
+export * from './schema/clubs.zod.js';
 export * from './schema/mail.zod.js';
 export * from './schema/admin-trip.zod.js';
 export * from './schema/trip.zod.js';
