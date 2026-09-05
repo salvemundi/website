@@ -53,6 +53,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
         participant_email: s.participant_email || '-',
         participant_phone: s.participant_phone,
         payment_status: s.payment_status || 'open',
+        amount_paid: s.amount_paid,
         created_at: s.created_at || new Date().toISOString(),
         checked_in: !!s.checked_in,
         is_member: !!s.is_member,

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { intro_group_members, intro_group_attendance, directus_users, intro_group_member_notes, vacancy_submissions, directus_files, vacancies, intro_group_attendance_log, clubs, club_members, Stickers, Board, Board_Members, contacts, directus_roles, directus_access, directus_policies, committees, directus_comments, directus_dashboards, directus_folders, directus_collections, directus_flows, directus_panels, directus_permissions, directus_presets, directus_activity, directus_revisions, directus_versions, directus_shares, directus_notifications, vacancy_verification_tokens, directus_operations, intro_blogs, vacancy_ict_directions, vacancies_vacancy_ict_directions, documents, events, event_signups, events_directus_users, intro_blog_likes, events_members, hero_banners, intro_blog_gallery, pub_crawl_events, membership_history, pub_crawl_signups, pub_crawl_signups_transactions, transactions, push_notification, vacancy_submission_direction_links, intro_planning, pub_crawl_tickets, intro_parent_signups, trips, vacancy_direction_links, trip_signups, trip_activities, trip_signup_activities, safe_havens, sponsors, intro_confidants, directus_sessions, roles, role_permissions, permissions, webshop_preorders, auth_accounts, auth_sessions, committee_members, intro_planning_signups, intro_signups, intro_settings, directus_deployments, webshop_products, webshop_product_media, directus_deployment_projects, directus_settings, directus_deployment_runs, webshop_product_variants, webshop_drop_windows, webshop_preorder_lines, intro_groups, intro_group_leaders } from "./schema";
+import { intro_group_members, intro_group_attendance, directus_users, intro_group_member_notes, vacancy_submissions, directus_files, vacancies, intro_group_attendance_log, nda_templates, nda_signatures, committees, nda_settings, clubs, club_members, Stickers, Board, Board_Members, contacts, directus_roles, directus_access, directus_policies, directus_comments, directus_dashboards, directus_folders, directus_collections, directus_flows, directus_panels, directus_permissions, directus_presets, directus_activity, directus_revisions, directus_versions, directus_shares, directus_notifications, vacancy_verification_tokens, directus_operations, intro_blogs, vacancy_ict_directions, vacancies_vacancy_ict_directions, documents, events, event_signups, events_directus_users, intro_blog_likes, events_members, hero_banners, intro_blog_gallery, pub_crawl_events, membership_history, pub_crawl_signups, pub_crawl_signups_transactions, transactions, push_notification, vacancy_submission_direction_links, intro_planning, pub_crawl_tickets, intro_parent_signups, trips, vacancy_direction_links, trip_signups, trip_activities, trip_signup_activities, safe_havens, sponsors, intro_confidants, directus_sessions, roles, role_permissions, permissions, webshop_preorders, auth_accounts, auth_sessions, committee_members, intro_planning_signups, intro_signups, intro_settings, directus_deployments, webshop_products, webshop_product_media, directus_deployment_projects, directus_settings, directus_deployment_runs, webshop_product_variants, webshop_drop_windows, webshop_preorder_lines, intro_groups, intro_group_leaders } from "./schema";
 
 export const intro_group_attendanceRelations = relations(intro_group_attendance, ({one}) => ({
 	intro_group_member: one(intro_group_members, {
@@ -32,6 +32,14 @@ export const directus_usersRelations = relations(directus_users, ({one, many}) =
 	vacancy_submissions: many(vacancy_submissions),
 	vacancies: many(vacancies),
 	intro_group_attendance_logs: many(intro_group_attendance_log),
+	nda_signatures: many(nda_signatures),
+	nda_settings: many(nda_settings),
+	nda_templates_secretary_user_id: many(nda_templates, {
+		relationName: "nda_templates_secretary_user_id_directus_users_id"
+	}),
+	nda_templates_user_created: many(nda_templates, {
+		relationName: "nda_templates_user_created_directus_users_id"
+	}),
 	Stickers_user_created: many(Stickers, {
 		relationName: "Stickers_user_created_directus_users_id"
 	}),
@@ -180,6 +188,13 @@ export const directus_filesRelations = relations(directus_files, ({one, many}) =
 	vacancies_document: many(vacancies, {
 		relationName: "vacancies_document_directus_files_id"
 	}),
+	nda_signatures_member_signature: many(nda_signatures, {
+		relationName: "nda_signatures_member_signature_directus_files_id"
+	}),
+	nda_signatures_signed_document: many(nda_signatures, {
+		relationName: "nda_signatures_signed_document_directus_files_id"
+	}),
+	nda_templates: many(nda_templates),
 	Stickers: many(Stickers),
 	Boards: many(Board),
 	contacts: many(contacts),
@@ -258,6 +273,71 @@ export const intro_group_attendance_logRelations = relations(intro_group_attenda
 	}),
 	directus_user: one(directus_users, {
 		fields: [intro_group_attendance_log.changed_by],
+		references: [directus_users.id]
+	}),
+}));
+
+export const nda_signaturesRelations = relations(nda_signatures, ({one}) => ({
+	nda_template: one(nda_templates, {
+		fields: [nda_signatures.nda_template_id],
+		references: [nda_templates.id]
+	}),
+	committee: one(committees, {
+		fields: [nda_signatures.committee_id],
+		references: [committees.id]
+	}),
+	directus_user: one(directus_users, {
+		fields: [nda_signatures.user_id],
+		references: [directus_users.id]
+	}),
+	directus_file_member_signature: one(directus_files, {
+		fields: [nda_signatures.member_signature],
+		references: [directus_files.id],
+		relationName: "nda_signatures_member_signature_directus_files_id"
+	}),
+	directus_file_signed_document: one(directus_files, {
+		fields: [nda_signatures.signed_document],
+		references: [directus_files.id],
+		relationName: "nda_signatures_signed_document_directus_files_id"
+	}),
+}));
+
+export const nda_templatesRelations = relations(nda_templates, ({one, many}) => ({
+	nda_signatures: many(nda_signatures),
+	committee: one(committees, {
+		fields: [nda_templates.committee_id],
+		references: [committees.id]
+	}),
+	directus_file: one(directus_files, {
+		fields: [nda_templates.document],
+		references: [directus_files.id]
+	}),
+	directus_user_secretary_user_id: one(directus_users, {
+		fields: [nda_templates.secretary_user_id],
+		references: [directus_users.id],
+		relationName: "nda_templates_secretary_user_id_directus_users_id"
+	}),
+	directus_user_user_created: one(directus_users, {
+		fields: [nda_templates.user_created],
+		references: [directus_users.id],
+		relationName: "nda_templates_user_created_directus_users_id"
+	}),
+}));
+
+export const committeesRelations = relations(committees, ({one, many}) => ({
+	nda_signatures: many(nda_signatures),
+	nda_templates: many(nda_templates),
+	directus_file: one(directus_files, {
+		fields: [committees.image],
+		references: [directus_files.id]
+	}),
+	events: many(events),
+	committee_members: many(committee_members),
+}));
+
+export const nda_settingsRelations = relations(nda_settings, ({one}) => ({
+	directus_user: one(directus_users, {
+		fields: [nda_settings.secretary_user_id],
 		references: [directus_users.id]
 	}),
 }));
@@ -364,15 +444,6 @@ export const directus_rolesRelations = relations(directus_roles, ({one, many}) =
 export const directus_policiesRelations = relations(directus_policies, ({many}) => ({
 	directus_accesses: many(directus_access),
 	directus_permissions: many(directus_permissions),
-}));
-
-export const committeesRelations = relations(committees, ({one, many}) => ({
-	directus_file: one(directus_files, {
-		fields: [committees.image],
-		references: [directus_files.id]
-	}),
-	events: many(events),
-	committee_members: many(committee_members),
 }));
 
 export const directus_commentsRelations = relations(directus_comments, ({one}) => ({

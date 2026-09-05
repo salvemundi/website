@@ -60,15 +60,10 @@ export const SignaturePad = React.forwardRef<SignaturePadHandle, SignaturePadPro
         toBlob: async () => {
             const pad = padRef.current;
             if (!pad || pad.isEmpty()) return null;
-            // Decode the data URL manually instead of fetch()-ing it: a strict
-            // Content-Security-Policy connect-src can block fetch() on data: URIs.
             const dataUrl = pad.toDataURL('image/png');
             const base64 = dataUrl.split(',')[1] ?? '';
             const binary = atob(base64);
-            const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) {
-                bytes[i] = binary.charCodeAt(i);
-            }
+            const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
             return new Blob([bytes], { type: 'image/png' });
         },
     }), []);

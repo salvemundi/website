@@ -16,6 +16,7 @@ export function exportSignupsToCSV(signups: Signup[], eventName: string) {
             Email: getSignupEmail(signup),
             Telefoon: getSignupPhone(signup),
             Status: signup.payment_status || 'open',
+            Bedrag: typeof signup.amount_paid === 'number' ? signup.amount_paid.toFixed(2) : '',
             'Checked In': signup.checked_in ? 'Ja' : 'Nee',
             'Inschrijfdatum': formattedDate
         };

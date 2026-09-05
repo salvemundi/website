@@ -135,7 +135,8 @@ export async function searchMembersAction(query: string) {
                 first_name: true,
                 last_name: true,
                 email: true,
-                avatar: true
+                avatar: true,
+                membership_status: true
             }
         });
         return { success: true, data: users as UserBasic[] };

@@ -124,14 +124,22 @@ export async function getActivityBySlugInternal(slug: string): Promise<Activitei
     }) || null;
 }
 
-export async function getActivitySignupsInternal(eventId: string): Promise<EventSignup[]> {
+export type EventSignupWithAmount = EventSignup & { amount_paid: number | null };
+
+export async function getActivitySignupsInternal(eventId: string): Promise<EventSignupWithAmount[]> {
     const { db, schema } = await import('@/lib/database/db');
     const { eq, inArray, desc, sql, and } = await import('drizzle-orm');
 
     const rows = await db.select({
         signup: schema.event_signups,
         calculated_is_member: sql<boolean>`COALESCE(${schema.event_signups.is_member}, (${schema.directus_users.id} IS NOT NULL))`,
-        user_id: schema.directus_users.id
+        user_id: schema.directus_users.id,
+        amount_paid: sql<number | null>`(
+            SELECT t.amount FROM ${schema.transactions} t
+            WHERE t.registration = ${schema.event_signups.id}
+            ORDER BY (t.payment_status = 'paid') DESC, t.created_at DESC
+            LIMIT 1
+        )`
     })
     .from(schema.event_signups)
     .leftJoin(schema.directus_users, eq(schema.event_signups.participant_email, schema.directus_users.email))
@@ -146,8 +154,9 @@ export async function getActivitySignupsInternal(eventId: string): Promise<Event
     return rows.map((r) => ({
         ...r.signup,
         id: Number(r.signup.id),
-        is_member: Boolean(r.calculated_is_member)
-    } as unknown as EventSignup));
+        is_member: Boolean(r.calculated_is_member),
+        amount_paid: r.amount_paid !== null ? Number(r.amount_paid) : null
+    } as unknown as EventSignupWithAmount));
 }
 
 export async function getActivitiesWithSignupCountsInternal(search?: string, filter: 'all' | 'upcoming' | 'past' = 'all'): Promise<(Activiteit & { signup_count: number })[]> {

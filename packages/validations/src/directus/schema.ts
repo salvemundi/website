@@ -69,6 +69,9 @@ export interface Schema {
   whatsapp_groups: WhatsappGroup[];
   directus_users: CustomDirectusUser;
   directus_deployments: CustomDirectusDeployment;
+  nda_settings: NdaSetting[];
+  nda_signatures: NdaSignature[];
+  nda_templates: NdaTemplate[];
 }
 
 export interface Board {
@@ -907,6 +910,46 @@ export interface CustomDirectusUser {
 
 export interface CustomDirectusDeployment {
   webhook_secret: string | null;
+}
+
+export interface NdaSetting {
+  id: number;
+  secretary_user_id: string | null;
+  reminder_days_before: number;
+  updated_at: string | "datetime" | null;
+  is_active: boolean;
+}
+
+export interface NdaSignature {
+  id: number;
+  nda_template_id: number | null;
+  committee_id: number;
+  user_id: string;
+  status: string;
+  is_legacy: boolean;
+  member_signature: string | null;
+  signed_at: string | "datetime" | null;
+  signed_location: string | null;
+  expires_at: string | "datetime" | null;
+  signed_document: string | null;
+  sent_at: string | "datetime" | null;
+  reminder_sent_at: string | "datetime" | null;
+  created_at: string | "datetime";
+  updated_at: string | "datetime" | null;
+}
+
+export interface NdaTemplate {
+  id: number;
+  committee_id: number;
+  year: number;
+  document: string | null;
+  status: string;
+  secretary_user_id: string | null;
+  secretary_signed_at: string | "datetime" | null;
+  user_created: string | null;
+  created_at: string | "datetime";
+  updated_at: string | "datetime" | null;
+  signature_layout: unknown | null;
 }
 
 // GeoJSON Types

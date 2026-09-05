@@ -137,8 +137,8 @@ export default function NdaSignatureLayoutEditor({ templateId, documentFileId, i
         setDrawing(null);
 
         const currentIndex = STEPS.findIndex((s) => s.key === activeStep);
-        const nextIndex = currentIndex + 1;
-        setActiveStep(nextIndex < STEPS.length ? STEPS[nextIndex].key : null);
+        const nextStep = currentIndex >= 0 ? STEPS.at(currentIndex + 1) : undefined;
+        setActiveStep(nextStep?.key ?? null);
     }, [activeStep, drawing]);
 
     const allBoxesSet = STEPS.every((s) => boxes[s.key]);

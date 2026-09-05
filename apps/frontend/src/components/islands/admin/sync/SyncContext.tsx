@@ -78,6 +78,7 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
 
     const syncFieldOptions = [
         { id: 'membership_expiry', label: 'Lidmaatschap Expiry' },
+        { id: 'originele_betaaldatum', label: 'Originele Betaaldatum' },
         { id: 'geboortedatum', label: 'Geboortedatum' },
         { id: 'phone_number', label: 'Telefoonnummer' },
         { id: 'committees', label: 'Commissies' },

@@ -36,7 +36,7 @@ export class FullSyncJob {
 
                 logInfo('[full-sync.job.ts][start] ', 'Triggering automated nightly sync...');
                 await SyncJob.run(redis, {
-                    fields: ['status', 'membership_status', 'membership_expiry', 'committees'],
+                    fields: ['status', 'membership_status', 'membership_expiry', 'originele_betaaldatum', 'committees'],
                     silent: true
                 });
 

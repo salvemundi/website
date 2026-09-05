@@ -28,6 +28,7 @@ export const AdminMemberSchema = selectDirectusUsersSchema.pick({
     last_name: true,
     date_of_birth: true,
     membership_expiry: true,
+    membership_status: true,
     status: true,
     phone_number: true,
     avatar: true,

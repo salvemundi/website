@@ -40,45 +40,106 @@ const STATUS_OPTIONS: { value: IntroGroupAttendanceStatus; label: string; icon: 
     { value: 'staying_out', label: 'Blijft na 22:00', icon: MoonStar }
 ];
 
-const STATUS_SINCE_LABEL: Record<IntroGroupAttendanceStatus, string> = {
-    not_reported: '',
-    present: 'Aanwezig sinds',
-    went_home: 'Onderweg sinds',
-    home: 'Thuis sinds',
-    staying_out: 'Buiten sinds'
-};
+function getStatusSinceLabel(status: IntroGroupAttendanceStatus): string {
+    switch (status) {
+        case 'present': return 'Aanwezig sinds';
+        case 'went_home': return 'Onderweg sinds';
+        case 'home': return 'Thuis sinds';
+        case 'staying_out': return 'Buiten sinds';
+        default: return '';
+    }
+}
 
-const STATUS_LABEL: Record<IntroGroupAttendanceStatus, string> = {
-    not_reported: 'Niet gemeld',
-    present: 'Aanwezig',
-    went_home: 'Onderweg naar huis',
-    home: 'Thuis',
-    staying_out: 'Blijft na 22:00'
-};
+function getStatusLabel(status: IntroGroupAttendanceStatus): string {
+    switch (status) {
+        case 'present': return 'Aanwezig';
+        case 'went_home': return 'Onderweg naar huis';
+        case 'home': return 'Thuis';
+        case 'staying_out': return 'Blijft na 22:00';
+        default: return 'Niet gemeld';
+    }
+}
 
-const STATUS_CARD_STYLE: Record<IntroGroupAttendanceStatus, string> = {
-    not_reported: 'bg-(--bg-card) border-(--border-color)',
-    present: 'bg-sky-500/10 border-sky-500/30',
-    went_home: 'bg-amber-500/10 border-amber-500/30',
-    home: 'bg-emerald-500/10 border-emerald-500/30',
-    staying_out: 'bg-purple-500/10 border-purple-500/30'
-};
+function getStatusCardStyle(status: IntroGroupAttendanceStatus): string {
+    switch (status) {
+        case 'present': return 'bg-sky-500/10 border-sky-500/30';
+        case 'went_home': return 'bg-amber-500/10 border-amber-500/30';
+        case 'home': return 'bg-emerald-500/10 border-emerald-500/30';
+        case 'staying_out': return 'bg-purple-500/10 border-purple-500/30';
+        default: return 'bg-(--bg-card) border-(--border-color)';
+    }
+}
 
-const STATUS_ICON: Record<IntroGroupAttendanceStatus, typeof HelpCircle> = {
-    not_reported: HelpCircle,
-    present: Check,
-    went_home: LogOut,
-    home: Home,
-    staying_out: MoonStar
-};
+function getStatusIcon(status: IntroGroupAttendanceStatus): typeof HelpCircle {
+    switch (status) {
+        case 'present': return Check;
+        case 'went_home': return LogOut;
+        case 'home': return Home;
+        case 'staying_out': return MoonStar;
+        default: return HelpCircle;
+    }
+}
 
-const STATUS_BADGE_STYLE: Record<IntroGroupAttendanceStatus, string> = {
-    not_reported: 'bg-(--bg-soft) text-(--text-muted)',
-    present: 'bg-sky-500/15 text-sky-600 dark:text-sky-400',
-    went_home: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
-    home: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
-    staying_out: 'bg-purple-500/15 text-purple-600 dark:text-purple-400'
-};
+function getStatusBadgeStyle(status: IntroGroupAttendanceStatus): string {
+    switch (status) {
+        case 'present': return 'bg-sky-500/15 text-sky-600 dark:text-sky-400';
+        case 'went_home': return 'bg-amber-500/15 text-amber-600 dark:text-amber-400';
+        case 'home': return 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400';
+        case 'staying_out': return 'bg-purple-500/15 text-purple-600 dark:text-purple-400';
+        default: return 'bg-(--bg-soft) text-(--text-muted)';
+    }
+}
+
+function getSummaryCount(summary: Record<IntroGroupAttendanceStatus, number> | null, status: IntroGroupAttendanceStatus): number {
+    if (!summary) return 0;
+    switch (status) {
+        case 'present': return summary.present;
+        case 'went_home': return summary.went_home;
+        case 'home': return summary.home;
+        case 'staying_out': return summary.staying_out;
+        default: return summary.not_reported;
+    }
+}
+
+function updateSummaryOnRemove(
+    prev: Record<IntroGroupAttendanceStatus, number> | null,
+    removedStatus: IntroGroupAttendanceStatus
+): Record<IntroGroupAttendanceStatus, number> | null {
+    if (!prev) return null;
+    const next = { ...prev };
+    switch (removedStatus) {
+        case 'present': next.present = Math.max(0, next.present - 1); break;
+        case 'went_home': next.went_home = Math.max(0, next.went_home - 1); break;
+        case 'home': next.home = Math.max(0, next.home - 1); break;
+        case 'staying_out': next.staying_out = Math.max(0, next.staying_out - 1); break;
+        case 'not_reported': next.not_reported = Math.max(0, next.not_reported - 1); break;
+    }
+    return next;
+}
+
+function updateSummaryOnStatusChange(
+    prev: Record<IntroGroupAttendanceStatus, number> | null,
+    prevStatus: IntroGroupAttendanceStatus,
+    newStatus: IntroGroupAttendanceStatus
+): Record<IntroGroupAttendanceStatus, number> | null {
+    if (!prev) return null;
+    const next = { ...prev };
+    switch (prevStatus) {
+        case 'present': next.present = Math.max(0, next.present - 1); break;
+        case 'went_home': next.went_home = Math.max(0, next.went_home - 1); break;
+        case 'home': next.home = Math.max(0, next.home - 1); break;
+        case 'staying_out': next.staying_out = Math.max(0, next.staying_out - 1); break;
+        case 'not_reported': next.not_reported = Math.max(0, next.not_reported - 1); break;
+    }
+    switch (newStatus) {
+        case 'present': next.present++; break;
+        case 'went_home': next.went_home++; break;
+        case 'home': next.home++; break;
+        case 'staying_out': next.staying_out++; break;
+        case 'not_reported': next.not_reported++; break;
+    }
+    return next;
+}
 
 const STATUS_ORDER: IntroGroupAttendanceStatus[] = ['not_reported', 'present', 'went_home', 'home', 'staying_out'];
 
@@ -189,7 +250,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
             setMembers(prev => prev.filter(m => m.id !== memberId));
             showToast('Verwijderd', 'success');
             if (isCrew) {
-                setTotalSummary(prev => prev && { ...prev, [removedStatus]: Math.max(0, prev[removedStatus] - 1) });
+                setTotalSummary(prev => updateSummaryOnRemove(prev, removedStatus));
             }
         } else {
             showToast(res.error || 'Verwijderen mislukt', 'error');
@@ -218,11 +279,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
             setJustUpdatedId(member.id);
             setTimeout(() => setJustUpdatedId(prev => prev === member.id ? null : prev), 500);
             if (isCrew && previousStatus !== status) {
-                setTotalSummary(prev => prev && {
-                    ...prev,
-                    [previousStatus]: Math.max(0, prev[previousStatus] - 1),
-                    [status]: prev[status] + 1
-                });
+                setTotalSummary(prev => updateSummaryOnStatusChange(prev, previousStatus, status));
             }
         } else {
             showToast(res.error || 'Bijwerken mislukt', 'error');
@@ -333,17 +390,17 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                     ) : totalSummary && (
                         <div className="flex flex-wrap items-center gap-1.5">
                             <span className="text-xs font-bold text-(--text-main) mr-1">
-                                {STATUS_ORDER.reduce((sum, s) => sum + totalSummary[s], 0)} kiddos
+                                {STATUS_ORDER.reduce((sum, s) => sum + getSummaryCount(totalSummary, s), 0)} kiddos
                             </span>
-                            {STATUS_ORDER.filter(s => totalSummary[s] > 0).map(s => {
-                                const Icon = STATUS_ICON[s];
+                            {STATUS_ORDER.filter(s => getSummaryCount(totalSummary, s) > 0).map(s => {
+                                const Icon = getStatusIcon(s);
                                 return (
                                     <span
                                         key={s}
-                                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold ${STATUS_BADGE_STYLE[s]}`}
+                                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold ${getStatusBadgeStyle(s)}`}
                                     >
                                         <Icon className="h-3 w-3" />
-                                        {totalSummary[s]} {STATUS_LABEL[s]}
+                                        {getSummaryCount(totalSummary, s)} {getStatusLabel(s)}
                                     </span>
                                 );
                             })}
@@ -390,16 +447,16 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
             {members.length > 0 && (
                 <div className="flex flex-wrap items-center gap-1.5 mb-4">
                     {STATUS_ORDER.filter(s => (statusCounts.get(s) ?? 0) > 0).map(s => {
-                        const Icon = STATUS_ICON[s];
+                        const Icon = getStatusIcon(s);
                         const isActive = statusFilter === s;
                         return (
                             <button
                                 key={s}
                                 onClick={() => setStatusFilter(prev => prev === s ? null : s)}
-                                className={`form-button flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold transition-all active:scale-90 ${STATUS_BADGE_STYLE[s]} ${isActive ? 'ring-2 ring-offset-1 ring-theme-purple ring-offset-(--bg-main) scale-105' : 'opacity-80 hover:opacity-100'}`}
+                                className={`form-button flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold transition-all active:scale-90 ${getStatusBadgeStyle(s)} ${isActive ? 'ring-2 ring-offset-1 ring-theme-purple ring-offset-(--bg-main) scale-105' : 'opacity-80 hover:opacity-100'}`}
                             >
                                 <Icon className="h-3 w-3" />
-                                {statusCounts.get(s)} {STATUS_LABEL[s]}
+                                {statusCounts.get(s)} {getStatusLabel(s)}
                             </button>
                         );
                     })}
@@ -475,10 +532,10 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                 <div className="text-center py-16 text-(--text-muted)">
                     <p className="font-semibold">
                         {searchQuery.trim() && statusFilter
-                            ? <>Geen kiddo gevonden voor &quot;{searchQuery}&quot; met status &quot;{STATUS_LABEL[statusFilter]}&quot;.</>
+                            ? <>Geen kiddo gevonden voor &quot;{searchQuery}&quot; met status &quot;{getStatusLabel(statusFilter)}&quot;.</>
                             : searchQuery.trim()
                                 ? <>Geen kiddo gevonden voor &quot;{searchQuery}&quot;.</>
-                                : <>Geen kiddo met status &quot;{statusFilter ? STATUS_LABEL[statusFilter] : ''}&quot;.</>}
+                                : <>Geen kiddo met status &quot;{statusFilter ? getStatusLabel(statusFilter) : ''}&quot;.</>}
                     </p>
                 </div>
             ) : (
@@ -494,7 +551,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                         return (
                             <div
                                 key={member.id}
-                                className={`fade-in border rounded-xl p-2.5 transition-all duration-300 ${STATUS_CARD_STYLE[status]} ${justUpdatedId === member.id ? 'scale-[1.02] ring-2 ring-theme-purple/50 shadow-md' : 'scale-100'}`}
+                                className={`fade-in border rounded-xl p-2.5 transition-all duration-300 ${getStatusCardStyle(status)} ${justUpdatedId === member.id ? 'scale-[1.02] ring-2 ring-theme-purple/50 shadow-md' : 'scale-100'}`}
                             >
                                 <div className="flex items-center justify-between gap-2 mb-1.5">
                                     <div className="flex items-center gap-1.5 min-w-0">
@@ -568,7 +625,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <span>{STATUS_SINCE_LABEL[status]} {formatTime(statusAt)}</span>
+                                                        <span>{getStatusSinceLabel(status)} {formatTime(statusAt)}</span>
                                                         <button
                                                             onClick={() => startEditTime(member)}
                                                             className="form-button p-1 rounded text-(--text-muted) hover:text-theme-purple transition-colors"
@@ -652,7 +709,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                             <div className="space-y-1.5">
                                                                 {log.map(entry => (
                                                                     <div key={entry.id} className="flex items-center justify-between gap-2 text-[11px] text-(--text-muted)">
-                                                                        <span className="font-semibold text-(--text-main)">{STATUS_LABEL[entry.status]}</span>
+                                                                        <span className="font-semibold text-(--text-main)">{getStatusLabel(entry.status)}</span>
                                                                         <span className="opacity-70">
                                                                             {entry.status_at ? formatTime(entry.status_at) : '-'} · {entry.author_name || 'onbekend'}
                                                                         </span>

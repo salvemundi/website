@@ -19,6 +19,7 @@ export interface Signup {
     participant_email: string;
     participant_phone?: string | null;
     payment_status?: string;
+    amount_paid?: number | null;
     created_at: string;
     checked_in?: boolean;
     checked_in_at?: string | null;
@@ -53,6 +54,8 @@ export default function ActiviteitAanmeldingenIsland({
     const { toast, showToast, hideToast } = useAdminToast();
     const [, startTransition] = useTransition();
     const [searchQuery, setSearchQuery] = useState('');
+    const [paymentFilter, setPaymentFilter] = useState<'all' | 'paid' | 'open'>('all');
+    const [membershipFilter, setMembershipFilter] = useState<'all' | 'member' | 'guest'>('all');
     const [isManualModalOpen, setIsManualModalOpen] = useState(false);
     const [isMailModalOpen, setIsMailModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
@@ -87,15 +90,22 @@ export default function ActiviteitAanmeldingenIsland({
             return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         });
 
-        if (!searchQuery) return sorted;
+        const filtered = sorted.filter(signup => {
+            if (paymentFilter !== 'all' && (signup.payment_status || 'open') !== paymentFilter) return false;
+            if (membershipFilter === 'member' && !signup.is_member) return false;
+            if (membershipFilter === 'guest' && signup.is_member) return false;
+            return true;
+        });
+
+        if (!searchQuery) return filtered;
         const query = searchQuery.toLowerCase();
-        return sorted.filter(signup => {
+        return filtered.filter(signup => {
             const name = getSignupName(signup).toLowerCase();
             const email = getSignupEmail(signup).toLowerCase();
             const phone = getSignupPhone(signup).toLowerCase();
             return name.includes(query) || email.includes(query) || phone.includes(query);
         });
-    }, [optimisticSignups, searchQuery]);
+    }, [optimisticSignups, searchQuery, paymentFilter, membershipFilter]);
 
     async function handleToggleCheckIn(signupId: number, currentCheckedIn: boolean) {
         const newValue = !currentCheckedIn;
@@ -168,15 +178,43 @@ export default function ActiviteitAanmeldingenIsland({
                         )}
                     </div>
 
-                    <div className="relative group w-full sm:w-[320px] order-1 sm:order-2">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-(--beheer-text-muted) opacity-40 group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 transition-all" />
-                        <input
-                            type="text"
-                            placeholder="Zoek deelnemers..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="beheer-input w-full pl-11! pr-4 py-2"
-                        />
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto order-1 sm:order-2">
+                        <div className="flex min-w-0 items-center justify-between gap-2 px-4 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl shadow-sm hover:border-(--beheer-accent)/30 transition-colors">
+                            <label className="text-[11px] font-semibold text-(--beheer-text-muted) whitespace-nowrap opacity-75">Betaling:</label>
+                            <select
+                                value={paymentFilter}
+                                onChange={(e) => setPaymentFilter(e.target.value as 'all' | 'paid' | 'open')}
+                                className="beheer-select bg-transparent text-(--beheer-text) text-[11px] font-bold outline-none cursor-pointer border-none p-0 focus:ring-0 min-w-0"
+                            >
+                                <option value="all" className="bg-(--beheer-card-bg)">Alle</option>
+                                <option value="paid" className="bg-(--beheer-card-bg)">Betaald</option>
+                                <option value="open" className="bg-(--beheer-card-bg)">Open</option>
+                            </select>
+                        </div>
+
+                        <div className="flex min-w-0 items-center justify-between gap-2 px-4 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl shadow-sm hover:border-(--beheer-accent)/30 transition-colors">
+                            <label className="text-[11px] font-semibold text-(--beheer-text-muted) whitespace-nowrap opacity-75">Lidmaatschap:</label>
+                            <select
+                                value={membershipFilter}
+                                onChange={(e) => setMembershipFilter(e.target.value as 'all' | 'member' | 'guest')}
+                                className="beheer-select bg-transparent text-(--beheer-text) text-[11px] font-bold outline-none cursor-pointer border-none p-0 focus:ring-0 min-w-0"
+                            >
+                                <option value="all" className="bg-(--beheer-card-bg)">Alle</option>
+                                <option value="member" className="bg-(--beheer-card-bg)">Lid</option>
+                                <option value="guest" className="bg-(--beheer-card-bg)">Gast</option>
+                            </select>
+                        </div>
+
+                        <div className="relative group w-full sm:w-[280px]">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-(--beheer-text-muted) opacity-40 group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 transition-all" />
+                            <input
+                                type="text"
+                                placeholder="Zoek deelnemers..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="beheer-input w-full pl-11! pr-4 py-2"
+                            />
+                        </div>
                     </div>
                 </div>
 
