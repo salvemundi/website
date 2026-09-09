@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { AlertCircle, ChevronLeft, ChevronRight, CreditCard, Minus, Plus, ShoppingBag, User } from 'lucide-react';
+import { AlertCircle, Check, ChevronLeft, ChevronRight, CreditCard, Minus, Plus, ShoppingBag, User } from 'lucide-react';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
@@ -167,7 +167,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                     {product.type === 'clothing' && (
                         <>
                             {availableSizes.length > 0 && (
-                                <FormField label="Maat" required error={errors.lines?.[0]?.variant_id?.message}>
+                                <FormField label={`Maat${selectedSize ? ` — gekozen: ${selectedSize}` : ''}`} required error={errors.lines?.[0]?.variant_id?.message}>
                                     <div className="flex flex-wrap gap-2">
                                         {availableSizes.map((size) => {
                                             const isSelected = selectedSize === size;
@@ -175,13 +175,15 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                                 <button
                                                     key={size}
                                                     type="button"
+                                                    aria-pressed={isSelected}
                                                     onClick={() => handleSelectSize(size)}
-                                                    className={`form-button px-4 py-2 rounded-full text-sm font-bold border-2 transition-all ${
+                                                    className={`tab-button flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold border-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] ${
                                                         isSelected
-                                                            ? 'border-(--theme-purple) bg-(--theme-purple) text-white'
-                                                            : 'border-(--border-color) text-(--text-muted) hover:border-(--theme-purple)'
+                                                            ? 'border-(--theme-purple) bg-(--theme-purple) text-white shadow-md scale-105'
+                                                            : 'border-(--border-color) bg-transparent text-(--text-muted) hover:border-(--theme-purple) hover:text-(--theme-purple)'
                                                     }`}
                                                 >
+                                                    {isSelected && <Check className="h-3.5 w-3.5" />}
                                                     {size}
                                                 </button>
                                             );
@@ -191,7 +193,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                             )}
 
                             {availableColors.length > 0 && (
-                                <FormField label="Kleur" required={availableSizes.length === 0} error={availableSizes.length === 0 ? errors.lines?.[0]?.variant_id?.message : undefined}>
+                                <FormField label={`Kleur${selectedColor ? ` — gekozen: ${selectedColor}` : ''}`} required={availableSizes.length === 0} error={availableSizes.length === 0 ? errors.lines?.[0]?.variant_id?.message : undefined}>
                                     <div className="flex flex-wrap gap-2">
                                         {availableColors.map((color) => {
                                             const isSelected = selectedColor === color;
@@ -199,13 +201,15 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                                 <button
                                                     key={color}
                                                     type="button"
+                                                    aria-pressed={isSelected}
                                                     onClick={() => handleSelectColor(color)}
-                                                    className={`form-button px-4 py-2 rounded-full text-sm font-bold border-2 transition-all ${
+                                                    className={`tab-button flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold border-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] ${
                                                         isSelected
-                                                            ? 'border-(--theme-purple) bg-(--theme-purple) text-white'
-                                                            : 'border-(--border-color) text-(--text-muted) hover:border-(--theme-purple)'
+                                                            ? 'border-(--theme-purple) bg-(--theme-purple) text-white shadow-md scale-105'
+                                                            : 'border-(--border-color) bg-transparent text-(--text-muted) hover:border-(--theme-purple) hover:text-(--theme-purple)'
                                                     }`}
                                                 >
+                                                    {isSelected && <Check className="h-3.5 w-3.5" />}
                                                     {color}
                                                 </button>
                                             );
