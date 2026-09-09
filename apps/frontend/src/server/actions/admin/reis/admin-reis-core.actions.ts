@@ -196,6 +196,9 @@ interface _FeatureFlag {
 
 export async function toggleReisVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
     await requireAdminResource(AdminResource.Reis);
+    if (isAccEnvironment()) {
+        return { success: false, error: 'Op de acceptatie-omgeving staan alle modules altijd aan.' };
+    }
 
     try {
         const rows = await db.select({

@@ -10,6 +10,7 @@ import { safeConsoleError } from '@/server/utils/logger';
 import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
 import { unstable_cache, revalidatePath, updateTag } from 'next/cache';
+import { isAccEnvironment } from '@/lib/config/feature-flags';
 
 type DirectusUserSelect = typeof schema.directus_users.$inferSelect;
 type CommitteeSelect = typeof schema.committees.$inferSelect;
@@ -188,6 +189,10 @@ export async function toggleFeatureFlag(
     defaultMessage: string,
     pathsToRevalidate: string[]
 ) {
+    if (isAccEnvironment()) {
+        return { success: false, error: 'Op de acceptatie-omgeving staan alle modules altijd aan.' };
+    }
+
     const featureKey = TOGGLEABLE_FEATURES[routeMatch];
 
     if (featureKey) {
@@ -239,6 +244,10 @@ export async function getFeatureFlagSettings(routeMatch: string) {
         } catch {
             canToggleVisibility = false;
         }
+    }
+
+    if (isAccEnvironment()) {
+        return { show: true, disabled_message: null, canToggleVisibility: false };
     }
 
     const rows = await db.select({ is_active: schema.feature_flags.is_active, message: schema.feature_flags.message })

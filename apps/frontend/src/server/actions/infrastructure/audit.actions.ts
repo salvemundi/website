@@ -4,6 +4,7 @@ import { revalidateTag, revalidatePath, unstable_noStore as noStore } from "next
 import { canAccess } from "@/shared/lib/permissions";
 import { db, schema } from '@salvemundi/db';
 import { eq, sql } from 'drizzle-orm';
+import { isAccEnvironment } from '@/lib/config/feature-flags';
 import { getLookupPrefix } from '@/shared/audit.config';
 import {
     getPendingSignupsInternal,
@@ -208,7 +209,7 @@ export async function getAuditSettingsAction(): Promise<ActionResponse<{ manual_
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
-    if (process.env.ENV_NAME === 'acc') {
+    if (isAccEnvironment()) {
         return { success: true, data: { manual_approval: true } };
     }
 
@@ -229,7 +230,7 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
-    if (process.env.ENV_NAME === 'acc') {
+    if (isAccEnvironment()) {
         return { success: false, error: "Handmatige goedkeuring is verplicht op de acceptatie-omgeving." };
     }
 

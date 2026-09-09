@@ -7,8 +7,16 @@ import { eq } from 'drizzle-orm';
 export const FLAGS_CACHE_KEY = 'site:disabled_routes';
 const CACHE_TTL = 60;
 
+export function isAccEnvironment(): boolean {
+    return process.env.ENV_NAME === 'acc';
+}
+
 export async function getDisabledRoutes(): Promise<string[]> {
     noStore();
+
+    if (isAccEnvironment()) {
+        return [];
+    }
 
     try {
         const redis = await getRedis();
