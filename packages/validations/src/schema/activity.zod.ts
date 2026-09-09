@@ -36,7 +36,7 @@ export const eventSignupFormSchema = z.object({
     event_id: z.number(),
     name: z.string().min(1, 'Naam is verplicht'),
     email: z.string().email('Ongeldig e-mailadres'),
-    phoneNumber: phoneNumberSchema,
+    phoneNumber: phoneNumberSchema.optional().or(z.literal('')),
     website: z.string().optional(),
 });
 

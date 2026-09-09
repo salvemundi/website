@@ -62,14 +62,14 @@ export async function getActivityBySlug(slug: string): Promise<Activiteit | null
 
 export async function getActivitySignupCount(eventId: number): Promise<number> {
     const { db, schema } = await import('@salvemundi/db');
-    const { eq, and, inArray, count } = await import('drizzle-orm');
+    const { eq, and, count } = await import('drizzle-orm');
 
     const countRows = await db.select({ value: count() })
         .from(schema.event_signups)
         .where(
             and(
                 eq(schema.event_signups.event_id, eventId),
-                inArray(schema.event_signups.payment_status, ['paid', 'open'])
+                eq(schema.event_signups.payment_status, 'paid')
             )
         );
 
@@ -185,14 +185,46 @@ export async function signupForActivity(data: EventSignupForm) {
         const price = Number(priceRaw);
 
         const { db, schema } = await import('@salvemundi/db');
-        const { eq, and, ilike, ne } = await import('drizzle-orm');
+        const { eq, and, or, ilike, ne } = await import('drizzle-orm');
+
+        let participantName = parsed.data.name;
+        let participantEmail = parsed.data.email;
+        let participantPhone = parsed.data.phoneNumber;
+
+        if (!userId) {
+            const { phoneNumberSchema } = await import('@salvemundi/validations');
+            const phoneResult = phoneNumberSchema.safeParse(parsed.data.phoneNumber);
+            if (!phoneResult.success) {
+                return { success: false, error: 'Telefoonnummer is verplicht voor gasten.' };
+            }
+        }
+
+        if (userId) {
+            const dbUser = await db.query.directus_users.findFirst({
+                where: eq(schema.directus_users.id, userId),
+                columns: { first_name: true, last_name: true, email: true, phone_number: true }
+            });
+            if (dbUser) {
+                const officialName = `${dbUser.first_name || ''} ${dbUser.last_name || ''}`.trim();
+                if (officialName) participantName = officialName;
+                if (dbUser.email) participantEmail = dbUser.email;
+                if (dbUser.phone_number) participantPhone = dbUser.phone_number;
+            }
+        }
+
+        const duplicateCondition = userId
+            ? or(
+                ilike(schema.event_signups.participant_email, participantEmail),
+                eq(schema.event_signups.directus_relations, userId)
+            )
+            : ilike(schema.event_signups.participant_email, participantEmail);
 
         const rows = await db.select({
             id: schema.event_signups.id
         }).from(schema.event_signups).where(
             and(
                 eq(schema.event_signups.event_id, parsed.data.event_id),
-                ilike(schema.event_signups.participant_email, parsed.data.email),
+                duplicateCondition,
                 ne(schema.event_signups.payment_status, 'failed')
             )
         ).limit(1);
@@ -205,9 +237,9 @@ export async function signupForActivity(data: EventSignupForm) {
 
         const payload: Partial<EventSignup> = {
             event_id: parsed.data.event_id,
-            participant_name: parsed.data.name,
-            participant_email: parsed.data.email,
-            participant_phone: parsed.data.phoneNumber,
+            participant_name: participantName,
+            participant_email: participantEmail,
+            participant_phone: participantPhone,
             payment_status: price > 0 ? 'open' : 'paid',
             qr_token: qrToken,
             directus_relations: userId || null,
@@ -230,9 +262,9 @@ export async function signupForActivity(data: EventSignupForm) {
                     description: `Signup: ${activity.name}`,
                     registrationId: signupId,
                     registrationType: 'event_signup',
-                    email: parsed.data.email,
-                    firstName: parsed.data.name,
-                    phoneNumber: parsed.data.phoneNumber,
+                    email: participantEmail,
+                    firstName: participantName,
+                    phoneNumber: participantPhone,
                     userId: userId,
                     isContribution: false,
                     redirectUrl: `${process.env.PUBLIC_URL}/activiteiten/bevestiging?id=${signupId}`
