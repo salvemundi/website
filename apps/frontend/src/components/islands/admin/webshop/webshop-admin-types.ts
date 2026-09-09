@@ -29,7 +29,7 @@ export interface AdminProduct {
     slug: string | null;
     description: string | null;
     price: string | null;
-    deposit_amount: string | null;
+    max_orders: number | null;
     is_active: boolean | null;
     display_order: number | null;
     variants: AdminVariant[];
@@ -53,9 +53,21 @@ export interface AdminPreorder {
     phone_number: string | null;
     status: string | null;
     subtotal_amount: string | null;
-    deposit_amount: string | null;
     deposit_paid: boolean | null;
-    final_payment_paid: boolean | null;
+    picked_up: boolean | null;
+    picked_up_at: string | null;
     pickup_notes: string | null;
+    lines: AdminPreorderLine[];
+}
+
+// Board-only pickup checklist row — a subset of AdminPreorder, only what's needed to check
+// off which member has collected their item.
+export interface AdminPickupOrder {
+    id: number;
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+    picked_up: boolean | null;
+    picked_up_at: string | null;
     lines: AdminPreorderLine[];
 }

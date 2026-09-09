@@ -3,7 +3,7 @@
 import 'server-only';
 import { revalidateTag, revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { getRedis } from '@/server/auth/redis-client';
-import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
+import { FLAGS_CACHE_KEY, isAccEnvironment } from '@/lib/config/feature-flags';
 import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
 import { requireKroegAdmin } from './admin-kroegentocht-event.actions';
@@ -11,6 +11,9 @@ import { safeConsoleError } from '@/server/utils/logger';
 
 export async function toggleKroegentochtVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
     await requireKroegAdmin();
+    if (isAccEnvironment()) {
+        return { success: false, error: 'Op de acceptatie-omgeving staan alle modules altijd aan.' };
+    }
     const route = '/kroegentocht';
 
     try {
@@ -63,6 +66,9 @@ export async function toggleKroegentochtVisibility(): Promise<{ success: boolean
 export async function getKroegentochtSettings() {
     noStore();
     await requireKroegAdmin();
+    if (isAccEnvironment()) {
+        return { show: true };
+    }
     try {
         const rows = await db.select({
             is_active: schema.feature_flags.is_active

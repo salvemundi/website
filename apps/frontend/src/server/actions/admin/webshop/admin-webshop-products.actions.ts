@@ -123,7 +123,10 @@ export async function saveProduct(formData: FormData) {
         slug: formData.get('slug'),
         description: formData.get('description') || null,
         price: formData.get('price'),
-        deposit_amount: formData.get('deposit_amount'),
+        // No deposit concept anymore — the DB column is still notNull, so it's kept equal to
+        // the price rather than exposed as a separate admin field.
+        deposit_amount: formData.get('price'),
+        max_orders: formData.get('max_orders') || null,
         is_active: formData.get('is_active') === 'on' || formData.get('is_active') === 'true',
         display_order: formData.get('display_order') ? Number(formData.get('display_order')) : 0
     };
@@ -151,7 +154,9 @@ export async function saveProduct(formData: FormData) {
         const dbData = {
             ...data,
             price: data.price.toFixed(2),
-            deposit_amount: data.deposit_amount.toFixed(2)
+            // No deposit concept anymore — the DB column is still notNull, so it's kept equal
+            // to the price rather than exposed as a separate admin field.
+            deposit_amount: data.price.toFixed(2)
         };
 
         let productId: number;

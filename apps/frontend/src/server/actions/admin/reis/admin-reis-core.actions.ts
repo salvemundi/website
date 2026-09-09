@@ -8,7 +8,7 @@ import { eq } from 'drizzle-orm';
 import { requireAdminResource } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
 import { getRedis } from '@/server/auth/redis-client';
-import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
+import { FLAGS_CACHE_KEY, isAccEnvironment } from '@/lib/config/feature-flags';
 import { createTripDb, updateTripDb, deleteTripDb, fetchFullTripsDb, fetchTripByIdDb } from '@/server/internal/reis/reis-trip-db.utils';;
 import { tripSchema } from '@salvemundi/validations/schema/admin-trip.zod';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -196,6 +196,9 @@ interface _FeatureFlag {
 
 export async function toggleReisVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
     await requireAdminResource(AdminResource.Reis);
+    if (isAccEnvironment()) {
+        return { success: false, error: 'Op de acceptatie-omgeving staan alle modules altijd aan.' };
+    }
 
     try {
         const rows = await db.select({

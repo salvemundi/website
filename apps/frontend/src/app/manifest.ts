@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
         description: 'De officiële website van SV Salve Mundi, de studievereniging voor Fontys ICT Eindhoven.',
         start_url: '/',
         display: 'standalone',
-        background_color: '#1a141b',
+        background_color: '#ffffff',
         theme_color: '#a4539b',
         shortcuts: [
             {

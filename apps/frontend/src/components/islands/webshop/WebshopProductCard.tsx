@@ -15,7 +15,6 @@ export default function WebshopProductCard({ product }: WebshopProductCardProps)
     const cover = product.media.length > 0 ? product.media[0] : null;
     const video = product.media.find(m => m.asset_type?.startsWith('video/')) ?? null;
     const price = Number(product.price).toFixed(2);
-    const deposit = Number(product.deposit_amount).toFixed(2);
 
     const showVideo = isHovering && video !== null;
 
@@ -58,7 +57,7 @@ export default function WebshopProductCard({ product }: WebshopProductCardProps)
                 </h3>
                 <div className="flex items-center justify-between pt-2 border-t border-(--border-color)">
                     <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-bold text-(--theme-purple)/50">Prijs &middot; aanbetaling €{deposit} nu</span>
+                        <span className="text-[10px] uppercase font-bold text-(--theme-purple)/50">Prijs</span>
                         <span className="text-lg font-bold text-(--theme-purple)/80">€{price}</span>
                     </div>
                     <span className="text-xs font-bold text-(--theme-purple) uppercase tracking-wider">Bekijk &rarr;</span>

@@ -14,8 +14,7 @@ interface Props {
 }
 
 const STATUS_OPTIONS = [
-    { value: 'awaiting_deposit', label: 'Wacht op aanbetaling' },
-    { value: 'awaiting_final', label: 'Wacht op restbetaling' },
+    { value: 'awaiting_deposit', label: 'Wacht op betaling' },
     { value: 'completed', label: 'Voltooid' },
     { value: 'cancelled', label: 'Geannuleerd' }
 ];
@@ -41,9 +40,9 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
         });
     };
 
-    const handleCopyLink = (id: number, paymentType: 'deposit' | 'final') => {
+    const handleCopyLink = (id: number) => {
         startTransition(async () => {
-            const res = await getPreorderPaymentLink(id, paymentType);
+            const res = await getPreorderPaymentLink(id);
             if (res.success && res.link) {
                 await navigator.clipboard.writeText(res.link);
                 showToast('Link gekopieerd naar klembord', 'success');
@@ -112,18 +111,9 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-end gap-2">
                                                         {!preorder.deposit_paid && (
-                                                            <button 
-                                                                onClick={() => handleCopyLink(preorder.id, 'deposit')} 
-                                                                title="Kopieer aanbetalingslink" 
-                                                                className="icon-button p-2 rounded-lg text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/10 transition-all cursor-pointer"
-                                                            >
-                                                                <Copy className="h-4 w-4" />
-                                                            </button>
-                                                        )}
-                                                        {preorder.deposit_paid && !preorder.final_payment_paid && (
-                                                            <button 
-                                                                onClick={() => handleCopyLink(preorder.id, 'final')} 
-                                                                title="Kopieer restbetalingslink" 
+                                                            <button
+                                                                onClick={() => handleCopyLink(preorder.id)}
+                                                                title="Kopieer betaallink"
                                                                 className="icon-button p-2 rounded-lg text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/10 transition-all cursor-pointer"
                                                             >
                                                                 <Copy className="h-4 w-4" />
@@ -147,8 +137,8 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                                                 </div>
                                                             ))}
                                                             <div className="flex items-center justify-between text-sm pt-2 border-t border-(--beheer-border)/50 font-semibold">
-                                                                <span className="text-(--beheer-text-muted)">Aanbetaling {preorder.deposit_paid ? '(betaald)' : '(open)'}</span>
-                                                                <span className="text-(--beheer-text) font-mono">€{Number(preorder.deposit_amount).toFixed(2)}</span>
+                                                                <span className="text-(--beheer-text-muted)">Betaald {preorder.deposit_paid ? '(ja)' : '(nog niet)'}</span>
+                                                                <span className="text-(--beheer-text) font-mono">€{Number(preorder.subtotal_amount).toFixed(2)}</span>
                                                             </div>
                                                             {preorder.pickup_notes && (
                                                                 <p className="text-xs text-(--beheer-text-muted) italic pt-2 opacity-80">Opmerking: {preorder.pickup_notes}</p>

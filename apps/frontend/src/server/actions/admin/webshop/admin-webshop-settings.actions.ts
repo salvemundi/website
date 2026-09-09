@@ -3,7 +3,7 @@
 import 'server-only';
 import { revalidateTag, revalidatePath } from "next/cache";
 import { getRedis } from '@/server/auth/redis-client';
-import { FLAGS_CACHE_KEY } from '@/lib/config/feature-flags';
+import { FLAGS_CACHE_KEY, isAccEnvironment } from '@/lib/config/feature-flags';
 import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -12,6 +12,9 @@ import { AdminResource } from '@/shared/lib/permissions-config';
 
 export async function toggleWebshopVisibility(): Promise<{ success: boolean; show?: boolean; error?: string }> {
     await requireAdminResource(AdminResource.Webshop);
+    if (isAccEnvironment()) {
+        return { success: false, error: 'Op de acceptatie-omgeving staan alle modules altijd aan.' };
+    }
     const route = '/webshop';
 
     try {

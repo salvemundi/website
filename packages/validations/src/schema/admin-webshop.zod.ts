@@ -23,17 +23,9 @@ export const webshopProductAdminSchema = insertWebshopProductsSchema.extend({
     slug: z.string().min(1, 'Slug is verplicht').regex(/^[a-z0-9-]+$/, 'Slug mag alleen kleine letters, cijfers en streepjes bevatten'),
     description: z.preprocess((value) => (value === null || value === undefined) ? value : (value === '' ? null : String(value as string)), z.string().nullable().optional()),
     price: z.coerce.number().positive('Prijs moet groter dan 0 zijn'),
-    deposit_amount: z.coerce.number().positive('Aanbetaling moet groter dan 0 zijn'),
+    max_orders: z.preprocess((value) => (value === '' || value === null || value === undefined) ? null : value, z.coerce.number().int().positive('Limiet moet groter dan 0 zijn').nullable()).optional(),
     is_active: z.any().transform(value => !!value),
     display_order: z.coerce.number().int().nullable().optional(),
-}).superRefine((data, ctx) => {
-    if (data.deposit_amount > data.price) {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: 'Aanbetaling kan niet hoger zijn dan de prijs.',
-            path: ['deposit_amount'],
-        });
-    }
 });
 export type WebshopProductAdmin = z.infer<typeof webshopProductAdminSchema>;
 
@@ -58,6 +50,6 @@ export type WebshopProductMediaAdmin = z.infer<typeof webshopProductMediaAdminSc
 
 export const webshopPreorderStatusUpdateSchema = z.object({
     id: z.coerce.number().int(),
-    status: z.enum(['awaiting_deposit', 'awaiting_final', 'completed', 'cancelled']),
+    status: z.enum(['awaiting_deposit', 'completed', 'cancelled']),
 });
 export type WebshopPreorderStatusUpdate = z.infer<typeof webshopPreorderStatusUpdateSchema>;

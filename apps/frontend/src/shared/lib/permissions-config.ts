@@ -17,6 +17,7 @@ export enum AdminResource {
     ActivitiesView = 'admin:activities:view',
     ActivitiesEdit = 'admin:activities:edit',
     Webshop = 'admin:webshop',
+    WebshopPickup = 'admin:webshop:pickup',
     Nda = 'admin:nda'
 }
 
@@ -59,6 +60,7 @@ export interface FeatureRegistry {
     sync: readonly string[];
     vacatures: readonly string[];
     webshop: readonly string[];
+    webshop_pickup: readonly string[];
 }
 
 export const FEATURE_ACCESS: FeatureRegistry = {
@@ -69,6 +71,8 @@ export const FEATURE_ACCESS: FeatureRegistry = {
     reis: [COMMITTEES.REIS, COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     // Beheer group dashboard.
     webshop: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
+    // Board-only pickup checklist — deliberately excludes KANDI, unlike the general webshop feature.
+    webshop_pickup: [COMMITTEES.BESTUUR],
     commissies: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     coupons: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     leden: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertCircle, Loader2, Plus, Save, Trash2, Upload } from 'lucide-react';
+import { AlertCircle, Loader2, Save, Trash2, Upload } from 'lucide-react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { uploadWebshopMedia } from '@/server/actions/admin/webshop/admin-webshop-products.actions';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -14,13 +14,6 @@ interface Props {
     onCancel: () => void;
     isPending: boolean;
     error: string | null;
-}
-
-interface VariantDraft {
-    size: string;
-    color: string;
-    sku: string;
-    is_active: boolean;
 }
 
 interface MediaDraft {
@@ -37,14 +30,61 @@ function slugify(value: string): string {
         .replace(/-+/g, '-');
 }
 
+function ChipListInput({ label, placeholder, values, onChange }: { label: string; placeholder: string; values: string[]; onChange: (values: string[]) => void }) {
+    const [draft, setDraft] = useState('');
+
+    const addChip = () => {
+        const value = draft.trim();
+        if (value && !values.includes(value)) {
+            onChange([...values, value]);
+        }
+        setDraft('');
+    };
+
+    const removeChip = (value: string) => onChange(values.filter(v => v !== value));
+
+    return (
+        <div className="space-y-3">
+            <label className="text-xs font-semibold text-(--beheer-text-muted)">{label}</label>
+            <div className="flex flex-wrap items-center gap-2">
+                {values.map(value => (
+                    <span key={value} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-lg bg-(--beheer-accent)/10 text-(--beheer-accent) text-xs font-semibold">
+                        {value}
+                        <button type="button" onClick={() => removeChip(value)} aria-label={`Verwijder ${value}`} className="beheer-button hover:text-red-500 transition-colors cursor-pointer">
+                            <Trash2 className="h-3 w-3" />
+                        </button>
+                    </span>
+                ))}
+                <input
+                    type="text"
+                    value={draft}
+                    placeholder={placeholder}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ',') {
+                            e.preventDefault();
+                            addChip();
+                        }
+                    }}
+                    onBlur={addChip}
+                    className="beheer-input flex-1 min-w-[8rem] px-3 py-1.5 rounded-lg border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) text-sm"
+                />
+            </div>
+        </div>
+    );
+}
+
 export default function AdminWebshopProductForm({ product, dropWindows, onSave, onCancel, isPending, error }: Props) {
     const [name, setName] = useState(product?.name || '');
     const [slug, setSlug] = useState(product?.slug || '');
     const [slugTouched, setSlugTouched] = useState(!!product);
     const [type, setType] = useState<'item' | 'clothing'>(product?.type === 'clothing' ? 'clothing' : 'item');
 
-    const [variants, setVariants] = useState<VariantDraft[]>(
-        product?.variants.map(v => ({ size: v.size || '', color: v.color || '', sku: v.sku || '', is_active: v.is_active ?? true })) || []
+    const [sizes, setSizes] = useState<string[]>(
+        () => Array.from(new Set((product?.variants || []).map(v => v.size).filter((v): v is string => !!v)))
+    );
+    const [colors, setColors] = useState<string[]>(
+        () => Array.from(new Set((product?.variants || []).map(v => v.color).filter((v): v is string => !!v)))
     );
 
     const [media, setMedia] = useState<MediaDraft[]>(
@@ -78,19 +118,21 @@ export default function AdminWebshopProductForm({ product, dropWindows, onSave, 
         }
     };
 
-    const addVariant = () => setVariants(prev => [...prev, { size: '', color: '', sku: '', is_active: true }]);
-    const removeVariant = (index: number) => setVariants(prev => prev.filter((_, i) => i !== index));
-    const updateVariant = (index: number, patch: Partial<VariantDraft>) => {
-        setVariants(prev => prev.map((v, i) => i === index ? { ...v, ...patch } : v));
-    };
-
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
         if (product) fd.set('id', String(product.id));
         fd.set('type', type);
         fd.set('slug', slug);
-        fd.set('variants_json', JSON.stringify(type === 'clothing' ? variants : []));
+
+        // Every size is available in every color — generate the full combo list instead of
+        // making the admin type each size/color pair by hand.
+        const variants = type === 'clothing'
+            ? (colors.length > 0
+                ? sizes.flatMap(size => colors.map(color => ({ size, color, sku: null, is_active: true })))
+                : sizes.map(size => ({ size, color: null, sku: null, is_active: true })))
+            : [];
+        fd.set('variants_json', JSON.stringify(variants));
         fd.set('media_json', JSON.stringify(media));
         onSave(fd);
     };
@@ -163,8 +205,8 @@ export default function AdminWebshopProductForm({ product, dropWindows, onSave, 
                 </div>
 
                 <div className="space-y-3">
-                    <label className="text-xs font-semibold text-(--beheer-text-muted)">Aanbetaling (€) *</label>
-                    <input type="number" name="deposit_amount" required min="0.01" step="0.01" defaultValue={product?.deposit_amount ? Number(product.deposit_amount).toFixed(2) : ''} className="beheer-input w-full px-5 py-4 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold" />
+                    <label className="text-xs font-semibold text-(--beheer-text-muted)">Limiet bestellingen (optioneel)</label>
+                    <input type="number" name="max_orders" min="1" step="1" placeholder="Geen limiet" defaultValue={product?.max_orders ?? ''} className="beheer-input w-full px-5 py-4 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold" />
                 </div>
             </div>
 
@@ -214,26 +256,11 @@ export default function AdminWebshopProductForm({ product, dropWindows, onSave, 
             </div>
 
             {type === 'clothing' && (
-                <div className="space-y-3 pt-6 border-t border-(--beheer-border)">
-                    <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold text-(--beheer-text-muted)">Maat / kleur varianten *</label>
-                        <button type="button" onClick={addVariant} className="beheer-button flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--beheer-accent)/10 text-(--beheer-accent) text-xs font-semibold hover:bg-(--beheer-accent)/20 transition-all">
-                            <Plus className="h-3.5 w-3.5" /> Variant
-                        </button>
-                    </div>
-                    <div className="space-y-2">
-                        {variants.map((variant, index) => (
-                            <div key={index} className="flex items-center gap-2">
-                                <input type="text" placeholder="Maat (S, M, L...)" value={variant.size} onChange={(e) => updateVariant(index, { size: e.target.value })} className="beheer-input flex-1 px-4 py-2.5 rounded-lg border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) text-sm" />
-                                <input type="text" placeholder="Kleur (optioneel)" value={variant.color} onChange={(e) => updateVariant(index, { color: e.target.value })} className="beheer-input flex-1 px-4 py-2.5 rounded-lg border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) text-sm" />
-                                <input type="text" placeholder="SKU (optioneel)" value={variant.sku} onChange={(e) => updateVariant(index, { sku: e.target.value })} className="beheer-input flex-1 px-4 py-2.5 rounded-lg border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) text-sm" />
-                                <button type="button" onClick={() => removeVariant(index)} className="beheer-button p-2.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-all" aria-label="Verwijder variant">
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
-                            </div>
-                        ))}
-                        {variants.length === 0 && <p className="text-xs text-(--beheer-text-muted) italic">Nog geen varianten toegevoegd.</p>}
-                    </div>
+                <div className="space-y-6 pt-6 border-t border-(--beheer-border)">
+                    <p className="text-xs text-(--beheer-text-muted)">Elke maat is in elke kleur verkrijgbaar — er wordt automatisch een variant aangemaakt voor elke combinatie.</p>
+                    <ChipListInput label="Maten *" placeholder="Typ een maat en druk op Enter (S, M, L...)" values={sizes} onChange={setSizes} />
+                    <ChipListInput label="Kleuren (optioneel)" placeholder="Typ een kleur en druk op Enter" values={colors} onChange={setColors} />
+                    {sizes.length === 0 && <p className="text-xs text-(--beheer-text-muted) italic">Voeg minimaal 1 maat toe.</p>}
                 </div>
             )}
 

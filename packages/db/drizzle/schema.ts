@@ -1742,21 +1742,21 @@ export const transactions = pgTable("transactions", {
 
 export const auth_accounts = pgTable("auth_accounts", {
 	id: text().primaryKey().notNull(),
-	account_id: text("account_id", ).notNull(),
-	provider_id: text("provider_id", ).notNull(),
-	user_id: uuid("user_id", ).notNull(),
-	access_token: text("access_token", ),
-	refresh_token: text("refresh_token", ),
-	id_token: text("id_token", ),
-	access_token_expires_at: timestamp("access_token_expires_at", { mode: 'string' }),
-	refresh_token_expires_at: timestamp("refresh_token_expires_at", { mode: 'string' }),
+	accountId: text().notNull(),
+	providerId: text().notNull(),
+	userId: uuid().notNull(),
+	accessToken: text(),
+	refreshToken: text(),
+	idToken: text(),
+	accessTokenExpiresAt: timestamp({ mode: 'string' }),
+	refreshTokenExpiresAt: timestamp({ mode: 'string' }),
 	scope: text(),
 	password: text(),
-	created_at: timestamp("created_at", { mode: 'string' }).notNull(),
-	updated_at: timestamp("updated_at", { mode: 'string' }).notNull(),
+	createdAt: timestamp({ mode: 'string' }).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).notNull(),
 }, (table) => [
 	foreignKey({
-			columns: [table.user_id],
+			columns: [table.userId],
 			foreignColumns: [directus_users.id],
 			name: "auth_accounts_userId_directus_users_id_fk"
 		}).onDelete("cascade"),
@@ -1764,16 +1764,16 @@ export const auth_accounts = pgTable("auth_accounts", {
 
 export const auth_sessions = pgTable("auth_sessions", {
 	id: text().primaryKey().notNull(),
-	expires_at: timestamp("expires_at", { mode: 'string' }).notNull(),
+	expiresAt: timestamp({ mode: 'string' }).notNull(),
 	token: text().notNull(),
-	created_at: timestamp("created_at", { mode: 'string' }).notNull(),
-	updated_at: timestamp("updated_at", { mode: 'string' }).notNull(),
-	ip_address: text("ip_address", ),
-	user_agent: text("user_agent", ),
-	user_id: uuid("user_id", ).notNull(),
+	createdAt: timestamp({ mode: 'string' }).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).notNull(),
+	ipAddress: text(),
+	userAgent: text(),
+	userId: uuid().notNull(),
 }, (table) => [
 	foreignKey({
-			columns: [table.user_id],
+			columns: [table.userId],
 			foreignColumns: [directus_users.id],
 			name: "auth_sessions_userId_directus_users_id_fk"
 		}).onDelete("cascade"),
@@ -1784,9 +1784,9 @@ export const verification = pgTable("verification", {
 	id: text().primaryKey().notNull(),
 	identifier: text().notNull(),
 	value: text().notNull(),
-	expires_at: timestamp("expires_at", { mode: 'string' }).notNull(),
-	created_at: timestamp("created_at", { mode: 'string' }),
-	updated_at: timestamp("updated_at", { mode: 'string' }),
+	expiresAt: timestamp({ mode: 'string' }).notNull(),
+	createdAt: timestamp({ mode: 'string' }),
+	updatedAt: timestamp({ mode: 'string' }),
 });
 
 export const committee_members = pgTable("committee_members", {
@@ -2151,6 +2151,8 @@ export const webshop_preorders = pgTable("webshop_preorders", {
 	terms_accepted: boolean().default(false),
 	pickup_notes: text(),
 	access_token: varchar({ length: 255 }),
+	picked_up: boolean().default(false).notNull(),
+	picked_up_at: timestamp({ withTimezone: true, mode: 'string' }),
 }, (table) => [
 	index("idx_webshop_preorders_drop_window").using("btree", table.drop_window_id.asc().nullsLast().op("int4_ops")),
 	index("idx_webshop_preorders_user").using("btree", table.user_id.asc().nullsLast().op("uuid_ops")),
@@ -2194,21 +2196,6 @@ export const webshop_preorder_lines = pgTable("webshop_preorder_lines", {
 		}).onDelete("set null"),
 ]);
 
-export const intro_groups = pgTable("intro_groups", {
-	id: serial().primaryKey().notNull(),
-	name: varchar({ length: 255 }).notNull(),
-	notes: text(),
-	user_created: uuid(),
-	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
-	updated_at: timestamp({ withTimezone: true, mode: 'string' }),
-}, (table) => [
-	foreignKey({
-			columns: [table.user_created],
-			foreignColumns: [directus_users.id],
-			name: "intro_groups_user_created_fkey"
-		}).onDelete("set null"),
-]);
-
 export const webshop_products = pgTable("webshop_products", {
 	id: serial().primaryKey().notNull(),
 	drop_window_id: integer(),
@@ -2223,6 +2210,7 @@ export const webshop_products = pgTable("webshop_products", {
 	display_order: integer().default(0),
 	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+	max_orders: integer(),
 }, (table) => [
 	index("idx_webshop_products_drop_window").using("btree", table.drop_window_id.asc().nullsLast().op("int4_ops")),
 	foreignKey({
@@ -2231,6 +2219,21 @@ export const webshop_products = pgTable("webshop_products", {
 			name: "webshop_products_drop_window_id_webshop_drop_windows_id_fk"
 		}).onDelete("set null"),
 	unique("uq_webshop_products_slug").on(table.slug),
+]);
+
+export const intro_groups = pgTable("intro_groups", {
+	id: serial().primaryKey().notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	notes: text(),
+	user_created: uuid(),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+	updated_at: timestamp({ withTimezone: true, mode: 'string' }),
+}, (table) => [
+	foreignKey({
+			columns: [table.user_created],
+			foreignColumns: [directus_users.id],
+			name: "intro_groups_user_created_fkey"
+		}).onDelete("set null"),
 ]);
 
 export const intro_group_leaders = pgTable("intro_group_leaders", {

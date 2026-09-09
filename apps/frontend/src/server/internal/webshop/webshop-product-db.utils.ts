@@ -1,6 +1,6 @@
 import 'server-only';
 import { db, schema } from '@salvemundi/db';
-import { eq, and, asc, inArray } from 'drizzle-orm';
+import { eq, and, ne, asc, inArray, count } from 'drizzle-orm';
 import {
     webshopCatalogProductSchema,
     type WebshopCatalogProduct,
@@ -131,6 +131,20 @@ export async function updateProductDb(id: number, data: Partial<ProductRow>): Pr
 export async function deleteProductDb(id: number): Promise<boolean> {
     const result = await db.delete(schema.webshop_products).where(eq(schema.webshop_products.id, id));
     return result.count > 0;
+}
+
+// Counts non-cancelled orders placed for a product, to enforce a product's optional
+// max_orders cap. Each preorder currently holds exactly 1 line (enforced at checkout), so
+// counting lines here is equivalent to counting distinct orders.
+export async function countActiveOrdersForProductDb(productId: number): Promise<number> {
+    const result = await db.select({ value: count() })
+        .from(schema.webshop_preorder_lines)
+        .innerJoin(schema.webshop_preorders, eq(schema.webshop_preorder_lines.preorder_id, schema.webshop_preorders.id))
+        .where(and(
+            eq(schema.webshop_preorder_lines.product_id, productId),
+            ne(schema.webshop_preorders.status, 'cancelled')
+        ));
+    return result[0]?.value ?? 0;
 }
 
 // --- Admin: variants ---

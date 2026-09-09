@@ -29,7 +29,26 @@ export async function updatePreorderStatus(id: number, status: string) {
     }
 }
 
-export async function getPreorderPaymentLink(id: number, paymentType: 'deposit' | 'final') {
+export async function toggleOrderPickedUp(id: number, pickedUp: boolean) {
+    await requireAdminResource(AdminResource.WebshopPickup);
+
+    try {
+        const ok = await updatePreorderDb(id, {
+            picked_up: pickedUp,
+            picked_up_at: pickedUp ? new Date().toISOString() : null
+        });
+        if (!ok) throw new Error('Update failed');
+
+        await logAdminAction('admin_webshop_order_picked_up_toggled', 'SUCCESS', { preorder_id: id, picked_up: pickedUp });
+        revalidatePath('/beheer/webshop/afhalen');
+        return { success: true };
+    } catch (error) {
+        safeConsoleError('[admin-webshop-preorders.actions.ts][toggleOrderPickedUp]', error);
+        return { success: false, error: 'Bijwerken mislukt.' };
+    }
+}
+
+export async function getPreorderPaymentLink(id: number) {
     await requireAdminResource(AdminResource.Webshop);
 
     try {
@@ -37,8 +56,7 @@ export async function getPreorderPaymentLink(id: number, paymentType: 'deposit' 
         if (!preorder) return { success: false, error: 'Bestelling niet gevonden.' };
 
         const publicUrl = process.env.PUBLIC_URL || '';
-        const path = paymentType === 'deposit' ? '/webshop/bevestiging' : '/webshop/betalen/restbetaling';
-        const link = `${publicUrl}${path}?preorder=${id}&token=${preorder.access_token}`;
+        const link = `${publicUrl}/webshop/bevestiging?preorder=${id}&token=${preorder.access_token}`;
 
         return { success: true, link };
     } catch (error) {

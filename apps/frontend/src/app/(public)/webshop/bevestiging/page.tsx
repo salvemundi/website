@@ -26,9 +26,8 @@ function ErrorCard({ title, message }: { title: string; message: string }) {
 }
 
 const STATUS_LABELS: Record<string, string> = {
-    awaiting_deposit: 'Wacht op aanbetaling',
-    awaiting_final: 'Aanbetaling ontvangen — restbetaling volgt later',
-    completed: 'Volledig betaald',
+    awaiting_deposit: 'Wacht op betaling',
+    completed: 'Betaald',
     cancelled: 'Geannuleerd'
 };
 
@@ -114,16 +113,8 @@ export default async function WebshopBevestigingPage({ searchParams }: PageProps
 
                     <div className="space-y-1 mb-8">
                         <div className="flex items-center justify-between text-(--text-muted)">
-                            <span>Totaalprijs</span>
+                            <span>Totaalprijs {preorder.deposit_paid ? '(betaald)' : '(nog niet betaald)'}</span>
                             <span>€{Number(preorder.subtotal_amount).toFixed(2)}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-(--text-muted)">
-                            <span>Aanbetaling {preorder.deposit_paid ? '(betaald)' : '(nog niet betaald)'}</span>
-                            <span>€{Number(preorder.deposit_amount).toFixed(2)}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-(--text-muted)">
-                            <span>Restbetaling {preorder.final_payment_paid ? '(betaald)' : '(later)'}</span>
-                            <span>€{(Number(preorder.subtotal_amount) - Number(preorder.deposit_amount)).toFixed(2)}</span>
                         </div>
                     </div>
 

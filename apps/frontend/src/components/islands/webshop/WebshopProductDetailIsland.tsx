@@ -19,8 +19,6 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
     const isDropOpen = product.drop_window?.status === 'open';
     const closesAt = product.drop_window?.closes_at ? new Date(product.drop_window.closes_at) : null;
     const price = Number(product.price).toFixed(2);
-    const deposit = Number(product.deposit_amount).toFixed(2);
-    const remaining = (Number(product.price) - Number(product.deposit_amount)).toFixed(2);
 
     const handleLogin = () => {
         const returnTo = window.location.pathname + window.location.search;
@@ -43,22 +41,14 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
 
             <div className="rounded-2xl border border-(--border-color) p-4 space-y-1">
                 <div className="flex items-center justify-between">
-                    <span className="text-sm text-(--text-muted)">Totaalprijs</span>
+                    <span className="text-sm text-(--text-muted)">Prijs</span>
                     <span className="text-xl font-bold text-(--theme-purple)/90">€{price}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm text-(--text-muted)">
-                    <span>Aanbetaling nu</span>
-                    <span>€{deposit}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm text-(--text-muted)">
-                    <span>Restbetaling later</span>
-                    <span>€{remaining}</span>
                 </div>
             </div>
 
             <div className="rounded-2xl bg-(--bg-soft) p-4 text-sm text-(--text-muted) space-y-1">
                 <p className="font-bold text-(--theme-purple)/80">Dit is een preorder drop</p>
-                <p>Je betaalt nu alleen de aanbetaling; de restbetaling volgt later. Er is geen bezorging &mdash; je haalt je bestelling op tijdens een afgesproken afhaalmoment.</p>
+                <p>Je betaalt nu de volledige prijs. Er is geen bezorging &mdash; je haalt je bestelling op tijdens een afgesproken afhaalmoment.</p>
                 {closesAt && (
                     <p>{isDropOpen ? `Bestellen kan tot ${formatDate(closesAt, 'd MMMM yyyy HH:mm')}.` : `Deze drop is gesloten sinds ${formatDate(closesAt, 'd MMMM yyyy HH:mm')}.`}</p>
                 )}
