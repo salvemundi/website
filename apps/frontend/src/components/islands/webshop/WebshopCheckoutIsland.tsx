@@ -30,12 +30,19 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
             if (product.type === 'clothing' && !data.lines[0]?.variant_id) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
-                    message: 'Kies een maat.',
+                    message: 'Kies een maat en kleur.',
                     path: ['lines', 0, 'variant_id']
                 });
             }
         });
     }, [product.type]);
+
+    const activeVariants = useMemo(() => product.variants.filter(v => v.is_active), [product.variants]);
+    const availableSizes = useMemo(() => Array.from(new Set(activeVariants.map(v => v.size).filter((v): v is string => !!v))), [activeVariants]);
+    const availableColors = useMemo(() => Array.from(new Set(activeVariants.map(v => v.color).filter((v): v is string => !!v))), [activeVariants]);
+
+    const [selectedSize, setSelectedSize] = useState<string | null>(null);
+    const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
     const { register, control, handleSubmit, watch, setValue, trigger, formState: { errors } } = useForm<WebshopPreorderForm>({
         resolver: zodResolver(checkoutSchema),
@@ -55,7 +62,24 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
 
     const line = watch('lines.0');
     const quantity = line.quantity || 1;
-    const variantId = line.variant_id ?? null;
+
+    const applyVariantSelection = (size: string | null, color: string | null) => {
+        const matched = activeVariants.find(v =>
+            (availableSizes.length === 0 || v.size === size) &&
+            (availableColors.length === 0 || v.color === color)
+        );
+        setValue('lines.0.variant_id', matched?.id ?? null, { shouldValidate: true });
+    };
+
+    const handleSelectSize = (size: string) => {
+        setSelectedSize(size);
+        applyVariantSelection(size, selectedColor);
+    };
+
+    const handleSelectColor = (color: string) => {
+        setSelectedColor(color);
+        applyVariantSelection(selectedSize, color);
+    };
 
     const unitPrice = Number(product.price);
     const subtotal = unitPrice * quantity;
@@ -141,28 +165,55 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
 <div className="animate-in fade-in duration-300" hidden={step !== 1}>
                 <div className="space-y-6">
                     {product.type === 'clothing' && (
-                        <FormField label="Maat" required error={errors.lines?.[0]?.variant_id?.message}>
-                            <div className="flex flex-wrap gap-2">
-                                {product.variants.filter(v => v.is_active).map((variant) => {
-                                    const label = [variant.size, variant.color].filter(Boolean).join(' / ') || `Variant ${variant.id}`;
-                                    const isSelected = variantId === variant.id;
-                                    return (
-                                        <button
-                                            key={variant.id}
-                                            type="button"
-                                            onClick={() => setValue('lines.0.variant_id', variant.id, { shouldValidate: true })}
-                                            className={`form-button px-4 py-2 rounded-full text-sm font-bold border-2 transition-all ${
-                                                isSelected
-                                                    ? 'border-(--theme-purple) bg-(--theme-purple) text-white'
-                                                    : 'border-(--border-color) text-(--text-muted) hover:border-(--theme-purple)'
-                                            }`}
-                                        >
-                                            {label}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </FormField>
+                        <>
+                            {availableSizes.length > 0 && (
+                                <FormField label="Maat" required error={errors.lines?.[0]?.variant_id?.message}>
+                                    <div className="flex flex-wrap gap-2">
+                                        {availableSizes.map((size) => {
+                                            const isSelected = selectedSize === size;
+                                            return (
+                                                <button
+                                                    key={size}
+                                                    type="button"
+                                                    onClick={() => handleSelectSize(size)}
+                                                    className={`form-button px-4 py-2 rounded-full text-sm font-bold border-2 transition-all ${
+                                                        isSelected
+                                                            ? 'border-(--theme-purple) bg-(--theme-purple) text-white'
+                                                            : 'border-(--border-color) text-(--text-muted) hover:border-(--theme-purple)'
+                                                    }`}
+                                                >
+                                                    {size}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </FormField>
+                            )}
+
+                            {availableColors.length > 0 && (
+                                <FormField label="Kleur" required={availableSizes.length === 0} error={availableSizes.length === 0 ? errors.lines?.[0]?.variant_id?.message : undefined}>
+                                    <div className="flex flex-wrap gap-2">
+                                        {availableColors.map((color) => {
+                                            const isSelected = selectedColor === color;
+                                            return (
+                                                <button
+                                                    key={color}
+                                                    type="button"
+                                                    onClick={() => handleSelectColor(color)}
+                                                    className={`form-button px-4 py-2 rounded-full text-sm font-bold border-2 transition-all ${
+                                                        isSelected
+                                                            ? 'border-(--theme-purple) bg-(--theme-purple) text-white'
+                                                            : 'border-(--border-color) text-(--text-muted) hover:border-(--theme-purple)'
+                                                    }`}
+                                                >
+                                                    {color}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </FormField>
+                            )}
+                        </>
                     )}
 
                     <FormField label="Aantal" required>

@@ -51,6 +51,7 @@ const resourceToFeature = new Map<string, AdminFeature>([
     ['admin:activities:view', 'activiteiten'],
     ['admin:activities:edit', 'activiteiten'],
     ['admin:webshop', 'webshop'],
+    ['admin:webshop:pickup', 'webshop_pickup'],
     ['admin:nda', 'nda']
 ]);
 
