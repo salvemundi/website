@@ -43,3 +43,11 @@ export async function getAdminPreorderById(id: number) {
     await requireAdminResource(AdminResource.Webshop);
     return fetchPreorderWithLinesDb(id);
 }
+
+// Board-only: every paid order, for the pickup checklist. Unpaid/cancelled orders aren't
+// relevant here — there's nothing to hand out yet.
+export async function getAdminPickupList() {
+    await requireAdminResource(AdminResource.WebshopPickup);
+    const preorders = await fetchAllPreordersDb();
+    return preorders.filter(p => p.status === 'completed');
+}

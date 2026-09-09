@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import { webshopPreorderFormSchema, type WebshopPreorderForm } from '@salvemundi/validations/schema/webshop.zod';
-import { fetchProductByIdDb } from '@/server/internal/webshop/webshop-product-db.utils';
+import { fetchProductByIdDb, countActiveOrdersForProductDb } from '@/server/internal/webshop/webshop-product-db.utils';
 import { insertPreorderDb, insertPreorderLinesDb, fetchPreorderByIdDb } from '@/server/internal/webshop/webshop-preorder-db.utils';;
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteiten/activiteiten.utils';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -33,23 +33,15 @@ async function requireMemberSession() {
     return { ok: true as const, session };
 }
 
-async function buildFinancePaymentRequest(preorderId: number, paymentType: 'deposit' | 'final') {
+async function buildFinancePaymentRequest(preorderId: number) {
     const preorder = await fetchPreorderByIdDb(preorderId);
     if (!preorder) return { success: false as const, error: 'Bestelling niet gevonden.' };
 
-    if (paymentType === 'deposit' && preorder.deposit_paid) {
-        return { success: false as const, error: 'Aanbetaling is al voldaan.' };
-    }
-    if (paymentType === 'final' && preorder.final_payment_paid) {
-        return { success: false as const, error: 'Restbetaling is al voldaan.' };
-    }
-    if (paymentType === 'final' && !preorder.deposit_paid) {
-        return { success: false as const, error: 'De aanbetaling moet eerst voldaan zijn.' };
+    if (preorder.deposit_paid) {
+        return { success: false as const, error: 'Deze bestelling is al betaald.' };
     }
 
-    const amount = paymentType === 'deposit'
-        ? Number(preorder.deposit_amount)
-        : Number(preorder.subtotal_amount) - Number(preorder.deposit_amount);
+    const amount = Number(preorder.subtotal_amount);
 
     if (!(amount > 0)) {
         return { success: false as const, error: 'Het te betalen bedrag is ongeldig.' };
@@ -66,7 +58,7 @@ async function buildFinancePaymentRequest(preorderId: number, paymentType: 'depo
             headers: getInternalHeaders(),
             body: JSON.stringify({
                 amount,
-                description: `${paymentType === 'deposit' ? 'Aanbetaling' : 'Restbetaling'}: webshop bestelling #${preorderId}`,
+                description: `Bestelling webshop #${preorderId}`,
                 registrationId: preorderId,
                 registrationType: 'webshop_preorder',
                 email: preorder.email,
@@ -125,6 +117,13 @@ export async function submitPreorderAndInitiatePayment(formData: WebshopPreorder
             return { success: false, error: 'Deze drop is gesloten voor nieuwe bestellingen.' };
         }
 
+        if (product.max_orders !== null) {
+            const activeOrders = await countActiveOrdersForProductDb(product.id);
+            if (activeOrders >= product.max_orders) {
+                return { success: false, error: 'Deze drop heeft de bestellimiet bereikt.' };
+            }
+        }
+
         let variantLabel: string | null = null;
         if (product.type === 'clothing') {
             if (!line.variant_id) return { success: false, error: 'Kies een maat.' };
@@ -134,9 +133,7 @@ export async function submitPreorderAndInitiatePayment(formData: WebshopPreorder
         }
 
         const unitPrice = Number(product.price);
-        const unitDeposit = Number(product.deposit_amount);
         const subtotal = unitPrice * line.quantity;
-        const deposit = unitDeposit * line.quantity;
 
         const preorderId = await insertPreorderDb({
             user_id: session.user.id,
@@ -147,7 +144,9 @@ export async function submitPreorderAndInitiatePayment(formData: WebshopPreorder
             phone_number: data.phone_number,
             status: 'awaiting_deposit',
             subtotal_amount: subtotal.toFixed(2),
-            deposit_amount: deposit.toFixed(2),
+            // No deposit concept anymore — the full price is charged upfront. This column stays
+            // notNull in the DB, so it's kept equal to the subtotal rather than dropped.
+            deposit_amount: subtotal.toFixed(2),
             terms_accepted: data.terms_accepted,
             pickup_notes: data.pickup_notes || null,
             access_token: crypto.randomUUID(),
@@ -167,7 +166,7 @@ export async function submitPreorderAndInitiatePayment(formData: WebshopPreorder
             variant_label_snapshot: variantLabel,
         }]);
 
-        const payment = await buildFinancePaymentRequest(preorderId, 'deposit');
+        const payment = await buildFinancePaymentRequest(preorderId);
         if (!payment.success) {
             return { success: false, error: payment.error, preorderId };
         }
@@ -176,29 +175,5 @@ export async function submitPreorderAndInitiatePayment(formData: WebshopPreorder
     } catch (error) {
         safeConsoleError('[webshop-checkout.actions.ts][submitPreorderAndInitiatePayment]', error);
         return { success: false, error: 'Er is een onverwachte fout opgetreden.' };
-    }
-}
-
-export async function initiateFinalPayment(preorderId: number, token?: string) {
-    try {
-        const { checkRateLimit } = await import('@/server/utils/ratelimit');
-        const rateLimitResult = await checkRateLimit(`webshop-final-payment:${preorderId}`, 5, 60, 'Te veel betaalpogingen. Probeer het over een minuut opnieuw.');
-        if (!rateLimitResult.success) return rateLimitResult;
-
-        const preorder = await fetchPreorderByIdDb(preorderId);
-        if (!preorder) return { success: false as const, error: 'Bestelling niet gevonden.' };
-
-        const session = await getEnrichedSession();
-        const isOwner = Boolean(session?.user.id && preorder.user_id === session.user.id);
-        const hasValidToken = Boolean(token && preorder.access_token && token === preorder.access_token);
-
-        if (!isOwner && !hasValidToken) {
-            return { success: false as const, error: 'Geen toegang tot deze bestelling.' };
-        }
-
-        return await buildFinancePaymentRequest(preorderId, 'final');
-    } catch (error) {
-        safeConsoleError('[webshop-checkout.actions.ts][initiateFinalPayment]', error);
-        return { success: false as const, error: 'Er is een onverwachte fout opgetreden.' };
     }
 }

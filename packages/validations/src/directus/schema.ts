@@ -842,6 +842,8 @@ export interface WebshopPreorder {
   terms_accepted: boolean | null;
   pickup_notes: string | null;
   access_token: string | null;
+  picked_up: boolean;
+  picked_up_at: string | "datetime" | null;
 }
 
 export interface WebshopProductMedia {
@@ -876,6 +878,7 @@ export interface WebshopProduct {
   display_order: number | null;
   created_at: string | "datetime" | null;
   updated_at: string | "datetime" | null;
+  max_orders: number | null;
 }
 
 export interface WhatsappGroup {

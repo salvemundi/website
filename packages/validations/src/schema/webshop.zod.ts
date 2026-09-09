@@ -15,7 +15,7 @@ export type WebshopProductType = z.infer<typeof webshopProductTypeSchema>;
 export const webshopDropWindowStatusSchema = z.enum(['draft', 'open', 'closed']);
 export type WebshopDropWindowStatus = z.infer<typeof webshopDropWindowStatusSchema>;
 
-export const webshopPreorderStatusSchema = z.enum(['awaiting_deposit', 'awaiting_final', 'completed', 'cancelled']);
+export const webshopPreorderStatusSchema = z.enum(['awaiting_deposit', 'completed', 'cancelled']);
 export type WebshopPreorderStatus = z.infer<typeof webshopPreorderStatusSchema>;
 
 export const webshopProductSchema = selectWebshopProductsSchema.extend({

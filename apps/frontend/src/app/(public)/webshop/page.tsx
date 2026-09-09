@@ -19,8 +19,8 @@ export default async function WebshopPage() {
                 <div className="mb-8 space-y-2">
                     <h1 className="text-3xl font-bold text-(--theme-purple)/90">Webshop</h1>
                     <p className="text-(--text-muted) max-w-2xl">
-                        Bestel je favoriete Salve Mundi kleding en items. Dit zijn preorders: je betaalt nu een
-                        aanbetaling, de rest later, en je haalt je bestelling op tijdens een afgesproken afhaalmoment.
+                        Bestel je favoriete Salve Mundi kleding en items. Dit zijn preorders: je betaalt nu de
+                        volledige prijs en je haalt je bestelling op tijdens een afgesproken afhaalmoment.
                     </p>
                 </div>
 

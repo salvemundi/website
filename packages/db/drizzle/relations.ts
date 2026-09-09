@@ -1012,14 +1012,14 @@ export const webshop_preordersRelations = relations(webshop_preorders, ({one, ma
 
 export const auth_accountsRelations = relations(auth_accounts, ({one}) => ({
 	directus_user: one(directus_users, {
-		fields: [auth_accounts.user_id],
+		fields: [auth_accounts.userId],
 		references: [directus_users.id]
 	}),
 }));
 
 export const auth_sessionsRelations = relations(auth_sessions, ({one}) => ({
 	directus_user: one(directus_users, {
-		fields: [auth_sessions.user_id],
+		fields: [auth_sessions.userId],
 		references: [directus_users.id]
 	}),
 }));

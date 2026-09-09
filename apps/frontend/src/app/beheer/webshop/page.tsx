@@ -10,7 +10,9 @@ import {
     getAdminProductMedia
 } from '@/server/queries/webshop/admin-webshop.queries';
 import { getWebshopSettings } from '@/server/actions/public/webshop.actions';
-import { ClipboardList } from 'lucide-react';
+import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
+import { COMMITTEES } from '@/shared/lib/permissions-config';
+import { ClipboardList, ClipboardCheck } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: 'Webshop Beheer | SV Salve Mundi'
@@ -33,7 +35,13 @@ async function loadWebshopAdminData() {
 }
 
 export default async function AdminWebshopPage() {
-    const { dropWindows, products, settings } = await loadWebshopAdminData();
+    const [{ dropWindows, products, settings }, accessData] = await Promise.all([
+        loadWebshopAdminData(),
+        checkAdminAccess()
+    ]);
+    const isBoardOrIct = Boolean(accessData.user?.committees.some(
+        c => c.azure_group_id === COMMITTEES.BESTUUR || c.azure_group_id === COMMITTEES.ICT
+    ));
 
     return (
         <AdminPageShell 
@@ -49,6 +57,15 @@ export default async function AdminWebshopPage() {
                              <ClipboardList className="h-3.5 w-3.5" />
                              <span>Bestellingen</span>
                          </Link>
+                         {isBoardOrIct && (
+                             <Link
+                                 href="/beheer/webshop/afhalen"
+                                 className="flex items-center justify-center gap-2 px-4 py-2 bg-bg-card border border-border-color text-text-main rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm"
+                             >
+                                 <ClipboardCheck className="h-3.5 w-3.5" />
+                                 <span>Afhaallijst</span>
+                             </Link>
+                         )}
                          <WebshopVisibilityIsland initialVisible={settings.show} />
                      </div>
                  </div>

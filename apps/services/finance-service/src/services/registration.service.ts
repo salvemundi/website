@@ -51,19 +51,13 @@ export class RegistrationService {
                 };
             }
         } else if (registrationType === 'webshop_preorder') {
-            if (paymentType === 'final') {
-                updateData = {
-                    final_payment_paid: true,
-                    final_payment_paid_at: new Date().toISOString(),
-                    status: 'completed'
-                };
-            } else {
-                updateData = {
-                    deposit_paid: true,
-                    deposit_paid_at: new Date().toISOString(),
-                    status: 'awaiting_final'
-                };
-            }
+            // Webshop orders are paid in full upfront (no deposit/final split) — a single
+            // payment confirmation completes the order.
+            updateData = {
+                deposit_paid: true,
+                deposit_paid_at: new Date().toISOString(),
+                status: 'completed'
+            };
         }
 
         try {

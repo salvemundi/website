@@ -58,10 +58,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
     const variantId = line.variant_id ?? null;
 
     const unitPrice = Number(product.price);
-    const unitDeposit = Number(product.deposit_amount);
     const subtotal = unitPrice * quantity;
-    const deposit = unitDeposit * quantity;
-    const remaining = subtotal - deposit;
 
     const cover = product.media.length > 0 ? product.media[0] : null;
 
@@ -227,9 +224,8 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                 className="mt-1 h-5 w-5 rounded border-theme-purple/20 accent-theme-purple transition-all group-hover:scale-110"
                             />
                             <span className="text-sm leading-snug">
-                                Ik ga akkoord met de voorwaarden voor preorders: ik betaal nu een aanbetaling, de
-                                restbetaling volgt later, en ik haal mijn bestelling op tijdens een afgesproken
-                                afhaalmoment.
+                                Ik ga akkoord met de voorwaarden voor preorders: ik betaal nu de volledige prijs,
+                                en ik haal mijn bestelling op tijdens een afgesproken afhaalmoment.
                             </span>
                         </label>
                         {errors.terms_accepted && <p className="text-xs text-red-500 font-semibold mt-1">{errors.terms_accepted.message}</p>}
@@ -244,15 +240,11 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                         <span className="font-bold text-(--theme-purple)/90">€{subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex items-center justify-between text-(--text-muted)">
-                        <span>Aanbetaling nu</span>
-                        <span className="font-bold text-(--theme-purple)">€{deposit.toFixed(2)}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-(--text-muted)">
-                        <span>Restbetaling later</span>
-                        <span>€{remaining.toFixed(2)}</span>
+                        <span>Te betalen</span>
+                        <span className="font-bold text-(--theme-purple)">€{subtotal.toFixed(2)}</span>
                     </div>
                     <p className="text-xs text-(--text-muted) pt-2">
-                        Je betaalt nu de aanbetaling. Je ontvangt later een betaalverzoek voor het resterende bedrag.
+                        Je betaalt nu de volledige prijs. Je ontvangt bericht zodra je bestelling klaarstaat om af te halen.
                     </p>
                 </div>
             </div>
@@ -284,7 +276,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                         {loading ? 'Verwerken...' : step < 3 ? (
                             <>Volgende <ChevronRight className="w-4 h-4" /></>
                         ) : (
-                            <><CreditCard className="w-5 h-5" /> Aanbetaling voldoen</>
+                            <><CreditCard className="w-5 h-5" /> Bestelling betalen</>
                         )}
                     </button>
                 </div>
