@@ -56,7 +56,14 @@ const NavigationHeader = ({
                                 src={BRAND_CONFIG.logoLightMode}
                                 alt="Salve Mundi Logo"
                                 fill
-                                className="object-contain"
+                                className="object-contain dark:hidden"
+                                priority
+                            />
+                            <Image
+                                src={BRAND_CONFIG.logoDarkMode}
+                                alt="Salve Mundi Logo"
+                                fill
+                                className="object-contain hidden dark:block"
                                 priority
                             />
                         </div>

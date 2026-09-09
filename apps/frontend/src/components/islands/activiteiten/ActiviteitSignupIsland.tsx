@@ -159,14 +159,20 @@ export default function ActiviteitSignupIsland({
         );
     }
 
+    const fullName = user?.first_name 
+        ? `${user.first_name} ${user.last_name || ''}`.trim() 
+        : (user?.name || '');
+
     return (
         <SignupFormContent
             onSubmit={(data) => { void onSubmit(data); }}
             isPending={isPending}
             price={price}
+            isLoggedIn={Boolean(user)}
+            user={user}
             initialData={{
                 event_id: eventId,
-                name: user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : ''),
+                name: fullName,
                 email: user?.email || '',
                 phoneNumber: formatPhoneNumber(user?.phone_number || '')
             }}

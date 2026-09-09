@@ -128,12 +128,14 @@ export type EventSignupWithAmount = EventSignup & { amount_paid: number | null }
 
 export async function getActivitySignupsInternal(eventId: string): Promise<EventSignupWithAmount[]> {
     const { db, schema } = await import('@/lib/database/db');
-    const { eq, inArray, desc, sql, and } = await import('drizzle-orm');
+    const { eq, or, desc, sql, and } = await import('drizzle-orm');
 
     const rows = await db.select({
         signup: schema.event_signups,
         calculated_is_member: sql<boolean>`COALESCE(${schema.event_signups.is_member}, (${schema.directus_users.id} IS NOT NULL))`,
         user_id: schema.directus_users.id,
+        user_first_name: schema.directus_users.first_name,
+        user_last_name: schema.directus_users.last_name,
         amount_paid: sql<number | null>`(
             SELECT t.amount FROM ${schema.transactions} t
             WHERE t.registration = ${schema.event_signups.id}
@@ -142,21 +144,34 @@ export async function getActivitySignupsInternal(eventId: string): Promise<Event
         )`
     })
     .from(schema.event_signups)
-    .leftJoin(schema.directus_users, eq(schema.event_signups.participant_email, schema.directus_users.email))
+    .leftJoin(
+        schema.directus_users,
+        or(
+            eq(schema.event_signups.directus_relations, schema.directus_users.id),
+            eq(schema.event_signups.participant_email, schema.directus_users.email)
+        )
+    )
     .where(
         and(
             eq(schema.event_signups.event_id, Number(eventId)),
-            inArray(schema.event_signups.payment_status, ['paid', 'open'])
+            eq(schema.event_signups.payment_status, 'paid')
         )
     )
     .orderBy(desc(sql`COALESCE(${schema.event_signups.is_member}, (${schema.directus_users.id} IS NOT NULL))`), desc(schema.event_signups.created_at));
 
-    return rows.map((r) => ({
-        ...r.signup,
-        id: Number(r.signup.id),
-        is_member: Boolean(r.calculated_is_member),
-        amount_paid: r.amount_paid !== null ? Number(r.amount_paid) : null
-    } as unknown as EventSignupWithAmount));
+    return rows.map((r) => {
+        let name = r.signup.participant_name;
+        if (r.user_first_name) {
+            name = `${r.user_first_name} ${r.user_last_name || ''}`.trim();
+        }
+        return {
+            ...r.signup,
+            id: Number(r.signup.id),
+            participant_name: name || r.signup.participant_name || 'Onbekend',
+            is_member: Boolean(r.calculated_is_member),
+            amount_paid: r.amount_paid !== null ? Number(r.amount_paid) : null
+        } as unknown as EventSignupWithAmount;
+    });
 }
 
 export async function getActivitiesWithSignupCountsInternal(search?: string, filter: 'all' | 'upcoming' | 'past' = 'all'): Promise<(Activiteit & { signup_count: number })[]> {
