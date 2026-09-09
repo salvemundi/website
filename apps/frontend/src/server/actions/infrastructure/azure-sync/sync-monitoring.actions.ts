@@ -1,5 +1,5 @@
 'use server';
-import { safeConsoleError } from '@/server/utils/logger';
+import { safeConsoleError} from '@/server/utils/logger';
 import { getRedis } from "@/server/auth/redis-client";
 import { checkSyncAccess, AZURE_SYNC_URL, INTERNAL_TOKEN } from "@/server/actions/infrastructure/azure-sync/sync-access";
 
@@ -41,18 +41,25 @@ export async function getSyncStatusAction(): Promise<SyncStatus | { success: fal
             cache: 'no-store'
         });
 
-        if (!res.ok) {
-            safeConsoleError(`[sync-monitoring.actions.ts][getSyncStatusAction] GET /status failed: ${res.status}`);
-            return { success: false, error: "Status service onbeschikbaar" };
+        if (res.ok) {
+            const data = await res.json() as SyncStatus;
+            return data;
         }
-
-        const data = await res.json() as SyncStatus;
-        return data;
-    } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Kon status niet ophalen.';
-        safeConsoleError(`[sync-monitoring.actions.ts][getSyncStatusAction] Connection error to status endpoint:`, message);
-        return { success: false, error: "Kon status niet ophalen." };
+    } catch {
+        // Silent fallback to Redis when HTTP service is unreachable or blocked
     }
+
+    try {
+        const redis = await getRedis();
+        const statusRaw = await redis.get('v7:sync:status');
+        if (statusRaw) {
+            return JSON.parse(statusRaw) as SyncStatus;
+        }
+    } catch (redisError: unknown) {
+        safeConsoleError('[sync-monitoring.actions.ts][getSyncStatusAction] Redis fallback', redisError);
+    }
+
+    return { success: false, error: "Status service onbeschikbaar" };
 }
 
 export async function stopSyncAction() {

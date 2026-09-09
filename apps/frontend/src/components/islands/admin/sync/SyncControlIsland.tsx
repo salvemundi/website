@@ -9,7 +9,7 @@ export default function SyncControlIsland() {
         isStartingSync, isStopping, isResetting, isUserSyncLoading,
         selectedSyncFields, toggleField, forceLink, setForceLink,
         activeOnly, setActiveOnly, sendExpiryEmails, setSendExpiryEmails,
-        convertUpn, setConvertUpn,
+        convertUpn, setConvertUpn, ignoreGracePeriod, setIgnoreGracePeriod,
         handleFullSync, handleStopSync, handleResetSync,
         userId, setUserId, handleUserSync, syncFieldOptions, status
     } = useSync();
@@ -20,7 +20,8 @@ export default function SyncControlIsland() {
         { label: 'Forceer Entra Link', value: forceLink, setValue: setForceLink },
         { label: 'Alleen Actieve Leden', value: activeOnly, setValue: setActiveOnly },
         { label: 'Verstuur Expiratie E-mails', value: sendExpiryEmails, setValue: setSendExpiryEmails },
-        { label: 'Automatische UPN Conversie', value: convertUpn, setValue: setConvertUpn }
+        { label: 'Automatische UPN Conversie', value: convertUpn, setValue: setConvertUpn },
+        { label: 'Negeer 14-Dagen Gratieperiode (Direct Verwijderen)', value: ignoreGracePeriod, setValue: setIgnoreGracePeriod }
     ];
 
     return (

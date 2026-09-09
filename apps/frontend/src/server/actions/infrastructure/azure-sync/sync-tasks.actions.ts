@@ -14,7 +14,7 @@ interface DirectusUserRow {
     email?: unknown;
 }
 
-export async function triggerFullSyncAction(options?: { fields: string[]; forceLink?: boolean; activeOnly?: boolean; sendExpiryEmails?: boolean; convertUpn?: boolean }) {
+export async function triggerFullSyncAction(options?: { fields?: string[]; forceLink?: boolean; activeOnly?: boolean; sendExpiryEmails?: boolean; convertUpn?: boolean; ignoreGracePeriod?: boolean }) {
     const admin = await checkSyncAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 

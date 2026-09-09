@@ -38,6 +38,7 @@ export interface SyncOptions {
     silent?: boolean;
     sendExpiryEmails?: boolean;
     convertUpn?: boolean;
+    ignoreGracePeriod?: boolean;
 }
 
 export interface SyncContext {

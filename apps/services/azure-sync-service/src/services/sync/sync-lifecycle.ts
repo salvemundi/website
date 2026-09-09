@@ -42,7 +42,8 @@ export class SyncLifecycle {
             const desiredStatus = isActive ? 'active' : 'expired';
 
             const daysSinceExpiry = expiryDate ? (today.getTime() - expiryDate.getTime()) / (1000 * 60 * 60 * 24) : Infinity;
-            const shouldBeInActiveGroup = isActive || (expiryDate !== null && daysSinceExpiry < 14);
+            const ignoreGrace = ctx.options.ignoreGracePeriod ?? false;
+            const shouldBeInActiveGroup = isActive || (!ignoreGrace && expiryDate !== null && daysSinceExpiry < 14);
 
             const userInActiveGroup = ctx.mainMembershipState.get(aUser.id)?.has(GROUP_ACTIVE_LID) || false;
             const userInExpiredGroup = ctx.mainMembershipState.get(aUser.id)?.has(GROUP_EXPIRED_LID) || false;
