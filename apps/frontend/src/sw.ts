@@ -25,7 +25,6 @@ const serwist = new Serwist({
   disableDevLogs: true,
   runtimeCaching: [
     {
-      // Cache Directus assets with NetworkFirst (User preference for freshness)
       matcher: ({ url }) => {
         const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL;
         if (!directusUrl) return false;
@@ -62,6 +61,7 @@ const serwist = new Serwist({
         return url.pathname.startsWith('/lidmaatschap') ||
                url.pathname.startsWith('/profiel') ||
                url.pathname.startsWith('/admin') ||
+               url.pathname.startsWith('/beheer') ||
                url.pathname.startsWith('/api');
       },
       handler: new NetworkOnly()

@@ -127,8 +127,7 @@ export const AdminDatetimepicker = React.forwardRef<HTMLInputElement, AdminDatet
     const maxDate = max ? new Date(max.split('T')[0]) : undefined;
 
     return (
-        <div className={`flex w-full items-start gap-3 ${className}`}>
-            {/* Hidden input to ensure form submission works seamlessly */}
+        <div className={`flex w-full flex-col sm:flex-row items-stretch sm:items-start gap-3 ${className}`}>
             <input 
                 type="hidden" 
                 id={id} 
@@ -152,11 +151,11 @@ export const AdminDatetimepicker = React.forwardRef<HTMLInputElement, AdminDatet
                 />
             </div>
             
-            <div className="w-28 sm:w-32 shrink-0">
+            <div className="w-full sm:w-36 shrink-0">
                 {timeLabel ? (
                     <label className="block text-base font-semibold text-(--beheer-text-muted) mb-2">{timeLabel}</label>
                 ) : (
-                    dateLabel && <div className="h-6 mb-2"></div>
+                    dateLabel && <div className="hidden sm:block h-6 mb-2"></div>
                 )}
                 <AdminTimepicker
                     value={internalTime}

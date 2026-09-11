@@ -194,7 +194,7 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
             </div>
             <div className="p-6 space-y-6 flex-1 flex flex-col">
                 <div className="space-y-6">
-                    <div className="flex items-start gap-3">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3">
                         <div className="flex-1 min-w-0">
                             <label htmlFor="event_date" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Startdatum *</label>
                             <input type="hidden" name="event_date" value={startDate ? toISODateString(startDate) : ''} />
@@ -205,7 +205,7 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                             />
                             {formErrors?.event_date && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.event_date[0]}</p>}
                         </div>
-                        <div className="w-28 sm:w-32 shrink-0">
+                        <div className="w-full sm:w-36 shrink-0">
                             <label htmlFor="event_time" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Starttijd</label>
                             <AdminTimepicker
                                 id="event_time"
@@ -222,7 +222,7 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                         </div>
                     </div>
 
-                    <div className="flex items-start gap-3">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3">
                         <div className="flex-1 min-w-0">
                             <label htmlFor="event_date_end" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Einddatum</label>
                             <input type="hidden" name="event_date_end" value={endDate ? toISODateString(endDate) : ''} />
@@ -234,7 +234,7 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                             />
                             {formErrors?.event_date_end && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.event_date_end[0]}</p>}
                         </div>
-                        <div className="w-28 sm:w-32 shrink-0">
+                        <div className="w-full sm:w-36 shrink-0">
                             <label htmlFor="event_time_end" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Eindtijd</label>
                             <AdminTimepicker
                                 id="event_time_end"
@@ -246,7 +246,7 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                         </div>
                     </div>
 
-                    <div className="flex items-start gap-3">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3">
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-2">
                                 <label htmlFor="registration_deadline_date" className="block text-base font-semibold text-(--beheer-text-muted)">Inschrijfdeadline</label>
@@ -270,8 +270,13 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                             />
                             {formErrors?.registration_deadline && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.registration_deadline[0]}</p>}
                         </div>
-                        <div className="w-28 sm:w-32 shrink-0">
-                            <label htmlFor="registration_deadline_time" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Deadlinetijd</label>
+                        <div className="w-full sm:w-36 shrink-0">
+                            <div className="flex items-center justify-between mb-2">
+                                <label htmlFor="registration_deadline_time" className="block text-base font-semibold text-(--beheer-text-muted)">Deadlinetijd</label>
+                                {!deadlineDate && (
+                                    <span className="text-xs text-(--beheer-text-muted) opacity-70"></span>
+                                )}
+                            </div>
                             <AdminTimepicker
                                 id="registration_deadline_time"
                                 value={deadlineTime}

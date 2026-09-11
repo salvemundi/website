@@ -46,7 +46,7 @@ export default function AdminSelect<T extends string | number = string | number>
     }, []);
 
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
+        const handleClickOutside = (event: MouseEvent | PointerEvent) => {
             const target = event.target as Node;
             const clickedInsideButton = dropdownRef.current?.contains(target);
             const clickedInsidePortal = portalRef.current?.contains(target);
@@ -55,8 +55,8 @@ export default function AdminSelect<T extends string | number = string | number>
                 setIsOpen(false);
             }
         };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        document.addEventListener('pointerdown', handleClickOutside);
+        return () => document.removeEventListener('pointerdown', handleClickOutside);
     }, []);
 
     const updateCoords = useCallback(() => {

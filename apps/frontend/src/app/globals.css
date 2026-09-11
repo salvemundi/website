@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @source "../../src";
-@source "../../../node_modules/flowbite-react/dist/**/*.js";
+@source "../../node_modules/flowbite-react/dist/**/*.js";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -125,7 +125,7 @@
 }
 
 @utility form-input {
-    @apply w-full bg-(--bg-main)/50 border border-(--border-color)/30 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all outline-none;
+    @apply w-full bg-(--bg-main)/50 border border-(--border-color)/30 rounded-xl px-4 py-3 text-base sm:text-sm focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all outline-none disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-neutral-500/10;
 }
 
 @utility beheer-button {
