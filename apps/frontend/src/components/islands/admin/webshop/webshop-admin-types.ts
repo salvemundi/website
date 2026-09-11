@@ -29,7 +29,7 @@ export interface AdminProduct {
     slug: string | null;
     description: string | null;
     price: string | null;
-    max_orders: number | null;
+    max_orders?: number | null;
     is_active: boolean | null;
     display_order: number | null;
     variants: AdminVariant[];
@@ -54,8 +54,8 @@ export interface AdminPreorder {
     status: string | null;
     subtotal_amount: string | null;
     deposit_paid: boolean | null;
-    picked_up: boolean | null;
-    picked_up_at: string | null;
+    picked_up?: boolean | null;
+    picked_up_at?: string | null;
     pickup_notes: string | null;
     lines: AdminPreorderLine[];
 }
@@ -67,7 +67,7 @@ export interface AdminPickupOrder {
     first_name: string | null;
     last_name: string | null;
     email: string | null;
-    picked_up: boolean | null;
-    picked_up_at: string | null;
+    picked_up?: boolean | null;
+    picked_up_at?: string | null;
     lines: AdminPreorderLine[];
 }

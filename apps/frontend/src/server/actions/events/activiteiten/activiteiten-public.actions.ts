@@ -19,9 +19,10 @@ import {
     deleteEventSignupDb,
     fetchUserEventSignupsDb
 } from '@/server/internal/activiteiten/activiteiten-db.utils';
-import { fetchUserPubCrawlSignupsDb } from '@/server/internal/kroegentocht/kroegentocht-signup-db.utils';;
+import { fetchUserPubCrawlSignupsDb } from '@/server/internal/kroegentocht/kroegentocht-signup-db.utils';
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteiten/activiteiten.utils';
 import { safeConsoleError } from '@/server/utils/logger';
+import { isDeadlinePassed } from '@/shared/lib/utils/date';
 
 interface FinancePaymentResponse {
     checkoutUrl?: string;
@@ -161,11 +162,8 @@ export async function signupForActivity(data: EventSignupForm) {
         const activity = await getActivityById(String(parsed.data.event_id));
         if (!activity) return { success: false, error: 'Activiteit niet gevonden' };
 
-        if (activity.registration_deadline) {
-            const deadline = new Date(activity.registration_deadline);
-            if (new Date() > deadline) {
-                return { success: false, error: 'De inschrijfdeadline voor deze activiteit is verstreken.' };
-            }
+        if (isDeadlinePassed(activity.registration_deadline)) {
+            return { success: false, error: 'De inschrijfdeadline voor deze activiteit is verstreken.' };
         }
 
         if (activity.max_sign_ups !== null) {

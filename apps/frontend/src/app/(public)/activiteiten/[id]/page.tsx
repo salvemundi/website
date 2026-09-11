@@ -10,7 +10,7 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import BackButton from '@/components/ui/navigation/BackButton';
 import { type Metadata } from 'next';
 import { connection } from 'next/server';
-import { isEventPast } from '@/shared/lib/utils/date';
+import { isEventPast, isDeadlinePassed } from '@/shared/lib/utils/date';
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -62,9 +62,7 @@ async function ActivityContent({ params, searchParams }: PageProps) {
         activity.event_time_end || activity.event_time,
         !!activity.event_time_end
     );
-    const isDeadlinePassed = activity.registration_deadline
-        ? new Date(activity.registration_deadline) < new Date()
-        : false;
+    const isDeadlinePassedCheck = isDeadlinePassed(activity.registration_deadline);
 
     const isFull = activity.max_sign_ups !== null
         ? (await getActivitySignupCount(Number(activity.id))) >= activity.max_sign_ups
@@ -117,7 +115,7 @@ async function ActivityContent({ params, searchParams }: PageProps) {
                     initialIsSignedUp={isSignedUp}
                     id={signupId}
                     isPast={isPastEvent}
-                    isDeadlinePassed={isDeadlinePassed}
+                    isDeadlinePassed={isDeadlinePassedCheck}
                     isFull={isFull}
                     isMembersOnly={!!activity.only_members}
                     isMember={isMember}

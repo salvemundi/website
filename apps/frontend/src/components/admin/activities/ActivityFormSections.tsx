@@ -123,6 +123,10 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
     const initialStartTimeStr = formatTime(initialData?.event_time) || '00:00';
     const initialEndTimeStr = formatTime(initialData?.event_time_end);
 
+    const initialDeadlineISO = formatDateTime(initialData?.registration_deadline);
+    const initialDeadlineDateStr = initialDeadlineISO ? initialDeadlineISO.slice(0, 10) : '';
+    const initialDeadlineTimeStr = initialDeadlineISO ? initialDeadlineISO.slice(11, 16) : '';
+
     const [startDate, setStartDate] = React.useState<Date | null>(
         initialStartDateStr ? new Date(initialStartDateStr) : new Date()
     );
@@ -131,6 +135,10 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
     );
     const [startTime, setStartTime] = React.useState<string>(initialStartTimeStr);
     const [endTime, setEndTime] = React.useState<string>(initialEndTimeStr);
+    const [deadlineDate, setDeadlineDate] = React.useState<Date | null>(
+        initialDeadlineDateStr ? new Date(initialDeadlineDateStr) : null
+    );
+    const [deadlineTime, setDeadlineTime] = React.useState<string>(initialDeadlineTimeStr);
 
     const isSameDay = React.useMemo(() => {
         return startDate && endDate && startDate.toDateString() === endDate.toDateString();
@@ -140,15 +148,12 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
         return isSameDay ? startTime || undefined : undefined;
     }, [isSameDay, startTime]);
 
-    const registrationDeadlineMax = React.useMemo(() => {
-        if (!startDate) return undefined;
-        const year = startDate.getFullYear();
-        const month = String(startDate.getMonth() + 1).padStart(2, '0');
-        const day = String(startDate.getDate()).padStart(2, '0');
-        const dateStr = `${year}-${month}-${day}`;
-        const timeStr = startTime ? `T${startTime.slice(0, 5)}` : 'T00:00';
-        return `${dateStr}${timeStr}`;
-    }, [startDate, startTime]);
+    const deadlineValue = React.useMemo(() => {
+        if (!deadlineDate) return '';
+        const dateStr = toISODateString(deadlineDate);
+        const timeStr = deadlineTime ? deadlineTime.slice(0, 5) : '23:59';
+        return `${dateStr}T${timeStr}`;
+    }, [deadlineDate, deadlineTime]);
 
     const handleStartDateChange = (date: Date | null) => {
         setStartDate(date);
@@ -164,6 +169,21 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                 setEndTime('');
             }
         }
+    };
+
+    const handleDeadlineDateChange = (date: Date | null) => {
+        setDeadlineDate(date);
+        if (date && !deadlineTime) {
+            setDeadlineTime('23:59');
+        }
+        if (!date) {
+            setDeadlineTime('');
+        }
+    };
+
+    const handleClearDeadline = () => {
+        setDeadlineDate(null);
+        setDeadlineTime('');
     };
 
     return (
@@ -226,16 +246,39 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                         </div>
                     </div>
 
-                    <div>
-                        <AdminDatetimepicker
-                            id="registration_deadline"
-                            name="registration_deadline"
-                            dateLabel="Inschrijfdeadline"
-                            defaultValue={formatDateTime(initialData?.registration_deadline)}
-                            max={registrationDeadlineMax}
-                            error={!!formErrors?.registration_deadline}
-                        />
-                        {formErrors?.registration_deadline && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.registration_deadline[0]}</p>}
+                    <div className="flex items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-2">
+                                <label htmlFor="registration_deadline_date" className="block text-base font-semibold text-(--beheer-text-muted)">Inschrijfdeadline</label>
+                                {(deadlineDate || deadlineTime) && (
+                                    <button
+                                        type="button"
+                                        onClick={handleClearDeadline}
+                                        className="beheer-button text-xs font-semibold text-red-500 hover:text-red-400 flex items-center gap-1 cursor-pointer transition-colors"
+                                    >
+                                        <X className="h-3.5 w-3.5" /> Wissen
+                                    </button>
+                                )}
+                            </div>
+                            <input type="hidden" name="registration_deadline" value={deadlineValue} />
+                            <AdminDatepicker
+                                id="registration_deadline_date"
+                                value={deadlineDate}
+                                onChange={handleDeadlineDateChange}
+                                maxDate={startDate || undefined}
+                                className={formErrors?.registration_deadline ? 'border-red-500' : ''}
+                            />
+                            {formErrors?.registration_deadline && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.registration_deadline[0]}</p>}
+                        </div>
+                        <div className="w-28 sm:w-32 shrink-0">
+                            <label htmlFor="registration_deadline_time" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Deadlinetijd</label>
+                            <AdminTimepicker
+                                id="registration_deadline_time"
+                                value={deadlineTime}
+                                onChange={(e) => setDeadlineTime(e.target.value)}
+                                disabled={!deadlineDate}
+                            />
+                        </div>
                     </div>
                 </div>
 

@@ -677,20 +677,6 @@ export const documentsRelations = relations(documents, ({one}) => ({
 	}),
 }));
 
-export const eventsRelations = relations(events, ({one, many}) => ({
-	committee: one(committees, {
-		fields: [events.committee_id],
-		references: [committees.id]
-	}),
-	directus_file: one(directus_files, {
-		fields: [events.image],
-		references: [directus_files.id]
-	}),
-	event_signups: many(event_signups),
-	events_directus_users: many(events_directus_users),
-	events_members: many(events_members),
-}));
-
 export const event_signupsRelations = relations(event_signups, ({one, many}) => ({
 	event: one(events, {
 		fields: [event_signups.event_id],
@@ -701,6 +687,20 @@ export const event_signupsRelations = relations(event_signups, ({one, many}) => 
 		references: [directus_users.id]
 	}),
 	transactions: many(transactions),
+}));
+
+export const eventsRelations = relations(events, ({one, many}) => ({
+	event_signups: many(event_signups),
+	events_directus_users: many(events_directus_users),
+	committee: one(committees, {
+		fields: [events.committee_id],
+		references: [committees.id]
+	}),
+	directus_file: one(directus_files, {
+		fields: [events.image],
+		references: [directus_files.id]
+	}),
+	events_members: many(events_members),
 }));
 
 export const events_directus_usersRelations = relations(events_directus_users, ({one}) => ({
@@ -1012,14 +1012,14 @@ export const webshop_preordersRelations = relations(webshop_preorders, ({one, ma
 
 export const auth_accountsRelations = relations(auth_accounts, ({one}) => ({
 	directus_user: one(directus_users, {
-		fields: [auth_accounts.userId],
+		fields: [auth_accounts.user_id],
 		references: [directus_users.id]
 	}),
 }));
 
 export const auth_sessionsRelations = relations(auth_sessions, ({one}) => ({
 	directus_user: one(directus_users, {
-		fields: [auth_sessions.userId],
+		fields: [auth_sessions.user_id],
 		references: [directus_users.id]
 	}),
 }));

@@ -117,3 +117,33 @@ export function isEventPast(dateStr?: string, timeStr?: string | null, isEndTime
         return endOfDay(date) < now;
     } catch { return false; }
 }
+
+export function isDeadlinePassed(deadline?: string | Date | null, now: Date = new Date()): boolean {
+    if (!deadline) return false;
+    try {
+        if (typeof deadline === 'string') {
+            const trimmed = deadline.trim();
+            if (!trimmed) return false;
+
+            if (trimmed.length <= 10 && !trimmed.includes('T') && !trimmed.includes(' ')) {
+                const parts = trimmed.split('-').map(Number);
+                if (parts.length === 3 && !parts.some(isNaN)) {
+                    const [year, month, day] = parts;
+                    const d = new Date(year, month - 1, day, 23, 59, 59, 999);
+                    return d.getTime() < now.getTime();
+                }
+                return endOfDay(new Date(trimmed)).getTime() < now.getTime();
+            }
+
+            const d = new Date(trimmed);
+            if (isNaN(d.getTime())) return false;
+            return d.getTime() < now.getTime();
+        }
+
+        const d = new Date(deadline);
+        if (isNaN(d.getTime())) return false;
+        return d.getTime() < now.getTime();
+    } catch {
+        return false;
+    }
+}

@@ -10,6 +10,7 @@ import ActivityFilters from './ActivityFilters';
 import AdminToast from '@/components/ui/admin/AdminToast';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import { useAdminToast } from '@/hooks/use-admin-toast';
+import { isEventPast } from '@/shared/lib/utils/date';
 
 function cleanCommitteeName(name: string): string {
     return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
@@ -50,9 +51,13 @@ export default function AdminActivitiesIsland({
 
     const filteredEvents = useMemo(() => {
         let result = events;
-        const now = new Date();
-        if (filter === 'upcoming') result = result.filter(e => new Date(e.event_date) >= now);
-        else if (filter === 'past') result = result.filter(e => new Date(e.event_date) < now);
+        const eventIsPast = (e: AdminActivity) => isEventPast(
+            e.event_date_end || e.event_date,
+            e.event_time_end || e.event_time,
+            !!e.event_time_end
+        );
+        if (filter === 'upcoming') result = result.filter(e => !eventIsPast(e));
+        else if (filter === 'past') result = result.filter(e => eventIsPast(e));
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             result = result.filter(e => e.name.toLowerCase().includes(query) || e.location?.toLowerCase().includes(query));
@@ -66,7 +71,11 @@ export default function AdminActivitiesIsland({
     }, [filteredEvents, pageSize]);
 
     const stats = useMemo(() => {
-        const upcoming = displayedEvents.filter(e => e.event_date && new Date(e.event_date) >= new Date()).length;
+        const upcoming = displayedEvents.filter(e => e.event_date && !isEventPast(
+            e.event_date_end || e.event_date,
+            e.event_time_end || e.event_time,
+            !!e.event_time_end
+        )).length;
         const signups = displayedEvents.reduce((acc, curr) => acc + (curr.signup_count || 0), 0);
         return {
             upcoming,

@@ -9,5 +9,6 @@ export const azureSyncRunSchema = z.object({
     activeOnly: z.boolean().optional(),
     silent: z.boolean().optional(),
     sendExpiryEmails: z.boolean().optional(),
-    convertUpn: z.boolean().optional()
+    convertUpn: z.boolean().optional(),
+    ignoreGracePeriod: z.boolean().optional()
 });
