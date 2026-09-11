@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { AdminActivity } from '@salvemundi/validations';
 import MediaAsset from '@/components/ui/media/MediaAsset';
+import { isEventPast } from '@/shared/lib/utils/date';
 
 const formatDate = (dateString: string) =>
     new Intl.DateTimeFormat('nl-NL', {
@@ -34,8 +35,11 @@ export default function ActivityCard({
     onViewAttendance = () => { },
     onEdit = () => { } }: Props) {
     if (!event) return null;
-    const eventDate = new Date(event.event_date);
-    const isPast = eventDate < new Date();
+    const isPast = isEventPast(
+        event.event_date_end || event.event_date,
+        event.event_time_end || event.event_time,
+        !!event.event_time_end
+    );
     const isDraft = event.status === 'draft';
     const isScheduled = event.status === 'published' && event.publish_date && new Date(event.publish_date) > new Date();
 
