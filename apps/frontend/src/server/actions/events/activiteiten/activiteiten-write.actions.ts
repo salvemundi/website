@@ -11,6 +11,7 @@ import { uploadToDirectus } from '@/server/utils/media';
 import { deleteEventDb } from "@/server/internal/activiteiten/activiteiten-db.utils";
 import { enforceFeatureAccess } from "@/server/actions/admin/admin-utils.actions";
 import { canAccess } from "@/shared/lib/permissions";
+import { amsterdamToUTC } from '@/lib/utils/date-utils';
 
 async function uploadActivityImage(imageFile: File | null): Promise<{ success: true; imageId: string | null } | { success: false; error: string }> {
     const uploadResult = await uploadToDirectus(imageFile);
@@ -122,13 +123,13 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
         max_sign_ups: data.max_sign_ups || null,
         price_members: data.price_members.toString(),
         price_non_members: data.price_non_members.toString(),
-        registration_deadline: data.registration_deadline || null,
+        registration_deadline: data.registration_deadline ? amsterdamToUTC(data.registration_deadline) : null,
         custom_url: data.custom_url || null,
         committee_id: data.committee_id || null,
         contact: data.contact || null,
         only_members: data.only_members,
         status: data.status === 'scheduled' ? 'published' : data.status,
-        publish_date: data.publish_date || null,
+        publish_date: data.publish_date ? amsterdamToUTC(data.publish_date) : null,
         ...(imageId && { image: imageId }),
     };
 
@@ -234,8 +235,8 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
             event_time: data.event_time || null,
             location: data.location || null,
             event_time_end: data.event_time_end || null,
-            registration_deadline: data.registration_deadline || null,
-            publish_date: data.publish_date || null,
+            registration_deadline: data.registration_deadline ? amsterdamToUTC(data.registration_deadline) : null,
+            publish_date: data.publish_date ? amsterdamToUTC(data.publish_date) : null,
             event_date_end: data.event_date_end || null,
             custom_url: data.custom_url || null,
             short_description: data.short_description || null,

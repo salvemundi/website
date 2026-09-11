@@ -1,4 +1,4 @@
-import { pgTable, unique, serial, varchar, index, foreignKey, check, integer, date, timestamp, uuid, text, json, boolean, jsonb, doublePrecision, real, bigint, numeric, time, inet, bigserial } from "drizzle-orm/pg-core"
+import { pgTable, unique, serial, varchar, index, foreignKey, check, integer, date, timestamp, uuid, text, json, boolean, jsonb, doublePrecision, real, bigint, inet, numeric, time, bigserial } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -1002,45 +1002,6 @@ export const documents = pgTable("documents", {
 		}).onDelete("set null"),
 ]);
 
-export const events = pgTable("events", {
-	id: serial().primaryKey().notNull(),
-	name: varchar({ length: 255 }).notNull(),
-	event_date: date().notNull(),
-	description: text(),
-	description_logged_in: text(),
-	price_members: numeric({ precision: 10, scale:  2 }).default('0.00').notNull(),
-	price_non_members: numeric({ precision: 10, scale:  2 }).default('0.00').notNull(),
-	max_sign_ups: integer(),
-	only_members: boolean().default(false).notNull(),
-	one_sign_up_max: boolean().default(false).notNull(),
-	committee_id: integer(),
-	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updated_at: timestamp({ withTimezone: true, mode: 'string' }),
-	image: uuid(),
-	contact: varchar({ length: 255 }),
-	event_time: time(),
-	location: varchar({ length: 255 }).default('Rachelsmolen'),
-	event_time_end: time(),
-	registration_deadline: date(),
-	status: varchar({ length: 255 }),
-	publish_date: timestamp({ mode: 'string' }),
-	event_date_end: date(),
-	custom_url: text(),
-	short_description: text(),
-}, (table) => [
-	index("idx_events_committee").using("btree", table.committee_id.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-			columns: [table.committee_id],
-			foreignColumns: [committees.id],
-			name: "events_committee_id_committees_id_fk"
-		}).onDelete("set null"),
-	foreignKey({
-			columns: [table.image],
-			foreignColumns: [directus_files.id],
-			name: "events_image_directus_files_id_fk"
-		}).onDelete("set null"),
-]);
-
 export const event_signups = pgTable("event_signups", {
 	event_id: integer().notNull(),
 	submission_file_url: varchar({ length: 255 }),
@@ -1111,6 +1072,45 @@ export const intro_blog_likes = pgTable("intro_blog_likes", {
 			name: "intro_blog_likes_user_id_directus_users_id_fk"
 		}).onDelete("cascade"),
 	unique("uniq_blog_user").on(table.blog, table.user_id),
+]);
+
+export const events = pgTable("events", {
+	id: serial().primaryKey().notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	event_date: date().notNull(),
+	description: text(),
+	description_logged_in: text(),
+	price_members: numeric({ precision: 10, scale:  2 }).default('0.00').notNull(),
+	price_non_members: numeric({ precision: 10, scale:  2 }).default('0.00').notNull(),
+	max_sign_ups: integer(),
+	only_members: boolean().default(false).notNull(),
+	one_sign_up_max: boolean().default(false).notNull(),
+	committee_id: integer(),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updated_at: timestamp({ withTimezone: true, mode: 'string' }),
+	image: uuid(),
+	contact: varchar({ length: 255 }),
+	event_time: time(),
+	location: varchar({ length: 255 }).default('Rachelsmolen'),
+	event_time_end: time(),
+	registration_deadline: timestamp({ withTimezone: true, mode: 'string' }),
+	status: varchar({ length: 255 }),
+	publish_date: timestamp({ mode: 'string' }),
+	event_date_end: date(),
+	custom_url: text(),
+	short_description: text(),
+}, (table) => [
+	index("idx_events_committee").using("btree", table.committee_id.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.committee_id],
+			foreignColumns: [committees.id],
+			name: "events_committee_id_committees_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.image],
+			foreignColumns: [directus_files.id],
+			name: "events_image_directus_files_id_fk"
+		}).onDelete("set null"),
 ]);
 
 export const events_members = pgTable("events_members", {
@@ -1742,21 +1742,21 @@ export const transactions = pgTable("transactions", {
 
 export const auth_accounts = pgTable("auth_accounts", {
 	id: text().primaryKey().notNull(),
-	accountId: text().notNull(),
-	providerId: text().notNull(),
-	userId: uuid().notNull(),
-	accessToken: text(),
-	refreshToken: text(),
-	idToken: text(),
-	accessTokenExpiresAt: timestamp({ mode: 'string' }),
-	refreshTokenExpiresAt: timestamp({ mode: 'string' }),
+	account_id: text("account_id", ).notNull(),
+	provider_id: text("provider_id", ).notNull(),
+	user_id: uuid("user_id", ).notNull(),
+	access_token: text("access_token", ),
+	refresh_token: text("refresh_token", ),
+	id_token: text("id_token", ),
+	access_token_expires_at: timestamp("access_token_expires_at", { mode: 'string' }),
+	refresh_token_expires_at: timestamp("refresh_token_expires_at", { mode: 'string' }),
 	scope: text(),
 	password: text(),
-	createdAt: timestamp({ mode: 'string' }).notNull(),
-	updatedAt: timestamp({ mode: 'string' }).notNull(),
+	created_at: timestamp("created_at", { mode: 'string' }).notNull(),
+	updated_at: timestamp("updated_at", { mode: 'string' }).notNull(),
 }, (table) => [
 	foreignKey({
-			columns: [table.userId],
+			columns: [table.user_id],
 			foreignColumns: [directus_users.id],
 			name: "auth_accounts_userId_directus_users_id_fk"
 		}).onDelete("cascade"),
@@ -1764,16 +1764,16 @@ export const auth_accounts = pgTable("auth_accounts", {
 
 export const auth_sessions = pgTable("auth_sessions", {
 	id: text().primaryKey().notNull(),
-	expiresAt: timestamp({ mode: 'string' }).notNull(),
+	expires_at: timestamp("expires_at", { mode: 'string' }).notNull(),
 	token: text().notNull(),
-	createdAt: timestamp({ mode: 'string' }).notNull(),
-	updatedAt: timestamp({ mode: 'string' }).notNull(),
-	ipAddress: text(),
-	userAgent: text(),
-	userId: uuid().notNull(),
+	created_at: timestamp("created_at", { mode: 'string' }).notNull(),
+	updated_at: timestamp("updated_at", { mode: 'string' }).notNull(),
+	ip_address: text("ip_address", ),
+	user_agent: text("user_agent", ),
+	user_id: uuid("user_id", ).notNull(),
 }, (table) => [
 	foreignKey({
-			columns: [table.userId],
+			columns: [table.user_id],
 			foreignColumns: [directus_users.id],
 			name: "auth_sessions_userId_directus_users_id_fk"
 		}).onDelete("cascade"),
@@ -1784,9 +1784,9 @@ export const verification = pgTable("verification", {
 	id: text().primaryKey().notNull(),
 	identifier: text().notNull(),
 	value: text().notNull(),
-	expiresAt: timestamp({ mode: 'string' }).notNull(),
-	createdAt: timestamp({ mode: 'string' }),
-	updatedAt: timestamp({ mode: 'string' }),
+	expires_at: timestamp("expires_at", { mode: 'string' }).notNull(),
+	created_at: timestamp("created_at", { mode: 'string' }),
+	updated_at: timestamp("updated_at", { mode: 'string' }),
 });
 
 export const committee_members = pgTable("committee_members", {

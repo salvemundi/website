@@ -180,10 +180,6 @@ export const selectVacanciesVacancyIctDirectionsSchema = createSelectSchema(sche
 export const insertDocumentsSchema = createInsertSchema(schema.documents);
 export const selectDocumentsSchema = createSelectSchema(schema.documents);
 
-// --- events ---
-export const insertEventsSchema = createInsertSchema(schema.events);
-export const selectEventsSchema = createSelectSchema(schema.events);
-
 // --- event_signups ---
 export const insertEventSignupsSchema = createInsertSchema(schema.event_signups);
 export const selectEventSignupsSchema = createSelectSchema(schema.event_signups);
@@ -199,6 +195,10 @@ export const selectHeroBannersFilesSchema = createSelectSchema(schema.hero_banne
 // --- intro_blog_likes ---
 export const insertIntroBlogLikesSchema = createInsertSchema(schema.intro_blog_likes);
 export const selectIntroBlogLikesSchema = createSelectSchema(schema.intro_blog_likes);
+
+// --- events ---
+export const insertEventsSchema = createInsertSchema(schema.events);
+export const selectEventsSchema = createSelectSchema(schema.events);
 
 // --- events_members ---
 export const insertEventsMembersSchema = createInsertSchema(schema.events_members);
@@ -384,13 +384,13 @@ export const selectWebshopPreordersSchema = createSelectSchema(schema.webshop_pr
 export const insertWebshopPreorderLinesSchema = createInsertSchema(schema.webshop_preorder_lines);
 export const selectWebshopPreorderLinesSchema = createSelectSchema(schema.webshop_preorder_lines);
 
-// --- intro_groups ---
-export const insertIntroGroupsSchema = createInsertSchema(schema.intro_groups);
-export const selectIntroGroupsSchema = createSelectSchema(schema.intro_groups);
-
 // --- webshop_products ---
 export const insertWebshopProductsSchema = createInsertSchema(schema.webshop_products);
 export const selectWebshopProductsSchema = createSelectSchema(schema.webshop_products);
+
+// --- intro_groups ---
+export const insertIntroGroupsSchema = createInsertSchema(schema.intro_groups);
+export const selectIntroGroupsSchema = createSelectSchema(schema.intro_groups);
 
 // --- intro_group_leaders ---
 export const insertIntroGroupLeadersSchema = createInsertSchema(schema.intro_group_leaders);
