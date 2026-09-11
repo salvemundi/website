@@ -2,7 +2,7 @@
 
 import { useOptimistic, useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, Loader2 } from 'lucide-react';
+import { Save, Loader2, X } from 'lucide-react';
 import { createActivityAction } from '@/server/actions/events/activiteiten/activiteiten-write.actions';
 import AdminToolbar from '@/components/ui/admin/AdminToolbar';
 import AdminToast from '@/components/ui/admin/AdminToast';
@@ -131,7 +131,7 @@ export default function ActiviteitNieuwIsland({
                                 <button
                                     type="submit"
                                     disabled={optimisticSaving}
-                                    className="form-button w-full bg-(--beheer-accent) text-white px-8 py-4 rounded-xl font-semibold text-base shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 group border border-white/10"
+                                    className="form-button w-full bg-(--theme-purple) text-white px-8 py-4 rounded-xl font-semibold text-base shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 group border border-white/10"
                                 >
                                     {optimisticSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 group-hover:scale-110 transition-transform" />}
                                     <span>{optimisticSaving ? 'Bezig...' : 'Activiteit aanmaken'}</span>
@@ -139,9 +139,10 @@ export default function ActiviteitNieuwIsland({
                                 <button
                                     type="button"
                                     onClick={() => router.back()}
-                                    className="beheer-button w-full px-8 py-4 rounded-xl font-semibold text-base border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-all cursor-pointer"
+                                    className="btn-cancel w-full px-6 py-3.5 rounded-xl font-semibold text-base border border-(--border-color) bg-transparent text-(--text-main) hover:bg-(--bg-main)/60 dark:hover:bg-white/5 hover:border-(--theme-purple)/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
                                 >
-                                    Annuleren
+                                    <X className="h-4 w-4 text-(--text-muted)" />
+                                    <span>Annuleren</span>
                                 </button>
                             </div>
                         </div>
@@ -159,6 +160,26 @@ export default function ActiviteitNieuwIsland({
                             onOnlyMembersChange={setOnlyMembers}
                             formErrors={state.fieldErrors}
                         />
+                    </div>
+
+                    {/* Mobile bottom action buttons */}
+                    <div className="block lg:hidden pt-4 space-y-3">
+                        <button
+                            type="submit"
+                            disabled={optimisticSaving}
+                            className="form-button w-full bg-(--theme-purple) text-white px-8 py-4 rounded-xl font-semibold text-base shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 group border border-white/10"
+                        >
+                            {optimisticSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 group-hover:scale-110 transition-transform" />}
+                            <span>{optimisticSaving ? 'Bezig...' : 'Activiteit aanmaken'}</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => router.back()}
+                            className="btn-cancel w-full px-6 py-3.5 rounded-xl font-semibold text-base border border-(--border-color) bg-transparent text-(--text-main) hover:bg-(--bg-main)/60 dark:hover:bg-white/5 hover:border-(--theme-purple)/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+                        >
+                            <X className="h-4 w-4 text-(--text-muted)" />
+                            <span>Annuleren</span>
+                        </button>
                     </div>
                 </form>
             </div>
