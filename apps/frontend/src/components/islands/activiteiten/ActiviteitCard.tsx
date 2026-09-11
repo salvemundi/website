@@ -6,6 +6,7 @@ import AdminToast from '@/components/ui/admin/AdminToast';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import { formatActivityDateTime } from '@/shared/lib/activity-utils';
 import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
+import { isDeadlinePassed } from '@/shared/lib/utils/date';
 
 import ActiviteitGridCard from './card/ActiviteitGridCard';
 import ActiviteitListCard from './card/ActiviteitListCard';
@@ -66,8 +67,8 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     const alreadySignedUp = Boolean(isSignedUp);
     const isListVariant = variant === 'list';
     const now = serverTime ? new Date(serverTime) : new Date();
-    const isDeadlinePassed = registrationDeadline ? new Date(registrationDeadline) < now : false;
-    const cannotSignUp = alreadySignedUp || isDeadlinePassed;
+    const deadlinePassed = isDeadlinePassed(registrationDeadline, now);
+    const cannotSignUp = alreadySignedUp || deadlinePassed;
 
     const handleSignupClick = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -130,7 +131,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                     isPast={isPast}
                     cannotSignUp={cannotSignUp}
                     alreadySignedUp={alreadySignedUp}
-                    isDeadlinePassed={isDeadlinePassed}
+                    isDeadlinePassed={deadlinePassed}
                     contact={contact}
                     handleSignupClick={handleSignupClick}
                     onShowDetails={onShowDetails}
