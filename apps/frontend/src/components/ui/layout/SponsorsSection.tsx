@@ -14,7 +14,7 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
     sponsors = []
 }) => {
     const hasSponsors = sponsors.length > 0;
-    const scrollDuration = Math.max(2, sponsors.length * 0.8);
+    const scrollDuration = Math.max(2, sponsors.length * 0.8 * 2.5);
 
     return (
         <section className="py-fluid-lg overflow-hidden" style={{ '--scroll-duration': `${scrollDuration}s` } as React.CSSProperties}>
