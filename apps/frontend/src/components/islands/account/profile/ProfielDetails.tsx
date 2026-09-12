@@ -127,15 +127,15 @@ export default function ProfielDetails({
                                 onSubmit={(e) => {
                                     void handleSubmitPhone(onSavePhone)(e);
                                 }}
-                                className="flex flex-col w-full gap-2"
+                                className="relative flex flex-1 min-w-0 pr-12"
                                 autoComplete="off"
                             >
-                                <div className="flex w-full items-center gap-2">
+                                <div className="flex w-full items-center">
                                     <PhoneInput
                                         {...registerPhone("phone_number")}
-                                        className="flex-1 min-w-0 bg-white dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                                        className="flex-1 min-w-0 bg-white dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-lg text-sm font-medium"
                                     />
-                                    <button type="submit" disabled={isPending} className="form-button w-fit shrink-0 px-3 py-1.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center cursor-pointer disabled:opacity-50">
+                                    <button type="submit" disabled={isPending} className="form-button absolute right-0 top-1/2 -translate-y-1/2 h-10 w-10 p-0 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center cursor-pointer disabled:opacity-50">
                                         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                                     </button>
                                 </div>

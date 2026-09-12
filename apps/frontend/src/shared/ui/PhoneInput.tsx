@@ -175,7 +175,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
     return (
         <div className="relative w-full">
             <div
-                className={`flex items-center w-full rounded-2xl bg-bg-soft transition-all ${
+                className={`flex items-center w-full rounded-2xl bg-bg-soft transition-colors ${
                     error ? 'ring-2 ring-theme-error' : 'focus-within:ring-2 focus-within:ring-theme-purple/20'
                 } ${className}`}
             >
@@ -206,7 +206,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
                     placeholder={selectedCountry.placeholder}
                     value={nationalNumber}
                     onChange={handleNumberChange}
-                    className="flex-1 h-14 px-4 bg-transparent border-none rounded-r-2xl font-bold text-text-main placeholder:text-text-muted/50 placeholder:font-normal focus:outline-none text-base"
+                    className="flex-1 min-w-0 h-14 px-4 bg-transparent border-none rounded-r-2xl font-bold text-text-main placeholder:text-text-muted/50 placeholder:font-normal focus:outline-none text-base"
                 />
             </div>
 
