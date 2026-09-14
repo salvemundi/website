@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getActivitySignups } from '@/server/actions/admin/activiteiten/admin-activiteiten-core.actions';
 import { toggleCheckInAction } from '@/server/actions/admin/activiteiten/admin-activiteiten-signups.actions';
 import { Search, UserCheck, UserX, QrCode, Loader2, RefreshCw } from 'lucide-react';
@@ -27,6 +27,8 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
     const [search, setSearch] = useState('');
     const [scanning, setScanning] = useState(false);
     const [scanResult, setScanResult] = useState<{ success: boolean; message: string } | null>(null);
+    const scannerRef = useRef<{ clear: () => Promise<void> } | null>(null);
+    const scannerBootingRef = useRef(false);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -81,7 +83,32 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
         }
     }, [signups, handleToggleCheckIn]);
 
+    const cleanupScanner = useCallback(async () => {
+        scannerBootingRef.current = false;
+
+        const scanner = scannerRef.current;
+        scannerRef.current = null;
+
+        if (!scanner) return;
+
+        try {
+            await scanner.clear();
+        } catch (error) {
+            safeConsoleError('[AttendanceIsland.tsx][AttendanceIsland] cleanupScanner', error);
+        }
+    }, []);
+
+    useEffect(() => { return () => void cleanupScanner(); }, [cleanupScanner]);
+
+    const handleCancelScanner = useCallback(() => {
+        setScanning(false);
+        void cleanupScanner();
+    }, [cleanupScanner]);
+
     const startScanner = () => {
+        if (scannerRef.current || scannerBootingRef.current) return;
+
+        scannerBootingRef.current = true;
         setScanning(true);
         setScanResult(null);
 
@@ -91,23 +118,29 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
 
                 setTimeout(() => {
                     const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+                    scannerRef.current = scanner;
+                    scannerBootingRef.current = false;
 
                     scanner.render((decodedText) => {
                         void (async () => {
                             try {
-                                await scanner.clear();
+                                await cleanupScanner();
                                 setScanning(false);
                                 await handleScan(decodedText);
                             } catch (error) {
-                                safeConsoleError('[AttendanceIsland.tsx][AttendanceIsland] ', error);
+                                safeConsoleError('[AttendanceIsland.tsx][AttendanceIsland] 1', error);
                             }
                         })();
                     }, (errorMessage) => {
-                        safeConsoleError('[AttendanceIsland.tsx][AttendanceIsland] ', errorMessage);
+                        if (!errorMessage.includes('NotFoundException')) {
+                            safeConsoleError('[AttendanceIsland.tsx][AttendanceIsland] 2', errorMessage);
+                        }
                     });
-                }, 100);
+                }, 200);
             } catch (error) {
-                safeConsoleError('[AttendanceIsland.tsx][AttendanceIsland] ', error);
+                scannerBootingRef.current = false;
+                setScanning(false);
+                safeConsoleError('[AttendanceIsland.tsx][AttendanceIsland] 3', error);
             }
         })();
     };
@@ -163,7 +196,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                 <div className="fixed inset-0 z-200 bg-black/80 flex flex-col items-center justify-center p-4 isolate">
                     <div id="reader" className="scanner-reader w-full max-w-md bg-(--bg-card) squircle-lg overflow-hidden shadow-2xl" />
                     <button
-                        onClick={() => setScanning(false)}
+                        onClick={handleCancelScanner}
                         className="form-button mt-6 px-8 py-3 squircle bg-white/20 text-white font-bold hover:bg-white/30 transition-all text-base"
                     >
                         Annuleren
