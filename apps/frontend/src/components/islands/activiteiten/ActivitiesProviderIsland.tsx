@@ -8,6 +8,7 @@ import { Eye, EyeOff, LayoutGrid, List, Calendar as CalendarIcon } from "lucide-
 import CalendarView from "./CalendarView";
 import DayDetails from "./DayDetails";
 import ActiviteitList from "./ActiviteitList";
+import CalendarExportButton from "./CalendarExportButton";
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { slugify } from "@/shared/lib/utils/slug";
 import { getActivityUrl } from "@/shared/lib/utils/activity";
@@ -19,13 +20,15 @@ interface ActivitiesProviderIslandProps {
     serverTime?: string;
     initialViewMode?: 'list' | 'grid' | 'calendar';
     initialShowPast?: boolean;
+    isLoggedIn?: boolean;
 }
 
 export default function ActivitiesProviderIsland({
     events: initialEvents = [],
     serverTime,
     initialViewMode = 'list',
-    initialShowPast = false
+    initialShowPast = false,
+    isLoggedIn = false
 }: ActivitiesProviderIslandProps) {
     const router = useRouter();
     const [events] = useState<(Activiteit & { is_signed_up?: boolean })[]>(initialEvents);
@@ -167,36 +170,39 @@ export default function ActivitiesProviderIsland({
                         </button>
                     </div>
 
-                    <button
-                        onClick={toggleShowPastActivities}
-                        className={cn(
-                            "tab-button group relative inline-flex items-center justify-center gap-3 px-6 py-3 rounded-xl border transition-all active:scale-95 text-[10px] font-black uppercase tracking-widest",
-                            showPastActivities
-                                ? "bg-theme-purple text-white border-theme-purple shadow-lg shadow-theme-purple/20"
-                                : "bg-bg-card text-theme-purple border-border-color/30 hover:border-theme-purple/30 hover:bg-theme-purple/5"
-                        )}
-                    >
-                        <span className="grid grid-cols-1 grid-rows-1">
-                            <span className={cn(
-                                "col-start-1 row-start-1 transition-opacity duration-200",
-                                showPastActivities ? "opacity-100" : "opacity-0 pointer-events-none"
-                            )}>
-                                Verberg afgelopen
+                    <div className="flex items-center gap-3">
+                        {isLoggedIn && <CalendarExportButton />}
+                        <button
+                            onClick={toggleShowPastActivities}
+                            className={cn(
+                                "tab-button group relative inline-flex items-center justify-center gap-3 px-6 py-3 rounded-xl border transition-all active:scale-95 text-[10px] font-black uppercase tracking-widest",
+                                showPastActivities
+                                    ? "bg-theme-purple text-white border-theme-purple shadow-lg shadow-theme-purple/20"
+                                    : "bg-bg-card text-theme-purple border-border-color/30 hover:border-theme-purple/30 hover:bg-theme-purple/5"
+                            )}
+                        >
+                            <span className="grid grid-cols-1 grid-rows-1">
+                                <span className={cn(
+                                    "col-start-1 row-start-1 transition-opacity duration-200",
+                                    showPastActivities ? "opacity-100" : "opacity-0 pointer-events-none"
+                                )}>
+                                    Verberg afgelopen
+                                </span>
+                                <span className={cn(
+                                    "col-start-1 row-start-1 transition-opacity duration-200",
+                                    !showPastActivities ? "opacity-100" : "opacity-0 pointer-events-none"
+                                )}>
+                                    Toon afgelopen
+                                </span>
                             </span>
-                            <span className={cn(
-                                "col-start-1 row-start-1 transition-opacity duration-200",
-                                !showPastActivities ? "opacity-100" : "opacity-0 pointer-events-none"
+                            <div className={cn(
+                                "h-5 w-5 rounded-full flex items-center justify-center transition-colors shrink-0",
+                                showPastActivities ? "bg-white/20 text-white" : "bg-theme-purple/10 text-theme-purple group-hover:bg-theme-purple group-hover:text-white"
                             )}>
-                                Toon afgelopen
-                            </span>
-                        </span>
-                        <div className={cn(
-                            "h-5 w-5 rounded-full flex items-center justify-center transition-colors shrink-0",
-                            showPastActivities ? "bg-white/20 text-white" : "bg-theme-purple/10 text-theme-purple group-hover:bg-theme-purple group-hover:text-white"
-                        )}>
-                            {showPastActivities ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                        </div>
-                    </button>
+                                {showPastActivities ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                            </div>
+                        </button>
+                    </div>
                 </div>
             </div>
 

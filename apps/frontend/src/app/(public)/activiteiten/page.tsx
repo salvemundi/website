@@ -41,6 +41,7 @@ export default async function ActivitiesPage() {
                     serverTime={serverTime} 
                     initialViewMode={initialViewMode} 
                     initialShowPast={initialShowPast}
+                    isLoggedIn={!!session}
                 />
             </main>
         </div>
