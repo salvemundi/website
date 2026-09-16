@@ -84,7 +84,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
 
     const unitPrice = Number(product.price);
     const subtotal = unitPrice * quantity;
-    const maxQuantity = product.stock_quantity == null ? MAX_QUANTITY : Math.min(MAX_QUANTITY, product.stock_quantity);
+    const maxQuantity = product.stock_quantity === null ? MAX_QUANTITY : Math.min(MAX_QUANTITY, product.stock_quantity);
 
     const sizeError = variantTouched && availableSizes.length > 0 && !selectedSize ? 'Kies een maat.' : undefined;
     const colorError = variantTouched && availableColors.length > 0 && !selectedColor ? 'Kies een kleur.' : undefined;
