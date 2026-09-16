@@ -1,9 +1,11 @@
 'use client';
 
 import React, { createContext, useContext, useId } from 'react';
+import { AlertCircle } from 'lucide-react';
 
 interface FormFieldContextValue {
     inputId: string;
+    hasError: boolean;
 }
 
 const FormFieldContext = createContext<FormFieldContextValue | undefined>(undefined);
@@ -82,7 +84,7 @@ export const FormField: React.FC<FormFieldProps> = ({
     const childrenWithId = injectIdToChildren(children, inputId);
 
     return (
-        <FormFieldContext.Provider value={{ inputId }}>
+        <FormFieldContext.Provider value={{ inputId, hasError: Boolean(error) }}>
             <div className={`flex flex-col gap-1.5 ${className}`}>
                 <label htmlFor={inputId} className={`form-label ${labelClassName}`}>
                     {label}
@@ -92,7 +94,8 @@ export const FormField: React.FC<FormFieldProps> = ({
                 {childrenWithId}
 
                 {error && (
-                    <p role="alert" className="text-theme-error text-xs font-bold">
+                    <p role="alert" className="flex items-center gap-1.5 text-theme-error text-xs font-bold bg-theme-error/10 rounded-lg px-2.5 py-1.5">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                         {error}
                     </p>
                 )}

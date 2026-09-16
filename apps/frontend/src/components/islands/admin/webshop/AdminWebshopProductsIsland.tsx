@@ -28,6 +28,16 @@ const STATUS_LABELS: Record<string, string> = {
     closed: 'Gesloten'
 };
 
+function StockBadge({ product }: { product: AdminProduct }) {
+    if (product.stock_quantity == null) {
+        return <span className="text-(--beheer-text-muted)">Onbeperkt</span>;
+    }
+    if (product.stock_quantity === 0) {
+        return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-red-500/10 text-red-500 border-red-500/20">Uitverkocht</span>;
+    }
+    return <span>{product.stock_quantity} stuks</span>;
+}
+
 export default function AdminWebshopProductsIsland({ initialDropWindows, initialProducts }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [dropWindows, setDropWindows] = useState(initialDropWindows);
@@ -194,9 +204,7 @@ export default function AdminWebshopProductsIsland({ initialDropWindows, initial
                         </h2>
                         <button
                             onClick={() => setProductModal({ open: true, editing: null })}
-                            disabled={dropWindows.length === 0}
-                            title={dropWindows.length === 0 ? 'Maak eerst een drop aan' : undefined}
-                            className="beheer-button w-fit shrink-0 flex items-center justify-center gap-2 px-5 py-2.5 bg-(--beheer-accent) text-white rounded-xl text-xs font-semibold shadow-md hover:opacity-95 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                            className="beheer-button w-fit shrink-0 flex items-center justify-center gap-2 px-5 py-2.5 bg-(--beheer-accent) text-white rounded-xl text-xs font-semibold shadow-md hover:opacity-95 transition-all active:scale-95 cursor-pointer"
                         >
                             <Plus className="h-4 w-4" />
                             <span>Nieuw product</span>
@@ -218,6 +226,7 @@ export default function AdminWebshopProductsIsland({ initialDropWindows, initial
                                             <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) hidden sm:table-cell">Type</th>
                                             <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) hidden lg:table-cell">Drop</th>
                                             <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Prijs</th>
+                                            <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Voorraad</th>
                                             <th className="px-6 py-4 text-center text-xs font-semibold text-(--beheer-text-muted)">Actief</th>
                                             <th className="px-6 py-4 text-right text-xs font-semibold text-(--beheer-text-muted)">Acties</th>
                                         </tr>
@@ -231,6 +240,7 @@ export default function AdminWebshopProductsIsland({ initialDropWindows, initial
                                                     {product.drop_window_id ? dropWindowById.get(product.drop_window_id)?.name || '-' : '-'}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-(--beheer-text-muted)">€{Number(product.price).toFixed(2)}</td>
+                                                <td className="px-6 py-4 text-sm text-(--beheer-text-muted)"><StockBadge product={product} /></td>
                                                 <td className="px-6 py-4 text-center">
                                                     <button onClick={() => handleToggleActive(product)} disabled={togglingId === product.id} className="icon-button text-(--beheer-text-muted) hover:text-(--beheer-accent) transition-all disabled:opacity-50 cursor-pointer">
                                                         {product.is_active ? <ToggleRight className="h-6 w-6 text-emerald-500 mx-auto" /> : <ToggleLeft className="h-6 w-6 mx-auto" />}

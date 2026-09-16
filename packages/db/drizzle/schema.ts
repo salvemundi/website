@@ -2112,6 +2112,7 @@ export const webshop_product_variants = pgTable("webshop_product_variants", {
 	sku: varchar({ length: 255 }),
 	is_active: boolean().default(true),
 	display_order: integer().default(0),
+	stock_quantity: integer(),
 }, (table) => [
 	index("idx_webshop_product_variants_product").using("btree", table.product_id.asc().nullsLast().op("int4_ops")),
 	foreignKey({
@@ -2211,6 +2212,7 @@ export const webshop_products = pgTable("webshop_products", {
 	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 	max_orders: integer(),
+	stock_quantity: integer(),
 }, (table) => [
 	index("idx_webshop_products_drop_window").using("btree", table.drop_window_id.asc().nullsLast().op("int4_ops")),
 	foreignKey({

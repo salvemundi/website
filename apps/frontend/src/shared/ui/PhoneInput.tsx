@@ -20,8 +20,9 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
     disabled = false,
     ...props
 }, ref) => {
-    const contextId = useFormFieldOptional()?.inputId;
-    const inputId = id ?? contextId;
+    const fieldContext = useFormFieldOptional();
+    const inputId = id ?? fieldContext?.inputId;
+    const isError = error ?? fieldContext?.hasError;
 
     const rawValue = typeof props.value === 'string' ? props.value : (props.value ? String(props.value) : '');
 
@@ -176,7 +177,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
         <div className="relative w-full">
             <div
                 className={`flex items-center w-full rounded-2xl bg-bg-soft transition-colors ${
-                    error ? 'ring-2 ring-theme-error' : 'focus-within:ring-2 focus-within:ring-theme-purple/20'
+                    isError ? 'ring-2 ring-theme-error' : 'focus-within:ring-2 focus-within:ring-theme-purple/20'
                 } ${className}`}
             >
                 <button

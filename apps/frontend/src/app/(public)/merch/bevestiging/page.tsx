@@ -19,7 +19,7 @@ function ErrorCard({ title, message }: { title: string; message: string }) {
                 <XCircle className="w-16 h-16 text-red-500 mx-auto mb-6" />
                 <h1 className="text-2xl font-black text-(--theme-purple) mb-4">{title}</h1>
                 <p className="text-(--text-muted) mb-8 leading-relaxed">{message}</p>
-                <BackButton href="/webshop" text="Terug naar webshop" />
+                <BackButton href="/merch" text="Terug naar merch" />
             </div>
         </div>
     );
@@ -123,7 +123,7 @@ export default async function WebshopBevestigingPage({ searchParams }: PageProps
                     </p>
 
                     <div className="flex justify-center">
-                        <BackButton href="/webshop" text="Terug naar webshop" />
+                        <BackButton href="/merch" text="Terug naar merch" />
                     </div>
                 </div>
             </div>

@@ -15,12 +15,13 @@ export default function WebshopProductCard({ product }: WebshopProductCardProps)
     const cover = product.media.length > 0 ? product.media[0] : null;
     const video = product.media.find(m => m.asset_type?.startsWith('video/')) ?? null;
     const price = Number(product.price).toFixed(2);
+    const isSoldOut = product.stock_quantity === 0;
 
     const showVideo = isHovering && video !== null;
 
     return (
         <Link
-            href={`/webshop/${product.slug}`}
+            href={`/merch/${product.slug}`}
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
             className="group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-(--bg-card) dark:border dark:border-white/10 shadow-sm transition-all hover:shadow-md hover:-translate-y-1 no-underline"
@@ -49,6 +50,11 @@ export default function WebshopProductCard({ product }: WebshopProductCardProps)
                 <span className="absolute top-4 right-4 z-10 bg-(--theme-purple) text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
                     {product.type === 'clothing' ? 'Kleding' : 'Item'}
                 </span>
+                {isSoldOut && (
+                    <span className="absolute top-4 left-4 z-10 bg-black/70 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
+                        Uitverkocht
+                    </span>
+                )}
             </div>
 
             <div className="p-5 space-y-2">

@@ -30,6 +30,7 @@ export interface AdminProduct {
     description: string | null;
     price: string | null;
     max_orders?: number | null;
+    stock_quantity?: number | null;
     is_active: boolean | null;
     display_order: number | null;
     variants: AdminVariant[];

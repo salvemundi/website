@@ -43,6 +43,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
 
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
+    const [variantTouched, setVariantTouched] = useState(false);
 
     const { register, control, handleSubmit, watch, setValue, trigger, formState: { errors } } = useForm<WebshopPreorderForm>({
         resolver: zodResolver(checkoutSchema),
@@ -83,6 +84,10 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
 
     const unitPrice = Number(product.price);
     const subtotal = unitPrice * quantity;
+    const maxQuantity = product.stock_quantity == null ? MAX_QUANTITY : Math.min(MAX_QUANTITY, product.stock_quantity);
+
+    const sizeError = variantTouched && availableSizes.length > 0 && !selectedSize ? 'Kies een maat.' : undefined;
+    const colorError = variantTouched && availableColors.length > 0 && !selectedColor ? 'Kies een kleur.' : undefined;
 
     const cover = product.media.length > 0 ? product.media[0] : null;
 
@@ -90,6 +95,12 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
         setError(null);
 
         if (step === 1) {
+            if (product.type === 'clothing') {
+                setVariantTouched(true);
+                const sizeMissing = availableSizes.length > 0 && !selectedSize;
+                const colorMissing = availableColors.length > 0 && !selectedColor;
+                if (sizeMissing || colorMissing) return;
+            }
             const valid = await trigger('lines');
             if (!valid) return;
             setStep(2);
@@ -167,7 +178,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                     {product.type === 'clothing' && (
                         <>
                             {availableSizes.length > 0 && (
-                                <FormField label={`Maat${selectedSize ? ` — gekozen: ${selectedSize}` : ''}`} required error={errors.lines?.[0]?.variant_id?.message}>
+                                <FormField label={`Maat${selectedSize ? ` — gekozen: ${selectedSize}` : ''}`} required error={sizeError}>
                                     <div className="flex flex-wrap gap-2">
                                         {availableSizes.map((size) => {
                                             const isSelected = selectedSize === size;
@@ -193,7 +204,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                             )}
 
                             {availableColors.length > 0 && (
-                                <FormField label={`Kleur${selectedColor ? ` — gekozen: ${selectedColor}` : ''}`} required={availableSizes.length === 0} error={availableSizes.length === 0 ? errors.lines?.[0]?.variant_id?.message : undefined}>
+                                <FormField label={`Kleur${selectedColor ? ` — gekozen: ${selectedColor}` : ''}`} required error={colorError}>
                                     <div className="flex flex-wrap gap-2">
                                         {availableColors.map((color) => {
                                             const isSelected = selectedColor === color;
@@ -234,9 +245,9 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                             <output aria-label="Huidig aantal" className="min-w-10 text-center font-bold text-lg">{quantity}</output>
                             <button
                                 type="button"
-                                onClick={() => setValue('lines.0.quantity', Math.min(MAX_QUANTITY, quantity + 1), { shouldValidate: true })}
+                                onClick={() => setValue('lines.0.quantity', Math.min(maxQuantity, quantity + 1), { shouldValidate: true })}
                                 className="form-button p-2 rounded-full bg-(--bg-soft) text-(--theme-purple) hover:scale-105 transition-all disabled:opacity-30"
-                                disabled={quantity >= MAX_QUANTITY}
+                                disabled={quantity >= maxQuantity}
                                 aria-label="Verhoog aantal"
                             >
                                 <Plus className="h-4 w-4" />

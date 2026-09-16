@@ -24,6 +24,7 @@ export const webshopProductAdminSchema = insertWebshopProductsSchema.extend({
     description: z.preprocess((value) => (value === null || value === undefined) ? value : (value === '' ? null : String(value as string)), z.string().nullable().optional()),
     price: z.coerce.number().positive('Prijs moet groter dan 0 zijn'),
     max_orders: z.preprocess((value) => (value === '' || value === null || value === undefined) ? null : value, z.coerce.number().int().positive('Limiet moet groter dan 0 zijn').nullable()).optional(),
+    stock_quantity: z.preprocess((value) => (value === '' || value === null || value === undefined) ? null : value, z.coerce.number().int().nonnegative('Voorraad kan niet negatief zijn').nullable()).optional(),
     is_active: z.any().transform(value => !!value),
     display_order: z.coerce.number().int().nullable().optional(),
 });

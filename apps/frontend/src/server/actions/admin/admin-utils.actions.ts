@@ -18,7 +18,7 @@ type CommitteeSelect = typeof schema.committees.$inferSelect;
 const TOGGLEABLE_FEATURES: Record<string, AdminFeature | undefined> = {
     '/reis': 'reis',
     '/kroegentocht': 'kroegentocht',
-    '/webshop': 'webshop',
+    '/merch': 'webshop',
     '/intro': 'intro',
 };
 
