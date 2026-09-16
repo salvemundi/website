@@ -50,7 +50,6 @@ export async function insertPreorderWithStockDb(
         }
 
         const [preorder] = await tx.insert(schema.webshop_preorders).values(preorderData).returning({ id: schema.webshop_preorders.id });
-        if (!preorder) throw new Error('Bestelling aanmaken mislukt.');
 
         await tx.insert(schema.webshop_preorder_lines).values({ ...line, preorder_id: preorder.id });
 

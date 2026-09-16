@@ -29,7 +29,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 function StockBadge({ product }: { product: AdminProduct }) {
-    if (product.stock_quantity == null) {
+    if (product.stock_quantity === null) {
         return <span className="text-(--beheer-text-muted)">Onbeperkt</span>;
     }
     if (product.stock_quantity === 0) {
