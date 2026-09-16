@@ -15,14 +15,15 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
     id,
     ...props
 }, ref) => {
-    const contextId = useFormFieldOptional()?.inputId;
-    const inputId = id ?? contextId;
+    const fieldContext = useFormFieldOptional();
+    const inputId = id ?? fieldContext?.inputId;
+    const isError = error ?? fieldContext?.hasError;
 
     return (
         <input
             ref={ref}
             id={inputId}
-            className={`form-input ${error ? 'border-theme-error ring-1 ring-theme-error' : ''} ${className}`}
+            className={`form-input ${isError ? 'border-theme-error ring-1 ring-theme-error' : ''} ${className}`}
             {...props}
             autoComplete={autoComplete}
             suppressHydrationWarning={suppressHydrationWarning}

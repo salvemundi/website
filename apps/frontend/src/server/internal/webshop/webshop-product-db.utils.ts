@@ -65,7 +65,7 @@ export async function fetchCatalogProductsDb(category?: 'clothing' | 'item'): Pr
         .orderBy(asc(schema.webshop_products.display_order));
 
     const hydrated = await hydrateProducts(products);
-    return hydrated.filter(p => p.drop_window?.status === 'open');
+    return hydrated.filter(p => p.drop_window === null || p.drop_window.status === 'open');
 }
 
 export async function fetchProductBySlugDb(slug: string): Promise<WebshopCatalogProduct | null> {

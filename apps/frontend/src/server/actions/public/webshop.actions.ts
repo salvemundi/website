@@ -70,7 +70,7 @@ export async function getPreorderStatus(preorderId: number, accessToken?: string
 }
 
 export async function getWebshopSettings() {
-    const settings = await getFeatureFlagSettings('/webshop');
+    const settings = await getFeatureFlagSettings('/merch');
     return {
         show: settings.show,
         disabled_message: settings.disabled_message ?? 'De webshop is momenteel gesloten.'

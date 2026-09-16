@@ -16,7 +16,7 @@ import { uploadToDirectus } from '@/server/utils/media';
 
 function revalidateWebshop() {
     revalidatePath('/beheer/webshop');
-    revalidatePath('/webshop');
+    revalidatePath('/merch');
 }
 
 
@@ -127,6 +127,7 @@ export async function saveProduct(formData: FormData) {
         // the price rather than exposed as a separate admin field.
         deposit_amount: formData.get('price'),
         max_orders: formData.get('max_orders') || null,
+        stock_quantity: formData.get('stock_quantity') || null,
         is_active: formData.get('is_active') === 'on' || formData.get('is_active') === 'true',
         display_order: formData.get('display_order') ? Number(formData.get('display_order')) : 0
     };

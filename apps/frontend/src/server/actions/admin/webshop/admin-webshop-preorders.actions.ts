@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { requireAdminResource } from '@/server/auth/auth-utils';
 import { AdminResource } from '@/shared/lib/permissions-config';
-import { fetchPreorderByIdDb, updatePreorderDb } from '@/server/internal/webshop/webshop-preorder-db.utils';;
+import { fetchPreorderByIdDb, fetchPreorderWithLinesDb, updatePreorderDb, restoreStockForLinesDb } from '@/server/internal/webshop/webshop-preorder-db.utils';;
 import { webshopPreorderStatusUpdateSchema } from '@salvemundi/validations/schema/admin-webshop.zod';
 import { safeConsoleError } from '@/server/utils/logger';
 import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
@@ -17,8 +17,16 @@ export async function updatePreorderStatus(id: number, status: string) {
     }
 
     try {
+        const existing = await fetchPreorderByIdDb(validated.data.id);
+        const isNewlyCancelled = validated.data.status === 'cancelled' && existing?.status !== 'cancelled';
+
         const ok = await updatePreorderDb(validated.data.id, { status: validated.data.status });
         if (!ok) throw new Error('Update failed');
+
+        if (isNewlyCancelled) {
+            const preorderWithLines = await fetchPreorderWithLinesDb(validated.data.id);
+            if (preorderWithLines) await restoreStockForLinesDb(preorderWithLines.lines);
+        }
 
         await logAdminAction('admin_webshop_preorder_status_updated', 'SUCCESS', { preorder_id: id, status });
         revalidatePath('/beheer/webshop/bestellingen');
@@ -56,7 +64,7 @@ export async function getPreorderPaymentLink(id: number) {
         if (!preorder) return { success: false, error: 'Bestelling niet gevonden.' };
 
         const publicUrl = process.env.PUBLIC_URL || '';
-        const link = `${publicUrl}/webshop/bevestiging?preorder=${id}&token=${preorder.access_token}`;
+        const link = `${publicUrl}/merch/bevestiging?preorder=${id}&token=${preorder.access_token}`;
 
         return { success: true, link };
     } catch (error) {

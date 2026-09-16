@@ -189,10 +189,9 @@ export default function AdminWebshopProductForm({ product, dropWindows, onSave, 
                     <select
                         name="drop_window_id"
                         defaultValue={product?.drop_window_id ?? ''}
-                        required
                         className="beheer-input w-full px-5 py-4 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold"
                     >
-                        <option value="" disabled>Kies een drop</option>
+                        <option value="">Geen drop (los item, direct te koop)</option>
                         {dropWindows.map((dw) => (
                             <option key={dw.id} value={dw.id}>{dw.name} ({dw.status})</option>
                         ))}
@@ -207,6 +206,11 @@ export default function AdminWebshopProductForm({ product, dropWindows, onSave, 
                 <div className="space-y-3">
                     <label className="text-xs font-semibold text-(--beheer-text-muted)">Limiet bestellingen (optioneel)</label>
                     <input type="number" name="max_orders" min="1" step="1" placeholder="Geen limiet" defaultValue={product?.max_orders ?? ''} className="beheer-input w-full px-5 py-4 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold" />
+                </div>
+
+                <div className="space-y-3">
+                    <label className="text-xs font-semibold text-(--beheer-text-muted)">Voorraad (optioneel)</label>
+                    <input type="number" name="stock_quantity" min="0" step="1" placeholder="Onbeperkt" defaultValue={product?.stock_quantity ?? ''} className="beheer-input w-full px-5 py-4 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) focus:ring-4 focus:ring-(--beheer-accent)/10 focus:border-(--beheer-accent) outline-none transition-all font-semibold" />
                 </div>
             </div>
 

@@ -16,9 +16,11 @@ interface WebshopProductDetailIslandProps {
 export default function WebshopProductDetailIsland({ product, isLoggedIn, isMember }: WebshopProductDetailIslandProps) {
     const { login } = useAuthActions();
 
-    const isDropOpen = product.drop_window?.status === 'open';
+    const hasDrop = product.drop_window !== null;
+    const isDropOpen = !product.drop_window || product.drop_window.status === 'open';
     const closesAt = product.drop_window?.closes_at ? new Date(product.drop_window.closes_at) : null;
     const price = Number(product.price).toFixed(2);
+    const isSoldOut = product.stock_quantity === 0;
 
     const handleLogin = () => {
         const returnTo = window.location.pathname + window.location.search;
@@ -47,14 +49,19 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
             </div>
 
             <div className="rounded-2xl bg-(--bg-soft) p-4 text-sm text-(--text-muted) space-y-1">
-                <p className="font-bold text-(--theme-purple)/80">Dit is een preorder drop</p>
+                <p className="font-bold text-(--theme-purple)/80">{hasDrop ? 'Dit is een preorder drop' : 'Volledige betaling'}</p>
                 <p>Je betaalt nu de volledige prijs. Er is geen bezorging &mdash; je haalt je bestelling op tijdens een afgesproken afhaalmoment.</p>
                 {closesAt && (
                     <p>{isDropOpen ? `Bestellen kan tot ${formatDate(closesAt, 'd MMMM yyyy HH:mm')}.` : `Deze drop is gesloten sinds ${formatDate(closesAt, 'd MMMM yyyy HH:mm')}.`}</p>
                 )}
             </div>
 
-            {!isDropOpen ? (
+            {isSoldOut ? (
+                <button type="button" disabled className="form-button w-full py-3 rounded-full bg-(--theme-purple)/10 text-(--theme-purple)/40 font-bold cursor-not-allowed flex items-center justify-center gap-2">
+                    <Lock className="h-4 w-4" />
+                    Uitverkocht
+                </button>
+            ) : !isDropOpen ? (
                 <button type="button" disabled className="form-button w-full py-3 rounded-full bg-(--theme-purple)/10 text-(--theme-purple)/40 font-bold cursor-not-allowed flex items-center justify-center gap-2">
                     <Lock className="h-4 w-4" />
                     Drop gesloten
@@ -75,7 +82,7 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
                 </div>
             ) : (
                 <Link
-                    href={`/webshop/bestellen?product=${product.slug}`}
+                    href={`/merch/bestellen?product=${product.slug}`}
                     className="w-full py-3 rounded-full bg-(--theme-purple) text-white font-bold shadow-lg shadow-(--theme-purple)/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 no-underline"
                 >
                     Bestel nu

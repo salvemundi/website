@@ -35,7 +35,7 @@ const NavigationHeader = ({
     const navItems = ([
         { name: 'Home', href: ROUTES.HOME, icon: 'Home' },
         { name: 'Intro', href: ROUTES.INTRO, icon: 'Sparkles' },
-        { name: 'Webshop', href: ROUTES.WEBSHOP, icon: 'Shirt' },
+        { name: 'Merch', href: ROUTES.MERCH, icon: 'Shirt' },
         { name: 'Lidmaatschap', href: ROUTES.MEMBERSHIP, icon: 'User' },
         { name: 'Activiteiten', href: ROUTES.ACTIVITIES, icon: 'CalendarDays' },
         { name: 'Commissies', href: ROUTES.COMMITTEES, icon: 'Users' },

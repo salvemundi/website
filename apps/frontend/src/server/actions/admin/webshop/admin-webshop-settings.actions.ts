@@ -15,7 +15,7 @@ export async function toggleWebshopVisibility(): Promise<{ success: boolean; sho
     if (isAccEnvironment()) {
         return { success: false, error: 'Op de acceptatie-omgeving staan alle modules altijd aan.' };
     }
-    const route = '/webshop';
+    const route = '/merch';
 
     try {
         const rows = await db.select({

@@ -57,7 +57,7 @@ export const webshopPreorderLineFormSchema = z.object({
 export type WebshopPreorderLineForm = z.infer<typeof webshopPreorderLineFormSchema>;
 
 export const webshopPreorderFormSchema = z.object({
-    drop_window_id: z.number().min(1, 'Drop is verplicht'),
+    drop_window_id: z.number().min(0).nullable().optional(),
     lines: z.array(webshopPreorderLineFormSchema).min(1, 'Voeg minimaal 1 product toe'),
     first_name: z.string().min(1, 'Voornaam is verplicht'),
     last_name: z.string().min(1, 'Achternaam is verplicht'),

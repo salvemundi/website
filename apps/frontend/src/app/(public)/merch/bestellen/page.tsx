@@ -24,7 +24,7 @@ function BlockedCard({ icon: Icon, title, message }: { icon: typeof Lock; title:
                 <Icon className="w-16 h-16 text-(--theme-purple) mx-auto mb-6" />
                 <h1 className="text-2xl font-black text-(--theme-purple) mb-4">{title}</h1>
                 <p className="text-(--text-muted) mb-8 leading-relaxed">{message}</p>
-                <BackButton href="/webshop" text="Terug naar webshop" />
+                <BackButton href="/merch" text="Terug naar merch" />
             </div>
         </div>
     );
@@ -46,16 +46,19 @@ export default async function WebshopBestellenPage({ searchParams }: PageProps) 
     const user = session?.user as MembershipUserData | undefined;
     const isLoggedIn = !!session?.user;
     const isMember = user?.membership_status === 'active';
-    const isDropOpen = product.drop_window?.status === 'open';
+    const isDropOpen = !product.drop_window || product.drop_window.status === 'open';
+    const isSoldOut = product.stock_quantity === 0;
 
     return (
         <PublicPageShell>
             <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 pt-8 pb-16 sm:pb-24">
                 <div className="mb-6">
-                    <BackButton href={`/webshop/${product.slug}`} title="Terug naar product" />
+                    <BackButton href={`/merch/${product.slug}`} title="Terug naar product" />
                 </div>
 
-                {!isDropOpen ? (
+                {isSoldOut ? (
+                    <BlockedCard icon={Lock} title="Uitverkocht" message="Dit product is helaas uitverkocht." />
+                ) : !isDropOpen ? (
                     <BlockedCard icon={Lock} title="Drop gesloten" message="Deze drop is gesloten voor nieuwe bestellingen." />
                 ) : !isLoggedIn ? (
                     <BlockedCard icon={LogIn} title="Log in om te bestellen" message="Je moet ingelogd zijn met je Salve Mundi account om een bestelling te plaatsen." />

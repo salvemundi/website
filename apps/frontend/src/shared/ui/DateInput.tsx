@@ -18,8 +18,9 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(({
     id,
     ...props
 }, ref) => {
-    const contextId = useFormFieldOptional()?.inputId;
-    const inputId = id ?? contextId;
+    const fieldContext = useFormFieldOptional();
+    const inputId = id ?? fieldContext?.inputId;
+    const isError = error ?? fieldContext?.hasError;
 
     const formatDisplayValue = (val: string) => {
         if (!val) return '';
@@ -60,7 +61,7 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(({
             placeholder={placeholder}
             value={formatDisplayValue(value)}
             onAccept={handleAccept}
-            className={`form-input ${error ? 'border-theme-error ring-1 ring-theme-error' : ''} ${props.className ?? ''}`}
+            className={`form-input ${isError ? 'border-theme-error ring-1 ring-theme-error' : ''} ${props.className ?? ''}`}
             type="text"
             inputMode="numeric"
             autoComplete="off"

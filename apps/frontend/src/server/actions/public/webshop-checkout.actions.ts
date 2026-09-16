@@ -6,7 +6,7 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import { webshopPreorderFormSchema, type WebshopPreorderForm } from '@salvemundi/validations/schema/webshop.zod';
 import { fetchProductByIdDb, countActiveOrdersForProductDb } from '@/server/internal/webshop/webshop-product-db.utils';
-import { insertPreorderDb, insertPreorderLinesDb, fetchPreorderByIdDb } from '@/server/internal/webshop/webshop-preorder-db.utils';;
+import { insertPreorderWithStockDb, fetchPreorderByIdDb, InsufficientStockError } from '@/server/internal/webshop/webshop-preorder-db.utils';;
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteiten/activiteiten.utils';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -50,7 +50,7 @@ async function buildFinancePaymentRequest(preorderId: number) {
     const FINANCE_SERVICE_URL = getFinanceServiceUrl();
     if (!FINANCE_SERVICE_URL) return { success: false as const, error: 'Betaalservice niet geconfigureerd.' };
 
-    const redirectUrl = `${process.env.PUBLIC_URL || ''}/webshop/bevestiging?preorder=${preorderId}&token=${preorder.access_token}`;
+    const redirectUrl = `${process.env.PUBLIC_URL || ''}/merch/bevestiging?preorder=${preorderId}&token=${preorder.access_token}`;
 
     try {
         const response = await fetchWithTimeout(`${FINANCE_SERVICE_URL}/api/finance/create`, {
@@ -113,7 +113,7 @@ export async function submitPreorderAndInitiatePayment(formData: WebshopPreorder
         if (!product || !product.is_active) {
             return { success: false, error: 'Dit product is niet meer beschikbaar.' };
         }
-        if (!product.drop_window || product.drop_window.id !== data.drop_window_id || product.drop_window.status !== 'open') {
+        if (product.drop_window && (product.drop_window.id !== data.drop_window_id || product.drop_window.status !== 'open')) {
             return { success: false, error: 'Deze drop is gesloten voor nieuwe bestellingen.' };
         }
 
@@ -135,36 +135,37 @@ export async function submitPreorderAndInitiatePayment(formData: WebshopPreorder
         const unitPrice = Number(product.price);
         const subtotal = unitPrice * line.quantity;
 
-        const preorderId = await insertPreorderDb({
-            user_id: session.user.id,
-            drop_window_id: product.drop_window.id,
-            first_name: data.first_name,
-            last_name: data.last_name,
-            email: data.email,
-            phone_number: data.phone_number,
-            status: 'awaiting_deposit',
-            subtotal_amount: subtotal.toFixed(2),
-            // No deposit concept anymore — the full price is charged upfront. This column stays
-            // notNull in the DB, so it's kept equal to the subtotal rather than dropped.
-            deposit_amount: subtotal.toFixed(2),
-            terms_accepted: data.terms_accepted,
-            pickup_notes: data.pickup_notes || null,
-            access_token: crypto.randomUUID(),
-        });
-
-        if (!preorderId) {
-            return { success: false, error: 'Bestelling aanmaken mislukt.' };
+        let preorderId: number;
+        try {
+            preorderId = await insertPreorderWithStockDb({
+                user_id: session.user.id,
+                drop_window_id: product.drop_window?.id ?? null,
+                first_name: data.first_name,
+                last_name: data.last_name,
+                email: data.email,
+                phone_number: data.phone_number,
+                status: 'awaiting_deposit',
+                subtotal_amount: subtotal.toFixed(2),
+                // No deposit concept anymore — the full price is charged upfront. This column stays
+                // notNull in the DB, so it's kept equal to the subtotal rather than dropped.
+                deposit_amount: subtotal.toFixed(2),
+                terms_accepted: data.terms_accepted,
+                pickup_notes: data.pickup_notes || null,
+                access_token: crypto.randomUUID(),
+            }, {
+                product_id: product.id,
+                variant_id: line.variant_id ?? null,
+                quantity: line.quantity,
+                unit_price: unitPrice.toFixed(2),
+                product_name_snapshot: product.name,
+                variant_label_snapshot: variantLabel,
+            });
+        } catch (error) {
+            if (error instanceof InsufficientStockError) {
+                return { success: false, error: error.message };
+            }
+            throw error;
         }
-
-        await insertPreorderLinesDb([{
-            preorder_id: preorderId,
-            product_id: product.id,
-            variant_id: line.variant_id ?? null,
-            quantity: line.quantity,
-            unit_price: unitPrice.toFixed(2),
-            product_name_snapshot: product.name,
-            variant_label_snapshot: variantLabel,
-        }]);
 
         const payment = await buildFinancePaymentRequest(preorderId);
         if (!payment.success) {
