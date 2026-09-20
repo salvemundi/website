@@ -8,6 +8,9 @@ export interface Schema {
   auth_sessions: AuthSession[];
   club_members: ClubMember[];
   clubs: Club[];
+  cobo: Cobo[];
+  cobo_board_preferences: CoboBoardPreference[];
+  cobo_guest_boards: CoboGuestBoard[];
   committee_members: CommitteeMember[];
   committees: Committee[];
   contacts: Contact[];
@@ -157,6 +160,40 @@ export interface Club {
   website_link: string | null;
   description: string | null;
   image: string | DirectusFile<Schema> | null;
+}
+
+export interface Cobo {
+  id: number;
+  title: string | null;
+  date: string | "datetime" | null;
+  location: string | null;
+  description: string | null;
+  date_created: string | "datetime";
+  date_updated: string | "datetime";
+}
+
+export interface CoboBoardPreference {
+  id: number;
+  cobo_id: number | Cobo | null;
+  user_id: string | DirectusUser<Schema> | null;
+  drinks_alcohol: boolean | null;
+  vetoes: string | null;
+  dietary_requirements: string | null;
+  notes: string | null;
+  date_created: string | "datetime";
+  date_updated: string | "datetime";
+}
+
+export interface CoboGuestBoard {
+  id: number;
+  cobo_id: number | Cobo | null;
+  board_name: string | null;
+  activity_type: "shotjes" | "watervallen" | "shotgun" | string | null;
+  activity_custom: string | null;
+  position: number | null;
+  status: "waiting" | "current" | "completed" | "late" | string | null;
+  date_created: string | "datetime";
+  date_updated: string | "datetime";
 }
 
 export interface CommitteeMember {
@@ -862,6 +899,7 @@ export interface WebshopProductVariant {
   sku: string | null;
   is_active: boolean | null;
   display_order: number | null;
+  stock_quantity: number | null;
 }
 
 export interface WebshopProduct {
@@ -879,6 +917,7 @@ export interface WebshopProduct {
   created_at: string | "datetime" | null;
   updated_at: string | "datetime" | null;
   max_orders: number | null;
+  stock_quantity: number | null;
 }
 
 export interface WhatsappGroup {

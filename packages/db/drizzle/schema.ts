@@ -1,4 +1,4 @@
-import { pgTable, unique, serial, varchar, index, foreignKey, check, integer, date, timestamp, uuid, text, json, boolean, jsonb, doublePrecision, real, bigint, inet, numeric, time, bigserial } from "drizzle-orm/pg-core"
+import { pgTable, unique, serial, varchar, index, foreignKey, check, integer, date, timestamp, uuid, text, boolean, json, jsonb, doublePrecision, real, bigint, inet, numeric, time, bigserial } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -38,6 +38,16 @@ export const intro_group_attendance = pgTable("intro_group_attendance", {
 	check("intro_group_attendance_status_check", sql`(status)::text = ANY ((ARRAY['not_reported'::character varying, 'present'::character varying, 'went_home'::character varying, 'home'::character varying, 'staying_out'::character varying])::text[])`),
 ]);
 
+export const cobo = pgTable("cobo", {
+	id: serial().primaryKey().notNull(),
+	title: varchar({ length: 255 }),
+	date: timestamp({ mode: 'string' }),
+	location: varchar({ length: 255 }).default('Borrelbar Eindhoven'),
+	description: text(),
+	date_created: timestamp({ mode: 'string' }).notNull(),
+	date_updated: timestamp({ mode: 'string' }).notNull(),
+});
+
 export const intro_group_member_notes = pgTable("intro_group_member_notes", {
 	id: serial().primaryKey().notNull(),
 	intro_group_member_id: integer().notNull(),
@@ -55,6 +65,29 @@ export const intro_group_member_notes = pgTable("intro_group_member_notes", {
 			columns: [table.created_by],
 			foreignColumns: [directus_users.id],
 			name: "intro_group_member_notes_created_by_fkey"
+		}).onDelete("set null"),
+]);
+
+export const cobo_board_preferences = pgTable("cobo_board_preferences", {
+	id: serial().primaryKey().notNull(),
+	cobo_id: integer(),
+	user_id: uuid(),
+	drinks_alcohol: boolean().default(true),
+	vetoes: varchar({ length: 255 }),
+	dietary_requirements: varchar({ length: 255 }),
+	notes: text(),
+	date_created: timestamp({ mode: 'string' }).notNull(),
+	date_updated: timestamp({ mode: 'string' }).notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.cobo_id],
+			foreignColumns: [cobo.id],
+			name: "cobo_board_preferences_cobo_id_foreign"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.user_id],
+			foreignColumns: [directus_users.id],
+			name: "cobo_board_preferences_user_id_foreign"
 		}).onDelete("set null"),
 ]);
 
@@ -104,6 +137,24 @@ export const vacancy_submissions = pgTable("vacancy_submissions", {
 			foreignColumns: [vacancies.id],
 			name: "vacancy_submissions_approved_vacancy_id_foreign"
 		}).onDelete("set null"),
+]);
+
+export const cobo_guest_boards = pgTable("cobo_guest_boards", {
+	id: serial().primaryKey().notNull(),
+	cobo_id: integer(),
+	board_name: varchar({ length: 255 }),
+	activity_type: varchar({ length: 255 }),
+	activity_custom: text(),
+	position: integer(),
+	status: varchar({ length: 255 }).default('waiting'),
+	date_created: timestamp({ mode: 'string' }).notNull(),
+	date_updated: timestamp({ mode: 'string' }).notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.cobo_id],
+			foreignColumns: [cobo.id],
+			name: "cobo_guest_boards_cobo_id_foreign"
+		}).onDelete("cascade"),
 ]);
 
 export const vacancies = pgTable("vacancies", {
@@ -1849,6 +1900,24 @@ export const intro_planning_signups = pgTable("intro_planning_signups", {
 	unique("intro_planning_signups_intro_planning_id_user_id_key").on(table.intro_planning_id, table.user_id),
 ]);
 
+export const webshop_product_variants = pgTable("webshop_product_variants", {
+	id: serial().primaryKey().notNull(),
+	product_id: integer().notNull(),
+	size: varchar({ length: 255 }),
+	color: varchar({ length: 255 }),
+	sku: varchar({ length: 255 }),
+	is_active: boolean().default(true),
+	display_order: integer().default(0),
+	stock_quantity: integer(),
+}, (table) => [
+	index("idx_webshop_product_variants_product").using("btree", table.product_id.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.product_id],
+			foreignColumns: [webshop_products.id],
+			name: "webshop_product_variants_product_id_webshop_products_id_fk"
+		}).onDelete("cascade"),
+]);
+
 export const intro_settings = pgTable("intro_settings", {
 	id: serial().primaryKey().notNull(),
 	planning_image: uuid(),
@@ -2104,24 +2173,6 @@ export const directus_deployment_runs = pgTable("directus_deployment_runs", {
 		}).onDelete("set null"),
 ]);
 
-export const webshop_product_variants = pgTable("webshop_product_variants", {
-	id: serial().primaryKey().notNull(),
-	product_id: integer().notNull(),
-	size: varchar({ length: 255 }),
-	color: varchar({ length: 255 }),
-	sku: varchar({ length: 255 }),
-	is_active: boolean().default(true),
-	display_order: integer().default(0),
-	stock_quantity: integer(),
-}, (table) => [
-	index("idx_webshop_product_variants_product").using("btree", table.product_id.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-			columns: [table.product_id],
-			foreignColumns: [webshop_products.id],
-			name: "webshop_product_variants_product_id_webshop_products_id_fk"
-		}).onDelete("cascade"),
-]);
-
 export const webshop_drop_windows = pgTable("webshop_drop_windows", {
 	id: serial().primaryKey().notNull(),
 	name: varchar({ length: 255 }).notNull(),
@@ -2197,32 +2248,6 @@ export const webshop_preorder_lines = pgTable("webshop_preorder_lines", {
 		}).onDelete("set null"),
 ]);
 
-export const webshop_products = pgTable("webshop_products", {
-	id: serial().primaryKey().notNull(),
-	drop_window_id: integer(),
-	type: varchar({ length: 255 }).default('item').notNull(),
-	name: varchar({ length: 255 }).notNull(),
-	slug: varchar({ length: 255 }).notNull(),
-	description: text(),
-	price: numeric({ precision: 10, scale:  5 }).notNull(),
-	deposit_amount: numeric({ precision: 10, scale:  5 }).notNull(),
-	size_chart: jsonb(),
-	is_active: boolean().default(true),
-	display_order: integer().default(0),
-	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
-	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
-	max_orders: integer(),
-	stock_quantity: integer(),
-}, (table) => [
-	index("idx_webshop_products_drop_window").using("btree", table.drop_window_id.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-			columns: [table.drop_window_id],
-			foreignColumns: [webshop_drop_windows.id],
-			name: "webshop_products_drop_window_id_webshop_drop_windows_id_fk"
-		}).onDelete("set null"),
-	unique("uq_webshop_products_slug").on(table.slug),
-]);
-
 export const intro_groups = pgTable("intro_groups", {
 	id: serial().primaryKey().notNull(),
 	name: varchar({ length: 255 }).notNull(),
@@ -2278,4 +2303,30 @@ export const intro_group_members = pgTable("intro_group_members", {
 			foreignColumns: [directus_users.id],
 			name: "intro_group_members_added_by_fkey"
 		}).onDelete("set null"),
+]);
+
+export const webshop_products = pgTable("webshop_products", {
+	id: serial().primaryKey().notNull(),
+	drop_window_id: integer(),
+	type: varchar({ length: 255 }).default('item').notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	slug: varchar({ length: 255 }).notNull(),
+	description: text(),
+	price: numeric({ precision: 10, scale:  5 }).notNull(),
+	deposit_amount: numeric({ precision: 10, scale:  5 }).notNull(),
+	size_chart: jsonb(),
+	is_active: boolean().default(true),
+	display_order: integer().default(0),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+	max_orders: integer(),
+	stock_quantity: integer(),
+}, (table) => [
+	index("idx_webshop_products_drop_window").using("btree", table.drop_window_id.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.drop_window_id],
+			foreignColumns: [webshop_drop_windows.id],
+			name: "webshop_products_drop_window_id_webshop_drop_windows_id_fk"
+		}).onDelete("set null"),
+	unique("uq_webshop_products_slug").on(table.slug),
 ]);

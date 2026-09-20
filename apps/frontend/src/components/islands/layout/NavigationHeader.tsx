@@ -40,6 +40,7 @@ const NavigationHeader = ({
         { name: 'Activiteiten', href: ROUTES.ACTIVITIES, icon: 'CalendarDays' },
         { name: 'Commissies', href: ROUTES.COMMITTEES, icon: 'Users' },
         { name: 'Kroegentocht', href: ROUTES.PUB_CRAWL, icon: 'Beer' },
+        { name: 'CoBo', href: ROUTES.COBO, icon: 'Wine' },
         { name: 'Reis', href: ROUTES.TRIP, icon: 'Map' },
         { name: 'Safe Havens', href: ROUTES.SAFE_HAVENS, icon: 'Shield' },
         { name: 'Stickers', href: ROUTES.STICKERS, icon: 'MapPin' },

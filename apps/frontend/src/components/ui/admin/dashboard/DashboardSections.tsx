@@ -16,7 +16,8 @@ import {
     Layout,
     ShoppingBag,
     Briefcase,
-    FileSignature
+    FileSignature,
+    Wine
 } from 'lucide-react';
 import {
     ActionCard
@@ -45,6 +46,7 @@ export function DashboardHub({
                 { title: "Intro", value: stats.introSignups, icon: <FileText />, href: "/beheer/intro", colorClass: "blue" as const, disabled: !permissions.includes('intro') },
                 { title: "Reis", value: stats.reisSignups, icon: <Globe />, href: "/beheer/reis", colorClass: "teal" as const, disabled: !permissions.includes('reis') },
                 { title: "Kroegentocht", value: stats.pubCrawlSignups, icon: <Ticket />, href: "/beheer/kroegentocht", colorClass: "orange" as const, disabled: !permissions.includes('kroegentocht') },
+                { title: "CoBo", value: "Beheer", icon: <Wine />, href: "/beheer/cobo", colorClass: "purple" as const, disabled: !permissions.includes('cobo') },
             ].filter(i => !i.disabled)
         },
         {

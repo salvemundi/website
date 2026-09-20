@@ -18,7 +18,8 @@ export enum AdminResource {
     ActivitiesEdit = 'admin:activities:edit',
     Webshop = 'admin:webshop',
     WebshopPickup = 'admin:webshop:pickup',
-    Nda = 'admin:nda'
+    Nda = 'admin:nda',
+    Cobo = 'admin:cobo'
 }
 
 export interface PermissionRequirement {
@@ -41,11 +42,13 @@ export const COMMITTEES = {
     MARKETING: '0140644c-be1e-438f-9db1-9c082283abf2',
     ACTIVITEITEN: 'd4686b83-4679-46ed-9fd8-c6ff3c6a265f',
     REIS: '4c027a6d-0307-4aee-b719-23d67bcd0959',
-    KANDI: 'adf4d258-a404-4bc0-ae73-6bfa429a1537'
+    KANDI: 'adf4d258-a404-4bc0-ae73-6bfa429a1537',
+    COBO: 'f550025a-3dc3-4325-bc1b-256466066df9'
 };
 
 export interface FeatureRegistry {
     activiteiten: readonly string[];
+    cobo: readonly string[];
     commissies: readonly string[];
     coupons: readonly string[];
     impersonate: readonly string[];
@@ -66,6 +69,7 @@ export interface FeatureRegistry {
 export const FEATURE_ACCESS: FeatureRegistry = {
     // Content group dashboard.
     activiteiten: [COMMITTEES.KAMP, COMMITTEES.FEEST, COMMITTEES.STUDY, COMMITTEES.ACTIVITEITEN, COMMITTEES.BESTUUR, COMMITTEES.KANDI],
+    cobo: [COMMITTEES.COBO, COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     intro: [COMMITTEES.INTRO, COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     kroegentocht: [COMMITTEES.FEEST, COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     reis: [COMMITTEES.REIS, COMMITTEES.BESTUUR, COMMITTEES.KANDI],
