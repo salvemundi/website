@@ -263,7 +263,7 @@ export async function getFeatureFlagSettings(routeMatch: string) {
     }
 
     if (isAccEnvironment()) {
-        return { show: true, disabled_message: null, canToggleVisibility: false };
+        return { show: true, disabled_message: null, canToggleVisibility };
     }
 
     const rows = await db.select({ is_active: schema.feature_flags.is_active, message: schema.feature_flags.message })
