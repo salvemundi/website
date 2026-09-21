@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
         }
 
         const activities = await getActivities(email);
+        const origin = request.nextUrl.origin;
 
         const events = activities.map(activity => {
             const isPersonalized = Boolean(email);
@@ -44,13 +45,12 @@ export async function GET(request: NextRequest) {
             const title = `${emoji}${activity.name || 'Activiteit'}`;
 
             const datePart = activity.event_date ? activity.event_date.split('T')[0] : new Date().toISOString().split('T')[0];
-            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://salvemundi.nl';
-            const activityUrl = `${baseUrl}/activiteiten/${activity.id}`;
+            const activityUrl = `${origin}/activiteiten/${activity.id}`;
             
             const descriptionParts: string[] = [];
             if (isPersonalized) {
                 if (isSignedUp) {
-                    descriptionParts.push(`Je bent ingeschreven! Bekijk je tickets op: ${baseUrl}/mijn-tickets`);
+                    descriptionParts.push(`Je bent ingeschreven! Bekijk je tickets op: ${origin}/mijn-tickets`);
                 } else {
                     descriptionParts.push(`Bekijk of schrijf je in via: ${activityUrl}`);
                 }
@@ -61,7 +61,6 @@ export async function GET(request: NextRequest) {
             if (activity.short_description) {
                 descriptionParts.push(`\n${activity.short_description}`);
             } else if (activity.description) {
-                // Strip HTML tags for clean text presentation in calendar description
                 const cleanDesc = activity.description.replace(/<[^>]*>/g, '').trim();
                 if (cleanDesc) descriptionParts.push(`\n${cleanDesc}`);
             }

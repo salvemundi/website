@@ -55,7 +55,6 @@ export default function CalendarExportButton({
         return path;
     };
 
-    // Close on Escape or click outside
     useEffect(() => {
         if (!isOpen) return;
 
@@ -88,7 +87,6 @@ export default function CalendarExportButton({
         try {
             await navigator.clipboard.writeText(webcalUrl);
         } catch {
-            // clipboard not available, direct navigation fallback
         }
         window.location.href = webcalUrl;
         setIsOpen(false);
@@ -138,7 +136,6 @@ export default function CalendarExportButton({
 
     return (
         <div className="relative inline-block text-left">
-            {/* Main Trigger Button */}
             <button
                 type="button"
                 onClick={() => setIsOpen(true)}
@@ -155,7 +152,6 @@ export default function CalendarExportButton({
                 <span>Agenda koppelen</span>
             </button>
 
-            {/* Modal / Dialog Backdrop */}
             {isOpen && (
                 <div 
                     className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
@@ -163,7 +159,6 @@ export default function CalendarExportButton({
                     aria-modal="true"
                     aria-labelledby={modalTitleId}
                 >
-                    {/* Modal Content */}
                     <div 
                         ref={modalRef}
                         className={cn(
@@ -172,7 +167,6 @@ export default function CalendarExportButton({
                             "animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-2 duration-200"
                         )}
                     >
-                        {/* Header */}
                         <div className="flex items-start justify-between gap-4 border-b border-border-color/20 pb-4">
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2">
@@ -207,7 +201,6 @@ export default function CalendarExportButton({
                             </button>
                         </div>
 
-                        {/* Google Instructions Banner (if opened via Google) */}
                         {showGoogleInstructions && (
                             <div className="rounded-2xl border border-purple-500/30 bg-purple-500/5 dark:bg-purple-500/10 p-4 space-y-2.5 animate-in fade-in duration-200">
                                 <div className="flex items-start justify-between gap-2">
@@ -248,13 +241,11 @@ export default function CalendarExportButton({
                             </div>
                         )}
 
-                        {/* Platform Options */}
                         <div className="space-y-2">
                             <p className="text-[10px] font-bold tracking-widest uppercase text-(--text-muted) px-1">
                                 Kies jouw agenda
                             </p>
 
-                            {/* Google Calendar */}
                             <button
                                 type="button"
                                 onClick={() => { void handleGoogleCalendar(); }}
@@ -274,7 +265,6 @@ export default function CalendarExportButton({
                                 <ExternalLink className="h-4 w-4 text-(--text-muted) group-hover:text-purple-500 transition-colors shrink-0" />
                             </button>
 
-                            {/* Apple Calendar */}
                             <button
                                 type="button"
                                 onClick={() => { void handleAppleCalendar(); }}
@@ -294,7 +284,6 @@ export default function CalendarExportButton({
                                 <ExternalLink className="h-4 w-4 text-(--text-muted) group-hover:text-purple-500 transition-colors shrink-0" />
                             </button>
 
-                            {/* Outlook */}
                             <button
                                 type="button"
                                 onClick={handleOutlookCalendar}
@@ -315,9 +304,7 @@ export default function CalendarExportButton({
                             </button>
                         </div>
 
-                        {/* Secondary Actions: Download & Copy */}
                         <div className="pt-2 border-t border-border-color/20 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {/* Download .ics */}
                             <a
                                 href={getDownloadUrl()}
                                 download="salve-mundi-activiteiten.ics"

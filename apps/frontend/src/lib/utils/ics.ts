@@ -5,11 +5,8 @@ export interface IcsEvent {
     title: string;
     description?: string | null;
     location?: string | null;
-    /** Local (Europe/Amsterdam) date, e.g. 2026-08-24 */
     date: string;
-    /** Local (Europe/Amsterdam) start time, e.g. 14:30 or 14:30:00 */
     timeStart: string;
-    /** Local (Europe/Amsterdam) end time, optional */
     timeEnd?: string | null;
 }
 
@@ -66,9 +63,6 @@ export function buildIcsCalendar(events: IcsEvent[], calendarName: string): stri
     for (const event of events) {
         const dtStart = toUtcStamp(event.date, event.timeStart);
         if (!dtStart) continue;
-        // An end time not after the start time (e.g. "00:00") means the event
-        // runs past midnight — attribute it to the following calendar date so
-        // DTEND never lands before DTSTART, which some importers (Google) reject.
         const endDate = event.timeEnd && event.timeEnd.slice(0, 5) <= event.timeStart.slice(0, 5)
             ? addOneDay(event.date)
             : event.date;

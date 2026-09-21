@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 function getCalendarSecret(): string {
     const secret = process.env.BETTER_AUTH_SECRET || process.env.DIRECTUS_SECRET || process.env.INTERNAL_SERVICE_TOKEN;
     if (!secret || secret.length < 16) {
-        throw new Error('[calendar-token] Server authentication secret is missing or insufficient in environment variables.');
+        throw new Error('[calendar-token.ts][getCalendarSecret] Server authentication secret is missing or insufficient in environment variables.');
     }
     return secret;
 }
