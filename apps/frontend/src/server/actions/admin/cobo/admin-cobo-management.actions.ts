@@ -2,7 +2,7 @@
 
 import { enforceFeatureAccess } from '@/server/actions/admin/admin-utils.actions';
 import { db, schema } from '@salvemundi/db';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, inArray, type SQL } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { safeConsoleError } from '@/server/utils/logger';
 import {
@@ -169,9 +169,6 @@ export async function addGuestBoardAction(input: {
             date_updated: now
         }).returning();
 
-        revalidatePath('/cobo');
-        revalidatePath('/beheer/cobo');
-
         return { success: true as const, guestBoard: created };
     } catch (error) {
         safeConsoleError('[admin-cobo-management.actions.ts][addGuestBoardAction] Error:', error);
@@ -191,9 +188,6 @@ export async function updateGuestBoardStatusAction(id: number, status: string) {
             })
             .where(eq(schema.cobo_guest_boards.id, id));
 
-        revalidatePath('/cobo');
-        revalidatePath('/beheer/cobo');
-
         return { success: true as const };
     } catch (error) {
         safeConsoleError(`[admin-cobo-management.actions.ts][updateGuestBoardStatusAction] Error for id ${id}:`, error);
@@ -201,32 +195,32 @@ export async function updateGuestBoardStatusAction(id: number, status: string) {
     }
 }
 
-/**
- * Volgorde van gastbesturen bijwerken na Drag & Drop.
- */
 export async function reorderGuestBoardsAction(coboId: number, orderedIds: number[]) {
     await enforceFeatureAccess('cobo');
+
+    if (orderedIds.length === 0) {
+        return { success: true as const };
+    }
 
     try {
         const now = new Date().toISOString();
 
-        // Batch update positie
-        await Promise.all(
-            orderedIds.map((id, index) =>
-                db.update(schema.cobo_guest_boards)
-                    .set({
-                        position: index + 1,
-                        date_updated: now
-                    })
-                    .where(and(
-                        eq(schema.cobo_guest_boards.id, id),
-                        eq(schema.cobo_guest_boards.cobo_id, coboId)
-                    ))
-            )
-        );
+        const sqlChunks: SQL[] = [sql`CASE `];
+        for (let i = 0; i < orderedIds.length; i++) {
+            sqlChunks.push(sql`WHEN ${schema.cobo_guest_boards.id} = ${orderedIds[i]} THEN ${i + 1} `);
+        }
+        sqlChunks.push(sql`ELSE ${schema.cobo_guest_boards.position} END`);
+        const finalCaseSql = sql.join(sqlChunks, sql.raw(''));
 
-        revalidatePath('/cobo');
-        revalidatePath('/beheer/cobo');
+        await db.update(schema.cobo_guest_boards)
+            .set({
+                position: finalCaseSql,
+                date_updated: now
+            })
+            .where(and(
+                eq(schema.cobo_guest_boards.cobo_id, coboId),
+                inArray(schema.cobo_guest_boards.id, orderedIds)
+            ));
 
         return { success: true as const };
     } catch (error) {
@@ -241,9 +235,6 @@ export async function deleteGuestBoardAction(id: number) {
     try {
         await db.delete(schema.cobo_guest_boards)
             .where(eq(schema.cobo_guest_boards.id, id));
-
-        revalidatePath('/cobo');
-        revalidatePath('/beheer/cobo');
 
         return { success: true as const };
     } catch (error) {

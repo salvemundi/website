@@ -29,7 +29,7 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
 
         const fetchLivePreferences = async () => {
             try {
-                const res = await fetch(`/api/cobo/live?coboId=${coboId}`, {
+                const res = await fetch(`/api/cobo/live?coboId=${coboId}&includeMembers=true`, {
                     cache: 'no-store'
                 });
                 if (res.ok) {

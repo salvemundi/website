@@ -11,7 +11,7 @@ import CoboBoardPreferencesManager from './CoboBoardPreferencesManager';
 import CoboEventModal from './CoboEventModal';
 import { useAdminToast } from '@/hooks/use-admin-toast';
 import AdminToast from '@/components/ui/admin/AdminToast';
-import { Users, Shield, Calendar, MapPin, Sparkles } from 'lucide-react';
+import { Users, Shield, Calendar, MapPin, Plus } from 'lucide-react';
 import { formatDate } from '@/shared/lib/utils/date';
 
 interface Props {
@@ -45,12 +45,11 @@ export default function CoboManagementIsland({
         }
     };
 
-    // Als er geen actieve CoBo is aangemaakt
     if (!activeEvent) {
         return (
             <div className="py-16 max-w-xl mx-auto text-center space-y-6">
                 <div className="space-y-2">
-                    <h2 className="text-2xl font-black text-text-main">Nog geen CoBo evenement aangemaakt</h2>
+                    <h2 className="text-2xl font-bold text-text-main">Nog geen CoBo evenement aangemaakt</h2>
                     <p className="text-sm text-text-muted">
                         Maak een CoBo evenement aan om te starten met bestuursvoorkeuren en de gasten-wachtlijst.
                     </p>
@@ -61,9 +60,9 @@ export default function CoboManagementIsland({
                         setEventToEdit(null);
                         setIsModalOpen(true);
                     }}
-                    className="beheer-button px-8 py-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold text-sm shadow-xl hover:shadow-purple-500/25 transition-all cursor-pointer inline-flex items-center gap-2 active:scale-95"
+                    className="beheer-button px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold text-sm transition-colors cursor-pointer inline-flex items-center gap-2"
                 >
-                    <Sparkles className="h-5 w-5" />
+                    <Plus className="h-4 w-4" />
                     <span>Eerste CoBo Aanmaken</span>
                 </button>
 
@@ -80,23 +79,22 @@ export default function CoboManagementIsland({
 
     return (
         <div className="space-y-6">
-            {/* Header info badge card */}
-            <div className="bg-bg-card rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-border-color shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div className="flex items-center gap-4 min-w-0">
+            <div className="bg-bg-card rounded-2xl p-4 sm:p-5 border border-border-color flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
                     <div className="min-w-0">
-                        <h2 className="text-xl sm:text-2xl font-black text-text-main truncate">
+                        <h2 className="text-lg sm:text-xl font-bold text-text-main truncate">
                             {activeEvent.title || 'CoBo'}
                         </h2>
-                        <div className="flex items-center gap-4 mt-1 text-xs text-text-muted font-medium flex-wrap">
+                        <div className="flex items-center gap-3 mt-1 text-xs text-text-muted font-medium flex-wrap">
                             {activeEvent.date && (
                                 <span className="flex items-center gap-1.5">
-                                    <Calendar className="h-3.5 w-3.5 text-purple-500" />
+                                    <Calendar className="h-3.5 w-3.5 text-purple-600 dark:text-purple-300" />
                                     {formatDate(activeEvent.date)}
                                 </span>
                             )}
                             {activeEvent.location && (
                                 <span className="flex items-center gap-1.5">
-                                    <MapPin className="h-3.5 w-3.5 text-purple-500" />
+                                    <MapPin className="h-3.5 w-3.5 text-purple-600 dark:text-purple-300" />
                                     {activeEvent.location}
                                 </span>
                             )}
@@ -104,31 +102,30 @@ export default function CoboManagementIsland({
                     </div>
                 </div>
 
-                {/* Hoofdtab selector */}
-                <div className="flex items-center gap-2 p-1.5 bg-bg-soft rounded-2xl border border-border-color/60 w-full md:w-auto">
+                <div className="flex items-center gap-1.5 p-1 bg-bg-soft rounded-xl border border-border-color/60 w-full md:w-auto">
                     <button
                         type="button"
                         onClick={() => handleTabChange('queue')}
-                        className={`tab-button flex-1 md:flex-none px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                        className={`tab-button flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2 ${
                             activeTab === 'queue'
-                                ? 'bg-bg-card text-purple-600 dark:text-purple-300 shadow-sm border border-purple-500/20'
+                                ? 'bg-bg-card text-purple-700 dark:text-purple-300 shadow-xs border border-border-color'
                                 : 'text-text-muted hover:text-text-main'
                         }`}
                     >
-                        <Users className="h-4 w-4" />
+                        <Users className="h-3.5 w-3.5" />
                         <span>Gasten Wachtlijst</span>
                     </button>
 
                     <button
                         type="button"
                         onClick={() => handleTabChange('preferences')}
-                        className={`tab-button flex-1 md:flex-none px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                        className={`tab-button flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2 ${
                             activeTab === 'preferences'
-                                ? 'bg-bg-card text-purple-600 dark:text-purple-300 shadow-sm border border-purple-500/20'
+                                ? 'bg-bg-card text-purple-700 dark:text-purple-300 shadow-xs border border-border-color'
                                 : 'text-text-muted hover:text-text-main'
                         }`}
                     >
-                        <Shield className="h-4 w-4" />
+                        <Shield className="h-3.5 w-3.5" />
                         <span>Bestuursvoorkeuren &amp; Veto&apos;s</span>
                     </button>
                 </div>

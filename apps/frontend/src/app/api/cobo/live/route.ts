@@ -6,14 +6,17 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const coboId = searchParams.get('coboId');
+    const includeMembers = searchParams.get('includeMembers') === 'true';
 
     if (!coboId || isNaN(Number(coboId))) {
         return NextResponse.json({ error: 'Geldig coboId is verplicht' }, { status: 400 });
     }
 
+    const coboIdNum = Number(coboId);
+
     const [guestBoards, boardMembers] = await Promise.all([
-        getCoboGuestBoardsDb(Number(coboId)),
-        getActiveBoardMembersDb(Number(coboId))
+        getCoboGuestBoardsDb(coboIdNum),
+        includeMembers ? getActiveBoardMembersDb(coboIdNum) : Promise.resolve(undefined)
     ]);
 
     const currentBoard = guestBoards.find(b => b.status === 'current') || null;
@@ -23,10 +26,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
         success: true,
-        coboId: Number(coboId),
+        coboId: coboIdNum,
         guestBoards,
         allBoards: guestBoards,
-        boardMembers,
+        ...(boardMembers !== undefined && { boardMembers }),
         currentBoard,
         waitingBoards,
         lateBoards,
@@ -38,3 +41,4 @@ export async function GET(request: NextRequest) {
         }
     });
 }
+
