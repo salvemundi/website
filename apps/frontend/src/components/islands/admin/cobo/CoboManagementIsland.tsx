@@ -89,7 +89,7 @@ export default function CoboManagementIsland({
                             {activeEvent.date && (
                                 <span className="flex items-center gap-1.5">
                                     <Calendar className="h-3.5 w-3.5 text-purple-600 dark:text-purple-300" />
-                                    {formatDate(activeEvent.date)}
+                                    {formatDate(activeEvent.date, 'd MMMM yyyy HH:mm')}
                                 </span>
                             )}
                             {activeEvent.location && (

@@ -7,7 +7,7 @@ import CoboActivityBadge from './CoboActivityBadge';
 interface Props {
     currentBoard: CoboGuestBoard | null;
     waitingCount: number;
-    nextBoardName?: string;
+    nextBoardName?: string | null;
     onStatusChange: (id: number, status: string, name: string) => void;
     onNext: () => void;
 }
@@ -43,7 +43,7 @@ export default function CoboCurrentBoardCard({
     return (
         <div className="bg-bg-card rounded-2xl p-6 border border-border-color shadow-xs text-center space-y-4">
             <div className="space-y-2 max-w-xl mx-auto">
-                <h2 className="text-2xl sm:text-3xl font-bold text-text-main tracking-tight break-words">
+                <h2 className="text-2xl sm:text-3xl font-bold text-text-main tracking-tight wrap-break-words">
                     {currentBoard.board_name}
                 </h2>
                 <div className="flex items-center justify-center gap-2 flex-wrap">

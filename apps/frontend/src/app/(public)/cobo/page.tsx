@@ -84,7 +84,7 @@ export default async function CoboPage() {
         getCoboGuestBoardsDb(activeCobo.id)
     ]);
 
-    const formattedDate = activeCobo.date ? formatDate(activeCobo.date) : 'Datum volgt';
+    const formattedDate = activeCobo.date ? formatDate(activeCobo.date, 'd MMMM yyyy HH:mm') : 'Datum volgt';
 
     return (
         <PublicPageShell

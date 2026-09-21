@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { CoboGuestBoard } from '@salvemundi/validations';
-import { Clock, AlertTriangle, Sparkles, UserCheck, Flame, Waves, ArrowRight } from 'lucide-react';
+import { Clock, AlertTriangle, UserCheck, ArrowRight } from 'lucide-react';
 
 interface Props {
     coboId: number;
@@ -61,26 +61,27 @@ export default function CoboPublicQueueIsland({
     const displayedQueue = limit ? allActiveQueue.slice(0, limit) : allActiveQueue;
     const remainingCount = limit ? Math.max(0, allActiveQueue.length - limit) : 0;
 
-    const renderActivityBadge = (type: string | null | undefined, custom?: string | null) => {
+    const renderActivityBadge = (type: string | null | undefined, custom?: string | null, isCurrent: boolean = false) => {
+        const sizeClasses = isCurrent
+            ? 'px-3.5 py-1 rounded-full text-sm font-bold uppercase tracking-wider'
+            : 'px-2.5 py-1 rounded-full text-xs font-semibold';
+
         if (type === 'shotjes') {
             return (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
-                    <Flame className="h-3.5 w-3.5 text-amber-500" />
+                <span className={`inline-flex items-center ${sizeClasses} bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20`}>
                     <span>Shotjes</span>
                 </span>
             );
         }
         if (type === 'watervallen') {
             return (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20">
-                    <Waves className="h-3.5 w-3.5 text-blue-500" />
+                <span className={`inline-flex items-center ${sizeClasses} bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20`}>
                     <span>Watervallen</span>
                 </span>
             );
         }
         return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20">
-                <Sparkles className="h-3.5 w-3.5 text-purple-500" />
+            <span className={`inline-flex items-center ${sizeClasses} bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20`}>
                 <span>{custom || 'Activiteit'}</span>
             </span>
         );
@@ -110,7 +111,7 @@ export default function CoboPublicQueueIsland({
                         <span className="inline-flex items-center px-3.5 py-1 rounded-full text-sm font-bold bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 uppercase tracking-wider">
                             Nu aan de beurt
                         </span>
-                        {renderActivityBadge(currentBoard.activity_type, currentBoard.activity_custom)}
+                        {renderActivityBadge(currentBoard.activity_type, currentBoard.activity_custom, true)}
                     </div>
 
                     <div>

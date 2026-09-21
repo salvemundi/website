@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import type { CoboBoardPreference } from '@salvemundi/validations';
-import { Wine, Ban, Utensils, ShieldCheck, FileText } from 'lucide-react';
+import { Wine } from 'lucide-react';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { FallbackLogo } from '@/components/ui/media/FallbackLogo';
 
@@ -56,7 +56,6 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
         <section className="space-y-8 pt-6 border-t border-border-color/10">
             <div className="flex flex-col items-center text-center">
                 <div className="flex items-center gap-3 text-3xl sm:text-4xl font-black text-theme-purple">
-                    <ShieldCheck className="h-9 w-9 text-purple-600 dark:text-purple-400 shrink-0" />
                     <h2>Het Bestuur &amp; Voorkeuren</h2>
                 </div>
                 <div className="h-1.5 w-24 bg-linear-to-r from-transparent via-purple-500 to-transparent rounded-full my-4" />
@@ -119,7 +118,6 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
 
                                 <div>
                                     <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-text-muted mb-2">
-                                        <Ban className="h-3.5 w-3.5 text-rose-500" />
                                         <span>Veto&apos;s</span>
                                     </div>
 
@@ -144,7 +142,6 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
                                 {Boolean(member.dietary_requirements) && (
                                     <div>
                                         <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-text-muted mb-1">
-                                            <Utensils className="h-3.5 w-3.5 text-amber-500" />
                                             <span>Allergieën</span>
                                         </div>
                                         <p className="text-xs font-medium text-text-main bg-amber-500/10 p-3 rounded-2xl border border-amber-500/20">
@@ -156,7 +153,6 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
                                 {Boolean(member.notes) && (
                                     <div>
                                         <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-text-muted mb-1">
-                                            <FileText className="h-3.5 w-3.5 text-blue-500" />
                                             <span>Opmerking</span>
                                         </div>
                                         <p className="text-xs font-medium text-text-main bg-blue-500/10 p-3 rounded-2xl border border-blue-500/20">

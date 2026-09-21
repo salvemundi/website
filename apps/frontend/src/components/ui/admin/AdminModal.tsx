@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 interface AdminModalProps {
@@ -20,6 +21,12 @@ export default function AdminModal({
     children,
     maxWidth = '2xl'
 }: AdminModalProps) {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     // Handle escape key
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => {
@@ -35,7 +42,7 @@ export default function AdminModal({
         };
     }, [isOpen, onClose]);
 
-    if (!isOpen) return null;
+    if (!isOpen || !mounted) return null;
 
     const maxWidthClasses = new Map([
         ['sm', 'max-w-sm'],
@@ -50,45 +57,48 @@ export default function AdminModal({
         ['7xl', 'max-w-7xl'],
     ]);
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-500">
+    const modalContent = (
+        <div
+            className="fixed inset-0 z-250 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-300"
+            onClick={onClose}
+        >
             <div
                 role="dialog"
                 aria-modal="true"
                 aria-label={title}
-                className={`bg-bg-card/90 backdrop-blur-xl w-full ${maxWidthClasses.get(maxWidth)} squircle-lg shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-border-color/50 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500`}
+                className={`bg-bg-card/95 backdrop-blur-xl w-full ${maxWidthClasses.get(maxWidth) ?? 'max-w-2xl'} rounded-2xl sm:rounded-3xl shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-border-color/60 flex flex-col max-h-[min(90vh,820px)] animate-in zoom-in-95 duration-300 my-auto`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="p-8 border-b border-border-color flex items-center justify-between relative z-10">
-                    <div className="space-y-1">
-                        <h2 className="text-xl font-semibold text-theme-purple tracking-tight">
+                <div className="px-6 py-5 border-b border-border-color flex items-center justify-between relative z-10 shrink-0">
+                    <div className="space-y-0.5 min-w-0 pr-4">
+                        <h2 className="text-lg sm:text-xl font-bold text-purple-700 dark:text-purple-300 tracking-tight truncate">
                             {title}
                         </h2>
                         {subtitle && (
-                            <p className="text-xs font-semibold text-text-muted opacity-60">
+                            <p className="text-xs text-text-muted font-medium line-clamp-1">
                                 {subtitle}
                             </p>
                         )}
                     </div>
                     <button
+                        type="button"
                         onClick={onClose}
                         aria-label="Sluiten"
-                        className="p-4 bg-bg-soft hover:bg-bg-soft/80 text-text-muted hover:text-text-main transition-all squircle active:scale-90 group"
+                        className="icon-button h-9 w-9 rounded-xl bg-bg-soft hover:bg-bg-soft/80 text-text-muted hover:text-text-main transition-all flex items-center justify-center shrink-0 cursor-pointer active:scale-95"
                     >
-                        <X className="h-6 w-6" />
+                        <X className="h-4 w-4" />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar relative z-10">
+                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar relative z-10">
                     {children}
                 </div>
             </div>
-            
-            {/* Click outside to close */}
-            <div className="absolute inset-0 -z-10" onClick={onClose} />
         </div>
     );
+
+    return createPortal(modalContent, document.body);
 }
 
