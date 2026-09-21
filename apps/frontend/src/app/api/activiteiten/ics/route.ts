@@ -4,11 +4,17 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { verifyCalendarToken } from '@/server/auth/calendar-token';
 import { buildIcsCalendar } from '@/lib/utils/ics';
 import { safeConsoleError } from '@/server/utils/logger';
+import { checkRateLimit } from '@/server/utils/ratelimit';
 
 export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
     try {
+        const rateLimitResult = await checkRateLimit('activiteiten-ics-feed', 60, 60, 'Te veel verzoeken. Probeer het over een minuut opnieuw.');
+        if (!rateLimitResult.success) {
+            return new NextResponse('Too Many Requests', { status: 429 });
+        }
+
         const { searchParams } = new URL(request.url);
         const token = searchParams.get('token');
         const download = searchParams.get('download') === '1';

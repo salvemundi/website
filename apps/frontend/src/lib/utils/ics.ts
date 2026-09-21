@@ -28,6 +28,8 @@ function addOneDay(date: string): string {
 
 function escapeIcsText(value: string): string {
     return value
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
         .replace(/\\/g, '\\\\')
         .replace(/;/g, '\\;')
         .replace(/,/g, '\\,')
