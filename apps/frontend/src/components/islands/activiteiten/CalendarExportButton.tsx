@@ -180,9 +180,6 @@ export default function CalendarExportButton({
                                 <p className="text-xs text-(--text-muted) leading-relaxed">
                                     {isLoggedIn ? (
                                         <span className="flex items-center gap-1.5 flex-wrap">
-                                            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
-                                                <Sparkles className="h-3 w-3" /> Live gesynchroniseerd
-                                            </span>
                                             <span>met jouw inschrijfstatus (🟢 ingeschreven / 🔴 niet ingeschreven).</span>
                                         </span>
                                     ) : (
@@ -315,7 +312,6 @@ export default function CalendarExportButton({
                                 <span>Download .ics</span>
                             </a>
 
-                            {/* Copy URL */}
                             <button
                                 type="button"
                                 onClick={() => { void handleCopyGeneralFeed(); }}
