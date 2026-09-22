@@ -1,7 +1,29 @@
 import 'server-only';
 import { db, schema } from '@salvemundi/db';
-import { eq, sql, desc } from 'drizzle-orm';
+import { eq, and, or, count, sql, desc } from 'drizzle-orm';
 import { type EventSignup } from '@salvemundi/validations/directus/schema';
+
+export async function countActiveEventSignupsDb(
+    eventId: number,
+    pendingWindowMinutes: number = 15
+): Promise<number> {
+    const result = await db.select({ value: count() })
+        .from(schema.event_signups)
+        .where(
+            and(
+                eq(schema.event_signups.event_id, eventId),
+                or(
+                    eq(schema.event_signups.payment_status, 'paid'),
+                    and(
+                        eq(schema.event_signups.payment_status, 'open'),
+                        sql`${schema.event_signups.created_at} >= NOW() - (${pendingWindowMinutes} || ' minutes')::interval`
+                    )
+                )
+            )
+        );
+
+    return result[0]?.value ?? 0;
+}
 
 export type EnrichedEvent = {
     id: number;

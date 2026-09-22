@@ -44,7 +44,11 @@ export class PaymentService {
                 product_type: schema.transactions.product_type,
                 coupon_code: schema.transactions.coupon_code,
                 product_name: schema.transactions.product_name,
-                amount: schema.transactions.amount
+                amount: schema.transactions.amount,
+                registration: schema.transactions.registration,
+                pub_crawl_signup: schema.transactions.pub_crawl_signup,
+                trip_signup: schema.transactions.trip_signup,
+                webshop_preorder: schema.transactions.webshop_preorder
             })
             .from(schema.transactions)
             .where(eq(schema.transactions.mollie_id, paymentId))
@@ -71,13 +75,34 @@ export class PaymentService {
 
             if (['failed', 'canceled', 'expired'].includes(newStatus) &&
                 oldStatus !== 'paid' &&
-                !['failed', 'canceled', 'expired'].includes(oldStatus || '') &&
-                transaction.coupon_code) {
-                try {
-                    await fastify.db.execute(sql`UPDATE coupons SET usage_count = GREATEST(0, usage_count - 1) WHERE UPPER(coupon_code) = UPPER(${transaction.coupon_code})`);
-                    fastify.log.info(`[payment-service][coupon] Released coupon ${transaction.coupon_code} for failed/canceled/expired payment ${paymentId}`);
-                } catch (couponErr) {
-                    fastify.log.error({ err: couponErr }, `[payment-service][coupon] Failed to release coupon ${transaction.coupon_code} for payment ${paymentId}`);
+                !['failed', 'canceled', 'expired'].includes(oldStatus || '')) {
+                const regId = metadata?.registrationId || transaction.registration || transaction.pub_crawl_signup || transaction.trip_signup || transaction.webshop_preorder;
+                const regType = metadata?.registrationType || (
+                    transaction.registration ? 'event_signup' :
+                    transaction.pub_crawl_signup ? 'pub_crawl_signup' :
+                    transaction.trip_signup ? 'trip_signup' :
+                    transaction.webshop_preorder ? 'webshop_preorder' : undefined
+                );
+
+                if (regId && regType) {
+                    try {
+                        await RegistrationService.updateStatus(fastify.db, fastify.redis, {
+                            registrationId: regId,
+                            registrationType: regType,
+                            status: newStatus
+                        }, fastify.log);
+                    } catch (regErr) {
+                        fastify.log.error({ err: regErr }, `[payment-service][registration] Failed to update registration status to ${newStatus} for payment ${paymentId}`);
+                    }
+                }
+
+                if (transaction.coupon_code) {
+                    try {
+                        await fastify.db.execute(sql`UPDATE coupons SET usage_count = GREATEST(0, usage_count - 1) WHERE UPPER(coupon_code) = UPPER(${transaction.coupon_code})`);
+                        fastify.log.info(`[payment-service][coupon] Released coupon ${transaction.coupon_code} for failed/canceled/expired payment ${paymentId}`);
+                    } catch (couponErr) {
+                        fastify.log.error({ err: couponErr }, `[payment-service][coupon] Failed to release coupon ${transaction.coupon_code} for payment ${paymentId}`);
+                    }
                 }
             }
         }
