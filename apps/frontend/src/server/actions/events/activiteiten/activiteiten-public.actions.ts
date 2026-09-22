@@ -15,6 +15,7 @@ import {
     getActivityBySlugInternal
 } from "@/server/queries/activiteiten/admin-activiteiten.queries";
 import {
+    countActiveEventSignupsDb,
     createEventSignupDb,
     deleteEventSignupDb,
     fetchUserEventSignupsDb
@@ -62,19 +63,7 @@ export async function getActivityBySlug(slug: string): Promise<Activiteit | null
 }
 
 export async function getActivitySignupCount(eventId: number): Promise<number> {
-    const { db, schema } = await import('@salvemundi/db');
-    const { eq, and, count } = await import('drizzle-orm');
-
-    const countRows = await db.select({ value: count() })
-        .from(schema.event_signups)
-        .where(
-            and(
-                eq(schema.event_signups.event_id, eventId),
-                eq(schema.event_signups.payment_status, 'paid')
-            )
-        );
-
-    return countRows[0]?.value ?? 0;
+    return await countActiveEventSignupsDb(eventId);
 }
 
 export async function checkUserSignupStatus(eventId: number, email: string, userId?: string | null) {

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { intro_group_members, intro_group_attendance, directus_users, intro_group_member_notes, vacancy_submissions, directus_files, vacancies, intro_group_attendance_log, nda_templates, nda_signatures, committees, nda_settings, clubs, club_members, Stickers, Board, Board_Members, contacts, directus_roles, directus_access, directus_policies, directus_comments, directus_dashboards, directus_folders, directus_collections, directus_flows, directus_panels, directus_permissions, directus_presets, directus_activity, directus_revisions, directus_versions, directus_shares, directus_notifications, vacancy_verification_tokens, directus_operations, intro_blogs, vacancy_ict_directions, vacancies_vacancy_ict_directions, documents, events, event_signups, events_directus_users, intro_blog_likes, events_members, hero_banners, intro_blog_gallery, pub_crawl_events, membership_history, pub_crawl_signups, pub_crawl_signups_transactions, transactions, push_notification, vacancy_submission_direction_links, intro_planning, pub_crawl_tickets, intro_parent_signups, trips, vacancy_direction_links, trip_signups, trip_activities, trip_signup_activities, safe_havens, sponsors, intro_confidants, directus_sessions, roles, role_permissions, permissions, webshop_preorders, auth_accounts, auth_sessions, committee_members, intro_planning_signups, intro_signups, intro_settings, directus_deployments, webshop_products, webshop_product_media, directus_deployment_projects, directus_settings, directus_deployment_runs, webshop_product_variants, webshop_drop_windows, webshop_preorder_lines, intro_groups, intro_group_leaders } from "./schema";
+import { intro_group_members, intro_group_attendance, directus_users, intro_group_member_notes, cobo, cobo_board_preferences, vacancy_submissions, directus_files, vacancies, cobo_guest_boards, intro_group_attendance_log, nda_templates, nda_signatures, committees, nda_settings, clubs, club_members, Stickers, Board, Board_Members, contacts, directus_roles, directus_access, directus_policies, directus_comments, directus_dashboards, directus_folders, directus_collections, directus_flows, directus_panels, directus_permissions, directus_presets, directus_activity, directus_revisions, directus_versions, directus_shares, directus_notifications, vacancy_verification_tokens, directus_operations, intro_blogs, vacancy_ict_directions, vacancies_vacancy_ict_directions, documents, events, event_signups, events_directus_users, intro_blog_likes, events_members, hero_banners, intro_blog_gallery, pub_crawl_events, membership_history, pub_crawl_signups, pub_crawl_signups_transactions, transactions, push_notification, vacancy_submission_direction_links, intro_planning, pub_crawl_tickets, intro_parent_signups, trips, vacancy_direction_links, trip_signups, trip_activities, trip_signup_activities, safe_havens, sponsors, intro_confidants, directus_sessions, roles, role_permissions, permissions, webshop_preorders, auth_accounts, auth_sessions, committee_members, intro_planning_signups, intro_signups, webshop_products, webshop_product_variants, intro_settings, directus_deployments, webshop_product_media, directus_deployment_projects, directus_settings, directus_deployment_runs, webshop_drop_windows, webshop_preorder_lines, intro_groups, intro_group_leaders } from "./schema";
 
 export const intro_group_attendanceRelations = relations(intro_group_attendance, ({one}) => ({
 	intro_group_member: one(intro_group_members, {
@@ -29,6 +29,7 @@ export const intro_group_membersRelations = relations(intro_group_members, ({one
 export const directus_usersRelations = relations(directus_users, ({one, many}) => ({
 	intro_group_attendances: many(intro_group_attendance),
 	intro_group_member_notes: many(intro_group_member_notes),
+	cobo_board_preferences: many(cobo_board_preferences),
 	vacancy_submissions: many(vacancy_submissions),
 	vacancies: many(vacancies),
 	intro_group_attendance_logs: many(intro_group_attendance_log),
@@ -152,6 +153,22 @@ export const intro_group_member_notesRelations = relations(intro_group_member_no
 	}),
 }));
 
+export const cobo_board_preferencesRelations = relations(cobo_board_preferences, ({one}) => ({
+	cobo: one(cobo, {
+		fields: [cobo_board_preferences.cobo_id],
+		references: [cobo.id]
+	}),
+	directus_user: one(directus_users, {
+		fields: [cobo_board_preferences.user_id],
+		references: [directus_users.id]
+	}),
+}));
+
+export const coboRelations = relations(cobo, ({many}) => ({
+	cobo_board_preferences: many(cobo_board_preferences),
+	cobo_guest_boards: many(cobo_guest_boards),
+}));
+
 export const vacancy_submissionsRelations = relations(vacancy_submissions, ({one, many}) => ({
 	directus_user: one(directus_users, {
 		fields: [vacancy_submissions.reviewed_by],
@@ -264,6 +281,13 @@ export const vacanciesRelations = relations(vacancies, ({one, many}) => ({
 	}),
 	vacancies_vacancy_ict_directions: many(vacancies_vacancy_ict_directions),
 	vacancy_direction_links: many(vacancy_direction_links),
+}));
+
+export const cobo_guest_boardsRelations = relations(cobo_guest_boards, ({one}) => ({
+	cobo: one(cobo, {
+		fields: [cobo_guest_boards.cobo_id],
+		references: [cobo.id]
+	}),
 }));
 
 export const intro_group_attendance_logRelations = relations(intro_group_attendance_log, ({one}) => ({
@@ -1054,6 +1078,24 @@ export const intro_signupsRelations = relations(intro_signups, ({many}) => ({
 	intro_planning_signups: many(intro_planning_signups),
 }));
 
+export const webshop_product_variantsRelations = relations(webshop_product_variants, ({one, many}) => ({
+	webshop_product: one(webshop_products, {
+		fields: [webshop_product_variants.product_id],
+		references: [webshop_products.id]
+	}),
+	webshop_preorder_lines: many(webshop_preorder_lines),
+}));
+
+export const webshop_productsRelations = relations(webshop_products, ({one, many}) => ({
+	webshop_product_variants: many(webshop_product_variants),
+	webshop_product_medias: many(webshop_product_media),
+	webshop_preorder_lines: many(webshop_preorder_lines),
+	webshop_drop_window: one(webshop_drop_windows, {
+		fields: [webshop_products.drop_window_id],
+		references: [webshop_drop_windows.id]
+	}),
+}));
+
 export const intro_settingsRelations = relations(intro_settings, ({one}) => ({
 	directus_file_info_booklet: one(directus_files, {
 		fields: [intro_settings.info_booklet],
@@ -1083,16 +1125,6 @@ export const webshop_product_mediaRelations = relations(webshop_product_media, (
 	directus_file: one(directus_files, {
 		fields: [webshop_product_media.asset],
 		references: [directus_files.id]
-	}),
-}));
-
-export const webshop_productsRelations = relations(webshop_products, ({one, many}) => ({
-	webshop_product_medias: many(webshop_product_media),
-	webshop_product_variants: many(webshop_product_variants),
-	webshop_preorder_lines: many(webshop_preorder_lines),
-	webshop_drop_window: one(webshop_drop_windows, {
-		fields: [webshop_products.drop_window_id],
-		references: [webshop_drop_windows.id]
 	}),
 }));
 
@@ -1148,14 +1180,6 @@ export const directus_deployment_runsRelations = relations(directus_deployment_r
 		fields: [directus_deployment_runs.user_created],
 		references: [directus_users.id]
 	}),
-}));
-
-export const webshop_product_variantsRelations = relations(webshop_product_variants, ({one, many}) => ({
-	webshop_product: one(webshop_products, {
-		fields: [webshop_product_variants.product_id],
-		references: [webshop_products.id]
-	}),
-	webshop_preorder_lines: many(webshop_preorder_lines),
 }));
 
 export const webshop_drop_windowsRelations = relations(webshop_drop_windows, ({many}) => ({

@@ -6,6 +6,7 @@ import { type FastifyBaseLogger } from 'fastify';
 export interface RegistrationUpdateMetadata {
     registrationId: string | number;
     registrationType: string;
+    status?: string;
     paymentType?: string;
 }
 
@@ -23,7 +24,7 @@ export class RegistrationService {
         metadata: RegistrationUpdateMetadata,
         log: FastifyBaseLogger
     ) {
-        const { registrationId, registrationType, paymentType } = metadata;
+        const { registrationId, registrationType, paymentType, status } = metadata;
 
         if (!registrationId || !registrationType) {
             log.warn({ registrationId, registrationType }, '[registration.service.ts][updateStatus] Missing ID or Type for status update');
@@ -36,28 +37,35 @@ export class RegistrationService {
             return;
         }
 
-        let updateData: Record<string, unknown> = { payment_status: 'paid' };
+        const targetStatus = status || 'paid';
+        let updateData: Record<string, unknown> = { payment_status: targetStatus };
 
         if (registrationType === 'trip_signup') {
-            if (paymentType === 'final') {
-                updateData = {
-                    full_payment_paid: true,
-                    full_payment_paid_at: new Date().toISOString()
-                };
-            } else {
-                updateData = {
-                    deposit_paid: true,
-                    deposit_paid_at: new Date().toISOString()
-                };
+            if (targetStatus === 'paid') {
+                if (paymentType === 'final') {
+                    updateData = {
+                        full_payment_paid: true,
+                        full_payment_paid_at: new Date().toISOString()
+                    };
+                } else {
+                    updateData = {
+                        deposit_paid: true,
+                        deposit_paid_at: new Date().toISOString()
+                    };
+                }
             }
         } else if (registrationType === 'webshop_preorder') {
-            // Webshop orders are paid in full upfront (no deposit/final split) — a single
-            // payment confirmation completes the order.
-            updateData = {
-                deposit_paid: true,
-                deposit_paid_at: new Date().toISOString(),
-                status: 'completed'
-            };
+            if (targetStatus === 'paid') {
+                updateData = {
+                    deposit_paid: true,
+                    deposit_paid_at: new Date().toISOString(),
+                    status: 'completed'
+                };
+            } else if (['failed', 'canceled', 'expired'].includes(targetStatus)) {
+                updateData = {
+                    status: 'cancelled'
+                };
+            }
         }
 
         try {

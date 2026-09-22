@@ -1,41 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getActivities } from '@/server/actions/events/activiteiten/activiteiten-public.actions';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { verifyCalendarToken } from '@/server/auth/calendar-token';
 import { buildIcsCalendar } from '@/lib/utils/ics';
 import { safeConsoleError } from '@/server/utils/logger';
+import { checkRateLimit } from '@/server/utils/ratelimit';
 
 export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
     try {
-        const session = await getEnrichedSession();
-        if (!session || !session.user.email) {
-            return new NextResponse('Je moet ingelogd zijn om de agenda te koppelen.', { status: 401 });
+        const rateLimitResult = await checkRateLimit('activiteiten-ics-feed', 60, 60, 'Te veel verzoeken. Probeer het over een minuut opnieuw.');
+        if (!rateLimitResult.success) {
+            return new NextResponse('Too Many Requests', { status: 429 });
         }
-        const email = session.user.email;
+
+        const { searchParams } = new URL(request.url);
+        const token = searchParams.get('token');
+        const download = searchParams.get('download') === '1';
+
+        let email: string | undefined = undefined;
+
+        if (token) {
+            const verified = verifyCalendarToken(token);
+            if (verified?.email) {
+                email = verified.email;
+            }
+        }
+
+        if (!email) {
+            const session = await getEnrichedSession().catch(() => null);
+            if (session?.user.email) {
+                email = session.user.email;
+            }
+        }
 
         const activities = await getActivities(email);
+        const origin = request.nextUrl.origin;
 
         const events = activities.map(activity => {
-            const isSignedUp = !!activity.is_signed_up;
-            const emoji = isSignedUp ? '🟢' : '🔴';
-            const title = `${emoji} ${activity.name || 'Activiteit'}`;
+            const isPersonalized = Boolean(email);
+            const isSignedUp = Boolean(activity.is_signed_up);
+            const emoji = isPersonalized ? (isSignedUp ? '🟢 ' : '🔴 ') : '';
+            const title = `${emoji}${activity.name || 'Activiteit'}`;
 
             const datePart = activity.event_date ? activity.event_date.split('T')[0] : new Date().toISOString().split('T')[0];
-            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://salvemundi.nl';
-            const activityUrl = `${baseUrl}/activiteiten/${activity.id}`;
+            const activityUrl = `${origin}/activiteiten/${activity.id}`;
             
             const descriptionParts: string[] = [];
-            if (isSignedUp) {
-                descriptionParts.push(`Je bent ingeschreven! Bekijk je tickets op: ${baseUrl}/mijn-tickets`);
+            if (isPersonalized) {
+                if (isSignedUp) {
+                    descriptionParts.push(`Je bent ingeschreven! Bekijk je tickets op: ${origin}/mijn-tickets`);
+                } else {
+                    descriptionParts.push(`Bekijk of schrijf je in via: ${activityUrl}`);
+                }
             } else {
-                descriptionParts.push(`Bekijk of schrijf je in via: ${activityUrl}`);
+                descriptionParts.push(`Bekijk meer informatie en schrijf je in via: ${activityUrl}`);
             }
 
             if (activity.short_description) {
                 descriptionParts.push(`\n${activity.short_description}`);
             } else if (activity.description) {
-                // Strip HTML tags for clean text presentation in calendar description
                 const cleanDesc = activity.description.replace(/<[^>]*>/g, '').trim();
                 if (cleanDesc) descriptionParts.push(`\n${cleanDesc}`);
             }
@@ -51,14 +76,12 @@ export async function GET(request: NextRequest) {
             };
         });
 
-        const ics = buildIcsCalendar(events, 'Salve Mundi Activiteiten');
-
-        const { searchParams } = new URL(request.url);
-        const download = searchParams.get('download') === '1';
+        const calendarName = email ? 'Salve Mundi Mijn Activiteiten' : 'Salve Mundi Activiteiten';
+        const ics = buildIcsCalendar(events, calendarName);
 
         const headers: Record<string, string> = {
             'Content-Type': 'text/calendar; charset=utf-8',
-            'Cache-Control': 'public, max-age=300'
+            'Cache-Control': email ? 'private, no-cache, no-store, must-revalidate' : 'public, max-age=300'
         };
         if (download) {
             headers['Content-Disposition'] = 'attachment; filename="salve-mundi-activiteiten.ics"';
@@ -70,3 +93,4 @@ export async function GET(request: NextRequest) {
         return new NextResponse('Kon agenda niet ophalen', { status: 500 });
     }
 }
+

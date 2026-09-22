@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { AlertCircle, Loader2, Save } from 'lucide-react';
 import { type AdminDropWindow } from './webshop-admin-types';
+import { toLocalInputValue } from '@/shared/lib/utils/date';
 
 interface Props {
     dropWindow?: AdminDropWindow | null;
@@ -10,14 +11,6 @@ interface Props {
     onCancel: () => void;
     isPending: boolean;
     error: string | null;
-}
-
-function toLocalInputValue(iso: string | null): string {
-    if (!iso) return '';
-    const date = new Date(iso);
-    if (isNaN(date.getTime())) return '';
-    const offset = date.getTimezoneOffset() * 60000;
-    return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 }
 
 export default function AdminWebshopDropWindowForm({ dropWindow, onSave, onCancel, isPending, error }: Props) {

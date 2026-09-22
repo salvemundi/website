@@ -7,6 +7,8 @@ import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/se
 import { canAccess } from '@/shared/lib/permissions';
 import { safeConsoleError } from '@/server/utils/logger';
 
+import { countActiveEventSignupsDb } from '@/server/internal/activiteiten/activiteiten-db.utils';
+
 export async function retryActivityPayment(signupId: number) {
     const session = await getEnrichedSession();
     if (!session) {
@@ -23,6 +25,7 @@ export async function retryActivityPayment(signupId: number) {
             participant_phone: schema.event_signups.participant_phone,
             payment_status: schema.event_signups.payment_status,
             event_name: schema.events.name,
+            max_sign_ups: schema.events.max_sign_ups,
             price_members: schema.events.price_members,
             price_non_members: schema.events.price_non_members
         })
@@ -46,6 +49,18 @@ export async function retryActivityPayment(signupId: number) {
         if (signup.payment_status === 'paid') {
             return { success: false, error: "Deze aanmelding is al betaald." };
         }
+
+        if (signup.max_sign_ups !== null) {
+            const currentSignupCount = await countActiveEventSignupsDb(signup.event_id);
+            if (currentSignupCount >= signup.max_sign_ups) {
+                return { success: false, error: "Deze activiteit is inmiddels helaas vol." };
+            }
+        }
+
+        // Refresh the reservation timestamp so the retry has a fresh 15-minute pending hold
+        await db.update(schema.event_signups)
+            .set({ created_at: new Date().toISOString() })
+            .where(eq(schema.event_signups.id, signup.id));
 
         const isMember = currentUser.membership_status === 'active';
         const price = Number(isMember ? signup.price_members : signup.price_non_members) || 0;

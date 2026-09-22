@@ -4,6 +4,7 @@ import ActivitiesBannerIsland from '@/components/islands/activiteiten/Activities
 import ActivitiesProviderIsland from '@/components/islands/activiteiten/ActivitiesProviderIsland';
 import { getActivities } from '@/server/actions/events/activiteiten/activiteiten-public.actions';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { generateCalendarToken } from '@/server/auth/calendar-token';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 export default async function ActivitiesPage() {
     const session = await getEnrichedSession();
     const email = session?.user.email;
+    const calendarToken = email ? generateCalendarToken(email) : null;
     const cookieStore = await cookies();
     const viewModeCookie = cookieStore.get('activities_view_mode')?.value;
     const initialViewMode = (viewModeCookie === 'list' || viewModeCookie === 'grid' || viewModeCookie === 'calendar')
@@ -42,8 +44,9 @@ export default async function ActivitiesPage() {
                     initialViewMode={initialViewMode} 
                     initialShowPast={initialShowPast}
                     isLoggedIn={!!session}
+                    calendarToken={calendarToken}
                 />
             </main>
         </div>
     );
-}
+}

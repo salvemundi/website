@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import type { Trip } from '@salvemundi/validations';
 import AdminSelect from './AdminSelect';
@@ -27,7 +26,7 @@ export default function AdminReisSwitcher({ trips, activeTripId }: AdminReisSwit
     }));
 
     return (
-        <div className="w-full sm:w-auto sm:min-w-[180px] flex-1 sm:flex-initial">
+        <div className="w-full sm:w-auto sm:min-w-45 flex-1 sm:flex-initial">
             <AdminSelect
                 value={activeTripId}
                 onChange={handleSwitch}

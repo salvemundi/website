@@ -16,13 +16,25 @@ export const selectVacancyIctDirectionsSchema = createSelectSchema(schema.vacanc
 export const insertIntroGroupAttendanceSchema = createInsertSchema(schema.intro_group_attendance);
 export const selectIntroGroupAttendanceSchema = createSelectSchema(schema.intro_group_attendance);
 
+// --- cobo ---
+export const insertCoboSchema = createInsertSchema(schema.cobo);
+export const selectCoboSchema = createSelectSchema(schema.cobo);
+
 // --- intro_group_member_notes ---
 export const insertIntroGroupMemberNotesSchema = createInsertSchema(schema.intro_group_member_notes);
 export const selectIntroGroupMemberNotesSchema = createSelectSchema(schema.intro_group_member_notes);
 
+// --- cobo_board_preferences ---
+export const insertCoboBoardPreferencesSchema = createInsertSchema(schema.cobo_board_preferences);
+export const selectCoboBoardPreferencesSchema = createSelectSchema(schema.cobo_board_preferences);
+
 // --- vacancy_submissions ---
 export const insertVacancySubmissionsSchema = createInsertSchema(schema.vacancy_submissions);
 export const selectVacancySubmissionsSchema = createSelectSchema(schema.vacancy_submissions);
+
+// --- cobo_guest_boards ---
+export const insertCoboGuestBoardsSchema = createInsertSchema(schema.cobo_guest_boards);
+export const selectCoboGuestBoardsSchema = createSelectSchema(schema.cobo_guest_boards);
 
 // --- vacancies ---
 export const insertVacanciesSchema = createInsertSchema(schema.vacancies);
@@ -340,6 +352,10 @@ export const selectFeatureFlagsSchema = createSelectSchema(schema.feature_flags)
 export const insertIntroPlanningSignupsSchema = createInsertSchema(schema.intro_planning_signups);
 export const selectIntroPlanningSignupsSchema = createSelectSchema(schema.intro_planning_signups);
 
+// --- webshop_product_variants ---
+export const insertWebshopProductVariantsSchema = createInsertSchema(schema.webshop_product_variants);
+export const selectWebshopProductVariantsSchema = createSelectSchema(schema.webshop_product_variants);
+
 // --- intro_settings ---
 export const insertIntroSettingsSchema = createInsertSchema(schema.intro_settings);
 export const selectIntroSettingsSchema = createSelectSchema(schema.intro_settings);
@@ -368,10 +384,6 @@ export const selectDirectusSettingsSchema = createSelectSchema(schema.directus_s
 export const insertDirectusDeploymentRunsSchema = createInsertSchema(schema.directus_deployment_runs);
 export const selectDirectusDeploymentRunsSchema = createSelectSchema(schema.directus_deployment_runs);
 
-// --- webshop_product_variants ---
-export const insertWebshopProductVariantsSchema = createInsertSchema(schema.webshop_product_variants);
-export const selectWebshopProductVariantsSchema = createSelectSchema(schema.webshop_product_variants);
-
 // --- webshop_drop_windows ---
 export const insertWebshopDropWindowsSchema = createInsertSchema(schema.webshop_drop_windows);
 export const selectWebshopDropWindowsSchema = createSelectSchema(schema.webshop_drop_windows);
@@ -384,10 +396,6 @@ export const selectWebshopPreordersSchema = createSelectSchema(schema.webshop_pr
 export const insertWebshopPreorderLinesSchema = createInsertSchema(schema.webshop_preorder_lines);
 export const selectWebshopPreorderLinesSchema = createSelectSchema(schema.webshop_preorder_lines);
 
-// --- webshop_products ---
-export const insertWebshopProductsSchema = createInsertSchema(schema.webshop_products);
-export const selectWebshopProductsSchema = createSelectSchema(schema.webshop_products);
-
 // --- intro_groups ---
 export const insertIntroGroupsSchema = createInsertSchema(schema.intro_groups);
 export const selectIntroGroupsSchema = createSelectSchema(schema.intro_groups);
@@ -399,4 +407,8 @@ export const selectIntroGroupLeadersSchema = createSelectSchema(schema.intro_gro
 // --- intro_group_members ---
 export const insertIntroGroupMembersSchema = createInsertSchema(schema.intro_group_members);
 export const selectIntroGroupMembersSchema = createSelectSchema(schema.intro_group_members);
+
+// --- webshop_products ---
+export const insertWebshopProductsSchema = createInsertSchema(schema.webshop_products);
+export const selectWebshopProductsSchema = createSelectSchema(schema.webshop_products);
 

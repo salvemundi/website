@@ -21,6 +21,7 @@ interface ActivitiesProviderIslandProps {
     initialViewMode?: 'list' | 'grid' | 'calendar';
     initialShowPast?: boolean;
     isLoggedIn?: boolean;
+    calendarToken?: string | null;
 }
 
 export default function ActivitiesProviderIsland({
@@ -28,7 +29,8 @@ export default function ActivitiesProviderIsland({
     serverTime,
     initialViewMode = 'list',
     initialShowPast = false,
-    isLoggedIn = false
+    isLoggedIn = false,
+    calendarToken = null
 }: ActivitiesProviderIslandProps) {
     const router = useRouter();
     const [events] = useState<(Activiteit & { is_signed_up?: boolean })[]>(initialEvents);
@@ -171,7 +173,7 @@ export default function ActivitiesProviderIsland({
                     </div>
 
                     <div className="flex items-center gap-3">
-                        {isLoggedIn && <CalendarExportButton />}
+                        <CalendarExportButton calendarToken={calendarToken} isLoggedIn={isLoggedIn} />
                         <button
                             onClick={toggleShowPastActivities}
                             className={cn(

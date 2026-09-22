@@ -57,7 +57,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
         { label: 'Safe Havens', href: ROUTES.SAFE_HAVENS },
         { label: 'Lidmaatschap', href: ROUTES.MEMBERSHIP },
         { label: 'Kroegentocht', href: ROUTES.PUB_CRAWL },
+        { label: 'CoBo', href: ROUTES.COBO },
         { label: 'Reis', href: ROUTES.TRIP },
+        { label: 'Merch', href: ROUTES.MERCH },
         { label: 'Bijbanenbank', href: ROUTES.BIJBANENBANK },
     ];
 

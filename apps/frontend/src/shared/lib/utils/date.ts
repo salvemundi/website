@@ -1,4 +1,31 @@
-const toDate = (d: string | Date | number) => new Date(d);
+const TIMEZONE = 'Europe/Amsterdam';
+
+export const toDate = (d: string | Date | number): Date => {
+    if (d instanceof Date) return d;
+    if (typeof d === 'number') return new Date(d);
+    if (typeof d === 'string') {
+        const trimmed = d.trim();
+        // Check if string contains date & time without timezone offset (e.g. "2026-10-27 19:00:00" or "2026-10-27T19:00:00")
+        if (
+            (trimmed.includes(' ') || trimmed.includes('T')) &&
+            !trimmed.endsWith('Z') &&
+            !trimmed.slice(10).includes('+') &&
+            !trimmed.slice(10).includes('-')
+        ) {
+            return new Date(`${trimmed.replace(' ', 'T')}Z`);
+        }
+        return new Date(trimmed);
+    }
+    return new Date(d);
+};
+
+export function toLocalInputValue(date: string | Date | number | undefined | null): string {
+    if (!date) return '';
+    const d = toDate(date);
+    if (isNaN(d.getTime())) return '';
+    const offset = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - offset).toISOString().slice(0, 16);
+}
 
 export function formatDate(
     date: string | Date | number | undefined | null,
@@ -11,24 +38,24 @@ export function formatDate(
 
     switch (formatStr) {
         case 'dd-MM-yyyy':
-            return new Intl.DateTimeFormat('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d);
+            return new Intl.DateTimeFormat('nl-NL', { timeZone: TIMEZONE, day: '2-digit', month: '2-digit', year: 'numeric' }).format(d);
         case 'EEEE d MMMM':
-            return new Intl.DateTimeFormat('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }).format(d);
+            return new Intl.DateTimeFormat('nl-NL', { timeZone: TIMEZONE, weekday: 'long', day: 'numeric', month: 'long' }).format(d);
         case 'EEE d MMM':
-            return new Intl.DateTimeFormat('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }).format(d);
+            return new Intl.DateTimeFormat('nl-NL', { timeZone: TIMEZONE, weekday: 'short', day: 'numeric', month: 'short' }).format(d);
         case 'EEE':
-            return new Intl.DateTimeFormat('nl-NL', { weekday: 'short' }).format(d);
+            return new Intl.DateTimeFormat('nl-NL', { timeZone: TIMEZONE, weekday: 'short' }).format(d);
         case 'd MMM':
-            return new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short' }).format(d);
+            return new Intl.DateTimeFormat('nl-NL', { timeZone: TIMEZONE, day: 'numeric', month: 'short' }).format(d);
         case 'd MMMM yyyy':
-            return new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+            return new Intl.DateTimeFormat('nl-NL', { timeZone: TIMEZONE, day: 'numeric', month: 'long', year: 'numeric' }).format(d);
         case 'd MMM yyyy':
-            return new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+            return new Intl.DateTimeFormat('nl-NL', { timeZone: TIMEZONE, day: 'numeric', month: 'short', year: 'numeric' }).format(d);
         case 'yyyy-MM-dd':
-            return d.toISOString().split('T')[0];
+            return new Intl.DateTimeFormat('en-CA', { timeZone: TIMEZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
         case 'dd-MM-yyyy HH:mm': {
             const formatter = new Intl.DateTimeFormat('nl-NL', {
-                timeZone: 'Europe/Amsterdam',
+                timeZone: TIMEZONE,
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit',
@@ -42,6 +69,7 @@ export function formatDate(
         }
         case 'd MMMM yyyy HH:mm':
             return new Intl.DateTimeFormat('nl-NL', {
+                timeZone: TIMEZONE,
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric',
@@ -49,7 +77,7 @@ export function formatDate(
                 minute: '2-digit'
             }).format(d);
         default:
-            return d.toLocaleDateString('nl-NL');
+            return new Intl.DateTimeFormat('nl-NL', { timeZone: TIMEZONE }).format(d);
     }
 }
 

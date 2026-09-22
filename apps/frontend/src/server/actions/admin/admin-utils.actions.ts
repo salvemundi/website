@@ -20,6 +20,7 @@ const TOGGLEABLE_FEATURES: Record<string, AdminFeature | undefined> = {
     '/kroegentocht': 'kroegentocht',
     '/merch': 'webshop',
     '/intro': 'intro',
+    '/cobo': 'cobo',
 };
 
 export interface StronglyTypedAdminUser extends DirectusUserSelect {
@@ -210,24 +211,39 @@ export async function toggleFeatureFlag(
         .where(eq(schema.feature_flags.route_match, routeMatch))
         .limit(1);
 
+        const oldStatus = rows.length > 0 ? !!rows[0].is_active : true;
+        const newStatus = !oldStatus;
+
         if (rows.length === 0) {
             await db.insert(schema.feature_flags).values({
                 name,
                 route_match: routeMatch,
-                is_active: true,
+                is_active: newStatus,
                 message: defaultMessage
             });
         } else {
             await db.update(schema.feature_flags)
-                .set({ is_active: !rows[0].is_active })
+                .set({ is_active: newStatus })
                 .where(eq(schema.feature_flags.id, rows[0].id));
         }
 
+        try {
+            const { getRedis } = await import('@/server/auth/redis-client');
+            const { FLAGS_CACHE_KEY } = await import('@/lib/config/feature-flags');
+            const redis = await getRedis();
+            await redis.del(FLAGS_CACHE_KEY);
+        } catch (error) {
+            safeConsoleError(`[admin-utils.actions.ts][toggleFeatureFlag] Failed to delete redis cache:`, error);
+        }
+
+        const { revalidateTag } = await import('next/cache');
+        revalidateTag('feature_flags', 'max');
+        revalidatePath('/', 'layout');
         for (const path of pathsToRevalidate) {
             revalidatePath(path);
         }
 
-        return { success: true };
+        return { success: true, show: newStatus };
     } catch (error) {
         safeConsoleError(`[admin-utils.actions.ts][toggleFeatureFlag] Failed for ${routeMatch}`, error);
         return { success: false, error: 'Kan zichtbaarheid niet aanpassen.' };
@@ -247,7 +263,7 @@ export async function getFeatureFlagSettings(routeMatch: string) {
     }
 
     if (isAccEnvironment()) {
-        return { show: true, disabled_message: null, canToggleVisibility: false };
+        return { show: true, disabled_message: null, canToggleVisibility };
     }
 
     const rows = await db.select({ is_active: schema.feature_flags.is_active, message: schema.feature_flags.message })

@@ -69,7 +69,7 @@ export default function StandardSignupForm({
                     {(section === 'all' || section === 'personal' || section === 'personal_extended') && (
                         <>
                             <div className={`${compact ? 'mt-4' : 'mt-8'} grid grid-cols-1 md:grid-cols-2 ${compact ? 'gap-4' : 'gap-8'}`}>
-                                <Textarea label="Allergieën / Dieet" name="allergies" defaultValue={initialData?.allergies || signup.allergies || ''} placeholder="Lijst hier allergieën of dieetwensen..." />
+                                <Textarea label="Allergieën / Dieet" name="allergies" defaultValue={initialData?.allergies || signup.allergies || ''} placeholder="Lijst hier allergieën..." />
                                 <Textarea label="Bijzonderheden" name="special_notes" defaultValue={initialData?.special_notes || signup.special_notes || ''} placeholder="Andere belangrijke informatie..." />
                             </div>
 
