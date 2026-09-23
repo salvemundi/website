@@ -15,44 +15,59 @@ import { cn } from '@/lib/utils/cn';
 import { safeConsoleError } from '@/server/utils/logger';
 
 interface CalendarExportButtonProps {
+    feedPath?: string;
+    calendarName?: string;
     calendarToken?: string | null;
     isLoggedIn?: boolean;
+    label?: string;
+    buttonClassName?: string;
 }
 
 export default function CalendarExportButton({ 
+    feedPath = '/api/activiteiten/ics',
+    calendarName,
     calendarToken, 
-    isLoggedIn = false 
+    isLoggedIn = false,
+    label = 'Agenda koppelen',
+    buttonClassName
 }: CalendarExportButtonProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
     const [googleCopied, setGoogleCopied] = useState(false);
     const [showGoogleInstructions, setShowGoogleInstructions] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
     const modalTitleId = useId();
 
+    const resolvedCalendarName = calendarName || (isLoggedIn && calendarToken ? 'Salve Mundi Mijn Activiteiten' : 'Salve Mundi Activiteiten');
+
+    useEffect(() => {
+        setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+    }, []);
+
     const getBaseFeedUrl = () => {
         if (typeof window === 'undefined') return '';
+        const separator = feedPath.includes('?') ? '&' : '?';
         const path = calendarToken 
-            ? `/api/activiteiten/ics?token=${encodeURIComponent(calendarToken)}` 
-            : '/api/activiteiten/ics';
+            ? `${feedPath}${separator}token=${encodeURIComponent(calendarToken)}` 
+            : feedPath;
         return `${window.location.origin}${path}`;
     };
 
     const getWebcalUrl = () => {
         if (typeof window === 'undefined') return '';
+        const separator = feedPath.includes('?') ? '&' : '?';
         const path = calendarToken 
-            ? `/api/activiteiten/ics?token=${encodeURIComponent(calendarToken)}` 
-            : '/api/activiteiten/ics';
+            ? `${feedPath}${separator}token=${encodeURIComponent(calendarToken)}` 
+            : feedPath;
         return `webcal://${window.location.host}${path}`;
     };
 
     const getDownloadUrl = () => {
-        if (typeof window === 'undefined') return '/api/activiteiten/ics?download=1';
-        const separator = calendarToken ? '&' : '?';
-        const path = calendarToken 
-            ? `/api/activiteiten/ics?token=${encodeURIComponent(calendarToken)}${separator}download=1` 
-            : '/api/activiteiten/ics?download=1';
-        return path;
+        if (typeof window === 'undefined') return `${feedPath}?download=1`;
+        const separator = feedPath.includes('?') ? '&' : '?';
+        const tokenPart = calendarToken ? `token=${encodeURIComponent(calendarToken)}&` : '';
+        return `${feedPath}${separator}${tokenPart}download=1`;
     };
 
     useEffect(() => {
@@ -100,7 +115,9 @@ export default function CalendarExportButton({
         } catch {
             setGoogleCopied(false);
         }
-        window.open('https://calendar.google.com/calendar/r/settings/addbyurl', '_blank', 'noopener,noreferrer');
+        if (!isMobile) {
+            window.open('https://calendar.google.com/calendar/r/settings/addbyurl', '_blank', 'noopener,noreferrer');
+        }
         setShowGoogleInstructions(true);
     };
 
@@ -117,7 +134,7 @@ export default function CalendarExportButton({
 
     const handleOutlookCalendar = () => {
         const feedUrl = getBaseFeedUrl();
-        const calName = isLoggedIn ? 'Salve Mundi Mijn Activiteiten' : 'Salve Mundi Activiteiten';
+        const calName = resolvedCalendarName;
         const url = `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(feedUrl)}&name=${encodeURIComponent(calName)}`;
         window.open(url, '_blank', 'noopener,noreferrer');
         setIsOpen(false);
@@ -139,7 +156,7 @@ export default function CalendarExportButton({
             <button
                 type="button"
                 onClick={() => setIsOpen(true)}
-                className={cn(
+                className={buttonClassName || cn(
                     "tab-button group relative inline-flex items-center justify-center gap-2.5 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl border transition-all active:scale-95 text-[10px] font-black uppercase tracking-widest min-h-42px",
                     "bg-bg-card text-theme-purple border-border-color/30 hover:border-theme-purple/30 hover:bg-theme-purple/5 shadow-xs"
                 )}
@@ -149,7 +166,7 @@ export default function CalendarExportButton({
                 <div className="h-5 w-5 rounded-full flex items-center justify-center transition-colors shrink-0 bg-theme-purple/10 text-theme-purple group-hover:bg-theme-purple group-hover:text-white">
                     <Calendar className="h-3 w-3" />
                 </div>
-                <span>Agenda koppelen</span>
+                <span>{label}</span>
             </button>
 
             {isOpen && (
@@ -178,12 +195,12 @@ export default function CalendarExportButton({
                                     </h3>
                                 </div>
                                 <p className="text-xs text-(--text-muted) leading-relaxed">
-                                    {isLoggedIn ? (
+                                    {isLoggedIn && calendarToken ? (
                                         <span className="flex items-center gap-1.5 flex-wrap">
                                             <span>met jouw inschrijfstatus (🟢 ingeschreven / 🔴 niet ingeschreven).</span>
                                         </span>
                                     ) : (
-                                        'Synchroniseer alle openbare activiteiten van Salve Mundi direct met jouw agenda.'
+                                        `Synchroniseer ${resolvedCalendarName.toLowerCase()} direct met jouw agenda.`
                                     )}
                                 </p>
                             </div>
@@ -199,17 +216,25 @@ export default function CalendarExportButton({
                         </div>
 
                         {showGoogleInstructions && (
-                            <div className="rounded-2xl border border-purple-500/30 bg-purple-500/5 dark:bg-purple-500/10 p-4 space-y-2.5 animate-in fade-in duration-200">
+                            <div className="rounded-2xl border border-purple-500/30 bg-purple-500/5 dark:bg-purple-500/10 p-4 space-y-3 animate-in fade-in duration-200">
                                 <div className="flex items-start justify-between gap-2">
                                     <div className="space-y-1">
                                         <p className="text-xs font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
                                             <Sparkles className="h-3.5 w-3.5 text-purple-500" />
-                                            Google Agenda geopend
+                                            {isMobile ? 'Google Agenda (via browser of PC)' : 'Google Agenda geopend'}
                                         </p>
                                         <p className="text-xs text-(--text-muted) leading-relaxed">
-                                            {googleCopied 
-                                                ? 'De link is gekopieerd! Plak deze in Google Agenda in het veld "Van URL" en klik op Toevoegen.' 
-                                                : 'Kopieer de link hieronder en plak deze in het veld "Van URL".'}
+                                            {isMobile ? (
+                                                <>
+                                                    De Google Agenda mobiele app ondersteunt internetagenda&apos;s (URL) helaas niet rechtstreeks.
+                                                    Plak de link eenmalig op je computer in Google Agenda bij <strong className="text-(--text-main)">&quot;Andere agenda&apos;s &gt; Via URL&quot;</strong>.
+                                                    De agenda synchroniseert daarna vanzelf naar je telefoon!
+                                                </>
+                                            ) : (
+                                                googleCopied 
+                                                    ? 'De link is gekopieerd! Plak deze in Google Agenda in het veld "Van URL" en klik op Toevoegen.' 
+                                                    : 'Kopieer de link hieronder en plak deze in het veld "Van URL".'
+                                            )}
                                         </p>
                                     </div>
                                     <button
@@ -235,6 +260,21 @@ export default function CalendarExportButton({
                                         <span>{googleCopied ? 'Gekopieerd' : 'Kopieer'}</span>
                                     </button>
                                 </div>
+
+                                {isMobile && (
+                                    <div className="pt-2 border-t border-border-color/20 flex flex-wrap items-center justify-between gap-2 text-[11px] text-(--text-muted)">
+                                        <span>Tip: Direct op je mobiel? Gebruik de Apple/Systeem knop hieronder.</span>
+                                        <a
+                                            href="https://calendar.google.com/calendar/r/settings/addbyurl"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-purple-600 dark:text-purple-400 font-bold hover:underline inline-flex items-center gap-1"
+                                        >
+                                            <span>Toch openen in browser</span>
+                                            <ExternalLink className="h-3 w-3" />
+                                        </a>
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -256,7 +296,7 @@ export default function CalendarExportButton({
                                         Google Calendar
                                     </p>
                                     <p className="text-xs text-(--text-muted) truncate">
-                                        Aanbevolen voor Android & Google accounts
+                                        {isMobile ? 'Instellen via computer/browser' : 'Voor Google accounts'}
                                     </p>
                                 </div>
                                 <ExternalLink className="h-4 w-4 text-(--text-muted) group-hover:text-purple-500 transition-colors shrink-0" />
@@ -272,10 +312,10 @@ export default function CalendarExportButton({
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-bold text-(--text-main) group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors">
-                                        Apple Agenda
+                                        Apple & Systeemagenda
                                     </p>
                                     <p className="text-xs text-(--text-muted) truncate">
-                                        Direct koppelen op iPhone, iPad & Mac
+                                        Direct synchroniseren (iOS, macOS & Android webcal)
                                     </p>
                                 </div>
                                 <ExternalLink className="h-4 w-4 text-(--text-muted) group-hover:text-purple-500 transition-colors shrink-0" />
@@ -304,7 +344,7 @@ export default function CalendarExportButton({
                         <div className="pt-2 border-t border-border-color/20 grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <a
                                 href={getDownloadUrl()}
-                                download="salve-mundi-activiteiten.ics"
+                                download={`${resolvedCalendarName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.ics`}
                                 onClick={() => setIsOpen(false)}
                                 className="form-button flex items-center justify-center gap-2 p-3 rounded-xl border border-border-color/30 bg-(--bg-main) hover:bg-purple-500/5 hover:border-purple-500/30 transition-all text-xs font-bold text-(--text-main) active:scale-95"
                             >

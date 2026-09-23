@@ -1,12 +1,13 @@
 'use client';
 
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { Clock, MapPin, Download, Rss, Check, Calendar, CalendarDays, CalendarPlus, ChevronDown, PartyPopper, ImageOff, X, ZoomIn, Sunrise, Copy } from 'lucide-react';
+import { Clock, MapPin, Calendar, CalendarDays, ChevronDown, PartyPopper, ImageOff, X, ZoomIn, Sunrise } from 'lucide-react';
 import type { IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { formatDate } from '@/shared/lib/utils/date';
+import CalendarExportButton from '@/components/islands/activiteiten/CalendarExportButton';
 
 const TOMORROW_OVERVIEW_HOUR = 22;
 
@@ -146,7 +147,7 @@ function ActivityCard({
             className={[
                 'squircle-lg p-5 sm:p-6 border shadow-lg',
                 accent === 'live'
-                    ? 'bg-gradient-to-br from-purple-600 to-purple-800 border-purple-500/40 text-white'
+                    ? 'bg-linear-to-br from-purple-600 to-purple-800 border-purple-500/40 text-white'
                     : 'bg-bg-card border-border-color dark:border-white/10'
             ].join(' ')}
         >
@@ -183,13 +184,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
     const previewTomorrow = searchParams.get('previewTomorrow') === '1';
 
     const [now, setNow] = useState('');
-    const [copied, setCopied] = useState(false);
-    const [googleInstructionsOpen, setGoogleInstructionsOpen] = useState(false);
-    const [googleLinkCopied, setGoogleLinkCopied] = useState(false);
-    const [googleIcsUrl, setGoogleIcsUrl] = useState('');
     const [lightboxOpen, setLightboxOpen] = useState(false);
-    const [subscribeMenuOpen, setSubscribeMenuOpen] = useState(false);
-    const subscribeMenuRef = useRef<HTMLDivElement>(null);
     const [fullPlanningOpen, setFullPlanningOpen] = useState(false);
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
@@ -200,24 +195,6 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
         const id = setInterval(() => setNow(nowKey()), 30000);
         return () => clearInterval(id);
     }, []);
-
-    useEffect(() => {
-        if (!subscribeMenuOpen) return;
-        const onClickOutside = (e: MouseEvent) => {
-            if (subscribeMenuRef.current && !subscribeMenuRef.current.contains(e.target as Node)) {
-                setSubscribeMenuOpen(false);
-            }
-        };
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setSubscribeMenuOpen(false);
-        };
-        document.addEventListener('mousedown', onClickOutside);
-        document.addEventListener('keydown', onKeyDown);
-        return () => {
-            document.removeEventListener('mousedown', onClickOutside);
-            document.removeEventListener('keydown', onKeyDown);
-        };
-    }, [subscribeMenuOpen]);
 
     useEffect(() => {
         if (!lightboxOpen) return;
@@ -345,58 +322,6 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
         });
     };
 
-    // Apple Calendar (iOS/macOS) has a registered handler for the webcal: scheme
-    // and opens it directly in Calendar.app. Chrome/Android have no such handler,
-    // so the same link there just does nothing — those apps need their own
-    // "subscribe by URL" deep link instead (handled below per app).
-    const handleAppleCalendar = async () => {
-        const webcalUrl = `webcal://${window.location.host}/api/intro/planning.ics`;
-        try {
-            await navigator.clipboard.writeText(webcalUrl);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2500);
-        } catch {
-            // clipboard not available, fall through to direct navigation
-        }
-        window.location.href = webcalUrl;
-        setSubscribeMenuOpen(false);
-    };
-
-    // The calendar/render?cid= deep link is unreliable — Google intermittently
-    // rejects perfectly valid feeds through it with a generic "kan agenda niet
-    // toevoegen" error. Manually pasting the same URL into Google's own
-    // "Add calendar > From URL" settings page works every time, so we send
-    // people there instead and copy the link for them to paste.
-    const handleGoogleCalendar = async () => {
-        const icsUrl = `${window.location.origin}/api/intro/planning.ics`;
-        setGoogleIcsUrl(icsUrl);
-        try {
-            await navigator.clipboard.writeText(icsUrl);
-            setGoogleLinkCopied(true);
-        } catch {
-            setGoogleLinkCopied(false);
-        }
-        window.open('https://calendar.google.com/calendar/r/settings/addbyurl', '_blank', 'noopener,noreferrer');
-        setGoogleInstructionsOpen(true);
-        setSubscribeMenuOpen(false);
-    };
-
-    const handleCopyGoogleIcsUrl = async () => {
-        try {
-            await navigator.clipboard.writeText(googleIcsUrl);
-            setGoogleLinkCopied(true);
-        } catch {
-            // clipboard not available; the URL is still shown as plain text to copy manually
-        }
-    };
-
-    const handleOutlookCalendar = () => {
-        const icsUrl = `${window.location.origin}/api/intro/planning.ics`;
-        const url = `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(icsUrl)}&name=${encodeURIComponent('Salve Mundi Introductie')}`;
-        window.open(url, '_blank', 'noopener,noreferrer');
-        setSubscribeMenuOpen(false);
-    };
-
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -460,96 +385,14 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                 <span className="whitespace-nowrap">Bekijk tijdlijn</span>
                             </button>
                         )}
-                        <a
-                            href="/api/intro/planning.ics?download=1"
-                            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 squircle bg-purple-600 text-white px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
-                        >
-                            <Download className="h-4 w-4 shrink-0" />
-                            <span className="whitespace-nowrap">Download .ics</span>
-                        </a>
-                        <div className="relative" ref={subscribeMenuRef}>
-                            <button
-                                type="button"
-                                onClick={() => setSubscribeMenuOpen(open => !open)}
-                                aria-expanded={subscribeMenuOpen}
-                                className="btn-subscribe inline-flex items-center justify-center gap-1.5 sm:gap-2 squircle bg-bg-main border border-border-color dark:border-white/10 text-text-main px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold shadow-sm hover:shadow-md transition-all"
-                            >
-                                {copied ? <Check className="h-4 w-4 text-emerald-500 shrink-0" /> : <Rss className="h-4 w-4 shrink-0" />}
-                                <span className="whitespace-nowrap">
-                                    <span className="sm:hidden">{copied ? 'Gekopieerd' : 'Abonneren'}</span>
-                                    <span className="hidden sm:inline">{copied ? 'Link gekopieerd' : 'Abonneer op agenda'}</span>
-                                </span>
-                                <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${subscribeMenuOpen ? 'rotate-180' : ''}`} />
-                            </button>
-
-                            {subscribeMenuOpen && (
-                                <div className="absolute right-0 z-20 mt-2 w-56 squircle bg-bg-card border border-border-color dark:border-white/10 shadow-xl overflow-hidden">
-                                    <button
-                                        type="button"
-                                        onClick={() => { void handleAppleCalendar(); }}
-                                        className="btn-subscribe-apple flex w-full items-center gap-2.5 px-4 py-3 text-sm font-semibold text-text-main hover:bg-bg-main transition-colors text-left"
-                                    >
-                                        <CalendarPlus className="h-4 w-4 shrink-0 text-purple-500" />
-                                        Apple Kalender (iPhone/Mac)
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => { void handleGoogleCalendar(); }}
-                                        className="btn-subscribe-google flex w-full items-center gap-2.5 px-4 py-3 text-sm font-semibold text-text-main hover:bg-bg-main transition-colors text-left border-t border-border-color dark:border-white/10"
-                                    >
-                                        <CalendarPlus className="h-4 w-4 shrink-0 text-purple-500" />
-                                        Google Calendar
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleOutlookCalendar}
-                                        className="btn-subscribe-outlook flex w-full items-center gap-2.5 px-4 py-3 text-sm font-semibold text-text-main hover:bg-bg-main transition-colors text-left border-t border-border-color dark:border-white/10"
-                                    >
-                                        <CalendarPlus className="h-4 w-4 shrink-0 text-purple-500" />
-                                        Outlook
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                        <CalendarExportButton
+                            feedPath="/api/intro/planning.ics"
+                            calendarName="Salve Mundi Introductie"
+                            label="Abonneer op agenda"
+                            buttonClassName="btn-subscribe inline-flex items-center justify-center gap-1.5 sm:gap-2 squircle bg-bg-main border border-border-color dark:border-white/10 text-text-main px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold shadow-sm hover:shadow-md transition-all cursor-pointer"
+                        />
                     </div>
                 </div>
-
-                {googleInstructionsOpen && (
-                    <div className="mt-4 squircle border border-purple-500/30 bg-purple-500/5 p-4 sm:p-5">
-                        <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-start gap-2.5">
-                                <CalendarPlus className="h-4 w-4 shrink-0 text-purple-500 mt-0.5" />
-                                <div className="text-sm text-text-main">
-                                    <p className="font-bold">We hebben Google Agenda voor je geopend</p>
-                                    <p className="mt-1 text-text-muted">
-                                        {googleLinkCopied ? 'De link is al gekopieerd — plak' : 'Kopieer de link hieronder en plak'} &apos;m daar in het veld &quot;Van URL&quot; en klik op toevoegen.
-                                    </p>
-                                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                                        <code className="squircle bg-bg-main border border-border-color dark:border-white/10 px-2.5 py-1.5 text-xs text-text-muted break-all">
-                                            {googleIcsUrl}
-                                        </code>
-                                        <button
-                                            type="button"
-                                            onClick={() => { void handleCopyGoogleIcsUrl(); }}
-                                            className="btn-copy-google-ics inline-flex items-center gap-1.5 squircle bg-purple-600 text-white px-3 py-1.5 text-xs font-semibold shadow-sm hover:shadow-md transition-all"
-                                        >
-                                            {googleLinkCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                                            {googleLinkCopied ? 'Gekopieerd' : 'Kopieer link'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setGoogleInstructionsOpen(false)}
-                                aria-label="Sluiten"
-                                className="btn-close-google-instructions shrink-0 text-text-muted hover:text-text-main transition-colors"
-                            >
-                                <X className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
-                )}
 
                 {planningImageUrl ? (
                     <button
@@ -582,7 +425,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
 
             {fullPlanningOpen && (
                 <div
-                    className="fixed inset-0 z-[200] bg-black/70 flex items-end sm:items-center justify-center"
+                    className="fixed inset-0 z-200 bg-black/70 flex items-end sm:items-center justify-center"
                     onClick={() => setFullPlanningOpen(false)}
                 >
                     <div
@@ -693,7 +536,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                             return (
                                                 <div
                                                     key={date}
-                                                    className="flex-1 min-w-[9rem] px-2 py-2.5 text-center border-l border-border-color dark:border-white/10"
+                                                    className="flex-1 min-w-36 px-2 py-2.5 text-center border-l border-border-color dark:border-white/10"
                                                 >
                                                     <p className={`text-[11px] font-black uppercase tracking-wide ${isToday ? 'text-purple-500' : 'text-text-muted'}`}>
                                                         {formatDate(date, 'EEE')}
@@ -724,7 +567,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                             return (
                                                 <div
                                                     key={date}
-                                                    className="flex-1 min-w-[9rem] relative border-l border-border-color dark:border-white/10 px-1"
+                                                    className="flex-1 min-w-36 relative border-l border-border-color dark:border-white/10 px-1"
                                                     style={{ height: totalHeight }}
                                                 >
                                                     {hours.map(hour => (
@@ -807,7 +650,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
 
             {lightboxOpen && planningImageUrl && (
                 <div
-                    className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4 sm:p-8 cursor-zoom-out"
+                    className="fixed inset-0 z-200 bg-black/90 flex items-center justify-center p-4 sm:p-8 cursor-zoom-out"
                     onClick={() => setLightboxOpen(false)}
                 >
                     <button

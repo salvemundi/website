@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server';
 import { amsterdamToUTC } from './date-utils';
 
 export interface IcsEvent {
@@ -51,7 +52,7 @@ export function buildIcsCalendar(events: IcsEvent[], calendarName: string): stri
     const lines: string[] = [
         'BEGIN:VCALENDAR',
         'VERSION:2.0',
-        'PRODID:-//Salve Mundi//Intro Planning//NL',
+        `PRODID:-//Salve Mundi//${escapeIcsText(calendarName)}//NL`,
         'CALSCALE:GREGORIAN',
         'METHOD:PUBLISH',
         `X-WR-CALNAME:${escapeIcsText(calendarName)}`,
@@ -81,4 +82,31 @@ export function buildIcsCalendar(events: IcsEvent[], calendarName: string): stri
 
     lines.push('END:VCALENDAR');
     return lines.join('\r\n') + '\r\n';
+}
+
+interface BuildIcsResponseOptions {
+    filename: string;
+    cacheControl?: 'private' | 'public';
+    download?: boolean;
+}
+
+export function buildIcsResponse(
+    events: IcsEvent[],
+    calendarName: string,
+    { filename, cacheControl = 'public', download = false }: BuildIcsResponseOptions,
+): NextResponse {
+    const ics = buildIcsCalendar(events, calendarName);
+
+    const headers: Record<string, string> = {
+        'Content-Type': 'text/calendar; charset=utf-8',
+        'Cache-Control': cacheControl === 'private'
+            ? 'private, no-cache, no-store, must-revalidate'
+            : 'public, max-age=300',
+    };
+
+    if (download) {
+        headers['Content-Disposition'] = `attachment; filename="${filename}"`;
+    }
+
+    return new NextResponse(ics, { status: 200, headers });
 }
