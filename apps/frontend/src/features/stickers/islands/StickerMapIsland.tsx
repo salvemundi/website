@@ -384,13 +384,13 @@ export default function StickerMapIsland({
     };
 
     return (
-        <div className="flex flex-col h-full gap-4 sm:gap-6">
-            <div className="hidden md:block shrink-0">
+        <div className="flex h-full flex-col gap-4 sm:gap-6">
+            <div className="hidden shrink-0 md:block">
                 <StickerStats stickers={stickers as unknown as StickerPublic[]} />
             </div>
 
-            <div className="relative group flex-1 min-h-0">
-                <div className="absolute inset-0 bg-linear-to-r from-purple-500/5 to-orange-500/5 blur-3xl -z-10" />
+            <div className="group relative min-h-0 flex-1">
+                <div className="absolute inset-0 -z-10 bg-linear-to-r from-purple-500/5 to-orange-500/5 blur-3xl" />
 
                 <StickerMap
                     stickers={stickers as unknown as StickerPublic[]}
@@ -402,27 +402,27 @@ export default function StickerMapIsland({
                     className={className}
                 />
 
-                <div className="absolute inset-x-0 top-4 z-90 px-4 pointer-events-none md:inset-auto md:top-4 md:left-4 md:right-auto md:w-80 md:px-0 md:bottom-auto">
-                    <div className="flex items-center gap-3 md:hidden pointer-events-auto">
+                <div className="pointer-events-none absolute inset-x-0 top-4 z-90 px-4 md:inset-auto md:top-4 md:right-auto md:bottom-auto md:left-4 md:w-80 md:px-0">
+                    <div className="pointer-events-auto flex items-center gap-3 md:hidden">
                         <button
                             type="button"
                             onClick={openMobileFilters}
-                            className="form-button inline-flex flex-1 min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-bg-card/95 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-text-main shadow-2xl backdrop-blur-md whitespace-nowrap"
+                            className="form-button inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-bg-card/95 px-3 py-2.5 text-[10px] font-black tracking-[0.18em] whitespace-nowrap text-text-main uppercase shadow-2xl backdrop-blur-md"
                         >
-                            <Filter className="h-4 w-4 text-theme-purple shrink-0" />
+                            <Filter className="size-4 shrink-0 text-theme-purple" />
                             Filters
                         </button>
                         <button
                             type="button"
                             onClick={openMobileStats}
-                            className="form-button inline-flex flex-1 min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-bg-card/95 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-text-main shadow-2xl backdrop-blur-md whitespace-nowrap"
+                            className="form-button inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-bg-card/95 px-3 py-2.5 text-[10px] font-black tracking-[0.18em] whitespace-nowrap text-text-main uppercase shadow-2xl backdrop-blur-md"
                         >
-                            <BarChart3 className="h-4 w-4 text-theme-purple shrink-0" />
+                            <BarChart3 className="size-4 shrink-0 text-theme-purple" />
                             Stats
                         </button>
                     </div>
 
-                    <div className="hidden md:flex md:flex-col-reverse gap-3 pointer-events-auto">
+                    <div className="pointer-events-auto hidden gap-3 md:flex md:flex-col-reverse">
                         <StickerActionPanel
                             user={user}
                             isLocating={isLocating}
@@ -437,7 +437,7 @@ export default function StickerMapIsland({
                     </div>
                 </div>
 
-                <div className="absolute inset-x-4 bottom-4 z-90 md:hidden pointer-events-none">
+                <div className="pointer-events-none absolute inset-x-4 bottom-4 z-90 md:hidden">
                     <div className="pointer-events-auto w-full">
                         <StickerActionPanel
                             user={user}

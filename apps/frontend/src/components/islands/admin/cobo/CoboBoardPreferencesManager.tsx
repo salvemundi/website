@@ -111,10 +111,10 @@ export default function CoboBoardPreferencesManager({
 
     if (preferences.length === 0) {
         return (
-            <div className="bg-bg-card rounded-2xl p-8 text-center border border-border-color shadow-sm">
-                <Shield className="h-12 w-12 text-purple-400 mx-auto mb-3 opacity-60" />
+            <div className="rounded-2xl border border-border-color bg-bg-card p-8 text-center shadow-sm">
+                <Shield className="mx-auto mb-3 size-12 text-purple-400 opacity-60" />
                 <h3 className="text-lg font-bold text-text-main">Geen bestuursleden gevonden</h3>
-                <p className="text-sm text-text-muted mt-1">
+                <p className="mt-1 text-sm text-text-muted">
                     Zorg dat er bestuursleden zijn gekoppeld in het bestuursoverzicht.
                 </p>
             </div>
@@ -134,7 +134,7 @@ export default function CoboBoardPreferencesManager({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {preferences.map((pref) => {
                     const userId = pref.user_id || '';
                     const isSaving = savingUserId === userId;
@@ -143,11 +143,11 @@ export default function CoboBoardPreferencesManager({
                     return (
                         <div
                             key={userId || pref.id}
-                            className="bg-bg-card rounded-2xl p-6 border border-border-color shadow-sm hover:border-purple-500/30 transition-all flex flex-col justify-between"
+                            className="flex flex-col justify-between rounded-2xl border border-border-color bg-bg-card p-6 shadow-sm transition-all hover:border-purple-500/30"
                         >
                             <div className="space-y-4">
-                                <div className="flex items-center gap-4 pb-4 border-b border-border-color/60">
-                                    <div className="relative h-14 w-14 squircle bg-purple-500/10 flex items-center justify-center overflow-hidden border border-purple-500/20 shrink-0">
+                                <div className="flex items-center gap-4 border-b border-border-color/60 pb-4">
+                                    <div className="squircle relative flex size-14 shrink-0 items-center justify-center overflow-hidden border border-purple-500/20 bg-purple-500/10">
                                         {pref.user?.avatar ? (
                                             <Image
                                                 src={getImageUrl(pref.user.avatar)}
@@ -161,30 +161,30 @@ export default function CoboBoardPreferencesManager({
                                         )}
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <h4 className="font-bold text-text-main text-base truncate">
+                                        <h4 className="truncate text-base font-bold text-text-main">
                                             {memberName}
                                         </h4>
-                                        <span className="inline-block px-2.5 py-0.5 mt-1 rounded-md text-[11px] font-semibold bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/15 uppercase tracking-wider">
+                                        <span className="mt-1 inline-block rounded-md border border-purple-500/15 bg-purple-500/10 px-2.5 py-0.5 text-[11px] font-semibold tracking-wider text-purple-700 uppercase dark:text-purple-300">
                                             {pref.user?.functie || 'Bestuurslid'}
                                         </span>
                                     </div>
                                 </div>
 
                                 {/* Alcohol switch */}
-                                <div className="flex items-center justify-between p-3 rounded-xl bg-bg-soft border border-border-color/40">
+                                <div className="flex items-center justify-between rounded-xl border border-border-color/40 bg-bg-soft p-3">
                                     <div className="flex items-center gap-2.5">
-                                        <Wine className={`h-4 w-4 ${pref.drinks_alcohol ? 'text-emerald-500' : 'text-red-400'}`} />
+                                        <Wine className={`size-4 ${pref.drinks_alcohol ? 'text-emerald-500' : 'text-red-400'}`} />
                                         <span className="text-xs font-semibold text-text-main">Drinkt Alcohol</span>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => handleToggleAlcohol(pref)}
-                                        className={`beheer-button relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                        className={`relative beheer-button inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                                             pref.drinks_alcohol ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-red-700'
                                         }`}
                                     >
                                         <span
-                                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                                            className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
                                                 pref.drinks_alcohol ? 'translate-x-5' : 'translate-x-0'
                                             }`}
                                         />
@@ -193,8 +193,8 @@ export default function CoboBoardPreferencesManager({
 
                                 {/* Veto's input */}
                                 <div>
-                                    <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                                        <Ban className="h-3.5 w-3.5 text-rose-500" />
+                                    <label className="mb-1 flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-text-muted uppercase">
+                                        <Ban className="size-3.5 text-rose-500" />
                                         <span>Veto&apos;s</span>
                                     </label>
                                     <input
@@ -202,14 +202,14 @@ export default function CoboBoardPreferencesManager({
                                         value={pref.vetoes || ''}
                                         onChange={(e) => handleFieldChange(userId, 'vetoes', e.target.value)}
                                         placeholder="Bijv. Tequila, Sambuca, melkproducten..."
-                                        className="beheer-input w-full px-3.5 py-2.5 bg-bg-soft rounded-xl border border-border-color focus:border-theme-purple focus:outline-none text-xs text-text-main font-medium"
+                                        className="beheer-input w-full rounded-xl border border-border-color bg-bg-soft px-3.5 py-2.5 text-xs font-medium text-text-main focus:border-theme-purple focus:outline-none"
                                     />
                                 </div>
 
                                 {/* Dietary Requirements */}
                                 <div>
-                                    <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                                        <Utensils className="h-3.5 w-3.5 text-amber-500" />
+                                    <label className="mb-1 flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-text-muted uppercase">
+                                        <Utensils className="size-3.5 text-amber-500" />
                                         <span>Allergieën</span>
                                     </label>
                                     <input
@@ -217,14 +217,14 @@ export default function CoboBoardPreferencesManager({
                                         value={pref.dietary_requirements || ''}
                                         onChange={(e) => handleFieldChange(userId, 'dietary_requirements', e.target.value)}
                                         placeholder="Bijv. Notenallergie, Glutenintolerantie, Vegan..."
-                                        className="beheer-input w-full px-3.5 py-2.5 bg-bg-soft rounded-xl border border-border-color focus:border-theme-purple focus:outline-none text-xs text-text-main font-medium"
+                                        className="beheer-input w-full rounded-xl border border-border-color bg-bg-soft px-3.5 py-2.5 text-xs font-medium text-text-main focus:border-theme-purple focus:outline-none"
                                     />
                                 </div>
 
                                 {/* Notes */}
                                 <div>
-                                    <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                                        <FileText className="h-3.5 w-3.5 text-blue-500" />
+                                    <label className="mb-1 flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-text-muted uppercase">
+                                        <FileText className="size-3.5 text-blue-500" />
                                         <span>Extra Opmerkingen</span>
                                     </label>
                                     <textarea
@@ -232,23 +232,23 @@ export default function CoboBoardPreferencesManager({
                                         onChange={(e) => handleFieldChange(userId, 'notes', e.target.value)}
                                         rows={2}
                                         placeholder="Bijzonderheden of instructies voor Team CoBo..."
-                                        className="beheer-input w-full px-3.5 py-2.5 bg-bg-soft rounded-xl border border-border-color focus:border-theme-purple focus:outline-none text-xs text-text-main font-medium resize-none"
+                                        className="beheer-input w-full resize-none rounded-xl border border-border-color bg-bg-soft px-3.5 py-2.5 text-xs font-medium text-text-main focus:border-theme-purple focus:outline-none"
                                     />
                                 </div>
                             </div>
 
                             {/* Save button */}
-                            <div className="pt-4 mt-4 border-t border-border-color/60 flex justify-end">
+                            <div className="mt-4 flex justify-end border-t border-border-color/60 pt-4">
                                 <button
                                     type="button"
                                     onClick={() => handleSaveMember(pref)}
                                     disabled={isSaving}
-                                    className="beheer-button inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                                    className="beheer-button inline-flex cursor-pointer items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-purple-700 disabled:opacity-50"
                                 >
                                     {isSaving ? (
-                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        <Loader2 className="size-3.5 animate-spin" />
                                     ) : (
-                                        <Save className="h-3.5 w-3.5" />
+                                        <Save className="size-3.5" />
                                     )}
                                     <span>Opslaan</span>
                                 </button>

@@ -56,11 +56,11 @@ export default function NdaOverviewIsland({ initialOverview, bestuurMembers, ini
 
     return (
         <div className="space-y-8">
-            <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 shadow-sm space-y-6">
+            <div className="space-y-6 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
                 <div className="flex items-center justify-between gap-4">
                     <div>
-                        <h3 className="font-semibold text-sm text-(--beheer-text)">NDA-systeem actief</h3>
-                        <p className="text-xs text-(--beheer-text-muted) mt-0.5">
+                        <h3 className="text-sm font-semibold text-(--beheer-text)">NDA-systeem actief</h3>
+                        <p className="mt-0.5 text-xs text-(--beheer-text-muted)">
                             Zet aan om de NDA-pagina zichtbaar te maken voor leden en de dagelijkse automatische verloop-check in te schakelen.
                         </p>
                     </div>
@@ -69,24 +69,24 @@ export default function NdaOverviewIsland({ initialOverview, bestuurMembers, ini
                         onClick={() => { void handleToggleActive(); }}
                         disabled={togglingActive}
                         aria-label="NDA-systeem actief"
-                        className={`btn-toggle-nda-active w-12 h-6 rounded-full p-1 transition-all relative flex items-center shrink-0 ${isActive ? 'bg-beheer-active' : 'bg-beheer-inactive'} disabled:opacity-50 hover:opacity-90 active:scale-95`}
+                        className={`btn-toggle-nda-active relative flex h-6 w-12 shrink-0 items-center rounded-full p-1 transition-all ${isActive ? 'bg-beheer-active' : 'bg-beheer-inactive'} hover:opacity-90 active:scale-95 disabled:opacity-50`}
                     >
                         {togglingActive ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-white mx-auto" />
+                            <Loader2 className="mx-auto size-4 animate-spin text-white" />
                         ) : (
-                            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${isActive ? 'translate-x-6' : 'translate-x-0'} shadow-sm`} />
+                            <div className={`size-4 rounded-full bg-white transition-transform ${isActive ? 'translate-x-6' : 'translate-x-0'} shadow-sm`} />
                         )}
                     </button>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-end gap-4 justify-between border-t border-(--beheer-border)/50 pt-6">
-                    <div className="flex-1 max-w-sm">
-                        <label className="text-xs font-semibold tracking-tight text-(--beheer-text-muted) px-1">Secretaris (ondertekent namens de vereniging)</label>
+                <div className="flex flex-col justify-between gap-4 border-t border-(--beheer-border)/50 pt-6 sm:flex-row sm:items-end">
+                    <div className="max-w-sm flex-1">
+                        <label className="px-1 text-xs font-semibold tracking-tight text-(--beheer-text-muted)">Secretaris (ondertekent namens de vereniging)</label>
                         <select
                             value={secretaryUserId}
                             onChange={(e) => { void handleSecretaryChange(e.target.value); }}
                             disabled={savingSecretary}
-                            className="beheer-input w-full mt-2"
+                            className="mt-2 beheer-input w-full"
                         >
                             <option value="">Nog niet ingesteld</option>
                             {bestuurMembers.map((m) => (
@@ -94,7 +94,7 @@ export default function NdaOverviewIsland({ initialOverview, bestuurMembers, ini
                             ))}
                         </select>
                     </div>
-                    <div className="flex flex-col items-start sm:items-end gap-2">
+                    <div className="flex flex-col items-start gap-2 sm:items-end">
                         <Button onClick={() => { void handleCheckExpiry(); }} loading={checking} icon={RefreshCw} variant="secondary">
                             Controleer verlopen NDA&apos;s
                         </Button>
@@ -103,30 +103,30 @@ export default function NdaOverviewIsland({ initialOverview, bestuurMembers, ini
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {initialOverview.map((row) => (
                     <Link
                         key={row.committee.id}
                         href={`/beheer/nda/${row.committee.id}`}
-                        className="group bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 hover:border-(--beheer-accent)/30 transition-all shadow-sm hover:shadow-xl block"
+                        className="group block rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm transition-all hover:border-(--beheer-accent)/30 hover:shadow-xl"
                     >
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="h-10 w-10 rounded-full bg-(--beheer-accent)/10 text-(--beheer-accent) flex items-center justify-center shrink-0">
-                                <FileSignature className="h-5 w-5" />
+                        <div className="mb-4 flex items-center gap-3">
+                            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--beheer-accent)/10 text-(--beheer-accent)">
+                                <FileSignature className="size-5" />
                             </div>
                             <div className="min-w-0">
-                                <h4 className="font-semibold text-base text-(--beheer-text) truncate">{row.committee.name}</h4>
+                                <h4 className="truncate text-base font-semibold text-(--beheer-text)">{row.committee.name}</h4>
                                 <p className="text-xs text-(--beheer-text-muted)">
                                     {row.templateStatus ? `${templateStatusLabel[row.templateStatus]} (${row.templateYear})` : 'Geen NDA geüpload'}
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-(--beheer-text-muted) flex-wrap">
-                            <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" />{row.memberCount}</span>
-                            <span className="flex items-center gap-1 text-emerald-500"><ShieldCheck className="h-3.5 w-3.5" />{row.statusCounts.signed}</span>
-                            <span className="flex items-center gap-1 text-amber-500"><Clock className="h-3.5 w-3.5" />{row.statusCounts.pending}</span>
-                            <span className="flex items-center gap-1 text-orange-500"><AlertTriangle className="h-3.5 w-3.5" />{row.statusCounts.expiring_soon}</span>
-                            <span className="flex items-center gap-1 text-red-500"><XCircle className="h-3.5 w-3.5" />{row.statusCounts.expired}</span>
+                        <div className="flex flex-wrap items-center gap-4 text-xs text-(--beheer-text-muted)">
+                            <span className="flex items-center gap-1"><Users className="size-3.5" />{row.memberCount}</span>
+                            <span className="flex items-center gap-1 text-emerald-500"><ShieldCheck className="size-3.5" />{row.statusCounts.signed}</span>
+                            <span className="flex items-center gap-1 text-amber-500"><Clock className="size-3.5" />{row.statusCounts.pending}</span>
+                            <span className="flex items-center gap-1 text-orange-500"><AlertTriangle className="size-3.5" />{row.statusCounts.expiring_soon}</span>
+                            <span className="flex items-center gap-1 text-red-500"><XCircle className="size-3.5" />{row.statusCounts.expired}</span>
                         </div>
                     </Link>
                 ))}

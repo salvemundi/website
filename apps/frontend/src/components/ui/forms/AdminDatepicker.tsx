@@ -157,7 +157,7 @@ export const AdminDatepicker = React.forwardRef<React.ElementRef<typeof Datepick
     return (
         <div ref={containerRef} className={`relative w-full ${className}`}>
             {/* Mobile native datepicker: fully responsive, zero popup clipping, native touch sheet */}
-            <div className="block sm:hidden w-full">
+            <div className="block w-full sm:hidden">
                 <input
                     type="date"
                     id={id}
@@ -166,12 +166,12 @@ export const AdminDatepicker = React.forwardRef<React.ElementRef<typeof Datepick
                     max={maxDateStr || undefined}
                     disabled={disabled}
                     onChange={handleMobileDateChange}
-                    className={`beheer-input w-full font-medium cursor-pointer ${disabled ? 'opacity-40 cursor-not-allowed bg-neutral-500/10' : ''}`}
+                    className={`beheer-input w-full cursor-pointer font-medium ${disabled ? 'cursor-not-allowed bg-neutral-500/10 opacity-40' : ''}`}
                 />
             </div>
 
             {/* Desktop Flowbite datepicker */}
-            <div className="hidden sm:block w-full">
+            <div className="hidden w-full sm:block">
                 <Datepicker
                     key={value ? value.toISOString() : 'empty'}
                     theme={customDatepickerTheme}

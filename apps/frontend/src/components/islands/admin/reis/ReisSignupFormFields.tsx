@@ -27,15 +27,15 @@ export interface FieldProps extends React.InputHTMLAttributes<HTMLInputElement |
 export function DateAndLabel({ label, defaultValue, name }: { label: string; defaultValue: string; name: string }) {
     const [val, setVal] = React.useState(defaultValue);
     return (
-        <div className="space-y-1.5 group/field">
-            <label className="block text-[11px] font-semibold text-(--beheer-text-muted) group-focus-within/field:text-(--beheer-accent) transition-colors px-1 opacity-70">{label}</label>
+        <div className="group/field space-y-1.5">
+            <label className="block px-1 text-[11px] font-semibold text-(--beheer-text-muted) opacity-70 transition-colors group-focus-within/field:text-(--beheer-accent)">{label}</label>
             <div className="relative">
                 <DateInput 
                     name={name} 
                     value={val} 
                     onChange={(newVal) => setVal(newVal)}
                     autoComplete="off"
-                    className="w-full px-4 py-2.5 bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm border border-(--beheer-border)/40 rounded-xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main)/80 transition-all font-semibold outline-none shadow-inner"
+                    className="w-full rounded-xl border border-(--beheer-border)/40 bg-(--bg-main)/40 px-4 py-2.5 text-sm font-semibold text-(--beheer-text) shadow-inner backdrop-blur-sm transition-all outline-none focus:bg-(--bg-main)/80 focus:ring-2 focus:ring-(--beheer-accent) dark:bg-black/20"
                 />
             </div>
         </div>
@@ -45,15 +45,15 @@ export function DateAndLabel({ label, defaultValue, name }: { label: string; def
 export function PhoneAndLabel({ label, defaultValue, name }: { label: string; defaultValue: string; name: string }) {
     const [val, setVal] = React.useState(defaultValue);
     return (
-        <div className="space-y-1.5 group/field">
-            <label className="block text-[11px] font-semibold text-(--beheer-text-muted) group-focus-within/field:text-(--beheer-accent) transition-colors px-1 opacity-70">{label}</label>
+        <div className="group/field space-y-1.5">
+            <label className="block px-1 text-[11px] font-semibold text-(--beheer-text-muted) opacity-70 transition-colors group-focus-within/field:text-(--beheer-accent)">{label}</label>
             <div className="relative">
                 <PhoneInput 
                     name={name} 
                     value={val} 
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVal(e.target.value)}
                     autoComplete="off"
-                    className="w-full px-4 py-2.5 bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm border border-(--beheer-border)/40 rounded-xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main)/80 transition-all font-semibold outline-none shadow-inner"
+                    className="w-full rounded-xl border border-(--beheer-border)/40 bg-(--bg-main)/40 px-4 py-2.5 text-sm font-semibold text-(--beheer-text) shadow-inner backdrop-blur-sm transition-all outline-none focus:bg-(--bg-main)/80 focus:ring-2 focus:ring-(--beheer-accent) dark:bg-black/20"
                 />
             </div>
         </div>
@@ -62,11 +62,11 @@ export function PhoneAndLabel({ label, defaultValue, name }: { label: string; de
 
 export function Input({ label, ...props }: FieldProps) {
     return (
-        <div className="space-y-1.5 group/field">
-            <label className="block text-[11px] font-semibold text-(--beheer-text-muted) group-focus-within/field:text-(--beheer-accent) transition-colors px-1 opacity-70">{label}</label>
+        <div className="group/field space-y-1.5">
+            <label className="block px-1 text-[11px] font-semibold text-(--beheer-text-muted) opacity-70 transition-colors group-focus-within/field:text-(--beheer-accent)">{label}</label>
             <input 
                 {...props} 
-                className={`beheer-input w-full px-4 py-2.5 bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm border border-(--beheer-border)/40 rounded-xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main)/80 transition-all font-semibold outline-none shadow-inner placeholder:opacity-30 ${props.className || ''}`}
+                className={`beheer-input w-full rounded-xl border border-(--beheer-border)/40 bg-(--bg-main)/40 px-4 py-2.5 text-sm font-semibold text-(--beheer-text) shadow-inner backdrop-blur-sm transition-all outline-none placeholder:opacity-30 focus:bg-(--bg-main)/80 focus:ring-2 focus:ring-(--beheer-accent) dark:bg-black/20 ${props.className || ''}`}
             />
         </div>
     );
@@ -94,8 +94,8 @@ export function Select({ label, children, ...props }: FieldProps & { children: R
     };
 
     return (
-        <div className="space-y-1.5 group/field">
-            <label className="block text-[11px] font-semibold text-(--beheer-text-muted) transition-colors px-1 opacity-70">
+        <div className="group/field space-y-1.5">
+            <label className="block px-1 text-[11px] font-semibold text-(--beheer-text-muted) opacity-70 transition-colors">
                 {label}
             </label>
             <AdminSelect
@@ -112,11 +112,11 @@ export function Select({ label, children, ...props }: FieldProps & { children: R
 
 export function Textarea({ label, ...props }: FieldProps) {
     return (
-        <div className="space-y-1.5 group/field">
-            <label className="block text-[11px] font-semibold text-(--beheer-text-muted) group-focus-within/field:text-(--beheer-accent) transition-colors px-1 opacity-70">{label}</label>
+        <div className="group/field space-y-1.5">
+            <label className="block px-1 text-[11px] font-semibold text-(--beheer-text-muted) opacity-70 transition-colors group-focus-within/field:text-(--beheer-accent)">{label}</label>
             <textarea 
                 {...props} 
-                className="beheer-input w-full px-4 py-2.5 bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm border border-(--beheer-border)/40 rounded-xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main)/80 transition-all resize-none min-h-20 font-semibold outline-none shadow-inner placeholder:opacity-30 leading-relaxed"
+                className="min-h-20 beheer-input w-full resize-none rounded-xl border border-(--beheer-border)/40 bg-(--bg-main)/40 px-4 py-2.5 text-sm leading-relaxed font-semibold text-(--beheer-text) shadow-inner backdrop-blur-sm transition-all outline-none placeholder:opacity-30 focus:bg-(--bg-main)/80 focus:ring-2 focus:ring-(--beheer-accent) dark:bg-black/20"
             />
         </div>
     );
@@ -124,14 +124,14 @@ export function Textarea({ label, ...props }: FieldProps) {
 
 export function Checkbox({ label, ...props }: FieldProps) {
     return (
-        <label className="flex items-center gap-4 cursor-pointer group select-none">
+        <label className="group flex cursor-pointer items-center gap-4 select-none">
             <div className="relative">
-                <input type="checkbox" {...props} className="sr-only peer" />
-                <div className="h-5 w-9 bg-(--beheer-border)/20 dark:bg-white/5 backdrop-blur-md rounded-full peer-checked:bg-(--beheer-accent) transition-all border border-(--beheer-border)/30 group-hover:border-(--beheer-accent)/50 shadow-inner" />
-                <div className="absolute left-1 top-1 h-3 w-3 bg-white rounded-full transition-all peer-checked:left-5 shadow-lg transform peer-active:scale-90" />
+                <input type="checkbox" {...props} className="peer sr-only" />
+                <div className="h-5 w-9 rounded-full border border-(--beheer-border)/30 bg-(--beheer-border)/20 shadow-inner backdrop-blur-md transition-all group-hover:border-(--beheer-accent)/50 peer-checked:bg-(--beheer-accent) dark:bg-white/5" />
+                <div className="absolute top-1 left-1 size-3 transform rounded-full bg-white shadow-lg transition-all peer-checked:left-5 peer-active:scale-90" />
             </div>
             <div className="flex flex-col">
-                <span className="text-[11px] font-semibold text-(--beheer-text-muted) group-hover:text-(--beheer-text) transition-colors tracking-tight">{label}</span>
+                <span className="text-[11px] font-semibold tracking-tight text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">{label}</span>
             </div>
         </label>
     );
@@ -142,14 +142,14 @@ export function Checkbox({ label, ...props }: FieldProps) {
 export function HorizontalInput({ label, name, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label: string; name: string }) {
     const id = React.useId();
     return (
-        <div className="flex items-center gap-3 py-0.5 group">
-            <label htmlFor={id} className="w-28 shrink-0 text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 group-hover:opacity-100 group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 transition-all cursor-pointer">{label}</label>
-            <div className="flex-1 bg-slate-500/5 dark:bg-black/40 rounded-lg px-3 border border-(--beheer-border)/5 group-focus-within:border-(--beheer-accent)/20 transition-all">
+        <div className="group flex items-center gap-3 py-0.5">
+            <label htmlFor={id} className="w-28 shrink-0 cursor-pointer text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 transition-all group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 group-hover:opacity-100">{label}</label>
+            <div className="flex-1 rounded-lg border border-(--beheer-border)/5 bg-slate-500/5 px-3 transition-all group-focus-within:border-(--beheer-accent)/20 dark:bg-black/40">
                 <input 
                     {...props} 
                     id={id}
                     name={name}
-                    className={`beheer-input w-full bg-transparent text-xs text-(--beheer-text) font-semibold outline-none border-none p-0 focus:ring-0 placeholder:opacity-20 h-7 ${props.className || ''}`}
+                    className={`h-7 beheer-input w-full border-none bg-transparent p-0 text-xs font-semibold text-(--beheer-text) outline-none placeholder:opacity-20 focus:ring-0 ${props.className || ''}`}
                 />
             </div>
         </div>
@@ -160,15 +160,15 @@ export function HorizontalDate({ label, name, defaultValue }: { label: string; n
     const [val, setVal] = React.useState(defaultValue);
     const id = React.useId();
     return (
-        <div className="flex items-center gap-3 py-0.5 group">
-            <label htmlFor={id} className="w-28 shrink-0 text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 group-hover:opacity-100 group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 transition-all cursor-pointer">{label}</label>
-            <div className="flex-1 bg-slate-500/5 dark:bg-black/40 rounded-lg px-3 border border-(--beheer-border)/5 group-focus-within:border-(--beheer-accent)/20 transition-all">
+        <div className="group flex items-center gap-3 py-0.5">
+            <label htmlFor={id} className="w-28 shrink-0 cursor-pointer text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 transition-all group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 group-hover:opacity-100">{label}</label>
+            <div className="flex-1 rounded-lg border border-(--beheer-border)/5 bg-slate-500/5 px-3 transition-all group-focus-within:border-(--beheer-accent)/20 dark:bg-black/40">
                 <DateInput 
                     id={id}
                     name={name} 
                     value={val} 
                     onChange={(nv) => setVal(nv)} 
-                    className="bg-transparent text-xs text-(--beheer-text) font-semibold outline-none h-7 w-full border-none p-0 focus:ring-0"
+                    className="h-7 w-full border-none bg-transparent p-0 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-0"
                 />
             </div>
         </div>
@@ -179,15 +179,15 @@ export function HorizontalPhone({ label, name, defaultValue }: { label: string; 
     const [val, setVal] = React.useState(defaultValue);
     const id = React.useId();
     return (
-        <div className="flex items-center gap-3 py-0.5 group">
-            <label htmlFor={id} className="w-28 shrink-0 text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 group-hover:opacity-100 group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 transition-all cursor-pointer">{label}</label>
-            <div className="flex-1 bg-slate-500/5 dark:bg-black/40 rounded-lg px-3 border border-(--beheer-border)/5 group-focus-within:border-(--beheer-accent)/20 transition-all">
+        <div className="group flex items-center gap-3 py-0.5">
+            <label htmlFor={id} className="w-28 shrink-0 cursor-pointer text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 transition-all group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 group-hover:opacity-100">{label}</label>
+            <div className="flex-1 rounded-lg border border-(--beheer-border)/5 bg-slate-500/5 px-3 transition-all group-focus-within:border-(--beheer-accent)/20 dark:bg-black/40">
                 <PhoneInput 
                     id={id}
                     name={name} 
                     value={val} 
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVal(e.target.value)} 
-                    className="bg-transparent text-xs text-(--beheer-text) font-semibold outline-none h-7 w-full border-none p-0 focus:ring-0"
+                    className="h-7 w-full border-none bg-transparent p-0 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-0"
                 />
             </div>
         </div>
@@ -216,8 +216,8 @@ export function HorizontalSelect({ label, name, children, ...props }: React.Sele
     };
 
     return (
-        <div className="flex items-center gap-3 py-0.5 group relative">
-            <label className="w-28 shrink-0 text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 group-hover:opacity-100 transition-all">
+        <div className="group relative flex items-center gap-3 py-0.5">
+            <label className="w-28 shrink-0 text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 transition-all group-hover:opacity-100">
                 {label}
             </label>
             <div className="flex-1">
@@ -238,13 +238,13 @@ export function HorizontalSelect({ label, name, children, ...props }: React.Sele
 export function HorizontalTextarea({ label, name, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string; name: string }) {
     const id = React.useId();
     return (
-        <div className="flex flex-col gap-1 py-1 group">
-            <label htmlFor={id} className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 group-hover:opacity-100 group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 transition-all cursor-pointer">{label}</label>
+        <div className="group flex flex-col gap-1 py-1">
+            <label htmlFor={id} className="cursor-pointer text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 transition-all group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 group-hover:opacity-100">{label}</label>
             <textarea 
                 {...props} 
                 id={id}
                 name={name}
-                className="beheer-input w-full bg-slate-500/5 dark:bg-black/40 rounded-xl p-2.5 text-xs text-(--beheer-text) font-semibold outline-none placeholder:opacity-20 min-h-11.25 resize-none border border-(--beheer-border)/5 transition-all focus:border-(--beheer-accent)/30"
+                className="min-h-11.25 beheer-input w-full resize-none rounded-xl border border-(--beheer-border)/5 bg-slate-500/5 p-2.5 text-xs font-semibold text-(--beheer-text) transition-all outline-none placeholder:opacity-20 focus:border-(--beheer-accent)/30 dark:bg-black/40"
             />
         </div>
     );
@@ -252,13 +252,13 @@ export function HorizontalTextarea({ label, name, ...props }: React.TextareaHTML
 
 export function HorizontalCheckbox({ label, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) {
     return (
-        <label className="flex items-center gap-3 cursor-pointer group">
+        <label className="group flex cursor-pointer items-center gap-3">
             <div className="relative">
-                <input type="checkbox" {...props} className="sr-only peer" />
-                <div className="h-4 w-7 bg-(--beheer-text-muted)/10 rounded-full peer-checked:bg-(--beheer-accent) transition-all" />
-                <div className="absolute left-0.5 top-0.5 h-3 w-3 bg-white rounded-full transition-all peer-checked:left-3.5 shadow-sm" />
+                <input type="checkbox" {...props} className="peer sr-only" />
+                <div className="h-4 w-7 rounded-full bg-(--beheer-text-muted)/10 transition-all peer-checked:bg-(--beheer-accent)" />
+                <div className="absolute top-0.5 left-0.5 size-3 rounded-full bg-white shadow-sm transition-all peer-checked:left-3.5" />
             </div>
-            <span className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 group-hover:opacity-100 transition-all">{label}</span>
+            <span className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 transition-all group-hover:opacity-100">{label}</span>
         </label>
     );
 }

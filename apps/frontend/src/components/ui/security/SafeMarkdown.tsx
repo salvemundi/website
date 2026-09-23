@@ -12,7 +12,7 @@ export function SafeMarkdown({ content, className = '' }: SafeMarkdownProps) {
     if (!content) return null;
 
     return (
-        <div className={`prose prose-purple max-w-none dark:prose-invert ${className}`}>
+        <div className={`prose max-w-none prose-purple dark:prose-invert ${className}`}>
             <ReactMarkdown
                 remarkPlugins={[remarkBreaks, remarkGfm]}
                 rehypePlugins={[rehypeSanitize]}

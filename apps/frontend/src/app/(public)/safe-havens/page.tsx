@@ -68,27 +68,27 @@ async function SafeHavensContent() {
     const safeHavens = await getSafeHavens();
 
     return (
-        <div className="mx-auto max-w-app px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
+        <div className="max-w-app mx-auto px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
             <div className="mx-auto max-w-7xl">
                 {/* Industrial Columnar Bento Grid - Solves empty space issues on desktop */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
                     
                     {/* MAIN COLUMN (LEFT) */}
-                    <div className="lg:col-span-8 space-y-6">
+                    <div className="space-y-6 lg:col-span-8">
                         
                         {/* Intro Section */}
                         <BentoCard>
                             <div className="flex flex-col gap-6">
                                 <div className="flex items-start gap-4 sm:gap-6">
-                                    <div className="h-14 w-14 sm:h-16 sm:w-16 squircle bg-purple-600 flex items-center justify-center shrink-0 shadow-lg">
-                                        <Shield className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+                                    <div className="squircle flex size-14 shrink-0 items-center justify-center bg-purple-600 shadow-lg sm:size-16">
+                                        <Shield className="size-7 text-white sm:size-8" />
                                     </div>
 
                                     <div className="min-w-0 flex-1">
-                                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-theme-purple">
+                                        <h2 className="text-2xl font-black text-theme-purple sm:text-3xl lg:text-4xl">
                                             Wat zijn Safe Havens?
                                         </h2>
-                                        <p className="mt-3 text-base sm:text-lg text-text-muted leading-relaxed">
+                                        <p className="mt-3 text-base leading-relaxed text-text-muted sm:text-lg">
                                             Binnen Salve Mundi vinden wij een veilige en respectvolle omgeving essentieel.
                                             Safe Havens zijn zorgvuldig geselecteerde personen die voor jou klaarstaan:
                                             ze luisteren zonder te oordelen, denken met je mee en helpen je een passende vervolgstap te vinden.
@@ -96,15 +96,15 @@ async function SafeHavensContent() {
                                     </div>
                                 </div>
 
-                                <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="squircle bg-bg-main/50 border border-border-color p-5 transition-colors hover:bg-bg-main">
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="squircle bg-bg-main/50 hover:bg-bg-main border border-border-color p-5 transition-colors">
                                         <div className="flex items-start gap-3">
-                                            <Lock className="mt-0.5 h-5 w-5 text-purple-500 shrink-0" />
+                                            <Lock className="mt-0.5 size-5 shrink-0 text-purple-500" />
                                             <div>
                                                 <p className="text-base font-bold text-text-main">
                                                     Volledige vertrouwelijkheid
                                                 </p>
-                                                <p className="mt-1.5 text-sm text-text-muted leading-relaxed">
+                                                <p className="mt-1.5 text-sm leading-relaxed text-text-muted">
                                                     Safe Havens hebben geheimhoudingsplicht. Wat je deelt blijft tussen jullie,
                                                     tenzij jij expliciet toestemming geeft om informatie te delen.
                                                 </p>
@@ -112,14 +112,14 @@ async function SafeHavensContent() {
                                         </div>
                                     </div>
 
-                                    <div className="squircle bg-bg-main/50 border border-border-color p-5 transition-colors hover:bg-bg-main">
+                                    <div className="squircle bg-bg-main/50 hover:bg-bg-main border border-border-color p-5 transition-colors">
                                         <div className="flex items-start gap-3">
-                                            <Users className="mt-0.5 h-5 w-5 text-purple-500 shrink-0" />
+                                            <Users className="mt-0.5 size-5 shrink-0 text-purple-500" />
                                             <div>
                                                 <p className="text-base font-bold text-text-main">
                                                     Diverse achtergronden
                                                 </p>
-                                                <p className="mt-1.5 text-sm text-text-muted leading-relaxed">
+                                                <p className="mt-1.5 text-sm leading-relaxed text-text-muted">
                                                     We streven naar Safe Havens met verschillende achtergronden,
                                                     zodat er sneller iemand is waarbij jij je comfortabel voelt.
                                                 </p>
@@ -134,22 +134,22 @@ async function SafeHavensContent() {
                         <BentoCard>
                             <div className="flex flex-col gap-6">
                                 <div>
-                                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-theme-purple">
+                                    <h2 className="text-2xl font-black text-theme-purple sm:text-3xl lg:text-4xl">
                                         Onze Safe Havens
                                     </h2>
-                                    <p className="mt-2 text-sm sm:text-base text-text-muted">
+                                    <p className="mt-2 text-sm text-text-muted sm:text-base">
                                         Kies een persoon waarbij jij je het meest comfortabel voelt.
                                     </p>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     {safeHavens.length > 0 ? (
                                         safeHavens.map((safeHaven) => (
                                             <SafeHavenCard key={safeHaven.id} safeHaven={safeHaven} />
                                         ))
                                     ) : (
-                                        <div className="col-span-full squircle bg-bg-main/50 border border-dashed border-border-color p-10 text-center">
-                                            <Shield className="h-8 w-8 text-purple-500 mx-auto mb-4" />
+                                        <div className="squircle bg-bg-main/50 col-span-full border border-dashed border-border-color p-10 text-center">
+                                            <Shield className="mx-auto mb-4 size-8 text-purple-500" />
                                             <p className="text-lg font-bold text-text-main opacity-60">Wordt binnenkort aangevuld</p>
                                         </div>
                                     )}
@@ -159,12 +159,12 @@ async function SafeHavensContent() {
                     </div>
 
                     {/* SIDE COLUMN (RIGHT) */}
-                    <div className="lg:col-span-4 space-y-6">
+                    <div className="space-y-6 lg:col-span-4">
                         
                         {/* Topics section */}
                         <BentoCard>
                             <div>
-                                <h2 className="text-xl sm:text-2xl font-black text-theme-purple">
+                                <h2 className="text-xl font-black text-theme-purple sm:text-2xl">
                                     Onderwerpen
                                 </h2>
                                 <p className="mt-2 text-sm text-text-muted">
@@ -176,10 +176,10 @@ async function SafeHavensContent() {
                                 {topics.map((topic, index) => (
                                     <li
                                         key={index}
-                                        className="group flex items-center gap-3 rounded-xl bg-bg-main/40 border border-transparent p-3 hover:bg-bg-main hover:border-border-color transition-all duration-200"
+                                        className="group bg-bg-main/40 hover:bg-bg-main flex items-center gap-3 rounded-xl border border-transparent p-3 transition-all duration-200 hover:border-border-color"
                                     >
-                                        <div className={`h-9 w-9 rounded-lg bg-linear-to-br ${topic.color} flex items-center justify-center shrink-0 shadow-sm group-hover:shadow-md transition-shadow`}>
-                                            <topic.Icon className="h-4 w-4 text-white" />
+                                        <div className={`size-9 rounded-lg bg-linear-to-br ${topic.color} flex shrink-0 items-center justify-center shadow-sm transition-shadow group-hover:shadow-md`}>
+                                            <topic.Icon className="size-4 text-white" />
                                         </div>
                                         <span className="text-sm font-medium text-text-main">
                                             {topic.text}
@@ -193,15 +193,15 @@ async function SafeHavensContent() {
                         <BentoCard>
                             <div className="flex flex-col gap-6">
                                 <div className="text-center">
-                                    <div className="mx-auto mb-5 h-14 w-14 squircle bg-purple-600 flex items-center justify-center shadow-lg">
-                                        <MapPin className="h-7 w-7 text-white" />
+                                    <div className="squircle mx-auto mb-5 flex size-14 items-center justify-center bg-purple-600 shadow-lg">
+                                        <MapPin className="size-7 text-white" />
                                     </div>
 
-                                    <h2 className="text-xl sm:text-2xl font-black text-theme-purple">
+                                    <h2 className="text-xl font-black text-theme-purple sm:text-2xl">
                                         Externe hulp
                                     </h2>
 
-                                    <p className="mt-3 text-sm text-text-muted leading-relaxed">
+                                    <p className="mt-3 text-sm leading-relaxed text-text-muted">
                                         Hulp buiten onze vereniging nodig? Hier vind je belangrijke contactgegevens.
                                     </p>
                                 </div>
@@ -211,18 +211,18 @@ async function SafeHavensContent() {
                                         href="https://www.fontys.nl/fontyshelpt.htm"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="group flex items-center justify-between gap-3 squircle bg-purple-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl hover:scale-[1.02]"
+                                        className="group squircle hover:scale-1.02 flex items-center justify-between gap-3 bg-purple-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <Shield className="h-5 w-5" />
-                                            <span className="font-semibold text-sm">
+                                            <Shield className="size-5" />
+                                            <span className="text-sm font-semibold">
                                                 Fontys Safe Haven
                                             </span>
                                         </div>
-                                        <ExternalLink className="h-4 w-4 opacity-70 group-hover:opacity-100" />
+                                        <ExternalLink className="size-4 opacity-70 group-hover:opacity-100" />
                                     </a>
 
-                                    <div className="group flex items-center justify-center gap-2 squircle bg-purple-800 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl">
+                                    <div className="group squircle flex items-center justify-center gap-2 bg-purple-800 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl">
                                         <ObfuscatedEmail
                                             email="bestuur@salvemundi.nl"
                                             className="text-white hover:text-white"
@@ -230,10 +230,10 @@ async function SafeHavensContent() {
                                         />
                                     </div>
 
-                                    <div className="mt-4 squircle bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-900/50 p-4">
-                                        <div className="flex items-center justify-center gap-2 mb-2 text-red-600 dark:text-red-400">
-                                            <Phone className="h-4 w-4" />
-                                            <p className="font-bold text-sm text-center">Noodgeval? Bel 112</p>
+                                    <div className="squircle mt-4 border-2 border-red-200 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-950/30">
+                                        <div className="mb-2 flex items-center justify-center gap-2 text-red-600 dark:text-red-400">
+                                            <Phone className="size-4" />
+                                            <p className="text-center text-sm font-bold">Noodgeval? Bel 112</p>
                                         </div>
                                     </div>
                                 </div>

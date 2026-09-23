@@ -26,23 +26,23 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
     const [isExpanded, setIsExpanded] = useState(false);
     const hasDetails = !!(timestamp || stack || (changes && changes.length > 0));
     const icons = new Map<string, React.ReactNode>([
-        ['success', <CheckCircle key="success" className="h-5 w-5 text-(--beheer-active)" />],
-        ['warning', <AlertTriangle key="warning" className="h-5 w-5 text-(--theme-warning)" />],
-        ['error', <X key="error" className="h-5 w-5 text-(--beheer-inactive)" />],
-        ['info', <Info key="info" className="h-5 w-5 text-(--theme-info)" />],
-        ['excluded', <Users key="excluded" className="h-5 w-5 text-(--beheer-text-muted)" />],
+        ['success', <CheckCircle key="success" className="size-5 text-(--beheer-active)" />],
+        ['warning', <AlertTriangle key="warning" className="size-5 text-(--theme-warning)" />],
+        ['error', <X key="error" className="size-5 text-(--beheer-inactive)" />],
+        ['info', <Info key="info" className="size-5 text-(--theme-info)" />],
+        ['excluded', <Users key="excluded" className="size-5 text-(--beheer-text-muted)" />],
     ]);
 
     return (
         <div
-            className={`flex flex-col border-b border-(--beheer-border)/10 last:border-0 transition-colors ${hasDetails ? 'cursor-pointer hover:bg-(--beheer-accent)/5' : ''}`}
+            className={`flex flex-col border-b border-(--beheer-border)/10 transition-colors last:border-0 ${hasDetails ? 'cursor-pointer hover:bg-(--beheer-accent)/5' : ''}`}
             onClick={() => hasDetails && setIsExpanded(!isExpanded)}
         >
-            <div className="p-4 flex items-start gap-4 transition-colors">
+            <div className="flex items-start gap-4 p-4 transition-colors">
                 <div className="mt-0.5">{icons.get(type)}</div>
                 <div className="min-w-0 flex-1">
-                    <div className="text-base font-semibold text-(--beheer-text) break-all">{email}</div>
-                    {message && <div className="text-sm text-(--beheer-text-muted) font-medium mt-1">{message}</div>}
+                    <div className="text-base font-semibold break-all text-(--beheer-text)">{email}</div>
+                    {message && <div className="mt-1 text-sm font-medium text-(--beheer-text-muted)">{message}</div>}
                 </div>
                 <div className="ml-auto flex items-center gap-3">
                     <div className="text-sm font-semibold text-(--beheer-text-muted)/50 capitalize">
@@ -50,7 +50,7 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
                     </div>
                     {hasDetails && (
                         <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180 text-(--beheer-accent)' : 'text-(--beheer-text-muted)'}`}>
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
                             </svg>
                         </div>
@@ -59,8 +59,8 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
             </div>
 
             {isExpanded && hasDetails && (
-                <div className="px-12 pb-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="p-4 bg-(--beheer-card-soft) rounded-2xl border border-(--beheer-border)/30 space-y-3">
+                <div className="animate-in fade-in slide-in-from-top-2 px-12 pb-6 duration-300">
+                    <div className="space-y-3 rounded-2xl border border-(--beheer-border)/30 bg-(--beheer-card-soft) p-4">
                         {timestamp && (
                             <div className="flex items-center gap-2">
                                 <span className="text-sm font-semibold text-(--beheer-text-muted)">Tijdstip:</span>
@@ -70,7 +70,7 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
                         {stack && (
                             <div className="space-y-1.5">
                                 <span className="text-sm font-semibold text-(--beheer-text-muted)">Stack trace:</span>
-                                <pre className="text-sm text-(--theme-error)/70 font-mono leading-relaxed overflow-x-auto p-3 bg-(--theme-error)/5 rounded-xl border border-(--theme-error)/10 custom-scrollbar">
+                                <pre className="custom-scrollbar overflow-x-auto rounded-xl border border-(--theme-error)/10 bg-(--theme-error)/5 p-3 font-mono text-sm leading-relaxed text-(--theme-error)/70">
                                     {stack}
                                 </pre>
                             </div>
@@ -80,14 +80,14 @@ function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRo
                                 <span className="text-sm font-semibold text-(--beheer-text-muted)">Wijzigingen:</span>
                                 <div className="space-y-1">
                                     {changes.map((change, idx) => (
-                                        <div key={idx} className="flex flex-col gap-0.5 p-2 bg-(--beheer-card-bg) rounded-xl border border-(--beheer-border)/20">
+                                        <div key={idx} className="flex flex-col gap-0.5 rounded-xl border border-(--beheer-border)/20 bg-(--beheer-card-bg) p-2">
                                             <span className="text-sm font-semibold text-(--beheer-text)">{change.field}</span>
                                             <div className="flex flex-wrap items-center gap-2">
-                                                <span className="text-sm text-(--beheer-text-muted) break-all">{String(change.old ?? 'leeg')}</span>
-                                                <svg className="h-3 w-3 text-(--beheer-text-muted)/50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <span className="text-sm break-all text-(--beheer-text-muted)">{String(change.old ?? 'leeg')}</span>
+                                                <svg className="size-3 shrink-0 text-(--beheer-text-muted)/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
                                                 </svg>
-                                                <span className="text-sm font-semibold text-(--beheer-active) break-all">{String(change.new ?? 'leeg')}</span>
+                                                <span className="text-sm font-semibold break-all text-(--beheer-active)">{String(change.new ?? 'leeg')}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -208,12 +208,12 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
     const paginatedItems = items.slice(startIndex, startIndex + itemsPerPage);
 
     return (
-        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-sm flex flex-col">
-            <div className="max-h-120 overflow-y-auto custom-scrollbar">
+        <div className="flex flex-col overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm">
+            <div className="custom-scrollbar max-h-120 overflow-y-auto">
                 {paginatedItems.length === 0 ? (
                     <div className="flex flex-col items-center justify-center p-20 text-(--beheer-text-muted)">
-                        <Users className="h-12 w-12 mb-4 opacity-20" />
-                        <p className="text-base font-semibold text-center">Geen resultaten gevonden voor dit filter.</p>
+                        <Users className="mb-4 size-12 opacity-20" />
+                        <p className="text-center text-base font-semibold">Geen resultaten gevonden voor dit filter.</p>
                     </div>
                 ) : (
                     <div className="divide-y divide-(--beheer-border)/10">{paginatedItems}</div>
@@ -221,7 +221,7 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
             </div>
             
             {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-(--beheer-border)/20 px-6 py-4 bg-(--beheer-card-soft)">
+                <div className="flex items-center justify-between border-t border-(--beheer-border)/20 bg-(--beheer-card-soft) px-6 py-4">
                     <span className="text-[11px] font-semibold text-(--beheer-text-muted)">
                         Rij {startIndex + 1} t/m {Math.min(startIndex + itemsPerPage, totalItems)} van {totalItems}
                     </span>
@@ -229,17 +229,17 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
                         <button
                             disabled={currentPage === 1}
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            className="beheer-button px-3.5 py-1.5 rounded-lg border border-(--beheer-border) text-[11px] font-bold text-(--beheer-text) hover:border-(--beheer-accent) transition-all disabled:opacity-40"
+                            className="beheer-button rounded-lg border border-(--beheer-border) px-3.5 py-1.5 text-[11px] font-bold text-(--beheer-text) transition-all hover:border-(--beheer-accent) disabled:opacity-40"
                         >
                             Vorige
                         </button>
-                        <span className="text-[11px] font-bold text-(--beheer-text) px-2">
+                        <span className="px-2 text-[11px] font-bold text-(--beheer-text)">
                             {currentPage} / {totalPages}
                         </span>
                         <button
                             disabled={currentPage === totalPages}
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                            className="beheer-button px-3.5 py-1.5 rounded-lg border border-(--beheer-border) text-[11px] font-bold text-(--beheer-text) hover:border-(--beheer-accent) transition-all disabled:opacity-40"
+                            className="beheer-button rounded-lg border border-(--beheer-border) px-3.5 py-1.5 text-[11px] font-bold text-(--beheer-text) transition-all hover:border-(--beheer-accent) disabled:opacity-40"
                         >
                             Volgende
                         </button>

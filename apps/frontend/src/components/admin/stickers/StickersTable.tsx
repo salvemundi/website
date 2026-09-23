@@ -48,23 +48,23 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
 
     return (
         <div className="space-y-6">
-            <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) p-6 shadow-sm border border-(--beheer-border)">
-                <div className="flex items-center gap-3 bg-(--beheer-card-bg) rounded-(--beheer-radius) px-4 py-3 shadow-sm border border-(--beheer-border) focus-within:border-(--beheer-accent) focus-within:ring-2 focus-within:ring-(--beheer-accent)/20 transition-all">
-                    <Search className="h-4 w-4 shrink-0 text-(--beheer-text-muted)" />
+            <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
+                <div className="flex items-center gap-3 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-3 shadow-sm transition-all focus-within:border-(--beheer-accent) focus-within:ring-2 focus-within:ring-(--beheer-accent)/20">
+                    <Search className="size-4 shrink-0 text-(--beheer-text-muted)" />
                     <input
                         type="text"
                         placeholder="Zoek op locatie, stad, land of gebruiker..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         suppressHydrationWarning
-                        className="beheer-input bg-transparent border-none p-0 w-full text-xs font-semibold focus:outline-none placeholder:text-(--beheer-text-muted)/40 text-(--beheer-text)"
+                        className="beheer-input w-full border-none bg-transparent p-0 text-xs font-semibold text-(--beheer-text) placeholder:text-(--beheer-text-muted)/40 focus:outline-none"
                     />
                 </div>
             </div>
 
-            <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-sm border border-(--beheer-border) overflow-hidden">
-                <div className="overflow-x-auto custom-scrollbar">
-                    <table className="w-full text-left border-collapse min-w-200">
+            <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm">
+                <div className="custom-scrollbar overflow-x-auto">
+                    <table className="w-full min-w-200 border-collapse text-left">
                         <thead>
                             <tr className="border-b border-(--beheer-border) bg-(--beheer-card-soft) text-xs font-semibold text-(--beheer-text-muted)">
                                 <th className="px-6 py-4">Locatie & Gebruiker</th>
@@ -76,25 +76,25 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                         </thead>
                         <tbody className="divide-y divide-(--beheer-border)/10">
                             {filteredStickers.map((sticker) => (
-                                <tr key={sticker.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors group">
+                                <tr key={sticker.id} className="group transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-700/20">
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col gap-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-semibold text-(--beheer-text) group-hover:text-(--beheer-accent) transition-colors leading-tight">
+                                                <span className="leading-tight font-semibold text-(--beheer-text) transition-colors group-hover:text-(--beheer-accent)">
                                                     {sticker.location_name || 'Onbekende Locatie'}
                                                 </span>
                                                 {sticker.status === 'published' ? (
-                                                    <span className="px-2 py-0.5 rounded-md bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] font-semibold border border-green-500/20">
+                                                    <span className="rounded-md border border-green-500/20 bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-green-600 dark:text-green-400">
                                                         Live
                                                     </span>
                                                 ) : (
-                                                    <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-semibold border border-amber-500/20">
+                                                    <span className="rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
                                                         Draft
                                                     </span>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-1.5 text-xs text-(--beheer-text-muted) font-medium">
-                                                <User className="h-3.5 w-3.5 opacity-60" />
+                                            <div className="flex items-center gap-1.5 text-xs font-medium text-(--beheer-text-muted)">
+                                                <User className="size-3.5 opacity-60" />
                                                 <span>
                                                     Geüpload door:{' '}
                                                     {sticker.user_created
@@ -106,12 +106,12 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-sm font-semibold text-(--beheer-text) flex items-center gap-1.5 leading-none">
-                                                <MapPin className="h-3.5 w-3.5 text-red-500/80" />
+                                            <span className="flex items-center gap-1.5 text-sm leading-none font-semibold text-(--beheer-text)">
+                                                <MapPin className="size-3.5 text-red-500/80" />
                                                 {sticker.city || 'Onbekende stad'}
                                             </span>
-                                            <span className="text-xs font-medium text-(--beheer-text-muted) flex items-center gap-1.5 leading-none">
-                                                <Globe className="h-3.5 w-3.5 text-blue-500/80" />
+                                            <span className="flex items-center gap-1.5 text-xs leading-none font-medium text-(--beheer-text-muted)">
+                                                <Globe className="size-3.5 text-blue-500/80" />
                                                 {sticker.country || 'Onbekend land'}
                                             </span>
                                         </div>
@@ -123,18 +123,18 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <div
-                                            className="w-12 h-12 mx-auto rounded-(--beheer-radius) bg-(--beheer-card-soft) border border-dashed border-(--beheer-border) flex items-center justify-center text-(--beheer-text-muted) cursor-pointer hover:border-(--beheer-accent) transition-colors overflow-hidden"
+                                            className="mx-auto flex size-12 cursor-pointer items-center justify-center overflow-hidden rounded-(--beheer-radius) border border-dashed border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text-muted) transition-colors hover:border-(--beheer-accent)"
                                             onClick={() => sticker.image && setSelectedImage(`${ASSET_URL}/${sticker.image}`)}
                                         >
                                             {!sticker.image ? (
-                                                <ImageIcon className="h-4 w-4 opacity-30" />
+                                                <ImageIcon className="size-4 opacity-30" />
                                             ) : (
                                                 <MediaAsset
                                                     asset={getImageUrl(sticker.image, { width: 100, height: 100, fit: 'cover' }) || ''}
                                                     alt="Sticker"
                                                     width={48}
                                                     height={48}
-                                                    className="w-full h-full object-cover rounded-(--beheer-radius)"
+                                                    className="size-full rounded-(--beheer-radius) object-cover"
                                                 />
                                             )}
                                         </div>
@@ -144,18 +144,18 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                             {sticker.status !== 'published' && (
                                                 <button
                                                     onClick={() => onApprove(sticker.id)}
-                                                    className="icon-button p-2 bg-green-500/10 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-600 hover:text-white transition-all shadow-sm"
+                                                    className="icon-button rounded-lg bg-green-500/10 p-2 text-green-600 shadow-sm transition-all hover:bg-green-600 hover:text-white dark:text-green-400"
                                                     title="Publiceren"
                                                 >
-                                                    <CheckCircle className="h-4 w-4" />
+                                                    <CheckCircle className="size-4" />
                                                 </button>
                                             )}
                                             <button
                                                 onClick={() => onDelete(sticker.id)}
-                                                className="icon-button p-2 bg-red-500/10 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                                                className="icon-button rounded-lg bg-red-500/10 p-2 text-red-600 shadow-sm transition-all hover:bg-red-500 hover:text-white dark:text-red-400"
                                                 title="Verwijderen"
                                             >
-                                                <Trash className="h-4 w-4" />
+                                                <Trash className="size-4" />
                                             </button>
                                         </div>
                                     </td>
@@ -163,7 +163,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                             ))}
                             {filteredStickers.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-16 text-center text-(--beheer-text-muted) italic font-semibold text-sm">
+                                    <td colSpan={5} className="px-6 py-16 text-center text-sm font-semibold text-(--beheer-text-muted) italic">
                                         Geen stickers gevonden voor dit filter.
                                     </td>
                                 </tr>
@@ -175,23 +175,23 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
 
             {selectedImage && (
                 <div
-                    className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
                     onClick={() => setSelectedImage(null)}
                 >
-                    <div className="relative max-w-4xl max-h-[90vh] animate-in zoom-in-95 duration-300">
-                        <div className="relative w-full h-full min-h-[50vh] min-w-[50vw]">
+                    <div className="animate-in zoom-in-95 relative max-h-[90vh] max-w-4xl duration-300">
+                        <div className="relative size-full min-h-[50vh] min-w-[50vw]">
                             <MediaAsset
                                 asset={selectedImage}
                                 alt="Sticker Full"
                                 fill
-                                className="rounded-(--beheer-radius) shadow-2xl border border-(--beheer-border) object-contain"
+                                className="rounded-(--beheer-radius) border border-(--beheer-border) object-contain shadow-2xl"
                             />
                         </div>
                         <button
-                            className="icon-button absolute -top-4 -right-4 bg-(--beheer-card-bg) text-(--beheer-text) p-2 rounded-full shadow-lg hover:text-(--beheer-accent) transition-colors border border-(--beheer-border)"
+                            className="absolute -top-4 -right-4 icon-button rounded-full border border-(--beheer-border) bg-(--beheer-card-bg) p-2 text-(--beheer-text) shadow-lg transition-colors hover:text-(--beheer-accent)"
                             onClick={() => setSelectedImage(null)}
                         >
-                            <X className="h-5 w-5" />
+                            <X className="size-5" />
                             <span className="sr-only">Sluiten</span>
                         </button>
                     </div>

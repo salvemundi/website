@@ -26,8 +26,8 @@ export default function AdminVisibilityToggle({
     }
 
     return (
-        <div className={`flex items-center gap-1.5 sm:gap-3 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-bg-card border border-border-color rounded-full sm:rounded-3xl shadow-sm ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
-            <span className="text-[11px] sm:text-base font-semibold text-text-muted whitespace-nowrap">
+        <div className={`flex items-center gap-1.5 rounded-full border border-border-color bg-bg-card px-2.5 py-1.5 shadow-sm sm:gap-3 sm:rounded-3xl sm:px-4 sm:py-2 ${disabled ? 'pointer-events-none opacity-50' : ''}`}>
+            <span className="text-[11px] font-semibold whitespace-nowrap text-text-muted sm:text-base">
                 {label}
             </span>
             <button
@@ -35,15 +35,15 @@ export default function AdminVisibilityToggle({
                 onClick={onToggle}
                 disabled={isPending || disabled}
                 aria-label={typeof label === 'string' ? label : 'Toggle zichtbaarheid'}
-                className={`w-9 h-5 sm:w-12 sm:h-6 rounded-full p-1 transition-all relative flex items-center shrink-0 ${
+                className={`relative flex h-5 w-9 shrink-0 items-center rounded-full p-1 transition-all sm:h-6 sm:w-12 ${
                     isVisible ? 'bg-beheer-active' : 'bg-beheer-inactive'
-                } disabled:opacity-50 hover:opacity-90 active:scale-95`}
+                } hover:opacity-90 active:scale-95 disabled:opacity-50`}
             >
                 {isPending ? (
-                    <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin text-white mx-auto" />
+                    <Loader2 className="mx-auto size-3 animate-spin text-white sm:size-4" />
                 ) : (
                     <div
-                        className={`w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full transition-transform ${
+                        className={`size-3 rounded-full bg-white transition-transform sm:size-4 ${
                             isVisible ? 'translate-x-4 sm:translate-x-6' : 'translate-x-0'
                         } shadow-sm`}
                     />

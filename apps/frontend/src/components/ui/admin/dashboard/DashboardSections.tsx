@@ -92,13 +92,13 @@ export function DashboardHub({
         return (
             <div className="space-y-5">
                 <div className="flex items-center gap-3 px-1">
-                    <div className="bg-theme-purple/10 p-2 rounded-xl text-theme-purple">
+                    <div className="rounded-xl bg-theme-purple/10 p-2 text-theme-purple">
                         {React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'h-4 w-4' })}
                     </div>
                     <h2 className="text-base font-semibold text-theme-purple">{title}</h2>
                     <div className="h-px flex-1 bg-linear-to-r from-border-color to-transparent" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {items.map((item, i) => (
                         <ActionCard
                             key={i}
@@ -124,7 +124,7 @@ export function DashboardHub({
                     </React.Fragment>
                 ))
             ) : (
-                <div className="bg-bg-soft rounded-2xl border border-border-color/50 p-8 text-center max-w-md mx-auto my-8 shadow-sm">
+                <div className="mx-auto my-8 max-w-md rounded-2xl border border-border-color/50 bg-bg-soft p-8 text-center shadow-sm">
                     <p className="text-sm font-medium text-text-muted">
                         Er zijn nog geen beheerpagina&apos;s voor de commissies waar je in zit.
                     </p>
@@ -139,8 +139,8 @@ export function BirthdaysList({ data }: { data: Birthday[] }) {
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-3 px-1">
-                <div className="bg-theme-purple/10 p-2 rounded-xl text-theme-purple">
-                    <Cake className="h-4 w-4" />
+                <div className="rounded-xl bg-theme-purple/10 p-2 text-theme-purple">
+                    <Cake className="size-4" />
                 </div>
                 <h3 className="text-base font-semibold text-theme-purple">Aankomende Jarigen</h3>
                 <div className="h-px flex-1 bg-linear-to-r from-border-color to-transparent" />
@@ -166,8 +166,8 @@ export function TopStickersList({ data }: { data: TopSticker[] }) {
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-3 px-1">
-                <div className="bg-theme-purple/10 p-2 rounded-xl text-theme-purple">
-                    <Award className="h-4 w-4" />
+                <div className="rounded-xl bg-theme-purple/10 p-2 text-theme-purple">
+                    <Award className="size-4" />
                 </div>
                 <h3 className="text-base font-semibold text-theme-purple">Top Sticker Verzamelaars</h3>
                 <div className="h-px flex-1 bg-linear-to-r from-border-color to-transparent" />
@@ -192,8 +192,8 @@ export function ActivitySignupsList({ data }: { data: RecentActivity[] }) {
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-3 px-1">
-                <div className="bg-theme-purple/10 p-2 rounded-xl text-theme-purple">
-                    <Activity className="h-4 w-4" />
+                <div className="rounded-xl bg-theme-purple/10 p-2 text-theme-purple">
+                    <Activity className="size-4" />
                 </div>
                 <h3 className="text-base font-semibold text-theme-purple">Activiteiten aanmeldingen</h3>
                 <div className="h-px flex-1 bg-linear-to-r from-border-color to-transparent" />

@@ -20,80 +20,80 @@ interface Props {
 
 export default function ReisActivityCard({ activity, onEdit, onDelete, onViewSignups }: Props) {
     return (
-        <div className="group bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-sm hover:shadow-xl hover:border-(--beheer-accent)/30 transition-all duration-500 flex flex-col">
+        <div className="group flex flex-col overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm transition-all duration-500 hover:border-(--beheer-accent)/30 hover:shadow-xl">
             {/* Visual Header */}
             {activity.image ? (
-                <div className="relative h-48 bg-slate-900 overflow-hidden">
-                    <MediaAsset asset={activity.image} alt={activity.name} fill className="object-cover group-hover:scale-110 transition-transform duration-1000" />
-                    <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[9px] font-semibold tracking-widest shadow-lg ${activity.is_active ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                <div className="relative h-48 overflow-hidden bg-slate-900">
+                    <MediaAsset asset={activity.image} alt={activity.name} fill className="object-cover transition-transform duration-1000 group-hover:scale-110" />
+                    <div className={`absolute top-4 right-4 rounded-full px-3 py-1 text-[9px] font-semibold tracking-widest shadow-lg ${activity.is_active ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
                         {activity.is_active ? 'Actief' : 'Inactief'}
                     </div>
                 </div>
             ) : (
-                <div className="h-24 bg-(--beheer-card-soft)/50 flex items-center justify-center border-b border-(--beheer-border)">
-                    <LayoutGrid className="h-8 w-8 text-(--beheer-text-muted) opacity-20" />
+                <div className="flex h-24 items-center justify-center border-b border-(--beheer-border) bg-(--beheer-card-soft)/50">
+                    <LayoutGrid className="size-8 text-(--beheer-text-muted) opacity-20" />
                 </div>
             )}
 
-            <div className="p-6 flex-1 flex flex-col">
-                <div className="flex items-center justify-between gap-2 mb-2">
-                    <h3 className="text-lg font-semibold text-(--beheer-text) tracking-tight line-clamp-1 group-hover:text-(--beheer-accent) transition-colors">{activity.name}</h3>
+            <div className="flex flex-1 flex-col p-6">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                    <h3 className="line-clamp-1 text-lg font-semibold tracking-tight text-(--beheer-text) transition-colors group-hover:text-(--beheer-accent)">{activity.name}</h3>
                     <span className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-40">#{activity.display_order}</span>
                 </div>
                 
                 {activity.description && (
-                    <p className="text-xs text-(--beheer-text-muted) mt-1 mb-6 line-clamp-2 min-h-10 font-medium leading-relaxed">{activity.description}</p>
+                    <p className="mt-1 mb-6 line-clamp-2 min-h-10 text-xs leading-relaxed font-medium text-(--beheer-text-muted)">{activity.description}</p>
                 )}
 
-                <div className="flex justify-between items-end mt-auto mb-8">
+                <div className="mt-auto mb-8 flex items-end justify-between">
                     <div className="flex flex-col">
-                        <span className="text-[9px] font-semibold text-(--beheer-text-muted) mb-1 opacity-60">Basisprijs</span>
+                        <span className="mb-1 text-[9px] font-semibold text-(--beheer-text-muted) opacity-60">Basisprijs</span>
                         <span className="text-2xl font-semibold text-(--beheer-accent)">€{Number(activity.price || 0).toFixed(2)}</span>
                     </div>
                     {activity.max_participants && (
                         <div className="flex flex-col items-end">
-                            <span className="text-[9px] font-semibold text-(--beheer-text-muted) mb-1 opacity-60">Capaciteit</span>
-                            <span className="text-xs font-semibold text-(--beheer-text) flex items-center gap-1.5 bg-(--beheer-card-soft) px-2 py-1 rounded-lg border border-(--beheer-border)/50"><Users className="h-3 w-3" /> {activity.max_participants}</span>
+                            <span className="mb-1 text-[9px] font-semibold text-(--beheer-text-muted) opacity-60">Capaciteit</span>
+                            <span className="flex items-center gap-1.5 rounded-lg border border-(--beheer-border)/50 bg-(--beheer-card-soft) px-2 py-1 text-xs font-semibold text-(--beheer-text)"><Users className="size-3" /> {activity.max_participants}</span>
                         </div>
                     )}
                 </div>
 
                 {activity.options && activity.options.length > 0 && (
-                    <div className="mb-8 p-4 bg-(--beheer-card-soft)/50 rounded-2xl border border-(--beheer-border)/30">
-                        <span className="text-[9px] font-semibold text-(--beheer-text-muted) block mb-2 opacity-60">{activity.max_selections === 1 ? 'Keuze verplicht' : 'Extra opties'} ({activity.options.length})</span>
+                    <div className="mb-8 rounded-2xl border border-(--beheer-border)/30 bg-(--beheer-card-soft)/50 p-4">
+                        <span className="mb-2 block text-[9px] font-semibold text-(--beheer-text-muted) opacity-60">{activity.max_selections === 1 ? 'Keuze verplicht' : 'Extra opties'} ({activity.options.length})</span>
                         <div className="flex flex-wrap gap-1.5">
                             {activity.options.slice(0, 2).map((o, i) => (
-                                <span key={i} className="text-[9px] font-semibold px-2 py-1 bg-(--beheer-card-bg) rounded-lg border border-(--beheer-border) text-(--beheer-text-muted) tracking-tight">
+                                <span key={i} className="rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-2 py-1 text-[9px] font-semibold tracking-tight text-(--beheer-text-muted)">
                                     {o.name || 'Naamloos'}
                                 </span>
                             ))}
                             {activity.options.length > 2 && (
-                                <span className="text-[9px] font-semibold px-2 py-1 text-(--beheer-text-muted) opacity-50">+{activity.options.length - 2}</span>
+                                <span className="px-2 py-1 text-[9px] font-semibold text-(--beheer-text-muted) opacity-50">+{activity.options.length - 2}</span>
                             )}
                         </div>
                     </div>
                 )}
 
-                <div className="space-y-3 pt-6 border-t border-(--beheer-border)/20">
+                <div className="space-y-3 border-t border-(--beheer-border)/20 pt-6">
                     <div className="flex gap-3">
                         <button 
                             onClick={() => onEdit(activity)}
-                            className="beheer-button flex-1 px-4 py-3 rounded-xl border border-(--beheer-border) font-semibold text-[10px] text-(--beheer-text) hover:border-(--beheer-accent) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/5 transition-all flex items-center justify-center gap-2 active:scale-95"
+                            className="beheer-button flex flex-1 items-center justify-center gap-2 rounded-xl border border-(--beheer-border) px-4 py-3 text-[10px] font-semibold text-(--beheer-text) transition-all hover:border-(--beheer-accent) hover:bg-(--beheer-accent)/5 hover:text-(--beheer-accent) active:scale-95"
                         >
-                            <Pen className="h-3.5 w-3.5" /> Bewerken
+                            <Pen className="size-3.5" /> Bewerken
                         </button>
                         <button 
                             onClick={() => onDelete(activity.id as number)}
-                            className="icon-button p-3 rounded-xl border border-(--beheer-border) text-(--beheer-text-muted) hover:text-red-500 hover:border-red-500/20 hover:bg-red-500/5 transition-all flex items-center justify-center active:scale-95"
+                            className="icon-button flex items-center justify-center rounded-xl border border-(--beheer-border) p-3 text-(--beheer-text-muted) transition-all hover:border-red-500/20 hover:bg-red-500/5 hover:text-red-500 active:scale-95"
                         >
-                            <Trash className="h-4 w-4" />
+                            <Trash className="size-4" />
                         </button>
                     </div>
                     <button 
                         onClick={() => onViewSignups(activity.id as number)}
-                        className="beheer-button w-full h-11 bg-(--beheer-accent)/5 hover:bg-(--beheer-accent)/10 text-(--beheer-accent) rounded-xl font-semibold text-[10px] transition-all flex items-center justify-center gap-2 border border-(--beheer-accent)/10 active:scale-95"
+                        className="beheer-button flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-(--beheer-accent)/10 bg-(--beheer-accent)/5 text-[10px] font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/10 active:scale-95"
                     >
-                        <Users className="h-3.5 w-3.5" /> Inschrijvingen
+                        <Users className="size-3.5" /> Inschrijvingen
                     </button>
                 </div>
             </div>

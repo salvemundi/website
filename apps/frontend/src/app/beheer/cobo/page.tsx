@@ -52,7 +52,7 @@ export default async function AdminCoboPage() {
             title={pageTitle}
             backHref="/beheer"
             actions={
-                <div className="flex flex-wrap items-stretch sm:items-center gap-2 w-full md:w-auto">
+                <div className="flex w-full flex-wrap items-stretch gap-2 sm:items-center md:w-auto">
                     <CoboEventSwitcher
                         events={events}
                         activeEvent={activeEvent ?? null}

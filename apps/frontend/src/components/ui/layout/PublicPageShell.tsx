@@ -20,16 +20,16 @@ export default function PublicPageShell({
 }: PublicPageShellProps) {
     if (backgroundImage) {
         return (
-            <div className="w-full relative min-h-dvh overflow-hidden flex flex-col">
+            <div className="relative flex min-h-dvh w-full flex-col overflow-hidden">
                 <div 
-                    className="absolute inset-0 bg-cover bg-center pointer-events-none -z-10"
+                    className="pointer-events-none absolute inset-0 -z-10 bg-cover bg-center"
                     style={{
                         backgroundImage: `url(${backgroundImage})`,
                         filter: imageFilter
                     }}
                 />
-                <div className="absolute inset-0 bg-black/40 -z-10 pointer-events-none" />
-                <div className="grow relative z-10">
+                <div className="pointer-events-none absolute inset-0 -z-10 bg-black/40" />
+                <div className="relative z-10 grow">
                     {children}
                 </div>
             </div>
@@ -37,7 +37,7 @@ export default function PublicPageShell({
     }
 
     return (
-        <div className="w-full min-h-dvh">
+        <div className="min-h-dvh w-full">
             {children}
         </div>
     );

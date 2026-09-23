@@ -17,16 +17,16 @@ export const SponsorsSection: React.FC<SponsorsSectionProps> = ({
     const scrollDuration = Math.max(2, sponsors.length * 0.8 * 2.5);
 
     return (
-        <section className="py-fluid-lg overflow-hidden" style={{ '--scroll-duration': `${scrollDuration}s` } as React.CSSProperties}>
-            <div className="mx-auto max-w-app px-6">
-                <div className="text-center mb-6 sm:mb-8">
-                    <h2 className="text-2xl font-black text-gradient sm:text-3xl">
+        <section className="overflow-hidden py-fluid-lg" style={{ '--scroll-duration': `${scrollDuration}s` } as React.CSSProperties}>
+            <div className="max-w-app mx-auto px-6">
+                <div className="mb-6 text-center sm:mb-8">
+                    <h2 className="text-gradient text-2xl font-black sm:text-3xl">
                         Onze sponsoren
                     </h2>
                 </div>
 
                 {!hasSponsors ? (
-                    <div className="w-full min-h-30 flex items-center justify-center">
+                    <div className="flex min-h-30 w-full items-center justify-center">
                         <p className="text-center text-sm text-(--text-muted) italic">Binnenkort meer informatie.</p>
                     </div>
                 ) : (

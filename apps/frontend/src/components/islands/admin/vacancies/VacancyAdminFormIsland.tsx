@@ -115,8 +115,8 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                 backHref="/beheer/bijbanenbank"
             />
 
-            <div className="admin-container py-4 md:py-8 max-w-3xl">
-                <StandardFormCard title={isEditing ? 'Vacature bewerken' : 'Vacature aanmaken'} icon={<Briefcase className="w-8 h-8" />}>
+            <div className="admin-container max-w-3xl py-4 md:py-8">
+                <StandardFormCard title={isEditing ? 'Vacature bewerken' : 'Vacature aanmaken'} icon={<Briefcase className="size-8" />}>
                     <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6" autoComplete="off">
                         <FormField id="field-type" label="Type vacature" required error={errors.type?.message}>
                             <select {...register('type')} id="field-type" className="form-input" suppressHydrationWarning>
@@ -125,13 +125,13 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                             </select>
                         </FormField>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <FormField id="field-title" label="Functietitel" required error={errors.title?.message}>
                                 <Input {...register('title')} id="field-title" />
                             </FormField>
                             <FormField id="field-company" label="Bedrijfsnaam" required error={errors.company?.message}>
                                 <div className="relative">
-                                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <Building2 className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
                                     <Input {...register('company')} id="field-company" className="pl-10" />
                                 </div>
                             </FormField>
@@ -150,7 +150,7 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                     />
                                 )}
                             />
-                            <p className="text-xs text-(--text-muted) mt-1">
+                            <p className="mt-1 text-xs text-(--text-muted)">
                                 Gebruik de knoppen voor opmaak, of klik op &quot;Voorbeeld&quot; om te zien hoe de omschrijving op de Bijbanenbank wordt weergegeven.
                             </p>
                         </FormField>
@@ -172,22 +172,22 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
 
                         <FormField id="field-location" label="Locatie" required error={errors.location?.message}>
                             <div className="relative">
-                                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <MapPin className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
                                 <Input {...register('location')} id="field-location" className="pl-10" />
                             </div>
                         </FormField>
 
                         {type === 'internship' && (
                             <FormField id="field-directions" label="ICT-richting(en)" required error={errors.directions?.message}>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                     {ICT_DIRECTIONS.map((option) => (
-                                        <label key={option} className="flex items-center gap-2 text-sm font-medium text-(--text-main) bg-(--bg-soft) rounded-xl px-3 py-2 cursor-pointer">
+                                        <label key={option} className="flex cursor-pointer items-center gap-2 rounded-xl bg-(--bg-soft) px-3 py-2 text-sm font-medium text-(--text-main)">
                                             <input
                                                 type="checkbox"
                                                 value={option}
                                                 checked={selectedDirections.includes(option)}
                                                 {...register('directions')}
-                                                className="h-4 w-4 accent-(--theme-purple)"
+                                                className="size-4 accent-(--theme-purple)"
                                             />
                                             {option}
                                         </label>
@@ -196,7 +196,7 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                             </FormField>
                         )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <FormField id="field-salary" label="Salaris / vergoeding" error={errors.salary?.message}>
                                 <Input {...register('salary')} id="field-salary" />
                             </FormField>
@@ -208,20 +208,20 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                             </FormField>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <FormField id="field-image" label="Afbeelding">
                                 <div className="flex items-center gap-3">
                                     {(imagePreview || (initialData?.image && !removeExistingImage)) && (
-                                        <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-(--bg-soft)">
+                                        <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-(--bg-soft)">
                                             <MediaAsset asset={imagePreview || initialData?.image} alt="Voorbeeld" fill objectFit="cover" unoptimized={!!imagePreview} />
                                         </div>
                                     )}
                                     <button
                                         type="button"
                                         onClick={() => imageInputRef.current?.click()}
-                                        className="btn-upload flex-1 flex items-center gap-2 justify-center px-4 py-2.5 rounded-xl bg-(--bg-soft) text-(--text-muted) text-sm font-bold cursor-pointer hover:text-(--theme-purple) transition-colors"
+                                        className="btn-upload flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--bg-soft) px-4 py-2.5 text-sm font-bold text-(--text-muted) transition-colors hover:text-(--theme-purple)"
                                     >
-                                        <ImageIcon className="h-4 w-4" />
+                                        <ImageIcon className="size-4" />
                                         {imageFile ? imageFile.name : 'Kies afbeelding'}
                                     </button>
                                     <input
@@ -235,10 +235,10 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                         <button
                                             type="button"
                                             onClick={() => { handleImageChange(null); setRemoveExistingImage(true); }}
-                                            className="icon-button p-2 rounded-lg bg-(--bg-soft) text-(--text-muted) hover:text-(--theme-error)"
+                                            className="icon-button rounded-lg bg-(--bg-soft) p-2 text-(--text-muted) hover:text-(--theme-error)"
                                             aria-label="Verwijder afbeelding"
                                         >
-                                            <X className="h-4 w-4" />
+                                            <X className="size-4" />
                                         </button>
                                     )}
                                 </div>
@@ -249,9 +249,9 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                     <button
                                         type="button"
                                         onClick={() => documentInputRef.current?.click()}
-                                        className="btn-upload flex-1 flex items-center gap-2 justify-center px-4 py-2.5 rounded-xl bg-(--bg-soft) text-(--text-muted) text-sm font-bold cursor-pointer hover:text-(--theme-purple) transition-colors"
+                                        className="btn-upload flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--bg-soft) px-4 py-2.5 text-sm font-bold text-(--text-muted) transition-colors hover:text-(--theme-purple)"
                                     >
-                                        <FileText className="h-4 w-4" />
+                                        <FileText className="size-4" />
                                         {documentFile ? documentFile.name : 'Kies bestand'}
                                     </button>
                                     <input
@@ -265,10 +265,10 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                         <button
                                             type="button"
                                             onClick={() => { setDocumentFile(null); setRemoveExistingDocument(true); }}
-                                            className="icon-button p-2 rounded-lg bg-(--bg-soft) text-(--text-muted) hover:text-(--theme-error)"
+                                            className="icon-button rounded-lg bg-(--bg-soft) p-2 text-(--text-muted) hover:text-(--theme-error)"
                                             aria-label="Verwijder document"
                                         >
-                                            <X className="h-4 w-4" />
+                                            <X className="size-4" />
                                         </button>
                                     )}
                                 </div>
@@ -281,11 +281,11 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                         </div>
 
                         <div className="border-t border-(--border-color) pt-6">
-                            <h3 className="text-sm font-bold text-(--text-main) mb-4">Contactgegevens</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <h3 className="mb-4 text-sm font-bold text-(--text-main)">Contactgegevens</h3>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                 <FormField id="field-contact-email" label="E-mailadres" required error={errors.contact_email?.message}>
                                     <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                        <Mail className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
                                         <Input {...register('contact_email')} id="field-contact-email" type="email" className="pl-10" />
                                     </div>
                                 </FormField>
@@ -298,15 +298,15 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                             </div>
                         </div>
 
-                        <label className="flex items-center gap-2 text-sm font-semibold text-(--text-main) cursor-pointer">
-                            <input type="checkbox" {...register('is_visible')} className="h-4 w-4 accent-(--theme-purple)" />
+                        <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-(--text-main)">
+                            <input type="checkbox" {...register('is_visible')} className="size-4 accent-(--theme-purple)" />
                             Zichtbaar op de website
                         </label>
 
                         <button
                             type="submit"
                             disabled={isPending}
-                            className="form-button w-full bg-theme-purple enabled:hover:bg-purple-600 text-white font-black py-4 rounded-xl sm:rounded-2xl transition-all shadow-lg shadow-purple-500/20 enabled:active:scale-[0.98] disabled:opacity-50"
+                            className="enabled:active:scale-0.98 form-button w-full rounded-xl bg-theme-purple py-4 font-black text-white shadow-lg shadow-purple-500/20 transition-all enabled:hover:bg-purple-600 disabled:opacity-50 sm:rounded-2xl"
                         >
                             {isPending ? 'Opslaan...' : isEditing ? 'Wijzigingen opslaan' : 'Vacature aanmaken'}
                         </button>

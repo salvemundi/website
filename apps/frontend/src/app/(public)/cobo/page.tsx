@@ -40,14 +40,14 @@ export default async function CoboPage() {
                 description="Vier de constitutie van het nieuwe bestuur samen met Salve Mundi en zusterverenigingen."
             >
                 <div className="mx-auto max-w-7xl px-fluid-md pt-fluid-lg pb-16 sm:pb-24 lg:pb-32">
-                    <div className="bg-bg-card p-8 sm:p-12 squircle-lg text-center shadow-lg max-w-2xl mx-auto border border-border-color">
-                        <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-purple-500/20">
-                            <Wine className="w-8 h-8 text-purple-700 dark:text-purple-300" />
+                    <div className="squircle-lg mx-auto max-w-2xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
+                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10">
+                            <Wine className="size-8 text-purple-700 dark:text-purple-300" />
                         </div>
-                        <h2 className="text-xl sm:text-2xl font-black text-purple-700 dark:text-purple-300">
+                        <h2 className="text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
                             CoBo Gesloten
                         </h2>
-                        <p className="text-text-muted mt-2 text-sm font-medium leading-relaxed">
+                        <p className="mt-2 text-sm leading-relaxed font-medium text-text-muted">
                             {featureFlag.disabled_message || 'De CoBo module is momenteel gesloten.'}
                         </p>
                     </div>
@@ -63,14 +63,14 @@ export default async function CoboPage() {
                 description="Vier de constitutie van het nieuwe bestuur samen met Salve Mundi en zusterverenigingen."
             >
                 <div className="mx-auto max-w-7xl px-fluid-md pt-fluid-lg pb-16 sm:pb-24 lg:pb-32">
-                    <div className="bg-bg-card p-8 sm:p-12 squircle-lg text-center shadow-lg max-w-2xl mx-auto border border-border-color">
-                        <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-purple-500/20">
-                            <Calendar className="w-8 h-8 text-purple-700 dark:text-purple-300" />
+                    <div className="squircle-lg mx-auto max-w-2xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
+                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10">
+                            <Calendar className="size-8 text-purple-700 dark:text-purple-300" />
                         </div>
-                        <h2 className="text-xl sm:text-2xl font-black text-purple-700 dark:text-purple-300">
+                        <h2 className="text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
                             Geen actieve CoBo gevonden
                         </h2>
-                        <p className="text-text-muted mt-2 text-sm font-medium leading-relaxed">
+                        <p className="mt-2 text-sm leading-relaxed font-medium text-text-muted">
                             Er is momenteel geen actieve Constitutieborrel gepland. Houd de agenda in de gaten!
                         </p>
                     </div>
@@ -91,9 +91,9 @@ export default async function CoboPage() {
             title={activeCobo.title || 'Constitutieborrel'}
             description={activeCobo.description || 'Vier de constitutie van het nieuwe bestuur samen met Salve Mundi en zusterverenigingen.'}
         >
-            <div className="mx-auto max-w-7xl px-fluid-md pt-fluid-lg pb-16 sm:pb-24 lg:pb-32 space-y-12">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    <div className="lg:col-span-7 space-y-8">
+            <div className="mx-auto max-w-7xl space-y-12 px-fluid-md pt-fluid-lg pb-16 sm:pb-24 lg:pb-32">
+                <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
+                    <div className="space-y-8 lg:col-span-7">
                         <CoboPublicQueueIsland
                             coboId={activeCobo.id}
                             initialGuestBoards={guestBoards}
@@ -101,59 +101,59 @@ export default async function CoboPage() {
                         />
                     </div>
 
-                    <aside className="lg:col-span-5 space-y-6">
-                        <section className="bg-bg-card rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg border border-border-color space-y-5">
-                            <h2 className="text-xl sm:text-2xl font-black text-purple-700 dark:text-purple-300 flex items-center gap-3">
+                    <aside className="space-y-6 lg:col-span-5">
+                        <section className="space-y-5 rounded-2xl border border-border-color bg-bg-card p-6 shadow-lg sm:rounded-3xl sm:p-8">
+                            <h2 className="flex items-center gap-3 text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
                                 Evenement Details
                             </h2>
 
                             <div className="space-y-4">
-                                <div className="flex gap-3.5 items-center">
-                                    <div className="h-10 w-10 rounded-xl bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0 border border-purple-500/10 dark:border-purple-400/10">
-                                        <Clock className="h-5 w-5" />
+                                <div className="flex items-center gap-3.5">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/5 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
+                                        <Clock className="size-5" />
                                     </div>
                                     <div className="space-y-0.5">
                                         <p className="text-[10px] font-bold tracking-widest text-(--text-muted) uppercase">Datum &amp; Tijd</p>
-                                        <p className="text-sm text-(--text-main) font-medium leading-relaxed">
+                                        <p className="text-sm leading-relaxed font-medium text-(--text-main)">
                                             {formattedDate}
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="flex gap-3.5 items-center">
-                                    <div className="h-10 w-10 rounded-xl bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0 border border-purple-500/10 dark:border-purple-400/10">
-                                        <MapPin className="h-5 w-5" />
+                                <div className="flex items-center gap-3.5">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/5 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
+                                        <MapPin className="size-5" />
                                     </div>
                                     <div className="space-y-0.5">
                                         <p className="text-[10px] font-bold tracking-widest text-(--text-muted) uppercase">Locatie</p>
-                                        <p className="text-sm text-(--text-main) font-medium leading-relaxed">
+                                        <p className="text-sm leading-relaxed font-medium text-(--text-main)">
                                             {activeCobo.location || 'Borrelbar Eindhoven'}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex gap-3.5 items-center">
-                                    <div className="h-10 w-10 rounded-xl bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0 border border-purple-500/10 dark:border-purple-400/10">
-                                        <Mail className="h-5 w-5" />
+                                <div className="flex items-center gap-3.5">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/5 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
+                                        <Mail className="size-5" />
                                     </div>
                                     <div className="space-y-0.5">
                                         <p className="text-[10px] font-bold tracking-widest text-(--text-muted) uppercase">Contact</p>
-                                        <p className="text-sm text-(--text-main) font-medium leading-relaxed">cobo@salvemundi.nl</p>
+                                        <p className="text-sm leading-relaxed font-medium text-(--text-main)">cobo@salvemundi.nl</p>
                                     </div>
                                 </div>
                             </div>
                         </section>
 
                         {/* CoBo Etiquette & Regels */}
-                        <section className="bg-bg-card rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg border border-border-color space-y-4">
-                            <h2 className="text-xl sm:text-2xl font-black text-purple-700 dark:text-purple-300 flex items-center gap-3">
-                                <ScrollText className="w-6 h-6 text-purple-600 dark:text-purple-300" />
+                        <section className="space-y-4 rounded-2xl border border-border-color bg-bg-card p-6 shadow-lg sm:rounded-3xl sm:p-8">
+                            <h2 className="flex items-center gap-3 text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
+                                <ScrollText className="size-6 text-purple-600 dark:text-purple-300" />
                                 CoBo Etiquette
                             </h2>
-                            <div className="text-slate-600 dark:text-slate-400 leading-relaxed space-y-3 text-sm font-medium">
+                            <div className="space-y-3 text-sm leading-relaxed font-medium text-slate-600 dark:text-slate-400">
                                 <p>
                                     Kom je het bestuur feliciteren? Meld je bij binnenkomst aan bij de <strong>pedel</strong> om op de wachtlijst te worden geplaatst.
                                 </p>
-                                <ul className="list-disc list-inside space-y-1.5 text-xs text-text-muted">
+                                <ul className="list-inside list-disc space-y-1.5 text-xs text-text-muted">
                                     <li>Zorg dat je klaarstaat wanneer je bestuur bijna aan de beurt is.</li>
                                     <li>Houd rekening met de alcohol- en veto-wensen van de bestuursleden hieronder.</li>
                                     <li>Geniet van een gezellige avond samen met Salve Mundi!</li>

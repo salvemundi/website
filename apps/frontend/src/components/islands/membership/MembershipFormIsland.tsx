@@ -87,11 +87,11 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
             autoComplete="off"
             suppressHydrationWarning
         >
-            <p className="text-theme-text dark:text-white/90 mb-2">
+            <p className="mb-2 text-theme-text dark:text-white/90">
                 Vul je gegevens in om een account aan te maken en lid te worden.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField id="field-voornaam" label="Voornaam" required error={errors.voornaam?.message}>
                     <Input
                         {...register('voornaam')}
@@ -117,7 +117,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                 />
             </FormField>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField id="field-geboortedatum" label="Geboortedatum" required error={errors.geboortedatum?.message}>
                     <Controller
                         name="geboortedatum"
@@ -148,7 +148,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                 </FormField>
             </div>
 
-            <div className="border-t border-purple-100 dark:border-white/10 pt-6 mt-6">
+            <div className="mt-6 border-t border-purple-100 pt-6 dark:border-white/10">
                 <label htmlFor="coupon_code" className="form-label mb-2">Heb je een coupon code?</label>
                 <div className="flex gap-2">
                     <input
@@ -157,25 +157,25 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                         id="coupon_code"
                         placeholder="Bijv. ACTIE2024"
                         autoComplete="off"
-                        className="form-input uppercase grow"
+                        className="form-input grow uppercase"
                         suppressHydrationWarning
                     />
                     <button
                         type="button"
                         onClick={() => { void handleCouponCheck(); }}
                         disabled={!couponValue || isPending}
-                        className="form-button bg-theme-purple! text-white! w-auto py-2 px-6 shadow-md shrink-0 enabled:active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="form-button w-auto shrink-0 bg-theme-purple! px-6 py-2 text-white! shadow-md enabled:active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {isPending ? '...' : 'Check'}
                     </button>
                 </div>
                 {couponStatus && (
-                    <p className={`text-sm mt-2 font-bold ${couponStatus.valid ? 'text-green-600 dark:text-green-400' : 'text-theme-error'}`}>
+                    <p className={`mt-2 text-sm font-bold ${couponStatus.valid ? 'text-green-600 dark:text-green-400' : 'text-theme-error'}`}>
                         {couponStatus.message}
                     </p>
                 )}
 
-                <div className="mt-8 flex justify-between items-center text-theme-purple dark:text-white font-bold text-xl p-5 bg-purple-50/50 dark:bg-purple-900/20 rounded-3xl border border-purple-100 dark:border-purple-800/30 shadow-inner">
+                <div className="mt-8 flex items-center justify-between rounded-3xl border border-purple-100 bg-purple-50/50 p-5 text-xl font-bold text-theme-purple shadow-inner dark:border-purple-800/30 dark:bg-purple-900/20 dark:text-white">
                     <span className="opacity-80">Totaal:</span>
                     <span className="text-2xl font-black">
                         €{total.toFixed(2).replace('.', ',')}
@@ -183,7 +183,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                 </div>
             </div>
 
-            <button type="submit" disabled={isPending} className="form-button mt-4 shadow-glow">
+            <button type="submit" disabled={isPending} className="mt-4 form-button shadow-glow">
                 {isPending ? 'Verwerken...' : `Betalen en Inschrijven (€${total.toFixed(2).replace('.', ',')})`}
             </button>
             <AdminToast toast={toast} onClose={hideToast} />

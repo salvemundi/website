@@ -28,7 +28,7 @@ export default async function VacancyDetailPage({ params }: VacancyDetailPagePro
 
     return (
         <div className="pt-8">
-            <div className="container mx-auto px-4 py-12 max-w-7xl">
+            <div className="container mx-auto max-w-7xl px-4 py-12">
                 <VacancyDetailIsland vacancy={vacancy} />
             </div>
         </div>

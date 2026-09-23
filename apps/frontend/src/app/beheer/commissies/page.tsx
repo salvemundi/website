@@ -22,15 +22,15 @@ export default async function CommissiesBeheerPage() {
             backHref="/beheer"
             actions={
                 <div className="flex items-center gap-4">
-                    <div className="hidden md:flex items-center gap-4 bg-bg-soft px-4 py-2 rounded-2xl border border-border-color/50 shadow-sm">
+                    <div className="hidden items-center gap-4 rounded-2xl border border-border-color/50 bg-bg-soft px-4 py-2 shadow-sm md:flex">
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Groepen</span>
-                            <span className="text-sm font-bold text-text-main leading-none">{committees.length}</span>
+                            <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Groepen</span>
+                            <span className="text-sm leading-none font-bold text-text-main">{committees.length}</span>
                         </div>
-                        <div className="w-px h-6 bg-border-color/20" />
+                        <div className="h-6 w-px bg-border-color/20" />
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Totaal Leden</span>
-                            <span className="text-sm font-bold text-text-main leading-none">{totalUniqueMembers}</span>
+                            <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Totaal Leden</span>
+                            <span className="text-sm leading-none font-bold text-text-main">{totalUniqueMembers}</span>
                         </div>
                     </div>
                 </div>

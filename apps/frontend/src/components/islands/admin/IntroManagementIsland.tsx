@@ -276,7 +276,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
             />
 
 
-            <div className="w-full mt-2">
+            <div className="mt-2 w-full">
                 {activeTab === 'signups' && (
                     <IntroSignupsTab
                         signups={signups}

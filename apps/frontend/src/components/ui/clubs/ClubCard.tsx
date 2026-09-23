@@ -22,7 +22,7 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
     const needsExpand = !!description && (description.length > 160 || description.includes('\n'));
 
     return (
-        <div className="group flex h-full flex-col overflow-hidden squircle-lg bg-bg-card dark:border dark:border-white/10 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl">
+        <div className="group squircle-lg flex h-full flex-col overflow-hidden bg-bg-card shadow-lg transition hover:-translate-y-1 hover:shadow-2xl dark:border dark:border-white/10">
             <div className="relative h-61 w-full overflow-hidden bg-linear-to-br from-purple-500/20 to-purple-900/40">
                 {!hasImage ? (
                     <>
@@ -30,7 +30,7 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                             src={BRAND_CONFIG.logoFallbackLight}
                             alt={club.name}
                             fill
-                            className="transition-all duration-500 object-contain p-12 opacity-40 dark:hidden"
+                            className="object-contain p-12 opacity-40 transition-all duration-500 dark:hidden"
                             unoptimized
                             priority={index < 4}
                         />
@@ -38,7 +38,7 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                             src={BRAND_CONFIG.logoFallbackDark}
                             alt={club.name}
                             fill
-                            className="transition-all duration-500 object-contain p-12 opacity-40 hidden dark:block"
+                            className="hidden object-contain p-12 opacity-40 transition-all duration-500 dark:block"
                             unoptimized
                             priority={index < 4}
                         />
@@ -53,11 +53,11 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                         priority={index < 4}
                     />
                 )}
-                <div className="absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+                <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent" />
             </div>
 
             <div className="flex flex-1 flex-col p-6 sm:p-8">
-                <h3 className="text-xl md:text-2xl font-black tracking-tight text-theme-purple wrap-break-word hyphens-auto mb-4">
+                <h3 className="mb-4 text-xl font-black tracking-tight wrap-break-word hyphens-auto text-theme-purple md:text-2xl">
                     {club.name}
                 </h3>
 
@@ -77,7 +77,7 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                             </summary>
                         </details>
                     ) : (
-                        <p className="mb-8 whitespace-pre-line text-sm leading-relaxed text-text-muted">
+                        <p className="mb-8 text-sm leading-relaxed whitespace-pre-line text-text-muted">
                             {description}
                         </p>
                     )
@@ -91,9 +91,9 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                                     href={club.whatsapp_link}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-500/10 px-4 py-3 text-sm font-bold text-green-600 dark:text-green-400 transition hover:bg-green-500/20"
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-500/10 px-4 py-3 text-sm font-bold text-green-600 transition hover:bg-green-500/20 dark:text-green-400"
                                 >
-                                    <MessageCircle className="h-4 w-4" />
+                                    <MessageCircle className="size-4" />
                                     WhatsApp groep
                                 </a>
                             ) : (
@@ -102,7 +102,7 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-bg-soft px-4 py-3 text-sm font-bold text-text-muted transition hover:bg-bg-soft/70"
                                     title="Alleen zichtbaar voor leden met een actief lidmaatschap"
                                 >
-                                    <Lock className="h-4 w-4" />
+                                    <Lock className="size-4" />
                                     Alleen voor leden
                                 </Link>
                             )
@@ -113,9 +113,9 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                                 href={club.discord_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-500/10 px-4 py-3 text-sm font-bold text-indigo-600 dark:text-indigo-400 transition hover:bg-indigo-500/20"
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-500/10 px-4 py-3 text-sm font-bold text-indigo-600 transition hover:bg-indigo-500/20 dark:text-indigo-400"
                             >
-                                <DiscordIcon className="h-4 w-4" />
+                                <DiscordIcon className="size-4" />
                                 Discord
                             </a>
                         )}

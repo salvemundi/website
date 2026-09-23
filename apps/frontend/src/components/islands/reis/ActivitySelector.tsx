@@ -54,12 +54,12 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
     return (
         <div className="space-y-6">
             {!hideHeader && (
-                <header className="mb-6 pb-4 border-b border-border-color/30">
-                    <h2 className="text-2xl sm:text-3xl font-black text-text-main mb-1 italic tracking-tighter flex items-center gap-3">
-                        <Compass className="w-7 h-7 text-theme-purple" />
+                <header className="mb-6 border-b border-border-color/30 pb-4">
+                    <h2 className="mb-1 flex items-center gap-3 text-2xl font-black tracking-tighter text-text-main italic sm:text-3xl">
+                        <Compass className="size-7 text-theme-purple" />
                         Optionele Activiteiten
                     </h2>
-                    <p className="text-text-muted text-sm">Kies de extra activiteiten die je wilt doen tijdens de reis.</p>
+                    <p className="text-sm text-text-muted">Kies de extra activiteiten die je wilt doen tijdens de reis.</p>
                 </header>
             )}
             
@@ -72,36 +72,36 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
                     return (
                         <div 
                             key={activity.id}
-                            className={`relative overflow-hidden rounded-2xl border transition-all duration-300 flex flex-col ${
+                            className={`relative flex flex-col overflow-hidden rounded-2xl border transition-all duration-300 ${
                                 isSelected 
-                                ? 'bg-theme-purple/10 border-theme-purple/50 shadow-lg shadow-theme-purple/5' 
-                                : 'bg-bg-card border-border-color/30 hover:border-theme-purple/30'
+                                ? 'border-theme-purple/50 bg-theme-purple/10 shadow-lg shadow-theme-purple/5' 
+                                : 'border-border-color/30 bg-bg-card hover:border-theme-purple/30'
                             }`}
                         >
                             <div className="flex flex-col md:flex-row">
                                 {activity.image && (
-                                    <div className="relative w-full md:w-48 h-48 md:h-auto min-h-48 md:min-h-0 bg-slate-950 shrink-0 overflow-hidden border-b md:border-b-0 md:border-r border-border-color/10">
+                                    <div className="relative h-48 min-h-48 w-full shrink-0 overflow-hidden border-b border-border-color/10 bg-slate-950 md:h-auto md:min-h-0 md:w-48 md:border-r md:border-b-0">
                                         <MediaAsset asset={activity.image} alt={activity.name} fill objectFit="contain" />
                                     </div>
                                 )}
-                                <div className="p-5 flex-1 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex flex-1 flex-col justify-between gap-4 p-5 md:flex-row md:items-center">
                                     <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                            <h4 className="font-bold text-lg text-text-main">{activity.name}</h4>
+                                        <div className="mb-1 flex flex-wrap items-center gap-2">
+                                            <h4 className="text-lg font-bold text-text-main">{activity.name}</h4>
                                         </div>
-                                        <p className="text-sm text-text-muted max-w-xl">{activity.description}</p>
+                                        <p className="max-w-xl text-sm text-text-muted">{activity.description}</p>
                                     </div>
 
-                                    <div className="flex items-center gap-4 shrink-0 self-end md:self-auto">
+                                    <div className="flex shrink-0 items-center gap-4 self-end md:self-auto">
                                         {Number(activity.price) > 0 && (
-                                            <span className="text-base font-extrabold text-theme-purple whitespace-nowrap">
+                                            <span className="text-base font-extrabold whitespace-nowrap text-theme-purple">
                                                 + €{Number(activity.price).toFixed(2)}
                                             </span>
                                         )}
                                         <button
                                             type="button"
                                             onClick={() => handleToggleActivity(activity.id as number)}
-                                            className={`form-button px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                                            className={`form-button flex cursor-pointer items-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold whitespace-nowrap transition-all ${
                                                 isSelected
                                                 ? 'bg-theme-purple text-white shadow-md'
                                                 : 'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
@@ -109,7 +109,7 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
                                         >
                                             {isSelected ? (
                                                 <>
-                                                    <Check className="w-4 h-4" />
+                                                    <Check className="size-4" />
                                                     Geselecteerd
                                                 </>
                                             ) : (
@@ -124,11 +124,11 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
 
                             {/* Options Section */}
                             {isSelected && hasOptions && (
-                                <div className="px-5 pb-5 pt-0 border-t border-theme-purple/10 mt-2">
-                                    <p className="text-xs font-bold tracking-widest text-theme-purple mb-3 mt-4">
+                                <div className="mt-2 border-t border-theme-purple/10 px-5 pt-0 pb-5">
+                                    <p className="mt-4 mb-3 text-xs font-bold tracking-widest text-theme-purple">
                                         Maak je keuze ({activity.max_selections === 1 ? 'één optie' : 'meerdere mogelijk'}):
                                     </p>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                         {activity.options?.map((opt, idx) => {
                                             const optId = opt.id || `opt-${idx}`;
                                             const isOptSelected = selection?.options ? !!new Map(Object.entries(selection.options)).get(optId) : false;
@@ -137,24 +137,24 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
                                                     type="button"
                                                     key={optId}
                                                     onClick={() => handleOptionToggle(activity.id as number, optId, activity.max_selections || 0)}
-                                                    className={`form-button flex items-center justify-between p-3 rounded-xl border text-sm font-medium transition-all cursor-pointer ${
+                                                    className={`form-button flex cursor-pointer items-center justify-between rounded-xl border p-3 text-sm font-medium transition-all ${
                                                         isOptSelected
-                                                        ? 'bg-theme-purple/15 border-theme-purple/40 text-text-main'
-                                                        : 'bg-bg-soft/45 border-border-color/20 text-text-muted hover:border-border-color/40 hover:bg-bg-soft/80'
+                                                        ? 'border-theme-purple/40 bg-theme-purple/15 text-text-main'
+                                                        : 'border-border-color/20 bg-bg-soft/45 text-text-muted hover:border-border-color/40 hover:bg-bg-soft/80'
                                                     }`}
                                                 >
                                                     <span className="flex items-center gap-2">
-                                                        <div className={`w-4 h-4 rounded flex items-center justify-center border transition-all ${
+                                                        <div className={`flex size-4 items-center justify-center rounded border transition-all ${
                                                             isOptSelected 
-                                                            ? 'bg-theme-purple border-theme-purple' 
+                                                            ? 'border-theme-purple bg-theme-purple' 
                                                             : 'border-border-color/40'
                                                         }`}>
-                                                            {isOptSelected && <Check className="w-3 h-3 text-white" />}
+                                                            {isOptSelected && <Check className="size-3 text-white" />}
                                                         </div>
                                                         {opt.name}
                                                     </span>
                                                     {opt.price && Number(opt.price) > 0 && (
-                                                        <span className="text-xs text-theme-purple font-semibold">+€{Number(opt.price).toFixed(2)}</span>
+                                                        <span className="text-xs font-semibold text-theme-purple">+€{Number(opt.price).toFixed(2)}</span>
                                                     )}
                                                 </button>
                                             );
@@ -168,7 +168,7 @@ export default function ActivitySelector({ activities, selectedSelections, onCha
             </div>
 
             {activities.length === 0 && (
-                <div className="p-8 rounded-2xl border border-dashed border-border-color/20 text-center">
+                <div className="rounded-2xl border border-dashed border-border-color/20 p-8 text-center">
                     <p className="text-text-muted">Geen optionele activiteiten beschikbaar.</p>
                 </div>
             )}

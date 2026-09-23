@@ -79,10 +79,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                     {"(function(){try{if(localStorage.theme==='light'){document.documentElement.classList.remove('dark')}else{document.documentElement.classList.add('dark')}}catch(e){}})()"}
                 </script>
             </head>
-            <body className={`${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}>
+            <body className={`${poppins.variable} flex min-h-screen flex-col font-sans antialiased`}>
                 <ImpersonationWrapper impersonation={impersonation} />
                 <HeaderWrapper initialSession={session} isAuthorized={isAuthorized} />
-                <main className="grow flex flex-col pt-header-total">
+                <main className="flex grow flex-col pt-header-total">
                     {children}
                     <FooterWrapper initialSession={session} className="mt-auto w-full" />
                 </main>

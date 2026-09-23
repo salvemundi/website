@@ -37,47 +37,47 @@ export default function ReisTableRow({
         <div
             onClick={() => onSelect(signup)}
             className={`
-                relative bg-(--beheer-card-bg) border border-(--beheer-border)/60 rounded-4xl squircle-lg transition-all duration-300 cursor-pointer group flex flex-col
-                ${isSelected ? 'shadow-2xl border-(--beheer-accent) ring-2 ring-(--beheer-accent)/20' : 'hover:shadow-lg hover:border-(--beheer-accent)/20 shadow-sm'}
+                squircle-lg group relative flex cursor-pointer flex-col rounded-4xl border border-(--beheer-border)/60 bg-(--beheer-card-bg) transition-all duration-300
+                ${isSelected ? 'border-(--beheer-accent) shadow-2xl ring-2 ring-(--beheer-accent)/20' : 'shadow-sm hover:border-(--beheer-accent)/20 hover:shadow-lg'}
             `}
         >
-            <div className="p-4 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-3">
+            <div className="flex h-full flex-col p-4">
+                <div className="mb-3 flex items-start justify-between">
                     <div className="min-w-0 pr-2">
-                        <div className="text-xs font-semibold text-(--beheer-accent) mb-0.5 opacity-70">
+                        <div className="mb-0.5 text-xs font-semibold text-(--beheer-accent) opacity-70">
                             {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
                         </div>
-                        <div className="text-lg font-semibold text-(--beheer-text) leading-tight group-hover:text-(--beheer-accent) transition-colors line-clamp-2 min-h-[2.8rem] flex items-center">
+                        <div className="line-clamp-2 flex min-h-[2.8rem] items-center text-lg leading-tight font-semibold text-(--beheer-text) transition-colors group-hover:text-(--beheer-accent)">
                             {signup.first_name} {signup.last_name}
                         </div>
                     </div>
 
-                    <div className="flex items-center bg-(--bg-main)/50 p-1 rounded-xl border border-(--beheer-border)/20 shadow-inner shrink-0">
+                    <div className="flex shrink-0 items-center rounded-xl border border-(--beheer-border)/20 bg-(--bg-main)/50 p-1 shadow-inner">
                         <button
                             onClick={(e) => { e.stopPropagation(); onSelect(signup, true); }}
-                            className="icon-button p-2 text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-white/5 rounded-lg transition-all"
+                            className="icon-button rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-white/5 hover:text-(--beheer-accent)"
                             title="Bewerken"
                         >
-                            <Edit className="h-4 w-4" />
+                            <Edit className="size-4" />
                         </button>
-                        <div className="w-px h-4 bg-(--beheer-border)/20 mx-0.5" />
+                        <div className="mx-0.5 h-4 w-px bg-(--beheer-border)/20" />
                         <button
                             onClick={(e) => { e.stopPropagation(); onDelete(signup.id); }}
                             disabled={isDeleteLoading}
-                            className="icon-button p-2 text-(--beheer-text-muted) hover:text-red-400 hover:bg-red-400/5 rounded-lg transition-all disabled:opacity-50"
+                            className="icon-button rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-red-400/5 hover:text-red-400 disabled:opacity-50"
                             title="Verwijderen"
                         >
                             {isDeleteLoading ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="size-4 animate-spin" />
                             ) : (
-                                <Trash className="h-4 w-4" />
+                                <Trash className="size-4" />
                             )}
                         </button>
                     </div>
                 </div>
 
-                <div className="space-y-1.5 mb-4 px-1">
-                    <div className="text-[11px] font-medium text-(--beheer-text-muted) truncate opacity-80">
+                <div className="mb-4 space-y-1.5 px-1">
+                    <div className="truncate text-[11px] font-medium text-(--beheer-text-muted) opacity-80">
                         {signup.email}
                     </div>
                     <div className="flex items-center justify-between">
@@ -89,14 +89,14 @@ export default function ReisTableRow({
 
                         <div className="flex items-center gap-2">
                             {isBusTrip && signup.willing_to_drive && (
-                                <div className="flex items-center gap-1 text-[9px] font-semibold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-md border border-emerald-500/20" title="Chauffeur">
-                                    <Bus className="h-2.5 w-2.5" />
+                                <div className="flex items-center gap-1 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-500" title="Chauffeur">
+                                    <Bus className="size-2.5" />
                                     <span>Chauffeur</span>
                                 </div>
                             )}
                             {!isBusTrip && signup.extra_luggage && (
-                                <div className="flex items-center gap-1 text-[9px] font-semibold text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded-md border border-blue-500/20" title="Extra Koffer">
-                                    <Briefcase className="h-2.5 w-2.5" />
+                                <div className="flex items-center gap-1 rounded-md border border-blue-500/20 bg-blue-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-blue-500" title="Extra Koffer">
+                                    <Briefcase className="size-2.5" />
                                     <span>+1 Koffer</span>
                                 </div>
                             )}
@@ -104,11 +104,11 @@ export default function ReisTableRow({
                     </div>
                 </div>
 
-                <div className="mt-auto pt-3 border-t border-(--beheer-border)/10 flex flex-wrap items-center justify-between gap-y-2 gap-x-3">
+                <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-(--beheer-border)/10 pt-3">
                     <div className="shrink-0">
                         {isStatusLoading ? (
-                            <div className="flex items-center justify-center py-1 px-3">
-                                <Loader2 className="h-4 w-4 animate-spin text-(--beheer-accent)" />
+                            <div className="flex items-center justify-center px-3 py-1">
+                                <Loader2 className="size-4 animate-spin text-(--beheer-accent)" />
                             </div>
                         ) : (
                             <StatusDropdown
@@ -118,8 +118,8 @@ export default function ReisTableRow({
                         )}
                     </div>
 
-                    <div className="shrink-0 flex items-center justify-end ml-auto">
-                        <span className={`px-2.5 py-1 text-[10px] font-semibold rounded-lg border shadow-xs whitespace-nowrap ${paymentStatus.color}`}>
+                    <div className="ml-auto flex shrink-0 items-center justify-end">
+                        <span className={`rounded-lg border px-2.5 py-1 text-[10px] font-semibold whitespace-nowrap shadow-xs ${paymentStatus.color}`}>
                             {paymentStatus.label}
                         </span>
                     </div>
@@ -184,19 +184,19 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
                 className={`beheer-button 
-                    inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all duration-200 cursor-pointer shadow-2xs
+                    inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-semibold shadow-2xs transition-all duration-200
                     ${current.pillColor}
-                    ${isOpen ? 'ring-2 ring-(--beheer-accent)/40 scale-[1.02]' : ''}
+                    ${isOpen ? 'scale-1.02 ring-2 ring-(--beheer-accent)/40' : ''}
                 `}
             >
-                <current.icon className={`h-3 w-3 shrink-0 ${current.iconColor}`} />
+                <current.icon className={`size-3 shrink-0 ${current.iconColor}`} />
                 <span>{current.label}</span>
-                <ChevronDown className={`h-3 w-3 shrink-0 opacity-70 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`size-3 shrink-0 opacity-70 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isOpen && (
                 <div
-                    className="absolute bottom-full left-0 mb-1.5 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 overflow-hidden p-1 space-y-0.5 animate-in fade-in zoom-in-95 duration-150"
+                    className="animate-in fade-in zoom-in-95 absolute bottom-full left-0 z-50 mb-1.5 w-44 space-y-0.5 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-xl duration-150 dark:border-slate-800 dark:bg-slate-900"
                 >
                     {statuses.map((s) => {
                         const isSelected = currentStatus === s.value;
@@ -210,18 +210,18 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
                                     setIsOpen(false);
                                 }}
                                 className={`beheer-button 
-                                    w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all cursor-pointer text-left
+                                    flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-[11px] font-semibold transition-all
                                     ${isSelected
-                                        ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white font-bold ring-1 ring-slate-300 dark:ring-slate-700'
-                                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'}
+                                        ? 'bg-slate-100 font-bold text-slate-900 ring-1 ring-slate-300 dark:bg-slate-800 dark:text-white dark:ring-slate-700'
+                                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white'}
                                 `}
                             >
                                 <div className="flex items-center gap-2">
-                                    <s.icon className={`h-3.5 w-3.5 ${s.iconColor}`} />
+                                    <s.icon className={`size-3.5 ${s.iconColor}`} />
                                     <span>{s.label}</span>
                                 </div>
                                 {isSelected && (
-                                    <span className="h-1.5 w-1.5 rounded-full bg-(--beheer-accent)" />
+                                    <span className="size-1.5 rounded-full bg-(--beheer-accent)" />
                                 )}
                             </button>
                         );

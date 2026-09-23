@@ -179,19 +179,19 @@ export default function AddStickerModal({
     };
 
     return (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xl">
-            <div className="bg-(--bg-card) rounded-3xl w-full max-w-xl shadow-2xl border border-white/10 overflow-hidden flex flex-col max-h-[95vh]">
-                <div className="bg-linear-to-r from-(--theme-purple) to-(--theme-purple-dark) p-4 sm:p-6 text-white flex justify-between items-center shrink-0">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 p-2 backdrop-blur-xl sm:p-4">
+            <div className="flex max-h-[95vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-(--bg-card) shadow-2xl">
+                <div className="flex shrink-0 items-center justify-between bg-linear-to-r from-(--theme-purple) to-(--theme-purple-dark) p-4 text-white sm:p-6">
                     <div>
-                        <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tighter italic">Nieuwe Sticker <span className="text-white/70">Plakken</span></h2>
-                        <p className="text-[10px] uppercase tracking-widest font-black opacity-80 mt-1">{selectedLocation ? 'Locatie geselecteerd op kaart' : 'Selecteer of zoek locatie'}</p>
+                        <h2 className="text-xl font-black tracking-tighter uppercase italic sm:text-2xl">Nieuwe Sticker <span className="text-white/70">Plakken</span></h2>
+                        <p className="mt-1 text-[10px] font-black tracking-widest uppercase opacity-80">{selectedLocation ? 'Locatie geselecteerd op kaart' : 'Selecteer of zoek locatie'}</p>
                     </div>
                     <IconButton onClick={onClose} aria-label="Sluiten">
-                        <X className="h-6 w-6" />
+                        <X className="size-6" />
                     </IconButton>
                 </div>
 
-                <form onSubmit={onSubmit} autoComplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" className="p-4 sm:p-8 space-y-6 overflow-y-auto">
+                <form onSubmit={onSubmit} autoComplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" className="space-y-6 overflow-y-auto p-4 sm:p-8">
                     <div className="space-y-4">
                         <LocationPicker
                             selectedLocation={selectedLocation}
@@ -209,7 +209,7 @@ export default function AddStickerModal({
                         />
 
                         <div>
-                            <label className="block text-[10px] font-black uppercase tracking-widest text-(--text-muted) mb-2 ml-1">Naam van de Locatie</label>
+                            <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Naam van de Locatie</label>
                             <input
                                 required
                                 type="text"
@@ -220,13 +220,13 @@ export default function AddStickerModal({
                                     setFormData((prev) => ({ ...prev, location_name: e.target.value }));
                                 }}
                                 suppressHydrationWarning
-                                className="form-input w-full bg-(--bg-main)/50 border border-(--border-color)/30 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all outline-none"
+                                className="form-input w-full rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 px-4 py-3 text-sm transition-all outline-none focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
                             />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-(--text-muted) mb-2 ml-1">Stad</label>
+                                <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Stad</label>
                                 <input
                                     readOnly
                                     tabIndex={-1}
@@ -234,11 +234,11 @@ export default function AddStickerModal({
                                     placeholder="Kies via zoeken of huidige locatie"
                                     value={formData.city}
                                     suppressHydrationWarning
-                                    className="form-input w-full bg-(--bg-main)/30 border border-(--border-color)/20 rounded-xl px-4 py-3 text-sm text-(--text-muted) cursor-not-allowed outline-none"
+                                    className="form-input w-full cursor-not-allowed rounded-xl border border-(--border-color)/20 bg-(--bg-main)/30 px-4 py-3 text-sm text-(--text-muted) outline-none"
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-(--text-muted) mb-2 ml-1">Land</label>
+                                <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Land</label>
                                 <input
                                     readOnly
                                     tabIndex={-1}
@@ -246,24 +246,24 @@ export default function AddStickerModal({
                                     placeholder="Kies via zoeken of huidige locatie"
                                     value={formData.country}
                                     suppressHydrationWarning
-                                    className="form-input w-full bg-(--bg-main)/30 border border-(--border-color)/20 rounded-xl px-4 py-3 text-sm text-(--text-muted) cursor-not-allowed outline-none"
+                                    className="form-input w-full cursor-not-allowed rounded-xl border border-(--border-color)/20 bg-(--bg-main)/30 px-4 py-3 text-sm text-(--text-muted) outline-none"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-black uppercase tracking-widest text-(--text-muted) mb-2 ml-1">Beschrijving</label>
+                            <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Beschrijving</label>
                             <textarea
                                 rows={3}
                                 placeholder="Wat een mooie plek voor een Salve sticker!"
                                 value={formData.description}
                                 onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                                className="form-input w-full bg-(--bg-main)/50 border border-(--border-color)/30 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all outline-none resize-none"
+                                className="form-input w-full resize-none rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 px-4 py-3 text-sm transition-all outline-none focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-black uppercase tracking-widest text-(--text-muted) mb-2 ml-1">Foto Bewijs</label>
+                            <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Foto Bewijs</label>
                             <PhotoUploader
                                 imagePreview={imagePreview}
                                 onImageChange={handleImageChange}
@@ -276,9 +276,9 @@ export default function AddStickerModal({
                         type="submit"
                         size="lg"
                         disabled={isPending || !selectedLocation || !formData.city || !formData.country}
-                        className="w-full bg-linear-to-r from-(--theme-purple) to-orange-500 text-white rounded-2xl shadow-xl hover:shadow-2xl font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 active:scale-95"
+                        className="flex w-full items-center justify-center gap-3 rounded-2xl bg-linear-to-r from-(--theme-purple) to-orange-500 font-black tracking-[0.2em] text-white uppercase shadow-xl hover:shadow-2xl active:scale-95"
                     >
-                        {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
+                        {isPending ? <Loader2 className="size-5 animate-spin" /> : <Plus className="size-5" />}
                         Sticker Registreren
                     </Button>
                 </form>

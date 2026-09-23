@@ -121,11 +121,11 @@ export default function LogsTab({
     const hasMore = logs.length < totalCount;
 
     return (
-        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) shadow-xl overflow-hidden">
-            <div className="p-6 border-b border-(--beheer-border)/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
+            <div className="flex flex-col items-start justify-between gap-4 border-b border-(--beheer-border)/50 p-6 md:flex-row md:items-center">
                 <div>
-                    <h3 className="text-lg font-semibold text-(--beheer-text) tracking-tight">{title}</h3>
-                    <div className="flex flex-wrap items-center gap-4 mt-2">
+                    <h3 className="text-lg font-semibold tracking-tight text-(--beheer-text)">{title}</h3>
+                    <div className="mt-2 flex flex-wrap items-center gap-4">
                         <div className="flex items-center gap-2">
                             {[
                                 { id: 'ALL', label: 'Alles' },
@@ -137,9 +137,9 @@ export default function LogsTab({
                                 <button
                                     key={f.id}
                                     onClick={() => setStatusFilter(f.id as typeof statusFilter)}
-                                    className={`tab-button px-3 py-1 rounded-lg text-[11px] font-semibold transition-all border ${statusFilter === f.id
-                                        ? 'bg-(--beheer-accent)/10 text-(--beheer-accent) border-(--beheer-accent)/20'
-                                        : 'text-(--beheer-text-muted) border-transparent hover:bg-(--beheer-card-soft)'
+                                    className={`tab-button rounded-lg border px-3 py-1 text-[11px] font-semibold transition-all ${statusFilter === f.id
+                                        ? 'border-(--beheer-accent)/20 bg-(--beheer-accent)/10 text-(--beheer-accent)'
+                                        : 'border-transparent text-(--beheer-text-muted) hover:bg-(--beheer-card-soft)'
                                         }`}
                                 >
                                     {f.label}
@@ -156,7 +156,7 @@ export default function LogsTab({
                                     onSearch(localQuery);
                                 }
                             }}
-                            className="beheer-input px-3 py-1 text-xs rounded-lg border border-(--beheer-border)/50 bg-(--beheer-card-soft) text-(--beheer-text) placeholder-(--beheer-text-muted)/50 focus:outline-none focus:border-(--beheer-accent) w-48 md:w-64 transition-all"
+                            className="beheer-input w-48 rounded-lg border border-(--beheer-border)/50 bg-(--beheer-card-soft) px-3 py-1 text-xs text-(--beheer-text) placeholder-(--beheer-text-muted)/50 transition-all focus:border-(--beheer-accent) focus:outline-none md:w-64"
                         />
                     </div>
                 </div>
@@ -167,21 +167,21 @@ export default function LogsTab({
                     </span>
                     <button
                         onClick={onRefresh}
-                        className="icon-button p-2 text-(--beheer-text-muted) hover:text-(--beheer-accent) transition-colors"
+                        className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-accent)"
                     >
-                        <RefreshCw className="h-5 w-5" />
+                        <RefreshCw className="size-5" />
                     </button>
                 </div>
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-left">
                     <thead>
-                        <tr className="bg-(--beheer-card-soft)/50 border-b border-(--beheer-border)/50 text-xs font-semibold text-(--beheer-text-muted) tracking-tight">
+                        <tr className="border-b border-(--beheer-border)/50 bg-(--beheer-card-soft)/50 text-xs font-semibold tracking-tight text-(--beheer-text-muted)">
                             <th className="p-4">Datum</th>
                             <th className="p-4">Type</th>
                             <th className="p-4">Context</th>
                             <th className="p-4">Uitgevoerd door</th>
-                            <th className="p-4 min-w-5">Details</th>
+                            <th className="min-w-5 p-4">Details</th>
                             <th className="p-4 text-center">Status</th>
                         </tr>
                     </thead>
@@ -191,24 +191,24 @@ export default function LogsTab({
                             return (
                                 <Fragment key={log.id}>
                                     <tr
-                                        className="hover:bg-(--beheer-accent)/2 transition-colors group cursor-pointer border-b border-(--beheer-border)/10"
+                                        className="group cursor-pointer border-b border-(--beheer-border)/10 transition-colors hover:bg-(--beheer-accent)/2"
                                         onClick={() => toggleExpand(log.id)}
                                     >
-                                        <td className="p-4 text-xs font-medium text-(--beheer-text-muted) tracking-tight whitespace-nowrap">
+                                        <td className="p-4 text-xs font-medium tracking-tight whitespace-nowrap text-(--beheer-text-muted)">
                                             {formatDate(log.created_at, 'dd-MM-yyyy HH:mm')}
                                         </td>
                                         <td className="p-4">
                                             <div className="flex flex-col gap-1">
-                                                <span className="font-semibold text-(--beheer-text) tracking-tight text-xs capitalize">
+                                                <span className="text-xs font-semibold tracking-tight text-(--beheer-text) capitalize">
                                                     {log.type}
                                                 </span>
                                                 {log.payload && typeof log.payload === 'object' && 'environment' in log.payload && (
-                                                    <span className={`inline-block px-1.5 py-0.5 text-[9px] font-bold rounded w-fit capitalize border ${
+                                                    <span className={`inline-block w-fit rounded border px-1.5 py-0.5 text-[9px] font-bold capitalize ${
                                                         String(log.payload.environment) === 'productie'
-                                                            ? 'bg-red-500/10 text-red-500 border-red-500/20'
+                                                            ? 'border-red-500/20 bg-red-500/10 text-red-500'
                                                             : String(log.payload.environment) === 'acceptatie'
-                                                                ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                                                                : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                                                ? 'border-amber-500/20 bg-amber-500/10 text-amber-500'
+                                                                : 'border-blue-500/20 bg-blue-500/10 text-blue-500'
                                                     }`}>
                                                         {String(log.payload.environment)}
                                                     </span>
@@ -284,11 +284,11 @@ export default function LogsTab({
                                                 if (context) {
                                                     return (
                                                         <div className="flex flex-col">
-                                                            <span className="font-semibold text-(--beheer-text) tracking-tight text-xs capitalize">
+                                                            <span className="text-xs font-semibold tracking-tight text-(--beheer-text) capitalize">
                                                                 {context}
                                                             </span>
                                                             {contextName && (
-                                                                <span className="text-[10px] text-(--beheer-text-muted) truncate max-w-30" title={contextName}>
+                                                                <span className="max-w-30 truncate text-[10px] text-(--beheer-text-muted)" title={contextName}>
                                                                     {contextName}
                                                                 </span>
                                                             )}
@@ -314,7 +314,7 @@ export default function LogsTab({
                                             })()}
                                         </td>
                                         <td className="p-4">
-                                            <div className="text-xs font-medium text-(--beheer-text-muted) tracking-tight max-w-70 break-all">
+                                            <div className="max-w-70 text-xs font-medium tracking-tight break-all text-(--beheer-text-muted)">
                                                 {log.payload && typeof log.payload === 'object' ? (
                                                     log.type === 'system_sync_summary' ? (
                                                         <div className="space-y-1">
@@ -329,24 +329,24 @@ export default function LogsTab({
                                                                         <p className="text-(--beheer-text-muted) opacity-95">
                                                                             {String(p.processed || 0)} leden verwerkt in {p.duration_ms ? formatDuration(Number(p.duration_ms)) : 'onbekende tijd'}.
                                                                         </p>
-                                                                        <div className="flex flex-wrap gap-1.5 text-[10px] mt-1">
-                                                                            <span className="px-1.5 py-0.5 bg-green-500/10 text-green-500 rounded font-semibold whitespace-nowrap">
+                                                                        <div className="mt-1 flex flex-wrap gap-1.5 text-[10px]">
+                                                                            <span className="rounded bg-green-500/10 px-1.5 py-0.5 font-semibold whitespace-nowrap text-green-500">
                                                                                 +{p.moved_active || 0} actief
                                                                             </span>
-                                                                            <span className="px-1.5 py-0.5 bg-amber-500/10 text-amber-500 rounded font-semibold whitespace-nowrap">
+                                                                            <span className="rounded bg-amber-500/10 px-1.5 py-0.5 font-semibold whitespace-nowrap text-amber-500">
                                                                                 -{p.moved_expired || 0} verlopen
                                                                             </span>
                                                                             {Number(p.errors || 0) > 0 && (
-                                                                                <span className="px-1.5 py-0.5 bg-red-500/10 text-red-500 rounded font-semibold whitespace-nowrap">
+                                                                                <span className="rounded bg-red-500/10 px-1.5 py-0.5 font-semibold whitespace-nowrap text-red-500">
                                                                                     {p.errors} fouten
                                                                                 </span>
                                                                             )}
                                                                         </div>
                                                                         {Array.isArray(p.moved_active_users) && p.moved_active_users.length > 0 && (
                                                                             <div className="mt-2 space-y-0.5">
-                                                                                <p className="text-[10px] font-bold text-green-500 uppercase tracking-widest">Actief geworden</p>
+                                                                                <p className="text-[10px] font-bold tracking-widest text-green-500 uppercase">Actief geworden</p>
                                                                                 {p.moved_active_users.map((u, i) => (
-                                                                                    <p key={i} className="text-[10px] text-(--beheer-text) truncate" title={u.email}>
+                                                                                    <p key={i} className="truncate text-[10px] text-(--beheer-text)" title={u.email}>
                                                                                         {u.name ? String(u.name) : u.email}
                                                                                     </p>
                                                                                 ))}
@@ -354,9 +354,9 @@ export default function LogsTab({
                                                                         )}
                                                                         {Array.isArray(p.moved_expired_users) && p.moved_expired_users.length > 0 && (
                                                                             <div className="mt-2 space-y-0.5">
-                                                                                <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Verlopen geworden</p>
+                                                                                <p className="text-[10px] font-bold tracking-widest text-amber-500 uppercase">Verlopen geworden</p>
                                                                                 {p.moved_expired_users.map((u, i) => (
-                                                                                    <p key={i} className="text-[10px] text-(--beheer-text) truncate" title={u.email}>
+                                                                                    <p key={i} className="truncate text-[10px] text-(--beheer-text)" title={u.email}>
                                                                                         {u.name ? String(u.name) : u.email}
                                                                                     </p>
                                                                                 ))}
@@ -385,23 +385,23 @@ export default function LogsTab({
                                                                     return (
                                                                         <div key={key} className="flex flex-col gap-0.5">
                                                                             <div className="flex flex-wrap items-center gap-1">
-                                                                                <span className="opacity-50 font-semibold">{key}:</span>
+                                                                                <span className="font-semibold opacity-50">{key}:</span>
                                                                                  {isComplex ? (
                                                                                     <button
                                                                                         onClick={(e) => {
                                                                                             e.stopPropagation();
                                                                                             toggleExpand(log.id);
                                                                                         }}
-                                                                                        className="beheer-button px-2 py-0.5 bg-(--beheer-accent)/10 hover:bg-(--beheer-accent)/20 text-(--beheer-accent) rounded text-[10px] font-semibold transition-all active:scale-95 flex items-center gap-1"
+                                                                                        className="beheer-button flex items-center gap-1 rounded bg-(--beheer-accent)/10 px-2 py-0.5 text-[10px] font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/20 active:scale-95"
                                                                                     >
                                                                                         {expandedLogs.has(log.id) ? 'Verberg details' : 'Toon details'}
                                                                                     </button>
                                                                                 ) : isArray ? (
-                                                                                    <span className="text-(--beheer-text) break-all">
+                                                                                    <span className="break-all text-(--beheer-text)">
                                                                                         {resolvedArray.length > 0 ? resolvedArray.join(', ') : 'Geen'}
                                                                                     </span>
                                                                                 ) : (
-                                                                                    <span className="text-(--beheer-text) break-all">{resolveIdToName(key, val, (log.payload && typeof log.payload === 'object' && 'context' in log.payload) ? String(log.payload.context) : undefined, log.type)}</span>
+                                                                                    <span className="break-all text-(--beheer-text)">{resolveIdToName(key, val, (log.payload && typeof log.payload === 'object' && 'context' in log.payload) ? String(log.payload.context) : undefined, log.type)}</span>
                                                                                 )}
                                                                             </div>
                                                                         </div>
@@ -416,10 +416,10 @@ export default function LogsTab({
                                         </td>
                                         <td className="p-4 text-center">
                                             <div className="flex flex-col items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold tracking-tight border ${log.status === 'SUCCESS' ? 'bg-(--beheer-active)/10 text-(--beheer-active) border-(--beheer-active)/20'
-                                                    : (log.status as string) === 'INFO' ? 'bg-(--beheer-accent)/10 text-(--beheer-accent) border-(--beheer-accent)/20'
-                                                        : (log.status as string) === 'WARNING' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                                                            : 'bg-(--beheer-inactive)/10 text-(--beheer-inactive) border-(--beheer-inactive)/20'
+                                                <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold tracking-tight ${log.status === 'SUCCESS' ? 'border-(--beheer-active)/20 bg-(--beheer-active)/10 text-(--beheer-active)'
+                                                    : (log.status as string) === 'INFO' ? 'border-(--beheer-accent)/20 bg-(--beheer-accent)/10 text-(--beheer-accent)'
+                                                        : (log.status as string) === 'WARNING' ? 'border-amber-500/20 bg-amber-500/10 text-amber-500'
+                                                            : 'border-(--beheer-inactive)/20 bg-(--beheer-inactive)/10 text-(--beheer-inactive)'
                                                     }`}>
                                                     {log.status}
                                                 </span>
@@ -433,7 +433,7 @@ export default function LogsTab({
                                                     </button>
                                                 )}
                                                 {log.status === 'ERROR' && (isAcknowledged as boolean) && (
-                                                    <span className="text-[10px] text-(--beheer-text-muted) flex items-center gap-1">
+                                                    <span className="flex items-center gap-1 text-[10px] text-(--beheer-text-muted)">
                                                         Gezien
                                                     </span>
                                                 )}
@@ -441,22 +441,22 @@ export default function LogsTab({
                                         </td>
                                     </tr>
                                     {expandedLogs.has(log.id) && (
-                                        <tr className="bg-(--beheer-card-soft)/20 border-b border-(--beheer-border)/40">
+                                        <tr className="border-b border-(--beheer-border)/40 bg-(--beheer-card-soft)/20">
                                             <td colSpan={6} className="p-4 md:p-6">
-                                                <div className="flex flex-col gap-3 max-w-4xl mx-auto" onClick={(e) => e.stopPropagation()}>
-                                                    <div className="flex justify-between items-center">
+                                                <div className="mx-auto flex max-w-4xl flex-col gap-3" onClick={(e) => e.stopPropagation()}>
+                                                    <div className="flex items-center justify-between">
                                                         <span className="text-xs font-semibold text-(--beheer-text-muted)">Volledige Payload Details</span>
                                                         <button
                                                             onClick={() => {
                                                                 void navigator.clipboard.writeText(JSON.stringify(log.payload, null, 2));
                                                                 showToast('Gekopieerd naar klembord', 'success');
                                                             }}
-                                                            className="beheer-button px-3 py-1 bg-(--beheer-card-bg) border border-(--beheer-border) hover:bg-(--beheer-card-soft) text-xs rounded-lg font-semibold text-(--beheer-text) transition-all flex items-center gap-1 active:scale-95"
+                                                            className="beheer-button flex items-center gap-1 rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-1 text-xs font-semibold text-(--beheer-text) transition-all hover:bg-(--beheer-card-soft) active:scale-95"
                                                         >
                                                             Kopieer JSON
                                                         </button>
                                                     </div>
-                                                    <pre className="text-xs p-4 bg-(--beheer-card-bg) border border-(--beheer-border)/80 rounded-xl overflow-x-auto text-(--beheer-text) font-mono max-h-87.5 leading-relaxed shadow-inner break-all whitespace-pre-wrap md:whitespace-pre">
+                                                    <pre className="max-h-87.5 overflow-x-auto rounded-xl border border-(--beheer-border)/80 bg-(--beheer-card-bg) p-4 font-mono text-xs leading-relaxed break-all whitespace-pre-wrap text-(--beheer-text) shadow-inner md:whitespace-pre">
                                                         {JSON.stringify(log.payload, null, 2)}
                                                     </pre>
                                                 </div>
@@ -468,17 +468,17 @@ export default function LogsTab({
                         })}
                         {filteredLogs.length === 0 && (
                             <tr>
-                                <td colSpan={6} className="p-20 text-center text-(--beheer-text-muted) italic font-medium text-sm">Geen logboekvermeldingen gevonden.</td>
+                                <td colSpan={6} className="p-20 text-center text-sm font-medium text-(--beheer-text-muted) italic">Geen logboekvermeldingen gevonden.</td>
                             </tr>
                         )}
                     </tbody>
                 </table>
             </div>
             {hasMore && (
-                <div className="p-4 border-t border-(--beheer-border)/50 flex justify-center">
+                <div className="flex justify-center border-t border-(--beheer-border)/50 p-4">
                     <button
                         onClick={onLoadMore}
-                        className="beheer-button px-6 py-2 bg-(--beheer-accent)/10 text-(--beheer-accent) rounded-xl text-xs font-semibold hover:bg-(--beheer-accent)/20 transition-all border border-(--beheer-accent)/20 active:scale-95"
+                        className="beheer-button rounded-xl border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 px-6 py-2 text-xs font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/20 active:scale-95"
                     >
                         Meer laden
                     </button>

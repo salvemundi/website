@@ -48,25 +48,25 @@ export default function KroegentochtEventDropdown({
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="beheer-button flex items-center gap-3 px-4 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) text-(--beheer-text) hover:border-(--beheer-accent)/50 transition-all active:scale-95 group min-w-50"
+                className="group beheer-button flex min-w-50 items-center gap-3 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 text-(--beheer-text) transition-all hover:border-(--beheer-accent)/50 active:scale-95"
             >
-                <div className="p-1.5 rounded-lg bg-(--beheer-accent)/10 text-(--beheer-accent)">
-                    <Beer className="h-4 w-4" />
+                <div className="rounded-lg bg-(--beheer-accent)/10 p-1.5 text-(--beheer-accent)">
+                    <Beer className="size-4" />
                 </div>
                 <div className="flex flex-col items-start overflow-hidden">
-                    <span className="text-[10px] font-semibold text-(--beheer-text-muted) leading-none mb-0.5">Selecteer Event</span>
-                    <span className="text-sm font-semibold truncate w-full">
+                    <span className="mb-0.5 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Selecteer Event</span>
+                    <span className="w-full truncate text-sm font-semibold">
                         {selectedEvent?.name || 'Geen event'}
                     </span>
                 </div>
-                <ChevronDown className={`h-4 w-4 ml-auto text-(--beheer-text-muted) transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`ml-auto size-4 text-(--beheer-text-muted) transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isOpen && (
                 <div
-                    className="absolute right-0 mt-2 w-72 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) shadow-(--shadow-card-elevated) z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 ease-out"
+                    className="animate-in fade-in zoom-in-95 absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-(--shadow-card-elevated) duration-200 ease-out"
                 >
-                    <div className="p-2 space-y-1 max-h-75 overflow-y-auto custom-scrollbar">
+                    <div className="custom-scrollbar max-h-75 space-y-1 overflow-y-auto p-2">
                         {sortedEvents.map((event) => {
                             const eventDate = event.date ? new Date(event.date) : new Date(0);
                             const isUpcoming = event.date ? eventDate >= today : false;
@@ -79,19 +79,19 @@ export default function KroegentochtEventDropdown({
                                         onSelect(event);
                                         setIsOpen(false);
                                     }}
-                                    className={`beheer-button w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left group/item ${isSelected
+                                    className={`group/item beheer-button flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all ${isSelected
                                         ? 'bg-(--beheer-accent)/10 text-(--beheer-accent)'
-                                        : 'hover:bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:text-(--beheer-text)'
+                                        : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) hover:text-(--beheer-text)'
                                         }`}
                                 >
-                                    <div className={`p-2 rounded-lg transition-colors ${isSelected ? 'bg-(--beheer-accent) text-white' : 'bg-(--beheer-border)/50 group-hover/item:bg-(--beheer-accent)/10 group-hover/item:text-(--beheer-accent)'}`}>
-                                        <Calendar className="h-3.5 w-3.5" />
+                                    <div className={`rounded-lg p-2 transition-colors ${isSelected ? 'bg-(--beheer-accent) text-white' : 'bg-(--beheer-border)/50 group-hover/item:bg-(--beheer-accent)/10 group-hover/item:text-(--beheer-accent)'}`}>
+                                        <Calendar className="size-3.5" />
                                     </div>
-                                    <div className="flex flex-col min-w-0">
-                                        <span className="text-sm font-semibold truncate">{event.name}</span>
+                                    <div className="flex min-w-0 flex-col">
+                                        <span className="truncate text-sm font-semibold">{event.name}</span>
                                         <div className="flex items-center gap-2 text-[10px] opacity-60">
                                             <span>{formatDate(eventDate)}</span>
-                                            {isUpcoming && <span className="text-green-500 font-semibold tracking-tighter">Live</span>}
+                                            {isUpcoming && <span className="font-semibold tracking-tighter text-green-500">Live</span>}
                                         </div>
                                     </div>
                                 </button>

@@ -16,30 +16,30 @@ export default function MembershipError({
     }, [error]);
 
     return (
-        <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center py-20">
+        <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 py-20 text-center">
             <div className="relative mb-8 pt-10">
-                <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-purple-500/10 rounded-full pointer-events-none" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto size-40 rounded-full bg-purple-500/10 blur-3xl" />
 
-                <div className="relative squircle-lg bg-(--bg-card) p-6 shadow-2xl border border-(--border-color)/20 text-purple-500 inline-block">
-                    <AlertTriangle className="h-16 w-16" />
+                <div className="squircle-lg relative inline-block border border-(--border-color)/20 bg-(--bg-card) p-6 text-purple-500 shadow-2xl">
+                    <AlertTriangle className="size-16" />
                 </div>
             </div>
 
-            <h1 className="text-4xl font-black text-(--text-main) mb-3 tracking-tight">
+            <h1 className="mb-3 text-4xl font-black tracking-tight text-(--text-main)">
                 Er is iets misgegaan
             </h1>
 
-            <p className="text-(--text-muted) max-w-lg mx-auto mb-10 font-medium leading-relaxed">
+            <p className="mx-auto mb-10 max-w-lg leading-relaxed font-medium text-(--text-muted)">
                 Onze servers konden je lidmaatschapsgegevens niet ophalen.
                 Probeer de pagina te herladen of controleer je internetverbinding.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <button
                     onClick={() => reset()}
-                    className="form-button flex items-center gap-2 squircle bg-purple-500 text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-sm"
+                    className="squircle form-button flex items-center gap-2 bg-purple-500 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-purple-500/20 transition-all hover:-translate-y-0.5 hover:shadow-purple-500/40"
                 >
-                    <RefreshCcw className="h-4 w-4" />
+                    <RefreshCcw className="size-4" />
                     Opnieuw Proberen
                 </button>
 
@@ -52,7 +52,7 @@ export default function MembershipError({
             </div>
 
             {error.digest && (
-                <p className="mt-12 text-[10px] font-mono text-(--text-muted) opacity-50">
+                <p className="mt-12 font-mono text-[10px] text-(--text-muted) opacity-50">
                     Err-ID: {error.digest}
                 </p>
             )}

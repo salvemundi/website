@@ -112,14 +112,14 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
 
     return (
         <div className="space-y-8">
-            <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 shadow-sm">
-                <h3 className="font-semibold text-xs text-(--beheer-text-muted) mb-4">NDA-document ({new Date().getFullYear()})</h3>
-                <div className="flex flex-col sm:flex-row items-start gap-5">
-                    <div className="relative h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-(--beheer-card-soft) ring-1 ring-(--beheer-border) flex items-center justify-center">
-                        <FileText className={`h-6 w-6 ${template?.document ? 'text-(--beheer-accent)' : 'text-(--beheer-text-muted) opacity-40'}`} />
+            <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
+                <h3 className="mb-4 text-xs font-semibold text-(--beheer-text-muted)">NDA-document ({new Date().getFullYear()})</h3>
+                <div className="flex flex-col items-start gap-5 sm:flex-row">
+                    <div className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-(--beheer-card-soft) ring-1 ring-(--beheer-border)">
+                        <FileText className={`size-6 ${template?.document ? 'text-(--beheer-accent)' : 'text-(--beheer-text-muted) opacity-40'}`} />
                         {uploading && (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <Loader2 className="h-5 w-5 text-white animate-spin" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                                <Loader2 className="size-5 animate-spin text-white" />
                             </div>
                         )}
                     </div>
@@ -127,8 +127,8 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                         {(!template || template.status === 'draft') && (
                             <>
                                 <input type="file" accept="application/pdf,.pdf" onChange={(e) => { void handleUpload(e); }} className="hidden" id="nda-doc-upload" />
-                                <label htmlFor="nda-doc-upload" className="btn-upload-nda cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-(--beheer-accent)/10 text-(--beheer-accent) border border-(--beheer-accent)/20 text-sm font-semibold hover:bg-(--beheer-accent)/20 transition-all w-fit">
-                                    <Upload className="h-4 w-4" />
+                                <label htmlFor="nda-doc-upload" className="btn-upload-nda inline-flex w-fit cursor-pointer items-center gap-2 rounded-xl border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 px-4 py-2.5 text-sm font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/20">
+                                    <Upload className="size-4" />
                                     {template?.document ? 'Ander bestand kiezen' : 'NDA-PDF uploaden'}
                                 </label>
                             </>
@@ -140,16 +140,16 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                         )}
                         {uploadError && <p className="text-xs font-semibold text-red-500">{uploadError}</p>}
                         {!template?.document && !uploadError && (
-                            <p className="text-xs text-(--beheer-text-muted) opacity-70 max-w-sm">Upload de NDA-PDF zoals ondertekend door de secretaris en voorzitter — het document moet de handtekeningen van beiden al bevatten.</p>
+                            <p className="max-w-sm text-xs text-(--beheer-text-muted) opacity-70">Upload de NDA-PDF zoals ondertekend door de secretaris en voorzitter — het document moet de handtekeningen van beiden al bevatten.</p>
                         )}
                     </div>
                 </div>
             </div>
 
             {template?.document && (
-                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-xs text-(--beheer-text-muted)">Handtekeningplek instellen</h3>
+                <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between">
+                        <h3 className="text-xs font-semibold text-(--beheer-text-muted)">Handtekeningplek instellen</h3>
                         {template.signatureLayout && !editingLayout && (
                             <button
                                 type="button"
@@ -161,8 +161,8 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                         )}
                     </div>
                     {template.signatureLayout && !editingLayout ? (
-                        <p className="text-sm text-(--beheer-text-muted) flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-emerald-500" />
+                        <p className="flex items-center gap-2 text-sm text-(--beheer-text-muted)">
+                            <MapPin className="size-4 text-emerald-500" />
                             De plek voor locatie, datum, naam en handtekening van het commissielid is ingesteld.
                         </p>
                     ) : (
@@ -177,10 +177,10 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
             )}
 
             {template?.status === 'draft' && template.document && template.signatureLayout && (
-                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 shadow-sm">
-                    <h3 className="font-semibold text-xs text-(--beheer-text-muted) mb-4">Bevestigen en klaarzetten</h3>
+                <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
+                    <h3 className="mb-4 text-xs font-semibold text-(--beheer-text-muted)">Bevestigen en klaarzetten</h3>
                     {isSecretary ? (
-                        <div className="space-y-4 max-w-md">
+                        <div className="max-w-md space-y-4">
                             <p className="text-sm text-(--beheer-text-muted)">Controleer of het geüploade document de handtekeningen van de secretaris en de voorzitter bevat, en bevestig dan dat de NDA klaar is om naar de leden verstuurd te worden.</p>
                             {confirmError && <p className="text-xs font-semibold text-red-500">{confirmError}</p>}
                             <Button onClick={() => { void handleConfirmReady(); }} loading={confirming} icon={CheckCircle2}>
@@ -194,7 +194,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
             )}
 
             {template?.status === 'signed' && (
-                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex flex-col justify-between gap-4 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm sm:flex-row sm:items-center">
                     <p className="text-sm text-(--beheer-text-muted)">Bevestigd op {formatDate(template.secretarySignedAt)}. Verstuur nu naar de leden van {committee.name}.</p>
                     <Button onClick={() => { void handleSendToMembers(); }} loading={sending} icon={Send}>
                         Verstuur naar alle leden
@@ -204,7 +204,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
             {sendResult && <p className="text-sm text-(--beheer-text-muted)">{sendResult}</p>}
             {reminderError && <p className="text-sm font-semibold text-red-500">{reminderError}</p>}
 
-            <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-sm">
+            <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
@@ -227,7 +227,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                                             <div className="text-xs text-(--beheer-text-muted)">{member.email}</div>
                                         </td>
                                         <td className="p-4">
-                                            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${badge.className}`}>{badge.label}</span>
+                                            <span className={`rounded-full px-2 py-1 text-xs font-semibold ${badge.className}`}>{badge.label}</span>
                                         </td>
                                         <td className="p-4 text-(--beheer-text-muted)">{formatDate(member.sentAt)}</td>
                                         <td className="p-4 text-(--beheer-text-muted)">{formatDate(member.signedAt)}</td>
@@ -248,7 +248,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                                                     rel="noopener noreferrer"
                                                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-(--beheer-accent) hover:underline"
                                                 >
-                                                    <Eye className="h-3.5 w-3.5" />
+                                                    <Eye className="size-3.5" />
                                                     Bekijken
                                                 </a>
                                             )}
@@ -259,7 +259,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                                                     disabled={reminderId === member.signatureId}
                                                     className="btn-send-reminder mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-(--beheer-accent) hover:underline disabled:opacity-40"
                                                 >
-                                                    {reminderId === member.signatureId ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+                                                    {reminderId === member.signatureId ? <Loader2 className="size-3.5 animate-spin" /> : <Bell className="size-3.5" />}
                                                     Stuur herinnering
                                                 </button>
                                             )}
@@ -272,7 +272,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                                                             const val = e.target.value;
                                                             setHistoricalDates((prev) => new Map(prev).set(member.userId, val));
                                                         }}
-                                                        className="beheer-input text-xs py-1.5"
+                                                        className="beheer-input py-1.5 text-xs"
                                                     />
                                                     <button
                                                         type="button"

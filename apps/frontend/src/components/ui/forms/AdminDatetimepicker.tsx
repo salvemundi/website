@@ -127,7 +127,7 @@ export const AdminDatetimepicker = React.forwardRef<HTMLInputElement, AdminDatet
     const maxDate = max ? new Date(max.split('T')[0]) : undefined;
 
     return (
-        <div className={`flex w-full flex-col sm:flex-row items-stretch sm:items-start gap-3 ${className}`}>
+        <div className={`flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-start ${className}`}>
             <input 
                 type="hidden" 
                 id={id} 
@@ -140,8 +140,8 @@ export const AdminDatetimepicker = React.forwardRef<HTMLInputElement, AdminDatet
                 }}
             />
             
-            <div className="flex-1 min-w-0">
-                {dateLabel && <label htmlFor={id} className="block text-base font-semibold text-(--beheer-text-muted) mb-2">{dateLabel}</label>}
+            <div className="min-w-0 flex-1">
+                {dateLabel && <label htmlFor={id} className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">{dateLabel}</label>}
                 <AdminDatepicker
                     value={internalDate}
                     onChange={handleDateChange}
@@ -151,11 +151,11 @@ export const AdminDatetimepicker = React.forwardRef<HTMLInputElement, AdminDatet
                 />
             </div>
             
-            <div className="w-full sm:w-36 shrink-0">
+            <div className="w-full shrink-0 sm:w-36">
                 {timeLabel ? (
-                    <label className="block text-base font-semibold text-(--beheer-text-muted) mb-2">{timeLabel}</label>
+                    <label className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">{timeLabel}</label>
                 ) : (
-                    dateLabel && <div className="hidden sm:block h-6 mb-2"></div>
+                    dateLabel && <div className="mb-2 hidden h-6 sm:block"></div>
                 )}
                 <AdminTimepicker
                     value={internalTime}

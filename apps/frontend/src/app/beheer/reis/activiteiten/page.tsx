@@ -52,8 +52,8 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
     if (trips.length === 0) {
         return (
             <AdminPageShell title="Reis Activiteiten" backHref="/beheer/reis">
-                <div className="py-20 text-center mx-auto">
-                    <p className="text-(--beheer-text-muted) font-bold text-base">
+                <div className="mx-auto py-20 text-center">
+                    <p className="text-base font-bold text-(--beheer-text-muted)">
                         Geen reizen gevonden.
                     </p>
                 </div>

@@ -48,52 +48,52 @@ export default function StatsToolbar({
     }, []);
 
     return (
-        <div className="bg-(--bg-card) rounded-2xl shadow-(--shadow-card) ring-1 ring-(--border-color)/30 p-6 space-y-4">
-            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+        <div className="space-y-4 rounded-2xl bg-(--bg-card) p-6 shadow-(--shadow-card) ring-1 ring-(--border-color)/30">
+            <div className="flex flex-col items-start justify-between gap-4 xl:flex-row xl:items-center">
                 {/* Tabs for Table/Groups View + Inline Stats */}
-                <div className="flex flex-wrap items-center gap-6 w-full xl:w-auto">
-                    <div className="flex bg-(--bg-main)/80 p-1 rounded-xl border border-(--border-color)/40">
+                <div className="flex w-full flex-wrap items-center gap-6 xl:w-auto">
+                    <div className="flex rounded-xl border border-(--border-color)/40 bg-(--bg-main)/80 p-1">
                         <button
                             onClick={() => setViewMode('groups')}
-                            className={`tab-button flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+                            className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
                                 viewMode === 'groups' ? 'bg-(--theme-purple) text-white shadow-md' : 'text-(--text-muted) hover:text-(--text-main)'
                             }`}
                         >
-                            <Grid className="h-4 w-4" />
+                            <Grid className="size-4" />
                             Groepen Weergave
                         </button>
                         <button
                             onClick={() => setViewMode('table')}
-                            className={`tab-button flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+                            className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
                                 viewMode === 'table' ? 'bg-(--theme-purple) text-white shadow-md' : 'text-(--text-muted) hover:text-(--text-main)'
                             }`}
                         >
-                            <TableIcon className="h-4 w-4" />
+                            <TableIcon className="size-4" />
                             Tabel Weergave
                         </button>
                     </div>
 
                     {/* Inline Stats */}
-                    <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-(--text-muted) border-l border-(--border-color)/40 pl-4">
+                    <div className="flex flex-wrap items-center gap-4 border-l border-(--border-color)/40 pl-4 text-xs font-semibold text-(--text-muted)">
                         <div className="flex items-center gap-1.5">
-                            <Beer className="h-3.5 w-3.5 text-(--theme-purple)" />
+                            <Beer className="size-3.5 text-(--theme-purple)" />
                             <span>Tickets: <strong className="text-(--text-main)">{totalTicketsCount}</strong></span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                            <Building2 className="h-3.5 w-3.5 text-emerald-500" />
+                            <Building2 className="size-3.5 text-emerald-500" />
                             <span>Verenigingen: <strong className="text-(--text-main)">{totalAssociationsCount}</strong></span>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto justify-end">
+                <div className="flex w-full flex-wrap items-center justify-end gap-3 xl:w-auto">
                     {groupNames.length > 0 && (
                         <button
                             onClick={onAutoDistribute}
                             disabled={isPending || !hasSignups}
-                            className="beheer-button flex items-center gap-2 px-5 py-2.5 bg-(--theme-purple) hover:opacity-90 text-white font-semibold text-xs rounded-xl shadow-lg shadow-(--theme-purple)/10 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                            className="beheer-button flex cursor-pointer items-center gap-2 rounded-xl bg-(--theme-purple) px-5 py-2.5 text-xs font-semibold text-white shadow-(--theme-purple)/10 shadow-lg transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
                         >
-                            <Sparkles className="h-4 w-4 animate-pulse" />
+                            <Sparkles className="size-4 animate-pulse" />
                             Automatisch verdelen
                         </button>
                     )}
@@ -101,17 +101,17 @@ export default function StatsToolbar({
                     <button
                         onClick={onExportCSV}
                         disabled={!hasSignups}
-                        className="beheer-button flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold text-xs rounded-xl shadow-lg shadow-green-600/10 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                        className="beheer-button flex cursor-pointer items-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-xs font-semibold text-white shadow-lg shadow-green-600/10 transition-all hover:bg-green-700 active:scale-95 disabled:opacity-50"
                     >
-                        <Download className="h-4 w-4" />
+                        <Download className="size-4" />
                         Exporteer CSV
                     </button>
                 </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus-within:ring-4 focus-within:ring-(--theme-purple)/10 focus-within:border-(--theme-purple) transition-all">
-                    <Search className="h-5 w-5 shrink-0 text-(--text-muted) group-focus-within:text-(--theme-purple) transition-colors" />
+            <div className="flex flex-col gap-4 md:flex-row">
+                <div className="flex flex-1 items-center gap-3 rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-4 py-3 transition-all focus-within:border-(--theme-purple) focus-within:ring-4 focus-within:ring-(--theme-purple)/10">
+                    <Search className="size-5 shrink-0 text-(--text-muted) transition-colors group-focus-within:text-(--theme-purple)" />
                     <input
                         type="text"
                         placeholder="Zoek op naam, e-mail of vereniging..."
@@ -119,19 +119,19 @@ export default function StatsToolbar({
                         onChange={(e) => setSearchQuery(e.target.value)}
                         autoComplete="off"
                         spellCheck={false}
-                        className="beheer-input bg-transparent border-none p-0 w-full font-medium text-sm text-(--text-main) outline-none"
+                        className="beheer-input w-full border-none bg-transparent p-0 text-sm font-medium text-(--text-main) outline-none"
                     />
                 </div>
 
                 {/* Group Filter */}
-                <div className="w-full md:w-64 relative" ref={dropdownRef}>
+                <div className="relative w-full md:w-64" ref={dropdownRef}>
                     <button
                         type="button"
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className="beheer-button w-full flex items-center justify-between gap-2 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl px-4 py-3 text-xs font-semibold text-(--text-main) hover:border-(--theme-purple)/40 transition-all cursor-pointer focus:outline-none"
+                        className="beheer-button flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-4 py-3 text-xs font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/40 focus:outline-none"
                     >
                         <div className="flex items-center gap-2 truncate">
-                            <Users className="h-4 w-4 text-(--text-muted) shrink-0" />
+                            <Users className="size-4 shrink-0 text-(--text-muted)" />
                             <span className="truncate">
                                 {enabledGroups.length === groupNames.length + 1
                                     ? 'Alle groepen'
@@ -144,12 +144,12 @@ export default function StatsToolbar({
                                     : `${enabledGroups.length} geselecteerd`}
                             </span>
                         </div>
-                        <ChevronDown className={`h-4 w-4 text-(--text-muted) transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-(--theme-purple)' : ''}`} />
+                        <ChevronDown className={`size-4 text-(--text-muted) transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-(--theme-purple)' : ''}`} />
                     </button>
 
                     {isDropdownOpen && (
-                        <div className="absolute left-0 right-0 z-50 mt-1 origin-top rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1 shadow-2xl ring-1 ring-black/5 focus:outline-none animate-in fade-in slide-in-from-top-1 duration-100">
-                            <div className="max-h-[80vh] overflow-y-auto space-y-0.5">
+                        <div className="animate-in fade-in slide-in-from-top-1 absolute inset-x-0 z-50 mt-1 origin-top rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1 shadow-2xl ring-1 ring-black/5 duration-100 focus:outline-none">
+                            <div className="max-h-[80vh] space-y-0.5 overflow-y-auto">
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -160,14 +160,14 @@ export default function StatsToolbar({
                                             setEnabledGroups(allOptions);
                                         }
                                     }}
-                                    className="beheer-button w-full text-left px-3 py-2 rounded-lg text-xs font-semibold hover:bg-(--bg-main) text-(--text-main) transition-colors flex items-center justify-between"
+                                    className="beheer-button flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-(--text-main) transition-colors hover:bg-(--bg-main)"
                                 >
                                     <span>Alle groepen</span>
                                     <input
                                         type="checkbox"
                                         checked={enabledGroups.length === groupNames.length + 1}
                                         readOnly
-                                        className="rounded border-(--border-color) text-(--theme-purple) focus:ring-(--theme-purple)/20 cursor-pointer h-3.5 w-3.5"
+                                        className="size-3.5 cursor-pointer rounded border-(--border-color) text-(--theme-purple) focus:ring-(--theme-purple)/20"
                                     />
                                 </button>
                                 <button
@@ -179,14 +179,14 @@ export default function StatsToolbar({
                                             setEnabledGroups([...enabledGroups, 'unassigned']);
                                         }
                                     }}
-                                    className="beheer-button w-full text-left px-3 py-2 rounded-lg text-xs font-semibold hover:bg-(--bg-main) text-(--text-main) transition-colors flex items-center justify-between"
+                                    className="beheer-button flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-(--text-main) transition-colors hover:bg-(--bg-main)"
                                 >
                                     <span>Niet ingedeeld</span>
                                     <input
                                         type="checkbox"
                                         checked={enabledGroups.includes('unassigned')}
                                         readOnly
-                                        className="rounded border-(--border-color) text-(--theme-purple) focus:ring-(--theme-purple)/20 cursor-pointer h-3.5 w-3.5"
+                                        className="size-3.5 cursor-pointer rounded border-(--border-color) text-(--theme-purple) focus:ring-(--theme-purple)/20"
                                     />
                                 </button>
                                 {groupNames.map((name) => (
@@ -200,14 +200,14 @@ export default function StatsToolbar({
                                                 setEnabledGroups([...enabledGroups, name]);
                                             }
                                         }}
-                                        className="beheer-button w-full text-left px-3 py-2 rounded-lg text-xs font-semibold hover:bg-(--bg-main) text-(--text-main) transition-colors flex items-center justify-between"
+                                        className="beheer-button flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-(--text-main) transition-colors hover:bg-(--bg-main)"
                                     >
                                         <span className="truncate">{name}</span>
                                         <input
                                             type="checkbox"
                                             checked={enabledGroups.includes(name)}
                                             readOnly
-                                            className="rounded border-(--border-color) text-(--theme-purple) focus:ring-(--theme-purple)/20 cursor-pointer h-3.5 w-3.5"
+                                            className="size-3.5 cursor-pointer rounded border-(--border-color) text-(--theme-purple) focus:ring-(--theme-purple)/20"
                                         />
                                     </button>
                                 ))}

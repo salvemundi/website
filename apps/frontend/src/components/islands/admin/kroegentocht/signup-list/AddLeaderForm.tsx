@@ -49,9 +49,9 @@ export default function AddLeaderForm({
     ];
 
     return (
-        <div className="p-3 bg-(--bg-main)/50 border border-(--border-color)/30 rounded-xl space-y-3">
+        <div className="space-y-3 rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 p-3">
             <div className="space-y-1">
-                <label className="text-[9px] font-bold text-(--text-muted) uppercase tracking-wider">
+                <label className="text-[9px] font-bold tracking-wider text-(--text-muted) uppercase">
                     Kies leider type
                 </label>
                 <AdminSelect
@@ -68,7 +68,7 @@ export default function AddLeaderForm({
 
             {leaderType === 'signup' ? (
                 <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-(--text-muted) uppercase tracking-wider">
+                    <label className="text-[9px] font-bold tracking-wider text-(--text-muted) uppercase">
                         Kies deelnemer
                     </label>
                     <AdminSelect
@@ -86,7 +86,7 @@ export default function AddLeaderForm({
                 </div>
             ) : (
                 <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-(--text-muted) uppercase tracking-wider">
+                    <label className="text-[9px] font-bold tracking-wider text-(--text-muted) uppercase">
                         Naam leider
                     </label>
                     <input
@@ -94,16 +94,16 @@ export default function AddLeaderForm({
                         placeholder="Vul naam in..."
                         value={leaderName}
                         onChange={(e) => setLeaderName(e.target.value)}
-                        className="beheer-input w-full px-2.5 py-1.5 bg-(--bg-card) border border-(--border-color)/30 rounded-lg text-xs font-semibold text-(--text-main) focus:ring-2 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) focus:outline-none"
+                        className="beheer-input w-full rounded-lg border border-(--border-color)/30 bg-(--bg-card) px-2.5 py-1.5 text-xs font-semibold text-(--text-main) focus:border-(--theme-purple) focus:ring-2 focus:ring-(--theme-purple)/10 focus:outline-none"
                     />
                 </div>
             )}
 
-            <div className="flex gap-2 justify-end pt-1">
+            <div className="flex justify-end gap-2 pt-1">
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="beheer-button px-2.5 py-1.5 bg-(--bg-card) hover:bg-(--bg-main) border border-(--border-color)/30 rounded-lg text-[10px] font-bold text-(--text-muted) transition-all cursor-pointer"
+                    className="beheer-button cursor-pointer rounded-lg border border-(--border-color)/30 bg-(--bg-card) px-2.5 py-1.5 text-[10px] font-bold text-(--text-muted) transition-all hover:bg-(--bg-main)"
                 >
                     Annuleren
                 </button>
@@ -111,7 +111,7 @@ export default function AddLeaderForm({
                     type="button"
                     onClick={handleAdd}
                     disabled={leaderType === 'signup' ? !leaderSignupId : !leaderName.trim()}
-                    className="beheer-button px-3 py-1.5 bg-(--theme-purple) text-white hover:opacity-90 rounded-lg text-[10px] font-bold transition-all disabled:opacity-50 cursor-pointer"
+                    className="beheer-button cursor-pointer rounded-lg bg-(--theme-purple) px-3 py-1.5 text-[10px] font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"
                 >
                     Toevoegen
                 </button>

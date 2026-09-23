@@ -27,13 +27,13 @@ function FilterTab({ active, label, count, onClick, color = 'indigo' }: FilterTa
     return (
         <button
             onClick={onClick}
-            className={`beheer-button w-full px-3 py-2 rounded-xl text-[11px] font-semibold transition-all whitespace-nowrap flex items-center justify-between border ${active
+            className={`beheer-button flex w-full items-center justify-between rounded-xl border px-3 py-2 text-[11px] font-semibold whitespace-nowrap transition-all ${active
                 ? `${colorVariants.get(color)} border-transparent shadow-sm`
-                : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) border-(--beheer-border)/50 hover:border-(--beheer-accent)/30 hover:text-(--beheer-text)'
+                : 'border-(--beheer-border)/50 bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:border-(--beheer-accent)/30 hover:text-(--beheer-text)'
                 }`}
         >
             <span>{label}</span>
-            <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${active ? 'bg-white/20' : 'bg-(--beheer-border)/30'}`}>
+            <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${active ? 'bg-white/20' : 'bg-(--beheer-border)/30'}`}>
                 {count}
             </span>
         </button>
@@ -57,15 +57,15 @@ export default function SyncMonitorIsland() {
     const progress = total > 0 ? (processed / total) * 100 : 0;
 
     return (
-        <div className="bg-(--beheer-card-bg) p-6 rounded-(--beheer-radius) border border-(--beheer-border) shadow-sm">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+        <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
+            <div className="mb-8 flex flex-col justify-between gap-6 md:flex-row md:items-center">
                 <div className="flex items-center gap-4">
-                    <div className="p-2.5 bg-(--beheer-accent)/10 rounded-xl text-(--beheer-accent)">
-                        <Activity className="h-5 w-5" />
+                    <div className="rounded-xl bg-(--beheer-accent)/10 p-2.5 text-(--beheer-accent)">
+                        <Activity className="size-5" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-semibold text-(--beheer-text) tracking-tight">Sync Monitor</h3>
-                        <p className="text-[11px] font-semibold text-(--beheer-text-muted) mt-1">
+                        <h3 className="text-lg font-semibold tracking-tight text-(--beheer-text)">Sync Monitor</h3>
+                        <p className="mt-1 text-[11px] font-semibold text-(--beheer-text-muted)">
                             {lastUpdated && mounted ? `Laatste update: ${lastUpdated.toLocaleTimeString()}` : 'Real-time status & logs'}
                         </p>
                     </div>
@@ -73,14 +73,14 @@ export default function SyncMonitorIsland() {
             </div>
 
             {status?.error && (
-                <div className="mb-8 p-5 bg-(--theme-error)/5 border border-(--theme-error)/10 rounded-2xl">
+                <div className="mb-8 rounded-2xl border border-(--theme-error)/10 bg-(--theme-error)/5 p-5">
                     <div className="flex items-start gap-4">
-                        <div className="p-2 bg-(--theme-error)/10 rounded-lg text-(--theme-error)">
-                            <AlertCircle className="h-5 w-5" />
+                        <div className="rounded-lg bg-(--theme-error)/10 p-2 text-(--theme-error)">
+                            <AlertCircle className="size-5" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-semibold text-(--theme-error) tracking-tight">Verbindingsfout met Sync Service</h4>
-                            <p className="text-[11px] font-semibold text-(--beheer-text)/80 mt-1">
+                        <div className="min-w-0 flex-1">
+                            <h4 className="text-sm font-semibold tracking-tight text-(--theme-error)">Verbindingsfout met Sync Service</h4>
+                            <p className="mt-1 text-[11px] font-semibold text-(--beheer-text)/80">
                                 {status.error} (Controleer of de service en de Netbird VPN verbinding actief zijn.)
                             </p>
                         </div>
@@ -89,14 +89,14 @@ export default function SyncMonitorIsland() {
             )}
 
             {status?.fatalError && (
-                <div className="mb-8 p-5 bg-(--theme-error)/5 border border-(--theme-error)/10 rounded-2xl">
+                <div className="mb-8 rounded-2xl border border-(--theme-error)/10 bg-(--theme-error)/5 p-5">
                     <div className="flex items-start gap-4">
-                        <div className="p-2 bg-(--theme-error)/10 rounded-lg text-(--theme-error)">
-                            <AlertCircle className="h-5 w-5" />
+                        <div className="rounded-lg bg-(--theme-error)/10 p-2 text-(--theme-error)">
+                            <AlertCircle className="size-5" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-semibold text-(--theme-error) tracking-tight">Kritieke Fout Gedetecteerd</h4>
-                            <p className="text-[11px] font-semibold text-(--beheer-text)/80 mt-1">
+                        <div className="min-w-0 flex-1">
+                            <h4 className="text-sm font-semibold tracking-tight text-(--theme-error)">Kritieke Fout Gedetecteerd</h4>
+                            <p className="mt-1 text-[11px] font-semibold text-(--beheer-text)/80">
                                 {status.fatalError.message}
                             </p>
 
@@ -104,14 +104,14 @@ export default function SyncMonitorIsland() {
                                 <div className="mt-4">
                                     <button
                                         onClick={() => setShowStack(!showStack)}
-                                        className="beheer-button text-[11px] font-semibold text-(--theme-error) hover:underline transition-colors flex items-center gap-1"
+                                        className="beheer-button flex items-center gap-1 text-[11px] font-semibold text-(--theme-error) transition-colors hover:underline"
                                     >
                                         {showStack ? 'Verberg details' : 'Bekijk technische details (Stack Trace)'}
                                     </button>
 
                                     {showStack && (
-                                        <div className="mt-3 p-4 bg-black/5 dark:bg-white/5 rounded-xl border border-(--beheer-border) overflow-x-auto custom-scrollbar">
-                                            <pre className="text-[10px] text-(--beheer-text-muted) font-mono leading-relaxed">
+                                        <div className="custom-scrollbar mt-3 overflow-x-auto rounded-xl border border-(--beheer-border) bg-black/5 p-4 dark:bg-white/5">
+                                            <pre className="font-mono text-[10px] leading-relaxed text-(--beheer-text-muted)">
                                                 {status.fatalError.stack}
                                             </pre>
                                         </div>
@@ -126,13 +126,13 @@ export default function SyncMonitorIsland() {
             <div className="space-y-8">
                 {/* PROGRESS BAR */}
                 <div>
-                    <div className="flex justify-between items-end mb-3">
+                    <div className="mb-3 flex items-end justify-between">
                         <span className="text-[11px] font-semibold text-(--beheer-text-muted)">Voortgang ({processed} / {total})</span>
                         <span className="text-[11px] font-semibold text-(--beheer-accent)">{Math.round(progress || 0)}%</span>
                     </div>
-                    <div className="h-3 w-full bg-(--beheer-card-soft) rounded-full overflow-hidden border border-(--beheer-border)/20 shadow-inner">
+                    <div className="h-3 w-full overflow-hidden rounded-full border border-(--beheer-border)/20 bg-(--beheer-card-soft) shadow-inner">
                         <div
-                            className="h-full bg-linear-to-r from-(--beheer-accent) to-(--theme-info) transition-all duration-500 relative"
+                            className="relative h-full bg-linear-to-r from-(--beheer-accent) to-(--theme-info) transition-all duration-500"
                             style={{ width: `${progress}%` }}
                         >
                         </div>
@@ -140,7 +140,7 @@ export default function SyncMonitorIsland() {
                 </div>
 
                 {/* UNIFIED FILTERS GRID */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7">
                     <FilterTab active={resultFilter === 'all'} label="Alles" count={status?.processed || 0} onClick={() => setResultFilter('all')} />
                     <FilterTab active={resultFilter === 'success'} label="Success" count={status?.successCount || 0} onClick={() => setResultFilter('success')} color="green" />
                     <FilterTab active={resultFilter === 'created'} label="Nieuw" count={status?.createdCount || 0} onClick={() => setResultFilter('created')} color="purple" />

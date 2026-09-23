@@ -159,10 +159,10 @@ export default function KroegentochtManagementIsland({
                         {selectedEvent && (
                             <Link
                                 href={`/beheer/kroegentocht/bewerk/${selectedEvent.id}`}
-                                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:border-(--beheer-accent)/30 transition-all active:scale-90 text-sm font-semibold shadow-sm"
+                                className="flex items-center justify-center gap-2 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 text-sm font-semibold text-(--beheer-text-muted) shadow-sm transition-all hover:border-(--beheer-accent)/30 hover:text-(--beheer-accent) active:scale-90"
                                 title="Event Details"
                             >
-                                <Settings className="h-4 w-4" />
+                                <Settings className="size-4" />
                                 <span className="hidden sm:inline">Details</span>
                             </Link>
                         )}
@@ -170,10 +170,10 @@ export default function KroegentochtManagementIsland({
                         <button
                             onClick={handleRefresh}
                             disabled={isPending}
-                            className="icon-button p-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:border-(--beheer-accent)/30 transition-all active:scale-90 disabled:opacity-50"
+                            className="icon-button rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-2.5 text-(--beheer-text-muted) transition-all hover:border-(--beheer-accent)/30 hover:text-(--beheer-accent) active:scale-90 disabled:opacity-50"
                             title="Vernieuwen"
                         >
-                            <RefreshCw className={`h-4 w-4 ${isPending ? 'animate-spin' : ''}`} />
+                            <RefreshCw className={`size-4 ${isPending ? 'animate-spin' : ''}`} />
                         </button>
 
                         <AdminVisibilityToggle
@@ -184,9 +184,9 @@ export default function KroegentochtManagementIsland({
 
                         <Link
                             href="/beheer/kroegentocht/nieuw"
-                            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-(--beheer-accent) text-white font-semibold text-base rounded-(--beheer-radius) shadow-lg hover:opacity-90 transition-all active:scale-95"
+                            className="flex items-center justify-center gap-2 rounded-(--beheer-radius) bg-(--beheer-accent) px-6 py-2.5 text-base font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
                         >
-                            <Plus className="h-4 w-4" />
+                            <Plus className="size-4" />
                             Nieuw Event
                         </Link>
                     </>
@@ -197,12 +197,12 @@ export default function KroegentochtManagementIsland({
                 <div className="flex flex-col">
 
                     {error && (
-                        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/50 rounded-(--beheer-radius) text-red-500 text-base font-semibold flex items-center gap-3">
-                            <AlertCircle className="h-5 w-5" />
+                        <div className="mb-8 flex items-center gap-3 rounded-(--beheer-radius) border border-red-500/50 bg-red-500/10 p-4 text-base font-semibold text-red-500">
+                            <AlertCircle className="size-5" />
                             {error}
                             <button
                                 onClick={handleRefresh}
-                                className="beheer-button ml-auto underline"
+                                className="ml-auto beheer-button underline"
                             >
                                 Probeer opnieuw
                             </button>
@@ -211,7 +211,7 @@ export default function KroegentochtManagementIsland({
 
                     {selectedEvent ? (
                         <div className="space-y-8">
-                            <div className={`transition-opacity duration-300 ${isPending ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                            <div className={`transition-opacity duration-300 ${isPending ? 'pointer-events-none opacity-50' : 'opacity-100'}`}>
                                 <SignupList
                                     signups={signups}
                                     eventId={selectedEvent.id}
@@ -227,10 +227,10 @@ export default function KroegentochtManagementIsland({
                             </div>
                         </div>
                     ) : (
-                        <div className="text-center py-20 bg-(--bg-card)/40 rounded-2xl border-2 border-dashed border-(--border-color)/30">
-                            <AlertCircle className="h-16 w-16 text-(--text-muted) opacity-20 mx-auto mb-4" />
-                            <h2 className="text-xl font-semibold text-(--text-main) tracking-tight">Geen Event Geselecteerd</h2>
-                            <p className="text-base text-(--text-subtle) mt-2">Kies een event hierboven om de data te bekijken.</p>
+                        <div className="rounded-2xl border-2 border-dashed border-(--border-color)/30 bg-(--bg-card)/40 py-20 text-center">
+                            <AlertCircle className="mx-auto mb-4 size-16 text-(--text-muted) opacity-20" />
+                            <h2 className="text-xl font-semibold tracking-tight text-(--text-main)">Geen Event Geselecteerd</h2>
+                            <p className="mt-2 text-base text-(--text-subtle)">Kies een event hierboven om de data te bekijken.</p>
                         </div>
                     )}
                 </div>

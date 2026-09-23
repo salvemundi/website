@@ -38,14 +38,14 @@ export default function ReisTable({
     return (
         <div className="flex flex-col gap-3">
             {filteredSignups.length === 0 ? (
-                <div className="bg-(--beheer-card-bg)/50 rounded-3xl border border-(--beheer-border)/40 p-20 text-center">
-                    <AlertCircle className="h-12 w-12 text-(--beheer-text-muted) mx-auto mb-4 opacity-20" />
-                    <p className="text-(--beheer-text-muted) font-semibold text-[10px]">Geen aanmeldingen gevonden</p>
+                <div className="rounded-3xl border border-(--beheer-border)/40 bg-(--beheer-card-bg)/50 p-20 text-center">
+                    <AlertCircle className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-20" />
+                    <p className="text-[10px] font-semibold text-(--beheer-text-muted)">Geen aanmeldingen gevonden</p>
                 </div>
             ) : (
                 <>
                     {/* Cards Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {filteredSignups.map(signup => (
                             <ReisTableRow
                                 key={signup.id}

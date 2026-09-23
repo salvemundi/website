@@ -120,14 +120,14 @@ export function ReisRegistrationForm({
 
     if (!nextTrip) {
         return (
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-theme-purple/5 rounded-2xl border border-theme-purple/10">
-                <div className="w-16 h-16 bg-theme-purple/10 rounded-full flex items-center justify-center mb-4">
-                    <svg className="w-8 h-8 text-theme-purple opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-theme-purple/10 bg-theme-purple/5 px-4 py-12 text-center">
+                <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-theme-purple/10">
+                    <svg className="size-8 text-theme-purple opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                 </div>
-                <h2 className="text-xl font-bold text-theme-purple dark:text-theme-white mb-2">Geen reis gepland</h2>
-                <p className="text-(--text-muted) text-sm max-w-xs">
+                <h2 className="dark:text-theme-white mb-2 text-xl font-bold text-theme-purple">Geen reis gepland</h2>
+                <p className="max-w-xs text-sm text-(--text-muted)">
                     Momenteel is er geen reis gepland. Houd deze pagina in de gaten voor nieuwe data!
                 </p>
             </div>
@@ -153,7 +153,7 @@ export function ReisRegistrationForm({
                 autoComplete="off"
                 suppressHydrationWarning
             >
-                <p className="text-theme-text dark:text-white/90 text-sm mb-2 font-medium">
+                <p className="mb-2 text-sm font-medium text-theme-text dark:text-white/90">
                     Let op: dit is een vrijblijvende aanmelding. De daadwerkelijke betaling volgt later.
                 </p>
 
@@ -166,12 +166,12 @@ export function ReisRegistrationForm({
                             /* We use 'one-time-code' to block Chrome's aggressive autofill. */
                             autoComplete="one-time-code"
                         />
-                        <div className="mt-2 p-4 rounded-2xl bg-theme-purple/5 border border-theme-purple/10 flex items-start gap-3">
-                            <div className="flex items-center gap-1 mt-0.5">
-                                <AlertCircle className="w-4 h-4 text-theme-purple shrink-0 opacity-60" />
+                        <div className="mt-2 flex items-start gap-3 rounded-2xl border border-theme-purple/10 bg-theme-purple/5 p-4">
+                            <div className="mt-0.5 flex items-center gap-1">
+                                <AlertCircle className="size-4 shrink-0 text-theme-purple opacity-60" />
                             </div>
-                            <p className="text-[10px] leading-relaxed text-(--text-muted) font-semibold tracking-wider opacity-70">
-                                <span className="text-theme-purple font-bold">LET OP:</span> Gebruik je volledige voornaam zoals op je paspoort/ID. Dit is essentieel voor je ticket!
+                            <p className="text-[10px] leading-relaxed font-semibold tracking-wider text-(--text-muted) opacity-70">
+                                <span className="font-bold text-theme-purple">LET OP:</span> Gebruik je volledige voornaam zoals op je paspoort/ID. Dit is essentieel voor je ticket!
                             </p>
                         </div>
                     </FormField>
@@ -229,22 +229,22 @@ export function ReisRegistrationForm({
 
                 <label
                     htmlFor="terms_accepted"
-                    className="flex items-start gap-3 text-theme-text dark:text-white mt-2 cursor-pointer group"
+                    className="group mt-2 flex cursor-pointer items-start gap-3 text-theme-text dark:text-white"
                 >
                     <input
                         {...register('terms_accepted')}
                         id="terms_accepted"
                         type="checkbox"
-                        className="mt-1 h-5 w-5 rounded border-theme-purple/20 accent-theme-purple transition-all group-hover:scale-110"
+                        className="mt-1 size-5 rounded border-theme-purple/20 accent-theme-purple transition-all group-hover:scale-110"
                     />
                     <span className="text-sm leading-snug">
                         Ik accepteer de{' '}
-                        <a href={termsFileUrl || "/reisvoorwaarden.pdf"} download className="underline font-semibold text-theme-purple hover:text-theme-purple/80" target="_blank" rel="noopener noreferrer">
+                        <a href={termsFileUrl || "/reisvoorwaarden.pdf"} download className="font-semibold text-theme-purple underline hover:text-theme-purple/80" target="_blank" rel="noopener noreferrer">
                             algemene voorwaarden
                         </a>
                     </span>
                 </label>
-                {errors.terms_accepted && <p className="text-xs text-red-500 font-semibold">{errors.terms_accepted.message}</p>}
+                {errors.terms_accepted && <p className="text-xs font-semibold text-red-500">{errors.terms_accepted.message}</p>}
 
                 {/* Honeypot at bottom to avoid breaking browser autofill sections */}
                 <input {...register('website')} type="text" className="hidden" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
@@ -252,12 +252,12 @@ export function ReisRegistrationForm({
                 <button
                     type="submit"
                     disabled={loading}
-                    className="form-button mt-4 group"
+                    className="group mt-4 form-button"
                 >
                     <span>
                         {loading ? 'Bezig met aanmelden...' : 'Aanmelden voor de reis'}
                     </span>
-                    {!loading && <span className="group-hover:translate-x-1 transition-transform inline-block ml-2">→</span>}
+                    {!loading && <span className="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>}
                 </button>
                 <AdminToast toast={toast} onClose={hideToast} />
             </form>

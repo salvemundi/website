@@ -250,43 +250,43 @@ export default function CoboQueueManager({
                 onNext={handleNext}
             />
 
-            <div className="flex items-center gap-2 border-b border-border-color pb-3 overflow-x-auto">
+            <div className="flex items-center gap-2 overflow-x-auto border-b border-border-color pb-3">
                 <button
                     type="button"
                     onClick={() => handleSubTabChange('queue')}
-                    className={`tab-button min-h-11 sm:min-h-9 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center gap-2 cursor-pointer ${
+                    className={`tab-button flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-colors sm:min-h-9 sm:text-sm ${
                         activeTab === 'queue'
                             ? 'bg-purple-600 text-white shadow-xs'
-                            : 'bg-bg-card hover:bg-bg-soft text-text-muted hover:text-text-main border border-border-color'
+                            : 'border border-border-color bg-bg-card text-text-muted hover:bg-bg-soft hover:text-text-main'
                     }`}
                 >
-                    <Users className="h-4 w-4" />
+                    <Users className="size-4" />
                     <span>Wachtrij ({waitingBoards.length})</span>
                 </button>
 
                 <button
                     type="button"
                     onClick={() => handleSubTabChange('completed')}
-                    className={`tab-button min-h-11 sm:min-h-9 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center gap-2 cursor-pointer ${
+                    className={`tab-button flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-colors sm:min-h-9 sm:text-sm ${
                         activeTab === 'completed'
                             ? 'bg-purple-600 text-white shadow-xs'
-                            : 'bg-bg-card hover:bg-bg-soft text-text-muted hover:text-text-main border border-border-color'
+                            : 'border border-border-color bg-bg-card text-text-muted hover:bg-bg-soft hover:text-text-main'
                     }`}
                 >
-                    <CheckCircle2 className="h-4 w-4" />
+                    <CheckCircle2 className="size-4" />
                     <span>Geweest ({completedBoards.length})</span>
                 </button>
 
                 <button
                     type="button"
                     onClick={() => handleSubTabChange('late')}
-                    className={`tab-button min-h-11 sm:min-h-9 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center gap-2 cursor-pointer ${
+                    className={`tab-button flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-colors sm:min-h-9 sm:text-sm ${
                         activeTab === 'late'
                             ? 'bg-amber-600 text-white shadow-xs'
-                            : 'bg-bg-card hover:bg-bg-soft text-text-muted hover:text-text-main border border-border-color'
+                            : 'border border-border-color bg-bg-card text-text-muted hover:bg-bg-soft hover:text-text-main'
                     }`}
                 >
-                    <Clock className="h-4 w-4" />
+                    <Clock className="size-4" />
                     <span>Niet op tijd ({lateBoards.length})</span>
                 </button>
             </div>

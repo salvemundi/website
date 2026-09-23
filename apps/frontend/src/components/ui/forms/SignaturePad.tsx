@@ -86,7 +86,7 @@ export const SignaturePad = React.forwardRef<SignaturePadHandle, SignaturePadPro
                     padRef.current?.clear();
                     setIsEmpty(true);
                 }}
-                className="absolute top-2 right-2 flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs text-gray-600 border border-(--beheer-border) hover:bg-gray-50"
+                className="absolute top-2 right-2 flex items-center gap-1 rounded-md border border-(--beheer-border) bg-white/90 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50"
             >
                 <RotateCcw className="size-3" />
                 Wissen

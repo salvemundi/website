@@ -47,7 +47,7 @@ export default function CoboManagementIsland({
 
     if (!activeEvent) {
         return (
-            <div className="py-16 max-w-xl mx-auto text-center space-y-6">
+            <div className="mx-auto max-w-xl space-y-6 py-16 text-center">
                 <div className="space-y-2">
                     <h2 className="text-2xl font-bold text-text-main">Nog geen CoBo evenement aangemaakt</h2>
                     <p className="text-sm text-text-muted">
@@ -60,9 +60,9 @@ export default function CoboManagementIsland({
                         setEventToEdit(null);
                         setIsModalOpen(true);
                     }}
-                    className="beheer-button px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold text-sm transition-colors cursor-pointer inline-flex items-center gap-2"
+                    className="beheer-button inline-flex cursor-pointer items-center gap-2 rounded-xl bg-purple-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-purple-700"
                 >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="size-4" />
                     <span>Eerste CoBo Aanmaken</span>
                 </button>
 
@@ -79,22 +79,22 @@ export default function CoboManagementIsland({
 
     return (
         <div className="space-y-6">
-            <div className="bg-bg-card rounded-2xl p-4 sm:p-5 border border-border-color flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0">
+            <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border-color bg-bg-card p-4 sm:p-5 md:flex-row md:items-center">
+                <div className="flex min-w-0 items-center gap-3">
                     <div className="min-w-0">
-                        <h2 className="text-lg sm:text-xl font-bold text-text-main truncate">
+                        <h2 className="truncate text-lg font-bold text-text-main sm:text-xl">
                             {activeEvent.title || 'CoBo'}
                         </h2>
-                        <div className="flex items-center gap-3 mt-1 text-xs text-text-muted font-medium flex-wrap">
+                        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs font-medium text-text-muted">
                             {activeEvent.date && (
                                 <span className="flex items-center gap-1.5">
-                                    <Calendar className="h-3.5 w-3.5 text-purple-600 dark:text-purple-300" />
+                                    <Calendar className="size-3.5 text-purple-600 dark:text-purple-300" />
                                     {formatDate(activeEvent.date, 'd MMMM yyyy HH:mm')}
                                 </span>
                             )}
                             {activeEvent.location && (
                                 <span className="flex items-center gap-1.5">
-                                    <MapPin className="h-3.5 w-3.5 text-purple-600 dark:text-purple-300" />
+                                    <MapPin className="size-3.5 text-purple-600 dark:text-purple-300" />
                                     {activeEvent.location}
                                 </span>
                             )}
@@ -102,30 +102,30 @@ export default function CoboManagementIsland({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 p-1 bg-bg-soft rounded-xl border border-border-color/60 w-full md:w-auto">
+                <div className="flex w-full items-center gap-1.5 rounded-xl border border-border-color/60 bg-bg-soft p-1 md:w-auto">
                     <button
                         type="button"
                         onClick={() => handleTabChange('queue')}
-                        className={`tab-button flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2 ${
+                        className={`tab-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-colors md:flex-none ${
                             activeTab === 'queue'
-                                ? 'bg-bg-card text-purple-700 dark:text-purple-300 shadow-xs border border-border-color'
+                                ? 'border border-border-color bg-bg-card text-purple-700 shadow-xs dark:text-purple-300'
                                 : 'text-text-muted hover:text-text-main'
                         }`}
                     >
-                        <Users className="h-3.5 w-3.5" />
+                        <Users className="size-3.5" />
                         <span>Gasten Wachtlijst</span>
                     </button>
 
                     <button
                         type="button"
                         onClick={() => handleTabChange('preferences')}
-                        className={`tab-button flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2 ${
+                        className={`tab-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-colors md:flex-none ${
                             activeTab === 'preferences'
-                                ? 'bg-bg-card text-purple-700 dark:text-purple-300 shadow-xs border border-border-color'
+                                ? 'border border-border-color bg-bg-card text-purple-700 shadow-xs dark:text-purple-300'
                                 : 'text-text-muted hover:text-text-main'
                         }`}
                     >
-                        <Shield className="h-3.5 w-3.5" />
+                        <Shield className="size-3.5" />
                         <span>Bestuursvoorkeuren &amp; Veto&apos;s</span>
                     </button>
                 </div>

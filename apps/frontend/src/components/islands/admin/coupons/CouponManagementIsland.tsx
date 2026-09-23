@@ -130,9 +130,9 @@ export default function CouponManagementIsland({
                 actions={
                     <button
                         onClick={() => setIsAdding(true)}
-                        className="beheer-button flex items-center justify-center gap-1.5 px-4 py-2 bg-theme-purple text-white rounded-xl squircle text-xs font-semibold shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 whitespace-nowrap cursor-pointer"
+                        className="squircle beheer-button flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-theme-purple px-4 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
                     >
-                        <Plus className="h-4 w-4" />
+                        <Plus className="size-4" />
                         <span>Nieuwe Coupon</span>
                     </button>
                 }
@@ -156,32 +156,32 @@ export default function CouponManagementIsland({
                 <AdminStatsBar stats={adminStats} />
 
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between border-l-4 border-(--beheer-active) pl-4 py-1">
-                        <h2 className="text-sm font-semibold text-(--beheer-text) flex items-center gap-3">
+                    <div className="flex items-center justify-between border-l-4 border-(--beheer-active) py-1 pl-4">
+                        <h2 className="flex items-center gap-3 text-sm font-semibold text-(--beheer-text)">
                             Coupons
-                            <span className="px-2.5 py-0.5 rounded-full bg-(--beheer-active)/10 text-(--beheer-active) text-xs font-semibold border border-(--beheer-active)/20">
+                            <span className="rounded-full border border-(--beheer-active)/20 bg-(--beheer-active)/10 px-2.5 py-0.5 text-xs font-semibold text-(--beheer-active)">
                                 {validCoupons.length}
                             </span>
                         </h2>
                     </div>
 
                     <div
-                        className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-xl transition-all"
+                        className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl transition-all"
                     >
                         {validCoupons.length === 0 ? (
                             <div className="py-24 text-center">
-                                <Ticket className="h-12 w-12 text-(--beheer-text-muted) mx-auto mb-4 opacity-10" />
-                                <p className="font-semibold text-sm text-(--beheer-text-muted)">Geen coupons gevonden</p>
+                                <Ticket className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-10" />
+                                <p className="text-sm font-semibold text-(--beheer-text-muted)">Geen coupons gevonden</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-(--beheer-card-soft) border-b border-(--beheer-border)">
+                                    <thead className="border-b border-(--beheer-border) bg-(--beheer-card-soft)">
                                         <tr>
                                             <th className="px-8 py-5 text-xs font-semibold text-(--beheer-text-muted)">Code</th>
                                             <th className="px-8 py-5 text-xs font-semibold text-(--beheer-text-muted)">Korting</th>
-                                            <th className="px-8 py-5 text-xs font-semibold text-(--beheer-text-muted) hidden sm:table-cell">Gebruik</th>
-                                            <th className="px-8 py-5 text-xs font-semibold text-(--beheer-text-muted) hidden lg:table-cell">Geldigheid</th>
+                                            <th className="hidden px-8 py-5 text-xs font-semibold text-(--beheer-text-muted) sm:table-cell">Gebruik</th>
+                                            <th className="hidden px-8 py-5 text-xs font-semibold text-(--beheer-text-muted) lg:table-cell">Geldigheid</th>
                                             <th className="px-8 py-5 text-center text-xs font-semibold text-(--beheer-text-muted)">Status</th>
                                             <th className="px-8 py-5 text-right text-xs font-semibold text-(--beheer-text-muted)">Acties</th>
                                         </tr>
@@ -207,21 +207,21 @@ export default function CouponManagementIsland({
                 <div className="mt-12 space-y-4">
                     <button
                         onClick={() => setShowExpired(!showExpired)}
-                        className="beheer-button flex items-center gap-4 text-(--beheer-text-muted) hover:text-(--beheer-text) transition-all group cursor-pointer border-l-4 border-slate-500 pl-4 py-1"
+                        className="group beheer-button flex cursor-pointer items-center gap-4 border-l-4 border-slate-500 py-1 pl-4 text-(--beheer-text-muted) transition-all hover:text-(--beheer-text)"
                     >
-                        <h2 className="text-sm font-semibold flex items-center gap-3">
-                            {showExpired ? <ToggleRight className="h-5 w-5 text-(--beheer-accent)" /> : <ToggleLeft className="h-5 w-5" />}
+                        <h2 className="flex items-center gap-3 text-sm font-semibold">
+                            {showExpired ? <ToggleRight className="size-5 text-(--beheer-accent)" /> : <ToggleLeft className="size-5" />}
                             Verlopen Coupons
-                            <span className="px-2.5 py-0.5 rounded-full bg-slate-500/10 text-slate-500 text-xs font-semibold border border-slate-500/20">
+                            <span className="rounded-full border border-slate-500/20 bg-slate-500/10 px-2.5 py-0.5 text-xs font-semibold text-slate-500">
                                 {inactiveCoupons.length}
                             </span>
                         </h2>
                     </button>
 
                     {showExpired && (
-                        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden opacity-80 shadow-lg transition-all">
+                        <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) opacity-80 shadow-lg transition-all">
                             {inactiveCoupons.length === 0 ? (
-                                <div className="py-12 text-center text-(--beheer-text-muted) italic text-xs font-semibold">
+                                <div className="py-12 text-center text-xs font-semibold text-(--beheer-text-muted) italic">
                                     Niets gevonden
                                 </div>
                             ) : (

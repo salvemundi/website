@@ -68,15 +68,15 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingI
 
     return (
         <div>
-            <div className="flex flex-col sm:flex-row gap-3 mb-8">
-                <div className="flex-1 flex items-center gap-3 px-4 py-2.5 rounded-(--beheer-radius) bg-(--bg-main)/40 dark:bg-black/20 backdrop-blur-sm ring-1 ring-(--beheer-border)/40 focus-within:ring-2 focus-within:ring-(--beheer-accent) focus-within:bg-(--bg-main)/80 transition-all shadow-inner">
-                    <Search className="h-4 w-4 shrink-0 text-(--beheer-text-muted)" />
+            <div className="mb-8 flex flex-col gap-3 sm:flex-row">
+                <div className="flex flex-1 items-center gap-3 rounded-(--beheer-radius) bg-(--bg-main)/40 px-4 py-2.5 shadow-inner ring-1 ring-(--beheer-border)/40 backdrop-blur-sm transition-all focus-within:bg-(--bg-main)/80 focus-within:ring-2 focus-within:ring-(--beheer-accent) dark:bg-black/20">
+                    <Search className="size-4 shrink-0 text-(--beheer-text-muted)" />
                     <input
                         type="text"
                         placeholder="Zoek op naam, email of telefoon..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="beheer-input bg-transparent border-none p-0 w-full text-(--beheer-text) text-sm font-semibold outline-none placeholder:text-(--beheer-text-muted)/40"
+                        className="beheer-input w-full border-none bg-transparent p-0 text-sm font-semibold text-(--beheer-text) outline-none placeholder:text-(--beheer-text-muted)/40"
                     />
                 </div>
                 <div className="flex gap-2">
@@ -89,15 +89,15 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingI
             {filtered.length === 0 ? (
                 <EmptyState icon={Users} text="Nog geen aanmeldingen binnengekomen" />
             ) : (
-                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-2xl transition-all">
+                <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-2xl transition-all">
                     <table className="w-full text-sm">
-                        <thead className="bg-(--beheer-card-soft) border-b border-(--beheer-border)">
+                        <thead className="border-b border-(--beheer-border) bg-(--beheer-card-soft)">
                             <tr>
-                                <th className="px-8 py-5 text-left text-xs font-semibold text-(--beheer-text-muted) w-20">Status</th>
-                                <th className="px-8 py-5 text-left text-xs font-semibold text-(--beheer-text-muted) w-1/4">Naam</th>
-                                <th className="px-8 py-5 text-left text-xs font-semibold text-(--beheer-text-muted) hidden sm:table-cell">Email</th>
-                                <th className="px-8 py-5 text-left text-xs font-semibold text-(--beheer-text-muted) hidden md:table-cell w-48">Telefoon</th>
-                                <th className="px-8 py-5 text-right text-xs font-semibold text-(--beheer-text-muted) w-48">Acties</th>
+                                <th className="w-20 px-8 py-5 text-left text-xs font-semibold text-(--beheer-text-muted)">Status</th>
+                                <th className="w-1/4 px-8 py-5 text-left text-xs font-semibold text-(--beheer-text-muted)">Naam</th>
+                                <th className="hidden px-8 py-5 text-left text-xs font-semibold text-(--beheer-text-muted) sm:table-cell">Email</th>
+                                <th className="hidden w-48 px-8 py-5 text-left text-xs font-semibold text-(--beheer-text-muted) md:table-cell">Telefoon</th>
+                                <th className="w-48 px-8 py-5 text-right text-xs font-semibold text-(--beheer-text-muted)">Acties</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-(--beheer-border)/10">
@@ -107,36 +107,36 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingI
                                     <Fragment key={s.id}>
                                         <tr
                                             onClick={() => toggleExpand(s.id)}
-                                            className="hover:bg-(--beheer-accent)/2 cursor-pointer transition-colors group"
+                                            className="group cursor-pointer transition-colors hover:bg-(--beheer-accent)/2"
                                         >
                                             <td className="px-8 py-5">
-                                                <div className={`h-2.5 w-2.5 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)] transition-all ${s.approved ? 'bg-emerald-500 shadow-emerald-500/40' : 'bg-(--beheer-border) opacity-30'}`} />
+                                                <div className={`size-2.5 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)] transition-all ${s.approved ? 'bg-emerald-500 shadow-emerald-500/40' : 'bg-(--beheer-border) opacity-30'}`} />
                                             </td>
                                             <td className="px-8 py-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="text-sm font-semibold text-(--beheer-text) group-hover:text-(--beheer-accent) transition-colors">
+                                                    <div className="text-sm font-semibold text-(--beheer-text) transition-colors group-hover:text-(--beheer-accent)">
                                                         {s.first_name} {s.last_name}
                                                     </div>
                                                     {s.approved && (
-                                                        <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-emerald-500/20">
+                                                        <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500">
                                                             Goedgekeurd
                                                         </span>
                                                     )}
                                                     {s.status === 'approved' && !s.approved && (
-                                                        <span className="bg-green-500/10 text-green-500 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-green-500/20">
+                                                        <span className="rounded-full border border-green-500/20 bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-green-500">
                                                             Lid
                                                         </span>
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-5 text-(--beheer-text-muted) text-xs font-medium hidden sm:table-cell opacity-60">
+                                            <td className="hidden px-8 py-5 text-xs font-medium text-(--beheer-text-muted) opacity-60 sm:table-cell">
                                                 {s.email || '-'}
                                             </td>
-                                            <td className="px-8 py-5 text-(--beheer-text-muted) text-xs font-medium hidden md:table-cell">
+                                            <td className="hidden px-8 py-5 text-xs font-medium text-(--beheer-text-muted) md:table-cell">
                                                 {formatPhoneNumber(s.phone_number) || '-'}
                                             </td>
                                             <td className="px-12 py-5 text-right">
-                                                <div className="flex justify-end items-center gap-3">
+                                                <div className="flex items-center justify-end gap-3">
                                                     <ActionButton
                                                         icon={Edit}
                                                         onClick={(e) => startEdit(e, s)}
@@ -152,8 +152,8 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingI
                                                         disabled={deletingId === s.id}
                                                         title="Verwijderen"
                                                     />
-                                                    <div className="text-(--beheer-text-muted) p-2 group-hover:text-(--beheer-accent) transition-colors">
-                                                        <ChevronDown className="h-4 w-4 transition-transform duration-300" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                                                    <div className="p-2 text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-accent)">
+                                                        <ChevronDown className="size-4 transition-transform duration-300" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                                                     </div>
                                                 </div>
                                             </td>
@@ -161,8 +161,8 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingI
                                         {isExpanded && (
                                             <tr className="bg-(--beheer-card-soft)/30">
                                                 <td colSpan={5} className="px-12 py-10">
-                                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-sm font-medium text-(--beheer-text-muted)">
-                                                        <div className="lg:col-span-2 space-y-8">
+                                                    <div className="grid grid-cols-1 gap-12 text-sm font-medium text-(--beheer-text-muted) lg:grid-cols-3">
+                                                        <div className="space-y-8 lg:col-span-2">
                                                             {editingId === s.id ? (
                                                                 <div className="space-y-6">
                                                                     <div className="flex items-center justify-between">
@@ -172,25 +172,25 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingI
                                                                             <Button onClick={() => setEditingId(null)} variant="ghost" icon={X}>Annuleren</Button>
                                                                         </div>
                                                                     </div>
-                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                                                         <div className="flex flex-col gap-2">
-                                                                            <span className="opacity-50 text-[9px]">Voornaam</span>
-                                                                            <input type="text" value={editData.first_name || ''} onChange={e => setEditData({ ...editData, first_name: e.target.value })} className="beheer-input bg-(--beheer-card-bg) border border-(--beheer-border) rounded-lg px-3 py-2 text-(--beheer-text) text-xs font-semibold focus:ring-2 focus:ring-(--beheer-accent) outline-none" />
+                                                                            <span className="text-[9px] opacity-50">Voornaam</span>
+                                                                            <input type="text" value={editData.first_name || ''} onChange={e => setEditData({ ...editData, first_name: e.target.value })} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
                                                                         </div>
                                                                         <div className="flex flex-col gap-2">
-                                                                            <span className="opacity-50 text-[9px]">Achternaam</span>
-                                                                            <input type="text" value={editData.last_name || ''} onChange={e => setEditData({ ...editData, last_name: e.target.value })} className="beheer-input bg-(--beheer-card-bg) border border-(--beheer-border) rounded-lg px-3 py-2 text-(--beheer-text) text-xs font-semibold focus:ring-2 focus:ring-(--beheer-accent) outline-none" />
+                                                                            <span className="text-[9px] opacity-50">Achternaam</span>
+                                                                            <input type="text" value={editData.last_name || ''} onChange={e => setEditData({ ...editData, last_name: e.target.value })} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
                                                                         </div>
                                                                         <div className="flex flex-col gap-2">
-                                                                            <span className="opacity-50 text-[9px]">Email</span>
-                                                                            <input type="email" value={editData.email || ''} onChange={e => setEditData({ ...editData, email: e.target.value })} className="beheer-input bg-(--beheer-card-bg) border border-(--beheer-border) rounded-lg px-3 py-2 text-(--beheer-text) text-xs font-semibold focus:ring-2 focus:ring-(--beheer-accent) outline-none" />
+                                                                            <span className="text-[9px] opacity-50">Email</span>
+                                                                            <input type="email" value={editData.email || ''} onChange={e => setEditData({ ...editData, email: e.target.value })} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
                                                                         </div>
                                                                         <div className="flex flex-col gap-2">
-                                                                            <span className="opacity-50 text-[9px]">Telefoon</span>
+                                                                            <span className="text-[9px] opacity-50">Telefoon</span>
                                                                             <PhoneInput
                                                                                 value={editData.phone_number || ''}
                                                                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setEditData({ ...editData, phone_number: e.target.value })}
-                                                                                className="beheer-input bg-(--beheer-card-bg) border border-(--beheer-border) rounded-lg px-3 py-2 text-(--beheer-text) text-xs font-semibold focus:ring-2 focus:ring-(--beheer-accent) outline-none"
+                                                                                className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)"
                                                                             />
                                                                         </div>
                                                                     </div>
@@ -203,20 +203,20 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingI
                                                                             Bewerken
                                                                         </Button>
                                                                     </div>
-                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                                                         {s.date_of_birth && (
                                                                             <div className="flex flex-col gap-1">
                                                                                 <span className="opacity-50">Geboortedatum</span>
-                                                                                <span className="text-(--beheer-text) text-sm font-semibold">{formatDate(s.date_of_birth)}</span>
+                                                                                <span className="text-sm font-semibold text-(--beheer-text)">{formatDate(s.date_of_birth)}</span>
                                                                             </div>
                                                                         )}
                                                                         <div className="flex flex-col gap-1">
                                                                             <span className="opacity-50">Aangemeld op</span>
-                                                                            <span className="text-(--beheer-text) text-sm font-semibold">{s.created_at ? formatDate(s.created_at) : '-'}</span>
+                                                                            <span className="text-sm font-semibold text-(--beheer-text)">{s.created_at ? formatDate(s.created_at) : '-'}</span>
                                                                         </div>
                                                                         <div className="flex flex-col gap-1">
                                                                             <span className="opacity-50">Status</span>
-                                                                            <span className="text-(--beheer-text) text-sm font-semibold">
+                                                                            <span className="text-sm font-semibold text-(--beheer-text)">
                                                                                 {s.status === 'approved' ? 'Goedgekeurd' : 'Geregistreerd'}
                                                                             </span>
                                                                         </div>

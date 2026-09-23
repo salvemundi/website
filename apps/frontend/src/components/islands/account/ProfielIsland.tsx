@@ -66,8 +66,8 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
     }, [optimisticUser]);
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-            <div className="md:col-span-12 lg:col-span-4 flex flex-col gap-6">
+        <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-12">
+            <div className="flex flex-col gap-6 md:col-span-12 lg:col-span-4">
                 <ProfielHeader
                     user={{
                         ...optimisticUser,
@@ -93,7 +93,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
                 />
             </div>
 
-            <div className="md:col-span-12 lg:col-span-8 flex flex-col gap-6">
+            <div className="flex flex-col gap-6 md:col-span-12 lg:col-span-8">
                 <ProfielDetails
                     user={optimisticUser}
                     isEditingPhoneNumber={isEditingPhoneNumber}

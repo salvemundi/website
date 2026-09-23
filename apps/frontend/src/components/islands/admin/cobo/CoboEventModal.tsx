@@ -102,9 +102,9 @@ export default function CoboEventModal({
                 <div className="space-y-2">
                     <label
                         htmlFor="cobo-title"
-                        className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-2"
+                        className="flex items-center gap-2 text-xs font-bold tracking-wider text-text-muted uppercase"
                     >
-                        <Sparkles className="h-4 w-4 text-purple-500 dark:text-purple-400 shrink-0" />
+                        <Sparkles className="size-4 shrink-0 text-purple-500 dark:text-purple-400" />
                         <span>Titel / Bestuursjaar *</span>
                     </label>
                     <input
@@ -115,17 +115,17 @@ export default function CoboEventModal({
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="Bijv. CoBo 2026 of CoBo Bestuur VIII"
                         required
-                        className="beheer-input w-full min-h-11 px-4 py-2.5 bg-bg-soft rounded-xl border border-border-color focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none text-sm text-text-main font-medium transition-all"
+                        className="min-h-11 beheer-input w-full rounded-xl border border-border-color bg-bg-soft px-4 py-2.5 text-sm font-medium text-text-main transition-all focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
                     />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                         <label
                             htmlFor="cobo-date"
-                            className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-2"
+                            className="flex items-center gap-2 text-xs font-bold tracking-wider text-text-muted uppercase"
                         >
-                            <Calendar className="h-4 w-4 text-purple-500 dark:text-purple-400 shrink-0" />
+                            <Calendar className="size-4 shrink-0 text-purple-500 dark:text-purple-400" />
                             <span>Datum &amp; Aanvangstijd</span>
                         </label>
                         <input
@@ -134,16 +134,16 @@ export default function CoboEventModal({
                             type="datetime-local"
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
-                            className="beheer-input w-full min-h-11 px-4 py-2.5 bg-bg-soft rounded-xl border border-border-color focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none text-sm text-text-main font-medium transition-all"
+                            className="min-h-11 beheer-input w-full rounded-xl border border-border-color bg-bg-soft px-4 py-2.5 text-sm font-medium text-text-main transition-all focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
                         />
                     </div>
 
                     <div className="space-y-2">
                         <label
                             htmlFor="cobo-location"
-                            className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-2"
+                            className="flex items-center gap-2 text-xs font-bold tracking-wider text-text-muted uppercase"
                         >
-                            <MapPin className="h-4 w-4 text-purple-500 dark:text-purple-400 shrink-0" />
+                            <MapPin className="size-4 shrink-0 text-purple-500 dark:text-purple-400" />
                             <span>Locatie</span>
                         </label>
                         <input
@@ -153,7 +153,7 @@ export default function CoboEventModal({
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
                             placeholder="Bijv. Borrelbar Eindhoven"
-                            className="beheer-input w-full min-h-11 px-4 py-2.5 bg-bg-soft rounded-xl border border-border-color focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none text-sm text-text-main font-medium transition-all"
+                            className="min-h-11 beheer-input w-full rounded-xl border border-border-color bg-bg-soft px-4 py-2.5 text-sm font-medium text-text-main transition-all focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
                         />
                     </div>
                 </div>
@@ -161,9 +161,9 @@ export default function CoboEventModal({
                 <div className="space-y-2">
                     <label
                         htmlFor="cobo-description"
-                        className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-2"
+                        className="flex items-center gap-2 text-xs font-bold tracking-wider text-text-muted uppercase"
                     >
-                        <FileText className="h-4 w-4 text-purple-500 dark:text-purple-400 shrink-0" />
+                        <FileText className="size-4 shrink-0 text-purple-500 dark:text-purple-400" />
                         <span>Algemene Informatie / Uitnodigingstekst</span>
                     </label>
                     <textarea
@@ -173,25 +173,25 @@ export default function CoboEventModal({
                         onChange={(e) => setDescription(e.target.value)}
                         rows={4}
                         placeholder="Toelichting of welkomstboodschap voor de bezoekende besturen..."
-                        className="beheer-input w-full min-h-24 px-4 py-3 bg-bg-soft rounded-xl border border-border-color focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none text-sm text-text-main font-medium resize-y transition-all"
+                        className="min-h-24 beheer-input w-full resize-y rounded-xl border border-border-color bg-bg-soft px-4 py-3 text-sm font-medium text-text-main transition-all focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
                     />
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-border-color/60">
+                <div className="flex items-center justify-end gap-3 border-t border-border-color/60 pt-4">
                     <button
                         type="button"
                         onClick={onClose}
                         disabled={isPending}
-                        className="beheer-button min-h-11 px-5 py-2.5 rounded-xl border border-border-color text-text-muted text-sm font-semibold hover:bg-bg-soft hover:text-text-main transition-colors cursor-pointer disabled:opacity-50"
+                        className="beheer-button min-h-11 cursor-pointer rounded-xl border border-border-color px-5 py-2.5 text-sm font-semibold text-text-muted transition-colors hover:bg-bg-soft hover:text-text-main disabled:opacity-50"
                     >
                         Annuleren
                     </button>
                     <button
                         type="submit"
                         disabled={isPending}
-                        className="beheer-button min-h-11 px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                        className="beheer-button flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl bg-purple-600 px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-purple-700 hover:shadow-lg disabled:opacity-50"
                     >
-                        {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                        {isPending && <Loader2 className="size-4 animate-spin" />}
                         <span>{eventToEdit ? 'Wijzigingen Opslaan' : 'CoBo Aanmaken'}</span>
                     </button>
                 </div>

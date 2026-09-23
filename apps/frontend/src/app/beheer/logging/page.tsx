@@ -43,20 +43,20 @@ export default async function AuditLoggingPage() {
             title="Audit & Logboek"
             backHref="/beheer"
             actions={
-                <div className="flex items-center gap-4 bg-(--beheer-card-soft) px-4 py-2 rounded-2xl border border-(--beheer-border)/50 shadow-sm">
+                <div className="flex items-center gap-4 rounded-2xl border border-(--beheer-border)/50 bg-(--beheer-card-soft) px-4 py-2 shadow-sm">
                     <div className="flex flex-col items-center px-2">
-                        <span className="text-[10px] font-semibold text-(--beheer-text-muted) leading-none mb-1">Wachtrij</span>
-                        <span className="text-sm font-bold text-(--beheer-text) leading-none">{initialData.signups.length}</span>
+                        <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Wachtrij</span>
+                        <span className="text-sm leading-none font-bold text-(--beheer-text)">{initialData.signups.length}</span>
                     </div>
-                    <div className="w-px h-6 bg-(--beheer-border)/20" />
+                    <div className="h-6 w-px bg-(--beheer-border)/20" />
                     <div className="flex flex-col items-center px-2">
-                        <span className="text-[10px] font-semibold text-(--beheer-text-muted) leading-none mb-1">Commissie</span>
-                        <span className="text-sm font-bold text-(--beheer-text) leading-none">{initialData.adminLogsTotal}</span>
+                        <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Commissie</span>
+                        <span className="text-sm leading-none font-bold text-(--beheer-text)">{initialData.adminLogsTotal}</span>
                     </div>
-                    <div className="w-px h-6 bg-(--beheer-border)/20" />
+                    <div className="h-6 w-px bg-(--beheer-border)/20" />
                     <div className="flex flex-col items-center px-2">
-                        <span className="text-[10px] font-semibold text-(--beheer-text-muted) leading-none mb-1">Systeem</span>
-                        <span className="text-sm font-bold text-(--beheer-text) leading-none">{initialData.systemLogsTotal}</span>
+                        <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Systeem</span>
+                        <span className="text-sm leading-none font-bold text-(--beheer-text)">{initialData.systemLogsTotal}</span>
                     </div>
                 </div>
             }

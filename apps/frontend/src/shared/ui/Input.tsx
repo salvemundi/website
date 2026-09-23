@@ -23,7 +23,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
         <input
             ref={ref}
             id={inputId}
-            className={`form-input ${isError ? 'border-theme-error ring-1 ring-theme-error' : ''} ${className}`}
+            className={`form-input ${isError ? 'border-theme-error ring-theme-error ring-1' : ''} ${className}`}
             {...props}
             autoComplete={autoComplete}
             suppressHydrationWarning={suppressHydrationWarning}

@@ -29,40 +29,40 @@ interface Props {
 
 export default function ReisActivitySignupsModal({ activityName, options, signups, loading, onClose }: Props) {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md">
-            <div className="bg-(--beheer-card-bg)/90 backdrop-blur-xl w-full max-w-4xl rounded-4xl shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-(--beheer-border)/50 flex flex-col max-h-[90vh]">
-                <div className="p-8 border-b border-(--beheer-border) flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md sm:p-6">
+            <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-4xl border border-(--beheer-border)/50 bg-(--beheer-card-bg)/90 shadow-[0_40px_100px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+                <div className="flex items-center justify-between border-b border-(--beheer-border) p-8">
                     <div className="space-y-1">
-                        <h2 className="text-xl font-semibold text-(--beheer-text) tracking-tight flex items-center gap-3">
-                            <div className="p-2.5 bg-(--beheer-accent)/10 rounded-xl text-(--beheer-accent)">
-                                <Users className="h-6 w-6" />
+                        <h2 className="flex items-center gap-3 text-xl font-semibold tracking-tight text-(--beheer-text)">
+                            <div className="rounded-xl bg-(--beheer-accent)/10 p-2.5 text-(--beheer-accent)">
+                                <Users className="size-6" />
                             </div>
                             Inschrijvingen
                         </h2>
-                        <p className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-60 ml-14">{activityName}</p>
+                        <p className="ml-14 text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">{activityName}</p>
                     </div>
-                    <button onClick={onClose} className="icon-button p-4 bg-(--beheer-card-soft) hover:bg-(--beheer-card-soft)/80 text-(--beheer-text-muted) hover:text-(--beheer-text) transition-all rounded-2xl active:scale-90 group">
-                        <X className="h-6 w-6" />
+                    <button onClick={onClose} className="group icon-button rounded-2xl bg-(--beheer-card-soft) p-4 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-card-soft)/80 hover:text-(--beheer-text) active:scale-90">
+                        <X className="size-6" />
                     </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-8">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-24">
-                            <Loader2 className="animate-spin h-12 w-12 text-(--beheer-accent) mb-4 opacity-50" />
+                            <Loader2 className="mb-4 size-12 animate-spin text-(--beheer-accent) opacity-50" />
                             <p className="text-[10px] font-semibold text-(--beheer-text-muted)">Data laden...</p>
                         </div>
                     ) : signups.length === 0 ? (
-                        <div className="text-center py-24 bg-(--bg-main)/30 rounded-3xl border-2 border-dashed border-(--beheer-border)/20">
-                            <div className="h-20 w-20 bg-(--beheer-card-soft)/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <Users className="h-10 w-10 text-(--beheer-text-muted) opacity-20" />
+                        <div className="rounded-3xl border-2 border-dashed border-(--beheer-border)/20 bg-(--bg-main)/30 py-24 text-center">
+                            <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-full bg-(--beheer-card-soft)/50">
+                                <Users className="size-10 text-(--beheer-text-muted) opacity-20" />
                             </div>
                             <p className="text-sm font-semibold tracking-tight text-(--beheer-text-muted)">Nog geen inschrijvingen voor deze activiteit.</p>
                         </div>
                     ) : (
-                        <div className="border border-(--beheer-border)/50 rounded-3xl overflow-hidden shadow-sm">
+                        <div className="overflow-hidden rounded-3xl border border-(--beheer-border)/50 shadow-sm">
                             <table className="w-full text-left">
-                                <thead className="bg-(--beheer-card-soft)/50 border-b border-(--beheer-border)">
+                                <thead className="border-b border-(--beheer-border) bg-(--beheer-card-soft)/50">
                                     <tr className="text-[10px] font-semibold text-(--beheer-text-muted)">
                                         <th className="px-8 py-5">Reiziger</th>
                                         <th className="px-8 py-5">Contact</th>
@@ -71,13 +71,13 @@ export default function ReisActivitySignupsModal({ activityName, options, signup
                                 </thead>
                                 <tbody className="divide-y divide-(--beheer-border)/10">
                                     {signups.map((s) => (
-                                        <tr key={s.id} className="hover:bg-(--beheer-accent)/2 transition-colors">
+                                        <tr key={s.id} className="transition-colors hover:bg-(--beheer-accent)/2">
                                             <td className="px-8 py-6">
-                                                <div className="text-sm font-semibold text-(--beheer-text) tracking-tight">
+                                                <div className="text-sm font-semibold tracking-tight text-(--beheer-text)">
                                                     {s.trip_signup_id ? `${s.trip_signup_id.first_name} ${s.trip_signup_id.last_name}` : 'Onbekend'}
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6 text-xs text-(--beheer-text-muted) font-medium lowercase">{s.trip_signup_id?.email || '-'}</td>
+                                            <td className="px-8 py-6 text-xs font-medium text-(--beheer-text-muted) lowercase">{s.trip_signup_id?.email || '-'}</td>
                                             <td className="px-8 py-6">
                                                 {(() => {
                                                     const rawSelected = parseSelectedOptions(s.selected_options);
@@ -86,13 +86,13 @@ export default function ReisActivitySignupsModal({ activityName, options, signup
                                                         .filter(([, isSelected]) => isSelected)
                                                         .map(([id]) => id);
                                                     if (selectedIds.length === 0) {
-                                                        return <span className="text-(--beheer-text-muted) italic text-[10px] opacity-40">Geen opties</span>;
+                                                        return <span className="text-[10px] text-(--beheer-text-muted) italic opacity-40">Geen opties</span>;
                                                     }
 
                                                     return (
                                                         <div className="flex flex-wrap gap-2">
                                                             {selectedIds.map((optId, i) => (
-                                                                <span key={i} className="px-3 py-1 bg-(--beheer-accent)/5 text-(--beheer-accent) text-[9px] font-semibold tracking-tight rounded-lg border border-(--beheer-accent)/10">
+                                                                <span key={i} className="rounded-lg border border-(--beheer-accent)/10 bg-(--beheer-accent)/5 px-3 py-1 text-[9px] font-semibold tracking-tight text-(--beheer-accent)">
                                                                     {mapActivityOptionIdToName(optId, metaOptions)}
                                                                 </span>
                                                             ))}
@@ -103,7 +103,7 @@ export default function ReisActivitySignupsModal({ activityName, options, signup
                                         </tr>
                                     ))}
                                 </tbody>
-                                <tfoot className="bg-(--beheer-card-soft)/20 border-t border-(--beheer-border)/50">
+                                <tfoot className="border-t border-(--beheer-border)/50 bg-(--beheer-card-soft)/20">
                                     <tr>
                                         <td colSpan={3} className="px-8 py-5 text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">
                                             Totaal: {signups.length} {signups.length === 1 ? 'aanmelding' : 'aanmeldingen'}
@@ -115,10 +115,10 @@ export default function ReisActivitySignupsModal({ activityName, options, signup
                     )}
                 </div>
 
-                <div className="p-8 border-t border-(--beheer-border)/50 bg-(--beheer-card-soft)/20 flex justify-end">
+                <div className="flex justify-end border-t border-(--beheer-border)/50 bg-(--beheer-card-soft)/20 p-8">
                     <button
                         onClick={onClose}
-                        className="beheer-button px-10 py-4 bg-(--beheer-accent) text-white rounded-xl font-semibold text-[10px] shadow-xl transition-all hover:opacity-90 active:scale-95 border border-white/10"
+                        className="beheer-button rounded-xl border border-white/10 bg-(--beheer-accent) px-10 py-4 text-[10px] font-semibold text-white shadow-xl transition-all hover:opacity-90 active:scale-95"
                     >
                         Venster Sluiten
                     </button>

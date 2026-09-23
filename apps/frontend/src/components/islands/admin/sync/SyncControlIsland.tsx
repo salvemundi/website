@@ -25,18 +25,18 @@ export default function SyncControlIsland() {
     ];
 
     return (
-        <div className={`flex flex-col gap-6 mb-8 ${isBusy ? 'opacity-70 pointer-events-none' : ''}`}>
-            <div className="bg-(--beheer-card-bg) p-6 rounded-(--beheer-radius) border border-(--beheer-border) shadow-sm">
-                <div className="flex items-center gap-4 mb-6">
-                    <div className="p-2.5 bg-(--beheer-accent)/10 rounded-xl text-(--beheer-accent)">
-                        <RefreshCw className="h-5 w-5" />
+        <div className={`mb-8 flex flex-col gap-6 ${isBusy ? 'pointer-events-none opacity-70' : ''}`}>
+            <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
+                <div className="mb-6 flex items-center gap-4">
+                    <div className="rounded-xl bg-(--beheer-accent)/10 p-2.5 text-(--beheer-accent)">
+                        <RefreshCw className="size-5" />
                     </div>
-                    <h3 className="text-lg font-semibold text-(--beheer-text) tracking-tight">Volledige Sync</h3>
+                    <h3 className="text-lg font-semibold tracking-tight text-(--beheer-text)">Volledige Sync</h3>
                 </div>
 
                 <div className="space-y-6">
                     <div>
-                        <label className="text-xs font-semibold text-(--beheer-text-muted) mb-3 block">Velden om te synchroniseren</label>
+                        <label className="mb-3 block text-xs font-semibold text-(--beheer-text-muted)">Velden om te synchroniseren</label>
                         <div className="flex flex-wrap gap-2">
                             {syncFieldOptions.map((field: { id: string; label: string }) => {
                                 const isSelected = selectedSyncFields.includes(field.id);
@@ -45,10 +45,10 @@ export default function SyncControlIsland() {
                                         key={field.id}
                                         onClick={() => toggleField(field.id)}
                                         disabled={isBusy}
-                                        className={`beheer-button px-3.5 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                                        className={`beheer-button rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all ${
                                             isSelected 
-                                                ? 'bg-(--beheer-accent) text-white border-(--beheer-accent) shadow-sm' 
-                                                : 'bg-(--beheer-card-bg) text-(--beheer-text-muted) border-(--beheer-border)/50 hover:border-(--beheer-accent)/30 hover:text-(--beheer-text)'
+                                                ? 'border-(--beheer-accent) bg-(--beheer-accent) text-white shadow-sm' 
+                                                : 'border-(--beheer-border)/50 bg-(--beheer-card-bg) text-(--beheer-text-muted) hover:border-(--beheer-accent)/30 hover:text-(--beheer-text)'
                                         }`}
                                     >
                                         {field.label}
@@ -58,42 +58,42 @@ export default function SyncControlIsland() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-2.5 pt-4 border-t border-(--beheer-border)/50">
+                    <div className="grid grid-cols-1 gap-2.5 border-t border-(--beheer-border)/50 pt-4">
                         {toggles.map((item, idx) => (
                             <button
                                 key={idx}
                                 onClick={() => item.setValue(!item.value)}
                                 disabled={isBusy}
-                                className={`beheer-button flex items-center justify-between p-3.5 rounded-xl border transition-all ${item.value ? 'border-(--beheer-accent) bg-(--beheer-card-soft)' : 'border-(--beheer-border) bg-(--beheer-card-bg) hover:border-(--beheer-accent)/30 group'}`}
+                                className={`beheer-button flex items-center justify-between rounded-xl border p-3.5 transition-all ${item.value ? 'border-(--beheer-accent) bg-(--beheer-card-soft)' : 'group border-(--beheer-border) bg-(--beheer-card-bg) hover:border-(--beheer-accent)/30'}`}
                             >
                                 <span className={`text-[11px] font-semibold transition-colors ${item.value ? 'text-(--beheer-text)' : 'text-(--beheer-text-muted) group-hover:text-(--beheer-text)'}`}>
                                     {item.label}
                                 </span>
-                                <div className={`h-4 w-8 rounded-full relative transition-all ${item.value ? 'bg-(--beheer-accent)' : 'bg-slate-300 dark:bg-slate-700'}`}>
-                                    <div className={`absolute top-1 w-2 h-2 rounded-full bg-white transition-all ${item.value ? 'right-1' : 'left-1'}`} />
+                                <div className={`relative h-4 w-8 rounded-full transition-all ${item.value ? 'bg-(--beheer-accent)' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                                    <div className={`absolute top-1 size-2 rounded-full bg-white transition-all ${item.value ? 'right-1' : 'left-1'}`} />
                                 </div>
                             </button>
                         ))}
                     </div>
 
-                    <div className="pt-4 flex flex-col gap-3">
+                    <div className="flex flex-col gap-3 pt-4">
                         {status?.active ? (
                             <>
                                 <button
                                     onClick={() => { void handleStopSync(); }}
                                     disabled={isStopping || status.abortRequested}
-                                    className="beheer-button w-full flex items-center justify-center gap-2 py-3.5 bg-(--beheer-inactive) text-white rounded-xl font-semibold text-xs shadow-md hover:scale-[1.01] active:scale-95 disabled:opacity-50 transition-all"
+                                    className="hover:scale-1.01 beheer-button flex w-full items-center justify-center gap-2 rounded-xl bg-(--beheer-inactive) py-3.5 text-xs font-semibold text-white shadow-md transition-all active:scale-95 disabled:opacity-50"
                                 >
-                                    <X className={`h-4 w-4 ${isStopping ? 'animate-spin' : ''}`} />
+                                    <X className={`size-4 ${isStopping ? 'animate-spin' : ''}`} />
                                     {status.abortRequested ? 'Afbreken aangevraagd...' : 'Synchronisatie Stoppen'}
                                 </button>
                                 {status.abortRequested && (
                                     <button
                                         onClick={() => { void handleResetSync(); }}
                                         disabled={isResetting}
-                                        className="beheer-button w-full flex items-center justify-center gap-2 py-2 text-[11px] text-(--beheer-inactive) font-semibold hover:underline disabled:opacity-50"
+                                        className="beheer-button flex w-full items-center justify-center gap-2 py-2 text-[11px] font-semibold text-(--beheer-inactive) hover:underline disabled:opacity-50"
                                     >
-                                        <RefreshCw className={`h-3 w-3 ${isResetting ? 'animate-spin' : ''}`} />
+                                        <RefreshCw className={`size-3 ${isResetting ? 'animate-spin' : ''}`} />
                                         Forceer Reset (Emergency)
                                     </button>
                                 )}
@@ -102,9 +102,9 @@ export default function SyncControlIsland() {
                             <button
                                 onClick={() => { void handleFullSync(); }}
                                 disabled={isStartingSync || !!status?.error}
-                                className="beheer-button w-full flex items-center justify-center gap-2 py-3.5 bg-(--beheer-accent) text-white rounded-xl font-semibold text-xs shadow-md hover:scale-[1.01] active:scale-95 disabled:opacity-50 transition-all"
+                                className="hover:scale-1.01 beheer-button flex w-full items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) py-3.5 text-xs font-semibold text-white shadow-md transition-all active:scale-95 disabled:opacity-50"
                             >
-                                <RefreshCw className={`h-4 w-4 ${isStartingSync ? 'animate-spin' : ''}`} />
+                                <RefreshCw className={`size-4 ${isStartingSync ? 'animate-spin' : ''}`} />
                                 Start Volledige Synchronisatie
                             </button>
                         )}
@@ -112,15 +112,15 @@ export default function SyncControlIsland() {
                 </div>
             </div>
 
-            <div className="bg-(--beheer-card-bg) p-6 rounded-(--beheer-radius) border border-(--beheer-border) shadow-sm">
-                <div className="flex items-center gap-4 mb-6">
-                    <div className="p-2.5 bg-(--beheer-accent)/10 rounded-xl text-(--beheer-accent)">
-                        <Info className="h-5 w-5" />
+            <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
+                <div className="mb-6 flex items-center gap-4">
+                    <div className="rounded-xl bg-(--beheer-accent)/10 p-2.5 text-(--beheer-accent)">
+                        <Info className="size-5" />
                     </div>
-                    <h3 className="text-lg font-semibold text-(--beheer-text) tracking-tight">Specifieke Gebruiker</h3>
+                    <h3 className="text-lg font-semibold tracking-tight text-(--beheer-text)">Specifieke Gebruiker</h3>
                 </div>
 
-                <p className="text-[11px] font-semibold text-(--beheer-text-muted) mb-6 leading-relaxed opacity-70">
+                <p className="mb-6 text-[11px] leading-relaxed font-semibold text-(--beheer-text-muted) opacity-70">
                     Synchroniseer een specifieke gebruiker op basis van their Entra ID (UUID).
                 </p>
 
@@ -133,14 +133,14 @@ export default function SyncControlIsland() {
                         disabled={isBusy}
                         onChange={(e) => setUserId(e.target.value)}
                         placeholder="Entra ID (UUID)..."
-                        className="beheer-input w-full px-5 py-3.5 bg-(--beheer-card-soft) border border-(--beheer-border) rounded-xl text-xs font-semibold focus:outline-none focus:border-(--beheer-accent) transition-all placeholder:text-(--beheer-text-muted)/30 text-(--beheer-text)"
+                        className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-3.5 text-xs font-semibold text-(--beheer-text) transition-all placeholder:text-(--beheer-text-muted)/30 focus:border-(--beheer-accent) focus:outline-none"
                     />
                     <button
                         type="submit"
                         disabled={isUserSyncLoading || !userId.trim() || !!status?.error}
-                        className="beheer-button w-full flex items-center justify-center gap-2 py-3.5 bg-(--beheer-card-soft) text-(--beheer-text) border border-(--beheer-border) rounded-xl font-semibold text-xs hover:border-(--beheer-accent) hover:text-(--beheer-accent) transition-all disabled:opacity-50 active:scale-95"
+                        className="beheer-button flex w-full items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) py-3.5 text-xs font-semibold text-(--beheer-text) transition-all hover:border-(--beheer-accent) hover:text-(--beheer-accent) active:scale-95 disabled:opacity-50"
                     >
-                        <RefreshCw className={`h-4 w-4 ${isUserSyncLoading ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`size-4 ${isUserSyncLoading ? 'animate-spin' : ''}`} />
                         Sync Gebruiker
                     </button>
                 </form>

@@ -75,14 +75,14 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
     });
 
     return (
-        <footer className="relative overflow-hidden bg-bg-card dark:bg-gradient-theme border-t border-border-color/20">
-            <div className="absolute -left-10 top-10 h-64 w-64 rounded-full bg-purple-200/10 blur-3xl" />
-            <div className="absolute -right-10 bottom-10 h-64 w-64 rounded-full bg-purple-100/10 blur-3xl" />
+        <footer className="dark:bg-gradient-theme relative overflow-hidden border-t border-border-color/20 bg-bg-card">
+            <div className="absolute top-10 -left-10 size-64 rounded-full bg-purple-200/10 blur-3xl" />
+            <div className="absolute -right-10 bottom-10 size-64 rounded-full bg-purple-100/10 blur-3xl" />
 
-            <div className="relative mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8 lg:pt-8 pb-safe-4">
+            <div className="relative mx-auto max-w-7xl px-4 pt-6 pb-safe-4 sm:px-6 lg:px-8 lg:pt-8">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
 
-                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
+                    <div className="flex flex-col items-center text-center md:items-start md:text-left">
                         <h3 className={HEADING_CLS}>Informatie</h3>
                         <ul className={`space-y-2 text-sm ${MUTED_CLS}`}>
                             <li>Rachelsmolen 1</li>
@@ -104,9 +104,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                         </ul>
                     </div>
 
-                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
+                    <div className="flex flex-col items-center text-center md:items-start md:text-left">
                         <h3 className={HEADING_CLS}>Pagina&apos;s</h3>
-                        <ul className="grid grid-cols-2 md:grid-cols-1 gap-x-8 gap-y-2 text-sm w-full max-w-fit mx-auto md:mx-0 md:max-w-none">
+                        <ul className="mx-auto grid w-full max-w-fit grid-cols-2 gap-x-8 gap-y-2 text-sm md:mx-0 md:max-w-none md:grid-cols-1">
                             {pageLinks.map((link) => (
                                 <li key={link.href}>
                                     <ActiveLink href={link.href} className={LINK_CLS} activeClassName="bg-purple-500/10 text-purple-700">
@@ -117,8 +117,8 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                         </ul>
                     </div>
 
-                    <div className="lg:col-span-2 flex flex-col items-center md:items-start">
-                        <h3 className={`${HEADING_CLS} text-center w-full`}>Commissies</h3>
+                    <div className="flex flex-col items-center md:items-start lg:col-span-2">
+                        <h3 className={`${HEADING_CLS} w-full text-center`}>Commissies</h3>
 
                         <div className="flex gap-x-12 gap-y-2 text-sm  ">
                             <div className="flex flex-col gap-y-2 text-left">
@@ -157,9 +157,9 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                         </div>
                     </div>
 
-                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
+                    <div className="flex flex-col items-center text-center md:items-start md:text-left">
                         <h3 className={HEADING_CLS}>Contact</h3>
-                        <ul className="space-y-2 text-sm mb-6">
+                        <ul className="mb-6 space-y-2 text-sm">
                             <li>
                                 <ObfuscatedEmail
                                     email="info@salvemundi.nl"
@@ -202,7 +202,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                         </ul>
 
                         <h3 className={HEADING_CLS}>Social Media</h3>
-                        <div className="flex justify-center md:justify-start gap-3">
+                        <div className="flex justify-center gap-3 md:justify-start">
                             <a
                                 href="https://www.instagram.com/sv.salvemundi/"
                                 target="_blank"
@@ -215,7 +215,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 }
                                 aria-label="Instagram"
                             >
-                                <SiInstagram className="h-5 w-5" />
+                                <SiInstagram className="size-5" />
                             </a>
                             <a
                                 href="https://www.facebook.com/sv.salvemundi/?locale=nl_NL"
@@ -229,7 +229,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 }
                                 aria-label="Facebook"
                             >
-                                <SiFacebook className="h-5 w-5" />
+                                <SiFacebook className="size-5" />
                             </a>
                             <a
                                 href="https://nl.linkedin.com/company/salve-mundi"
@@ -243,7 +243,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 }
                                 aria-label="LinkedIn"
                             >
-                                <FaLinkedin className="h-5 w-5" />
+                                <FaLinkedin className="size-5" />
                             </a>
                             <a
                                 href="https://www.tiktok.com/@salve.mundi"
@@ -257,7 +257,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 }
                                 aria-label="TikTok"
                             >
-                                <SiTiktok className="h-5 w-5" />
+                                <SiTiktok className="size-5" />
                             </a>
                         </div>
                     </div>

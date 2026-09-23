@@ -45,8 +45,8 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
 
     if (media.length === 0) {
         return (
-            <div className="w-full aspect-square rounded-[1.75rem] bg-(--bg-soft) flex items-center justify-center">
-                <ImageOff className="h-12 w-12 text-(--theme-purple)/20" />
+            <div className="flex aspect-square w-full items-center justify-center rounded-[1.75rem] bg-(--bg-soft)">
+                <ImageOff className="size-12 text-(--theme-purple)/20" />
             </div>
         );
     }
@@ -58,7 +58,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
             <button
                 type="button"
                 onClick={() => setLightboxOpen(true)}
-                className="form-button relative w-full aspect-square rounded-[1.75rem] overflow-hidden bg-(--bg-soft) block cursor-zoom-in"
+                className="relative form-button block aspect-square w-full cursor-zoom-in overflow-hidden rounded-[1.75rem] bg-(--bg-soft)"
                 aria-label={`${productName} - vergroot media ${activeIndex + 1}`}
             >
                 <MediaAsset
@@ -78,7 +78,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                             key={item.id}
                             type="button"
                             onClick={() => setActiveIndex(idx)}
-                            className={`form-button relative aspect-square rounded-xl overflow-hidden border-2 transition-colors ${idx === activeIndex ? 'border-(--theme-purple)' : 'border-transparent hover:border-(--border-color)'}`}
+                            className={`relative form-button aspect-square overflow-hidden rounded-xl border-2 transition-colors ${idx === activeIndex ? 'border-(--theme-purple)' : 'border-transparent hover:border-(--border-color)'}`}
                             aria-label={`Bekijk media ${idx + 1}`}
                             aria-current={idx === activeIndex}
                         >
@@ -99,7 +99,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                     role="dialog"
                     aria-modal="true"
                     aria-label={`${productName} - vergrote weergave`}
-                    className="fixed inset-0 z-50 bg-background/90 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+                    className="bg-background/90 animate-in fade-in fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm duration-200 sm:p-6"
                     onClick={(e) => {
                         if (e.target === e.currentTarget) setLightboxOpen(false);
                     }}
@@ -107,13 +107,13 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                     <button
                         ref={closeButtonRef}
                         onClick={() => setLightboxOpen(false)}
-                        className="form-button absolute top-4 right-4 z-50 p-2 rounded-full bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground backdrop-blur-sm transition-colors border border-border"
+                        className="bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground border-border absolute top-4 right-4 z-50 form-button rounded-full border p-2 backdrop-blur-sm transition-colors"
                         aria-label="Sluiten"
                     >
                         ×
                     </button>
 
-                    <div className="relative w-full max-w-4xl h-[80vh] overflow-hidden rounded-3xl bg-black/20 p-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="relative h-[80vh] w-full max-w-4xl overflow-hidden rounded-3xl bg-black/20 p-2" onClick={(e) => e.stopPropagation()}>
                         <MediaAsset
                             asset={{ id: active.asset, type: active.asset_type }}
                             alt={`${productName} - vergrote foto ${activeIndex + 1}`}

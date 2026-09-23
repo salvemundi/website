@@ -114,16 +114,16 @@ export default function ReisSettingsIsland({ initialTrips, initialSettings }: Re
                         />
                         <button
                             onClick={handleAdd}
-                            className="beheer-button px-6 py-2.5 bg-(--beheer-accent) hover:opacity-90 text-white rounded-xl font-semibold tracking-widest text-[10px] shadow-lg transition-all active:scale-95 flex items-center gap-2 group border border-white/10"
+                            className="group beheer-button flex items-center gap-2 rounded-xl border border-white/10 bg-(--beheer-accent) px-6 py-2.5 text-[10px] font-semibold tracking-widest text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
                         >
-                            <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
+                            <Plus className="size-4 transition-transform group-hover:rotate-90" />
                             <span>Nieuwe Reis</span>
                         </button>
                     </div>
                 }
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl">
+            <div className="container mx-auto max-w-7xl px-4 py-8">
                 {(isAdding || editingTrip) && (
                     <ReisForm
                         editingTrip={editingTrip}
@@ -134,7 +134,7 @@ export default function ReisSettingsIsland({ initialTrips, initialSettings }: Re
                 )}
 
                 {!isAdding && !editingTrip && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+                    <div className="mb-20 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                         {trips.map((trip) => (
                             <ReisCard
                                 key={trip.id}
@@ -148,8 +148,8 @@ export default function ReisSettingsIsland({ initialTrips, initialSettings }: Re
                         ))}
                         {trips.length === 0 && (
                             <div className="col-span-full py-20 text-center">
-                                <Info className="h-12 w-12 text-(--beheer-text-muted) mx-auto mb-4 opacity-20" />
-                                <p className="text-(--beheer-text-muted) font-semibold italic">Nog geen reizen gepland...</p>
+                                <Info className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-20" />
+                                <p className="font-semibold text-(--beheer-text-muted) italic">Nog geen reizen gepland...</p>
                             </div>
                         )}
                     </div>

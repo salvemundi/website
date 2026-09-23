@@ -38,14 +38,14 @@ export default async function CoboWachtlijstPage() {
                 description="Wachtlijst van besturen/gasten."
             >
                 <div className="mx-auto max-w-4xl px-fluid-md pt-fluid-lg pb-16">
-                    <div className="bg-bg-card p-8 sm:p-12 squircle-lg text-center shadow-lg max-w-xl mx-auto border border-border-color">
-                        <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-purple-500/20">
-                            <Wine className="w-8 h-8 text-purple-700 dark:text-purple-300" />
+                    <div className="squircle-lg mx-auto max-w-xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
+                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10">
+                            <Wine className="size-8 text-purple-700 dark:text-purple-300" />
                         </div>
-                        <h2 className="text-xl sm:text-2xl font-black text-purple-700 dark:text-purple-300">
+                        <h2 className="text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
                             CoBo Gesloten
                         </h2>
-                        <p className="text-text-muted mt-2 text-sm font-medium leading-relaxed">
+                        <p className="mt-2 text-sm leading-relaxed font-medium text-text-muted">
                             {featureFlag.disabled_message || 'De CoBo module is momenteel gesloten.'}
                         </p>
                     </div>
@@ -61,14 +61,14 @@ export default async function CoboWachtlijstPage() {
                 description="Wachtlijst van besturen/gasten."
             >
                 <div className="mx-auto max-w-4xl px-fluid-md pt-fluid-lg pb-16">
-                    <div className="bg-bg-card p-8 sm:p-12 squircle-lg text-center shadow-lg max-w-xl mx-auto border border-border-color">
-                        <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-purple-500/20">
-                            <Calendar className="w-8 h-8 text-purple-700 dark:text-purple-300" />
+                    <div className="squircle-lg mx-auto max-w-xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
+                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10">
+                            <Calendar className="size-8 text-purple-700 dark:text-purple-300" />
                         </div>
-                        <h2 className="text-xl sm:text-2xl font-black text-purple-700 dark:text-purple-300">
+                        <h2 className="text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
                             Geen actieve CoBo gevonden
                         </h2>
-                        <p className="text-text-muted mt-2 text-sm font-medium leading-relaxed">
+                        <p className="mt-2 text-sm leading-relaxed font-medium text-text-muted">
                             Er is momenteel geen actieve Constitutieborrel gepland.
                         </p>
                     </div>
@@ -84,7 +84,7 @@ export default async function CoboWachtlijstPage() {
             title={`Live Wachtlijst: ${activeCobo.title || 'CoBo'}`}
             description="Realtime live volgorde van feliciterende besturen en verenigingen."
         >
-            <div className="mx-auto max-w-4xl px-fluid-md pt-fluid-sm pb-16 space-y-6">
+            <div className="mx-auto max-w-4xl space-y-6 px-fluid-md pt-fluid-sm pb-16">
                 <div>
                     <BackButton href="/cobo" title="Terug naar CoBo overzicht" />
                 </div>

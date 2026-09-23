@@ -35,22 +35,22 @@ export default function MemberActivitiesTab({ signups }: Props) {
     };
 
     return (
-        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-sm">
-            <div className="p-8 border-b border-(--beheer-border)">
-                <h3 className="text-xl font-semibold text-(--beheer-text) leading-tight">Activiteiten Historie</h3>
-                <p className="text-xs text-(--beheer-text-muted) font-semibold mt-1 opacity-60">Recente inschrijvingen voor activiteiten</p>
+        <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm">
+            <div className="border-b border-(--beheer-border) p-8">
+                <h3 className="text-xl leading-tight font-semibold text-(--beheer-text)">Activiteiten Historie</h3>
+                <p className="mt-1 text-xs font-semibold text-(--beheer-text-muted) opacity-60">Recente inschrijvingen voor activiteiten</p>
             </div>
 
             {signups.length === 0 ? (
                 <div className="py-20 text-center">
-                    <History className="h-12 w-12 text-(--beheer-text-muted) opacity-20 mx-auto mb-4" />
-                    <p className="text-(--beheer-text-muted) font-semibold text-xs">Nog geen activiteiten gevonden</p>
+                    <History className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-20" />
+                    <p className="text-xs font-semibold text-(--beheer-text-muted)">Nog geen activiteiten gevonden</p>
                 </div>
             ) : (
-                <div className="overflow-x-auto max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-(--beheer-border)">
-                    <table className="w-full text-left border-collapse">
+                <div className="max-h-[60vh] scrollbar-thin scrollbar-thumb-(--beheer-border) overflow-auto">
+                    <table className="w-full border-collapse text-left">
                         <thead>
-                            <tr className="bg-(--beheer-card-soft)/50 text-xs font-semibold text-(--beheer-text-muted) border-b border-(--beheer-border)">
+                            <tr className="border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 text-xs font-semibold text-(--beheer-text-muted)">
                                 <th className="px-8 py-4">Activiteit</th>
                                 <th className="px-8 py-4">Datum</th>
                                 <th className="px-8 py-4 text-right">Status</th>
@@ -58,11 +58,11 @@ export default function MemberActivitiesTab({ signups }: Props) {
                         </thead>
                         <tbody className="divide-y divide-(--beheer-border)">
                             {signups.map(signup => (
-                                <tr key={signup.id} className="group hover:bg-(--beheer-card-soft)/30 transition-colors">
+                                <tr key={signup.id} className="group transition-colors hover:bg-(--beheer-card-soft)/30">
                                     <td className="px-8 py-5">
                                         <div className="font-semibold text-(--beheer-text)">{signup.event_id.name}</div>
                                     </td>
-                                    <td className="px-8 py-5 text-xs text-(--beheer-text-muted) font-medium">
+                                    <td className="px-8 py-5 text-xs font-medium text-(--beheer-text-muted)">
                                         {formatDate(signup.event_id.event_date)}
                                     </td>
                                     <td className="px-8 py-5 text-right">

@@ -69,7 +69,7 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
 
     return (
         <div>
-            <div className="flex items-center justify-between mb-8">
+            <div className="mb-8 flex items-center justify-between">
                 {!creating && (
                     <Button onClick={() => setCreating(true)} icon={Plus}>
                         Nieuw Groepje
@@ -78,14 +78,14 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
             </div>
 
             {creating && (
-                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-8 mb-8 shadow-2xl">
-                    <div className="flex items-center justify-between mb-8">
-                        <h3 className="font-semibold text-xs text-(--beheer-text-muted)">Nieuw Groepje</h3>
-                        <button onClick={() => setCreating(false)} className="icon-button p-2 text-(--beheer-text-muted) hover:text-(--beheer-text) transition-colors">
-                            <X className="h-5 w-5" />
+                <div className="mb-8 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-2xl">
+                    <div className="mb-8 flex items-center justify-between">
+                        <h3 className="text-xs font-semibold text-(--beheer-text-muted)">Nieuw Groepje</h3>
+                        <button onClick={() => setCreating(false)} className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)">
+                            <X className="size-5" />
                         </button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <Field label="Naam *">
                             <input type="text" value={newName} onChange={e => setNewName(e.target.value)} className={`beheer-input ${inputClass}`} placeholder="Bv. Groepje 1" />
                         </Field>
@@ -93,7 +93,7 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                             <input type="text" value={newNotes} onChange={e => setNewNotes(e.target.value)} className={`beheer-input ${inputClass}`} placeholder="Optioneel" />
                         </Field>
                     </div>
-                    <div className="flex gap-3 pt-10 border-t border-(--beheer-border)/50 mt-10">
+                    <div className="mt-10 flex gap-3 border-t border-(--beheer-border)/50 pt-10">
                         <Button onClick={() => { void handleCreate(); }} loading={saving} icon={Save} disabled={!newName.trim()}>
                             Opslaan
                         </Button>
@@ -111,26 +111,26 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                     {groups.map(group => {
                         const isExpanded = expandedIds.includes(group.id);
                         return (
-                            <div key={group.id} className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) shadow-sm hover:border-(--beheer-accent)/30 transition-all overflow-hidden">
+                            <div key={group.id} className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm transition-all hover:border-(--beheer-accent)/30">
                                 <div
                                     role="button"
                                     tabIndex={0}
                                     onClick={() => toggleExpand(group.id)}
                                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleExpand(group.id); } }}
-                                    className="w-full flex items-center gap-3 px-5 py-4 text-left cursor-pointer"
+                                    className="flex w-full cursor-pointer items-center gap-3 px-5 py-4 text-left"
                                 >
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-(--beheer-text) truncate">{group.name}</p>
-                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs font-medium text-(--beheer-text-muted)">
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-sm font-semibold text-(--beheer-text)">{group.name}</p>
+                                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-(--beheer-text-muted)">
                                             <span className="flex items-center gap-1">
-                                                <User className="h-3 w-3" /> {group.member_count} {group.member_count === 1 ? 'lid' : 'leden'}
+                                                <User className="size-3" /> {group.member_count} {group.member_count === 1 ? 'lid' : 'leden'}
                                             </span>
                                             <span className="opacity-80">
                                                 {group.leaders.length === 0 ? 'Geen ouders' : group.leaders.map(l => `${l.first_name} ${l.last_name}`.trim()).join(', ')}
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1.5 shrink-0">
+                                    <div className="flex shrink-0 items-center gap-1.5">
                                         <ActionButton icon={Edit} onClick={(e) => { e.stopPropagation(); startEdit(group); }} title="Bewerken" />
                                         <ActionButton
                                             icon={Trash}
@@ -144,14 +144,14 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                             disabled={deletingId === group.id}
                                             title="Verwijderen"
                                         />
-                                        <ChevronDown className="h-4 w-4 text-(--beheer-text-muted) transition-transform duration-300 shrink-0" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                                        <ChevronDown className="size-4 shrink-0 text-(--beheer-text-muted) transition-transform duration-300" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                                     </div>
                                 </div>
 
                                 {isExpanded && (
-                                    <div className="bg-(--beheer-card-soft)/30 border-t border-(--beheer-border)/50 px-5 py-6">
+                                    <div className="border-t border-(--beheer-border)/50 bg-(--beheer-card-soft)/30 px-5 py-6">
                                         {editingId === group.id ? (
-                                            <div className="space-y-5 mb-6">
+                                            <div className="mb-6 space-y-5">
                                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                                     <p className="text-xs font-semibold text-(--beheer-accent)">Groepje Bewerken</p>
                                                     <div className="flex gap-2">
@@ -159,52 +159,52 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                                         <Button onClick={() => setEditingId(null)} variant="ghost" icon={X}>Annuleren</Button>
                                                     </div>
                                                 </div>
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                                     <div className="flex flex-col gap-2">
-                                                        <span className="opacity-50 text-[9px]">Naam</span>
-                                                        <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="beheer-input bg-(--beheer-card-bg) border border-(--beheer-border) rounded-lg px-3 py-2 text-(--beheer-text) text-xs font-semibold focus:ring-2 focus:ring-(--beheer-accent) outline-none" />
+                                                        <span className="text-[9px] opacity-50">Naam</span>
+                                                        <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
                                                     </div>
                                                     <div className="flex flex-col gap-2">
-                                                        <span className="opacity-50 text-[9px]">Notities</span>
-                                                        <input type="text" value={editNotes} onChange={e => setEditNotes(e.target.value)} className="beheer-input bg-(--beheer-card-bg) border border-(--beheer-border) rounded-lg px-3 py-2 text-(--beheer-text) text-xs font-semibold focus:ring-2 focus:ring-(--beheer-accent) outline-none" />
+                                                        <span className="text-[9px] opacity-50">Notities</span>
+                                                        <input type="text" value={editNotes} onChange={e => setEditNotes(e.target.value)} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
                                                     </div>
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+                                            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                                                 <p className="text-xs font-semibold text-(--beheer-accent)">Toegewezen ouders</p>
                                                 <Link
                                                     href={`/profiel/intro-attendance?group=${group.id}`}
-                                                    className="beheer-button flex items-center gap-2 px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl text-xs font-semibold text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-colors"
+                                                    className="beheer-button flex items-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-xs font-semibold text-(--beheer-text) transition-colors hover:bg-(--beheer-card-soft)"
                                                 >
-                                                    <ClipboardCheck className="h-3.5 w-3.5" />
+                                                    <ClipboardCheck className="size-3.5" />
                                                     Bekijk aanwezigheid
                                                 </Link>
                                             </div>
                                         )}
 
-                                        <div className="flex flex-wrap gap-3 mb-6">
+                                        <div className="mb-6 flex flex-wrap gap-3">
                                             {group.leaders.length === 0 && (
                                                 <p className="text-xs text-(--beheer-text-muted) opacity-60">Nog geen ouders toegewezen</p>
                                             )}
                                             {group.leaders.map(leader => (
-                                                <div key={leader.user_id} className="flex items-center gap-2 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-full pl-4 pr-2 py-1.5">
+                                                <div key={leader.user_id} className="flex items-center gap-2 rounded-full border border-(--beheer-border) bg-(--beheer-card-bg) py-1.5 pr-2 pl-4">
                                                     <span className="text-xs font-semibold text-(--beheer-text)">{leader.first_name} {leader.last_name}</span>
                                                     <button
                                                         onClick={() => { void onRemoveLeader(group.id, leader.user_id); }}
-                                                        className="icon-button p-1 rounded-full text-(--beheer-text-muted) hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                                                        className="icon-button rounded-full p-1 text-(--beheer-text-muted) transition-colors hover:bg-red-500/10 hover:text-red-500"
                                                         title="Verwijderen"
                                                     >
-                                                        <X className="h-3 w-3" />
+                                                        <X className="size-3" />
                                                     </button>
                                                 </div>
                                             ))}
                                         </div>
 
                                         {pickerGroupId === group.id ? (
-                                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                            <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                                                 <select
-                                                    className="beheer-input bg-(--beheer-card-bg) border border-(--beheer-border) rounded-lg px-3 py-2 text-(--beheer-text) text-xs font-semibold focus:ring-2 focus:ring-(--beheer-accent) outline-none w-full sm:w-auto"
+                                                    className="beheer-input w-full rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent) sm:w-auto"
                                                     defaultValue=""
                                                     onChange={(e) => {
                                                         if (e.target.value) {

@@ -27,10 +27,10 @@ export default function SignupTicketCard({
     const isEditing = editingTicketId === ticket.id;
 
     return (
-        <div className="p-4 bg-(--bg-main)/30 rounded-xl border border-(--border-color)/50 flex flex-col gap-3 group hover:border-(--theme-purple)/30 transition-all relative">
+        <div className="group relative flex flex-col gap-3 rounded-xl border border-(--border-color)/50 bg-(--bg-main)/30 p-4 transition-all hover:border-(--theme-purple)/30">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-(--bg-card) flex items-center justify-center text-[10px] font-semibold text-(--text-muted) border border-(--border-color) select-none group-hover:bg-(--theme-purple) group-hover:text-white group-hover:border-(--theme-purple) transition-all">
+                    <div className="flex size-6 items-center justify-center rounded-lg border border-(--border-color) bg-(--bg-card) text-[10px] font-semibold text-(--text-muted) transition-all select-none group-hover:border-(--theme-purple) group-hover:bg-(--theme-purple) group-hover:text-white">
                         {idx + 1}
                     </div>
                     {!isEditing ? (
@@ -41,7 +41,7 @@ export default function SignupTicketCard({
                                 className="icon-button p-1 text-(--text-muted) hover:text-(--theme-purple)"
                                 title="Naam aanpassen"
                             >
-                                <Pen className="h-3 w-3" />
+                                <Pen className="size-3" />
                             </button>
                             <button
                                 type="button"
@@ -49,17 +49,17 @@ export default function SignupTicketCard({
                                 className="icon-button p-1 text-(--text-muted) hover:text-red-500"
                                 title="Ticket verwijderen"
                             >
-                                <Trash className="h-3 w-3" />
+                                <Trash className="size-3" />
                             </button>
                         </div>
                     ) : (
                         <button
                             type="button"
                             onClick={() => setEditingTicketId(null)}
-                            className="icon-button p-1 text-(--theme-purple) hover:text-(--text-main) transition-all"
+                            className="icon-button p-1 text-(--theme-purple) transition-all hover:text-(--text-main)"
                             title="Sluiten"
                         >
-                            <X className="h-3 w-3" />
+                            <X className="size-3" />
                         </button>
                     )}
                 </div>
@@ -70,13 +70,13 @@ export default function SignupTicketCard({
                     className="beheer-button transition-all active:scale-95 disabled:opacity-50"
                 >
                     {ticket.checked_in ? (
-                        <span className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 text-green-500 text-[9px] font-semibold rounded-full ring-1 ring-green-500/20 hover:bg-green-500/20 transition-all">
-                            {togglingId === ticket.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3" />}
+                        <span className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1 text-[9px] font-semibold text-green-500 ring-1 ring-green-500/20 transition-all hover:bg-green-500/20">
+                            {togglingId === ticket.id ? <Loader2 className="size-3 animate-spin" /> : <CheckCircle className="size-3" />}
                             Ingecheckt
                         </span>
                     ) : (
-                        <span className="flex items-center gap-1.5 px-3 py-1 bg-red-500/10 text-red-500 text-[9px] font-semibold rounded-full ring-1 ring-red-500/20 hover:bg-red-500/20 transition-all">
-                            {togglingId === ticket.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3 opacity-50" />}
+                        <span className="flex items-center gap-1.5 rounded-full bg-red-500/10 px-3 py-1 text-[9px] font-semibold text-red-500 ring-1 ring-red-500/20 transition-all hover:bg-red-500/20">
+                            {togglingId === ticket.id ? <Loader2 className="size-3 animate-spin" /> : <XCircle className="size-3 opacity-50" />}
                             Inchecken
                         </span>
                     )}
@@ -84,25 +84,25 @@ export default function SignupTicketCard({
             </div>
 
             {isEditing ? (
-                <div className="flex gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                <div className="animate-in fade-in slide-in-from-top-1 flex gap-2 duration-200">
                     <div className="flex-1">
-                        <label className="text-[9px] font-bold text-(--text-muted) uppercase mb-1 block">Naam</label>
+                        <label className="mb-1 block text-[9px] font-bold text-(--text-muted) uppercase">Naam</label>
                         <input
                             type="text"
                             value={ticket.name}
                             onChange={(e) => handleTicketChange(Number(ticket.id), 'name', e.target.value)}
-                            className="beheer-input w-full px-3 py-2 bg-(--bg-card) border border-(--border-color) rounded-lg text-xs font-semibold text-(--text-main) focus:border-(--theme-purple) transition-all"
+                            className="beheer-input w-full rounded-lg border border-(--border-color) bg-(--bg-card) px-3 py-2 text-xs font-semibold text-(--text-main) transition-all focus:border-(--theme-purple)"
                             autoFocus
                             autoComplete="off"
                         />
                     </div>
                     <div className="w-16">
-                        <label className="text-[9px] font-bold text-(--text-muted) uppercase mb-1 block">Init.</label>
+                        <label className="mb-1 block text-[9px] font-bold text-(--text-muted) uppercase">Init.</label>
                         <input
                             type="text"
                             value={ticket.initial}
                             onChange={(e) => handleTicketChange(Number(ticket.id), 'initial', e.target.value)}
-                            className="beheer-input w-full px-3 py-2 bg-(--bg-card) border border-(--border-color) rounded-lg text-xs font-semibold text-(--text-main) text-center focus:border-(--theme-purple) transition-all"
+                            className="beheer-input w-full rounded-lg border border-(--border-color) bg-(--bg-card) px-3 py-2 text-center text-xs font-semibold text-(--text-main) transition-all focus:border-(--theme-purple)"
                             maxLength={1}
                             autoComplete="off"
                         />
@@ -110,11 +110,11 @@ export default function SignupTicketCard({
                 </div>
             ) : (
                 <div
-                    className="cursor-pointer group/name"
+                    className="group/name cursor-pointer"
                     onClick={() => setEditingTicketId(Number(ticket.id))}
                 >
-                    <p className="text-sm font-bold text-(--text-main) group-hover/name:text-(--theme-purple) transition-colors">
-                        {ticket.name} {ticket.initial && <span className="opacity-50 text-[10px] uppercase">{ticket.initial}.</span>}
+                    <p className="text-sm font-bold text-(--text-main) transition-colors group-hover/name:text-(--theme-purple)">
+                        {ticket.name} {ticket.initial && <span className="text-[10px] uppercase opacity-50">{ticket.initial}.</span>}
                     </p>
                 </div>
             )}

@@ -59,24 +59,24 @@ export default function AdminModal({
 
     const modalContent = (
         <div
-            className="fixed inset-0 z-250 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-300"
+            className="animate-in fade-in fixed inset-0 z-250 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md duration-300 sm:p-6"
             onClick={onClose}
         >
             <div
                 role="dialog"
                 aria-modal="true"
                 aria-label={title}
-                className={`bg-bg-card/95 backdrop-blur-xl w-full ${maxWidthClasses.get(maxWidth) ?? 'max-w-2xl'} rounded-2xl sm:rounded-3xl shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden border border-border-color/60 flex flex-col max-h-[min(90vh,820px)] animate-in zoom-in-95 duration-300 my-auto`}
+                className={`w-full bg-bg-card/95 backdrop-blur-xl ${maxWidthClasses.get(maxWidth) ?? 'max-w-2xl'} animate-in zoom-in-95 my-auto flex max-h-[min(90vh,820px)] flex-col overflow-hidden rounded-2xl border border-border-color/60 shadow-[0_40px_100px_rgba(0,0,0,0.5)] duration-300 sm:rounded-3xl`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="px-6 py-5 border-b border-border-color flex items-center justify-between relative z-10 shrink-0">
-                    <div className="space-y-0.5 min-w-0 pr-4">
-                        <h2 className="text-lg sm:text-xl font-bold text-purple-700 dark:text-purple-300 tracking-tight truncate">
+                <div className="relative z-10 flex shrink-0 items-center justify-between border-b border-border-color px-6 py-5">
+                    <div className="min-w-0 space-y-0.5 pr-4">
+                        <h2 className="truncate text-lg font-bold tracking-tight text-purple-700 sm:text-xl dark:text-purple-300">
                             {title}
                         </h2>
                         {subtitle && (
-                            <p className="text-xs text-text-muted font-medium line-clamp-1">
+                            <p className="line-clamp-1 text-xs font-medium text-text-muted">
                                 {subtitle}
                             </p>
                         )}
@@ -85,14 +85,14 @@ export default function AdminModal({
                         type="button"
                         onClick={onClose}
                         aria-label="Sluiten"
-                        className="icon-button h-9 w-9 rounded-xl bg-bg-soft hover:bg-bg-soft/80 text-text-muted hover:text-text-main transition-all flex items-center justify-center shrink-0 cursor-pointer active:scale-95"
+                        className="icon-button flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-bg-soft text-text-muted transition-all hover:bg-bg-soft/80 hover:text-text-main active:scale-95"
                     >
-                        <X className="h-4 w-4" />
+                        <X className="size-4" />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar relative z-10">
+                <div className="custom-scrollbar relative z-10 flex-1 overflow-y-auto p-6">
                     {children}
                 </div>
             </div>

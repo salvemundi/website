@@ -38,68 +38,68 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
     if (!mounted || !isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6 isolate">
+        <div className="fixed inset-0 isolate z-9999 flex items-center justify-center p-4 sm:p-6">
             <div
-                className="absolute inset-0 bg-slate-950/60 backdrop-blur-xl animate-in fade-in duration-300"
+                className="animate-in fade-in absolute inset-0 bg-slate-950/60 backdrop-blur-xl duration-300"
                 onClick={onCancel}
             />
 
             <div
-                className="bg-(--bg-card) w-full max-w-xl rounded-[2.5rem] shadow-(--shadow-card-elevated) ring-1 ring-white/10 overflow-hidden flex flex-col relative z-10 border border-(--border-color) dark:border-white/10 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300 ease-out"
+                className="animate-in fade-in zoom-in-95 slide-in-from-bottom-4 relative z-10 flex w-full max-w-xl flex-col overflow-hidden rounded-[2.5rem] border border-(--border-color) bg-(--bg-card) shadow-(--shadow-card-elevated) ring-1 ring-white/10 duration-300 ease-out dark:border-white/10"
             >
-                <div className="absolute -top-24 -right-24 w-48 h-48 bg-theme-purple/20 rounded-full blur-[80px] pointer-events-none" />
-                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-theme-purple/10 rounded-full blur-[80px] pointer-events-none" />
+                <div className="pointer-events-none absolute -top-24 -right-24 size-48 rounded-full bg-theme-purple/20 blur-[80px]" />
+                <div className="pointer-events-none absolute -bottom-24 -left-24 size-48 rounded-full bg-theme-purple/10 blur-[80px]" />
 
-                <div className="px-8 pt-8 pb-4 flex justify-between items-center relative">
+                <div className="relative flex items-center justify-between px-8 pt-8 pb-4">
                     <div className="flex items-center gap-3">
-                        <div className="bg-theme-purple/10 text-theme-purple p-2.5 rounded-2xl">
-                            <AlertCircle className="h-5 w-5" />
+                        <div className="rounded-2xl bg-theme-purple/10 p-2.5 text-theme-purple">
+                            <AlertCircle className="size-5" />
                         </div>
-                        <h2 className="text-[10px] font-bold text-(--text-main) tracking-[0.2em]">
+                        <h2 className="text-[10px] font-bold tracking-[0.2em] text-(--text-main)">
                             Naam Bevestigen
                         </h2>
                     </div>
                     <button
                         onClick={onCancel}
-                        className="icon-button text-(--text-muted) hover:text-(--text-main) p-2.5 rounded-full transition-all active:scale-90"
+                        className="icon-button rounded-full p-2.5 text-(--text-muted) transition-all hover:text-(--text-main) active:scale-90"
                     >
-                        <X className="h-5 w-5" />
+                        <X className="size-5" />
                     </button>
                 </div>
 
                 <div className="px-10 py-6 text-center">
-                    <h3 className="text-3xl font-bold text-(--text-main) mb-4 tracking-tight">
+                    <h3 className="mb-4 text-3xl font-bold tracking-tight text-(--text-main)">
                         Klopt je voornaam?
                     </h3>
 
-                    <div className="p-6 rounded-3xl bg-theme-purple/5 border border-theme-purple/10 mb-8">
-                        <p className="text-sm text-(--text-muted) mb-2 font-medium tracking-wide opacity-70">
+                    <div className="mb-8 rounded-3xl border border-theme-purple/10 bg-theme-purple/5 p-6">
+                        <p className="mb-2 text-sm font-medium tracking-wide text-(--text-muted) opacity-70">
                             Ingevulde voornaam:
                         </p>
-                        <p className="text-2xl font-bold text-theme-purple tracking-tight">
+                        <p className="text-2xl font-bold tracking-tight text-theme-purple">
                             {name}
                         </p>
                     </div>
 
-                    <p className="text-base text-(--text-muted) mb-8 leading-relaxed">
-                        Komt dit <span className="text-(--text-main) font-bold italic">exact</span> overeen met de naam op je paspoort of ID-kaart?
+                    <p className="mb-8 text-base leading-relaxed text-(--text-muted)">
+                        Komt dit <span className="font-bold text-(--text-main) italic">exact</span> overeen met de naam op je paspoort of ID-kaart?
                         <br />
-                        <span className="text-xs mt-2 inline-block opacity-80">
+                        <span className="mt-2 inline-block text-xs opacity-80">
                             Een typefout kan leiden tot problemen bij de gate!
                         </span>
                     </p>
 
-                    <div className="flex flex-col gap-3 mb-2">
+                    <div className="mb-2 flex flex-col gap-3">
                         <button
                             onClick={onConfirm}
-                            className="form-button w-full py-5 bg-theme-purple hover:bg-theme-purple-dark text-white rounded-2xl font-bold text-sm tracking-widest transition-all flex items-center justify-center gap-3 shadow-lg shadow-theme-purple/20 group"
+                            className="group form-button flex w-full items-center justify-center gap-3 rounded-2xl bg-theme-purple py-5 text-sm font-bold tracking-widest text-white shadow-lg shadow-theme-purple/20 transition-all hover:bg-theme-purple-dark"
                         >
-                            <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            <CheckCircle2 className="size-5 transition-transform group-hover:scale-110" />
                             Ja, dit klopt exact
                         </button>
                         <button
                             onClick={onCancel}
-                            className="form-button w-full py-5 bg-(--bg-soft) hover:bg-(--bg-card) text-(--text-muted) hover:text-(--text-main) rounded-2xl font-bold text-sm tracking-widest transition-all border border-(--border-color) dark:border-white/5"
+                            className="form-button w-full rounded-2xl border border-(--border-color) bg-(--bg-soft) py-5 text-sm font-bold tracking-widest text-(--text-muted) transition-all hover:bg-(--bg-card) hover:text-(--text-main) dark:border-white/5"
                         >
                             Nee, aanpassen
                         </button>

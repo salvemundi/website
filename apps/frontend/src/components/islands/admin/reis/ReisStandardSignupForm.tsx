@@ -31,15 +31,15 @@ export default function StandardSignupForm({
     compact = true
 }: StandardSignupFormProps) {
     return (
-        <div className={`${minimal ? (compact ? 'space-y-6' : 'space-y-12') : 'bg-(--beheer-card-bg) rounded-3xl shadow-xl border border-(--beheer-border) divide-y divide-(--beheer-border)/20 overflow-hidden'}`}>
+        <div className={`${minimal ? (compact ? 'space-y-6' : 'space-y-12') : 'divide-y divide-(--beheer-border)/20 overflow-hidden rounded-3xl border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl'}`}>
             {(section === 'all' || section === 'personal' || section === 'personal_basic' || section === 'personal_extended') && (
                 <div className={`${minimal ? '' : 'p-8'}`}>
                     <div className={`flex items-center gap-4 ${compact ? 'mb-4' : 'mb-8'}`}>
-                        <div className="h-10 w-10 bg-(--beheer-accent)/10 rounded-xl flex items-center justify-center text-(--beheer-accent) shadow-sm">
-                            <FileText className="h-5 w-5" />
+                        <div className="flex size-10 items-center justify-center rounded-xl bg-(--beheer-accent)/10 text-(--beheer-accent) shadow-sm">
+                            <FileText className="size-5" />
                         </div>
                         <div className="space-y-0.5">
-                            <h2 className={`${compact ? 'text-lg' : 'text-xl'} font-semibold text-(--beheer-text) tracking-tight`}>Persoonsgegevens</h2>
+                            <h2 className={`${compact ? 'text-lg' : 'text-xl'} font-semibold tracking-tight text-(--beheer-text)`}>Persoonsgegevens</h2>
                             <p className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">Basis informatie over de reiziger</p>
                         </div>
                     </div>
@@ -86,8 +86,8 @@ export default function StandardSignupForm({
                                 {isBusTrip ? (
                                     <Checkbox label="Beschikbaar als chauffeur" name="willing_to_drive" defaultChecked={initialData ? parseBoolean(initialData.willing_to_drive) : parseBoolean(signup.willing_to_drive)} />
                                 ) : (
-                                    <div className="flex items-center gap-3 px-3 py-2 bg-(--bg-main)/30 rounded-xl border border-(--beheer-border)/20 text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">
-                                        <Bus className="h-4 w-4 text-(--beheer-accent) opacity-50" />
+                                    <div className="flex items-center gap-3 rounded-xl border border-(--beheer-border)/20 bg-(--bg-main)/30 px-3 py-2 text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">
+                                        <Bus className="size-4 text-(--beheer-accent) opacity-50" />
                                         <span>Geen chauffeur informatie nodig voor vliegreizen</span>
                                     </div>
                                 )}
@@ -98,13 +98,13 @@ export default function StandardSignupForm({
             )}
 
             {(section === 'all' || section === 'admin') && (
-                <div className={`${(minimal && section === 'all') ? (compact ? 'pt-6' : 'pt-8') + ' border-t border-(--beheer-border)/20' : minimal ? '' : 'p-8 bg-(--beheer-card-soft)/20'}`}>
+                <div className={`${(minimal && section === 'all') ? (compact ? 'pt-6' : 'pt-8') + ' border-t border-(--beheer-border)/20' : minimal ? '' : 'bg-(--beheer-card-soft)/20 p-8'}`}>
                     <div className={`flex items-center gap-4 ${compact ? 'mb-4' : 'mb-8'}`}>
-                        <div className="h-10 w-10 bg-(--beheer-accent)/10 rounded-xl flex items-center justify-center text-(--beheer-accent) shadow-sm">
-                            <CreditCard className="h-5 w-5" />
+                        <div className="flex size-10 items-center justify-center rounded-xl bg-(--beheer-accent)/10 text-(--beheer-accent) shadow-sm">
+                            <CreditCard className="size-5" />
                         </div>
                         <div className="space-y-0.5">
-                            <h2 className={`${compact ? 'text-lg' : 'text-xl'} font-semibold text-(--beheer-text) tracking-tight`}>Beheer & Betaling</h2>
+                            <h2 className={`${compact ? 'text-lg' : 'text-xl'} font-semibold tracking-tight text-(--beheer-text)`}>Beheer & Betaling</h2>
                             <p className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">Status en administratieve afhandeling</p>
                         </div>
                     </div>
@@ -123,11 +123,11 @@ export default function StandardSignupForm({
                         </div>
 
                         <div className={`${compact ? 'space-y-4' : 'space-y-6'}`}>
-                            <div className={`${compact ? 'p-4' : 'p-6'} bg-(--bg-main)/50 rounded-2xl border border-(--beheer-border)/50 ${compact ? 'space-y-4' : 'space-y-5'} shadow-inner`}>
+                            <div className={`${compact ? 'p-4' : 'p-6'} rounded-2xl border border-(--beheer-border)/50 bg-(--bg-main)/50 ${compact ? 'space-y-4' : 'space-y-5'} shadow-inner`}>
                                 <div className="flex items-center justify-between gap-4">
                                     <Checkbox label="Aanbetaling OK" name="deposit_paid" defaultChecked={initialData ? parseBoolean(initialData.deposit_paid) : parseBoolean(signup.deposit_paid)} />
                                     {signup.deposit_paid_at && (
-                                        <span className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-60 shrink-0">
+                                        <span className="shrink-0 text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">
                                             {formatShortDate(new Date(signup.deposit_paid_at))}
                                         </span>
                                     )}
@@ -135,14 +135,14 @@ export default function StandardSignupForm({
                                 <div className="flex items-center justify-between gap-4">
                                     <Checkbox label="Restbetaling OK" name="full_payment_paid" defaultChecked={initialData ? parseBoolean(initialData.full_payment_paid) : parseBoolean(signup.full_payment_paid)} />
                                     {signup.full_payment_paid_at && (
-                                        <span className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-60 shrink-0">
+                                        <span className="shrink-0 text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">
                                             {formatShortDate(new Date(signup.full_payment_paid_at))}
                                         </span>
                                     )}
                                 </div>
                             </div>
-                            <div className="flex items-start gap-3 px-2 text-[10px] font-semibold text-(--beheer-text-muted) opacity-50 italic leading-relaxed">
-                                <AlertCircle className="h-3.5 w-3.5 shrink-0 text-(--beheer-accent) opacity-50" />
+                            <div className="flex items-start gap-3 px-2 text-[10px] leading-relaxed font-semibold text-(--beheer-text-muted) italic opacity-50">
+                                <AlertCircle className="size-3.5 shrink-0 text-(--beheer-accent) opacity-50" />
                                 <span>Betalingsstatus updates triggeren geen e-mails.</span>
                             </div>
                         </div>

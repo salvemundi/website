@@ -58,7 +58,7 @@ export const AdminTimepicker = React.forwardRef<HTMLInputElement, AdminTimepicke
             min={min}
             max={max}
             title={disabled ? 'Selecteer eerst een datum' : undefined}
-            className={`beheer-input w-full font-medium ${disabled ? 'opacity-40 cursor-not-allowed bg-neutral-500/10' : ''} ${error ? 'border-red-500 ring-4 ring-red-500/10' : ''} ${className}`}
+            className={`beheer-input w-full font-medium ${disabled ? 'cursor-not-allowed bg-neutral-500/10 opacity-40' : ''} ${error ? 'border-red-500 ring-4 ring-red-500/10' : ''} ${className}`}
         />
     );
 });

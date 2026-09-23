@@ -32,8 +32,8 @@ export default function IntroFilters({
     const activeTabInfo = tabs.find(t => t.id === activeTab);
 
     return (
-        <div className="flex flex-col gap-4 mb-6">
-            <div className="flex flex-col sm:flex-row gap-4">
+        <div className="mb-6 flex flex-col gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row">
                 <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
                     {activeTab === 'signups' && (
                         <IntroStudentSignupToggleIsland initialOpen={studentSignupsOpen} />
@@ -44,9 +44,9 @@ export default function IntroFilters({
                     {(activeTab === 'signups' || activeTab === 'parents') && (
                         <button
                             onClick={onExport}
-                            className="beheer-button flex items-center gap-2 px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl text-sm font-semibold text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-colors shadow-sm active:scale-95"
+                            className="beheer-button flex items-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-sm font-semibold text-(--beheer-text) shadow-sm transition-colors hover:bg-(--beheer-card-soft) active:scale-95"
                         >
-                            <Download className="w-4 h-4 text-(--beheer-text-muted)" />
+                            <Download className="size-4 text-(--beheer-text-muted)" />
                             <span className="hidden sm:inline">Exporteer CSV</span>
                         </button>
                     )}
@@ -56,12 +56,12 @@ export default function IntroFilters({
 
             {/* Compact dropdown for narrow screens, where a full tab row doesn't fit */}
             <div className="lg:hidden">
-                <div className="relative flex items-center gap-3 px-4 py-3 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl shadow-sm">
-                    {activeTabInfo && <activeTabInfo.icon className="h-4 w-4 shrink-0 text-(--beheer-accent)" />}
+                <div className="relative flex items-center gap-3 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-3 shadow-sm">
+                    {activeTabInfo && <activeTabInfo.icon className="size-4 shrink-0 text-(--beheer-accent)" />}
                     <select
                         value={activeTab}
                         onChange={(e) => onTabChange(e.target.value as TabType)}
-                        className="beheer-input bg-transparent text-(--beheer-text) outline-none border-none p-0 w-full font-semibold text-sm appearance-none"
+                        className="beheer-input w-full appearance-none border-none bg-transparent p-0 text-sm font-semibold text-(--beheer-text) outline-none"
                     >
                         {tabs.map(tab => (
                             <option key={tab.id} value={tab.id}>{tab.label} ({tab.count})</option>
@@ -71,19 +71,19 @@ export default function IntroFilters({
             </div>
 
             {/* Full tab row, only shown once there's enough width for all labels */}
-            <div className="hidden lg:flex bg-(--beheer-card-soft) p-1 rounded-xl border border-(--beheer-border)/50 overflow-x-auto">
+            <div className="hidden overflow-x-auto rounded-xl border border-(--beheer-border)/50 bg-(--beheer-card-soft) p-1 lg:flex">
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => onTabChange(tab.id as TabType)}
-                        className={`tab-button flex items-center gap-2 px-4 py-1.5 text-sm font-semibold rounded-lg transition-all whitespace-nowrap ${activeTab === tab.id
+                        className={`tab-button flex items-center gap-2 rounded-lg px-4 py-1.5 text-sm font-semibold whitespace-nowrap transition-all ${activeTab === tab.id
                             ? 'bg-(--beheer-accent) text-white shadow-sm'
-                            : 'text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-border)/30'
+                            : 'text-(--beheer-text-muted) hover:bg-(--beheer-border)/30 hover:text-(--beheer-text)'
                             }`}
                     >
-                        <tab.icon className="w-4 h-4" />
+                        <tab.icon className="size-4" />
                         {tab.label}
-                        <span className={`ml-1 text-[10px] py-0.5 px-1.5 rounded-full ${activeTab === tab.id
+                        <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] ${activeTab === tab.id
                             ? 'bg-white/20 text-white'
                             : 'bg-(--beheer-border)/50 text-(--beheer-text)'
                             }`}>

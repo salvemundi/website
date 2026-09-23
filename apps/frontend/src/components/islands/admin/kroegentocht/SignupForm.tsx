@@ -144,11 +144,11 @@ export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps
 
     return (
         <>
-            <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl mx-auto" autoComplete="off">
-                <div className="bg-(--bg-card) rounded-2xl shadow-(--shadow-card) ring-1 ring-(--border-color)/30">
+            <form onSubmit={handleSubmit} className="mx-auto max-w-3xl space-y-8" autoComplete="off">
+                <div className="rounded-2xl bg-(--bg-card) shadow-(--shadow-card) ring-1 ring-(--border-color)/30">
                     <SignupHeader />
 
-                    <div className="p-8 space-y-6">
+                    <div className="space-y-6 p-8">
                         <SignupPersonalDetails
                             formData={formData}
                             setFormData={setFormData}

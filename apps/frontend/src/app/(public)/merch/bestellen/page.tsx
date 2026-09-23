@@ -19,11 +19,11 @@ interface PageProps {
 
 function BlockedCard({ icon: Icon, title, message }: { icon: typeof Lock; title: string; message: string }) {
     return (
-        <div className="min-h-[60vh] flex items-center justify-center p-6">
-            <div className="max-w-md w-full p-12 bg-(--bg-card) border border-(--border-color) rounded-[1.75rem] text-center shadow-xl">
-                <Icon className="w-16 h-16 text-(--theme-purple) mx-auto mb-6" />
-                <h1 className="text-2xl font-black text-(--theme-purple) mb-4">{title}</h1>
-                <p className="text-(--text-muted) mb-8 leading-relaxed">{message}</p>
+        <div className="flex min-h-[60vh] items-center justify-center p-6">
+            <div className="w-full max-w-md rounded-[1.75rem] border border-(--border-color) bg-(--bg-card) p-12 text-center shadow-xl">
+                <Icon className="mx-auto mb-6 size-16 text-(--theme-purple)" />
+                <h1 className="mb-4 text-2xl font-black text-(--theme-purple)">{title}</h1>
+                <p className="mb-8 leading-relaxed text-(--text-muted)">{message}</p>
                 <BackButton href="/merch" text="Terug naar merch" />
             </div>
         </div>
@@ -51,7 +51,7 @@ export default async function WebshopBestellenPage({ searchParams }: PageProps) 
 
     return (
         <PublicPageShell>
-            <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 pt-8 pb-16 sm:pb-24">
+            <div className="mx-auto max-w-3xl px-4 pt-8 pb-16 sm:px-6 sm:pb-24 lg:px-8">
                 <div className="mb-6">
                     <BackButton href={`/merch/${product.slug}`} title="Terug naar product" />
                 </div>
@@ -65,7 +65,7 @@ export default async function WebshopBestellenPage({ searchParams }: PageProps) 
                 ) : !isMember ? (
                     <BlockedCard icon={ShieldAlert} title="Alleen voor leden" message="Bestellen in de webshop is op dit moment alleen mogelijk voor leden van Salve Mundi." />
                 ) : (
-                    <div className="p-6 sm:p-10 bg-(--bg-card) border border-(--border-color) rounded-[1.75rem] shadow-sm">
+                    <div className="rounded-[1.75rem] border border-(--border-color) bg-(--bg-card) p-6 shadow-sm sm:p-10">
                         <WebshopCheckoutIsland
                             product={product}
                             initialUser={{

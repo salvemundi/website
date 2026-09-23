@@ -21,26 +21,26 @@ export function TransactionStatus({ status }: { status: string }) {
     switch (status) {
         case 'paid':
             return (
-                <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[10px] font-semibold">
+                <span className="rounded-full bg-green-500/10 px-3 py-1 text-[10px] font-semibold text-green-500">
                     Betaald
                 </span>
             );
         case 'expired':
             return (
-                <span className="px-3 py-1 bg-gray-500/10 text-gray-500 rounded-full text-[10px] font-semibold">
+                <span className="rounded-full bg-gray-500/10 px-3 py-1 text-[10px] font-semibold text-gray-500">
                     Verlopen
                 </span>
             );
         case 'failed':
         case 'canceled':
             return (
-                <span className="px-3 py-1 bg-red-500/10 text-red-500 rounded-full text-[10px] font-semibold">
+                <span className="rounded-full bg-red-500/10 px-3 py-1 text-[10px] font-semibold text-red-500">
                     Mislukt
                 </span>
             );
         default:
             return (
-                <span className="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-semibold">
+                <span className="rounded-full bg-amber-500/10 px-3 py-1 text-[10px] font-semibold text-amber-500">
                     Open
                 </span>
             );
@@ -78,22 +78,22 @@ export default function MemberTransactionsTab({ transactions }: Props) {
     };
 
     return (
-        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-sm">
-            <div className="p-8 border-b border-(--beheer-border)">
-                <h3 className="text-xl font-semibold text-(--beheer-text) leading-tight">Transactie Geschiedenis</h3>
-                <p className="text-xs text-(--beheer-text-muted) font-semibold mt-1 opacity-60">Overzicht van alle lidmaatschap, webshop en activiteit betalingen</p>
+        <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm">
+            <div className="border-b border-(--beheer-border) p-8">
+                <h3 className="text-xl leading-tight font-semibold text-(--beheer-text)">Transactie Geschiedenis</h3>
+                <p className="mt-1 text-xs font-semibold text-(--beheer-text-muted) opacity-60">Overzicht van alle lidmaatschap, webshop en activiteit betalingen</p>
             </div>
 
             {transactions.length === 0 ? (
                 <div className="py-20 text-center">
-                    <CreditCard className="h-12 w-12 text-(--beheer-text-muted) opacity-20 mx-auto mb-4" />
-                    <p className="text-(--beheer-text-muted) font-semibold text-xs">Nog geen transacties gevonden</p>
+                    <CreditCard className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-20" />
+                    <p className="text-xs font-semibold text-(--beheer-text-muted)">Nog geen transacties gevonden</p>
                 </div>
             ) : (
-                <div className="overflow-x-auto max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-(--beheer-border)">
-                    <table className="w-full text-left border-collapse">
+                <div className="max-h-[60vh] scrollbar-thin scrollbar-thumb-(--beheer-border) overflow-auto">
+                    <table className="w-full border-collapse text-left">
                         <thead>
-                            <tr className="bg-(--beheer-card-soft)/50 text-xs font-semibold text-(--beheer-text-muted) border-b border-(--beheer-border)">
+                            <tr className="border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 text-xs font-semibold text-(--beheer-text-muted)">
                                 <th className="px-8 py-4">Product / Omschrijving</th>
                                 <th className="px-8 py-4">Type</th>
                                 <th className="px-8 py-4">Mollie ID</th>
@@ -104,17 +104,17 @@ export default function MemberTransactionsTab({ transactions }: Props) {
                         </thead>
                         <tbody className="divide-y divide-(--beheer-border)">
                             {transactions.map(tx => (
-                                <tr key={tx.id} className="group hover:bg-(--beheer-card-soft)/30 transition-colors">
+                                <tr key={tx.id} className="group transition-colors hover:bg-(--beheer-card-soft)/30">
                                     <td className="px-8 py-5">
                                         <div className="font-semibold text-(--beheer-text)">{tx.product_name || 'Lidmaatschap betaling'}</div>
                                     </td>
-                                    <td className="px-8 py-5 text-xs text-(--beheer-text-muted) font-medium capitalize">
+                                    <td className="px-8 py-5 text-xs font-medium text-(--beheer-text-muted) capitalize">
                                         {tx.product_type || 'onbekend'}
                                     </td>
-                                    <td className="px-8 py-5 text-xs font-mono text-(--beheer-text-muted) opacity-70">
+                                    <td className="px-8 py-5 font-mono text-xs text-(--beheer-text-muted) opacity-70">
                                         {tx.mollie_id || '-'}
                                     </td>
-                                    <td className="px-8 py-5 text-xs text-(--beheer-text-muted) font-medium">
+                                    <td className="px-8 py-5 text-xs font-medium text-(--beheer-text-muted)">
                                         {formatDate(tx.created_at)}
                                     </td>
                                     <td className="px-8 py-5 font-semibold text-(--beheer-text)">

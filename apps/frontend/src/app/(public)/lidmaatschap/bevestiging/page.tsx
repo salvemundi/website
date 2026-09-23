@@ -21,9 +21,9 @@ export default async function LidmaatschapConfirmationPage({ searchParams }: Pag
     const initialStatusRes = await getTransactionStatusAction(identifier);
 
     return (
-        <div className="pt-8 sm:pt-12 lg:pt-16 pb-16 sm:pb-24 lg:pb-32 w-full flex justify-center items-center min-h-[60vh]">
+        <div className="flex min-h-[60vh] w-full items-center justify-center pt-8 pb-16 sm:pt-12 sm:pb-24 lg:pt-16 lg:pb-32">
             <h1 className="sr-only">Lidmaatschap Bevestiging</h1>
-            <div className="container mx-auto px-4 max-w-4xl flex justify-center">
+            <div className="container mx-auto flex max-w-4xl justify-center px-4">
                 <ConfirmationIsland 
                     transactionId={identifier}
                     type={type || null}

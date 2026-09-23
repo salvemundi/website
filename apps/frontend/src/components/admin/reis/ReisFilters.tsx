@@ -40,21 +40,21 @@ export default function ReisFilters({
     tripId
 }: ReisFiltersProps) {
     return (
-        <div className="bg-(--beheer-card-bg) border border-(--beheer-border)/60 rounded-4xl shadow-sm">
-            <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 p-2.5">
-                <div className="relative flex-1 group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-(--beheer-text-muted) opacity-40 group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100 transition-all" />
+        <div className="rounded-4xl border border-(--beheer-border)/60 bg-(--beheer-card-bg) shadow-sm">
+            <div className="flex flex-col items-stretch gap-3 p-2.5 lg:flex-row lg:items-center">
+                <div className="group relative flex-1">
+                    <Search className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-(--beheer-text-muted) opacity-40 transition-all group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100" />
                     <input
                         type="text"
                         placeholder="Zoek deelnemers..."
                         value={searchQuery}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        className="beheer-input w-full pl-11! pr-4 py-2"
+                        className="beheer-input w-full py-2 pr-4 pl-11!"
                     />
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-2">
-                    <div className="w-full sm:w-[180px]">
+                <div className="flex flex-col items-center gap-2 sm:flex-row">
+                    <div className="w-full sm:w-45">
                         <AdminSelect
                             value={statusFilter}
                             onChange={onStatusChange}
@@ -72,26 +72,26 @@ export default function ReisFilters({
                         />
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-center gap-1.5 w-full sm:w-auto">
+                    <div className="flex w-full flex-wrap items-center justify-center gap-1.5 sm:w-auto">
                         <Link
                             href={`/beheer/reis/activiteiten?tripId=${tripId}`}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-xl text-xs font-semibold hover:border-(--beheer-accent)/50 hover:bg-(--beheer-accent)/5 transition-all shadow-sm whitespace-nowrap"
+                            className="flex items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-xs font-semibold whitespace-nowrap text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 hover:bg-(--beheer-accent)/5"
                         >
-                            <Compass className="h-3.5 w-3.5 text-(--beheer-accent)" />
+                            <Compass className="size-3.5 text-(--beheer-accent)" />
                             Activiteiten
                         </Link>
                         <Link
                             href="/beheer/reis/mail"
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-xl text-xs font-semibold hover:border-(--beheer-accent)/50 hover:bg-(--beheer-accent)/5 transition-all shadow-sm whitespace-nowrap"
+                            className="flex items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-xs font-semibold whitespace-nowrap text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 hover:bg-(--beheer-accent)/5"
                         >
-                            <Mail className="h-3.5 w-3.5 text-(--beheer-accent)" />
+                            <Mail className="size-3.5 text-(--beheer-accent)" />
                             Mailen
                         </Link>
                         <button
                             onClick={onDownloadCSV}
-                            className="beheer-button flex items-center justify-center gap-2 px-6 py-2 bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm hover:bg-emerald-800 transition-all active:scale-95 border border-white/10 whitespace-nowrap"
+                            className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-emerald-700 px-6 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-95"
                         >
-                            <Download className="h-3.5 w-3.5" />
+                            <Download className="size-3.5" />
                             Exporteer CSV
                         </button>
                     </div>

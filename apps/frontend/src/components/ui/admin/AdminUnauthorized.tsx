@@ -15,54 +15,54 @@ export default function AdminUnauthorized({
     backHref,
 }: AdminUnauthorizedProps) {
     return (
-        <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center select-none pt-20">
+        <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 pt-20 text-center select-none">
             {/* Header with Icon Box matching GlobalError */}
             <div className="relative mb-8">
                 {/* Decorative background glow */}
-                <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-purple-500/10 rounded-full pointer-events-none" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto size-40 rounded-full bg-purple-500/10 blur-3xl" />
 
                 {/* Icon Container */}
-                <div className="relative rounded-3xl bg-bg-card p-6 shadow-2xl border border-border-color/20 text-purple-500 inline-block">
-                    <ShieldAlert className="h-16 w-16" />
+                <div className="relative inline-block rounded-3xl border border-border-color/20 bg-bg-card p-6 text-purple-500 shadow-2xl">
+                    <ShieldAlert className="size-16" />
                 </div>
 
                 {/* Faded 403 text behind the icon */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 select-none">
+                <div className="absolute top-1/2 left-1/2 -z-10 -translate-1/2 select-none">
                     <span className="text-9xl font-bold tracking-normal text-purple-500/5">403</span>
                 </div>
             </div>
 
-            <h2 className="text-4xl font-bold text-theme-purple mb-3 tracking-tight">
+            <h2 className="mb-3 text-4xl font-bold tracking-tight text-theme-purple">
                 {title}
             </h2>
 
-            <p className="text-text-muted max-w-md mx-auto mb-10 font-medium leading-relaxed font-sans">
+            <p className="mx-auto mb-10 max-w-md font-sans leading-relaxed font-medium text-text-muted">
                 {description}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Link
                     href="/"
-                    className="flex items-center gap-2 rounded-full bg-purple-500 text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all text-base tracking-widest"
+                    className="flex items-center gap-2 rounded-full bg-purple-500 px-8 py-3.5 text-base font-bold tracking-widest text-white shadow-lg shadow-purple-500/20 transition-all hover:-translate-y-0.5 hover:shadow-purple-500/40"
                 >
-                    <Home className="h-4 w-4" />
+                    <Home className="size-4" />
                     Terug naar Home
                 </Link>
 
                 {backHref ? (
                     <Link
                         href={backHref}
-                        className="flex items-center gap-2 rounded-full px-8 py-3.5 font-bold text-text-main bg-bg-card border border-border-color/20 hover:bg-black/5 dark:hover:bg-white/5 transition-all text-base tracking-widest"
+                        className="flex items-center gap-2 rounded-full border border-border-color/20 bg-bg-card px-8 py-3.5 text-base font-bold tracking-widest text-text-main transition-all hover:bg-black/5 dark:hover:bg-white/5"
                     >
-                        <ArrowLeft className="h-4 w-4" />
+                        <ArrowLeft className="size-4" />
                         Vorige Pagina
                     </Link>
                 ) : (
                     <button
                         onClick={() => window.history.back()}
-                        className="flex items-center gap-2 rounded-full px-8 py-3.5 font-bold text-text-main bg-bg-card border border-border-color/20 hover:bg-black/5 dark:hover:bg-white/5 transition-all text-base tracking-widest"
+                        className="flex items-center gap-2 rounded-full border border-border-color/20 bg-bg-card px-8 py-3.5 text-base font-bold tracking-widest text-text-main transition-all hover:bg-black/5 dark:hover:bg-white/5"
                     >
-                        <ArrowLeft className="h-4 w-4" />
+                        <ArrowLeft className="size-4" />
                         Vorige Pagina
                     </button>
                 )}

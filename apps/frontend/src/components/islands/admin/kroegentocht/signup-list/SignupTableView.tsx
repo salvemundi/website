@@ -44,21 +44,21 @@ export default function SignupTableView({
     getParticipants
 }: SignupTableViewProps) {
     return (
-        <div className="bg-(--bg-card) rounded-2xl shadow-(--shadow-card) ring-1 ring-(--border-color)/30 overflow-hidden animate-in fade-in duration-200">
+        <div className="animate-in fade-in overflow-hidden rounded-2xl bg-(--bg-card) shadow-(--shadow-card) ring-1 ring-(--border-color)/30 duration-200">
             <div className="overflow-x-auto">
                 <table className="w-full text-left">
                     <thead>
-                        <tr className="bg-(--bg-main)/50 border-b border-(--border-color)/30">
+                        <tr className="border-b border-(--border-color)/30 bg-(--bg-main)/50">
                             <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted)">Deelnemers</th>
                             <th className="px-6 py-4 text-center text-[10px] font-semibold text-(--text-muted)">Tickets</th>
-                            <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted) hidden lg:table-cell">Vereniging</th>
+                            <th className="hidden px-6 py-4 text-[10px] font-semibold text-(--text-muted) lg:table-cell">Vereniging</th>
                             <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted)">Groep</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-(--border-color)/20">
                         {filteredSignups.length === 0 ? (
                             <tr>
-                                <td colSpan={4} className="px-6 py-16 text-center text-(--text-muted) italic font-medium">
+                                <td colSpan={4} className="px-6 py-16 text-center font-medium text-(--text-muted) italic">
                                     Geen aanmeldingen gevonden.
                                 </td>
                             </tr>
@@ -70,18 +70,18 @@ export default function SignupTableView({
                                 )?.name;
 
                                 return (
-                                    <tr key={signup.id} className="hover:bg-(--bg-main)/30 transition-colors border-b border-(--border-color)/10 last:border-0">
-                                        <td className="px-6 py-3 min-w-75">
+                                    <tr key={signup.id} className="border-b border-(--border-color)/10 transition-colors last:border-0 hover:bg-(--bg-main)/30">
+                                        <td className="min-w-75 px-6 py-3">
                                             <div className="flex flex-col gap-0.5">
                                                 <div className="flex items-center gap-2">
-                                                    <a href={`mailto:${signup.email}`} className="text-sm font-semibold text-(--text-main) hover:text-(--theme-purple) transition-colors flex items-center gap-2" title={signup.email}>
-                                                        <Mail className="h-3.5 w-3.5 text-(--text-muted)" />
-                                                        {signup.name} <span className="text-xs text-(--text-muted) font-normal">({signup.email})</span>
+                                                    <a href={`mailto:${signup.email}`} className="flex items-center gap-2 text-sm font-semibold text-(--text-main) transition-colors hover:text-(--theme-purple)" title={signup.email}>
+                                                        <Mail className="size-3.5 text-(--text-muted)" />
+                                                        {signup.name} <span className="text-xs font-normal text-(--text-muted)">({signup.email})</span>
                                                     </a>
                                                 </div>
 
                                                 {isLeaderOfGroup && (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 mt-1 bg-amber-500/10 border border-amber-500/20 rounded-md text-[9px] font-semibold text-amber-700 dark:text-amber-400 w-fit">
+                                                    <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[9px] font-semibold text-amber-700 dark:text-amber-400">
                                                         👑 Groepsleider ({isLeaderOfGroup})
                                                     </span>
                                                 )}
@@ -93,8 +93,8 @@ export default function SignupTableView({
                                                             const rawInitial = p.initial || '';
 
                                                             return (
-                                                                <div key={i} className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-(--bg-main)/80 rounded-md ring-1 ring-(--border-color)/30 text-[10px] font-medium text-(--text-light)">
-                                                                    <span className="text-(--text-muted) truncate max-w-30">
+                                                                <div key={i} className="inline-flex items-center gap-1.5 rounded-md bg-(--bg-main)/80 px-2 py-0.5 text-[10px] font-medium text-(--text-light) ring-1 ring-(--border-color)/30">
+                                                                    <span className="max-w-30 truncate text-(--text-muted)">
                                                                         {rawName}{rawInitial ? ` ${rawInitial}` : ''}
                                                                     </span>
                                                                 </div>
@@ -105,11 +105,11 @@ export default function SignupTableView({
                                             </div>
                                         </td>
                                         <td className="px-6 py-3 text-center">
-                                            <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-(--theme-purple)/10 text-(--theme-purple) text-[10px] font-semibold ring-1 ring-(--theme-purple)/30">
+                                            <span className="inline-flex items-center justify-center rounded-full bg-(--theme-purple)/10 px-2.5 py-0.5 text-[10px] font-semibold text-(--theme-purple) ring-1 ring-(--theme-purple)/30">
                                                 {signup.amount_tickets}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-3 text-[11px] font-medium text-(--text-muted) hidden lg:table-cell">
+                                        <td className="hidden px-6 py-3 text-[11px] font-medium text-(--text-muted) lg:table-cell">
                                             {signup.association || '-'}
                                         </td>
                                         <td className="px-6 py-3">
@@ -127,20 +127,20 @@ export default function SignupTableView({
                                                     </span>
                                                 )}
 
-                                                <div className="flex items-center gap-1 shrink-0">
+                                                <div className="flex shrink-0 items-center gap-1">
                                                     <button
                                                         onClick={() => signup.id && onEdit(signup.id)}
-                                                        className="icon-button p-1.5 rounded-md hover:bg-(--theme-purple)/10 text-(--text-muted) hover:text-(--theme-purple) transition-all cursor-pointer"
+                                                        className="icon-button cursor-pointer rounded-md p-1.5 text-(--text-muted) transition-all hover:bg-(--theme-purple)/10 hover:text-(--theme-purple)"
                                                         title="Inschrijving bewerken"
                                                     >
-                                                        <Edit className="h-3.5 w-3.5" />
+                                                        <Edit className="size-3.5" />
                                                     </button>
                                                     <button
                                                         onClick={() => signup.id && onDelete(signup.id)}
-                                                        className="icon-button p-1.5 rounded-md hover:bg-red-500/10 text-(--text-muted) hover:text-red-500 transition-all cursor-pointer"
+                                                        className="icon-button cursor-pointer rounded-md p-1.5 text-(--text-muted) transition-all hover:bg-red-500/10 hover:text-red-500"
                                                         title="Inschrijving verwijderen"
                                                     >
-                                                        <Trash className="h-3.5 w-3.5" />
+                                                        <Trash className="size-3.5" />
                                                     </button>
                                                 </div>
                                             </div>

@@ -50,31 +50,31 @@ export default function AdminToolbar({
 
     return (
         <header
-            className="bg-bg-card border-b border-border-color sticky top-(--header-total-height) z-30 w-full transition-transform duration-300"
+            className="sticky top-(--header-total-height) z-30 w-full border-b border-border-color bg-bg-card transition-transform duration-300"
             style={{ transform: hidden ? 'translateY(calc(-100% - var(--header-total-height)))' : 'translateY(0)' }}
         >
             <div className="admin-container py-4">
-                <div className={`flex flex-col ${centered ? 'items-center text-center mx-auto' : 'md:flex-row justify-between items-start md:items-center'} gap-4`}>
+                <div className={`flex flex-col ${centered ? 'mx-auto items-center text-center' : 'items-start justify-between md:flex-row md:items-center'} gap-4`}>
                     <div className={`flex items-center gap-4 ${centered ? 'flex-col' : ''}`}>
                         {backHref && (
                             <Link
                                 href={backHref}
                                 title="Terug"
                                 onClick={onBack}
-                                className="p-2 rounded-xl bg-bg-card border border-border-color text-text-muted hover:text-theme-purple transition-all active:scale-95 shadow-sm"
+                                className="rounded-xl border border-border-color bg-bg-card p-2 text-text-muted shadow-sm transition-all hover:text-theme-purple active:scale-95"
                             >
-                                <ChevronLeft className="h-4 w-4" />
+                                <ChevronLeft className="size-4" />
                             </Link>
                         )}
                         <div className={`flex flex-col ${centered ? 'items-center' : ''}`}>
-                            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                                <h1 className="text-xl md:text-2xl font-semibold text-theme-purple tracking-tight leading-tight">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                <h1 className="text-xl leading-tight font-semibold tracking-tight text-theme-purple md:text-2xl">
                                     {title}
                                 </h1>
                                 {titleBadge}
                             </div>
                             {subtitle && (
-                                <p className="text-sm text-text-muted font-medium leading-tight mt-0.5">
+                                <p className="mt-0.5 text-sm leading-tight font-medium text-text-muted">
                                     {subtitle}
                                 </p>
                             )}
@@ -82,7 +82,7 @@ export default function AdminToolbar({
                     </div>
 
                     {actions && (
-                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
+                        <div className="flex w-full flex-wrap items-center gap-2 sm:gap-3 md:w-auto">
                             {actions}
                         </div>
                     )}

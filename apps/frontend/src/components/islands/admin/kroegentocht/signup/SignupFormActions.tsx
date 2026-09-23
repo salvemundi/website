@@ -10,23 +10,23 @@ interface SignupFormActionsProps {
 
 export default function SignupFormActions({ isPending, onReset, onDelete }: SignupFormActionsProps) {
     return (
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex gap-4 w-full md:w-auto">
+        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+            <div className="flex w-full gap-4 md:w-auto">
                 <button
                     type="button"
                     onClick={onReset}
-                    className="beheer-button flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 bg-(--bg-card) border border-(--border-color) rounded-xl text-xs font-semibold text-(--text-light) hover:text-(--theme-purple) transition-all active:scale-95 shadow-sm"
+                    className="beheer-button flex flex-1 items-center justify-center gap-2 rounded-xl border border-(--border-color) bg-(--bg-card) px-8 py-4 text-xs font-semibold text-(--text-light) shadow-sm transition-all hover:text-(--theme-purple) active:scale-95 md:flex-none"
                 >
-                    <RefreshCw className="h-4 w-4" />
+                    <RefreshCw className="size-4" />
                     Reset
                 </button>
 
                 <button
                     type="button"
                     onClick={onDelete}
-                    className="beheer-button flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-semibold text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95 shadow-sm"
+                    className="beheer-button flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-8 py-4 text-xs font-semibold text-red-500 shadow-sm transition-all hover:bg-red-500 hover:text-white active:scale-95 md:flex-none"
                 >
-                    <Trash className="h-4 w-4" />
+                    <Trash className="size-4" />
                     Verwijder Aanmelding
                 </button>
             </div>
@@ -34,12 +34,12 @@ export default function SignupFormActions({ isPending, onReset, onDelete }: Sign
             <button
                 type="submit"
                 disabled={isPending}
-                className="beheer-button w-full md:w-auto flex items-center justify-center gap-3 px-12 py-5 bg-(--theme-purple) text-white font-semibold text-sm rounded-xl shadow-(--shadow-glow) hover:opacity-95 transition-all active:scale-95 disabled:opacity-50"
+                className="beheer-button flex w-full items-center justify-center gap-3 rounded-xl bg-(--theme-purple) px-12 py-5 text-sm font-semibold text-white shadow-(--shadow-glow) transition-all hover:opacity-95 active:scale-95 disabled:opacity-50 md:w-auto"
             >
                 {isPending ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="size-5 animate-spin" />
                 ) : (
-                    <Save className="h-5 w-5" />
+                    <Save className="size-5" />
                 )}
                 Wijzigingen Opslaan
             </button>

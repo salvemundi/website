@@ -72,26 +72,26 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
             actions={
                 <div className="flex items-center gap-4">
                     <Link href={`/beheer/activiteiten/${id}/scanner`} className="hidden md:inline-block">
-                        <button className="beheer-button h-10 px-4 rounded-xl bg-theme-purple text-white font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-theme-purple/20 text-sm">
+                        <button className="beheer-button flex h-10 items-center gap-2 rounded-xl bg-theme-purple px-4 text-sm font-bold text-white shadow-lg shadow-theme-purple/20 transition-all hover:scale-105">
                             Scanner
                         </button>
                     </Link>
-                    <div className="hidden md:flex items-center gap-4 bg-bg-soft px-4 py-2 rounded-2xl border border-border-color/50 shadow-sm">
+                    <div className="hidden items-center gap-4 rounded-2xl border border-border-color/50 bg-bg-soft px-4 py-2 shadow-sm md:flex">
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Totaal</span>
-                            <span className="text-sm font-bold text-text-main leading-none">{totalSignups}</span>
+                            <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Totaal</span>
+                            <span className="text-sm leading-none font-bold text-text-main">{totalSignups}</span>
                         </div>
-                        <div className="w-px h-6 bg-border-color/20" />
+                        <div className="h-6 w-px bg-border-color/20" />
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Ingecheckt</span>
-                            <span className="text-sm font-bold text-beheer-active leading-none">{checkedInCount}</span>
+                            <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Ingecheckt</span>
+                            <span className="text-sm leading-none font-bold text-beheer-active">{checkedInCount}</span>
                         </div>
                         {spotsLeft !== null && (
                             <>
-                                <div className="w-px h-6 bg-border-color/20" />
+                                <div className="h-6 w-px bg-border-color/20" />
                                 <div className="flex flex-col items-center px-2">
-                                    <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Plekken over</span>
-                                    <span className="text-sm font-bold text-text-main leading-none">{spotsLeft}</span>
+                                    <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Plekken over</span>
+                                    <span className="text-sm leading-none font-bold text-text-main">{spotsLeft}</span>
                                 </div>
                             </>
                         )}

@@ -106,14 +106,14 @@ export default function ActiviteitNieuwIsland({
                 title="Nieuwe activiteit"
                 backHref="/beheer/activiteiten"
             />
-            <div className="container mx-auto px-4 py-8 max-w-7xl">
+            <div className="container mx-auto max-w-7xl px-4 py-8">
                 <form action={formAction} className="space-y-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
                         <div className="lg:col-span-8">
                             <GeneralInfoSection initialData={initialData} formErrors={state.fieldErrors} />
                         </div>
 
-                        <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-8">
+                        <div className="space-y-6 lg:sticky lg:top-8 lg:col-span-4">
                             <BannerSection
                                 imagePreview={imagePreview}
                                 onUploadClick={() => fileInputRef.current?.click()}
@@ -131,24 +131,24 @@ export default function ActiviteitNieuwIsland({
                                 <button
                                     type="submit"
                                     disabled={optimisticSaving}
-                                    className="form-button w-full bg-(--theme-purple) text-white px-8 py-4 rounded-xl font-semibold text-base shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 group border border-white/10"
+                                    className="group active:scale-0.98 form-button flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--theme-purple) px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:opacity-90 disabled:opacity-50"
                                 >
-                                    {optimisticSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 group-hover:scale-110 transition-transform" />}
+                                    {optimisticSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4 transition-transform group-hover:scale-110" />}
                                     <span>{optimisticSaving ? 'Bezig...' : 'Activiteit aanmaken'}</span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => router.back()}
-                                    className="btn-cancel w-full px-6 py-3.5 rounded-xl font-semibold text-base border border-(--border-color) bg-transparent text-(--text-main) hover:bg-(--bg-main)/60 dark:hover:bg-white/5 hover:border-(--theme-purple)/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+                                    className="btn-cancel active:scale-0.98 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-(--border-color) bg-transparent px-6 py-3.5 text-base font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/30 hover:bg-(--bg-main)/60 dark:hover:bg-white/5"
                                 >
-                                    <X className="h-4 w-4 text-(--text-muted)" />
+                                    <X className="size-4 text-(--text-muted)" />
                                     <span>Annuleren</span>
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                         <PlanningLocationSection initialData={initialData} formErrors={state.fieldErrors} />
                         <CapacityCostsSection
                             initialData={initialData}
@@ -163,21 +163,21 @@ export default function ActiviteitNieuwIsland({
                     </div>
 
                     {/* Mobile bottom action buttons */}
-                    <div className="block lg:hidden pt-4 space-y-3">
+                    <div className="block space-y-3 pt-4 lg:hidden">
                         <button
                             type="submit"
                             disabled={optimisticSaving}
-                            className="form-button w-full bg-(--theme-purple) text-white px-8 py-4 rounded-xl font-semibold text-base shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 group border border-white/10"
+                            className="group active:scale-0.98 form-button flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--theme-purple) px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:opacity-90 disabled:opacity-50"
                         >
-                            {optimisticSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 group-hover:scale-110 transition-transform" />}
+                            {optimisticSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4 transition-transform group-hover:scale-110" />}
                             <span>{optimisticSaving ? 'Bezig...' : 'Activiteit aanmaken'}</span>
                         </button>
                         <button
                             type="button"
                             onClick={() => router.back()}
-                            className="btn-cancel w-full px-6 py-3.5 rounded-xl font-semibold text-base border border-(--border-color) bg-transparent text-(--text-main) hover:bg-(--bg-main)/60 dark:hover:bg-white/5 hover:border-(--theme-purple)/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+                            className="btn-cancel active:scale-0.98 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-(--border-color) bg-transparent px-6 py-3.5 text-base font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/30 hover:bg-(--bg-main)/60 dark:hover:bg-white/5"
                         >
-                            <X className="h-4 w-4 text-(--text-muted)" />
+                            <X className="size-4 text-(--text-muted)" />
                             <span>Annuleren</span>
                         </button>
                     </div>

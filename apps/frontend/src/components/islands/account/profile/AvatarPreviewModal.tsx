@@ -17,11 +17,11 @@ export default function AvatarPreviewModal({
     onCancel 
 }: AvatarPreviewModalProps) {
     return (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-(--bg-card) squircle-xl p-8 max-w-sm w-full shadow-2xl border border-white/10 flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
-                <h3 className="text-2xl font-black text-white mb-6">Nieuwe profielfoto</h3>
+        <div className="animate-in fade-in fixed inset-0 z-100 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm duration-300">
+            <div className="squircle-xl animate-in zoom-in-95 flex w-full max-w-sm flex-col items-center border border-white/10 bg-(--bg-card) p-8 text-center shadow-2xl duration-300">
+                <h3 className="mb-6 text-2xl font-black text-white">Nieuwe profielfoto</h3>
                 
-                <div className="relative h-48 w-48 rounded-full overflow-hidden border-4 border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.3)] mb-8">
+                <div className="relative mb-8 size-48 overflow-hidden rounded-full border-4 border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.3)]">
                     <Image 
                         src={preview} 
                         alt="Preview" 
@@ -31,22 +31,22 @@ export default function AvatarPreviewModal({
                     />
                 </div>
 
-                <p className="text-(--text-muted) font-medium mb-8 leading-relaxed">
+                <p className="mb-8 leading-relaxed font-medium text-(--text-muted)">
                     Ziet dit er goed uit? Klik op opslaan om je nieuwe foto te gebruiken.
                 </p>
 
-                <div className="flex flex-col w-full gap-3">
+                <div className="flex w-full flex-col gap-3">
                     <button
                         onClick={onConfirm}
                         disabled={isPending}
-                        className="form-button w-full py-4 squircle bg-purple-600 text-white font-black text-lg shadow-xl shadow-purple-600/20 transition-all hover:scale-[1.02] hover:bg-purple-500 active:scale-95 disabled:opacity-50"
+                        className="squircle hover:scale-1.02 form-button w-full bg-purple-600 py-4 text-lg font-black text-white shadow-xl shadow-purple-600/20 transition-all hover:bg-purple-500 active:scale-95 disabled:opacity-50"
                     >
                         {isPending ? 'Uploaden...' : 'Opslaan'}
                     </button>
                     <button
                         onClick={onCancel}
                         disabled={isPending}
-                        className="form-button w-full py-4 squircle border-2 border-white/10 text-white font-bold text-lg transition-all hover:bg-white/5 active:scale-95 disabled:opacity-50"
+                        className="squircle form-button w-full border-2 border-white/10 py-4 text-lg font-bold text-white transition-all hover:bg-white/5 active:scale-95 disabled:opacity-50"
                     >
                         Annuleren
                     </button>
