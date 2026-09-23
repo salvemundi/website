@@ -175,3 +175,19 @@ export function isDeadlinePassed(deadline?: string | Date | null, now: Date = ne
         return false;
     }
 }
+
+export function isEventOnDay(
+    event: { event_date: string | Date; event_date_end?: string | Date | null },
+    day: Date
+): boolean {
+    const start = toDate(event.event_date);
+    if (isNaN(start.getTime())) return false;
+    const end = event.event_date_end ? toDate(event.event_date_end) : start;
+    const validEnd = isNaN(end.getTime()) ? start : end;
+
+    const d = new Date(day.getFullYear(), day.getMonth(), day.getDate()).getTime();
+    const s = new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
+    const e = new Date(validEnd.getFullYear(), validEnd.getMonth(), validEnd.getDate()).getTime();
+
+    return d >= s && d <= e;
+}

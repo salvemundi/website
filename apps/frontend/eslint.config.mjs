@@ -14,11 +14,24 @@ import unusedImports from "eslint-plugin-unused-imports";
 import eslintComments from "eslint-plugin-eslint-comments";
 import nextConfig from "eslint-config-next";
 import tsEslint from "@typescript-eslint/eslint-plugin";
+import tailwindPlugin from "eslint-plugin-tailwindcss";
 
 const eslintConfig = [
     { ignores: [".next/", "node_modules/", "dist/"] },
     ...nextConfig,
     securityPlugin.configs.recommended,
+    tailwindPlugin.configs.recommended,
+    {
+        settings: {
+            tailwindcss: {
+                callees: ["cn", "clsx", "cva"],
+                cssConfigPath: "src/app/globals.css",
+            },
+        },
+        rules: {
+            "tailwindcss/no-custom-classname": "off",
+        },
+    },
     {
         languageOptions: {
             parserOptions: {

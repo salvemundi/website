@@ -18,24 +18,24 @@ export default async function BoardHistoryPage() {
 
     return (
         <PublicPageShell>
-            <div className="container px-fluid-md max-w-7xl pt-fluid-md pb-4">
+            <div className="container max-w-7xl px-fluid-md pt-fluid-md pb-4">
                 <BackButton href="/commissies/bestuur" title="Terug naar Huidig Bestuur" text="Huidig Bestuur" />
             </div>
 
-            <main className="mx-auto max-w-app px-fluid-md pb-fluid-lg pt-fluid-md">
+            <main className="max-w-app mx-auto px-fluid-md pt-fluid-md pb-fluid-lg">
                 {/* Header Section */}
-                <div className="flex flex-col items-center mb-16 text-center">
-                    <div className="p-4 rounded-3xl bg-purple-500/10 text-purple-500 mb-6 shadow-sm ring-1 ring-purple-500/20">
-                        <History className="h-10 w-10" />
+                <div className="mb-12 flex flex-col items-center text-center sm:mb-16">
+                    <div className="mb-6 rounded-3xl border border-purple-500/10 bg-purple-500/5 p-4 text-purple-700 shadow-sm dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
+                        <History className="size-10" />
                     </div>
-                    <h2 className="text-4xl font-black text-theme-purple mb-4 tracking-tight">
+                    <h1 className="mb-4 text-3xl font-black tracking-tight text-purple-700 sm:text-4xl dark:text-purple-300">
                         Onze Geschiedenis
-                    </h2>
-                    <p className="text-text-muted max-w-2xl text-lg font-medium leading-relaxed">
+                    </h1>
+                    <p className="max-w-2xl text-base leading-relaxed font-medium text-(--text-muted) sm:text-lg">
                         Sinds de oprichting van Salve Mundi hebben vele gedreven studenten zich ingezet om de vereniging te laten groeien.
                         Hieronder vind je het overzicht van alle besturen die de basis hebben gelegd voor wat we vandaag zijn.
                     </p>
-                    <div className="h-1 w-24 bg-linear-to-r from-transparent via-purple-500 to-transparent rounded-full mt-10" />
+                    <div className="mt-10 h-1 w-24 rounded-full bg-linear-to-r from-transparent via-purple-500 to-transparent" />
                 </div>
 
                 <BoardHistoryTimeline boards={boards} />
