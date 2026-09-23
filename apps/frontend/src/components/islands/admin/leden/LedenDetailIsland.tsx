@@ -183,33 +183,33 @@ export default function LedenDetailIsland({
 
     return (
         <div className="w-full overflow-x-hidden">
-            <div className="flex flex-col md:flex-row md:items-center gap-8 mb-12">
-                <div className="relative group">
-                    <div className="h-28 w-28 rounded-4xl bg-(--beheer-accent)/10 flex items-center justify-center text-(--beheer-accent) font-semibold text-4xl shadow-2xl border border-(--beheer-border) transition-transform group-hover:scale-105 duration-500 overflow-hidden">
+            <div className="mb-12 flex flex-col gap-8 md:flex-row md:items-center">
+                <div className="group relative">
+                    <div className="flex size-28 items-center justify-center overflow-hidden rounded-4xl border border-(--beheer-border) bg-(--beheer-accent)/10 text-4xl font-semibold text-(--beheer-accent) shadow-2xl transition-transform duration-500 group-hover:scale-105">
                         {localMember.avatar ? (
                             <MediaAsset
                                 asset={getImageUrl(localMember.avatar, { width: 150, height: 150, fit: 'cover' }) || ''}
                                 alt="avatar"
                                 width={112}
                                 height={112}
-                                className="h-full w-full object-cover rounded-4xl"
+                                className="size-full rounded-4xl object-cover"
                             />
                         ) : (
                             <>{localMember.first_name?.[0]}{localMember.last_name?.[0]}</>
                         )}
                     </div>
                 </div>
-                <div className="space-y-3 min-w-0">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-(--beheer-text) leading-tight wrap-break-word">
+                <div className="min-w-0 space-y-3">
+                    <h1 className="text-2xl leading-tight font-semibold wrap-break-word text-(--beheer-text) sm:text-3xl md:text-4xl">
                         {localMember.first_name} {localMember.last_name}
                     </h1>
                     <div className="flex flex-wrap items-center gap-4">
-                        <span className="text-(--beheer-text-muted) font-semibold flex items-center gap-2 text-xs opacity-70">
-                            <Mail className="h-4 w-4 text-(--beheer-accent)" /> {localMember.email}
+                        <span className="flex items-center gap-2 text-xs font-semibold text-(--beheer-text-muted) opacity-70">
+                            <Mail className="size-4 text-(--beheer-accent)" /> {localMember.email}
                         </span>
-                        <div suppressHydrationWarning className={`px-4 py-1.5 rounded-full text-[10px] font-semibold shadow-sm border ${isMembershipActive
-                            ? 'bg-green-500/10 text-green-500 border-green-500/20'
-                            : 'bg-red-500/10 text-red-500 border-red-500/20'
+                        <div suppressHydrationWarning className={`rounded-full border px-4 py-1.5 text-[10px] font-semibold shadow-sm ${isMembershipActive
+                            ? 'border-green-500/20 bg-green-500/10 text-green-500'
+                            : 'border-red-500/20 bg-red-500/10 text-red-500'
                             }`}>
                             {isMembershipActive ? 'Actief Lidmaatschap' : 'Lidmaatschap Verlopen'}
                         </div>
@@ -217,7 +217,7 @@ export default function LedenDetailIsland({
                 </div>
             </div>
 
-            <div className="flex flex-wrap gap-0 border-b border-(--beheer-border) mb-10">
+            <div className="mb-10 flex flex-wrap gap-0 border-b border-(--beheer-border)">
                 {[
                     { id: 'profiel', label: 'Profiel', icon: UserIcon },
                     { id: 'activiteiten', label: 'Activiteiten', icon: History },
@@ -228,12 +228,12 @@ export default function LedenDetailIsland({
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                            className={`tab-button flex items-center gap-3 px-8 py-5 font-semibold text-xs transition-all border-b-2 cursor-pointer ${activeTab === tab.id
-                                ? 'text-(--beheer-accent) border-(--beheer-accent)'
-                                : 'text-(--beheer-text-muted) border-transparent hover:text-(--beheer-text)'
+                            className={`tab-button flex cursor-pointer items-center gap-3 border-b-2 px-8 py-5 text-xs font-semibold transition-all ${activeTab === tab.id
+                                ? 'border-(--beheer-accent) text-(--beheer-accent)'
+                                : 'border-transparent text-(--beheer-text-muted) hover:text-(--beheer-text)'
                                 }`}
                         >
-                            <tab.icon className="h-4 w-4" /> {tab.label}
+                            <tab.icon className="size-4" /> {tab.label}
                         </button>
                     )
                 ))}

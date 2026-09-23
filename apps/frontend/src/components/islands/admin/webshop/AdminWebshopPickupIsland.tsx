@@ -42,31 +42,31 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                 backHref="/beheer/webshop"
             />
 
-            <div className="admin-container py-4 md:py-8 space-y-4">
+            <div className="admin-container space-y-4 py-4 md:py-8">
                 <p className="text-sm text-(--beheer-text-muted)">{openCount} van de {preorders.length} bestellingen nog niet opgehaald.</p>
 
-                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-xl">
+                <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
                     {preorders.length === 0 ? (
                         <div className="py-24 text-center">
-                            <ClipboardCheck className="h-12 w-12 text-(--beheer-text-muted) mx-auto mb-4 opacity-10" />
-                            <p className="font-semibold text-sm text-(--beheer-text-muted)">Nog geen betaalde bestellingen</p>
+                            <ClipboardCheck className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-10" />
+                            <p className="text-sm font-semibold text-(--beheer-text-muted)">Nog geen betaalde bestellingen</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-(--beheer-card-soft) border-b border-(--beheer-border)">
+                                <thead className="border-b border-(--beheer-border) bg-(--beheer-card-soft)">
                                     <tr>
                                         <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Lid</th>
                                         <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Bestelling</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) hidden sm:table-cell">Opgehaald op</th>
+                                        <th className="hidden px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) sm:table-cell">Opgehaald op</th>
                                         <th className="px-6 py-4 text-right text-xs font-semibold text-(--beheer-text-muted)">Opgehaald</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-(--beheer-border)">
                                     {preorders.map((preorder) => (
-                                        <tr key={preorder.id} className={`hover:bg-(--beheer-card-soft)/30 transition-colors ${preorder.picked_up ? 'opacity-60' : ''}`}>
+                                        <tr key={preorder.id} className={`transition-colors hover:bg-(--beheer-card-soft)/30 ${preorder.picked_up ? 'opacity-60' : ''}`}>
                                             <td className="px-6 py-4">
-                                                <p className="font-semibold text-(--beheer-text) text-sm">{preorder.first_name} {preorder.last_name}</p>
+                                                <p className="text-sm font-semibold text-(--beheer-text)">{preorder.first_name} {preorder.last_name}</p>
                                                 <p className="text-xs text-(--beheer-text-muted) opacity-80">{preorder.email}</p>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-(--beheer-text)">
@@ -78,7 +78,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                     </p>
                                                 ))}
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-(--beheer-text-muted) hidden sm:table-cell">
+                                            <td className="hidden px-6 py-4 text-sm text-(--beheer-text-muted) sm:table-cell">
                                                 {preorder.picked_up_at ? formatDate(new Date(preorder.picked_up_at), 'd MMM yyyy HH:mm') : '-'}
                                             </td>
                                             <td className="px-6 py-4">
@@ -87,9 +87,9 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                         type="button"
                                                         disabled={isPending && updatingId === preorder.id}
                                                         onClick={() => handleToggle(preorder.id, !preorder.picked_up)}
-                                                        className={`beheer-button flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer disabled:opacity-50 ${preorder.picked_up ? 'bg-green-500/10 text-green-600' : 'bg-(--beheer-accent)/10 text-(--beheer-accent) hover:bg-(--beheer-accent)/20'}`}
+                                                        className={`beheer-button flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all disabled:opacity-50 ${preorder.picked_up ? 'bg-green-500/10 text-green-600' : 'bg-(--beheer-accent)/10 text-(--beheer-accent) hover:bg-(--beheer-accent)/20'}`}
                                                     >
-                                                        <CheckCircle2 className="h-4 w-4" />
+                                                        <CheckCircle2 className="size-4" />
                                                         {preorder.picked_up ? 'Opgehaald' : 'Markeer als opgehaald'}
                                                     </button>
                                                 </div>

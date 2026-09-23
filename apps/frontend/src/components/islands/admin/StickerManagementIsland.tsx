@@ -44,7 +44,7 @@ export default function StickerManagementIsland({
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="container mx-auto max-w-7xl px-4 py-8">
             <div>
                 {stickers.length > 0 ? (
                     <StickersTable
@@ -57,10 +57,10 @@ export default function StickerManagementIsland({
                         }}
                     />
                 ) : (
-                    <div className="text-center py-32 bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-dashed border-(--beheer-border)">
-                        <AlertCircle className="h-16 w-16 text-(--beheer-text-muted) opacity-20 mx-auto mb-4" />
-                        <h2 className="text-xl font-semibold text-(--beheer-text) tracking-tight">Geen stickers gevonden</h2>
-                        <p className="text-sm text-(--beheer-text-muted) mt-2 font-semibold">Er zijn nog geen stickers geregistreerd.</p>
+                    <div className="rounded-(--beheer-radius) border border-dashed border-(--beheer-border) bg-(--beheer-card-bg) py-32 text-center">
+                        <AlertCircle className="mx-auto mb-4 size-16 text-(--beheer-text-muted) opacity-20" />
+                        <h2 className="text-xl font-semibold tracking-tight text-(--beheer-text)">Geen stickers gevonden</h2>
+                        <p className="mt-2 text-sm font-semibold text-(--beheer-text-muted)">Er zijn nog geen stickers geregistreerd.</p>
                     </div>
                 )}
             </div>

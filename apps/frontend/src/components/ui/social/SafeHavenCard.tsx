@@ -17,10 +17,10 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
 
     return (
         <div
-            className="flex flex-col squircle-lg bg-bg-main/30 border border-border-color p-5 sm:p-6 transition-all duration-300 hover:border-purple-300 dark:hover:border-white/20 shadow-sm hover:shadow-md h-full"
+            className="squircle-lg bg-bg-main/30 flex h-full flex-col border border-border-color p-5 shadow-sm transition-all duration-300 hover:border-purple-300 hover:shadow-md sm:p-6 dark:hover:border-white/20"
         >
             <div className="flex items-center gap-4">
-                <div className="relative h-16 w-16 sm:h-20 sm:w-20 overflow-hidden squircle shadow-md shrink-0 bg-bg-main">
+                <div className="squircle bg-bg-main relative size-16 shrink-0 overflow-hidden shadow-md sm:size-20">
                     {imageUrl ? (
                         <Image
                             src={imageUrl}
@@ -43,13 +43,13 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                                 alt={safeHaven?.contact_name || 'Safe Haven'}
                                 fill
                                 unoptimized
-                                className="object-cover hidden dark:block"
+                                className="hidden object-cover dark:block"
                             />
                         </>
                     )}
                 </div>
                 <div className="min-w-0 flex-1">
-                    <h3 className="text-lg sm:text-xl font-bold text-theme-purple truncate">
+                    <h3 className="truncate text-lg font-bold text-theme-purple sm:text-xl">
                         {safeHaven?.contact_name || ''}
                     </h3>
                     <p className="text-sm font-semibold text-purple-500">
@@ -63,18 +63,18 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                     <>
                         <ObfuscatedEmail
                             email={safeHaven.email || ''}
-                            className="flex items-center gap-3 rounded-xl bg-bg-card border border-border-color p-3 text-sm font-medium text-text-main hover:border-purple-300 transition-colors w-full shadow-sm"
+                            className="flex w-full items-center gap-3 rounded-xl border border-border-color bg-bg-card p-3 text-sm font-medium text-text-main shadow-sm transition-colors hover:border-purple-300"
                         />
                         {safeHaven.phone_number && (
-                            <div className="flex items-center gap-3 rounded-xl bg-bg-card border border-border-color p-3 text-sm font-medium text-text-main shadow-sm">
-                                <Phone className="h-4 w-4 text-purple-400" />
+                            <div className="flex items-center gap-3 rounded-xl border border-border-color bg-bg-card p-3 text-sm font-medium text-text-main shadow-sm">
+                                <Phone className="size-4 text-purple-400" />
                                 <span>{safeHaven.phone_number}</span>
                             </div>
                         )}
                     </>
                 ) : (
-                    <div className="rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30 p-3">
-                        <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 text-center">
+                    <div className="rounded-xl border border-amber-200/50 bg-amber-50/50 p-3 dark:border-amber-800/30 dark:bg-amber-950/20">
+                        <p className="text-center text-xs font-semibold text-amber-700 dark:text-amber-400">
                             Log in om contactgegevens te zien
                         </p>
                     </div>

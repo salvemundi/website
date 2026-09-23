@@ -128,12 +128,12 @@ export default function AdminSelect<T extends string | number = string | number>
                 type="button"
                 onClick={toggleDropdown}
                 disabled={disabled}
-                className={`flex items-center justify-between w-full font-semibold text-left transition-all outline-none cursor-pointer duration-200 border bg-(--beheer-card-bg) border-(--beheer-border) text-(--beheer-text) rounded-xl hover:border-(--beheer-accent)/50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`active:scale-0.98 flex w-full cursor-pointer items-center justify-between rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) text-left font-semibold text-(--beheer-text) transition-all duration-200 outline-none hover:border-(--beheer-accent)/50 disabled:cursor-not-allowed disabled:opacity-50 ${
                     size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2.5 text-sm'
                 }`}
             >
                 <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
-                <ChevronDown className={`h-4 w-4 shrink-0 text-(--beheer-text-muted) transition-transform duration-300 ${isOpen ? 'rotate-180 text-(--beheer-accent)' : ''}`} />
+                <ChevronDown className={`size-4 shrink-0 text-(--beheer-text-muted) transition-transform duration-300 ${isOpen ? 'rotate-180 text-(--beheer-accent)' : ''}`} />
             </button>
 
             {mounted && isOpen && createPortal(
@@ -146,11 +146,11 @@ export default function AdminSelect<T extends string | number = string | number>
                         width: `${coords.width}px`,
                         zIndex: 999999
                     }}
-                    className="bg-(--beheer-card-bg) border border-(--beheer-border) rounded-xl shadow-(--shadow-card-elevated) overflow-hidden animate-in fade-in zoom-in-95 duration-150 ease-out"
+                    className="animate-in fade-in zoom-in-95 overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) shadow-(--shadow-card-elevated) duration-150 ease-out"
                 >
-                    <div className="max-h-60 overflow-y-auto p-1 space-y-0.5 custom-scrollbar">
+                    <div className="custom-scrollbar max-h-60 space-y-0.5 overflow-y-auto p-1">
                         {options.length === 0 ? (
-                            <div className="px-3 py-2 text-xs font-semibold text-(--beheer-text-muted) italic text-center">
+                            <div className="px-3 py-2 text-center text-xs font-semibold text-(--beheer-text-muted) italic">
                                 Geen opties beschikbaar
                             </div>
                         ) : (
@@ -161,7 +161,7 @@ export default function AdminSelect<T extends string | number = string | number>
                                         key={option.value}
                                         type="button"
                                         onClick={() => handleSelect(option.value)}
-                                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                        className={`w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all ${
                                             isSelected
                                                 ? 'bg-(--beheer-accent) text-white'
                                                 : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) hover:text-(--beheer-text)'

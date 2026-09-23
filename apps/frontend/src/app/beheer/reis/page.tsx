@@ -133,8 +133,8 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
             backHref="/beheer"
             actions={
                 <>
-                    <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-                        <div className="hidden xl:flex items-center gap-4 bg-bg-card px-5 py-2.5 rounded-2xl border border-border-color shadow-sm">
+                    <div className="flex flex-col items-start gap-4 md:flex-row md:items-center">
+                        <div className="hidden items-center gap-4 rounded-2xl border border-border-color bg-bg-card px-5 py-2.5 shadow-sm xl:flex">
                             <StatItem label="Aanmeldingen" value={stats.total} color="text-text-main" />
                             <Divider />
                             <StatItem label="Bevestigd" value={stats.confirmed} color="text-emerald-500" />
@@ -145,16 +145,16 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
                             <Divider />
                             <StatItem label="Restbetaling" value={stats.fullPaid} color="text-purple-500" />
                         </div>
-                        <div className="flex flex-wrap items-stretch sm:items-center gap-2 w-full md:w-auto">
+                        <div className="flex w-full flex-wrap items-stretch gap-2 sm:items-center md:w-auto">
                             <AdminReisSwitcher
                                 trips={trips}
                                 activeTripId={activeTripId as number}
                             />
                             <Link
                                 href="/beheer/reis/instellingen"
-                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-bg-card border border-border-color text-text-main rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm"
+                                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border-color bg-bg-card px-4 py-2 text-xs font-semibold text-text-main shadow-sm transition-all hover:border-theme-purple hover:bg-theme-purple/5 sm:flex-none"
                             >
-                                <Settings2 className="h-3.5 w-3.5" />
+                                <Settings2 className="size-3.5" />
                                 <span className="hidden sm:inline">Instellingen</span>
                             </Link>
                             <ReisVisibilityToggle initialVisible={reisSettings.show} canToggle={canToggleVisibility} />
@@ -178,30 +178,30 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
 function StatItem({ label, value, color }: { label: string; value: number; color: string }) {
     return (
         <div className="flex flex-col items-center px-1">
-            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">{label}</span>
-            <span className={`text-sm font-semibold leading-none ${color}`}>{value}</span>
+            <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">{label}</span>
+            <span className={`text-sm leading-none font-semibold ${color}`}>{value}</span>
         </div>
     );
 }
 
 function Divider() {
-    return <div className="w-px h-7 bg-border-color/40" />;
+    return <div className="h-7 w-px bg-border-color/40" />;
 }
 
 function NoTripsView() {
     return (
-        <div className="py-20 max-w-2xl text-center mx-auto">
-            <div className="bg-bg-card rounded-3xl p-12 shadow-2xl border border-border-color">
-                <div className="h-24 w-24 rounded-full bg-theme-purple/10 text-theme-purple flex items-center justify-center mx-auto mb-8 border border-theme-purple/20">
-                    <Plane className="h-12 w-12 rotate-45" />
+        <div className="mx-auto max-w-2xl py-20 text-center">
+            <div className="rounded-3xl border border-border-color bg-bg-card p-12 shadow-2xl">
+                <div className="mx-auto mb-8 flex size-24 items-center justify-center rounded-full border border-theme-purple/20 bg-theme-purple/10 text-theme-purple">
+                    <Plane className="size-12 rotate-45" />
                 </div>
-                <h2 className="text-3xl font-semibold text-theme-purple mb-2">Geen reizen gevonden</h2>
-                <p className="text-text-muted font-semibold text-sm mb-10">Er zijn momenteel geen actieve of geplande reizen in het systeem.</p>
+                <h2 className="mb-2 text-3xl font-semibold text-theme-purple">Geen reizen gevonden</h2>
+                <p className="mb-10 text-sm font-semibold text-text-muted">Er zijn momenteel geen actieve of geplande reizen in het systeem.</p>
                 <Link
                     href="/beheer/reis/instellingen"
-                    className="inline-flex items-center gap-3 px-10 py-4 bg-theme-purple text-white rounded-2xl font-semibold text-sm shadow-xl transition-all hover:scale-[1.03] active:scale-95 group"
+                    className="group hover:scale-1.03 inline-flex items-center gap-3 rounded-2xl bg-theme-purple px-10 py-4 text-sm font-semibold text-white shadow-xl transition-all active:scale-95"
                 >
-                    <LayoutDashboard className="h-5 w-5" />
+                    <LayoutDashboard className="size-5" />
                     <span>Nieuwe reis aanmaken</span>
                 </Link>
             </div>

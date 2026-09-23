@@ -14,11 +14,11 @@ interface PageProps {
 
 function ErrorCard({ title, message }: { title: string; message: string }) {
     return (
-        <div className="min-h-[70vh] flex items-center justify-center p-6">
-            <div className="max-w-md w-full p-12 bg-(--bg-card) border border-(--border-color) rounded-[1.75rem] text-center shadow-xl">
-                <XCircle className="w-16 h-16 text-red-500 mx-auto mb-6" />
-                <h1 className="text-2xl font-black text-(--theme-purple) mb-4">{title}</h1>
-                <p className="text-(--text-muted) mb-8 leading-relaxed">{message}</p>
+        <div className="flex min-h-[70vh] items-center justify-center p-6">
+            <div className="w-full max-w-md rounded-[1.75rem] border border-(--border-color) bg-(--bg-card) p-12 text-center shadow-xl">
+                <XCircle className="mx-auto mb-6 size-16 text-red-500" />
+                <h1 className="mb-4 text-2xl font-black text-(--theme-purple)">{title}</h1>
+                <p className="mb-8 leading-relaxed text-(--text-muted)">{message}</p>
                 <BackButton href="/merch" text="Terug naar merch" />
             </div>
         </div>
@@ -83,21 +83,21 @@ export default async function WebshopBevestigingPage({ searchParams }: PageProps
 
     return (
         <PublicPageShell>
-            <div className="container mx-auto px-4 py-16 sm:py-24 max-w-2xl">
-                <div className="p-8 sm:p-12 bg-(--bg-card) border border-(--border-color) rounded-[1.75rem] shadow-xl">
-                    <div className="flex flex-col items-center text-center mb-8">
+            <div className="container mx-auto max-w-2xl px-4 py-16 sm:py-24">
+                <div className="rounded-[1.75rem] border border-(--border-color) bg-(--bg-card) p-8 shadow-xl sm:p-12">
+                    <div className="mb-8 flex flex-col items-center text-center">
                         {isCancelled ? (
-                            <XCircle className="w-16 h-16 text-red-500 mb-4" />
+                            <XCircle className="mb-4 size-16 text-red-500" />
                         ) : isCompleted ? (
-                            <CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
+                            <CheckCircle2 className="mb-4 size-16 text-green-500" />
                         ) : (
-                            <Clock className="w-16 h-16 text-(--theme-purple) mb-4" />
+                            <Clock className="mb-4 size-16 text-(--theme-purple)" />
                         )}
-                        <h1 className="text-2xl sm:text-3xl font-black text-(--theme-purple)">Bestelling #{preorder.id}</h1>
-                        <p className="text-(--text-muted) mt-2">{statusLabel}</p>
+                        <h1 className="text-2xl font-black text-(--theme-purple) sm:text-3xl">Bestelling #{preorder.id}</h1>
+                        <p className="mt-2 text-(--text-muted)">{statusLabel}</p>
                     </div>
 
-                    <div className="space-y-3 mb-6">
+                    <div className="mb-6 space-y-3">
                         {preorder.lines.map((line) => (
                             <div key={line.id} className="flex items-center justify-between border-b border-(--border-color) pb-3">
                                 <div>
@@ -111,14 +111,14 @@ export default async function WebshopBevestigingPage({ searchParams }: PageProps
                         ))}
                     </div>
 
-                    <div className="space-y-1 mb-8">
+                    <div className="mb-8 space-y-1">
                         <div className="flex items-center justify-between text-(--text-muted)">
                             <span>Totaalprijs {preorder.deposit_paid ? '(betaald)' : '(nog niet betaald)'}</span>
                             <span>€{Number(preorder.subtotal_amount).toFixed(2)}</span>
                         </div>
                     </div>
 
-                    <p className="text-sm text-(--text-muted) text-center mb-8">
+                    <p className="mb-8 text-center text-sm text-(--text-muted)">
                         Je ontvangt per e-mail bericht zodra je bestelling klaarstaat om af te halen.
                     </p>
 

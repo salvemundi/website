@@ -38,7 +38,7 @@ export default function AdminPageShell({
                         actions={actions}
                         centered={centered}
                     />
-                    <div className="admin-container py-4 md:py-8 min-h-dvh">
+                    <div className="admin-container min-h-dvh py-4 md:py-8">
                         {children}
                     </div>
                 </>

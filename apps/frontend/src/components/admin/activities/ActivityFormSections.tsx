@@ -45,14 +45,14 @@ export function GeneralInfoSection({
     formErrors?: Record<string, string[] | undefined>
 }) {
     return (
-        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border) overflow-hidden">
-            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3">
-                <Info className="h-4 w-4 text-(--beheer-accent)" />
+        <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
+            <div className="flex items-center gap-3 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
+                <Info className="size-4 text-(--beheer-accent)" />
                 <h2 className="text-base font-semibold text-(--beheer-text)">Beschrijving</h2>
             </div>
-            <div className="p-6 space-y-6">
+            <div className="space-y-6 p-6">
                 <div className="relative z-10">
-                    <label htmlFor="name" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Naam van de activiteit *</label>
+                    <label htmlFor="name" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Naam van de activiteit *</label>
                     <input
                         type="text"
                         id="name"
@@ -62,23 +62,23 @@ export function GeneralInfoSection({
                         className={`beheer-input ${formErrors?.name ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
                         placeholder="Bijv. Borrel: Back to School"
                     />
-                    {formErrors?.name && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.name[0]}</p>}
+                    {formErrors?.name && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.name[0]}</p>}
                 </div>
                 <div className="grid grid-cols-1 gap-6">
                     <div>
-                        <label htmlFor="description" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Publieke beschrijving *</label>
+                        <label htmlFor="description" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Publieke beschrijving *</label>
                         <textarea
                             id="description"
                             name="description"
                             rows={8}
                             defaultValue={toInputSafe(initialData?.description)}
-                            className={`beheer-input font-mono text-sm leading-relaxed resize-y ${formErrors?.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                            className={`beheer-input resize-y font-mono text-sm leading-relaxed ${formErrors?.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
                             placeholder="Plak hier je WhatsApp bericht. Gebruik **tekst** voor dikgedrukt."
                         />
-                        {formErrors?.description && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.description[0]}</p>}
+                        {formErrors?.description && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.description[0]}</p>}
                     </div>
                     <div>
-                        <label htmlFor="short_description" className="flex items-end justify-between mb-2">
+                        <label htmlFor="short_description" className="mb-2 flex items-end justify-between">
                             <span className="block text-base font-semibold text-(--beheer-text-muted)">Korte beschrijving / TL;DR</span>
                             <span className="text-xs font-normal text-(--beheer-text-muted) opacity-70">
                                 Optioneel (voor preview kaarten)
@@ -89,13 +89,13 @@ export function GeneralInfoSection({
                             name="short_description"
                             rows={4}
                             defaultValue={toInputSafe(initialData?.short_description)}
-                            className={`beheer-input font-mono text-sm leading-relaxed resize-y ${formErrors?.short_description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                            className={`beheer-input resize-y font-mono text-sm leading-relaxed ${formErrors?.short_description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
                             placeholder="Bijv. een korte samenvatting of TL;DR voor op de overzichtskaart."
                         />
-                        {formErrors?.short_description && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.short_description[0]}</p>}
+                        {formErrors?.short_description && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.short_description[0]}</p>}
                     </div>
                     <div>
-                        <label htmlFor="description_logged_in" className="flex items-end justify-between mb-2">
+                        <label htmlFor="description_logged_in" className="mb-2 flex items-end justify-between">
                             <span className="block text-base font-semibold text-(--beheer-text-muted)">Extra informatie (alleen ingelogd)</span>
                             <span className="text-xs font-normal text-(--beheer-text-muted) opacity-70">
                                 Optioneel
@@ -106,10 +106,10 @@ export function GeneralInfoSection({
                             name="description_logged_in"
                             rows={3}
                             defaultValue={toInputSafe(initialData?.description_logged_in)}
-                            className={`beheer-input font-mono text-sm leading-relaxed resize-y ${formErrors?.description_logged_in ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                            className={`beheer-input resize-y font-mono text-sm leading-relaxed ${formErrors?.description_logged_in ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
                             placeholder="Bijv. verzamelplek, wat mee te nemen..."
                         />
-                        {formErrors?.description_logged_in && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.description_logged_in[0]}</p>}
+                        {formErrors?.description_logged_in && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.description_logged_in[0]}</p>}
                     </div>
                 </div>
             </div>
@@ -187,26 +187,26 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
     };
 
     return (
-        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border) h-full flex flex-col">
-            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3 rounded-t-(--beheer-radius)">
-                <CalendarIcon className="h-4 w-4 text-(--beheer-accent)" />
+        <div className="flex h-full flex-col rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
+            <div className="flex items-center gap-3 rounded-t-(--beheer-radius) border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
+                <CalendarIcon className="size-4 text-(--beheer-accent)" />
                 <h2 className="text-base font-semibold text-(--beheer-text)">Planning & locatie</h2>
             </div>
-            <div className="p-6 space-y-6 flex-1 flex flex-col">
+            <div className="flex flex-1 flex-col space-y-6 p-6">
                 <div className="space-y-6">
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3">
-                        <div className="flex-1 min-w-0">
-                            <label htmlFor="event_date" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Startdatum *</label>
+                    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start">
+                        <div className="min-w-0 flex-1">
+                            <label htmlFor="event_date" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Startdatum *</label>
                             <input type="hidden" name="event_date" value={startDate ? toISODateString(startDate) : ''} />
                             <AdminDatepicker
                                 value={startDate}
                                 onChange={handleStartDateChange}
                                 className={formErrors?.event_date ? 'border-red-500' : ''}
                             />
-                            {formErrors?.event_date && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.event_date[0]}</p>}
+                            {formErrors?.event_date && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.event_date[0]}</p>}
                         </div>
-                        <div className="w-full sm:w-36 shrink-0">
-                            <label htmlFor="event_time" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Starttijd</label>
+                        <div className="w-full shrink-0 sm:w-36">
+                            <label htmlFor="event_time" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Starttijd</label>
                             <AdminTimepicker
                                 id="event_time"
                                 name="event_time"
@@ -222,9 +222,9 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                         </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3">
-                        <div className="flex-1 min-w-0">
-                            <label htmlFor="event_date_end" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Einddatum</label>
+                    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start">
+                        <div className="min-w-0 flex-1">
+                            <label htmlFor="event_date_end" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Einddatum</label>
                             <input type="hidden" name="event_date_end" value={endDate ? toISODateString(endDate) : ''} />
                             <AdminDatepicker
                                 value={endDate}
@@ -232,10 +232,10 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                                 minDate={startDate || undefined}
                                 className={formErrors?.event_date_end ? 'border-red-500' : ''}
                             />
-                            {formErrors?.event_date_end && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.event_date_end[0]}</p>}
+                            {formErrors?.event_date_end && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.event_date_end[0]}</p>}
                         </div>
-                        <div className="w-full sm:w-36 shrink-0">
-                            <label htmlFor="event_time_end" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Eindtijd</label>
+                        <div className="w-full shrink-0 sm:w-36">
+                            <label htmlFor="event_time_end" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Eindtijd</label>
                             <AdminTimepicker
                                 id="event_time_end"
                                 name="event_time_end"
@@ -246,17 +246,17 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                         </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3">
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-2">
+                    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start">
+                        <div className="min-w-0 flex-1">
+                            <div className="mb-2 flex items-center justify-between">
                                 <label htmlFor="registration_deadline_date" className="block text-base font-semibold text-(--beheer-text-muted)">Inschrijfdeadline</label>
                                 {(deadlineDate || deadlineTime) && (
                                     <button
                                         type="button"
                                         onClick={handleClearDeadline}
-                                        className="beheer-button text-xs font-semibold text-red-500 hover:text-red-400 flex items-center gap-1 cursor-pointer transition-colors"
+                                        className="beheer-button flex cursor-pointer items-center gap-1 text-xs font-semibold text-red-500 transition-colors hover:text-red-400"
                                     >
-                                        <X className="h-3.5 w-3.5" /> Wissen
+                                        <X className="size-3.5" /> Wissen
                                     </button>
                                 )}
                             </div>
@@ -268,10 +268,10 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                                 maxDate={startDate || undefined}
                                 className={formErrors?.registration_deadline ? 'border-red-500' : ''}
                             />
-                            {formErrors?.registration_deadline && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.registration_deadline[0]}</p>}
+                            {formErrors?.registration_deadline && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.registration_deadline[0]}</p>}
                         </div>
-                        <div className="w-full sm:w-36 shrink-0">
-                            <div className="flex items-center justify-between mb-2">
+                        <div className="w-full shrink-0 sm:w-36">
+                            <div className="mb-2 flex items-center justify-between">
                                 <label htmlFor="registration_deadline_time" className="block text-base font-semibold text-(--beheer-text-muted)">Deadlinetijd</label>
                                 {!deadlineDate && (
                                     <span className="text-xs text-(--beheer-text-muted) opacity-70"></span>
@@ -287,16 +287,16 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                     </div>
                 </div>
 
-                <div className="pt-4 border-t border-(--beheer-border)/50 mt-auto">
-                    <label htmlFor="location" className="flex items-center gap-2 text-base font-semibold text-(--beheer-text-muted) mb-2">
-                        <MapPin className="h-3 w-3" /> Locatie
+                <div className="mt-auto border-t border-(--beheer-border)/50 pt-4">
+                    <label htmlFor="location" className="mb-2 flex items-center gap-2 text-base font-semibold text-(--beheer-text-muted)">
+                        <MapPin className="size-3" /> Locatie
                     </label>
                     <input type="text" id="location" name="location" defaultValue={toInputSafe(initialData?.location)} className="beheer-input" placeholder="Bijv. Fontys R10" />
                 </div>
 
                 <div className="pt-2">
-                    <label htmlFor="custom_url" className="flex items-center gap-2 text-base font-semibold text-(--beheer-text-muted) mb-2">
-                        <LinkIcon className="h-3 w-3" /> Custom redirect URL
+                    <label htmlFor="custom_url" className="mb-2 flex items-center gap-2 text-base font-semibold text-(--beheer-text-muted)">
+                        <LinkIcon className="size-3" /> Custom redirect URL
                     </label>
                     <input type="text" id="custom_url" name="custom_url" defaultValue={toInputSafe(initialData?.custom_url)} className="beheer-input" placeholder="bijv. https://forms.gle/..." />
                 </div>
@@ -325,31 +325,31 @@ export function CapacityCostsSection({
     formErrors?: Record<string, string[] | undefined>
 }) {
     return (
-        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border) overflow-hidden h-full flex flex-col">
-            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3">
-                <Euro className="h-4 w-4 text-(--beheer-accent)" />
+        <div className="flex h-full flex-col overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
+            <div className="flex items-center gap-3 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
+                <Euro className="size-4 text-(--beheer-accent)" />
                 <h2 className="text-base font-semibold text-(--beheer-text)">Kosten & capaciteit</h2>
             </div>
-            <div className="p-6 space-y-6 flex-1 flex flex-col">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex flex-1 flex-col space-y-6 p-6">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div>
-                        <label htmlFor="max_sign_ups" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Max. deelnemers</label>
+                        <label htmlFor="max_sign_ups" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Max. deelnemers</label>
                         <input type="number" id="max_sign_ups" name="max_sign_ups" defaultValue={toInputSafe(initialData?.max_sign_ups)} min="0" className={`beheer-input ${formErrors?.max_sign_ups ? 'border-red-500 ring-4 ring-red-500/10' : ''}`} placeholder="Onbeperkt" />
-                        {formErrors?.max_sign_ups && <p className="text-red-500 text-sm font-semibold mt-2">{formErrors.max_sign_ups[0]}</p>}
+                        {formErrors?.max_sign_ups && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.max_sign_ups[0]}</p>}
                     </div>
                     <div>
-                        <label htmlFor="price_members" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Leden (€)</label>
+                        <label htmlFor="price_members" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Leden (€)</label>
                         <input type="number" id="price_members" name="price_members" defaultValue={toInputSafe(initialData?.price_members)} min="0" step="0.01" className="beheer-input" placeholder="0.00" />
                     </div>
                     <div>
-                        <label htmlFor="price_non_members" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Niet-leden (€)</label>
+                        <label htmlFor="price_non_members" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Niet-leden (€)</label>
                         <input type="number" id="price_non_members" name="price_non_members" defaultValue={toInputSafe(initialData?.price_non_members)} min="0" step="0.01" className="beheer-input" placeholder="0.00" />
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
+                <div className="grid grid-cols-1 gap-4 pt-6 md:grid-cols-2">
                     <div>
-                        <label htmlFor="committee_id" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Organiserende commissie</label>
+                        <label htmlFor="committee_id" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Organiserende commissie</label>
                         <AdminSelect
                             name="committee_id"
                             defaultValue={toInputSafe(initialData?.committee_id)}
@@ -362,7 +362,7 @@ export function CapacityCostsSection({
                         />
                     </div>
                     <div>
-                        <label htmlFor="contact" className="block text-base font-semibold text-(--beheer-text-muted) mb-2">Contactpersoon (e-mail)</label>
+                        <label htmlFor="contact" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Contactpersoon (e-mail)</label>
                         <input
                             type="email"
                             id="contact"
@@ -376,13 +376,13 @@ export function CapacityCostsSection({
                     </div>
                 </div>
 
-                <label className="relative flex items-center gap-4 bg-(--beheer-card-soft)/50 p-4 rounded-2xl border border-(--beheer-border)/50 cursor-pointer group z-10 mt-auto">
+                <label className="group relative z-10 mt-auto flex cursor-pointer items-center gap-4 rounded-2xl border border-(--beheer-border)/50 bg-(--beheer-card-soft)/50 p-4">
                     <div className="relative flex items-center justify-center">
                         <input type="checkbox" id="only_members" checked={onlyMembers} onChange={(e) => onOnlyMembersChange(e.target.checked)} className="peer sr-only" />
-                        <div className="w-5 h-5 border-2 border-(--beheer-border) rounded peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent) transition-all"></div>
-                        <Check className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                        <div className="size-5 rounded border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
+                        <Check className="absolute size-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" />
                     </div>
-                    <span className="text-base font-semibold text-(--beheer-text-muted) group-hover:text-(--beheer-text) transition-colors">Alleen toegankelijk voor leden</span>
+                    <span className="text-base font-semibold text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">Alleen toegankelijk voor leden</span>
                 </label>
             </div>
         </div>
@@ -397,24 +397,24 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }) {
     return (
-        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border) overflow-hidden">
-            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3">
-                <Upload className="h-4 w-4 text-(--beheer-accent)" />
+        <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
+            <div className="flex items-center gap-3 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
+                <Upload className="size-4 text-(--beheer-accent)" />
                 <h2 className="text-base font-semibold text-(--beheer-text)">Banner</h2>
             </div>
             <div className="p-4">
                 {!imagePreview ? (
-                    <div onClick={onUploadClick} className="flex flex-col items-center justify-center w-full min-h-40 border-2 border-dashed border-(--beheer-border) rounded-xl cursor-pointer hover:border-(--beheer-accent) hover:bg-(--beheer-accent)/5 transition-all bg-(--beheer-card-soft) group">
-                        <Upload className="h-6 w-6 mb-2 text-(--beheer-text-muted) group-hover:text-(--beheer-accent) transition-colors" />
-                        <span className="text-sm font-semibold text-(--beheer-text-muted) group-hover:text-(--beheer-accent) text-center px-4">Upload banner</span>
+                    <div onClick={onUploadClick} className="group flex min-h-40 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-(--beheer-border) bg-(--beheer-card-soft) transition-all hover:border-(--beheer-accent) hover:bg-(--beheer-accent)/5">
+                        <Upload className="mb-2 size-6 text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-accent)" />
+                        <span className="px-4 text-center text-sm font-semibold text-(--beheer-text-muted) group-hover:text-(--beheer-accent)">Upload banner</span>
                         <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={onFileChange} className="hidden" />
                     </div>
                 ) : (
-                    <div className="relative group overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft)/50 h-40 flex items-center justify-center">
+                    <div className="group relative flex h-40 items-center justify-center overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft)/50">
                         <MediaAsset asset={imagePreview} alt="Preview" fill sizes="(max-width: 768px) 100vw, 800px" objectFit="contain" className="object-contain transition-transform duration-700" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                            <button type="button" onClick={onUploadClick} className="beheer-button bg-white text-slate-900 p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-4 w-4" /></button>
-                            <button type="button" onClick={onRemoveClick} className="beheer-button bg-red-500 text-white p-2.5 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-4 w-4" /></button>
+                        <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                            <button type="button" onClick={onUploadClick} className="beheer-button cursor-pointer rounded-xl bg-white p-2.5 text-slate-900 shadow-xl transition hover:scale-110"><Upload className="size-4" /></button>
+                            <button type="button" onClick={onRemoveClick} className="beheer-button cursor-pointer rounded-xl bg-red-500 p-2.5 text-white shadow-xl transition hover:scale-110"><X className="size-4" /></button>
                         </div>
                         <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={onFileChange} className="hidden" />
                     </div>
@@ -426,38 +426,38 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
 
 export function StatusSection({ status, onStatusChange, initialData }: { status: string, onStatusChange: (val: string) => void, initialData?: Record<string, InitialValue> }) {
     return (
-        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border)">
-            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3 rounded-t-(--beheer-radius)">
-                <Eye className="h-4 w-4 text-(--beheer-accent)" />
+        <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
+            <div className="flex items-center gap-3 rounded-t-(--beheer-radius) border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
+                <Eye className="size-4 text-(--beheer-accent)" />
                 <h2 className="text-base font-semibold text-(--beheer-text)">Status</h2>
             </div>
-            <div className="p-6 space-y-4">
-                <label className="relative flex items-center gap-4 cursor-pointer group z-10">
+            <div className="space-y-4 p-6">
+                <label className="group relative z-10 flex cursor-pointer items-center gap-4">
                     <div className="relative flex items-center justify-center">
                         <input type="radio" value="published" checked={status === 'published'} onChange={() => onStatusChange('published')} className="peer sr-only" />
-                        <div className="w-5 h-5 border-2 border-(--beheer-border) rounded-full peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent) transition-all"></div>
-                        <div className="absolute w-1.5 h-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                        <div className="size-5 rounded-full border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
+                        <div className="absolute size-1.5 rounded-full bg-white opacity-0 transition-opacity peer-checked:opacity-100"></div>
                     </div>
-                    <span className="text-base font-semibold text-(--beheer-text-muted) group-hover:text-(--beheer-text) transition-colors">Gepubliceerd</span>
+                    <span className="text-base font-semibold text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">Gepubliceerd</span>
                 </label>
-                <label className="relative flex items-center gap-4 cursor-pointer group z-10">
+                <label className="group relative z-10 flex cursor-pointer items-center gap-4">
                     <div className="relative flex items-center justify-center">
                         <input type="radio" value="draft" checked={status === 'draft'} onChange={() => onStatusChange('draft')} className="peer sr-only" />
-                        <div className="w-5 h-5 border-2 border-(--beheer-border) rounded-full peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent) transition-all"></div>
-                        <div className="absolute w-1.5 h-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                        <div className="size-5 rounded-full border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
+                        <div className="absolute size-1.5 rounded-full bg-white opacity-0 transition-opacity peer-checked:opacity-100"></div>
                     </div>
-                    <span className="text-base font-semibold text-(--beheer-text-muted) group-hover:text-(--beheer-text) transition-colors">Concept</span>
+                    <span className="text-base font-semibold text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">Concept</span>
                 </label>
-                <label className="relative flex items-start gap-4 cursor-pointer group z-10">
-                    <div className="relative flex items-center justify-center mt-0.5">
+                <label className="group relative z-10 flex cursor-pointer items-start gap-4">
+                    <div className="relative mt-0.5 flex items-center justify-center">
                         <input type="radio" value="scheduled" checked={status === 'scheduled'} onChange={() => onStatusChange('scheduled')} className="peer sr-only" />
-                        <div className="w-5 h-5 border-2 border-(--beheer-border) rounded-full peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent) transition-all"></div>
-                        <div className="absolute w-1.5 h-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                        <div className="size-5 rounded-full border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
+                        <div className="absolute size-1.5 rounded-full bg-white opacity-0 transition-opacity peer-checked:opacity-100"></div>
                     </div>
                     <div className="flex-1">
-                        <span className="text-base font-semibold text-(--beheer-text-muted) group-hover:text-(--beheer-text) transition-colors">Inplannen</span>
+                        <span className="text-base font-semibold text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">Inplannen</span>
                         {status === 'scheduled' && (
-                            <div className="mt-2 animate-in slide-in-from-top-2 duration-300">
+                            <div className="animate-in slide-in-from-top-2 mt-2 duration-300">
                                 <AdminDatetimepicker
                                     name="publish_date"
                                     defaultValue={formatDateTime(initialData?.publish_date)}

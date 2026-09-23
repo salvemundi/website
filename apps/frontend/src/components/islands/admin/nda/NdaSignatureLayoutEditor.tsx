@@ -203,15 +203,15 @@ export default function NdaSignatureLayoutEditor({ templateId, documentFileId, i
                             key={step.key}
                             type="button"
                             onClick={() => setActiveStep(step.key)}
-                            className={`btn-nda-layout-step inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                            className={`btn-nda-layout-step inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
                                 active
-                                    ? 'bg-(--beheer-accent) text-white border-(--beheer-accent)'
+                                    ? 'border-(--beheer-accent) bg-(--beheer-accent) text-white'
                                     : done
-                                        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                                        : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) border-(--beheer-border)'
+                                        ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500'
+                                        : 'border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text-muted)'
                             }`}
                         >
-                            {done && !active ? <Pencil className="h-3 w-3" /> : null}
+                            {done && !active ? <Pencil className="size-3" /> : null}
                             {step.label}
                         </button>
                     );
@@ -227,13 +227,13 @@ export default function NdaSignatureLayoutEditor({ templateId, documentFileId, i
             {loadError && <p className="text-xs font-semibold text-red-500">{loadError}</p>}
             {saveError && <p className="text-xs font-semibold text-red-500">{saveError}</p>}
 
-            <div ref={containerRef} className="relative w-full max-w-2xl border border-(--beheer-border) rounded-xl overflow-hidden bg-white">
+            <div ref={containerRef} className="relative w-full max-w-2xl overflow-hidden rounded-xl border border-(--beheer-border) bg-white">
                 {loading && (
                     <div className="flex items-center justify-center py-20">
-                        <Loader2 className="h-6 w-6 animate-spin text-(--beheer-accent)" />
+                        <Loader2 className="size-6 animate-spin text-(--beheer-accent)" />
                     </div>
                 )}
-                <canvas ref={canvasRef} className="block w-full h-auto" />
+                <canvas ref={canvasRef} className="block h-auto w-full" />
                 <div
                     className={`absolute inset-0 ${activeStep ? 'cursor-crosshair' : ''}`}
                     onPointerDown={handlePointerDown}
@@ -247,16 +247,16 @@ export default function NdaSignatureLayoutEditor({ templateId, documentFileId, i
                         return (
                             <div
                                 key={step.key}
-                                className="absolute border-2 border-(--beheer-accent) bg-(--beheer-accent)/15 pointer-events-none flex items-start"
+                                className="pointer-events-none absolute flex items-start border-2 border-(--beheer-accent) bg-(--beheer-accent)/15"
                                 style={{ left: style.left, top: style.top, width: style.width, height: style.height }}
                             >
-                                <span className="text-[10px] font-semibold text-(--beheer-accent) bg-white/90 px-1 rounded-sm">{step.label}</span>
+                                <span className="rounded-sm bg-white/90 px-1 text-[10px] font-semibold text-(--beheer-accent)">{step.label}</span>
                             </div>
                         );
                     })}
                     {drawing && (
                         <div
-                            className="absolute border-2 border-dashed border-(--beheer-accent) bg-(--beheer-accent)/10 pointer-events-none"
+                            className="pointer-events-none absolute border-2 border-dashed border-(--beheer-accent) bg-(--beheer-accent)/10"
                             style={{
                                 left: Math.min(drawing.x0, drawing.x1),
                                 top: Math.min(drawing.y0, drawing.y1),

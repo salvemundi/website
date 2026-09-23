@@ -74,19 +74,19 @@ export default async function BeheerPage() {
             hideToolbar={true}
         >
             <div className="admin-container py-4 md:py-8">
-                <div className={`grid grid-cols-1 ${isLimitedAccess ? 'lg:grid-cols-1 max-w-5xl mx-auto' : 'lg:grid-cols-12'} gap-8 md:gap-12 items-start`}>
+                <div className={`grid grid-cols-1 ${isLimitedAccess ? 'mx-auto max-w-5xl lg:grid-cols-1' : 'lg:grid-cols-12'} items-start gap-8 md:gap-12`}>
                         
-                        <div className={isLimitedAccess ? 'w-full space-y-12' : 'lg:col-span-8 space-y-12'}>
+                        <div className={isLimitedAccess ? 'w-full space-y-12' : 'space-y-12 lg:col-span-8'}>
                             <DashboardHub permissions={permissions} stats={stats} />
     
                             {!isLimitedAccess && !hideStickers && (
-                                <div className="pt-12 border-t border-border-color opacity-60 hover:opacity-100 transition-opacity hidden md:block">
+                                <div className="hidden border-t border-border-color pt-12 opacity-60 transition-opacity hover:opacity-100 md:block">
                                     <TopStickersList data={stickers} />
                                 </div>
                             )}
                         </div>
     
-                        <div className={isLimitedAccess ? 'w-full grid grid-cols-1 md:grid-cols-2 gap-6 pt-12 border-t border-border-color' : 'lg:col-span-4 space-y-8'}>
+                        <div className={isLimitedAccess ? 'grid w-full grid-cols-1 gap-6 border-t border-border-color pt-12 md:grid-cols-2' : 'space-y-8 lg:col-span-4'}>
                             <div className="space-y-6">
                                 <ActivitySignupsList data={activities} />
                             </div>
@@ -94,7 +94,7 @@ export default async function BeheerPage() {
                             <div className="space-y-6">
                                 <BirthdaysList data={birthdays} />
                                 {isLimitedAccess && !hideStickers && (
-                                    <div className="md:hidden opacity-60">
+                                    <div className="opacity-60 md:hidden">
                                         <TopStickersList data={stickers} />
                                     </div>
                                 )}

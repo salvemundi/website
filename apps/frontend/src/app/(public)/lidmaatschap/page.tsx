@@ -39,10 +39,10 @@ export default async function MembershipPage() {
             backgroundImage="" // Default gradient
         >
             <div className="max-w-app mx-auto">
-                <div className={isGuest ? "flex flex-col sm:flex-row gap-6 px-6 pt-8 pb-16 sm:pt-10 sm:pb-24 md:pt-12 md:pb-32" : "px-6 pt-8 pb-16 sm:pt-10 sm:pb-24 md:pt-12 md:pb-32"}>
+                <div className={isGuest ? "flex flex-col gap-6 px-6 pt-8 pb-16 sm:flex-row sm:pt-10 sm:pb-24 md:pt-12 md:pb-32" : "px-6 pt-8 pb-16 sm:pt-10 sm:pb-24 md:pt-12 md:pb-32"}>
                     <StandardFormCard
                         title={isGuest ? 'Inschrijven' : (user.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
-                        className={isGuest ? 'w-full sm:w-1/2' : 'w-full max-w-2xl mx-auto'}
+                        className={isGuest ? 'w-full sm:w-1/2' : 'mx-auto w-full max-w-2xl'}
                     >
                         {isGuest ? (
                             <MembershipFormIsland baseAmount={baseAmount} />
@@ -52,12 +52,12 @@ export default async function MembershipPage() {
                     </StandardFormCard>
 
                     {isGuest && (
-                        <aside className="w-full sm:w-1/2 flex flex-col gap-6">
-                            <div className="w-full text-center bg-bg-card dark:border dark:border-white/10 squircle-xl p-8 shadow-lg">
-                                <h2 className="text-3xl font-black text-theme-purple mb-4 tracking-tight">
+                        <aside className="flex w-full flex-col gap-6 sm:w-1/2">
+                            <div className="squircle-xl w-full bg-bg-card p-8 text-center shadow-lg dark:border dark:border-white/10">
+                                <h2 className="mb-4 text-3xl font-black tracking-tight text-theme-purple">
                                     Waarom Lid Worden?
                                 </h2>
-                                <p className="text-lg opacity-80 leading-relaxed font-medium">
+                                <p className="text-lg leading-relaxed font-medium opacity-80">
                                     Als lid van Salve Mundi krijg je toegang tot exclusieve activiteiten en workshops.
                                     Word vandaag lid!
                                 </p>

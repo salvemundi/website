@@ -24,15 +24,15 @@ export default function SignupActivities({
     minimal = false
 }: SignupActivitiesProps) {
     return (
-        <div className={`${minimal ? '' : 'bg-(--beheer-card-bg) rounded-3xl shadow-xl border border-(--beheer-border) p-8'}`}>
+        <div className={`${minimal ? '' : 'rounded-3xl border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-xl'}`}>
             {!minimal && (
-                <div className="flex items-center justify-between mb-8">
+                <div className="mb-8 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 bg-(--beheer-accent)/10 rounded-xl flex items-center justify-center text-(--beheer-accent) shadow-sm">
-                            <Utensils className="h-5 w-5" />
+                        <div className="flex size-10 items-center justify-center rounded-xl bg-(--beheer-accent)/10 text-(--beheer-accent) shadow-sm">
+                            <Utensils className="size-5" />
                         </div>
                         <div className="space-y-0.5">
-                            <h2 className="text-xl font-semibold text-(--beheer-text) tracking-tight">Activiteiten</h2>
+                            <h2 className="text-xl font-semibold tracking-tight text-(--beheer-text)">Activiteiten</h2>
                             <p className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">Gekozen voor deze reis</p>
                         </div>
                     </div>
@@ -41,7 +41,7 @@ export default function SignupActivities({
 
             <div className="space-y-2">
                 {allActivities.length === 0 ? (
-                    <div className="text-center py-8 bg-(--bg-main)/30 rounded-xl border border-dashed border-(--beheer-border)/50">
+                    <div className="rounded-xl border border-dashed border-(--beheer-border)/50 bg-(--bg-main)/30 py-8 text-center">
                         <p className="text-[9px] font-semibold text-(--beheer-text-muted) opacity-60">Geen activiteiten beschikbaar</p>
                     </div>
                 ) : (
@@ -52,17 +52,17 @@ export default function SignupActivities({
                                 key={activity.id}
                                 type="button"
                                 onClick={() => onToggleActivity(activity.id as number)}
-                                className={`beheer-button w-full group relative flex items-center justify-between p-3 rounded-xl border transition-all duration-300 ${
+                                className={`group relative beheer-button flex w-full items-center justify-between rounded-xl border p-3 transition-all duration-300 ${
                                     isSelected 
-                                    ? 'bg-(--beheer-accent)/10 border-(--beheer-accent)/30 shadow-sm' 
-                                    : 'bg-(--bg-main)/40 border-(--beheer-border)/30 hover:border-(--beheer-accent)/40'
+                                    ? 'border-(--beheer-accent)/30 bg-(--beheer-accent)/10 shadow-sm' 
+                                    : 'border-(--beheer-border)/30 bg-(--bg-main)/40 hover:border-(--beheer-accent)/40'
                                 }`}
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
+                                    <div className={`flex size-8 items-center justify-center rounded-lg transition-colors ${
                                         isSelected ? 'bg-(--beheer-accent) text-white shadow-glow' : 'bg-(--beheer-card-bg) text-(--beheer-text-muted)'
                                     }`}>
-                                        <div className="h-4 w-4 flex items-center justify-center font-semibold text-[10px]">
+                                        <div className="flex size-4 items-center justify-center text-[10px] font-semibold">
                                             {activity.id}
                                         </div>
                                     </div>
@@ -75,10 +75,10 @@ export default function SignupActivities({
                                         </p>
                                     </div>
                                 </div>
-                                <div className={`h-5 w-5 rounded-md border flex items-center justify-center transition-all ${
-                                    isSelected ? 'bg-(--beheer-accent) border-(--beheer-accent)' : 'border-(--beheer-border)'
+                                <div className={`flex size-5 items-center justify-center rounded-md border transition-all ${
+                                    isSelected ? 'border-(--beheer-accent) bg-(--beheer-accent)' : 'border-(--beheer-border)'
                                 }`}>
-                                    {isSelected && <Check className="h-3 w-3 text-white" />}
+                                    {isSelected && <Check className="size-3 text-white" />}
                                 </div>
                             </button>
                         );
@@ -91,9 +91,9 @@ export default function SignupActivities({
                     type="button"
                     onClick={onUpdate}
                     disabled={isUpdating}
-                    className="beheer-button mt-8 w-full py-4 bg-(--beheer-accent)/5 hover:bg-(--beheer-accent)/10 text-(--beheer-accent) rounded-2xl font-semibold text-[10px] transition-all flex items-center justify-center gap-3 border border-(--beheer-accent)/10 hover:border-(--beheer-accent)/30 active:scale-95"
+                    className="mt-8 beheer-button flex w-full items-center justify-center gap-3 rounded-2xl border border-(--beheer-accent)/10 bg-(--beheer-accent)/5 py-4 text-[10px] font-semibold text-(--beheer-accent) transition-all hover:border-(--beheer-accent)/30 hover:bg-(--beheer-accent)/10 active:scale-95"
                 >
-                    {isUpdating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
+                    {isUpdating ? <Loader2 className="size-5 animate-spin" /> : <Save className="size-5" />}
                     <span>Activiteiten Opslaan</span>
                 </button>
             )}

@@ -153,20 +153,20 @@ export default function ReisParticipantDetailIsland({
                             void handleDelete();
                         }}
                         disabled={isPending}
-                        className="beheer-button px-6 py-3 bg-(--beheer-inactive)/5 text-(--beheer-inactive) rounded-xl font-semibold text-base border border-(--beheer-inactive)/10 hover:bg-(--beheer-inactive)/10 transition-all flex items-center gap-2 shadow-sm active:scale-95"
+                        className="beheer-button flex items-center gap-2 rounded-xl border border-(--beheer-inactive)/10 bg-(--beheer-inactive)/5 px-6 py-3 text-base font-semibold text-(--beheer-inactive) shadow-sm transition-all hover:bg-(--beheer-inactive)/10 active:scale-95"
                     >
-                        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash className="h-4 w-4" />}
+                        {isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
                         <span>Verwijderen</span>
                     </button>
                 }
             />
 
-            <div className="container mx-auto px-4 py-8 max-w-7xl">
+            <div className="container mx-auto max-w-7xl px-4 py-8">
                 <AdminStatsBar stats={adminStats} />
 
-                <form action={formAction} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <form action={formAction} className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <input type="hidden" name="id" value={initialSignup.id} />
-                    <div className="lg:col-span-2 space-y-8">
+                    <div className="space-y-8 lg:col-span-2">
                         <ReisSignupForm
                             key={`${initialSignup.id}-${initialSignup.role}`}
                             signup={initialSignup}
@@ -186,21 +186,21 @@ export default function ReisParticipantDetailIsland({
                             isUpdating={isUpdatingActivities}
                         />
 
-                        <div className="bg-(--beheer-card-bg)/50 backdrop-blur-sm rounded-3xl border border-(--beheer-border)/50 p-8 space-y-5 shadow-sm relative overflow-hidden group/meta">
-                            <div className="absolute -right-8 -bottom-8 opacity-5 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700">
-                                <Clock className="h-24 w-24 text-(--beheer-accent)" />
+                        <div className="group/meta relative space-y-5 overflow-hidden rounded-3xl border border-(--beheer-border)/50 bg-(--beheer-card-bg)/50 p-8 shadow-sm backdrop-blur-sm">
+                            <div className="absolute -right-8 -bottom-8 opacity-5 transition-transform duration-700 group-hover:scale-110 group-hover:rotate-12">
+                                <Clock className="size-24 text-(--beheer-accent)" />
                             </div>
-                            <div className="flex justify-between items-center text-base font-semibold text-(--beheer-text-muted) opacity-60">
+                            <div className="flex items-center justify-between text-base font-semibold text-(--beheer-text-muted) opacity-60">
                                 <span>Aangemeld op</span>
-                                <span className="text-(--beheer-text) font-semibold">
+                                <span className="font-semibold text-(--beheer-text)">
                                     {initialSignup.created_at
                                         ? formatDateTime(new Date(initialSignup.created_at))
                                         : '-'}
                                 </span>
                             </div>
-                            <div className="flex justify-between items-center text-base font-semibold text-(--beheer-text-muted) opacity-60 border-t border-(--beheer-border)/10 pt-4">
+                            <div className="flex items-center justify-between border-t border-(--beheer-border)/10 pt-4 text-base font-semibold text-(--beheer-text-muted) opacity-60">
                                 <span>Deelnemer ID</span>
-                                <span className="text-(--beheer-text) font-semibold">#{initialSignup.id}</span>
+                                <span className="font-semibold text-(--beheer-text)">#{initialSignup.id}</span>
                             </div>
                         </div>
 
@@ -208,9 +208,9 @@ export default function ReisParticipantDetailIsland({
                             <button
                                 type="submit"
                                 disabled={isSaving}
-                                className="beheer-button w-full py-5 bg-(--beheer-accent) hover:opacity-95 text-white rounded-2xl font-semibold text-base shadow-2xl shadow-(--beheer-accent)/30 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-4 group border border-white/10"
+                                className="group active:scale-0.98 beheer-button flex w-full items-center justify-center gap-4 rounded-2xl border border-white/10 bg-(--beheer-accent) py-5 text-base font-semibold text-white shadow-(--beheer-accent)/30 shadow-2xl transition-all hover:opacity-95 disabled:opacity-50"
                             >
-                                {isSaving ? <Loader2 className="h-7 w-7 animate-spin" /> : <Save className="h-7 w-7 group-hover:scale-110 transition-transform" />}
+                                {isSaving ? <Loader2 className="size-7 animate-spin" /> : <Save className="size-7 transition-transform group-hover:scale-110" />}
                                 <span>Gegevens Opslaan</span>
                             </button>
 
@@ -218,9 +218,9 @@ export default function ReisParticipantDetailIsland({
                                 <button
                                     type="button"
                                     onClick={() => router.push('/beheer/reis')}
-                                    className="beheer-button flex-1 py-4 bg-(--bg-main)/50 hover:bg-(--beheer-card-bg) text-(--beheer-text-muted) hover:text-(--beheer-text) rounded-2xl font-semibold text-base border border-(--beheer-border) transition-all flex items-center justify-center gap-3 active:scale-95"
+                                    className="beheer-button flex flex-1 items-center justify-center gap-3 rounded-2xl border border-(--beheer-border) bg-(--bg-main)/50 py-4 text-base font-semibold text-(--beheer-text-muted) transition-all hover:bg-(--beheer-card-bg) hover:text-(--beheer-text) active:scale-95"
                                 >
-                                    <ArrowLeft className="h-4 w-4" />
+                                    <ArrowLeft className="size-4" />
                                     Annuleren
                                 </button>
                                 <button
@@ -229,9 +229,9 @@ export default function ReisParticipantDetailIsland({
                                         void handleDelete();
                                     }}
                                     disabled={isPending}
-                                    className="icon-button p-4 bg-(--beheer-inactive)/5 hover:bg-(--beheer-inactive)/10 text-(--beheer-inactive) rounded-2xl border border-(--beheer-inactive)/20 transition-all shadow-sm active:scale-90"
+                                    className="icon-button rounded-2xl border border-(--beheer-inactive)/20 bg-(--beheer-inactive)/5 p-4 text-(--beheer-inactive) shadow-sm transition-all hover:bg-(--beheer-inactive)/10 active:scale-90"
                                 >
-                                    {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash className="h-5 w-5" />}
+                                    {isPending ? <Loader2 className="size-5 animate-spin" /> : <Trash className="size-5" />}
                                 </button>
                             </div>
                         </div>

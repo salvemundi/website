@@ -41,20 +41,20 @@ export default function CoboQueueItem({
             onDragOver={onDragOver}
             onDrop={onDrop}
             onDragEnd={onDragEnd}
-            className={`bg-bg-card rounded-xl p-3.5 sm:p-4 border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group ${
+            className={`group flex flex-col items-start justify-between gap-3 rounded-xl border bg-bg-card p-3.5 transition-all sm:flex-row sm:items-center sm:p-4 ${
                 isDragged
-                    ? 'opacity-40 border-purple-500 scale-[0.99]'
+                    ? 'scale-0.99 border-purple-500 opacity-40'
                     : isDragOver
                     ? 'border-purple-500 bg-purple-500/5'
                     : 'border-border-color hover:border-purple-500/40'
             }`}
         >
-            <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div
-                    className="cursor-grab active:cursor-grabbing text-text-muted hover:text-purple-600 dark:hover:text-purple-400 p-1 -ml-1 rounded-md transition-colors shrink-0"
+                    className="-ml-1 shrink-0 cursor-grab rounded-md p-1 text-text-muted transition-colors hover:text-purple-600 active:cursor-grabbing dark:hover:text-purple-400"
                     title="Sleep om volgorde direct te wijzigen"
                 >
-                    <GripVertical className="h-4 w-4" />
+                    <GripVertical className="size-4" />
                 </div>
 
                 <div className="relative shrink-0" title="Klik om direct naar positie te springen">
@@ -64,10 +64,10 @@ export default function CoboQueueItem({
                             const targetPos = parseInt(e.target.value, 10) - 1;
                             onReorder(index, targetPos);
                         }}
-                        className="beheer-select w-auto! h-8! min-w-11! px-2! py-0! bg-none! text-center font-bold text-xs rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/20 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
+                        className="beheer-select h-8! w-auto! min-w-11! cursor-pointer rounded-lg border border-purple-500/20 bg-purple-500/10 bg-none! px-2! py-0! text-center text-xs font-bold text-purple-700 transition-colors hover:bg-purple-500/20 focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-purple-300"
                     >
                         {Array.from({ length: totalCount }, (_, pIdx) => (
-                            <option key={pIdx} value={pIdx + 1} className="bg-bg-card text-text-main font-semibold">
+                            <option key={pIdx} value={pIdx + 1} className="bg-bg-card font-semibold text-text-main">
                                 #{pIdx + 1}
                             </option>
                         ))}
@@ -75,10 +75,10 @@ export default function CoboQueueItem({
                 </div>
 
                 <div className="min-w-0 flex-1">
-                    <h4 className="font-semibold text-text-main text-sm sm:text-base truncate">
+                    <h4 className="truncate text-sm font-semibold text-text-main sm:text-base">
                         {board.board_name}
                     </h4>
-                    <div className="mt-1 flex items-center gap-2 flex-wrap">
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
                         <CoboActivityBadge
                             type={board.activity_type}
                             custom={board.activity_custom}
@@ -87,37 +87,37 @@ export default function CoboQueueItem({
                 </div>
             </div>
 
-            <div className="flex items-center gap-1.5 w-full sm:w-auto justify-end flex-wrap">
+            <div className="flex w-full flex-wrap items-center justify-end gap-1.5 sm:w-auto">
                 {index > 0 && (
                     <button
                         type="button"
                         onClick={() => onReorder(index, 0)}
                         title="Direct naar boven (#1)"
-                        className="beheer-button px-2.5 py-1 min-h-11 sm:min-h-8 rounded-lg bg-purple-500/10 hover:bg-purple-600 hover:text-white text-purple-700 dark:text-purple-300 border border-purple-500/20 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                        className="beheer-button flex min-h-11 cursor-pointer items-center gap-1 rounded-lg border border-purple-500/20 bg-purple-500/10 px-2.5 py-1 text-xs font-semibold text-purple-700 transition-colors hover:bg-purple-600 hover:text-white sm:min-h-8 dark:text-purple-300"
                     >
-                        <ArrowUpToLine className="h-3.5 w-3.5" />
+                        <ArrowUpToLine className="size-3.5" />
                         <span className="hidden md:inline">Naar #1</span>
                     </button>
                 )}
 
-                <div className="flex items-center bg-bg-soft rounded-lg border border-border-color/60 p-0.5 min-h-11 sm:min-h-8">
+                <div className="flex min-h-11 items-center rounded-lg border border-border-color/60 bg-bg-soft p-0.5 sm:min-h-8">
                     <button
                         type="button"
                         onClick={() => onReorder(index, index - 1)}
                         disabled={index === 0}
                         title="Eén plek omhoog"
-                        className="icon-button min-h-10 min-w-10 sm:min-h-7 sm:min-w-7 flex items-center justify-center p-1 text-text-muted hover:text-purple-500 disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
+                        className="icon-button flex min-h-10 min-w-10 cursor-pointer items-center justify-center p-1 text-text-muted hover:text-purple-500 disabled:cursor-not-allowed disabled:opacity-20 sm:min-h-7 sm:min-w-7"
                     >
-                        <MoveUp className="h-3.5 w-3.5" />
+                        <MoveUp className="size-3.5" />
                     </button>
                     <button
                         type="button"
                         onClick={() => onReorder(index, index + 1)}
                         disabled={index === totalCount - 1}
                         title="Eén plek omlaag"
-                        className="icon-button min-h-10 min-w-10 sm:min-h-7 sm:min-w-7 flex items-center justify-center p-1 text-text-muted hover:text-purple-500 disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
+                        className="icon-button flex min-h-10 min-w-10 cursor-pointer items-center justify-center p-1 text-text-muted hover:text-purple-500 disabled:cursor-not-allowed disabled:opacity-20 sm:min-h-7 sm:min-w-7"
                     >
-                        <MoveDown className="h-3.5 w-3.5" />
+                        <MoveDown className="size-3.5" />
                     </button>
                 </div>
 
@@ -125,9 +125,9 @@ export default function CoboQueueItem({
                     type="button"
                     onClick={() => onStatusChange(board.id, 'current', board.board_name || 'Bestuur')}
                     title="Nu aan de beurt zetten"
-                    className="beheer-button px-2.5 py-1 min-h-11 sm:min-h-8 rounded-lg bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-600 hover:text-white border border-purple-500/20 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                    className="beheer-button flex min-h-11 cursor-pointer items-center gap-1 rounded-lg border border-purple-500/20 bg-purple-500/10 px-2.5 py-1 text-xs font-semibold text-purple-700 transition-colors hover:bg-purple-600 hover:text-white sm:min-h-8 dark:text-purple-300"
                 >
-                    <Play className="h-3 w-3" />
+                    <Play className="size-3" />
                     <span>Nu</span>
                 </button>
 
@@ -135,18 +135,18 @@ export default function CoboQueueItem({
                     type="button"
                     onClick={() => onStatusChange(board.id, 'late', board.board_name || 'Bestuur')}
                     title="Markeren als niet op tijd"
-                    className="icon-button min-h-11 min-w-11 sm:min-h-8 sm:min-w-8 flex items-center justify-center p-1.5 rounded-lg text-text-muted hover:text-amber-500 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                    className="icon-button flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg p-1.5 text-text-muted transition-colors hover:bg-amber-500/10 hover:text-amber-500 sm:min-h-8 sm:min-w-8"
                 >
-                    <Clock className="h-3.5 w-3.5" />
+                    <Clock className="size-3.5" />
                 </button>
 
                 <button
                     type="button"
                     onClick={() => onDelete(board.id, board.board_name || 'Bestuur')}
                     title="Verwijderen"
-                    className="icon-button min-h-11 min-w-11 sm:min-h-8 sm:min-w-8 flex items-center justify-center p-1.5 rounded-lg text-text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                    className="icon-button flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg p-1.5 text-text-muted transition-colors hover:bg-rose-500/10 hover:text-rose-500 sm:min-h-8 sm:min-w-8"
                 >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="size-3.5" />
                 </button>
             </div>
         </div>

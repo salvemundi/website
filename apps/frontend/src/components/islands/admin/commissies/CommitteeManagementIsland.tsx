@@ -210,9 +210,9 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
 
     return (
         <div className="w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8 items-stretch">
+            <div className="grid grid-cols-1 items-stretch gap-4 md:gap-8 lg:grid-cols-12">
                 <div className="lg:col-span-4">
-                    <div className="lg:sticky lg:top-[180px] lg:self-start w-full">
+                    <div className="w-full lg:sticky lg:top-45 lg:self-start">
                         <CommitteeSidebar
                             committees={filteredCommittees}
                             selectedId={selected?.id || null}
@@ -227,10 +227,10 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
 
                 <div className="lg:col-span-8">
                     {!selected ? (
-                        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-sm ring-1 ring-(--beheer-border) p-24 text-center border-2 border-dashed border-(--beheer-border) opacity-60">
-                            <Users className="h-16 w-16 text-(--beheer-text-muted) mx-auto mb-6 opacity-20" />
-                            <h3 className="text-xl font-semibold text-(--beheer-text) mb-2">Geen selectie</h3>
-                            <p className="text-(--beheer-text-muted) font-semibold text-xs max-w-xs mx-auto opacity-60">
+                        <div className="rounded-(--beheer-radius) border-2 border-dashed border-(--beheer-border) bg-(--beheer-card-bg) p-24 text-center opacity-60 shadow-sm ring-1 ring-(--beheer-border)">
+                            <Users className="mx-auto mb-6 size-16 text-(--beheer-text-muted) opacity-20" />
+                            <h3 className="mb-2 text-xl font-semibold text-(--beheer-text)">Geen selectie</h3>
+                            <p className="mx-auto max-w-xs text-xs font-semibold text-(--beheer-text-muted) opacity-60">
                                 Kies een groep uit de lijst om de details en leden te beheren.
                             </p>
                         </div>

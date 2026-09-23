@@ -54,24 +54,24 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
 
     return (
         <div className="space-y-12">
-            <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
-                <div className="flex items-center gap-3 px-4 h-14 squircle bg-(--bg-card) border border-(--border-color) w-full md:w-96 group focus-within:ring-4 focus-within:ring-(--theme-purple)/10 focus-within:border-(--theme-purple) transition-all">
-                    <Search className="h-5 w-5 shrink-0 text-(--text-muted) group-focus-within:text-(--theme-purple) transition-colors" />
+            <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
+                <div className="squircle group flex h-14 w-full items-center gap-3 border border-(--border-color) bg-(--bg-card) px-4 transition-all focus-within:border-(--theme-purple) focus-within:ring-4 focus-within:ring-(--theme-purple)/10 md:w-96">
+                    <Search className="size-5 shrink-0 text-(--text-muted) transition-colors group-focus-within:text-(--theme-purple)" />
                     <input
                         type="text"
                         placeholder="Tickets zoeken..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="form-input bg-transparent border-none p-0 w-full text-sm font-black uppercase tracking-widest outline-none"
+                        className="form-input w-full border-none bg-transparent p-0 text-sm font-black tracking-widest uppercase outline-none"
                     />
                 </div>
                 <div className="flex gap-4">
-                    <div className="px-6 py-3 squircle bg-(--bg-card) border border-(--border-color) flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-(--theme-purple)/10 text-(--theme-purple)">
-                            <Ticket className="h-4 w-4" />
+                    <div className="squircle flex items-center gap-3 border border-(--border-color) bg-(--bg-card) px-6 py-3">
+                        <div className="rounded-lg bg-(--theme-purple)/10 p-2 text-(--theme-purple)">
+                            <Ticket className="size-4" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-(--text-muted)">Totaal aantal tickets</p>
+                            <p className="text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Totaal aantal tickets</p>
                             <p className="text-sm font-black text-(--text-main)">{tickets.length}</p>
                         </div>
                     </div>
@@ -79,41 +79,41 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
             </div>
 
             {filteredTickets.length === 0 ? (
-                <div className="py-32 text-center bg-(--bg-card) squircle-xl border border-dashed border-(--border-color)">
-                    <Ticket className="h-16 w-16 text-(--text-muted) opacity-20 mx-auto mb-4" />
-                    <h3 className="text-xl font-black text-(--text-main) uppercase tracking-tight italic">Geen tickets <span className="text-(--theme-purple)">gevonden</span></h3>
-                    <p className="text-(--text-muted) mt-2 font-medium">Je hebt nog geen tickets voor aankomende activiteiten.</p>
+                <div className="squircle-xl border border-dashed border-(--border-color) bg-(--bg-card) py-32 text-center">
+                    <Ticket className="mx-auto mb-4 size-16 text-(--text-muted) opacity-20" />
+                    <h3 className="text-xl font-black tracking-tight text-(--text-main) uppercase italic">Geen tickets <span className="text-(--theme-purple)">gevonden</span></h3>
+                    <p className="mt-2 font-medium text-(--text-muted)">Je hebt nog geen tickets voor aankomende activiteiten.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {filteredTickets.map((ticket) => (
                         <div
                             key={ticket.id}
                             onClick={() => handleTicketSelect(ticket)}
-                            className="group relative bg-(--bg-card) p-6 squircle-lg border border-(--border-color) hover:border-(--theme-purple)/50 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:shadow-(--theme-purple)/5 hover:-translate-y-1"
+                            className="group squircle-lg relative cursor-pointer border border-(--border-color) bg-(--bg-card) p-6 transition-all duration-300 hover:-translate-y-1 hover:border-(--theme-purple)/50 hover:shadow-(--theme-purple)/5 hover:shadow-2xl"
                         >
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="p-3 squircle bg-(--theme-purple)/5 text-(--theme-purple) group-hover:bg-(--theme-purple) group-hover:text-white transition-all duration-500">
-                                    <QrCode className="h-6 w-6" />
+                            <div className="mb-4 flex items-start justify-between">
+                                <div className="squircle bg-(--theme-purple)/5 p-3 text-(--theme-purple) transition-all duration-500 group-hover:bg-(--theme-purple) group-hover:text-white">
+                                    <QrCode className="size-6" />
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-[10px] font-black text-(--text-muted) uppercase tracking-widest">{formatDate(ticket.date_created)}</p>
-                                    <p className="text-[10px] font-black text-(--theme-purple) uppercase tracking-widest">#{ticket.id}</p>
+                                    <p className="text-[10px] font-black tracking-widest text-(--text-muted) uppercase">{formatDate(ticket.date_created)}</p>
+                                    <p className="text-[10px] font-black tracking-widest text-(--theme-purple) uppercase">#{ticket.id}</p>
                                 </div>
                             </div>
 
-                            <h3 className="text-xl font-black text-(--text-main) uppercase tracking-tighter italic mb-4 line-clamp-1">
+                            <h3 className="mb-4 line-clamp-1 text-xl font-black tracking-tighter text-(--text-main) uppercase italic">
                                 {ticket.event_id?.name || 'Activiteit'}
                             </h3>
 
                             <div className="space-y-2 border-t border-(--border-color)/30 pt-4">
                                 <div className="flex items-center gap-2 text-(--text-muted)">
-                                    <Calendar className="h-3 w-3" />
+                                    <Calendar className="size-3" />
                                     <span className="text-[10px] font-bold uppercase">{formatDate(ticket.event_id?.event_date)}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-(--text-muted)">
-                                    <MapPin className="h-3 w-3" />
-                                    <span className="text-[10px] font-bold uppercase truncate">{ticket.event_id?.location || 'Strijp-S'}</span>
+                                    <MapPin className="size-3" />
+                                    <span className="truncate text-[10px] font-bold uppercase">{ticket.event_id?.location || 'Strijp-S'}</span>
                                 </div>
                             </div>
                         </div>
@@ -123,42 +123,42 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
 
             {mounted && createPortal(
                 selectedTicket && (
-                    <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 isolate">
+                    <div className="fixed inset-0 isolate z-9999 flex items-center justify-center p-4">
                         <div
                             onClick={handleCloseModal}
-                            className="absolute inset-0 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300"
+                            className="animate-in fade-in absolute inset-0 bg-black/60 backdrop-blur-xl duration-300"
                         />
 
                         <div
-                            className="bg-(--bg-card) squircle-xl w-full max-w-lg shadow-2xl border border-white/10 overflow-hidden relative z-10 animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 duration-300 ease-out"
+                            className="squircle-xl animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 relative z-10 w-full max-w-lg overflow-hidden border border-white/10 bg-(--bg-card) shadow-2xl duration-300 ease-out"
                         >
                             <button
                                 onClick={handleCloseModal}
-                                className="icon-button absolute top-6 right-6 p-2 h-10 w-10 flex items-center justify-center rounded-full bg-black/5 hover:bg-black/10 transition-colors z-20 group"
+                                className="group absolute top-6 right-6 z-20 icon-button flex size-10 items-center justify-center rounded-full bg-black/5 p-2 transition-colors hover:bg-black/10"
                             >
-                                <X className="h-5 w-5 text-(--text-muted) group-hover:text-(--text-main) transition-colors" />
+                                <X className="size-5 text-(--text-muted) transition-colors group-hover:text-(--text-main)" />
                             </button>
 
-                            <div className="p-8 md:p-12 space-y-8 flex flex-col items-center">
-                                <div className="text-center space-y-2">
-                                    <p className="text-[10px] font-black text-(--theme-purple) uppercase tracking-[0.3em]">Jouw Digitale Ticket</p>
-                                    <h2 className="text-3xl font-black text-(--text-main) uppercase tracking-tighter italic">
+                            <div className="flex flex-col items-center space-y-8 p-8 md:p-12">
+                                <div className="space-y-2 text-center">
+                                    <p className="text-[10px] font-black tracking-[0.3em] text-(--theme-purple) uppercase">Jouw Digitale Ticket</p>
+                                    <h2 className="text-3xl font-black tracking-tighter text-(--text-main) uppercase italic">
                                         {selectedTicket.event_id?.name || 'Activiteit'}
                                     </h2>
                                 </div>
 
-                                <div className="p-6 bg-white squircle-lg shadow-2xl ring-1 ring-black/5">
+                                <div className="squircle-lg bg-white p-6 shadow-2xl ring-1 ring-black/5">
                                     <QRDisplay qrToken={selectedTicket.qr_token} size={240} />
                                 </div>
 
-                                <div className="text-center space-y-1">
-                                    <p className="text-lg font-black text-(--text-main) uppercase tracking-tight italic">{selectedTicket.participant_name}</p>
-                                    <p className="text-xs font-bold text-(--text-muted) uppercase tracking-widest opacity-60 italic">Toon deze code bij de entree</p>
+                                <div className="space-y-1 text-center">
+                                    <p className="text-lg font-black tracking-tight text-(--text-main) uppercase italic">{selectedTicket.participant_name}</p>
+                                    <p className="text-xs font-bold tracking-widest text-(--text-muted) uppercase italic opacity-60">Toon deze code bij de entree</p>
                                 </div>
 
                                 <div className="w-full border-t border-(--border-color)/50 pt-8">
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-(--text-muted) uppercase tracking-widest">Inschrijfdatum</p>
+                                        <p className="text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Inschrijfdatum</p>
                                         <p className="text-sm font-bold text-(--text-main) uppercase">{formatDate(selectedTicket.date_created)}</p>
                                     </div>
                                 </div>

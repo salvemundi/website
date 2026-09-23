@@ -41,9 +41,9 @@ export default function ActiviteitGridCard({
     return (
         <div
             onClick={onShowDetails}
-            className={`group relative z-0 overflow-hidden w-full rounded-[1.75rem] bg-(--bg-card) dark:border dark:border-white/10 p-0 shadow-sm transition-all cursor-pointer hover:shadow-md hover:-translate-y-1 ${isPast ? 'opacity-75 grayscale-50' : ''}`}
+            className={`group relative z-0 w-full cursor-pointer overflow-hidden rounded-[1.75rem] bg-(--bg-card) p-0 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md dark:border dark:border-white/10 ${isPast ? 'opacity-75 grayscale-50' : ''}`}
         >
-            <div className="relative z-10 w-full aspect-video mb-0 overflow-hidden">
+            <div className="relative z-10 mb-0 aspect-video w-full overflow-hidden">
                 {image ? (
                     <MediaAsset
                         asset={image}
@@ -53,52 +53,52 @@ export default function ActiviteitGridCard({
                         objectFit="contain"
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-transparent">
-                        <Calendar className="h-12 w-12 text-(--theme-purple)/20" />
+                    <div className="flex size-full items-center justify-center bg-transparent">
+                        <Calendar className="size-12 text-(--theme-purple)/20" />
                     </div>
                 )}
-                <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 items-end">
-                    <span className="bg-(--theme-purple) text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
+                <div className="absolute top-4 right-4 z-20 flex flex-col items-end gap-2">
+                    <span className="rounded-full bg-(--theme-purple) px-3 py-1 text-[10px] font-bold tracking-wider text-white uppercase shadow-lg backdrop-blur-md">
                         {committeeLabel}
                     </span>
                     {onlyMembers && (
-                        <span className="bg-(--theme-warning) text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider backdrop-blur-md">
+                        <span className="rounded-full bg-(--theme-warning) px-3 py-1 text-[10px] font-bold tracking-wider text-white uppercase shadow-lg backdrop-blur-md">
                             Leden Alleen
                         </span>
                     )}
                 </div>
             </div>
 
-            <div className="p-5 flex flex-col grow relative z-10 space-y-3">
-                <h3 className="text-xl font-bold text-(--theme-purple)/90 leading-tight group-hover:text-(--theme-purple) transition-colors line-clamp-2 wrap-break-word">
+            <div className="relative z-10 flex grow flex-col space-y-3 p-5">
+                <h3 className="line-clamp-2 text-xl leading-tight font-bold wrap-break-word text-(--theme-purple)/90 transition-colors group-hover:text-(--theme-purple)">
                     {title}
                 </h3>
 
                 <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-sm text-(--theme-purple)/80 font-bold">
-                        <Calendar className="h-4 w-4" />
+                    <div className="flex items-center gap-2 text-sm font-bold text-(--theme-purple)/80">
+                        <Calendar className="size-4" />
                         <span>{displayDate}</span>
                     </div>
                     {timeRange && (
-                        <p className="text-sm text-(--text-muted) ml-6 font-medium">
+                        <p className="ml-6 text-sm font-medium text-(--text-muted)">
                             {timeRange}
                         </p>
                     )}
                 </div>
 
                 {short_description ? (
-                    <div className="text-(--text-muted) text-sm line-clamp-5 leading-relaxed wrap-break-word overflow-hidden">
-                        <SafeMarkdown content={short_description} className="text-(--text-muted)! prose-sm prose-p:my-1 prose-headings:my-1" />
+                    <div className="line-clamp-5 overflow-hidden text-sm leading-relaxed wrap-break-word text-(--text-muted)">
+                        <SafeMarkdown content={short_description} className="prose-sm text-(--text-muted)! prose-headings:my-1 prose-p:my-1" />
                     </div>
                 ) : description ? (
-                    <p className="text-(--text-muted) text-sm line-clamp-3 leading-relaxed wrap-break-word overflow-hidden">
+                    <p className="line-clamp-3 overflow-hidden text-sm leading-relaxed wrap-break-word text-(--text-muted)">
                         {description}
                     </p>
                 ) : null}
 
-                <div className="flex items-center justify-between pt-4 mt-auto border-t border-(--border-color)">
+                <div className="mt-auto flex items-center justify-between border-t border-(--border-color) pt-4">
                     <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-bold text-(--theme-purple)/50">Prijs</span>
+                        <span className="text-[10px] font-bold text-(--theme-purple)/50 uppercase">Prijs</span>
                         <span className="text-lg font-bold text-(--theme-purple)/80">€{safePrice}</span>
                     </div>
 
@@ -106,10 +106,10 @@ export default function ActiviteitGridCard({
                         {!isPast && (
                             <button
                                 onClick={handleSignupClick}
-                                className={`icon-button p-2 rounded-full transition-all duration-200
+                                className={`icon-button rounded-full p-2 transition-all duration-200
                                     ${cannotSignUp
                                         ? 'bg-(--bg-soft) text-(--text-muted)'
-                                        : 'bg-(--theme-purple) text-white shadow-lg shadow-(--theme-purple)/20 hover:scale-105'
+                                        : 'bg-(--theme-purple) text-white shadow-(--theme-purple)/20 shadow-lg hover:scale-105'
                                     }`}
                                 title={alreadySignedUp ? 'Al aangemeld' : 'Aanmelden'}
                             >
@@ -132,7 +132,7 @@ export default function ActiviteitGridCard({
                                 e.stopPropagation();
                                 onShowDetails?.();
                             }}
-                            className="icon-button p-2 rounded-full bg-(--bg-soft) text-(--theme-purple)"
+                            className="icon-button rounded-full bg-(--bg-soft) p-2 text-(--theme-purple)"
                             title="Meer info"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

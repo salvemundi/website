@@ -186,19 +186,19 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
 
     return (
         <div>
-            <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 mb-8 shadow-sm">
-                <h3 className="font-semibold text-xs text-(--beheer-text-muted) mb-4">Planning-afbeelding (bovenaan de publieke QR-code pagina)</h3>
-                <div className="flex flex-col sm:flex-row items-start gap-5">
-                    <div className="relative w-full sm:w-64 aspect-video shrink-0 rounded-xl overflow-hidden bg-(--beheer-card-soft) ring-1 ring-(--beheer-border) flex items-center justify-center">
+            <div className="mb-8 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
+                <h3 className="mb-4 text-xs font-semibold text-(--beheer-text-muted)">Planning-afbeelding (bovenaan de publieke QR-code pagina)</h3>
+                <div className="flex flex-col items-start gap-5 sm:flex-row">
+                    <div className="relative flex aspect-video w-full shrink-0 items-center justify-center overflow-hidden rounded-xl bg-(--beheer-card-soft) ring-1 ring-(--beheer-border) sm:w-64">
                         {imagePreview ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={imagePreview} alt="Voorbeeld" className="h-full w-full object-cover" />
+                            <img src={imagePreview} alt="Voorbeeld" className="size-full object-cover" />
                         ) : (
-                            <ImageIcon className="h-6 w-6 text-(--beheer-text-muted) opacity-40" />
+                            <ImageIcon className="size-6 text-(--beheer-text-muted) opacity-40" />
                         )}
                         {uploadingImage && (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <Loader2 className="h-5 w-5 text-white animate-spin" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                                <Loader2 className="size-5 animate-spin text-white" />
                             </div>
                         )}
                     </div>
@@ -212,18 +212,18 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         />
                         <label
                             htmlFor="planning-image-upload"
-                            className="btn-upload-photo cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-(--beheer-accent)/10 text-(--beheer-accent) border border-(--beheer-accent)/20 text-sm font-semibold hover:bg-(--beheer-accent)/20 transition-all w-fit"
+                            className="btn-upload-photo inline-flex w-fit cursor-pointer items-center gap-2 rounded-xl border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 px-4 py-2.5 text-sm font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/20"
                         >
-                            <Camera className="h-4 w-4" />
+                            <Camera className="size-4" />
                             {imagePreview ? 'Andere afbeelding kiezen' : 'Afbeelding uploaden'}
                         </label>
                         {imagePreview && (
                             <button
                                 type="button"
                                 onClick={() => { void handleRemovePlanningImage(); }}
-                                className="btn-remove-photo inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-all w-fit"
+                                className="btn-remove-photo inline-flex w-fit items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold text-red-500 transition-all hover:bg-red-500/10"
                             >
-                                <Trash2 className="h-3.5 w-3.5" />
+                                <Trash2 className="size-3.5" />
                                 Verwijderen
                             </button>
                         )}
@@ -231,20 +231,20 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                             <p className="text-xs font-semibold text-red-500">{imageUploadError}</p>
                         )}
                         {!imagePreview && !imageUploadError && (
-                            <p className="text-xs text-(--beheer-text-muted) opacity-70 max-w-sm">Optioneel. Bijv. een ontworpen posterafbeelding van de planning. Als je niets uploadt, toont de pagina alleen de live planning hieronder.</p>
+                            <p className="max-w-sm text-xs text-(--beheer-text-muted) opacity-70">Optioneel. Bijv. een ontworpen posterafbeelding van de planning. Als je niets uploadt, toont de pagina alleen de live planning hieronder.</p>
                         )}
                     </div>
                 </div>
             </div>
 
-            <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 mb-8 shadow-sm">
-                <h3 className="font-semibold text-xs text-(--beheer-text-muted) mb-4">Infoboekje (PDF, downloadbaar op de publieke QR-code pagina)</h3>
-                <div className="flex flex-col sm:flex-row items-start gap-5">
-                    <div className="relative h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-(--beheer-card-soft) ring-1 ring-(--beheer-border) flex items-center justify-center">
-                        <FileText className={`h-6 w-6 ${infoBooklet ? 'text-(--beheer-accent)' : 'text-(--beheer-text-muted) opacity-40'}`} />
+            <div className="mb-8 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
+                <h3 className="mb-4 text-xs font-semibold text-(--beheer-text-muted)">Infoboekje (PDF, downloadbaar op de publieke QR-code pagina)</h3>
+                <div className="flex flex-col items-start gap-5 sm:flex-row">
+                    <div className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-(--beheer-card-soft) ring-1 ring-(--beheer-border)">
+                        <FileText className={`size-6 ${infoBooklet ? 'text-(--beheer-accent)' : 'text-(--beheer-text-muted) opacity-40'}`} />
                         {uploadingBooklet && (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <Loader2 className="h-5 w-5 text-white animate-spin" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                                <Loader2 className="size-5 animate-spin text-white" />
                             </div>
                         )}
                     </div>
@@ -258,9 +258,9 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         />
                         <label
                             htmlFor="info-booklet-upload"
-                            className="btn-upload-booklet cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-(--beheer-accent)/10 text-(--beheer-accent) border border-(--beheer-accent)/20 text-sm font-semibold hover:bg-(--beheer-accent)/20 transition-all w-fit"
+                            className="btn-upload-booklet inline-flex w-fit cursor-pointer items-center gap-2 rounded-xl border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 px-4 py-2.5 text-sm font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/20"
                         >
-                            <Upload className="h-4 w-4" />
+                            <Upload className="size-4" />
                             {infoBooklet ? 'Ander bestand kiezen' : 'PDF uploaden'}
                         </label>
                         {infoBooklet && (
@@ -276,9 +276,9 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                                 <button
                                     type="button"
                                     onClick={() => { void handleRemoveInfoBooklet(); }}
-                                    className="btn-remove-booklet inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-all w-fit"
+                                    className="btn-remove-booklet inline-flex w-fit items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold text-red-500 transition-all hover:bg-red-500/10"
                                 >
-                                    <Trash2 className="h-3.5 w-3.5" />
+                                    <Trash2 className="size-3.5" />
                                     Verwijderen
                                 </button>
                             </div>
@@ -287,13 +287,13 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                             <p className="text-xs font-semibold text-red-500">{bookletUploadError}</p>
                         )}
                         {!infoBooklet && !bookletUploadError && (
-                            <p className="text-xs text-(--beheer-text-muted) opacity-70 max-w-sm">Optioneel. Bijv. een programmaboekje met praktische info. Nieuwkomers kunnen dit downloaden op de QR-code pagina.</p>
+                            <p className="max-w-sm text-xs text-(--beheer-text-muted) opacity-70">Optioneel. Bijv. een programmaboekje met praktische info. Nieuwkomers kunnen dit downloaden op de QR-code pagina.</p>
                         )}
                     </div>
                 </div>
             </div>
 
-            <div className="flex items-center justify-between mb-8">
+            <div className="mb-8 flex items-center justify-between">
                 {editingPlanning === null && (
                     <Button
                         onClick={() => setEditingPlanning({ date: '', time_start: '', title: '', description: '' })}
@@ -302,21 +302,21 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         Nieuw Item
                     </Button>
                 )}
-                <div className="flex gap-1 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) p-1.5 ml-auto shadow-sm">
-                    <button onClick={() => setView('list')} className={`tab-button flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${view === 'list' ? 'bg-(--beheer-accent) text-white shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
-                        <List className="h-4 w-4" /> Lijst
+                <div className="ml-auto flex gap-1 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-1.5 shadow-sm">
+                    <button onClick={() => setView('list')} className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${view === 'list' ? 'bg-(--beheer-accent) text-white shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
+                        <List className="size-4" /> Lijst
                     </button>
-                    <button onClick={() => setView('calendar')} className={`tab-button flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${view === 'calendar' ? 'bg-(--beheer-accent) text-white shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
-                        <LayoutGrid className="h-4 w-4" /> Kalender
+                    <button onClick={() => setView('calendar')} className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${view === 'calendar' ? 'bg-(--beheer-accent) text-white shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
+                        <LayoutGrid className="size-4" /> Kalender
                     </button>
                 </div>
             </div>
 
             {availableDays.length > 0 && (
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-6 -mx-1 px-1">
+                <div className="-mx-1 mb-6 flex items-center gap-2 overflow-x-auto px-1 pb-1">
                     <button
                         onClick={() => setDayFilter(null)}
-                        className={`tab-button shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold capitalize transition-all whitespace-nowrap ${dayFilter === null ? 'bg-(--beheer-accent) text-white shadow-md' : 'bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
+                        className={`tab-button shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap capitalize transition-all ${dayFilter === null ? 'bg-(--beheer-accent) text-white shadow-md' : 'border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
                     >
                         Alle dagen
                     </button>
@@ -324,7 +324,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         <button
                             key={day}
                             onClick={() => setDayFilter(day)}
-                            className={`tab-button shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold capitalize transition-all whitespace-nowrap ${dayFilter === day ? 'bg-(--beheer-accent) text-white shadow-md' : 'bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
+                            className={`tab-button shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap capitalize transition-all ${dayFilter === day ? 'bg-(--beheer-accent) text-white shadow-md' : 'border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
                         >
                             {day}
                         </button>
@@ -333,17 +333,17 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
             )}
 
             {editingPlanning !== null && (
-                <div ref={editFormRef} className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-8 mb-8 shadow-2xl scroll-mt-24">
-                    <div className="flex items-center justify-between mb-8">
-                        <h3 className="font-semibold text-xs text-(--beheer-text-muted)">
+                <div ref={editFormRef} className="mb-8 scroll-mt-24 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-2xl">
+                    <div className="mb-8 flex items-center justify-between">
+                        <h3 className="text-xs font-semibold text-(--beheer-text-muted)">
                             {editingPlanning.id ? 'Planning Bewerken' : 'Nieuw Planning Item'}
                         </h3>
-                        <button onClick={() => setEditingPlanning(null)} className="icon-button p-2 text-(--beheer-text-muted) hover:text-(--beheer-text) transition-colors">
-                            <X className="h-5 w-5" />
+                        <button onClick={() => setEditingPlanning(null)} className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)">
+                            <X className="size-5" />
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                         <Field label="Datum *">
                             <AdminDatepicker
                                 value={editingPlanning.date ? new Date(editingPlanning.date) : null}
@@ -380,7 +380,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         </div>
                     </div>
 
-                    <div className="flex gap-3 pt-10 border-t border-(--beheer-border)/50 mt-10">
+                    <div className="mt-10 flex gap-3 border-t border-(--beheer-border)/50 pt-10">
                         <Button
                             onClick={() => { void handleSave(); }}
                             loading={saving}
@@ -399,19 +399,19 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
             {view === 'list' && (
                 <div className="grid gap-4">
                     {filteredPlanningList.map(item => (
-                        <div key={item.id} ref={setItemRef(item.id)} className="group bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 flex items-start justify-between gap-6 hover:border-(--beheer-accent)/30 transition-all shadow-sm hover:shadow-xl scroll-mt-24">
+                        <div key={item.id} ref={setItemRef(item.id)} className="group flex scroll-mt-24 items-start justify-between gap-6 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm transition-all hover:border-(--beheer-accent)/30 hover:shadow-xl">
                             <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <span className="text-xs font-semibold text-(--beheer-accent) bg-(--beheer-accent)/5 px-2 py-0.5 rounded">{item.day || ''}</span>
+                                <div className="mb-2 flex items-center gap-3">
+                                    <span className="rounded bg-(--beheer-accent)/5 px-2 py-0.5 text-xs font-semibold text-(--beheer-accent)">{item.day || ''}</span>
                                     {item.date && <span className="text-xs font-semibold text-(--beheer-text-muted)">{formatDate(item.date)}</span>}
                                 </div>
-                                <h4 className="font-semibold text-base text-(--beheer-text)">{item.title}</h4>
-                                <p className="text-xs font-medium text-(--beheer-text-muted) mt-1 opacity-70">
+                                <h4 className="text-base font-semibold text-(--beheer-text)">{item.title}</h4>
+                                <p className="mt-1 text-xs font-medium text-(--beheer-text-muted) opacity-70">
                                     {item.time_start}{item.time_end ? ` - ${item.time_end}` : ''}{item.location ? ` · ${item.location}` : ''}
                                 </p>
-                                {item.description && <p className="text-sm text-(--beheer-text-muted) mt-4 font-medium leading-relaxed">{item.description}</p>}
+                                {item.description && <p className="mt-4 text-sm leading-relaxed font-medium text-(--beheer-text-muted)">{item.description}</p>}
                             </div>
-                            <div className="flex gap-2 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                            <div className="flex shrink-0 gap-2 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                                 <ActionButton
                                     icon={Edit}
                                     onClick={() => setEditingPlanning(item)}
@@ -451,19 +451,19 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                     .filter(day => !dayFilter || day === dayFilter)
                     .sort((a, b) => DAY_ORDER.indexOf(a as string) - DAY_ORDER.indexOf(b as string));
                 return (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {sorted.map(day => (
-                            <div key={day as string} className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-6 shadow-sm">
-                                <h3 className="font-semibold text-(--beheer-accent) text-xs mb-6 capitalize pb-3 border-b border-(--beheer-border)">{day as string}</h3>
+                            <div key={day as string} className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
+                                <h3 className="mb-6 border-b border-(--beheer-border) pb-3 text-xs font-semibold text-(--beheer-accent) capitalize">{day as string}</h3>
                                 <div className="space-y-3">
                                     {(byDay.get(day) || []).sort((a, b) => (String(a.time_start || '')).localeCompare(String(b.time_start || ''))).map(item => (
-                                        <div key={item.id as string | number} ref={setItemRef(item.id)} className="group bg-(--beheer-card-soft) rounded-xl p-4 border border-transparent hover:border-(--beheer-accent)/20 transition-all scroll-mt-24">
+                                        <div key={item.id as string | number} ref={setItemRef(item.id)} className="group scroll-mt-24 rounded-xl border border-transparent bg-(--beheer-card-soft) p-4 transition-all hover:border-(--beheer-accent)/20">
                                             <div className="flex items-start justify-between gap-2">
                                                 <div>
-                                                    <p className="font-semibold text-sm text-(--beheer-text) mb-1">{item.title as React.ReactNode}</p>
+                                                    <p className="mb-1 text-sm font-semibold text-(--beheer-text)">{item.title as React.ReactNode}</p>
                                                     <p className="text-xs font-medium text-(--beheer-text-muted) opacity-70">{item.time_start ? String(item.time_start) : ''}{item.time_end ? ` - ${String(item.time_end)}` : ''}</p>
                                                 </div>
-                                                <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                                <div className="flex gap-1 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                                                     <ActionButton
                                                         icon={Edit}
                                                         onClick={() => setEditingPlanning(item)}

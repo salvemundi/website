@@ -19,13 +19,13 @@ interface CommitteeMembership {
 
 export function InfoRow({ icon: Icon, label, value }: { icon: LucideIcon, label: string, value: string }) {
     return (
-        <div className="flex items-center gap-4 group">
-            <div className="h-10 w-10 shrink-0 squircle bg-(--beheer-card-soft) flex items-center justify-center text-(--beheer-text-muted) group-hover:text-(--beheer-accent) transition-colors border border-(--beheer-border)">
-                <Icon className="h-5 w-5" />
+        <div className="group flex items-center gap-4">
+            <div className="squircle flex size-10 shrink-0 items-center justify-center border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-accent)">
+                <Icon className="size-5" />
             </div>
             <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-(--beheer-text-muted) mb-0.5">{label}</p>
-                <p className="text-sm font-semibold text-(--beheer-text) truncate">{value}</p>
+                <p className="mb-0.5 text-xs font-semibold text-(--beheer-text-muted)">{label}</p>
+                <p className="truncate text-sm font-semibold text-(--beheer-text)">{value}</p>
             </div>
         </div>
     );
@@ -33,16 +33,16 @@ export function InfoRow({ icon: Icon, label, value }: { icon: LucideIcon, label:
 
 export function CommitteeCard({ membership, cleanName }: { membership: CommitteeMembership, cleanName: (n: string) => string }) {
     return (
-        <div className="p-5 squircle-lg bg-(--beheer-card-bg) border border-(--beheer-border) flex flex-col gap-3 group hover:border-(--beheer-accent)/30 transition-all shadow-sm">
+        <div className="squircle-lg group flex flex-col gap-3 border border-(--beheer-border) bg-(--beheer-card-bg) p-5 shadow-sm transition-all hover:border-(--beheer-accent)/30">
             <div className="flex items-center gap-4">
-                <div className="h-10 w-10 shrink-0 rounded-full bg-(--beheer-accent)/10 flex items-center justify-center text-(--beheer-accent) group-hover:scale-110 transition-transform">
-                    <Shield className="h-5 w-5" />
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--beheer-accent)/10 text-(--beheer-accent) transition-transform group-hover:scale-110">
+                    <Shield className="size-5" />
                 </div>
                 <div className="min-w-0">
-                    <p className="font-semibold text-(--beheer-text) truncate">{cleanName(membership.committee_id.name)}</p>
+                    <p className="truncate font-semibold text-(--beheer-text)">{cleanName(membership.committee_id.name)}</p>
                     {membership.is_leader && membership.committee_id.azure_group_id !== COMMITTEES.BESTUUR && (
-                        <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-(--beheer-accent) mt-0.5">
-                            <Award className="h-3 w-3" />
+                        <span className="mt-0.5 inline-flex items-center gap-1.5 text-[10px] font-semibold text-(--beheer-accent)">
+                            <Award className="size-3" />
                             Commissie Leider
                         </span>
                     )}
@@ -54,11 +54,11 @@ export function CommitteeCard({ membership, cleanName }: { membership: Committee
 
 export function GroupCard({ membership, cleanName }: { membership: CommitteeMembership, cleanName: (n: string) => string }) {
     return (
-        <div className="p-4 squircle bg-(--beheer-card-bg) border border-(--beheer-border) flex items-center gap-4 group hover:border-(--beheer-accent)/30 transition-all shadow-sm">
-            <div className="h-10 w-10 shrink-0 squircle bg-(--beheer-card-soft) flex items-center justify-center text-(--beheer-text-muted) group-hover:bg-(--beheer-accent) group-hover:text-white transition-all shadow-sm border border-(--beheer-border)">
-                <Hash className="h-5 w-5" />
+        <div className="squircle group flex items-center gap-4 border border-(--beheer-border) bg-(--beheer-card-bg) p-4 shadow-sm transition-all hover:border-(--beheer-accent)/30">
+            <div className="squircle flex size-10 shrink-0 items-center justify-center border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text-muted) shadow-sm transition-all group-hover:bg-(--beheer-accent) group-hover:text-white">
+                <Hash className="size-5" />
             </div>
-            <p className="font-semibold text-(--beheer-text) text-sm truncate">{cleanName(membership.committee_id.name)}</p>
+            <p className="truncate text-sm font-semibold text-(--beheer-text)">{cleanName(membership.committee_id.name)}</p>
         </div>
     );
 }
@@ -67,20 +67,20 @@ export function SignupStatus({ status }: { status: string }) {
     switch (status) {
         case 'paid':
             return (
-                <span className="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-[10px] font-semibold">
+                <span className="rounded-full bg-green-500/10 px-3 py-1 text-[10px] font-semibold text-green-500">
                     Betaald
                 </span>
             );
         case 'failed':
         case 'canceled':
             return (
-                <span className="px-3 py-1 bg-red-500/10 text-red-500 rounded-full text-[10px] font-semibold">
+                <span className="rounded-full bg-red-500/10 px-3 py-1 text-[10px] font-semibold text-red-500">
                     Mislukt
                 </span>
             );
         default:
             return (
-                <span className="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-semibold">
+                <span className="rounded-full bg-amber-500/10 px-3 py-1 text-[10px] font-semibold text-amber-500">
                     Open
                 </span>
             );
@@ -89,11 +89,11 @@ export function SignupStatus({ status }: { status: string }) {
 
 export function EmptyState({ icon: Icon, message }: { icon: LucideIcon, message: string }) {
     return (
-        <div className="py-16 text-center border-2 border-dashed border-(--beheer-border) squircle-lg">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-(--beheer-card-soft) mb-3 text-(--beheer-text-muted) opacity-30">
-                <Icon className="h-6 w-6" />
+        <div className="squircle-lg border-2 border-dashed border-(--beheer-border) py-16 text-center">
+            <div className="mb-3 inline-flex size-12 items-center justify-center rounded-full bg-(--beheer-card-soft) text-(--beheer-text-muted) opacity-30">
+                <Icon className="size-6" />
             </div>
-            <p className="text-(--beheer-text-muted) font-medium italic text-sm">{message}</p>
+            <p className="text-sm font-medium text-(--beheer-text-muted) italic">{message}</p>
         </div>
     );
 }

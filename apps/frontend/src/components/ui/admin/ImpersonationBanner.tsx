@@ -21,24 +21,24 @@ export default function ImpersonationBanner({ targetName, adminName, committees 
     };
 
     return (
-        <div className="fixed top-0 left-0 right-0 z-[9999] animate-in slide-in-from-top duration-500">
-            <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white px-4 py-2 shadow-xl border-b border-white/20">
-                <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
+        <div className="animate-in slide-in-from-top fixed inset-x-0 top-0 z-9999 duration-500">
+            <div className="border-b border-white/20 bg-linear-to-r from-orange-600 to-amber-600 px-4 py-2 text-white shadow-xl">
+                <div className="mx-auto flex max-w-360 items-center justify-between gap-4">
                     <div className="flex items-center gap-3 overflow-hidden">
-                        <div className="shrink-0 bg-white/20 p-1.5 rounded-lg">
-                            <Shield className="w-4 h-4" />
+                        <div className="shrink-0 rounded-lg bg-white/20 p-1.5">
+                            <Shield className="size-4" />
                         </div>
-                        <div className="flex items-center gap-2 text-base font-medium truncate">
-                            <span className="opacity-80 hidden sm:inline">Test Modus Actief:</span>
-                            <span className="font-bold flex items-center gap-1.5 bg-black/30 px-2 py-0.5 rounded-md">
-                                <User className="w-3 h-3" />
+                        <div className="flex items-center gap-2 truncate text-base font-medium">
+                            <span className="hidden opacity-80 sm:inline">Test Modus Actief:</span>
+                            <span className="flex items-center gap-1.5 rounded-md bg-black/30 px-2 py-0.5 font-bold">
+                                <User className="size-3" />
                                 {targetName}
                             </span>
-                            <span className="hidden lg:inline opacity-60 text-base italic">
+                            <span className="hidden text-base italic opacity-60 lg:inline">
                                 (Geïmiteerd door {adminName})
                             </span>
                             {committees.length > 0 && (
-                                <span className="opacity-60 hidden md:inline">– ({committees.join(', ')})</span>
+                                <span className="hidden opacity-60 md:inline">– ({committees.join(', ')})</span>
                             )}
                         </div>
                     </div>
@@ -46,12 +46,12 @@ export default function ImpersonationBanner({ targetName, adminName, committees 
                     <button
                         onClick={handleStop}
                         disabled={isPending}
-                        className="shrink-0 flex items-center gap-1.5 bg-white text-orange-700 px-3 py-1 rounded-full text-base font-bold hover:bg-orange-50 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                        className="flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3 py-1 text-base font-bold text-orange-700 transition-all hover:scale-105 hover:bg-orange-50 active:scale-95 disabled:opacity-50"
                     >
                         {isPending ? 'Bezig...' : (
                             <>
-                                <X className="w-3 h-3" />
-                                <span className="hidden xs:inline">Stop Testen</span>
+                                <X className="size-3" />
+                                <span className="xs:inline hidden">Stop Testen</span>
                             </>
                         )}
                     </button>

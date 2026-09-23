@@ -19,7 +19,7 @@ export default function ActiviteitList({ events, onEventClick, variant = 'list',
 
     if (events.length === 0) {
         return (
-            <div className="text-center py-12 bg-(--bg-card) rounded-3xl shadow-sm">
+            <div className="rounded-3xl bg-(--bg-card) py-12 text-center shadow-sm">
                 <p className="text-(--text-muted)">Geen activiteiten gevonden.</p>
             </div>
         );
@@ -27,7 +27,7 @@ export default function ActiviteitList({ events, onEventClick, variant = 'list',
 
     if (variant === 'grid') {
         return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {events.map((event) => (
                     <ActiviteitCard
                         key={event.id}

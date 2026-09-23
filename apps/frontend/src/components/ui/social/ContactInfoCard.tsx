@@ -30,21 +30,21 @@ function ActionItem({ icon, title, subtitle, href, onClick, children }: ActionIt
                 {...(onClick ? { onClick } : {})}
                 className={`${commonClasses} ${interactionClasses}`}
             >
-                <div className="text-purple-500 shrink-0 mt-1">
+                <div className="mt-1 shrink-0 text-purple-500">
                     {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'h-5 w-5' })}
                 </div>
-                <div className="flex-1 min-w-0">
-                    <h4 className={`text-(--text-main) text-lg font-semibold leading-tight transition-colors ${isInteractive ? "group-hover:text-purple-600" : ""}`}>
+                <div className="min-w-0 flex-1">
+                    <h4 className={`text-lg leading-tight font-semibold text-(--text-main) transition-colors ${isInteractive ? "group-hover:text-purple-600" : ""}`}>
                         {title}
                     </h4>
                     {subtitle && (
-                        <p className="text-(--text-muted) text-base mt-0.5">
+                        <p className="mt-0.5 text-base text-(--text-muted)">
                             {subtitle}
                         </p>
                     )}
                 </div>
                 {(href || onClick) && (
-                    <ChevronRight className="h-4 w-4 text-purple-300 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                    <ChevronRight className="size-4 -translate-x-2 text-purple-300 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
                 )}
             </Component>
             {children && <div className="ml-11">{children}</div>}
@@ -55,9 +55,9 @@ function ActionItem({ icon, title, subtitle, href, onClick, children }: ActionIt
 export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten: WebsiteDocument[], isLoggedIn: boolean }) {
     return (
         <div className="@container w-full">
-            <div className="grid grid-cols-1 @[700px]:grid-cols-2 gap-10">
+            <div className="grid grid-cols-1 gap-10 @[700px]:grid-cols-2">
                 <div className="flex flex-col gap-6">
-                    <h2 className="text-2xl font-black text-theme-purple px-2">Informatie</h2>
+                    <h2 className="px-2 text-2xl font-black text-theme-purple">Informatie</h2>
 
                     <div className="flex flex-col gap-2">
                         <ActionItem
@@ -73,9 +73,9 @@ export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten
                     </div>
 
 
-                    <div className="pt-2 px-2">
-                        <h3 className="font-semibold text-(--text-main) text-lg mb-3 flex items-center gap-3">
-                            <FileText className="h-5 w-5 text-purple-500" />
+                    <div className="px-2 pt-2">
+                        <h3 className="mb-3 flex items-center gap-3 text-lg font-semibold text-(--text-main)">
+                            <FileText className="size-5 text-purple-500" />
                             Documenten
                         </h3>
                         <DocumentenLijst documenten={documenten} />
@@ -84,7 +84,7 @@ export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten
 
                 {/* Rechterkolom: Contactopties */}
                 <div className="flex flex-col gap-6">
-                    <h2 className="text-2xl font-black text-theme-purple px-2">Contact</h2>
+                    <h2 className="px-2 text-2xl font-black text-theme-purple">Contact</h2>
 
                     <div className="flex flex-col gap-2">
                         <ActionItem

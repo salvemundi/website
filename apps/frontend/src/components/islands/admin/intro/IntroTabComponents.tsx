@@ -5,8 +5,8 @@ export const inputClass = 'w-full px-5 py-4 rounded-xl bg-(--bg-main)/40 dark:bg
 
 export function Field({ label, children, className = '' }: { label: string; children: React.ReactNode; className?: string }) {
     return (
-        <div className={`space-y-2 group/field ${className}`}>
-            <label className="text-xs font-semibold tracking-tight text-(--beheer-text-muted) group-focus-within/field:text-(--beheer-accent) transition-colors px-1">{label}</label>
+        <div className={`group/field space-y-2 ${className}`}>
+            <label className="px-1 text-xs font-semibold tracking-tight text-(--beheer-text-muted) transition-colors group-focus-within/field:text-(--beheer-accent)">{label}</label>
             <div className="relative">
                 {children}
             </div>
@@ -43,9 +43,9 @@ export function Button({
         <button
             onClick={onClick}
             disabled={disabled || loading}
-            className={`beheer-button flex items-center justify-center gap-2 px-6 py-3 rounded-(--beheer-radius) text-sm font-semibold transition-all active:scale-95 disabled:opacity-50 ${variants.get(variant) || ''} ${className}`}
+            className={`beheer-button flex items-center justify-center gap-2 rounded-(--beheer-radius) px-6 py-3 text-sm font-semibold transition-all active:scale-95 disabled:opacity-50 ${variants.get(variant) || ''} ${className}`}
         >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : Icon && <Icon className="h-4 w-4" />}
+            {loading ? <Loader2 className="size-4 animate-spin" /> : Icon && <Icon className="size-4" />}
             {children}
         </button>
     );
@@ -77,9 +77,9 @@ export function ActionButton({
             onClick={onClick}
             disabled={disabled || loading}
             title={title}
-            className={`icon-button p-2.5 rounded-xl border transition-all active:scale-90 disabled:opacity-50 ${variants.get(variant) || ''}`}
+            className={`icon-button rounded-xl border p-2.5 transition-all active:scale-90 disabled:opacity-50 ${variants.get(variant) || ''}`}
         >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
+            {loading ? <Loader2 className="size-4 animate-spin" /> : <Icon className="size-4" />}
         </button>
     );
 }
@@ -87,10 +87,10 @@ export function ActionButton({
 export function EmptyState({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
     return (
         <div className="py-24 text-center text-(--beheer-text-muted)">
-            <div className="p-8 bg-(--beheer-card-soft)/50 rounded-full w-fit mx-auto mb-8 ring-1 ring-(--beheer-border)/20 shadow-inner">
-                <Icon className="h-12 w-12 opacity-20 text-(--beheer-accent)" />
+            <div className="mx-auto mb-8 w-fit rounded-full bg-(--beheer-card-soft)/50 p-8 shadow-inner ring-1 ring-(--beheer-border)/20">
+                <Icon className="size-12 text-(--beheer-accent) opacity-20" />
             </div>
-            <p className="font-semibold text-sm opacity-60">{text}</p>
+            <p className="text-sm font-semibold opacity-60">{text}</p>
         </div>
     );
 }

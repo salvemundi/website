@@ -20,26 +20,26 @@ import {
 } from '@salvemundi/validations';
 
 const PROCESS_STEPS = [
-    { icon: <Send className="h-4 w-4" />, text: 'Je vult dit formulier in en verstuurt je aanmelding.' },
-    { icon: <Mail className="h-4 w-4" />, text: 'Je ontvangt direct een e-mail met een link om je e-mailadres te bevestigen.' },
-    { icon: <ShieldCheck className="h-4 w-4" />, text: 'Na bevestiging beoordeelt het bestuur van Salve Mundi je aanmelding.' },
-    { icon: <Users className="h-4 w-4" />, text: 'Na goedkeuring is je vacature zichtbaar voor ingelogde leden van Salve Mundi — niet voor externe bezoekers van de website.' }
+    { icon: <Send className="size-4" />, text: 'Je vult dit formulier in en verstuurt je aanmelding.' },
+    { icon: <Mail className="size-4" />, text: 'Je ontvangt direct een e-mail met een link om je e-mailadres te bevestigen.' },
+    { icon: <ShieldCheck className="size-4" />, text: 'Na bevestiging beoordeelt het bestuur van Salve Mundi je aanmelding.' },
+    { icon: <Users className="size-4" />, text: 'Na goedkeuring is je vacature zichtbaar voor ingelogde leden van Salve Mundi — niet voor externe bezoekers van de website.' }
 ];
 
 function ProcessExplanation() {
     return (
-        <div className="mb-6 rounded-2xl bg-(--bg-soft) border border-(--border-color) p-6 space-y-4">
-            <h2 className="text-sm font-bold text-(--text-main) flex items-center gap-2">
-                <Info className="h-4 w-4 text-(--theme-purple)" />
+        <div className="mb-6 space-y-4 rounded-2xl border border-(--border-color) bg-(--bg-soft) p-6">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-(--text-main)">
+                <Info className="size-4 text-(--theme-purple)" />
                 Hoe werkt het?
             </h2>
             <ol className="space-y-3">
                 {PROCESS_STEPS.map((step, i) => (
                     <li key={i} className="flex items-start gap-3">
-                        <span className="shrink-0 h-6 w-6 rounded-full bg-(--theme-purple) text-white text-xs font-bold flex items-center justify-center mt-0.5">
+                        <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-(--theme-purple) text-xs font-bold text-white">
                             {i + 1}
                         </span>
-                        <p className="text-sm text-(--text-muted) leading-relaxed">{step.text}</p>
+                        <p className="text-sm leading-relaxed text-(--text-muted)">{step.text}</p>
                     </li>
                 ))}
             </ol>
@@ -124,8 +124,8 @@ export default function VacancySubmissionFormIsland() {
 
     if (submitted) {
         return (
-            <StandardFormCard title="Bedankt voor je aanmelding" icon={<CheckCircle2 className="w-8 h-8" />}>
-                <p className="text-(--text-main) leading-relaxed">
+            <StandardFormCard title="Bedankt voor je aanmelding" icon={<CheckCircle2 className="size-8" />}>
+                <p className="leading-relaxed text-(--text-main)">
                     We hebben je een e-mail gestuurd met een link om je e-mailadres te bevestigen. Zodra je dit
                     hebt gedaan, beoordeelt het bestuur van Salve Mundi je aanmelding. Na goedkeuring is je
                     vacature zichtbaar voor ingelogde leden van Salve Mundi — niet voor externe bezoekers van de
@@ -140,7 +140,7 @@ export default function VacancySubmissionFormIsland() {
             <ProcessExplanation />
             <StandardFormCard
                 title="Vacature aanmelden"
-                icon={<Briefcase className="w-8 h-8" />}
+                icon={<Briefcase className="size-8" />}
                 description="Meld een stage of bijbaan aan voor leden van Salve Mundi."
             >
             <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6" autoComplete="off">
@@ -151,13 +151,13 @@ export default function VacancySubmissionFormIsland() {
                     </select>
                 </FormField>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <FormField id="field-title" label="Functietitel" required error={errors.title?.message}>
                         <Input {...register('title')} id="field-title" placeholder="Bijv. Frontend Developer" />
                     </FormField>
                     <FormField id="field-company" label="Bedrijfsnaam" required error={errors.company?.message}>
                         <div className="relative">
-                            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <Building2 className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
                             <Input {...register('company')} id="field-company" placeholder="Bedrijfsnaam" className="pl-10" />
                         </div>
                     </FormField>
@@ -177,7 +177,7 @@ export default function VacancySubmissionFormIsland() {
                             />
                         )}
                     />
-                    <p className="text-xs text-(--text-muted) mt-1">
+                    <p className="mt-1 text-xs text-(--text-muted)">
                         Gebruik de knoppen voor opmaak, of klik op &quot;Voorbeeld&quot; om te zien hoe je omschrijving straks op de Bijbanenbank wordt weergegeven.
                     </p>
                 </FormField>
@@ -199,22 +199,22 @@ export default function VacancySubmissionFormIsland() {
 
                 <FormField id="field-location" label="Locatie" required error={errors.location?.message}>
                     <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <MapPin className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
                         <Input {...register('location')} id="field-location" placeholder="Bijv. Eindhoven" className="pl-10" />
                     </div>
                 </FormField>
 
                 {type === 'internship' && (
                     <FormField id="field-directions" label="ICT-richting(en)" required error={errors.directions?.message}>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             {ICT_DIRECTIONS.map((option) => (
-                                <label key={option} className="flex items-center gap-2 text-sm font-medium text-(--text-main) bg-(--bg-soft) rounded-xl px-3 py-2 cursor-pointer">
+                                <label key={option} className="flex cursor-pointer items-center gap-2 rounded-xl bg-(--bg-soft) px-3 py-2 text-sm font-medium text-(--text-main)">
                                     <input
                                         type="checkbox"
                                         value={option}
                                         checked={selectedDirections.includes(option)}
                                         {...register('directions')}
-                                        className="h-4 w-4 accent-(--theme-purple)"
+                                        className="size-4 accent-(--theme-purple)"
                                     />
                                     {option}
                                 </label>
@@ -223,7 +223,7 @@ export default function VacancySubmissionFormIsland() {
                     </FormField>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <FormField id="field-salary" label="Salaris / vergoeding" error={errors.salary?.message}>
                         <Input {...register('salary')} id="field-salary" placeholder="Bijv. €12,50 per uur" />
                     </FormField>
@@ -235,20 +235,20 @@ export default function VacancySubmissionFormIsland() {
                     </FormField>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <FormField id="field-image" label="Afbeelding (optioneel)">
                         <div className="flex items-center gap-3">
                             {imagePreview && (
-                                <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-(--bg-soft)">
+                                <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-(--bg-soft)">
                                     <MediaAsset asset={imagePreview} alt="Voorbeeld" fill objectFit="cover" unoptimized />
                                 </div>
                             )}
                             <button
                                 type="button"
                                 onClick={() => imageInputRef.current?.click()}
-                                className="btn-upload flex-1 flex items-center gap-2 justify-center px-4 py-2.5 rounded-xl bg-(--bg-soft) text-(--text-muted) text-sm font-bold cursor-pointer hover:text-(--theme-purple) transition-colors"
+                                className="btn-upload flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--bg-soft) px-4 py-2.5 text-sm font-bold text-(--text-muted) transition-colors hover:text-(--theme-purple)"
                             >
-                                <ImageIcon className="h-4 w-4" />
+                                <ImageIcon className="size-4" />
                                 {imageFile ? imageFile.name : 'Kies afbeelding'}
                             </button>
                             <input
@@ -266,9 +266,9 @@ export default function VacancySubmissionFormIsland() {
                             <button
                                 type="button"
                                 onClick={() => documentInputRef.current?.click()}
-                                className="btn-upload flex-1 flex items-center gap-2 justify-center px-4 py-2.5 rounded-xl bg-(--bg-soft) text-(--text-muted) text-sm font-bold cursor-pointer hover:text-(--theme-purple) transition-colors"
+                                className="btn-upload flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--bg-soft) px-4 py-2.5 text-sm font-bold text-(--text-muted) transition-colors hover:text-(--theme-purple)"
                             >
-                                <FileText className="h-4 w-4" />
+                                <FileText className="size-4" />
                                 {documentFile ? documentFile.name : 'Kies bestand'}
                             </button>
                             <input
@@ -279,8 +279,8 @@ export default function VacancySubmissionFormIsland() {
                                 className="hidden"
                             />
                             {documentFile && (
-                                <button type="button" onClick={() => setDocumentFile(null)} className="icon-button p-2 rounded-lg bg-(--bg-soft) text-(--text-muted) hover:text-(--theme-error)" aria-label="Verwijder document">
-                                    <X className="h-4 w-4" />
+                                <button type="button" onClick={() => setDocumentFile(null)} className="icon-button rounded-lg bg-(--bg-soft) p-2 text-(--text-muted) hover:text-(--theme-error)" aria-label="Verwijder document">
+                                    <X className="size-4" />
                                 </button>
                             )}
                         </div>
@@ -288,11 +288,11 @@ export default function VacancySubmissionFormIsland() {
                 </div>
 
                 <div className="border-t border-(--border-color) pt-6">
-                    <h3 className="text-sm font-bold text-(--text-main) mb-4">Contactgegevens</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <h3 className="mb-4 text-sm font-bold text-(--text-main)">Contactgegevens</h3>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <FormField id="field-contact-email" label="E-mailadres" required error={errors.contact_email?.message}>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Mail className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
                                 <Input {...register('contact_email')} id="field-contact-email" type="email" placeholder="contact@bedrijf.nl" className="pl-10" />
                             </div>
                         </FormField>
@@ -308,11 +308,11 @@ export default function VacancySubmissionFormIsland() {
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="form-button w-full bg-theme-purple enabled:hover:bg-purple-600 text-white font-black py-4 rounded-xl sm:rounded-2xl transition-all shadow-lg shadow-purple-500/20 enabled:active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
+                    className="enabled:active:scale-0.98 form-button flex w-full items-center justify-center gap-2 rounded-xl bg-theme-purple py-4 text-lg font-black text-white shadow-lg shadow-purple-500/20 transition-all enabled:hover:bg-purple-600 disabled:opacity-50 sm:rounded-2xl"
                 >
                     {isPending ? (
                         <>
-                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <div className="size-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                             Versturen...
                         </>
                     ) : (
@@ -321,7 +321,7 @@ export default function VacancySubmissionFormIsland() {
                 </button>
 
                 {/* Honeypot at bottom to avoid breaking browser autofill sections */}
-                <div className="opacity-0 absolute top-0 left-0 h-0 w-0 -z-10 pointer-events-none overflow-hidden" aria-hidden="true">
+                <div className="pointer-events-none absolute top-0 left-0 -z-10 size-0 overflow-hidden opacity-0" aria-hidden="true">
                     <label htmlFor="hp_confirm">Website</label>
                     <input {...register('hp_confirm')} id="hp_confirm" tabIndex={-1} autoComplete="off" className="hidden" suppressHydrationWarning />
                 </div>

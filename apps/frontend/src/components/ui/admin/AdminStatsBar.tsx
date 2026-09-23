@@ -15,15 +15,15 @@ export default function AdminStatsBar({ stats = [] }: AdminStatsBarProps) {
     return (
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 py-2">
             {stats.map((stat, i) => (
-                <div key={i} className="flex items-center gap-2 group whitespace-nowrap">
-                    <span className="text-xs font-semibold text-text-muted opacity-50 group-hover:opacity-100 transition-opacity">
+                <div key={i} className="group flex items-center gap-2 whitespace-nowrap">
+                    <span className="text-xs font-semibold text-text-muted opacity-50 transition-opacity group-hover:opacity-100">
                         {stat.label}
                     </span>
                     <span className="text-lg font-semibold text-text-main tabular-nums">
                         {stat.value}
                     </span>
                     {i < stats.length - 1 && (
-                        <div className="hidden lg:block h-1 w-1 rounded-full bg-theme-purple/20 ml-4" />
+                        <div className="ml-4 hidden size-1 rounded-full bg-theme-purple/20 lg:block" />
                     )}
                 </div>
             ))}

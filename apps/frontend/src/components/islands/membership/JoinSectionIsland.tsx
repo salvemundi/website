@@ -27,23 +27,23 @@ export const JoinSectionIsland: React.FC<JoinSectionIslandProps> = ({
 
     return (
         <section className="py-fluid-lg">
-            <div className="mx-auto max-w-4xl text-center px-4 sm:px-6 lg:px-8">
-                <h2 className="text-3xl font-black text-gradient sm:text-4xl md:text-5xl mb-6">
+            <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+                <h2 className="text-gradient mb-6 text-3xl font-black sm:text-4xl md:text-5xl">
                     {title}
                 </h2>
-                <p className="text-lg text-(--text-muted) mb-8 max-w-2xl mx-auto leading-relaxed">
+                <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-(--text-muted)">
                     {description}
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="flex flex-col justify-center gap-4 sm:flex-row">
                     <Link
                         href="/lidmaatschap"
-                        className="inline-flex items-center justify-center gap-2 squircle bg-brand-primary dark:bg-gradient-theme px-8 py-4 text-base font-semibold text-white shadow-xl transition hover:scale-105"
+                        className="squircle dark:bg-gradient-theme inline-flex items-center justify-center gap-2 bg-brand-primary px-8 py-4 text-base font-semibold text-white shadow-xl transition hover:scale-105"
                     >
                         {buttonText}
                     </Link>
                     <Link
                         href="/contact"
-                        className="inline-flex items-center justify-center gap-2 squircle bg-purple-100 dark:bg-transparent px-8 py-4 text-base font-semibold text-brand-primary dark:text-purple-300 transition hover:bg-purple-200 dark:hover:bg-(--bg-card) hover:scale-105"
+                        className="squircle inline-flex items-center justify-center gap-2 bg-purple-100 px-8 py-4 text-base font-semibold text-brand-primary transition hover:scale-105 hover:bg-purple-200 dark:bg-transparent dark:text-purple-300 dark:hover:bg-(--bg-card)"
                     >
                         Neem contact op
                     </Link>

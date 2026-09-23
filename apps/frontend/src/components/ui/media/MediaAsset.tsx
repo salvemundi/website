@@ -49,7 +49,7 @@ export default function MediaAsset({
         return (
             <video
                 src={url}
-                className={`${className} ${fill ? 'absolute inset-0 w-full h-full' : ''}`}
+                className={`${className} ${fill ? 'absolute inset-0 size-full' : ''}`}
                 autoPlay
                 loop
                 muted

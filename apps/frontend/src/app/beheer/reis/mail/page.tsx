@@ -25,8 +25,8 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
     if (trips.length === 0) {
         return (
             <AdminPageShell title="Reis Mail" backHref="/beheer/reis">
-                <div className="py-20 text-center mx-auto">
-                    <p className="text-slate-500 font-bold italic tracking-widest">Geen reizen gevonden.</p>
+                <div className="mx-auto py-20 text-center">
+                    <p className="font-bold tracking-widest text-slate-500 italic">Geen reizen gevonden.</p>
                 </div>
             </AdminPageShell>
         );
@@ -52,22 +52,22 @@ export default async function ReisMailPage({ searchParams }: PageProps) {
             backHref="/beheer/reis"
             actions={
                 <div className="flex items-center gap-4">
-                    <div className="hidden md:flex items-center gap-4 bg-bg-soft px-4 py-2 rounded-2xl border border-border-color/50 shadow-sm">
+                    <div className="hidden items-center gap-4 rounded-2xl border border-border-color/50 bg-bg-soft px-4 py-2 shadow-sm md:flex">
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Bevestigde Reizigers</span>
-                            <span className="text-sm font-bold text-beheer-active leading-none">{confirmedCount}</span>
+                            <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Bevestigde Reizigers</span>
+                            <span className="text-sm leading-none font-bold text-beheer-active">{confirmedCount}</span>
                         </div>
-                        <div className="w-px h-6 bg-border-color/20" />
+                        <div className="h-6 w-px bg-border-color/20" />
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Openstaande Betalingen</span>
-                            <span className="text-sm font-bold text-beheer-inactive leading-none">{unpaidCount}</span>
+                            <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Openstaande Betalingen</span>
+                            <span className="text-sm leading-none font-bold text-beheer-inactive">{unpaidCount}</span>
                         </div>
                     </div>
                     <Link
                         href={`/beheer/reis?tripId=${activeTripId}`}
-                        className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-bg-card border border-border-color text-text-main rounded-xl text-[11px] font-semibold hover:border-theme-purple/50 transition-all shadow-sm"
+                        className="flex items-center justify-center gap-1.5 rounded-xl border border-border-color bg-bg-card px-3 py-1.5 text-[11px] font-semibold text-text-main shadow-sm transition-all hover:border-theme-purple/50"
                     >
-                        <Ticket className="h-3.5 w-3.5 text-theme-purple" />
+                        <Ticket className="size-3.5 text-theme-purple" />
                         Dashboard
                     </Link>
                 </div>

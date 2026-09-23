@@ -104,52 +104,52 @@ export default async function ReisPage() {
         return (
             <PublicPageShell>
                 <h1 className="sr-only">Reis</h1>
-                <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 lg:pt-16 pb-16 sm:pb-24 lg:pb-32">
-                    <div className="flex flex-col lg:flex-row gap-8 items-start">
+                <div className="max-w-app mx-auto px-4 pt-8 pb-16 sm:px-6 sm:pt-12 sm:pb-24 lg:px-8 lg:pt-16 lg:pb-32">
+                    <div className="flex flex-col items-start gap-8 lg:flex-row">
                         {/* Left Column: Announcement & Goed om te weten */}
-                        <div className="w-full lg:w-1/2 flex flex-col gap-8">
+                        <div className="flex w-full flex-col gap-8 lg:w-1/2">
                             {/* Announcement card */}
-                            <div className="bg-bg-card dark:border dark:border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl text-center relative overflow-hidden">
+                            <div className="relative overflow-hidden rounded-3xl bg-bg-card p-6 text-center shadow-2xl sm:p-10 dark:border dark:border-white/10">
                                 <div className="absolute top-0 right-0 p-8 opacity-5">
-                                    <Lock className="h-32 w-32 text-theme-purple" />
+                                    <Lock className="size-32 text-theme-purple" />
                                 </div>
                                 <div className="relative z-10 flex flex-col items-center justify-center">
-                                    <div className="w-16 h-16 bg-theme-purple/5 text-theme-purple rounded-full flex items-center justify-center mb-6 border border-theme-purple/10">
-                                        <Lock className="w-8 h-8 text-theme-purple" />
+                                    <div className="mb-6 flex size-16 items-center justify-center rounded-full border border-theme-purple/10 bg-theme-purple/5 text-theme-purple">
+                                        <Lock className="size-8 text-theme-purple" />
                                     </div>
-                                    <h2 className="text-2xl sm:text-3xl font-bold text-theme-purple mb-4">
+                                    <h2 className="mb-4 text-2xl font-bold text-theme-purple sm:text-3xl">
                                         {announcementTitle}
                                     </h2>
-                                    <p className="text-text-muted text-sm sm:text-base max-w-lg leading-relaxed font-semibold">
+                                    <p className="max-w-lg text-sm leading-relaxed font-semibold text-text-muted sm:text-base">
                                         {announcementMessage}
                                     </p>
                                 </div>
                             </div>
 
                             {/* Goed om te weten card */}
-                            <div className="bg-bg-card dark:border dark:border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+                            <div className="relative overflow-hidden rounded-3xl bg-bg-card p-6 shadow-2xl sm:p-10 dark:border dark:border-white/10">
                                 <div className="absolute top-0 right-0 p-8 opacity-5">
-                                    <ShieldCheck className="h-32 w-32 text-theme-purple" />
+                                    <ShieldCheck className="size-32 text-theme-purple" />
                                 </div>
                                 <div className="relative z-10">
-                                    <h3 className="text-xl sm:text-2xl font-bold text-theme-purple mb-8 flex items-center gap-3">
+                                    <h3 className="mb-8 flex items-center gap-3 text-xl font-bold text-theme-purple sm:text-2xl">
                                         Goed om te weten
                                     </h3>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                         {[
-                                            { icon: <ShieldCheck className="h-5 w-5" />, title: 'Lidmaatschap', content: <>Je hoeft <strong>geen lid</strong> te zijn om mee te gaan.</> },
-                                            { icon: <Mail className="h-5 w-5" />, title: 'Bevestiging', content: <>Je krijgt direct een mail na je inschrijving.</> },
-                                            { icon: <Info className="h-5 w-5" />, title: 'Leeftijd', content: <>Minimumleeftijd voor deelname is 18 jaar.</> },
-                                            { icon: <ExternalLink className="h-5 w-5" />, title: 'Vragen?', content: <>Mail ons op <a href="mailto:reis@salvemundi.nl" className="text-theme-purple font-bold hover:underline">reis@salvemundi.nl</a></> },
+                                            { icon: <ShieldCheck className="size-5" />, title: 'Lidmaatschap', content: <>Je hoeft <strong>geen lid</strong> te zijn om mee te gaan.</> },
+                                            { icon: <Mail className="size-5" />, title: 'Bevestiging', content: <>Je krijgt direct een mail na je inschrijving.</> },
+                                            { icon: <Info className="size-5" />, title: 'Leeftijd', content: <>Minimumleeftijd voor deelname is 18 jaar.</> },
+                                            { icon: <ExternalLink className="size-5" />, title: 'Vragen?', content: <>Mail ons op <a href="mailto:reis@salvemundi.nl" className="font-bold text-theme-purple hover:underline">reis@salvemundi.nl</a></> },
                                         ].map((item, i) => (
-                                            <div key={i} className="flex gap-4 group">
-                                                <div className="h-10 w-10 rounded-xl bg-theme-purple/5 text-theme-purple flex items-center justify-center shrink-0 border border-theme-purple/10 transition-colors group-hover:bg-theme-purple/10">
+                                            <div key={i} className="group flex gap-4">
+                                                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-theme-purple/10 bg-theme-purple/5 text-theme-purple transition-colors group-hover:bg-theme-purple/10">
                                                     {item.icon}
                                                 </div>
                                                 <div className="space-y-1">
                                                     <p className="text-[10px] font-bold tracking-widest text-text-muted">{item.title}</p>
-                                                    <div className="text-sm text-text-main font-medium leading-relaxed">
+                                                    <div className="text-sm leading-relaxed font-medium text-text-main">
                                                         {item.content}
                                                     </div>
                                                 </div>
@@ -161,11 +161,11 @@ export default async function ReisPage() {
                         </div>
 
                         {/* Right Column: Trip Info */}
-                        <div className="w-full lg:w-1/2 flex flex-col gap-8">
+                        <div className="flex w-full flex-col gap-8 lg:w-1/2">
                             {displayTrip && (
-                                <div className="bg-bg-card dark:border dark:border-white/10 rounded-3xl overflow-hidden shadow-2xl relative">
+                                <div className="relative overflow-hidden rounded-3xl bg-bg-card shadow-2xl dark:border dark:border-white/10">
                                     {displayTripImage && (
-                                        <div className="relative w-full h-62.5 sm:h-87.5 overflow-hidden bg-slate-900/10">
+                                        <div className="relative h-62.5 w-full overflow-hidden bg-slate-900/10 sm:h-87.5">
                                             <MediaAsset
                                                 asset={displayTripImage}
                                                 alt={displayTripName ?? 'Reis'}
@@ -175,13 +175,13 @@ export default async function ReisPage() {
                                         </div>
                                     )}
                                     <div className="p-6 sm:p-10">
-                                        <h3 className="text-xl sm:text-2xl font-bold text-theme-purple mb-6 flex items-center gap-3">
+                                        <h3 className="mb-6 flex items-center gap-3 text-xl font-bold text-theme-purple sm:text-2xl">
                                             {isPast 
                                                 ? `Hoe was onze vorige Reis${displayTripName ? `: ${displayTripName}` : ''}?`
                                                 : displayTripName || 'Over de Reis'
                                             }
                                         </h3>
-                                        <div className="text-text-muted space-y-4 prose prose-sm sm:prose prose-purple dark:prose-invert max-w-none prose-p:leading-relaxed font-medium">
+                                        <div className="prose prose-sm max-w-none space-y-4 font-medium text-text-muted prose-purple sm:prose dark:prose-invert prose-p:leading-relaxed">
                                             {displayTripDescription ? (
                                                 <SafeMarkdown content={displayTripDescription} />
                                             ) : (
@@ -203,8 +203,8 @@ export default async function ReisPage() {
     return (
         <PublicPageShell>
             <h1 className="sr-only">Reis</h1>
-            <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 lg:pt-16 pb-16 sm:pb-24 lg:pb-32">
-                <div className="flex flex-col lg:flex-row gap-8 items-start">
+            <div className="max-w-app mx-auto px-4 pt-8 pb-16 sm:px-6 sm:pt-12 sm:pb-24 lg:px-8 lg:pt-16 lg:pb-32">
+                <div className="flex flex-col items-start gap-8 lg:flex-row">
                     <ReisFormIsland
                         nextTrip={nextTrip}
                         userSignup={userSignup}

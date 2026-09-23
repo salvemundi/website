@@ -24,25 +24,25 @@ export default function LedenTable({
     const router = useRouter();
 
     return (
-        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-sm ring-1 ring-(--beheer-border) overflow-hidden">
+        <div className="overflow-hidden rounded-(--beheer-radius) bg-(--beheer-card-bg) shadow-sm ring-1 ring-(--beheer-border)">
             {/* Mobile: stacked cards (avoids horizontal scrolling / clipped columns) */}
-            <div className="divide-y divide-slate-100 dark:divide-slate-700/50 md:hidden">
+            <div className="divide-y divide-slate-100 md:hidden dark:divide-slate-700/50">
                 {members.map((member) => (
                     <div
                         key={member.id}
                         onClick={() => router.push(`/beheer/leden/${member.id}`)}
-                        className="flex items-center gap-3 px-4 py-4 active:bg-slate-50/50 dark:active:bg-slate-700/20 transition-colors cursor-pointer"
+                        className="flex cursor-pointer items-center gap-3 p-4 transition-colors active:bg-slate-50/50 dark:active:bg-slate-700/20"
                     >
-                        <div className="h-10 w-10 shrink-0 rounded-2xl bg-(--beheer-accent)/10 flex items-center justify-center text-(--beheer-accent) font-semibold text-sm ring-2 ring-white dark:ring-slate-800 shadow-sm">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-(--beheer-accent)/10 text-sm font-semibold text-(--beheer-accent) shadow-sm ring-2 ring-white dark:ring-slate-800">
                             {member.first_name?.[0]}{member.last_name?.[0]}
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="font-semibold text-slate-900 dark:text-white leading-tight truncate">
+                            <p className="truncate leading-tight font-semibold text-slate-900 dark:text-white">
                                 {member.first_name} {member.last_name}
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">{member.email}</p>
+                            <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">{member.email}</p>
                         </div>
-                        <span suppressHydrationWarning className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold ${isMembershipActive(member)
+                        <span suppressHydrationWarning className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-[10px] font-semibold ${isMembershipActive(member)
                             ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400'
                             : 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400'
                             }`}>
@@ -53,13 +53,13 @@ export default function LedenTable({
             </div>
 
             {/* Desktop / tablet: full table */}
-            <div className="hidden md:block overflow-x-auto custom-scrollbar">
-                <table className="w-full text-left border-collapse min-w-[800px]">
+            <div className="custom-scrollbar hidden overflow-x-auto md:block">
+                <table className="w-full min-w-200 border-collapse text-left">
                     <thead>
                         <tr className="border-b border-(--beheer-border) bg-(--beheer-card-soft) text-xs font-semibold text-(--beheer-text-muted)">
-                            <th className="px-4 md:px-8 py-4">Lid</th>
-                            <th className="px-4 md:px-8 py-4">Contactgegevens</th>
-                            <th className="px-4 md:px-8 py-4">Validiteit</th>
+                            <th className="p-4 md:px-8">Lid</th>
+                            <th className="p-4 md:px-8">Contactgegevens</th>
+                            <th className="p-4 md:px-8">Validiteit</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -67,35 +67,35 @@ export default function LedenTable({
                             <tr
                                 key={member.id}
                                 onClick={() => router.push(`/beheer/leden/${member.id}`)}
-                                className="group hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors cursor-pointer"
+                                className="group cursor-pointer transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-700/20"
                             >
-                                <td className="px-4 md:px-8 py-5">
+                                <td className="px-4 py-5 md:px-8">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 shrink-0 rounded-2xl bg-(--beheer-accent)/10 flex items-center justify-center text-(--beheer-accent) font-semibold text-sm ring-2 ring-white dark:ring-slate-800 shadow-sm transition-transform group-hover:scale-110">
+                                        <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-(--beheer-accent)/10 text-sm font-semibold text-(--beheer-accent) shadow-sm ring-2 ring-white transition-transform group-hover:scale-110 dark:ring-slate-800">
                                             {member.first_name?.[0]}{member.last_name?.[0]}
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-slate-900 dark:text-white leading-tight">
+                                            <p className="leading-tight font-semibold text-slate-900 dark:text-white">
                                                 {member.first_name} {member.last_name}
                                             </p>
-                                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">Lid ID: {member.id.substring(0, 8)}</p>
+                                            <p className="mt-1 text-[10px] font-medium text-slate-400 dark:text-slate-500">Lid ID: {member.id.substring(0, 8)}</p>
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-4 md:px-8 py-5 text-sm font-medium text-slate-500 dark:text-slate-400">
+                                <td className="px-4 py-5 text-sm font-medium text-slate-500 md:px-8 dark:text-slate-400">
                                     <div className="flex items-center gap-2">
-                                        <Mail className="h-4 w-4 text-slate-300 dark:text-slate-600" />
+                                        <Mail className="size-4 text-slate-300 dark:text-slate-600" />
                                         <a
                                             href={`mailto:${member.email}`}
-                                            className="hover:text-(--beheer-accent) transition-colors"
+                                            className="transition-colors hover:text-(--beheer-accent)"
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             {member.email}
                                         </a>
                                     </div>
                                 </td>
-                                <td className="px-4 md:px-8 py-5">
-                                    <span suppressHydrationWarning className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-semibold ${isMembershipActive(member)
+                                <td className="px-4 py-5 md:px-8">
+                                    <span suppressHydrationWarning className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-semibold ${isMembershipActive(member)
                                         ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400'
                                         : 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400'
                                         }`}>
@@ -110,9 +110,9 @@ export default function LedenTable({
 
             {members.length === 0 && (
                 <div className="p-20 text-center">
-                    <Users className="h-16 w-16 text-slate-200 dark:text-slate-700 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Geen leden gevonden</h3>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium">Pas de filters aan of probeer een andere zoekterm.</p>
+                    <Users className="mx-auto mb-4 size-16 text-slate-200 dark:text-slate-700" />
+                    <h3 className="mb-2 text-xl font-semibold text-slate-900 dark:text-white">Geen leden gevonden</h3>
+                    <p className="font-medium text-slate-500 dark:text-slate-400">Pas de filters aan of probeer een andere zoekterm.</p>
                 </div>
             )}
         </div>

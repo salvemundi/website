@@ -99,68 +99,68 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
     if (!mounted || !isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6 isolate">
+        <div className="fixed inset-0 isolate z-9999 flex items-center justify-center p-4 sm:p-6">
             <div
-                className="absolute inset-0 bg-slate-950/60 backdrop-blur-xl animate-in fade-in duration-300"
+                className="animate-in fade-in absolute inset-0 bg-slate-950/60 backdrop-blur-xl duration-300"
                 onClick={onClose}
             />
 
             <div
-                className="bg-(--beheer-card-bg) w-full max-w-xl rounded-4xl shadow-(--shadow-card-elevated) ring-1 ring-white/10 overflow-hidden flex flex-col max-h-[90vh] relative z-10 border border-(--beheer-border) animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 duration-300 ease-out"
+                className="animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 relative z-10 flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-4xl border border-(--beheer-border) bg-(--beheer-card-bg) shadow-(--shadow-card-elevated) ring-1 ring-white/10 duration-300 ease-out"
             >
-                <div className="px-8 py-6 border-b border-(--beheer-border) flex justify-between items-center bg-(--beheer-card-soft)/80 relative">
+                <div className="relative flex items-center justify-between border-b border-(--beheer-border) bg-(--beheer-card-soft)/80 px-8 py-6">
                     <div className="absolute inset-x-0 -bottom-px h-px bg-linear-to-r from-transparent via-(--beheer-accent)/30 to-transparent" />
-                    <h2 className="text-[10px] font-semibold text-(--beheer-text) tracking-[0.2em] flex items-center gap-3">
-                        <div className="bg-(--beheer-accent) text-white p-2.5 rounded-2xl shadow-(--shadow-glow)">
-                            <UserPlus className="h-4 w-4" />
+                    <h2 className="flex items-center gap-3 text-[10px] font-semibold tracking-[0.2em] text-(--beheer-text)">
+                        <div className="rounded-2xl bg-(--beheer-accent) p-2.5 text-white shadow-(--shadow-glow)">
+                            <UserPlus className="size-4" />
                         </div>
                         Handmatig Inschrijven
                     </h2>
                     <button
                         onClick={onClose}
-                        className="icon-button text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg) p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border border-transparent hover:border-(--beheer-border)"
+                        className="icon-button rounded-full border border-transparent p-2.5 text-(--beheer-text-muted) transition-all hover:border-(--beheer-border) hover:bg-(--beheer-card-bg) hover:text-(--beheer-text) focus:outline-none active:scale-90"
                     >
-                        <X className="h-5 w-5" />
+                        <X className="size-5" />
                     </button>
                 </div>
 
-                <div className="px-8 py-4 bg-(--beheer-card-bg)">
-                    <div className="flex bg-(--beheer-card-soft) p-1.5 rounded-2xl border border-(--beheer-border) gap-1">
+                <div className="bg-(--beheer-card-bg) px-8 py-4">
+                    <div className="flex gap-1 rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft) p-1.5">
                         <button
                             type="button"
-                            className={`tab-button flex-1 py-2.5 text-[10px] font-semibold tracking-widest rounded-xl transition-all flex justify-center items-center gap-2.5 ${activeTab === 'member'
-                                ? 'bg-(--beheer-card-bg) text-(--beheer-accent) shadow-md border border-(--beheer-border)'
-                                : 'text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg)/40'
+                            className={`tab-button flex flex-1 items-center justify-center gap-2.5 rounded-xl py-2.5 text-[10px] font-semibold tracking-widest transition-all ${activeTab === 'member'
+                                ? 'border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-accent) shadow-md'
+                                : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-bg)/40 hover:text-(--beheer-text)'
                                 }`}
                             onClick={() => setActiveTab('member')}
                         >
-                            <User className="h-3.5 w-3.5" />
+                            <User className="size-3.5" />
                             Lid
                         </button>
                         <button
                             type="button"
-                            className={`tab-button flex-1 py-2.5 text-[10px] font-semibold tracking-widest rounded-xl transition-all flex justify-center items-center gap-2.5 ${activeTab === 'guest'
-                                ? 'bg-(--beheer-card-bg) text-(--beheer-accent) shadow-md border border-(--beheer-border)'
-                                : 'text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg)/40'
+                            className={`tab-button flex flex-1 items-center justify-center gap-2.5 rounded-xl py-2.5 text-[10px] font-semibold tracking-widest transition-all ${activeTab === 'guest'
+                                ? 'border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-accent) shadow-md'
+                                : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-bg)/40 hover:text-(--beheer-text)'
                                 }`}
                             onClick={() => setActiveTab('guest')}
                         >
-                            <UserPlus className="h-3.5 w-3.5" />
+                            <UserPlus className="size-3.5" />
                             Gast (Niet-lid)
                         </button>
                     </div>
                 </div>
 
-                <div className="px-8 pb-8 pt-2 overflow-y-auto custom-scrollbar">
+                <div className="custom-scrollbar overflow-y-auto px-8 pt-2 pb-8">
                     {error && (
-                        <div className="mb-6 p-4 bg-red-500/10 text-red-500 rounded-2xl text-[10px] font-semibold tracking-widest border border-red-500/20 flex items-start gap-4 animate-in slide-in-from-top-2">
-                            <XCircle className="h-5 w-5 shrink-0" />
+                        <div className="animate-in slide-in-from-top-2 mb-6 flex items-start gap-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-[10px] font-semibold tracking-widest text-red-500">
+                            <XCircle className="size-5 shrink-0" />
                             <span className="leading-relaxed">{error}</span>
                         </div>
                     )}
                     {successMessage && (
-                        <div className="mb-6 p-4 bg-emerald-500/10 text-emerald-500 rounded-2xl text-[10px] font-semibold tracking-widest border border-emerald-500/20 flex items-center gap-4 animate-in slide-in-from-top-2">
-                            <CheckCircle className="h-5 w-5 shrink-0" />
+                        <div className="animate-in slide-in-from-top-2 mb-6 flex items-center gap-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-[10px] font-semibold tracking-widest text-emerald-500">
+                            <CheckCircle className="size-5 shrink-0" />
                             <span className="leading-relaxed">{successMessage}</span>
                         </div>
                     )}
@@ -183,11 +183,11 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                             />
                         )}
 
-                        <div className="flex gap-4 pt-8 mt-4 border-t border-(--beheer-border)">
+                        <div className="mt-4 flex gap-4 border-t border-(--beheer-border) pt-8">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="beheer-button flex-1 h-14 rounded-2xl font-semibold tracking-widest text-[10px] border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-all active:scale-[0.98] cursor-pointer"
+                                className="active:scale-0.98 beheer-button h-14 flex-1 cursor-pointer rounded-2xl border border-(--beheer-border) text-[10px] font-semibold tracking-widest text-(--beheer-text) transition-all hover:bg-(--beheer-card-soft)"
                                 disabled={isLoading}
                             >
                                 Annuleren
@@ -195,14 +195,14 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                             <button
                                 type="submit"
                                 disabled={isLoading || (activeTab === 'member' && !selectedMember)}
-                                className="form-button flex-[1.5] h-14 rounded-2xl font-semibold tracking-widest text-[10px] bg-(--beheer-accent) text-white shadow-(--shadow-glow) hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3 border border-white/10 group"
+                                className="group active:scale-0.98 form-button flex h-14 flex-[1.5] items-center justify-center gap-3 rounded-2xl border border-white/10 bg-(--beheer-accent) text-[10px] font-semibold tracking-widest text-white shadow-(--shadow-glow) transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
                             >
                                 {isLoading ? (
-                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                    <Loader2 className="size-5 animate-spin" />
                                 ) : (
                                     <>
                                         <span>Bevestig Inschrijving</span>
-                                        <CheckCircle className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                                        <CheckCircle className="size-4 transition-transform group-hover:scale-110" />
                                     </>
                                 )}
                             </button>

@@ -29,13 +29,13 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
     const showAdmin = isAuthenticated && canAccessAdmin;
 
     return (
-        <div className="flex items-center justify-end gap-1.5 lg:gap-2 shrink-0 flex-nowrap">
+        <div className="flex shrink-0 flex-nowrap items-center justify-end gap-1.5 lg:gap-2">
             {showAdmin && (
                 <Link
                     href={ROUTES.ADMIN}
-                    className="flex items-center gap-2 squircle bg-purple-500 text-white px-3 py-1.5 h-9 text-sm font-medium shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0"
+                    className="squircle flex h-9 shrink-0 items-center gap-2 bg-purple-500 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                 >
-                    <Shield className="h-4 w-4 shrink-0" />
+                    <Shield className="size-4 shrink-0" />
                     <span className="hidden @[1200px]:inline">Beheer</span>
                 </Link>
             )}
@@ -43,13 +43,13 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
             {isAuthenticated ? (
                 <Link
                     href={ROUTES.ACCOUNT}
-                    className="flex items-center gap-2 squircle px-3 py-1.5 h-9 text-sm font-medium text-(--text-main) shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg shrink-0"
+                    className="squircle flex h-9 shrink-0 items-center gap-2 px-3 py-1.5 text-sm font-medium text-(--text-main) shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                 >
-                    <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0 bg-purple-50 dark:bg-white/10 flex items-center justify-center">
+                    <div className="relative flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-purple-50 dark:bg-white/10">
                         {user.avatar ? (
                             <Image src={getImageUrl(user.avatar)} alt={user.name || 'Profiel'} fill className="object-cover" priority unoptimized />
                         ) : (
-                            <User className="h-3.5 w-3.5 text-purple-600" />
+                            <User className="size-3.5 text-purple-600" />
                         )}
                     </div>
                     <span className="hidden @[1200px]:inline">Mijn profiel</span>
@@ -62,7 +62,7 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                             callbackURL: searchParams.get('callbackURL') || ROUTES.MEMBERSHIP
                         });
                     }}
-                    className="form-button flex cursor-pointer items-center justify-center gap-2 squircle font-semibold px-4 py-1.5 h-9 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg bg-purple-50 text-purple-700 shrink-0"
+                    className="squircle form-button flex h-9 shrink-0 cursor-pointer items-center justify-center gap-2 bg-purple-50 px-4 py-1.5 text-sm font-semibold text-purple-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                 >
                     Inloggen
                 </button>

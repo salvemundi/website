@@ -68,20 +68,20 @@ export default function CoboPublicQueueIsland({
 
         if (type === 'shotjes') {
             return (
-                <span className={`inline-flex items-center ${sizeClasses} bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20`}>
+                <span className={`inline-flex items-center ${sizeClasses} border border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300`}>
                     <span>Shotjes</span>
                 </span>
             );
         }
         if (type === 'watervallen') {
             return (
-                <span className={`inline-flex items-center ${sizeClasses} bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20`}>
+                <span className={`inline-flex items-center ${sizeClasses} border border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300`}>
                     <span>Watervallen</span>
                 </span>
             );
         }
         return (
-            <span className={`inline-flex items-center ${sizeClasses} bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20`}>
+            <span className={`inline-flex items-center ${sizeClasses} border border-purple-500/20 bg-purple-500/10 text-purple-700 dark:text-purple-300`}>
                 <span>{custom || 'Activiteit'}</span>
             </span>
         );
@@ -92,30 +92,30 @@ export default function CoboPublicQueueIsland({
     return (
         <div className="space-y-6">
             {!hasAnyActive && (
-                <div className="bg-bg-card rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-center shadow-lg border border-border-color space-y-3">
-                    <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mx-auto border border-purple-500/20 text-purple-700 dark:text-purple-300">
-                        <UserCheck className="h-7 w-7" />
+                <div className="space-y-3 rounded-2xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:rounded-3xl sm:p-12">
+                    <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-purple-500/20 bg-purple-500/10 text-purple-700 dark:text-purple-300">
+                        <UserCheck className="size-7" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-black text-text-main">
+                    <h3 className="text-lg font-black text-text-main sm:text-xl">
                         De wachtlijst is momenteel leeg
                     </h3>
-                    <p className="text-text-muted text-sm max-w-md mx-auto font-medium">
+                    <p className="mx-auto max-w-md text-sm font-medium text-text-muted">
                         Meld je aan bij de pedel om op de lijst te komen.
                     </p>
                 </div>
             )}
 
             {currentBoard && (
-                <div className="bg-bg-card rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xl border-2 border-purple-500/30 text-center space-y-3">
-                    <div className="flex items-center justify-center gap-2.5 flex-wrap">
-                        <span className="inline-flex items-center px-3.5 py-1 rounded-full text-sm font-bold bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 uppercase tracking-wider">
+                <div className="space-y-3 rounded-2xl border-2 border-purple-500/30 bg-bg-card p-6 text-center shadow-xl sm:rounded-3xl sm:p-8">
+                    <div className="flex flex-wrap items-center justify-center gap-2.5">
+                        <span className="inline-flex items-center rounded-full border border-purple-500/20 bg-purple-500/10 px-3.5 py-1 text-sm font-bold tracking-wider text-purple-700 uppercase dark:text-purple-300">
                             Nu aan de beurt
                         </span>
                         {renderActivityBadge(currentBoard.activity_type, currentBoard.activity_custom, true)}
                     </div>
 
                     <div>
-                        <h3 className="text-3xl sm:text-4xl font-black text-theme-purple tracking-tight">
+                        <h3 className="text-3xl font-black tracking-tight text-theme-purple sm:text-4xl">
                             {currentBoard.board_name}
                         </h3>
                     </div>
@@ -123,10 +123,10 @@ export default function CoboPublicQueueIsland({
             )}
 
             {displayedQueue.length > 0 && (
-                <div className="bg-bg-card rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg border border-border-color space-y-4">
+                <div className="space-y-4 rounded-2xl border border-border-color bg-bg-card p-6 shadow-lg sm:rounded-3xl sm:p-8">
                     <div className="flex items-center justify-between border-b border-border-color/60 pb-3">
-                        <h3 className="text-sm font-black uppercase tracking-wider text-text-muted flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-purple-600 dark:text-purple-300" />
+                        <h3 className="flex items-center gap-2 text-sm font-black tracking-wider text-text-muted uppercase">
+                            <Clock className="size-4 text-purple-600 dark:text-purple-300" />
                             {limit && allActiveQueue.length > limit
                                 ? `Eerstvolgende (${displayedQueue.length} van ${allActiveQueue.length})`
                                 : `Wachtend (${allActiveQueue.length})`}
@@ -140,29 +140,29 @@ export default function CoboPublicQueueIsland({
                             return (
                                 <div
                                     key={board.id}
-                                    className={`py-4 flex items-center justify-between gap-4 transition-colors ${
-                                        isLate ? 'opacity-90 bg-rose-500/5 -mx-4 px-4 rounded-xl' : ''
+                                    className={`flex items-center justify-between gap-4 py-4 transition-colors ${
+                                        isLate ? '-mx-4 rounded-xl bg-rose-500/5 px-4 opacity-90' : ''
                                     }`}
                                 >
-                                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                                    <div className="flex min-w-0 flex-1 items-center gap-3.5">
                                         <div
-                                            className={`h-8 w-8 rounded-xl flex items-center justify-center text-xs font-black shrink-0 ${
+                                            className={`flex size-8 shrink-0 items-center justify-center rounded-xl text-xs font-black ${
                                                 isLate
-                                                    ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30'
-                                                    : 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/15'
+                                                    ? 'border border-rose-500/30 bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                                                    : 'border border-purple-500/15 bg-purple-500/10 text-purple-700 dark:text-purple-300'
                                             }`}
                                         >
                                             #{index + 1}
                                         </div>
 
                                         <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <h4 className="font-bold text-text-main text-sm sm:text-base truncate">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <h4 className="truncate text-sm font-bold text-text-main sm:text-base">
                                                     {board.board_name}
                                                 </h4>
                                                 {isLate && (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30">
-                                                        <AlertTriangle className="h-3 w-3" />
+                                                    <span className="inline-flex items-center gap-1 rounded-md border border-rose-500/30 bg-rose-500/15 px-2 py-0.5 text-[11px] font-black tracking-wider text-rose-600 uppercase dark:text-rose-400">
+                                                        <AlertTriangle className="size-3" />
                                                         Niet op tijd
                                                     </span>
                                                 )}
@@ -179,15 +179,15 @@ export default function CoboPublicQueueIsland({
                     </div>
 
                     {remainingCount > 0 && (
-                        <div className="pt-4 border-t border-border-color/40">
+                        <div className="border-t border-border-color/40 pt-4">
                             <Link
                                 href="/cobo/wachtlijst"
-                                className="beheer-button w-full py-3 px-4 bg-purple-500/10 hover:bg-purple-500/15 text-purple-700 dark:text-purple-300 font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 border border-purple-500/20 shadow-xs"
+                                className="beheer-button flex w-full items-center justify-center gap-2 rounded-xl border border-purple-500/20 bg-purple-500/10 px-4 py-3 text-sm font-bold text-purple-700 shadow-xs transition-all hover:bg-purple-500/15 dark:text-purple-300"
                             >
                                 <span>
                                     Bekijk nog {remainingCount} {remainingCount === 1 ? 'ander wachtend bestuur' : 'andere wachtende besturen'}
                                 </span>
-                                <ArrowRight className="h-4 w-4" />
+                                <ArrowRight className="size-4" />
                             </Link>
                         </div>
                     )}

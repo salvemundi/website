@@ -108,13 +108,13 @@ export default function KroegentochtFormIsland({
     return (
         <StandardFormCard
             title="Inschrijven"
-            icon={<Ticket className="w-8 h-8" />}
+            icon={<Ticket className="size-8" />}
             description="Vul hieronder je gegevens in en reserveer je plek voor de kroegentocht. Tickets kosten slechts €1,00 per stuk!"
         >
             <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6" autoComplete="off">
                 <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>
                     <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Mail className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
                         <Input
                             {...register('email')}
                             id="field-email"
@@ -125,10 +125,10 @@ export default function KroegentochtFormIsland({
                     </div>
                 </FormField>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <FormField id="field-association" label="Vereniging" required error={errors.association?.message}>
                         <div className="relative">
-                            <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <Building className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
                             <select
                                 {...register('association')}
                                 id="field-association"
@@ -156,12 +156,12 @@ export default function KroegentochtFormIsland({
                     )}
                 </div>
 
-                <div className="border-t border-slate-100 dark:border-white/5 pt-6 mt-8">
-                    <div className="flex items-center justify-between mb-6">
+                <div className="mt-8 border-t border-slate-100 pt-6 dark:border-white/5">
+                    <div className="mb-6 flex items-center justify-between">
                         <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
                             Aantal Personen
                         </label>
-                        <div className="flex items-center gap-4 bg-slate-50 dark:bg-white/5 p-1 rounded-xl border border-slate-100 dark:border-white/10">
+                        <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 p-1 dark:border-white/10 dark:bg-white/5">
                             <button
                                 type="button"
                                 onClick={() => {
@@ -170,12 +170,12 @@ export default function KroegentochtFormIsland({
                                         remove(fields.length - 1);
                                     }
                                 }}
-                                className="icon-button p-2 hover:bg-white dark:hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30"
+                                className="icon-button rounded-lg p-2 transition-colors hover:bg-white disabled:opacity-30 dark:hover:bg-white/10"
                                 disabled={amount <= 1}
                             >
-                                <Minus className="w-4 h-4" />
+                                <Minus className="size-4" />
                             </button>
-                            <span className="w-8 text-center font-black text-lg">{amount}</span>
+                            <span className="w-8 text-center text-lg font-black">{amount}</span>
                             <button
                                 type="button"
                                 onClick={() => {
@@ -184,26 +184,26 @@ export default function KroegentochtFormIsland({
                                         append({ name: '', initial: '' });
                                     }
                                 }}
-                                className="icon-button p-2 hover:bg-white dark:hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30"
+                                className="icon-button rounded-lg p-2 transition-colors hover:bg-white disabled:opacity-30 dark:hover:bg-white/10"
                                 disabled={amount >= 10}
                             >
-                                <Plus className="w-4 h-4" />
+                                <Plus className="size-4" />
                             </button>
                         </div>
                     </div>
 
-                    <div className="space-y-4 max-h-100 overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="custom-scrollbar max-h-100 space-y-4 overflow-y-auto pr-2">
                         {fields.map((field, index) => (
-                            <div key={field.id} className="bg-white dark:bg-white/5 rounded-xl p-4 border border-slate-100 dark:border-white/10 shadow-sm">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <div className="w-6 h-6 rounded-full bg-theme-purple text-white flex items-center justify-center text-[10px] font-bold">
+                            <div key={field.id} className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
+                                <div className="mb-3 flex items-center gap-2">
+                                    <div className="flex size-6 items-center justify-center rounded-full bg-theme-purple text-[10px] font-bold text-white">
                                         {index + 1}
                                     </div>
-                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Deelnemer {index + 1}</span>
+                                    <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">Deelnemer {index + 1}</span>
                                 </div>
                                 <div className="flex gap-3">
                                     <div className="grow">
-                                        <label htmlFor={`field-participants-${index}-name`} className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Voornaam + tussenvoegsel</label>
+                                        <label htmlFor={`field-participants-${index}-name`} className="mb-1 block text-[10px] font-bold text-slate-400 uppercase">Voornaam + tussenvoegsel</label>
                                         <Input
                                             {...register(`participants.${index}.name`)}
                                             id={`field-participants-${index}-name`}
@@ -212,7 +212,7 @@ export default function KroegentochtFormIsland({
                                         />
                                     </div>
                                     <div className="w-fit shrink-0">
-                                        <label htmlFor={`field-participants-${index}-initial`} className="text-[10px] font-bold text-slate-400 uppercase mb-1 block whitespace-nowrap">1e letter achtern.</label>
+                                        <label htmlFor={`field-participants-${index}-initial`} className="mb-1 block text-[10px] font-bold whitespace-nowrap text-slate-400 uppercase">1e letter achtern.</label>
                                         <Input
                                             {...register(`participants.${index}.initial`, {
                                                 onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -222,7 +222,7 @@ export default function KroegentochtFormIsland({
                                             id={`field-participants-${index}-initial`}
                                             placeholder="Bijv. S"
                                             maxLength={1}
-                                            className="w-20 text-center uppercase font-bold"
+                                            className="w-20 text-center font-bold uppercase"
                                             required
                                         />
                                     </div>
@@ -235,11 +235,11 @@ export default function KroegentochtFormIsland({
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="form-button w-full bg-theme-purple enabled:hover:bg-purple-600 text-white font-black py-4 rounded-xl sm:rounded-2xl transition-all shadow-lg shadow-purple-500/20 enabled:active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
+                    className="enabled:active:scale-0.98 form-button flex w-full items-center justify-center gap-2 rounded-xl bg-theme-purple py-4 text-lg font-black text-white shadow-lg shadow-purple-500/20 transition-all enabled:hover:bg-purple-600 disabled:opacity-50 sm:rounded-2xl"
                 >
                     {isPending ? (
                         <>
-                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <div className="size-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                             Verwerken...
                         </>
                     ) : (
@@ -248,7 +248,7 @@ export default function KroegentochtFormIsland({
                 </button>
 
                 {/* Honeypot at bottom to avoid breaking browser autofill sections */}
-                <div className="opacity-0 absolute top-0 left-0 h-0 w-0 -z-10 pointer-events-none overflow-hidden" aria-hidden="true">
+                <div className="pointer-events-none absolute top-0 left-0 -z-10 size-0 overflow-hidden opacity-0" aria-hidden="true">
                     <label htmlFor="website">Website</label>
                     <input {...register('website')} id="website" tabIndex={-1} autoComplete="off" className="hidden" suppressHydrationWarning />
                 </div>

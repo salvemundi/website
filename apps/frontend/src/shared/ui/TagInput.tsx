@@ -33,9 +33,9 @@ export function TagInput({ value, onChange, placeholder, id }: TagInputProps) {
     };
 
     return (
-        <div className="form-input flex flex-wrap items-center gap-2 min-h-12 py-2">
+        <div className="flex min-h-12 form-input flex-wrap items-center gap-2 py-2">
             {value.map((tag) => (
-                <span key={tag} className="flex items-center gap-1 bg-(--bg-soft) text-(--theme-purple) text-xs font-bold px-2.5 py-1 rounded-full">
+                <span key={tag} className="flex items-center gap-1 rounded-full bg-(--bg-soft) px-2.5 py-1 text-xs font-bold text-(--theme-purple)">
                     {tag}
                     <button
                         type="button"
@@ -43,7 +43,7 @@ export function TagInput({ value, onChange, placeholder, id }: TagInputProps) {
                         className="icon-button hover:text-(--theme-error)"
                         aria-label={`Verwijder ${tag}`}
                     >
-                        <X className="h-3 w-3" />
+                        <X className="size-3" />
                     </button>
                 </span>
             ))}
@@ -55,7 +55,7 @@ export function TagInput({ value, onChange, placeholder, id }: TagInputProps) {
                 onKeyDown={handleKeyDown}
                 onBlur={() => addTag(draft)}
                 placeholder={value.length === 0 ? placeholder : ''}
-                className="form-input-tag flex-1 min-w-[8ch] bg-transparent outline-none border-none p-0 text-sm"
+                className="form-input-tag min-w-[8ch] flex-1 border-none bg-transparent p-0 text-sm outline-none"
             />
         </div>
     );

@@ -26,29 +26,29 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
     };
 
     return (
-        <div className="bg-linear-to-br from-theme-purple/5 to-theme-purple/10 rounded-2xl p-6 border border-theme-purple/20">
+        <div className="rounded-2xl border border-theme-purple/20 bg-linear-to-br from-theme-purple/5 to-theme-purple/10 p-6">
             {error && (
-                <div className="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-3 rounded-xl mb-6 text-sm font-medium">
+                <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-500">
                     {error}
                 </div>
             )}
-            <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-full bg-theme-purple/20 flex items-center justify-center">
-                    <CheckCircle2 className="h-8 w-8 text-theme-purple" />
+            <div className="mb-6 flex items-center gap-4">
+                <div className="flex size-14 items-center justify-center rounded-full bg-theme-purple/20">
+                    <CheckCircle2 className="size-8 text-theme-purple" />
                 </div>
                 <div>
                     <h3 className="text-xl font-bold text-theme-purple dark:text-white">Huidige status</h3>
                 </div>
             </div>
 
-            <div className="bg-white/50 dark:bg-black/5 rounded-2xl p-6 border border-theme-purple/10 mb-6">
+            <div className="mb-6 rounded-2xl border border-theme-purple/10 bg-white/50 p-6 dark:bg-black/5">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <p className="text-2xl sm:text-3xl font-bold text-theme-purple dark:text-white tracking-tight wrap-break-word">
+                        <p className="text-2xl font-bold tracking-tight wrap-break-word text-theme-purple sm:text-3xl dark:text-white">
                             {getSignupStatusDisplay(userSignup)}
                         </p>
                         {userSignup.status === 'registered' && (
-                            <p className="text-xs text-text-muted mt-1 italic">
+                            <p className="mt-1 text-xs text-text-muted italic">
                                 Je aanmelding wordt momenteel beoordeeld door de commissie.
                             </p>
                         )}
@@ -57,18 +57,18 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
             </div>
 
             {userSignup.status === 'confirmed' && !userSignup.full_payment_paid && (
-                <div className="mt-4 pt-4 border-t border-theme-purple/20 space-y-4">
+                <div className="mt-4 space-y-4 border-t border-theme-purple/20 pt-4">
                     {!userSignup.deposit_paid ? (
                         nextTrip?.allow_deposit_payments ? (
                             <Link
                                 href={`/reis/betalen/aanbetaling?id=${userSignup.id}`}
-                                className="inline-flex items-center gap-2 px-6 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition group"
+                                className="group inline-flex items-center gap-2 rounded-lg bg-theme-purple px-6 py-2 text-white transition hover:bg-theme-purple-dark"
                             >
-                                <CreditCard className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                <CreditCard className="size-5 transition-transform group-hover:scale-110" />
                                 Ga naar aanbetaling
                             </Link>
                         ) : (
-                            <p className="text-xs italic text-text-muted leading-relaxed">
+                            <p className="text-xs leading-relaxed text-text-muted italic">
                                 De aanbetalingen zijn momenteel nog niet geopend voor deze reis. Je ontvangt een e-mail zodra je kunt betalen.
                             </p>
                         )
@@ -77,21 +77,21 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                             {nextTrip?.allow_final_payments ? (
                                 <Link
                                     href={`/reis/betalen/restbetaling?id=${userSignup.id}`}
-                                    className="inline-flex items-center gap-2 px-6 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition group"
+                                    className="group inline-flex items-center gap-2 rounded-lg bg-theme-purple px-6 py-2 text-white transition hover:bg-theme-purple-dark"
                                 >
-                                    <CreditCard className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                    <CreditCard className="size-5 transition-transform group-hover:scale-110" />
                                     Afronden & Betalen
                                 </Link>
                             ) : (
                                 <>
                                     <Link
                                         href={`/reis/betalen/restbetaling?id=${userSignup.id}`}
-                                        className="inline-flex items-center gap-2 px-6 py-2 bg-theme-purple text-white rounded-lg hover:bg-theme-purple-dark transition group"
+                                        className="group inline-flex items-center gap-2 rounded-lg bg-theme-purple px-6 py-2 text-white transition hover:bg-theme-purple-dark"
                                     >
-                                        <Utensils className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                        <Utensils className="size-5 transition-transform group-hover:scale-110" />
                                         Activiteiten beheren
                                     </Link>
-                                    <p className="text-xs italic text-(--text-muted) leading-relaxed">
+                                    <p className="text-xs leading-relaxed text-(--text-muted) italic">
                                         De restbetaling is momenteel nog niet geopend. Je kunt wel alvast je activiteiten doorgeven of wijzigen.
                                     </p>
                                 </>

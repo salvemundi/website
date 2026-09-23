@@ -44,12 +44,12 @@ export default async function WebshopProductPage({ params }: PageProps) {
 
     return (
         <PublicPageShell>
-            <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-8 pb-16 sm:pb-24">
+            <div className="mx-auto max-w-6xl px-4 pt-8 pb-16 sm:px-6 sm:pb-24 lg:px-8">
                 <div className="mb-6">
                     <BackButton href="/merch" title="Terug naar merch" />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
                     <WebshopGalleryIsland media={product.media} productName={product.name} />
                     <WebshopProductDetailIsland product={product} isLoggedIn={isLoggedIn} isMember={isMember} />
                 </div>

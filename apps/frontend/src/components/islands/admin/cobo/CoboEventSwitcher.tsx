@@ -45,9 +45,9 @@ export default function CoboEventSwitcher({
 
     return (
         <>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-wrap items-center gap-2">
                 {options.length > 0 && activeEvent && (
-                    <div className="w-full sm:w-auto m:min-w-50">
+                    <div className="m:min-w-50 w-full sm:w-auto">
                         <AdminSelect
                             value={activeEvent.id}
                             onChange={handleSwitch}
@@ -62,9 +62,9 @@ export default function CoboEventSwitcher({
                         type="button"
                         onClick={handleEdit}
                         title="CoBo Instellingen & Tekst bewerken"
-                        className="beheer-button flex items-center justify-center gap-1.5 px-3 py-2 bg-bg-card border border-border-color text-text-main rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm cursor-pointer"
+                        className="beheer-button flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-border-color bg-bg-card px-3 py-2 text-xs font-semibold text-text-main shadow-sm transition-all hover:border-theme-purple hover:bg-theme-purple/5"
                     >
-                        <Settings2 className="h-3.5 w-3.5" />
+                        <Settings2 className="size-3.5" />
                         <span className="hidden sm:inline">Bewerken</span>
                     </button>
                 )}
@@ -73,9 +73,9 @@ export default function CoboEventSwitcher({
                     type="button"
                     onClick={handleNew}
                     title="Nieuwe CoBo editie aanmaken"
-                    className="beheer-button flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
+                    className="beheer-button flex cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-purple-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-purple-700"
                 >
-                    <Plus className="h-3.5 w-3.5" />
+                    <Plus className="size-3.5" />
                     <span>Nieuw</span>
                 </button>
             </div>

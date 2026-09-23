@@ -42,7 +42,7 @@ export default function ActivitySignupTable({
 }: ActivitySignupTableProps) {
     return (
         <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-200">
+            <table className="w-full min-w-200 border-collapse text-left">
                 <thead>
                     <tr className="border-b border-(--beheer-border) bg-(--beheer-card-soft) text-[10px] font-semibold tracking-widest text-(--beheer-text-muted)">
                         <th className="px-6 py-4">Inchecken</th>
@@ -63,57 +63,57 @@ export default function ActivitySignupTable({
                         const checkedInAt = signup.checked_in_at ? new Date(signup.checked_in_at) : null;
 
                         return (
-                            <tr key={signup.id} className={`group hover:bg-(--beheer-card-soft) transition-colors ${isRowDeleting ? 'opacity-50 pointer-events-none' : ''}`}>
+                            <tr key={signup.id} className={`group transition-colors hover:bg-(--beheer-card-soft) ${isRowDeleting ? 'pointer-events-none opacity-50' : ''}`}>
                                 <td className="px-6 py-5">
                                     <div className="flex flex-col gap-1.5">
                                         <button
                                             onClick={() => onToggleCheckIn(signup.id, !!signup.checked_in)}
                                             disabled={!canAccessEdit}
-                                            className={`beheer-button flex items-center gap-2 self-start px-3 py-2 rounded-xl transition-all font-semibold text-[10px] tracking-wider border shadow-sm active:scale-95 ${signup.checked_in
-                                                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30'
-                                                : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) border-(--beheer-border) hover:border-emerald-500/50 hover:text-emerald-500'
-                                                } ${!canAccessEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                            className={`beheer-button flex items-center gap-2 self-start rounded-xl border px-3 py-2 text-[10px] font-semibold tracking-wider shadow-sm transition-all active:scale-95 ${signup.checked_in
+                                                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500'
+                                                : 'border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:border-emerald-500/50 hover:text-emerald-500'
+                                                } ${!canAccessEdit ? 'cursor-not-allowed opacity-50' : ''}`}
                                         >
                                             {signup.checked_in ? (
                                                 <>
-                                                    <CheckCircle2 className="h-4 w-4" />
+                                                    <CheckCircle2 className="size-4" />
                                                     <span>Ingecheckt</span>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Circle className="h-4 w-4" />
+                                                    <Circle className="size-4" />
                                                     <span>Inchecken</span>
                                                 </>
                                             )}
                                         </button>
                                         {signup.checked_in && checkedInAt && !isNaN(checkedInAt.getTime()) && (
-                                            <div className="flex items-center gap-1 text-[9px] text-(--beheer-text-muted) opacity-60 font-semibold tracking-tight ml-1">
-                                                <Clock className="h-3 w-3" />
+                                            <div className="ml-1 flex items-center gap-1 text-[9px] font-semibold tracking-tight text-(--beheer-text-muted) opacity-60">
+                                                <Clock className="size-3" />
                                                 {formatTime(checkedInAt)}
                                             </div>
                                         )}
                                     </div>
                                 </td>
                                 <td className="px-6 py-5">
-                                    <div className="font-semibold text-(--beheer-text) text-sm tracking-tight mb-1">{name}</div>
+                                    <div className="mb-1 text-sm font-semibold tracking-tight text-(--beheer-text)">{name}</div>
                                 </td>
-                                <td className="px-6 py-5 space-y-1.5">
-                                    <div className="flex items-center gap-2 text-xs text-(--beheer-text-muted) font-semibold tracking-tight">
-                                        <Mail className="h-3.5 w-3.5 opacity-50" />
-                                        <a href={`mailto:${email}`} className="hover:text-(--beheer-accent) transition-colors">{email}</a>
+                                <td className="space-y-1.5 px-6 py-5">
+                                    <div className="flex items-center gap-2 text-xs font-semibold tracking-tight text-(--beheer-text-muted)">
+                                        <Mail className="size-3.5 opacity-50" />
+                                        <a href={`mailto:${email}`} className="transition-colors hover:text-(--beheer-accent)">{email}</a>
                                     </div>
                                     {phone && phone !== '-' && (
-                                        <div className="flex items-center gap-2 text-xs text-(--beheer-text-muted) font-semibold tracking-tight">
-                                            <a href={`tel:${phone}`} className="hover:text-(--beheer-accent) transition-colors">{phone}</a>
+                                        <div className="flex items-center gap-2 text-xs font-semibold tracking-tight text-(--beheer-text-muted)">
+                                            <a href={`tel:${phone}`} className="transition-colors hover:text-(--beheer-accent)">{phone}</a>
                                         </div>
                                     )}
                                 </td>
                                 <td className="px-6 py-5">
-                                    <div className="flex flex-wrap gap-2 mb-2">
+                                    <div className="mb-2 flex flex-wrap gap-2">
                                         <MemberBadge signup={signup} />
                                         <PaymentBadge status={signup.payment_status || 'open'} amount={signup.amount_paid} />
                                     </div>
-                                    <div className="text-[10px] text-(--beheer-text-muted) font-bold tracking-widest">
+                                    <div className="text-[10px] font-bold tracking-widest text-(--beheer-text-muted)">
                                         {createdAt && !isNaN(createdAt.getTime())
                                             ? formatDateTime(createdAt)
                                             : 'Datum onbekend'}
@@ -123,13 +123,13 @@ export default function ActivitySignupTable({
                                     {canAccessEdit && (
                                         <button
                                             onClick={() => onDelete(signup.id, email)}
-                                            className="icon-button inline-flex items-center justify-center w-10 h-10 rounded-xl text-(--beheer-text-muted) opacity-30 hover:opacity-100 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
+                                            className="icon-button inline-flex size-10 cursor-pointer items-center justify-center rounded-xl text-(--beheer-text-muted) opacity-30 transition-all hover:bg-red-500/10 hover:text-red-500 hover:opacity-100"
                                             title="Verwijder aanmelding"
                                         >
                                             {isRowDeleting ? (
-                                                <Loader2 className="h-5 w-5 animate-spin" />
+                                                <Loader2 className="size-5 animate-spin" />
                                             ) : (
-                                                <Trash className="h-5 w-5" />
+                                                <Trash className="size-5" />
                                             )}
                                         </button>
                                     )}

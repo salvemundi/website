@@ -28,18 +28,18 @@ export default async function IntroAttendancePage({ searchParams }: Props) {
     return (
         <div>
             <header className="bg-(--bg-soft) py-12">
-                <div className="mx-auto max-w-app px-4">
+                <div className="max-w-app mx-auto px-4">
                     <div className="mb-6">
                         <BackButton href="/profiel" />
                     </div>
                     <h1 className="text-4xl font-extrabold text-(--text-main)">Groepje Aanwezigheid</h1>
-                    <p className="text-lg text-(--text-muted) mt-2 max-w-3xl">
+                    <p className="mt-2 max-w-3xl text-lg text-(--text-muted)">
                         Houd per dag bij wie er aanwezig is en wie er &apos;s avonds al naar huis is.
                     </p>
                 </div>
             </header>
 
-            <div className="mx-auto max-w-app px-4 py-8 sm:py-10 md:py-12">
+            <div className="max-w-app mx-auto px-4 py-8 sm:py-10 md:py-12">
                 <IntroAttendanceIsland groups={groups} isCrew={isCrew} initialGroupId={initialGroupId} />
             </div>
         </div>

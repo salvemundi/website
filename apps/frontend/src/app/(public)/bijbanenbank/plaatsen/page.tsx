@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function VacancySubmissionPage() {
     return (
-        <div className="w-full min-h-dvh pt-8">
+        <div className="min-h-dvh w-full pt-8">
             <div className="mx-auto max-w-3xl px-4 py-12">
                 <VacancySubmissionFormIsland />
             </div>

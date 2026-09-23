@@ -27,20 +27,20 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
         <div className="space-y-6">
             <input type="hidden" {...register('is_bus_trip')} />
             {!hideHeader && (
-                <header className="mb-6 pb-4 border-b border-black/5 dark:border-white/10">
-                    <h2 className="text-2xl sm:text-3xl font-black text-(--text-main) mb-1 italic tracking-tighter flex items-center gap-3">
-                        <User className="w-7 h-7 text-theme-purple" />
+                <header className="mb-6 border-b border-black/5 pb-4 dark:border-white/10">
+                    <h2 className="mb-1 flex items-center gap-3 text-2xl font-black tracking-tighter text-(--text-main) italic sm:text-3xl">
+                        <User className="size-7 text-theme-purple" />
                         Reisgegevens
                     </h2>
-                    <p className="text-(--text-muted) text-sm">Vul je gegevens aan voor <span className="text-theme-purple font-bold">{trip.name}</span>.</p>
+                    <p className="text-sm text-(--text-muted)">Vul je gegevens aan voor <span className="font-bold text-theme-purple">{trip.name}</span>.</p>
                 </header>
             )}
 
-            <div className="grid grid-cols-1 @md:grid-cols-2 @3xl:grid-cols-3 gap-x-6 gap-y-5">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-5 @md:grid-cols-2 @3xl:grid-cols-3">
                 {/* Identity */}
                 <div className="@md:col-span-1">
                     <FormField id="first_name" label="Voornaam (zoals op ID/Paspoort)" required error={errors.first_name?.message}>
-                        <div className="relative group">
+                        <div className="group relative">
                             <Input 
                                 {...register('first_name')} 
                                 placeholder="Volledige voornaam" 
@@ -48,9 +48,9 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
                                 /* We use 'one-time-code' to block Chrome's aggressive autofill. */
                                 autoComplete="one-time-code"
                             />
-                            <AlertCircle className="w-5 h-5 text-red-500 absolute right-3 top-1/2 -translate-y-1/2 opacity-50 group-hover:opacity-100 transition-opacity" />
+                            <AlertCircle className="absolute top-1/2 right-3 size-5 -translate-y-1/2 text-red-500 opacity-50 transition-opacity group-hover:opacity-100" />
                         </div>
-                        <p className="text-[10px] text-red-500 font-bold mt-1 flex items-center gap-1">
+                        <p className="mt-1 flex items-center gap-1 text-[10px] font-bold text-red-500">
                             <span>→</span> LET OP: MOET EXACT OVEREENKOMEN MET JE ID-BEWIJS!
                         </p>
                     </FormField>
@@ -120,45 +120,45 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
 
                 <div className="@md:col-span-1">
                     <FormField id="allergies" label="Allergieën & Medisch" error={errors.allergies?.message}>
-                        <textarea {...register('allergies')} placeholder="Bijv. Notenallergie, medicijngebruik..." className="form-input min-h-[80px]" autoComplete="off" />
+                        <textarea {...register('allergies')} placeholder="Bijv. Notenallergie, medicijngebruik..." className="min-h-20 form-input" autoComplete="off" />
                     </FormField>
                 </div>
 
                 <div className="@md:col-span-1">
                     <FormField id="special_notes" label="Speciale Opmerkingen" error={errors.special_notes?.message}>
-                        <textarea {...register('special_notes')} placeholder="Overige zaken..." className="form-input min-h-[80px]" autoComplete="off" />
+                        <textarea {...register('special_notes')} placeholder="Overige zaken..." className="min-h-20 form-input" autoComplete="off" />
                     </FormField>
                 </div>
 
                 <div className="col-span-1 @md:col-span-2 @3xl:col-span-3">
                     {trip.is_bus_trip && (
-                        <div className="p-4 squircle bg-theme-purple/5 flex items-center justify-start gap-8">
-                            <div className="flex items-center gap-3 min-w-[180px]">
-                                <Bus className="w-5 h-5 text-theme-purple" />
+                        <div className="squircle flex items-center justify-start gap-8 bg-theme-purple/5 p-4">
+                            <div className="flex min-w-45 items-center gap-3">
+                                <Bus className="size-5 text-theme-purple" />
                                 <div>
-                                    <p className="font-bold text-(--text-main) text-sm">Vrijwillige Chauffeur?</p>
+                                    <p className="text-sm font-bold text-(--text-main)">Vrijwillige Chauffeur?</p>
                                     <p className="text-[10px] text-(--text-muted)">Bereid om een busje te rijden.</p>
                                 </div>
                             </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input {...register('willing_to_drive')} type="checkbox" className="sr-only peer" />
-                                <div className="w-11 h-6 bg-(--bg-soft) peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-purple"></div>
+                            <label className="relative inline-flex cursor-pointer items-center">
+                                <input {...register('willing_to_drive')} type="checkbox" className="peer sr-only" />
+                                <div className="peer h-6 w-11 rounded-full bg-(--bg-soft) peer-checked:bg-theme-purple peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:size-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
                             </label>
                         </div>
                     )}
 
                     {!trip.is_bus_trip && (
-                        <div className="p-4 squircle bg-theme-purple/5 flex items-center justify-start gap-8">
-                            <div className="flex items-center gap-3 min-w-[180px]">
-                                <Briefcase className="w-5 h-5 text-theme-purple" />
+                        <div className="squircle flex items-center justify-start gap-8 bg-theme-purple/5 p-4">
+                            <div className="flex min-w-45 items-center gap-3">
+                                <Briefcase className="size-5 text-theme-purple" />
                                 <div>
-                                    <p className="font-bold text-(--text-main) text-sm">Extra Koffer?</p>
+                                    <p className="text-sm font-bold text-(--text-main)">Extra Koffer?</p>
                                     <p className="text-[10px] text-(--text-muted)">Ik wil een grote koffer meenemen.</p>
                                 </div>
                             </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input {...register('extra_luggage')} type="checkbox" className="sr-only peer" />
-                                <div className="w-11 h-6 bg-(--bg-soft) peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-theme-purple"></div>
+                            <label className="relative inline-flex cursor-pointer items-center">
+                                <input {...register('extra_luggage')} type="checkbox" className="peer sr-only" />
+                                <div className="peer h-6 w-11 rounded-full bg-(--bg-soft) peer-checked:bg-theme-purple peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:size-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
                             </label>
                         </div>
                     )}

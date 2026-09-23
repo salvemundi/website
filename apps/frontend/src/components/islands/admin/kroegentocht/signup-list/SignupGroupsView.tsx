@@ -139,7 +139,7 @@ export default function SignupGroupsView({
     const layoutColumns = visibleGroupsCount === 1 ? 3 : visibleGroupsCount === 2 ? 2 : 1;
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-200">
+        <div className="animate-in fade-in space-y-8 duration-200">
             <div className={gridClass}>
                 {/* Render standard groups defined for the event */}
                 {groupConfigs

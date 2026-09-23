@@ -26,10 +26,10 @@ export default function ActivityFilters({
     onCommitteeChange
 }: Props) {
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-10 items-stretch">
+        <div className="mb-10 grid grid-cols-1 items-stretch gap-4 lg:grid-cols-12">
             {/* Search Bar */}
-            <div className="lg:col-span-5 flex items-center gap-3 px-4 py-3 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) shadow-sm focus-within:border-(--beheer-accent) focus-within:ring-4 focus-within:ring-(--beheer-accent)/10 transition-all">
-                <Search className="h-4 w-4 shrink-0 text-(--beheer-text-muted)" />
+            <div className="flex items-center gap-3 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-3 shadow-sm transition-all focus-within:border-(--beheer-accent) focus-within:ring-4 focus-within:ring-(--beheer-accent)/10 lg:col-span-5">
+                <Search className="size-4 shrink-0 text-(--beheer-text-muted)" />
                 <input
                     type="text"
                     placeholder="Zoek activiteiten op naam of locatie..."
@@ -37,20 +37,20 @@ export default function ActivityFilters({
                     onChange={(e) => onSearchChange(e.target.value)}
                     autoComplete="off"
                     suppressHydrationWarning
-                    className="beheer-input bg-transparent text-(--beheer-text) placeholder:text-(--beheer-text-muted) outline-none border-none p-0 w-full font-semibold text-sm"
+                    className="beheer-input w-full border-none bg-transparent p-0 text-sm font-semibold text-(--beheer-text) outline-none placeholder:text-(--beheer-text-muted)"
                 />
             </div>
             
             {/* Filters Row */}
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:col-span-7">
                 {/* Committee Filter */}
-                <div className="flex min-w-0 items-center justify-between gap-2 px-4 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) shadow-sm hover:border-(--beheer-accent)/30 transition-colors">
-                    <label className="text-[11px] font-semibold text-(--beheer-text-muted) whitespace-nowrap opacity-75">Commissie:</label>
+                <div className="flex min-w-0 items-center justify-between gap-2 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 shadow-sm transition-colors hover:border-(--beheer-accent)/30">
+                    <label className="text-[11px] font-semibold whitespace-nowrap text-(--beheer-text-muted) opacity-75">Commissie:</label>
                     <select
                         value={selectedCommittee}
                         onChange={(e) => onCommitteeChange(e.target.value)}
                         suppressHydrationWarning
-                        className="beheer-select bg-transparent text-(--beheer-text) text-[11px] font-bold outline-none cursor-pointer border-none p-0 focus:ring-0 min-w-0 flex-1 text-right sm:text-left truncate"
+                        className="beheer-select min-w-0 flex-1 cursor-pointer truncate border-none bg-transparent p-0 text-right text-[11px] font-bold text-(--beheer-text) outline-none focus:ring-0 sm:text-left"
                     >
                         <option value="all" className="bg-(--beheer-card-bg)">Alle</option>
                         {committees.map(c => (
@@ -60,13 +60,13 @@ export default function ActivityFilters({
                 </div>
 
                 {/* Page Size Filter */}
-                <div className="flex min-w-0 items-center justify-between gap-2 px-4 py-2.5 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) shadow-sm hover:border-(--beheer-accent)/30 transition-colors">
-                    <label className="text-[11px] font-semibold text-(--beheer-text-muted) whitespace-nowrap opacity-75">Per pagina:</label>
+                <div className="flex min-w-0 items-center justify-between gap-2 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 shadow-sm transition-colors hover:border-(--beheer-accent)/30">
+                    <label className="text-[11px] font-semibold whitespace-nowrap text-(--beheer-text-muted) opacity-75">Per pagina:</label>
                     <select
                         value={pageSize === -1 ? 'all' : pageSize}
                         onChange={(e) => onPageSizeChange(e.target.value === 'all' ? -1 : parseInt(e.target.value, 10))}
                         suppressHydrationWarning
-                        className="beheer-select bg-transparent text-(--beheer-text) text-[11px] font-bold outline-none cursor-pointer border-none p-0 focus:ring-0 min-w-0 flex-1 text-right sm:text-left"
+                        className="beheer-select min-w-0 flex-1 cursor-pointer border-none bg-transparent p-0 text-right text-[11px] font-bold text-(--beheer-text) outline-none focus:ring-0 sm:text-left"
                     >
                         <option value="10" className="bg-(--beheer-card-bg)">10 items</option>
                         <option value="25" className="bg-(--beheer-card-bg)">25 items</option>
@@ -75,15 +75,15 @@ export default function ActivityFilters({
                 </div>
 
                 {/* Status Filter Buttons */}
-                <div className="w-full flex gap-1 p-1 bg-(--beheer-card-soft) border border-(--beheer-border) rounded-(--beheer-radius) shadow-sm items-center">
+                <div className="flex w-full items-center gap-1 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-soft) p-1 shadow-sm">
                     {(['all', 'upcoming', 'past'] as const).map(f => (
                         <button
                             key={f}
                             onClick={() => onFilterChange(f)}
-                            className={`tab-button flex-1 px-3 py-2 rounded-[calc(var(--beheer-radius)-4px)] text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap text-center ${
+                            className={`tab-button flex-1 cursor-pointer rounded-[calc(var(--beheer-radius)-4px)] px-3 py-2 text-center text-[11px] font-bold whitespace-nowrap transition-all ${
                                 filter === f 
                                 ? 'bg-(--beheer-accent) text-white shadow-sm' 
-                                : 'text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-white/50 dark:hover:bg-white/5'
+                                : 'text-(--beheer-text-muted) hover:bg-white/50 hover:text-(--beheer-text) dark:hover:bg-white/5'
                             }`}
                         >
                             {f === 'all' ? 'Alle' : f === 'upcoming' ? 'Aankomend' : 'Verleden'}

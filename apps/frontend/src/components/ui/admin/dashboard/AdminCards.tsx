@@ -63,39 +63,39 @@ export function ActionCard({
                 href,
                 ...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})
             } : {})}
-            className={`w-full flex items-center gap-4 p-4 rounded-3xl bg-bg-card border border-border-color shadow-sm relative overflow-hidden
-                ${disabled ? 'opacity-50 cursor-not-allowed shadow-none' : ''} 
-                ${!disabled && href ? 'hover:border-theme-purple/40 hover:bg-theme-purple/2 hover:shadow-md transition-all cursor-pointer active:scale-[0.98] group' : ''}
+            className={`relative flex w-full items-center gap-4 overflow-hidden rounded-3xl border border-border-color bg-bg-card p-4 shadow-sm
+                ${disabled ? 'cursor-not-allowed opacity-50 shadow-none' : ''} 
+                ${!disabled && href ? 'group active:scale-0.98 cursor-pointer transition-all hover:border-theme-purple/40 hover:bg-theme-purple/2 hover:shadow-md' : ''}
                 ${pulse ? `ring-1 ${getPulseClasses(colorClass)}` : ''}`}
         >
             {icon && (
-                <div className={`p-3 rounded-xl transition-colors ${colorStyle} group-hover:bg-opacity-20 shrink-0 ${pulse ? 'animate-pulse' : ''}`}>
+                <div className={`rounded-xl p-3 transition-colors ${colorStyle} group-hover:bg-opacity-20 shrink-0 ${pulse ? 'animate-pulse' : ''}`}>
                     {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'h-6 w-6' }) : icon}
                 </div>
             )}
 
-            <div className="text-left flex-1 min-w-0 pr-2">
-                <p className="text-base font-semibold tracking-normal text-text-main group-hover:text-theme-purple transition-colors leading-tight mb-1 truncate">
+            <div className="min-w-0 flex-1 pr-2 text-left">
+                <p className="mb-1 truncate text-base leading-tight font-semibold tracking-normal text-text-main transition-colors group-hover:text-theme-purple">
                     {title}
                 </p>
                 {subtitle && (
-                    <p className="font-medium text-base text-text-muted truncate leading-tight opacity-60">
+                    <p className="truncate text-base leading-tight font-medium text-text-muted opacity-60">
                         {subtitle}
                     </p>
                 )}
             </div>
 
             {value !== undefined && (
-                <div className="shrink-0 flex flex-col items-end">
-                    <span className="text-2xl font-semibold tracking-normal text-text-main opacity-80 group-hover:opacity-100 group-hover:text-theme-purple transition-all">
+                <div className="flex shrink-0 flex-col items-end">
+                    <span className="text-2xl font-semibold tracking-normal text-text-main opacity-80 transition-all group-hover:text-theme-purple group-hover:opacity-100">
                         {value}
                     </span>
                 </div>
             )}
 
             {isLink && (
-                <div className="text-theme-purple opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all pr-1">
-                    <ChevronRight className="h-5 w-5" />
+                <div className="pr-1 text-theme-purple opacity-20 transition-all group-hover:translate-x-1 group-hover:opacity-100">
+                    <ChevronRight className="size-5" />
                 </div>
             )}
         </Component>

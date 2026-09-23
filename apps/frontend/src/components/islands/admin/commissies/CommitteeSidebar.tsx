@@ -32,34 +32,34 @@ export default function CommitteeSidebar({
     onShowAllChange
 }: Props) {
     return (
-        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-sm ring-1 ring-(--beheer-border) overflow-hidden h-fit flex flex-col">
-            <div className="p-6 border-b border-(--beheer-border)/50">
-                <h2 className="text-xs font-semibold text-(--beheer-text-muted) flex items-center gap-3 mb-5">
-                    <Users className="h-4 w-4 text-(--beheer-accent)" />
+        <div className="flex h-fit flex-col overflow-hidden rounded-(--beheer-radius) bg-(--beheer-card-bg) shadow-sm ring-1 ring-(--beheer-border)">
+            <div className="border-b border-(--beheer-border)/50 p-6">
+                <h2 className="mb-5 flex items-center gap-3 text-xs font-semibold text-(--beheer-text-muted)">
+                    <Users className="size-4 text-(--beheer-accent)" />
                     {"Groepen & commissies"}
                 </h2>
                 
                 <div className="space-y-4">
-                    <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-(--beheer-text-muted) group-focus-within:text-(--beheer-accent) transition-colors" />
+                    <div className="group relative">
+                        <Search className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-(--beheer-text-muted) transition-colors group-focus-within:text-(--beheer-accent)" />
                         <Input
                             type="text"
                             placeholder="Zoek commissie..."
                             value={searchQuery}
                             onChange={e => onSearchChange(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 bg-(--beheer-card-soft) border-none rounded-xl text-sm font-semibold text-(--beheer-text) placeholder:text-(--beheer-text-muted) focus:ring-2 focus:ring-(--beheer-accent)/20 transition-all"
+                            className="w-full rounded-xl border-none bg-(--beheer-card-soft) py-3 pr-4 pl-11 text-sm font-semibold text-(--beheer-text) transition-all placeholder:text-(--beheer-text-muted) focus:ring-2 focus:ring-(--beheer-accent)/20"
                         />
                     </div>
-                    <div className="flex p-1 bg-(--beheer-card-soft) rounded-xl border border-(--beheer-border)/50">
+                    <div className="flex rounded-xl border border-(--beheer-border)/50 bg-(--beheer-card-soft) p-1">
                         <button
                             onClick={() => onShowAllChange(false)}
-                            className={`tab-button flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${!showAll ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
+                            className={`tab-button flex-1 rounded-lg py-2 text-xs font-semibold transition-all ${!showAll ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
                         >
                             Kern
                         </button>
                         <button
                             onClick={() => onShowAllChange(true)}
-                            className={`tab-button flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${showAll ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
+                            className={`tab-button flex-1 rounded-lg py-2 text-xs font-semibold transition-all ${showAll ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
                         >
                             Alles
                         </button>
@@ -67,33 +67,33 @@ export default function CommitteeSidebar({
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
+            <div className="custom-scrollbar flex-1 space-y-1 overflow-y-auto p-3">
                 {committees.length === 0 ? (
                     <div className="py-16 text-center">
-                        <Search className="h-10 w-10 text-(--beheer-text-muted) opacity-10 mx-auto mb-3" />
-                        <p className="text-(--beheer-text-muted) text-sm font-semibold opacity-40 italic">Geen resultaten</p>
+                        <Search className="mx-auto mb-3 size-10 text-(--beheer-text-muted) opacity-10" />
+                        <p className="text-sm font-semibold text-(--beheer-text-muted) italic opacity-40">Geen resultaten</p>
                     </div>
                 ) : (
                     committees.map(c => (
                         <button
                             key={c.id}
                             onClick={() => onSelect(c)}
-                            className={`beheer-button w-full group flex items-center justify-between p-4 rounded-xl transition-all border-none ${selectedId === c.id
+                            className={`group beheer-button flex w-full items-center justify-between rounded-xl border-none p-4 transition-all ${selectedId === c.id
                                 ? 'bg-(--beheer-accent) text-white shadow-(--shadow-glow)'
-                                : 'bg-(--beheer-card-soft)/40 hover:bg-(--beheer-card-soft) text-(--beheer-text) hover:translate-x-1'}`}
+                                : 'bg-(--beheer-card-soft)/40 text-(--beheer-text) hover:translate-x-1 hover:bg-(--beheer-card-soft)'}`}
                         >
-                            <div className="text-left min-w-0">
-                                <div className={`font-semibold text-sm truncate ${selectedId === c.id ? 'text-white' : 'text-(--beheer-text)'}`}>
+                            <div className="min-w-0 text-left">
+                                <div className={`truncate text-sm font-semibold ${selectedId === c.id ? 'text-white' : 'text-(--beheer-text)'}`}>
                                     {normalizeName(c.name)}
                                 </div>
                                 {c.email && (
-                                    <div className={`text-xs truncate flex items-center gap-1.5 mt-1 font-medium ${selectedId === c.id ? 'text-white/80' : 'text-(--beheer-text-muted)'}`}>
-                                        <Mail className="h-3 w-3" />
+                                    <div className={`mt-1 flex items-center gap-1.5 truncate text-xs font-medium ${selectedId === c.id ? 'text-white/80' : 'text-(--beheer-text-muted)'}`}>
+                                        <Mail className="size-3" />
                                         {c.email}
                                     </div>
                                 )}
                             </div>
-                            <ChevronRight className={`h-4 w-4 shrink-0 transition-transform ${selectedId === c.id ? 'translate-x-1 text-white' : 'text-(--beheer-text-muted) group-hover:text-(--beheer-text)'}`} />
+                            <ChevronRight className={`size-4 shrink-0 transition-transform ${selectedId === c.id ? 'translate-x-1 text-white' : 'text-(--beheer-text-muted) group-hover:text-(--beheer-text)'}`} />
                         </button>
                     ))
                 )}

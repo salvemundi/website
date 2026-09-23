@@ -136,18 +136,18 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
     };
 
     return (
-        <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-8 @container">
+        <form onSubmit={(e) => e.preventDefault()} className="@container flex flex-col gap-8">
             <input type="hidden" {...register('drop_window_id', { valueAsNumber: true })} />
             <input type="hidden" {...register('lines.0.product_id', { valueAsNumber: true })} />
             <input {...register('website')} type="text" className="hidden" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
 
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-(--bg-soft)">
-                <div className="relative h-16 w-16 rounded-xl overflow-hidden shrink-0 bg-(--bg-card)">
+            <div className="flex items-center gap-4 rounded-2xl bg-(--bg-soft) p-4">
+                <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-(--bg-card)">
                     {cover ? (
                         <MediaAsset asset={{ id: cover.asset, type: cover.asset_type }} alt={product.name} fill objectFit="cover" sizes="64px" />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                            <ShoppingBag className="h-6 w-6 text-(--theme-purple)/20" />
+                        <div className="flex size-full items-center justify-center">
+                            <ShoppingBag className="size-6 text-(--theme-purple)/20" />
                         </div>
                     )}
                 </div>
@@ -157,18 +157,18 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                 </div>
             </div>
 
-            <div className="pb-4 border-b border-(--border-color) flex items-center justify-between">
+            <div className="flex items-center justify-between border-b border-(--border-color) pb-4">
                 <div>
-                    <h2 className="text-xl sm:text-2xl font-black text-(--theme-purple) italic tracking-tighter flex items-center gap-3">
-                        {step === 1 && <ShoppingBag className="w-6 h-6" />}
-                        {step === 2 && <User className="w-6 h-6" />}
-                        {step === 3 && <CreditCard className="w-6 h-6" />}
+                    <h2 className="flex items-center gap-3 text-xl font-black tracking-tighter text-(--theme-purple) italic sm:text-2xl">
+                        {step === 1 && <ShoppingBag className="size-6" />}
+                        {step === 2 && <User className="size-6" />}
+                        {step === 3 && <CreditCard className="size-6" />}
                         {step === 1 && 'Kies je maat en aantal'}
                         {step === 2 && 'Jouw gegevens'}
                         {step === 3 && 'Samenvatting'}
                     </h2>
                 </div>
-                <div className="text-xs font-bold text-(--theme-purple) bg-(--theme-purple)/10 px-3 py-1.5 rounded-full tracking-wider select-none">
+                <div className="rounded-full bg-(--theme-purple)/10 px-3 py-1.5 text-xs font-bold tracking-wider text-(--theme-purple) select-none">
                     Stap {step} van 3
                 </div>
             </div>
@@ -188,13 +188,13 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                                     type="button"
                                                     aria-pressed={isSelected}
                                                     onClick={() => handleSelectSize(size)}
-                                                    className={`tab-button flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold border-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                                                    className={`tab-button hover:scale-1.02 active:scale-0.98 flex cursor-pointer items-center gap-1.5 rounded-full border-2 px-4 py-2 text-sm font-bold transition-all ${
                                                         isSelected
-                                                            ? 'border-(--theme-purple) bg-(--theme-purple) text-white shadow-md scale-105'
+                                                            ? 'scale-105 border-(--theme-purple) bg-(--theme-purple) text-white shadow-md'
                                                             : 'border-(--border-color) bg-transparent text-(--text-muted) hover:border-(--theme-purple) hover:text-(--theme-purple)'
                                                     }`}
                                                 >
-                                                    {isSelected && <Check className="h-3.5 w-3.5" />}
+                                                    {isSelected && <Check className="size-3.5" />}
                                                     {size}
                                                 </button>
                                             );
@@ -214,13 +214,13 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                                     type="button"
                                                     aria-pressed={isSelected}
                                                     onClick={() => handleSelectColor(color)}
-                                                    className={`tab-button flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold border-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                                                    className={`tab-button hover:scale-1.02 active:scale-0.98 flex cursor-pointer items-center gap-1.5 rounded-full border-2 px-4 py-2 text-sm font-bold transition-all ${
                                                         isSelected
-                                                            ? 'border-(--theme-purple) bg-(--theme-purple) text-white shadow-md scale-105'
+                                                            ? 'scale-105 border-(--theme-purple) bg-(--theme-purple) text-white shadow-md'
                                                             : 'border-(--border-color) bg-transparent text-(--text-muted) hover:border-(--theme-purple) hover:text-(--theme-purple)'
                                                     }`}
                                                 >
-                                                    {isSelected && <Check className="h-3.5 w-3.5" />}
+                                                    {isSelected && <Check className="size-3.5" />}
                                                     {color}
                                                 </button>
                                             );
@@ -236,21 +236,21 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                             <button
                                 type="button"
                                 onClick={() => setValue('lines.0.quantity', Math.max(1, quantity - 1), { shouldValidate: true })}
-                                className="form-button p-2 rounded-full bg-(--bg-soft) text-(--theme-purple) hover:scale-105 transition-all disabled:opacity-30"
+                                className="form-button rounded-full bg-(--bg-soft) p-2 text-(--theme-purple) transition-all hover:scale-105 disabled:opacity-30"
                                 disabled={quantity <= 1}
                                 aria-label="Verminder aantal"
                             >
-                                <Minus className="h-4 w-4" />
+                                <Minus className="size-4" />
                             </button>
-                            <output aria-label="Huidig aantal" className="min-w-10 text-center font-bold text-lg">{quantity}</output>
+                            <output aria-label="Huidig aantal" className="min-w-10 text-center text-lg font-bold">{quantity}</output>
                             <button
                                 type="button"
                                 onClick={() => setValue('lines.0.quantity', Math.min(maxQuantity, quantity + 1), { shouldValidate: true })}
-                                className="form-button p-2 rounded-full bg-(--bg-soft) text-(--theme-purple) hover:scale-105 transition-all disabled:opacity-30"
+                                className="form-button rounded-full bg-(--bg-soft) p-2 text-(--theme-purple) transition-all hover:scale-105 disabled:opacity-30"
                                 disabled={quantity >= maxQuantity}
                                 aria-label="Verhoog aantal"
                             >
-                                <Plus className="h-4 w-4" />
+                                <Plus className="size-4" />
                             </button>
                         </div>
                     </FormField>
@@ -258,7 +258,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
             </div>
 
             <div className="animate-in fade-in duration-300" hidden={step !== 2}>
-                <div className="grid grid-cols-1 @md:grid-cols-2 gap-x-6 gap-y-5">
+                <div className="grid grid-cols-1 gap-x-6 gap-y-5 @md:grid-cols-2">
                     <FormField label="Voornaam" required error={errors.first_name?.message}>
                         <Input {...register('first_name')} placeholder="Voornaam" />
                     </FormField>
@@ -282,26 +282,26 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                     </div>
 
                     <div className="@md:col-span-2">
-                        <label htmlFor="terms_accepted" className="flex items-start gap-3 text-(--text-main) mt-2 cursor-pointer group">
+                        <label htmlFor="terms_accepted" className="group mt-2 flex cursor-pointer items-start gap-3 text-(--text-main)">
                             <input
                                 {...register('terms_accepted')}
                                 id="terms_accepted"
                                 type="checkbox"
-                                className="mt-1 h-5 w-5 rounded border-theme-purple/20 accent-theme-purple transition-all group-hover:scale-110"
+                                className="mt-1 size-5 rounded border-theme-purple/20 accent-theme-purple transition-all group-hover:scale-110"
                             />
                             <span className="text-sm leading-snug">
                                 Ik ga akkoord met de voorwaarden voor preorders: ik betaal nu de volledige prijs,
                                 en ik haal mijn bestelling op tijdens een afgesproken afhaalmoment.
                             </span>
                         </label>
-                        {errors.terms_accepted && <p className="text-xs text-red-500 font-semibold mt-1">{errors.terms_accepted.message}</p>}
+                        {errors.terms_accepted && <p className="mt-1 text-xs font-semibold text-red-500">{errors.terms_accepted.message}</p>}
                     </div>
                 </div>
             </div>
 
             <div className="animate-in fade-in duration-300" hidden={step !== 3}>
                 <div className="space-y-3">
-                    <div className="flex items-center justify-between py-2 border-b border-(--border-color)">
+                    <div className="flex items-center justify-between border-b border-(--border-color) py-2">
                         <span className="text-(--text-muted)">{product.name} &times; {quantity}</span>
                         <span className="font-bold text-(--theme-purple)/90">€{subtotal.toFixed(2)}</span>
                     </div>
@@ -309,26 +309,26 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                         <span>Te betalen</span>
                         <span className="font-bold text-(--theme-purple)">€{subtotal.toFixed(2)}</span>
                     </div>
-                    <p className="text-xs text-(--text-muted) pt-2">
+                    <p className="pt-2 text-xs text-(--text-muted)">
                         Je betaalt nu de volledige prijs. Je ontvangt bericht zodra je bestelling klaarstaat om af te halen.
                     </p>
                 </div>
             </div>
 
-            <div className="pt-6 border-t border-(--border-color) flex flex-col sm:flex-row gap-4 justify-between items-center">
+            <div className="flex flex-col items-center justify-between gap-4 border-t border-(--border-color) pt-6 sm:flex-row">
                 <button
                     type="button"
                     onClick={() => setStep(Math.max(1, step - 1))}
-                    className="form-button w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-sm text-(--text-muted) hover:text-(--text-main) transition-all flex items-center justify-center gap-2"
+                    className="form-button flex w-full items-center justify-center gap-2 rounded-xl px-8 py-3 text-sm font-bold text-(--text-muted) transition-all hover:text-(--text-main) sm:w-auto"
                 >
-                    <ChevronLeft className="w-4 h-4" />
+                    <ChevronLeft className="size-4" />
                     Vorige
                 </button>
 
-                <div className="w-full sm:w-auto flex flex-col gap-3 items-end">
+                <div className="flex w-full flex-col items-end gap-3 sm:w-auto">
                     {error && (
-                        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center gap-2 w-full">
-                            <AlertCircle className="w-4 h-4 shrink-0" />
+                        <div className="flex w-full items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-red-500">
+                            <AlertCircle className="size-4 shrink-0" />
                             <p className="text-xs">{error}</p>
                         </div>
                     )}
@@ -337,12 +337,12 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                         type="button"
                         onClick={() => void (step < 3 ? handleNext() : handleSubmit(onSubmit)())}
                         disabled={loading}
-                        className={`form-button w-full sm:w-auto px-10 flex items-center justify-center gap-2 ${loading ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
+                        className={`form-button flex w-full items-center justify-center gap-2 px-10 sm:w-auto ${loading ? 'cursor-not-allowed opacity-50 grayscale' : ''}`}
                     >
                         {loading ? 'Verwerken...' : step < 3 ? (
-                            <>Volgende <ChevronRight className="w-4 h-4" /></>
+                            <>Volgende <ChevronRight className="size-4" /></>
                         ) : (
-                            <><CreditCard className="w-5 h-5" /> Bestelling betalen</>
+                            <><CreditCard className="size-5" /> Bestelling betalen</>
                         )}
                     </button>
                 </div>

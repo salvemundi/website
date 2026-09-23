@@ -16,15 +16,15 @@ export default function StatusFailed({ signupData, isMembership, isTrip }: Statu
     const isExpired = signupData?.errorType === 'expired';
 
     return (
-        <div className="py-20 text-center space-y-8 animate-in zoom-in-95 duration-500">
-            <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mx-auto ring-1 ring-red-500/20">
-                <XCircle className="h-12 w-12 text-red-500" />
+        <div className="animate-in zoom-in-95 space-y-8 py-20 text-center duration-500">
+            <div className="mx-auto flex size-24 items-center justify-center rounded-full bg-red-500/10 ring-1 ring-red-500/20">
+                <XCircle className="size-12 text-red-500" />
             </div>
             <div className="space-y-2">
-                <h2 className="text-4xl font-semibold text-(--text-main) tracking-tighter italic">
+                <h2 className="text-4xl font-semibold tracking-tighter text-(--text-main) italic">
                     Betaling <span className="text-red-500">{isCanceled ? 'gecanceld' : isExpired ? 'verlopen' : 'mislukt'}</span>
                 </h2>
-                <p className="text-(--text-muted) text-lg font-medium max-w-md mx-auto">
+                <p className="mx-auto max-w-md text-lg font-medium text-(--text-muted)">
                     {isCanceled
                         ? 'Je hebt de betaling afgebroken. Geen zorgen, je gegevens zijn nog niet verwerkt.'
                         : isExpired
@@ -32,7 +32,7 @@ export default function StatusFailed({ signupData, isMembership, isTrip }: Statu
                             : 'Helaas is je betaling niet gelukt. Probeer het opnieuw of neem contact op als dit probleem blijft optreden.'}
                 </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <BackButton
                     href={
                         isMembership ? '/lidmaatschap' :
@@ -41,13 +41,13 @@ export default function StatusFailed({ signupData, isMembership, isTrip }: Statu
                     }
                     text="Opnieuw proberen"
                     icon={RefreshCw}
-                    className="h-14 px-10 rounded-2xl bg-(--theme-purple) text-white shadow-xl shadow-(--theme-purple)/20"
+                    className="h-14 rounded-2xl bg-(--theme-purple) px-10 text-white shadow-(--theme-purple)/20 shadow-xl"
                 />
                 <BackButton
                     href="/"
                     text="Terug naar home"
                     icon={Home}
-                    className="h-14 px-10 rounded-2xl bg-(--bg-card) border border-(--border-color) text-(--text-main)"
+                    className="h-14 rounded-2xl border border-(--border-color) bg-(--bg-card) px-10 text-(--text-main)"
                 />
             </div>
         </div>

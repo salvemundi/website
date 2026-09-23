@@ -31,8 +31,8 @@ export default function CockpitSignupForm({
         <div className="space-y-4">
             {(section === 'all' || section === 'personal' || section === 'personal_basic') && (
                 <div className="space-y-3">
-                    <div className="flex items-center gap-2 mb-2 opacity-50">
-                        <FileText className="h-3 w-3 text-(--beheer-accent)" />
+                    <div className="mb-2 flex items-center gap-2 opacity-50">
+                        <FileText className="size-3 text-(--beheer-accent)" />
                         <h3 className="text-[11px] font-semibold text-(--beheer-text)">Informatie</h3>
                     </div>
                     <div className="grid grid-cols-1 gap-y-1">
@@ -48,8 +48,8 @@ export default function CockpitSignupForm({
             {(section === 'all' || section === 'personal' || section === 'personal_extended') && (
                 <div className="space-y-3">
                     {section === 'personal_extended' && (
-                        <div className="flex items-center gap-2 mb-2 opacity-50">
-                            <FileText className="h-3 w-3 text-(--beheer-accent)" />
+                        <div className="mb-2 flex items-center gap-2 opacity-50">
+                            <FileText className="size-3 text-(--beheer-accent)" />
                             <h3 className="text-[11px] font-semibold text-(--beheer-text)">Documenten & Extra</h3>
                         </div>
                     )}
@@ -69,7 +69,7 @@ export default function CockpitSignupForm({
                             <HorizontalTextarea label="Allergieën" name="allergies" defaultValue={initialData?.allergies || signup.allergies || ''} />
                             <HorizontalTextarea label="Bijzonderheden" name="special_notes" defaultValue={initialData?.special_notes || signup.special_notes || ''} />
                         </div>
-                        <div className="flex items-center gap-6 mt-2 px-1">
+                        <div className="mt-2 flex items-center gap-6 px-1">
                             {!isBusTrip && <HorizontalCheckbox label="Extra Koffer" name="extra_luggage" defaultChecked={initialData ? parseBoolean(initialData.extra_luggage) : parseBoolean(signup.extra_luggage)} />}
                             {isBusTrip && <HorizontalCheckbox label="Chauffeur" name="willing_to_drive" defaultChecked={initialData ? parseBoolean(initialData.willing_to_drive) : parseBoolean(signup.willing_to_drive)} />}
                         </div>
@@ -79,8 +79,8 @@ export default function CockpitSignupForm({
 
             {(section === 'all' || section === 'admin') && (
                 <div className="space-y-3">
-                    <div className="flex items-center gap-2 mb-2 opacity-50">
-                        <CreditCard className="h-3 w-3 text-(--beheer-accent)" />
+                    <div className="mb-2 flex items-center gap-2 opacity-50">
+                        <CreditCard className="size-3 text-(--beheer-accent)" />
                         <h3 className="text-[11px] font-semibold text-(--beheer-text)">Beheer</h3>
                     </div>
                     <div className="grid grid-cols-1 gap-y-1">
@@ -94,7 +94,7 @@ export default function CockpitSignupForm({
                             <option value="participant">Regulier</option>
                             <option value="crew">Crew</option>
                         </HorizontalSelect>
-                        <div className="pt-3 flex flex-col gap-2 px-1">
+                        <div className="flex flex-col gap-2 px-1 pt-3">
                             <div className="flex items-center justify-between">
                                 <HorizontalCheckbox label="Aanbetaling" name="deposit_paid" defaultChecked={initialData ? parseBoolean(initialData.deposit_paid) : parseBoolean(signup.deposit_paid)} />
                                 {signup.deposit_paid_at && <span className="text-[8px] font-semibold text-(--beheer-text-muted) opacity-50">{formatShortDate(new Date(signup.deposit_paid_at))}</span>}

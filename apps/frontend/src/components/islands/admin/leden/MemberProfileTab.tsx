@@ -104,14 +104,14 @@ export default function MemberProfileTab({
     ];
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1 space-y-6">
-                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-8 shadow-sm">
-                    <div className="flex items-center justify-between mb-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <div className="space-y-6 lg:col-span-1">
+                <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-sm">
+                    <div className="mb-8 flex items-center justify-between">
                         <h3 className="text-xs font-semibold text-(--beheer-text-muted)">Gegevens</h3>
                         {hasAccess && !isEditing && (
-                            <button onClick={() => setIsEditing(true)} className="icon-button p-2 text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/10 rounded-xl transition-all cursor-pointer">
-                                <Edit className="h-4 w-4" />
+                            <button onClick={() => setIsEditing(true)} className="icon-button cursor-pointer rounded-xl p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)">
+                                <Edit className="size-4" />
                             </button>
                         )}
                     </div>
@@ -125,23 +125,23 @@ export default function MemberProfileTab({
                                         <PhoneInput
                                             value={(editData.phone_number) || ''}
                                             onChange={e => setEditData(prev => ({ ...prev, phone_number: e.target.value }))}
-                                            className="w-full px-4 py-3 rounded-xl bg-(--beheer-card-soft) border border-(--beheer-border) text-sm font-semibold focus:ring-2 focus:ring-(--beheer-accent) outline-none transition-all"
+                                            className="w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-4 py-3 text-sm font-semibold transition-all outline-none focus:ring-2 focus:ring-(--beheer-accent)"
                                         />
                                     ) : (
                                         <input
                                             type={field.type}
                                             value={(editData[field.key] as string) || ''}
                                             onChange={e => setEditData(prev => ({ ...prev, [field.key]: e.target.value }))}
-                                            className="beheer-input w-full px-4 py-3 rounded-xl bg-(--beheer-card-soft) border border-(--beheer-border) text-sm font-semibold focus:ring-2 focus:ring-(--beheer-accent) outline-none transition-all"
+                                            className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-4 py-3 text-sm font-semibold transition-all outline-none focus:ring-2 focus:ring-(--beheer-accent)"
                                         />
                                     )}
                                 </div>
                             ))}
                             <div className="flex gap-3 pt-4">
-                                <button onClick={() => { void handleSave(); }} disabled={saving} className="beheer-button flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-(--beheer-accent) text-white rounded-xl text-xs font-semibold shadow-(--shadow-glow) hover:opacity-90 transition-all disabled:opacity-50 cursor-pointer">
-                                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Opslaan
+                                <button onClick={() => { void handleSave(); }} disabled={saving} className="beheer-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) px-4 py-3 text-xs font-semibold text-white shadow-(--shadow-glow) transition-all hover:opacity-90 disabled:opacity-50">
+                                    {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />} Opslaan
                                 </button>
-                                <button onClick={() => setIsEditing(false)} className="beheer-button flex-1 px-4 py-3 rounded-xl text-xs font-semibold text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) transition-all border border-transparent hover:border-(--beheer-border) cursor-pointer">
+                                <button onClick={() => setIsEditing(false)} className="beheer-button flex-1 cursor-pointer rounded-xl border border-transparent px-4 py-3 text-xs font-semibold text-(--beheer-text-muted) transition-all hover:border-(--beheer-border) hover:bg-(--beheer-card-soft)">
                                     X
                                 </button>
                             </div>
@@ -158,20 +158,20 @@ export default function MemberProfileTab({
                 </div>
             </div>
 
-            <div className="lg:col-span-2 space-y-6">
-                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-8 shadow-sm">
-                    <div className="flex items-center gap-4 mb-8">
-                        <div className="h-12 w-12 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center shadow-sm">
-                            <Award className="h-6 w-6" />
+            <div className="space-y-6 lg:col-span-2">
+                <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-sm">
+                    <div className="mb-8 flex items-center gap-4">
+                        <div className="flex size-12 items-center justify-center rounded-2xl bg-orange-500/10 text-orange-500 shadow-sm">
+                            <Award className="size-6" />
                         </div>
                         <div>
-                            <h3 className="text-xl font-semibold text-(--beheer-text) leading-tight">Commissies</h3>
-                            <p className="text-xs text-(--beheer-text-muted) font-semibold mt-1 opacity-60">Actieve rollen binnen Salve Mundi</p>
+                            <h3 className="text-xl leading-tight font-semibold text-(--beheer-text)">Commissies</h3>
+                            <p className="mt-1 text-xs font-semibold text-(--beheer-text-muted) opacity-60">Actieve rollen binnen Salve Mundi</p>
                         </div>
                     </div>
 
                     {realCommittees.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             {realCommittees.map((membership) => (
                                 <CommitteeCard key={membership.id} membership={membership} cleanName={cleanName} />
                             ))}
@@ -181,19 +181,19 @@ export default function MemberProfileTab({
                     )}
                 </div>
 
-                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) p-8 shadow-sm">
-                    <div className="flex items-center gap-4 mb-8">
-                        <div className="h-12 w-12 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center shadow-sm">
-                            <Layers className="h-6 w-6" />
+                <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-sm">
+                    <div className="mb-8 flex items-center gap-4">
+                        <div className="flex size-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500 shadow-sm">
+                            <Layers className="size-6" />
                         </div>
                         <div>
-                            <h3 className="text-xl font-semibold text-(--beheer-text) leading-tight">Teams & Groepen</h3>
-                            <p className="text-xs text-(--beheer-text-muted) font-semibold mt-1 opacity-60">Systeemgroepen en secundaire teams</p>
+                            <h3 className="text-xl leading-tight font-semibold text-(--beheer-text)">Teams & Groepen</h3>
+                            <p className="mt-1 text-xs font-semibold text-(--beheer-text-muted) opacity-60">Systeemgroepen en secundaire teams</p>
                         </div>
                     </div>
 
                     {otherGroups.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             {otherGroups.map((membership) => (
                                 <GroupCard key={membership.id} membership={membership} cleanName={cleanName} />
                             ))}

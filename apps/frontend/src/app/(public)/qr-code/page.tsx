@@ -53,13 +53,13 @@ export default async function QRCodePage() {
 
     return (
         <PublicPageShell>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-12 lg:py-20 space-y-10">
-                <header className="text-center max-w-2xl mx-auto">
-                    <p className="text-sm font-black uppercase tracking-widest text-purple-500">Salve Mundi Introductie</p>
-                    <h1 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-black text-text-main tracking-tight">
+            <div className="mx-auto max-w-7xl space-y-10 px-4 py-12 sm:px-6 lg:px-10 lg:py-20">
+                <header className="mx-auto max-w-2xl text-center">
+                    <p className="text-sm font-black tracking-widest text-purple-500 uppercase">Salve Mundi Introductie</p>
+                    <h1 className="mt-2 text-3xl font-black tracking-tight text-text-main sm:text-4xl lg:text-5xl">
                         Welkom bij de introweek!
                     </h1>
-                    <p className="mt-4 text-base sm:text-lg text-text-muted font-medium">
+                    <p className="mt-4 text-base font-medium text-text-muted sm:text-lg">
                         Alles wat je nodig hebt tijdens de introweek: de planning, wie je kan aanspreken als er iets is,
                         en hoe je bij de groepsapp komt.
                     </p>
@@ -68,13 +68,13 @@ export default async function QRCodePage() {
                 <IntroPlanningLiveIsland planning={planning} planningImageUrl={planningImageUrl} />
 
                 {infoBooklet && (
-                    <BentoCard className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-                        <div className="flex items-center gap-4 sm:gap-6 flex-1 min-w-0">
-                            <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 border border-purple-500/10 dark:border-purple-400/10 flex items-center justify-center shrink-0 shadow-sm">
-                                <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 text-purple-500 dark:text-purple-400" />
+                    <BentoCard className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+                        <div className="flex min-w-0 flex-1 items-center gap-4 sm:gap-6">
+                            <div className="squircle flex size-12 shrink-0 items-center justify-center border border-purple-500/10 bg-purple-500/5 text-purple-700 shadow-sm sm:size-14 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
+                                <BookOpen className="size-6 text-purple-500 sm:size-7 dark:text-purple-400" />
                             </div>
                             <div className="min-w-0">
-                                <h2 className="text-xl sm:text-2xl font-black text-purple-700 dark:text-purple-300 wrap-break-word">Infoboekje</h2>
+                                <h2 className="text-xl font-black wrap-break-word text-purple-700 sm:text-2xl dark:text-purple-300">Infoboekje</h2>
                                 <p className="mt-1 text-sm text-text-muted">Alle praktische info voor de introweek op een rijtje.</p>
                             </div>
                         </div>
@@ -83,13 +83,13 @@ export default async function QRCodePage() {
                 )}
 
                 <BentoCard>
-                    <div className="flex items-start gap-4 sm:gap-6 mb-6">
-                        <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 border border-purple-500/10 dark:border-purple-400/10 flex items-center justify-center shrink-0 shadow-sm">
-                            <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7 text-purple-500 dark:text-purple-400" />
+                    <div className="mb-6 flex items-start gap-4 sm:gap-6">
+                        <div className="squircle flex size-12 shrink-0 items-center justify-center border border-purple-500/10 bg-purple-500/5 text-purple-700 shadow-sm sm:size-14 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
+                            <MessageCircle className="size-6 text-purple-500 sm:size-7 dark:text-purple-400" />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-xl sm:text-3xl font-black text-purple-700 dark:text-purple-300 wrap-break-word">Groepsapp</h2>
-                            <p className="mt-2 text-sm sm:text-base text-text-muted">
+                            <h2 className="text-xl font-black wrap-break-word text-purple-700 sm:text-3xl dark:text-purple-300">Groepsapp</h2>
+                            <p className="mt-2 text-sm text-text-muted sm:text-base">
                                 Sluit je aan bij de groepsapp om op de hoogte te blijven en contact te leggen met je mede-introducees.
                             </p>
                         </div>
@@ -99,26 +99,26 @@ export default async function QRCodePage() {
                 </BentoCard>
 
                 <BentoCard>
-                    <div className="flex items-start gap-4 sm:gap-6 mb-6">
-                        <div className="h-12 w-12 sm:h-14 sm:w-14 squircle bg-purple-500/5 dark:bg-purple-400/5 text-purple-700 dark:text-purple-300 border border-purple-500/10 dark:border-purple-400/10 flex items-center justify-center shrink-0 shadow-sm">
-                            <ShieldCheck className="h-6 w-6 sm:h-7 sm:w-7 text-purple-500 dark:text-purple-400" />
+                    <div className="mb-6 flex items-start gap-4 sm:gap-6">
+                        <div className="squircle flex size-12 shrink-0 items-center justify-center border border-purple-500/10 bg-purple-500/5 text-purple-700 shadow-sm sm:size-14 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
+                            <ShieldCheck className="size-6 text-purple-500 sm:size-7 dark:text-purple-400" />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-xl sm:text-3xl font-black text-purple-700 dark:text-purple-300 wrap-break-word">Vertrouwenscontactpersonen</h2>
-                            <p className="mt-2 text-sm sm:text-base text-text-muted">
+                            <h2 className="text-xl font-black wrap-break-word text-purple-700 sm:text-3xl dark:text-purple-300">Vertrouwenscontactpersonen</h2>
+                            <p className="mt-2 text-sm text-text-muted sm:text-base">
                                 Loopt iets niet lekker tijdens de introweek? Deze mensen staan voor je klaar en denken met je mee.
                             </p>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                         {confidants.length > 0 ? (
                             confidants.map(confidant => (
                                 <IntroConfidantCard key={confidant.id} confidant={confidant} />
                             ))
                         ) : (
-                            <div className="col-span-full squircle bg-bg-main/50 border border-dashed border-border-color p-10 text-center">
-                                <ShieldCheck className="h-8 w-8 text-purple-500 mx-auto mb-4" />
+                            <div className="squircle bg-bg-main/50 col-span-full border border-dashed border-border-color p-10 text-center">
+                                <ShieldCheck className="mx-auto mb-4 size-8 text-purple-500" />
                                 <p className="text-lg font-bold text-text-main opacity-60">Wordt binnenkort aangevuld</p>
                             </div>
                         )}

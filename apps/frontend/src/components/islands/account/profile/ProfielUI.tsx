@@ -16,23 +16,23 @@ export function Tile({
     title, icon, children, className = "", actions
 }: TileProps) {
     return (
-        <section className={`relative overflow-hidden squircle-xl bg-(--bg-card) border border-transparent dark:border-white/10 shadow-lg ${className}`}>
+        <section className={`squircle-xl relative overflow-hidden border border-transparent bg-(--bg-card) shadow-lg dark:border-white/10 ${className}`}>
             <div className="relative p-6 sm:p-8">
                 {(title || actions) && (
                     <header className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex min-w-0 items-center gap-3">
                             {icon && (
-                                <div className="shrink-0 flex items-center justify-center text-purple-700 dark:text-purple-300">
+                                <div className="flex shrink-0 items-center justify-center text-purple-700 dark:text-purple-300">
                                     {icon}
                                 </div>
                             )}
                             {title && (
-                                <h2 className="min-w-0 wrap-break-word whitespace-normal text-xl sm:text-2xl font-bold text-purple-700 dark:text-white">
+                                <h2 className="min-w-0 text-xl font-bold wrap-break-word whitespace-normal text-purple-700 sm:text-2xl dark:text-white">
                                     {title}
                                 </h2>
                             )}
                         </div>
-                        {actions && <div className="w-full sm:w-auto flex justify-start sm:justify-end">{actions}</div>}
+                        {actions && <div className="flex w-full justify-start sm:w-auto sm:justify-end">{actions}</div>}
                     </header>
                 )}
                 <div className="text-(--text-main)">{children}</div>
@@ -58,18 +58,18 @@ export function QuickLink({
 
     const inner = (
         <>
-            <div className="shrink-0 flex items-center justify-center text-purple-700 dark:text-purple-300 transition-transform group-hover:scale-110">
+            <div className="flex shrink-0 items-center justify-center text-purple-700 transition-transform group-hover:scale-110 dark:text-purple-300">
                 {icon}
             </div>
-            <span className="flex-1 flex items-center justify-between text-sm font-bold text-purple-700 dark:text-white">
+            <span className="flex flex-1 items-center justify-between text-sm font-bold text-purple-700 dark:text-white">
                 <div className="flex flex-col items-start gap-0.5">
                     <span>{label}</span>
-                    {subtitle && <span className="text-[10px] font-medium text-purple-500 dark:text-purple-400 leading-none opacity-80">{subtitle}</span>}
+                    {subtitle && <span className="text-[10px] leading-none font-medium text-purple-500 opacity-80 dark:text-purple-400">{subtitle}</span>}
                 </div>
                 <div className="flex items-center gap-2">
-                    {locked && <Lock className="h-3 w-3 opacity-50" />}
-                    {external && <ExternalLink className="h-3 w-3 opacity-50" />}
-                    <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1" />
+                    {locked && <Lock className="size-3 opacity-50" />}
+                    {external && <ExternalLink className="size-3 opacity-50" />}
+                    <ChevronRight className="size-4 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
                 </div>
             </span>
         </>

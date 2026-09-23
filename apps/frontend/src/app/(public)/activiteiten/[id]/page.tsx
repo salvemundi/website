@@ -98,7 +98,7 @@ async function ActivityContent({ params, searchParams }: PageProps) {
 
     return (
         <>
-            <div className="container px-4 max-w-7xl pt-8 pb-4">
+            <div className="container max-w-7xl px-4 pt-8 pb-4">
                 <BackButton href="/activiteiten" title="Terug naar activiteiten" />
             </div>
 

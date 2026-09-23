@@ -81,9 +81,9 @@ export default function GroupCard({
 
     return (
         <div
-            className={`rounded-2xl border shadow-md p-5 flex flex-col justify-between transition-all ring-1 ${
+            className={`flex flex-col justify-between rounded-2xl border p-5 shadow-md ring-1 transition-all ${
                 isUnassigned
-                    ? 'ring-red-500/10 border-red-500/20 hover:border-red-500/30 bg-red-500/5'
+                    ? 'border-red-500/20 bg-red-500/5 ring-red-500/10 hover:border-red-500/30'
                     : `ring-(--border-color)/20 ${color.bg} ${color.border}`
             }`}
         >
@@ -92,29 +92,29 @@ export default function GroupCard({
                 <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                         <div
-                            className={`p-2 rounded-xl flex items-center justify-center border border-current/10 ${
+                            className={`flex items-center justify-center rounded-xl border border-current/10 p-2 ${
                                 isUnassigned
-                                    ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/10'
+                                    ? 'border-red-500/10 bg-red-500/10 text-red-600 dark:text-red-400'
                                     : color.badge
                             }`}
                         >
-                            <Users className="h-4.5 w-4.5" />
+                            <Users className="size-4.5" />
                         </div>
                         <div>
                             <h3
-                                className={`text-base font-bold tracking-tight leading-tight ${
+                                className={`text-base leading-tight font-bold tracking-tight ${
                                     isUnassigned ? 'text-red-700 dark:text-red-400' : color.text
                                 }`}
                             >
                                 {groupName}
                             </h3>
-                            <p className="text-[10px] text-(--text-muted) font-semibold mt-0.5 tracking-wider uppercase">
+                            <p className="mt-0.5 text-[10px] font-semibold tracking-wider text-(--text-muted) uppercase">
                                 {groupSignups.length} aanmeldingen
                             </p>
                         </div>
                     </div>
                     <span
-                        className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold ring-1 ${
+                        className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-bold ring-1 ${
                             isUnassigned
                                 ? 'bg-red-500/10 text-red-600 ring-1 ring-red-500/20'
                                 : `${color.badge} ring-current/20`
@@ -125,28 +125,28 @@ export default function GroupCard({
                 </div>
 
                 {/* Participant list */}
-                <div className="space-y-2 pt-2 border-t border-(--border-color)/10">
+                <div className="space-y-2 border-t border-(--border-color)/10 pt-2">
                     {/* Leaders first */}
                     {!isUnassigned && leadersList.length > 0 && (
                         <div className={leaderGridClass}>
                             {leadersList.map((leader, lIdx) => (
                                 <div
                                     key={`leader-${lIdx}`}
-                                    className="flex justify-between items-center bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-lg text-xs ring-1 ring-amber-500/5 shadow-sm relative overflow-hidden group"
+                                    className="group relative flex items-center justify-between overflow-hidden rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs shadow-sm ring-1 ring-amber-500/5"
                                 >
-                                    <div className="flex items-center gap-2 min-w-0">
+                                    <div className="flex min-w-0 items-center gap-2">
                                         <Crown
-                                            className="h-3.5 w-3.5 text-amber-500 shrink-0 fill-amber-500/20 animate-bounce"
+                                            className="size-3.5 shrink-0 animate-bounce fill-amber-500/20 text-amber-500"
                                             style={{ animationDuration: '3s' }}
                                         />
-                                        <div className="flex flex-col min-w-0">
+                                        <div className="flex min-w-0 flex-col">
                                             <span
-                                                className="font-bold text-amber-700 dark:text-amber-300 truncate max-w-32.5 sm:max-w-42.5"
+                                                className="max-w-32.5 truncate font-bold text-amber-700 sm:max-w-42.5 dark:text-amber-300"
                                                 title={leader.name}
                                             >
                                                 {leader.name}
                                             </span>
-                                            <span className="text-[8px] text-amber-600 dark:text-amber-400 font-semibold tracking-wide uppercase">
+                                            <span className="text-[8px] font-semibold tracking-wide text-amber-600 uppercase dark:text-amber-400">
                                                 Groepsleider {leader.signupId ? '' : '(Extern)'}
                                             </span>
                                         </div>
@@ -154,10 +154,10 @@ export default function GroupCard({
                                     <button
                                         type="button"
                                         onClick={() => onRemoveLeader?.(groupName, leader)}
-                                        className="icon-button p-1 rounded text-amber-600 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+                                        className="icon-button cursor-pointer rounded p-1 text-amber-600 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500"
                                         title="Verwijder groepsleider"
                                     >
-                                        <X className="h-3.5 w-3.5" />
+                                        <X className="size-3.5" />
                                     </button>
                                 </div>
                             ))}
@@ -165,7 +165,7 @@ export default function GroupCard({
                     )}
 
                     {participantsList.length === 0 ? (
-                        <p className="text-xs text-(--text-muted) italic py-3 text-center">
+                        <p className="py-3 text-center text-xs text-(--text-muted) italic">
                             Geen deelnemers in deze groep
                         </p>
                     ) : (
@@ -173,16 +173,16 @@ export default function GroupCard({
                             {visibleParticipants.map((p, idx) => (
                                 <div
                                     key={idx}
-                                    className="flex justify-between items-center bg-(--bg-card)/60 px-3 py-2 rounded-lg border border-(--border-color)/20 hover:border-(--border-color)/40 transition-all text-xs"
+                                    className="flex items-center justify-between rounded-lg border border-(--border-color)/20 bg-(--bg-card)/60 px-3 py-2 text-xs transition-all hover:border-(--border-color)/40"
                                 >
-                                    <div className="flex flex-col min-w-0">
+                                    <div className="flex min-w-0 flex-col">
                                         <span
-                                            className="font-semibold text-(--text-main) truncate max-w-32.5 sm:max-w-42.5"
+                                            className="max-w-32.5 truncate font-semibold text-(--text-main) sm:max-w-42.5"
                                             title={p.name}
                                         >
                                             {p.name}
                                         </span>
-                                        <span className="text-[9px] text-(--text-muted) truncate max-w-30">
+                                        <span className="max-w-30 truncate text-[9px] text-(--text-muted)">
                                             {p.association}
                                         </span>
                                     </div>
@@ -203,15 +203,15 @@ export default function GroupCard({
                             {regularParticipants.length > limit && (
                                 <button
                                     onClick={() => setIsExpanded(!isExpanded)}
-                                    className="beheer-button w-full py-1.5 flex items-center justify-center gap-1.5 bg-(--bg-main)/30 hover:bg-(--bg-main)/60 border border-(--border-color)/40 rounded-lg text-[10px] font-bold text-(--text-muted) hover:text-(--text-main) transition-all col-span-full mt-2"
+                                    className="col-span-full mt-2 beheer-button flex w-full items-center justify-center gap-1.5 rounded-lg border border-(--border-color)/40 bg-(--bg-main)/30 py-1.5 text-[10px] font-bold text-(--text-muted) transition-all hover:bg-(--bg-main)/60 hover:text-(--text-main)"
                                 >
                                     {isExpanded ? (
                                         <>
-                                            Toon minder <ChevronUp className="h-3 w-3" />
+                                            Toon minder <ChevronUp className="size-3" />
                                         </>
                                     ) : (
                                         <>
-                                            Toon alle {regularParticipants.length} <ChevronDown className="h-3 w-3" />
+                                            Toon alle {regularParticipants.length} <ChevronDown className="size-3" />
                                         </>
                                     )}
                                 </button>
@@ -223,7 +223,7 @@ export default function GroupCard({
 
             {/* Action to add a leader */}
             {!isUnassigned && onAddLeader && (
-                <div className="mt-4 pt-3 border-t border-(--border-color)/10">
+                <div className="mt-4 border-t border-(--border-color)/10 pt-3">
                     {showAddLeaderForm ? (
                         <AddLeaderForm
                             participantsList={participantsList}
@@ -237,9 +237,9 @@ export default function GroupCard({
                         <button
                             type="button"
                             onClick={() => setShowAddLeaderForm(true)}
-                            className="beheer-button w-full py-1.5 flex items-center justify-center gap-1 bg-(--bg-main)/30 hover:bg-(--bg-main)/60 border border-(--border-color)/30 hover:border-(--theme-purple)/40 rounded-xl text-[10px] font-bold text-(--text-muted) hover:text-(--theme-purple) transition-all cursor-pointer"
+                            className="beheer-button flex w-full cursor-pointer items-center justify-center gap-1 rounded-xl border border-(--border-color)/30 bg-(--bg-main)/30 py-1.5 text-[10px] font-bold text-(--text-muted) transition-all hover:border-(--theme-purple)/40 hover:bg-(--bg-main)/60 hover:text-(--theme-purple)"
                         >
-                            <Plus className="h-3 w-3" /> Leider toevoegen
+                            <Plus className="size-3" /> Leider toevoegen
                         </button>
                     )}
                 </div>

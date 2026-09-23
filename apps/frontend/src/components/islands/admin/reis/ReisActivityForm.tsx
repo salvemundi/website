@@ -102,32 +102,32 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
     };
 
     return (
-        <div className="bg-(--beheer-card-bg) rounded-3xl border border-(--beheer-border) p-8 mb-10 shadow-2xl overflow-hidden relative group/form">
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-(--beheer-accent)/5 rounded-full blur-3xl group-hover/form:bg-(--beheer-accent)/10 transition-colors duration-700" />
+        <div className="group/form relative mb-10 overflow-hidden rounded-3xl border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-2xl">
+            <div className="absolute -top-24 -right-24 size-48 rounded-full bg-(--beheer-accent)/5 blur-3xl transition-colors duration-700 group-hover/form:bg-(--beheer-accent)/10" />
 
-            <div className="flex items-center justify-between mb-8 relative z-10">
-                <h2 className="text-xl font-semibold text-(--beheer-text) tracking-tight flex items-center gap-3">
-                    <div className="p-2.5 bg-(--beheer-accent)/10 rounded-xl text-(--beheer-accent) shadow-sm">
-                        {activity?.id ? <Save className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+            <div className="relative z-10 mb-8 flex items-center justify-between">
+                <h2 className="flex items-center gap-3 text-xl font-semibold tracking-tight text-(--beheer-text)">
+                    <div className="rounded-xl bg-(--beheer-accent)/10 p-2.5 text-(--beheer-accent) shadow-sm">
+                        {activity?.id ? <Save className="size-5" /> : <Plus className="size-5" />}
                     </div>
                     {activity?.id ? 'Bewerken' : 'Nieuwe Activiteit'}
                 </h2>
-                <button onClick={onCancel} className="icon-button p-3 bg-(--beheer-card-soft) hover:bg-(--beheer-card-soft)/80 text-(--beheer-text-muted) hover:text-(--beheer-text) transition-all rounded-xl active:scale-90"><X className="h-5 w-5" /></button>
+                <button onClick={onCancel} className="icon-button rounded-xl bg-(--beheer-card-soft) p-3 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-card-soft)/80 hover:text-(--beheer-text) active:scale-90"><X className="size-5" /></button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-10 relative z-10">
+            <form onSubmit={handleSubmit} className="relative z-10 space-y-10">
                 {activity?.id && <input type="hidden" name="id" value={activity.id} />}
                 <input type="hidden" name="existing_image_id" value={existingImageId || ''} />
 
                 {imageError && (
-                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500 text-[10px] font-semibold tracking-widest uppercase">
-                        <Info className="h-4 w-4 shrink-0" />
+                    <div className="flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-[10px] font-semibold tracking-widest text-red-500 uppercase">
+                        <Info className="size-4 shrink-0" />
                         <span>{imageError}</span>
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                    <div className="lg:col-span-7 space-y-6">
+                <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
+                    <div className="space-y-6 lg:col-span-7">
                         <Field label="Naam *">
                             <input type="text" name="name" defaultValue={activity?.name || ''} required className={`beheer-input ${inputClass}`} placeholder="Bijv. Skiën" />
                         </Field>
@@ -136,17 +136,17 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                         </Field>
                     </div>
 
-                    <div className="lg:col-span-5 grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-6 lg:col-span-5">
                         <div className="col-span-2">
                             <Field label="Afbeelding">
                                 {!imagePreview ? (
-                                    <div onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center w-full min-h-32 border-2 border-dashed border-(--beheer-border) rounded-2xl cursor-pointer hover:border-(--beheer-accent) hover:bg-(--beheer-accent)/5 transition-all bg-(--beheer-card-soft)/30 group py-4">
-                                        <Upload className="h-5 w-5 mb-1.5 text-(--beheer-text-muted) group-hover:text-(--beheer-accent) transition-colors" />
-                                        <span className="text-[9px] font-semibold tracking-widest text-(--beheer-text-muted) group-hover:text-(--beheer-accent) text-center px-4">Upload afbeelding</span>
+                                    <div onClick={() => fileInputRef.current?.click()} className="group flex min-h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-(--beheer-border) bg-(--beheer-card-soft)/30 py-4 transition-all hover:border-(--beheer-accent) hover:bg-(--beheer-accent)/5">
+                                        <Upload className="mb-1.5 size-5 text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-accent)" />
+                                        <span className="px-4 text-center text-[9px] font-semibold tracking-widest text-(--beheer-text-muted) group-hover:text-(--beheer-accent)">Upload afbeelding</span>
                                         <input ref={fileInputRef} type="file" name="image_file" accept="image/*" onChange={handleImageChange} className="hidden" />
                                     </div>
                                 ) : (
-                                    <div className="relative group overflow-hidden rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft)/50 h-32 flex items-center justify-center">
+                                    <div className="group relative flex h-32 items-center justify-center overflow-hidden rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft)/50">
                                         <MediaAsset
                                             asset={imagePreview}
                                             alt="Preview"
@@ -154,9 +154,9 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                             objectFit="contain"
                                             unoptimized
                                         />
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                            <button type="button" onClick={() => fileInputRef.current?.click()} className="icon-button bg-white text-slate-900 p-2 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><Upload className="h-4 w-4" /></button>
-                                            <button type="button" onClick={handleRemoveImage} className="icon-button bg-red-500 text-white p-2 rounded-xl hover:scale-110 transition shadow-xl cursor-pointer"><X className="h-4 w-4" /></button>
+                                        <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                                            <button type="button" onClick={() => fileInputRef.current?.click()} className="icon-button cursor-pointer rounded-xl bg-white p-2 text-slate-900 shadow-xl transition hover:scale-110"><Upload className="size-4" /></button>
+                                            <button type="button" onClick={handleRemoveImage} className="icon-button cursor-pointer rounded-xl bg-red-500 p-2 text-white shadow-xl transition hover:scale-110"><X className="size-4" /></button>
                                         </div>
                                         <input ref={fileInputRef} type="file" name="image_file" accept="image/*" onChange={handleImageChange} className="hidden" />
                                     </div>
@@ -166,7 +166,7 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                         <div className="col-span-2">
                             <Field label="Basisprijs (€) *">
                                 <div className="relative">
-                                    <Euro className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-(--beheer-text-muted) opacity-40" />
+                                    <Euro className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-(--beheer-text-muted) opacity-40" />
                                     <input type="number" step="0.01" name="price" defaultValue={activity?.price || 0} required className={`beheer-input ${inputClass} pl-12`} />
                                 </div>
                             </Field>
@@ -178,56 +178,56 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                             <input type="number" name="display_order" defaultValue={activity?.display_order || 0} className={`beheer-input ${inputClass}`} />
                         </Field>
                         <div className="col-span-2 flex items-center pt-2">
-                            <label className="flex items-center gap-4 cursor-pointer group select-none bg-(--beheer-card-soft)/50 px-6 py-4 rounded-2xl border border-(--beheer-border)/20 hover:border-(--beheer-accent)/30 transition-all">
+                            <label className="group flex cursor-pointer items-center gap-4 rounded-2xl border border-(--beheer-border)/20 bg-(--beheer-card-soft)/50 px-6 py-4 transition-all select-none hover:border-(--beheer-accent)/30">
                                 <div className="relative">
-                                    <input type="checkbox" name="is_active" className="sr-only peer" defaultChecked={activity?.is_active ?? true} />
-                                    <div className="h-6 w-11 bg-(--beheer-border)/20 dark:bg-white/5 backdrop-blur-md rounded-full peer-checked:bg-(--beheer-accent) transition-all border border-(--beheer-border)/30 shadow-inner" />
-                                    <div className="absolute left-1 top-1 h-4 w-4 bg-white rounded-full transition-all peer-checked:left-6 shadow-lg transform peer-active:scale-90" />
+                                    <input type="checkbox" name="is_active" className="peer sr-only" defaultChecked={activity?.is_active ?? true} />
+                                    <div className="h-6 w-11 rounded-full border border-(--beheer-border)/30 bg-(--beheer-border)/20 shadow-inner backdrop-blur-md transition-all peer-checked:bg-(--beheer-accent) dark:bg-white/5" />
+                                    <div className="absolute top-1 left-1 size-4 transform rounded-full bg-white shadow-lg transition-all peer-checked:left-6 peer-active:scale-90" />
                                 </div>
-                                <span className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-70 group-hover:text-(--beheer-text) transition-colors">Activiteit is zichtbaar</span>
+                                <span className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-70 transition-colors group-hover:text-(--beheer-text)">Activiteit is zichtbaar</span>
                             </label>
                         </div>
                     </div>
                 </div>
 
                 {/* Options Management */}
-                <div className="bg-(--beheer-card-soft)/30 rounded-3xl p-8 border border-(--beheer-border)/30 space-y-8">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-8 rounded-3xl border border-(--beheer-border)/30 bg-(--beheer-card-soft)/30 p-8">
+                    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                         <div className="space-y-1">
-                            <h3 className="text-sm font-semibold text-(--beheer-text) flex items-center gap-3">
-                                <List className="h-4 w-4 text-(--beheer-accent)" /> Sub-opties
+                            <h3 className="flex items-center gap-3 text-sm font-semibold text-(--beheer-text)">
+                                <List className="size-4 text-(--beheer-accent)" /> Sub-opties
                             </h3>
                             <p className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">Optionele keuzes voor deze activiteit</p>
                         </div>
-                        <button type="button" onClick={addOption} className="beheer-button text-(--beheer-accent) font-semibold text-[10px] flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-(--beheer-accent)/5 hover:bg-(--beheer-accent)/10 transition-all border border-(--beheer-accent)/20 active:scale-95">
-                            <Plus className="h-4 w-4" /> Optie toevoegen
+                        <button type="button" onClick={addOption} className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-(--beheer-accent)/20 bg-(--beheer-accent)/5 px-6 py-3 text-[10px] font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/10 active:scale-95">
+                            <Plus className="size-4" /> Optie toevoegen
                         </button>
                     </div>
 
-                    <div className="flex flex-wrap gap-8 bg-(--beheer-card-bg)/50 p-6 rounded-2xl border border-(--beheer-border)/10 shadow-inner">
-                        <label className="flex items-center gap-3 cursor-pointer group select-none">
-                            <div className="relative flex items-center h-5">
-                                <input type="radio" name="max_selections" value="" defaultChecked={activity?.max_selections === null || !activity?.id} className="sr-only peer" />
-                                <div className="h-5 w-5 rounded-lg border-2 border-(--beheer-border)/50 peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent) transition-all flex items-center justify-center shadow-sm">
-                                    <div className="h-2 w-2 bg-white rounded-sm opacity-0 peer-checked:opacity-100 transition-opacity" />
+                    <div className="flex flex-wrap gap-8 rounded-2xl border border-(--beheer-border)/10 bg-(--beheer-card-bg)/50 p-6 shadow-inner">
+                        <label className="group flex cursor-pointer items-center gap-3 select-none">
+                            <div className="relative flex h-5 items-center">
+                                <input type="radio" name="max_selections" value="" defaultChecked={activity?.max_selections === null || !activity?.id} className="peer sr-only" />
+                                <div className="flex size-5 items-center justify-center rounded-lg border-2 border-(--beheer-border)/50 shadow-sm transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)">
+                                    <div className="size-2 rounded-sm bg-white opacity-0 transition-opacity peer-checked:opacity-100" />
                                 </div>
                             </div>
-                            <span className="text-[10px] font-semibold text-(--beheer-text-muted) group-hover:text-(--beheer-accent) transition-colors">Checkbox (Meerdere)</span>
+                            <span className="text-[10px] font-semibold text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-accent)">Checkbox (Meerdere)</span>
                         </label>
-                        <label className="flex items-center gap-3 cursor-pointer group select-none">
-                            <div className="relative flex items-center h-5">
-                                <input type="radio" name="max_selections" value="1" defaultChecked={activity?.max_selections === 1} className="sr-only peer" />
-                                <div className="h-5 w-5 rounded-full border-2 border-(--beheer-border)/50 peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent) transition-all flex items-center justify-center shadow-sm">
-                                    <div className="h-2 w-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity" />
+                        <label className="group flex cursor-pointer items-center gap-3 select-none">
+                            <div className="relative flex h-5 items-center">
+                                <input type="radio" name="max_selections" value="1" defaultChecked={activity?.max_selections === 1} className="peer sr-only" />
+                                <div className="flex size-5 items-center justify-center rounded-full border-2 border-(--beheer-border)/50 shadow-sm transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)">
+                                    <div className="size-2 rounded-full bg-white opacity-0 transition-opacity peer-checked:opacity-100" />
                                 </div>
                             </div>
-                            <span className="text-[10px] font-semibold text-(--beheer-text-muted) group-hover:text-(--beheer-accent) transition-colors">Radio (Eén keuze)</span>
+                            <span className="text-[10px] font-semibold text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-accent)">Radio (Eén keuze)</span>
                         </label>
                     </div>
 
                     <div className="space-y-4">
                         {options.map((opt, idx) => (
-                            <div key={idx} className="flex gap-4 items-center">
+                            <div key={idx} className="flex items-center gap-4">
                                 <div className="flex-1">
                                     <input
                                         type="text" value={opt.name || ''}
@@ -236,8 +236,8 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                         className={`beheer-input ${inputClass} py-4 text-xs`}
                                     />
                                 </div>
-                                <div className="w-40 relative">
-                                    <Euro className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-(--beheer-text-muted) opacity-40" />
+                                <div className="relative w-40">
+                                    <Euro className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-(--beheer-text-muted) opacity-40" />
                                     <input
                                         type="number" step="0.01" value={opt.price || 0}
                                         onChange={(e) => updateOption(idx, 'price', e.target.value)}
@@ -245,23 +245,23 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                         placeholder="Meerprijs"
                                     />
                                 </div>
-                                <button type="button" onClick={() => removeOption(idx)} className="icon-button p-4 text-(--beheer-inactive) hover:bg-red-500/10 hover:text-red-500 rounded-2xl transition-all active:scale-90 bg-(--beheer-card-soft)">
-                                    <Trash className="h-5 w-5" />
+                                <button type="button" onClick={() => removeOption(idx)} className="icon-button rounded-2xl bg-(--beheer-card-soft) p-4 text-(--beheer-inactive) transition-all hover:bg-red-500/10 hover:text-red-500 active:scale-90">
+                                    <Trash className="size-5" />
                                 </button>
                             </div>
                         ))}
                         {options.length === 0 && (
-                            <div className="py-16 text-center bg-(--beheer-card-bg)/20 border border-dashed border-(--beheer-border)/30 rounded-2xl text-[10px] font-semibold text-(--beheer-text-muted) opacity-40">
+                            <div className="rounded-2xl border border-dashed border-(--beheer-border)/30 bg-(--beheer-card-bg)/20 py-16 text-center text-[10px] font-semibold text-(--beheer-text-muted) opacity-40">
                                 Geen sub-opties geconfigureerd voor deze activiteit
                             </div>
                         )}
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-end gap-4 pt-4 border-t border-(--beheer-border)/10">
-                    <button type="button" onClick={onCancel} className="beheer-button px-8 py-4 rounded-xl font-semibold text-[10px] text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) transition-all border border-transparent hover:border-(--beheer-border) active:scale-95">Annuleren</button>
-                    <button type="submit" disabled={pending} className="beheer-button px-10 py-4 bg-(--beheer-accent) text-white rounded-xl font-semibold text-[10px] shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center gap-3 disabled:opacity-50 border border-white/10">
-                        {pending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
+                <div className="flex flex-wrap items-center justify-end gap-4 border-t border-(--beheer-border)/10 pt-4">
+                    <button type="button" onClick={onCancel} className="beheer-button rounded-xl border border-transparent px-8 py-4 text-[10px] font-semibold text-(--beheer-text-muted) transition-all hover:border-(--beheer-border) hover:bg-(--beheer-card-soft) active:scale-95">Annuleren</button>
+                    <button type="submit" disabled={pending} className="beheer-button flex items-center gap-3 rounded-xl border border-white/10 bg-(--beheer-accent) px-10 py-4 text-[10px] font-semibold text-white shadow-xl transition-all hover:opacity-90 active:scale-95 disabled:opacity-50">
+                        {pending ? <Loader2 className="size-5 animate-spin" /> : <Save className="size-5" />}
                         <span>Opslaan</span>
                     </button>
                 </div>

@@ -46,20 +46,20 @@ export default async function LedenBeheerPage() {
             backHref="/beheer"
             actions={
                 <div className="flex items-center gap-4">
-                    <div className="hidden md:flex items-center gap-4 bg-(--beheer-card-soft) px-4 py-2 rounded-2xl border border-(--beheer-border)/50 shadow-sm">
+                    <div className="hidden items-center gap-4 rounded-2xl border border-(--beheer-border)/50 bg-(--beheer-card-soft) px-4 py-2 shadow-sm md:flex">
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-(--beheer-text-muted) leading-none mb-1">Totaal</span>
-                            <span className="text-sm font-bold text-(--beheer-text) leading-none">{totalCount}</span>
+                            <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Totaal</span>
+                            <span className="text-sm leading-none font-bold text-(--beheer-text)">{totalCount}</span>
                         </div>
-                        <div className="w-px h-6 bg-(--beheer-border)/20" />
+                        <div className="h-6 w-px bg-(--beheer-border)/20" />
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-(--beheer-text-muted) leading-none mb-1">Actief</span>
-                            <span className="text-sm font-bold text-(--beheer-active) leading-none">{activeCount}</span>
+                            <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Actief</span>
+                            <span className="text-sm leading-none font-bold text-(--beheer-active)">{activeCount}</span>
                         </div>
-                        <div className="w-px h-6 bg-(--beheer-border)/20" />
+                        <div className="h-6 w-px bg-(--beheer-border)/20" />
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-(--beheer-text-muted) leading-none mb-1">Verlopen</span>
-                            <span className="text-sm font-bold text-(--beheer-inactive) leading-none">{inactiveCount}</span>
+                            <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Verlopen</span>
+                            <span className="text-sm leading-none font-bold text-(--beheer-inactive)">{inactiveCount}</span>
                         </div>
                     </div>
                 </div>

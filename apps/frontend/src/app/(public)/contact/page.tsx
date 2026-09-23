@@ -34,7 +34,7 @@ async function ContactContent() {
             <h1 className="sr-only">Contact</h1>
 
             <div className="mx-auto max-w-7xl px-fluid-md py-fluid-lg">
-                <div className="max-w-6xl mx-auto flex w-full flex-col gap-8">
+                <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
 
                     <ContactInfoCard 
                         documenten={documenten} 
@@ -43,11 +43,11 @@ async function ContactContent() {
 
                     <section
                         aria-labelledby="social-media-header"
-                        className="bg-bg-card dark:border dark:border-white/10 squircle-lg shadow-lg p-fluid-md"
+                        className="squircle-lg bg-bg-card p-fluid-md shadow-lg dark:border dark:border-white/10"
                     >
                         <h2
                             id="social-media-header"
-                            className="text-2xl font-black text-theme-purple mb-6 text-center"
+                            className="mb-6 text-center text-2xl font-black text-theme-purple"
                         >
                             Volg Ons Op Social Media
                         </h2>
@@ -57,36 +57,36 @@ async function ContactContent() {
                                 href="https://www.instagram.com/sv.salvemundi/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 px-6 py-3 bg-bg-soft squircle hover:bg-bg-main transition-colors text-text-main font-semibold"
+                                className="squircle hover:bg-bg-main flex items-center gap-3 bg-bg-soft px-6 py-3 font-semibold text-text-main transition-colors"
                             >
-                                <SiInstagram className="w-5 h-5" aria-hidden="true" />
+                                <SiInstagram className="size-5" aria-hidden="true" />
                                 Instagram
                             </a>
                             <a
                                 href="https://www.facebook.com/sv.salvemundi/?locale=nl_NL"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 px-6 py-3 bg-bg-soft squircle hover:bg-bg-main transition-colors text-text-main font-semibold"
+                                className="squircle hover:bg-bg-main flex items-center gap-3 bg-bg-soft px-6 py-3 font-semibold text-text-main transition-colors"
                             >
-                                <SiFacebook className="w-5 h-5" aria-hidden="true" />
+                                <SiFacebook className="size-5" aria-hidden="true" />
                                 Facebook
                             </a>
                             <a
                                 href="https://nl.linkedin.com/company/salve-mundi"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 px-6 py-3 bg-bg-soft squircle hover:bg-bg-main transition-colors text-text-main font-semibold"
+                                className="squircle hover:bg-bg-main flex items-center gap-3 bg-bg-soft px-6 py-3 font-semibold text-text-main transition-colors"
                             >
-                                <FaLinkedin className="w-5 h-5" aria-hidden="true" />
+                                <FaLinkedin className="size-5" aria-hidden="true" />
                                 LinkedIn
                             </a>
                             <a
                                 href="https://www.tiktok.com/@salve.mundi"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 px-6 py-3 bg-bg-soft squircle hover:bg-bg-main transition-colors text-text-main font-semibold"
+                                className="squircle hover:bg-bg-main flex items-center gap-3 bg-bg-soft px-6 py-3 font-semibold text-text-main transition-colors"
                             >
-                                <SiTiktok className="w-5 h-5" aria-hidden="true" />
+                                <SiTiktok className="size-5" aria-hidden="true" />
                                 TikTok
                             </a>
                         </div>

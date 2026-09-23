@@ -21,10 +21,10 @@ export default async function TransactiesPage() {
 
     return (
         <PublicPageShell title="Transacties">
-            <div className="container mx-auto px-4 max-w-7xl pt-8">
+            <div className="container mx-auto max-w-7xl px-4 pt-8">
                 <BackButton href="/profiel" />
             </div>
-            <div className="container mx-auto px-4 py-8 max-w-7xl">
+            <div className="container mx-auto max-w-7xl px-4 py-8">
                 <TransactionsIsland transactions={transactions} />
             </div>
         </PublicPageShell>

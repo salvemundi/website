@@ -33,7 +33,7 @@ function StockBadge({ product }: { product: AdminProduct }) {
         return <span className="text-(--beheer-text-muted)">Onbeperkt</span>;
     }
     if (product.stock_quantity === 0) {
-        return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-red-500/10 text-red-500 border-red-500/20">Uitverkocht</span>;
+        return <span className="rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-500">Uitverkocht</span>;
     }
     return <span>{product.stock_quantity} stuks</span>;
 }
@@ -126,61 +126,61 @@ export default function AdminWebshopProductsIsland({ initialDropWindows, initial
 
     return (
         <>
-            <div className="admin-container py-4 md:py-8 space-y-12">
+            <div className="admin-container space-y-12 py-4 md:py-8">
                 {/* Drop windows */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between border-l-4 border-(--beheer-accent) pl-4 py-1">
-                        <h2 className="text-sm font-semibold text-(--beheer-text) flex items-center gap-3">
+                    <div className="flex items-center justify-between border-l-4 border-(--beheer-accent) py-1 pl-4">
+                        <h2 className="flex items-center gap-3 text-sm font-semibold text-(--beheer-text)">
                             Drops
-                            <span className="px-2.5 py-0.5 rounded-full bg-(--beheer-accent)/10 text-(--beheer-accent) text-xs font-semibold border border-(--beheer-accent)/20">
+                            <span className="rounded-full border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 px-2.5 py-0.5 text-xs font-semibold text-(--beheer-accent)">
                                 {dropWindows.length}
                             </span>
                         </h2>
                         <button
                             onClick={() => setDropWindowModal({ open: true, editing: null })}
-                            className="beheer-button w-fit shrink-0 flex items-center justify-center gap-2 px-5 py-2.5 bg-(--beheer-accent) text-white rounded-xl text-xs font-semibold shadow-md hover:opacity-95 transition-all active:scale-95 cursor-pointer"
+                            className="beheer-button flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:opacity-95 active:scale-95"
                         >
-                            <Plus className="h-4 w-4" />
+                            <Plus className="size-4" />
                             <span>Nieuwe drop</span>
                         </button>
                     </div>
 
-                    <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-xl">
+                    <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
                         {dropWindows.length === 0 ? (
                             <div className="py-16 text-center">
-                                <CalendarClock className="h-12 w-12 text-(--beheer-text-muted) mx-auto mb-4 opacity-10" />
-                                <p className="font-semibold text-sm text-(--beheer-text-muted)">Nog geen drops aangemaakt</p>
+                                <CalendarClock className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-10" />
+                                <p className="text-sm font-semibold text-(--beheer-text-muted)">Nog geen drops aangemaakt</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-(--beheer-card-soft) border-b border-(--beheer-border)">
+                                    <thead className="border-b border-(--beheer-border) bg-(--beheer-card-soft)">
                                         <tr>
                                             <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Naam</th>
                                             <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Status</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) hidden sm:table-cell">Sluit op</th>
+                                            <th className="hidden px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) sm:table-cell">Sluit op</th>
                                             <th className="px-6 py-4 text-right text-xs font-semibold text-(--beheer-text-muted)">Acties</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-(--beheer-border)">
                                         {dropWindows.map((dw) => (
                                             <tr key={dw.id}>
-                                                <td className="px-6 py-4 font-semibold text-(--beheer-text) text-sm">{dw.name}</td>
+                                                <td className="px-6 py-4 text-sm font-semibold text-(--beheer-text)">{dw.name}</td>
                                                 <td className="px-6 py-4">
-                                                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${dw.status === 'open' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : dw.status === 'closed' ? 'bg-slate-500/10 text-slate-500 border-slate-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
+                                                    <span className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${dw.status === 'open' ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500' : dw.status === 'closed' ? 'border-slate-500/20 bg-slate-500/10 text-slate-500' : 'border-amber-500/20 bg-amber-500/10 text-amber-500'}`}>
                                                         {dw.status ? STATUS_LABELS[dw.status] ?? dw.status : 'Onbekend'}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-(--beheer-text-muted) hidden sm:table-cell">
+                                                <td className="hidden px-6 py-4 text-sm text-(--beheer-text-muted) sm:table-cell">
                                                     {dw.closes_at ? formatDate(new Date(dw.closes_at), 'd MMMM yyyy HH:mm') : '-'}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-end gap-2">
-                                                        <button onClick={() => setDropWindowModal({ open: true, editing: dw })} className="icon-button p-2 rounded-lg text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/10 transition-all cursor-pointer" aria-label="Bewerken">
-                                                            <Edit2 className="h-4 w-4" />
+                                                        <button onClick={() => setDropWindowModal({ open: true, editing: dw })} className="icon-button cursor-pointer rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)" aria-label="Bewerken">
+                                                            <Edit2 className="size-4" />
                                                         </button>
-                                                        <button onClick={() => handleDeleteDropWindow(dw.id)} disabled={deletingId === dw.id} className="icon-button p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-all disabled:opacity-50 cursor-pointer" aria-label="Verwijderen">
-                                                            <Trash2 className="h-4 w-4" />
+                                                        <button onClick={() => handleDeleteDropWindow(dw.id)} disabled={deletingId === dw.id} className="icon-button cursor-pointer rounded-lg p-2 text-red-500 transition-all hover:bg-red-500/10 disabled:opacity-50" aria-label="Verwijderen">
+                                                            <Trash2 className="size-4" />
                                                         </button>
                                                     </div>
                                                 </td>
@@ -195,36 +195,36 @@ export default function AdminWebshopProductsIsland({ initialDropWindows, initial
 
                 {/* Products */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between border-l-4 border-(--beheer-accent) pl-4 py-1">
-                        <h2 className="text-sm font-semibold text-(--beheer-text) flex items-center gap-3">
+                    <div className="flex items-center justify-between border-l-4 border-(--beheer-accent) py-1 pl-4">
+                        <h2 className="flex items-center gap-3 text-sm font-semibold text-(--beheer-text)">
                             Producten
-                            <span className="px-2.5 py-0.5 rounded-full bg-(--beheer-accent)/10 text-(--beheer-accent) text-xs font-semibold border border-(--beheer-accent)/20">
+                            <span className="rounded-full border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 px-2.5 py-0.5 text-xs font-semibold text-(--beheer-accent)">
                                 {products.length}
                             </span>
                         </h2>
                         <button
                             onClick={() => setProductModal({ open: true, editing: null })}
-                            className="beheer-button w-fit shrink-0 flex items-center justify-center gap-2 px-5 py-2.5 bg-(--beheer-accent) text-white rounded-xl text-xs font-semibold shadow-md hover:opacity-95 transition-all active:scale-95 cursor-pointer"
+                            className="beheer-button flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:opacity-95 active:scale-95"
                         >
-                            <Plus className="h-4 w-4" />
+                            <Plus className="size-4" />
                             <span>Nieuw product</span>
                         </button>
                     </div>
 
-                    <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-xl">
+                    <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
                         {products.length === 0 ? (
                             <div className="py-16 text-center">
-                                <Package className="h-12 w-12 text-(--beheer-text-muted) mx-auto mb-4 opacity-10" />
-                                <p className="font-semibold text-sm text-(--beheer-text-muted)">Nog geen producten aangemaakt</p>
+                                <Package className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-10" />
+                                <p className="text-sm font-semibold text-(--beheer-text-muted)">Nog geen producten aangemaakt</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-(--beheer-card-soft) border-b border-(--beheer-border)">
+                                    <thead className="border-b border-(--beheer-border) bg-(--beheer-card-soft)">
                                         <tr>
                                             <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Naam</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) hidden sm:table-cell">Type</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) hidden lg:table-cell">Drop</th>
+                                            <th className="hidden px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) sm:table-cell">Type</th>
+                                            <th className="hidden px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) lg:table-cell">Drop</th>
                                             <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Prijs</th>
                                             <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Voorraad</th>
                                             <th className="px-6 py-4 text-center text-xs font-semibold text-(--beheer-text-muted)">Actief</th>
@@ -234,25 +234,25 @@ export default function AdminWebshopProductsIsland({ initialDropWindows, initial
                                     <tbody className="divide-y divide-(--beheer-border)">
                                         {products.map((product) => (
                                             <tr key={product.id}>
-                                                <td className="px-6 py-4 font-semibold text-(--beheer-text) text-sm">{product.name}</td>
-                                                <td className="px-6 py-4 text-sm text-(--beheer-text-muted) hidden sm:table-cell capitalize">{product.type}</td>
-                                                <td className="px-6 py-4 text-sm text-(--beheer-text-muted) hidden lg:table-cell">
+                                                <td className="px-6 py-4 text-sm font-semibold text-(--beheer-text)">{product.name}</td>
+                                                <td className="hidden px-6 py-4 text-sm text-(--beheer-text-muted) capitalize sm:table-cell">{product.type}</td>
+                                                <td className="hidden px-6 py-4 text-sm text-(--beheer-text-muted) lg:table-cell">
                                                     {product.drop_window_id ? dropWindowById.get(product.drop_window_id)?.name || '-' : '-'}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-(--beheer-text-muted)">€{Number(product.price).toFixed(2)}</td>
                                                 <td className="px-6 py-4 text-sm text-(--beheer-text-muted)"><StockBadge product={product} /></td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <button onClick={() => handleToggleActive(product)} disabled={togglingId === product.id} className="icon-button text-(--beheer-text-muted) hover:text-(--beheer-accent) transition-all disabled:opacity-50 cursor-pointer">
-                                                        {product.is_active ? <ToggleRight className="h-6 w-6 text-emerald-500 mx-auto" /> : <ToggleLeft className="h-6 w-6 mx-auto" />}
+                                                    <button onClick={() => handleToggleActive(product)} disabled={togglingId === product.id} className="icon-button cursor-pointer text-(--beheer-text-muted) transition-all hover:text-(--beheer-accent) disabled:opacity-50">
+                                                        {product.is_active ? <ToggleRight className="mx-auto size-6 text-emerald-500" /> : <ToggleLeft className="mx-auto size-6" />}
                                                     </button>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-end gap-2">
-                                                        <button onClick={() => setProductModal({ open: true, editing: product })} className="icon-button p-2 rounded-lg text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/10 transition-all cursor-pointer" aria-label="Bewerken">
-                                                            <Edit2 className="h-4 w-4" />
+                                                        <button onClick={() => setProductModal({ open: true, editing: product })} className="icon-button cursor-pointer rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)" aria-label="Bewerken">
+                                                            <Edit2 className="size-4" />
                                                         </button>
-                                                        <button onClick={() => handleDeleteProduct(product.id)} disabled={deletingId === product.id} className="icon-button p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-all disabled:opacity-50 cursor-pointer" aria-label="Verwijderen">
-                                                            <Trash2 className="h-4 w-4" />
+                                                        <button onClick={() => handleDeleteProduct(product.id)} disabled={deletingId === product.id} className="icon-button cursor-pointer rounded-lg p-2 text-red-500 transition-all hover:bg-red-500/10 disabled:opacity-50" aria-label="Verwijderen">
+                                                            <Trash2 className="size-4" />
                                                         </button>
                                                     </div>
                                                 </td>

@@ -23,26 +23,26 @@ export default function GlobalError({
     return (
         <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
             <div className="relative mb-8">
-                <div className="absolute inset-x-0 top-0 h-40 w-40 mx-auto blur-3xl bg-purple-500/10 rounded-full pointer-events-none" />
-                <div className="relative squircle-lg bg-(--bg-card) p-6 shadow-2xl border border-(--border-color)/20 text-purple-500">
-                    <AlertTriangle className="h-16 w-16" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto size-40 rounded-full bg-purple-500/10 blur-3xl" />
+                <div className="squircle-lg relative border border-(--border-color)/20 bg-(--bg-card) p-6 text-purple-500 shadow-2xl">
+                    <AlertTriangle className="size-16" />
                 </div>
             </div>
 
-            <h2 className="text-3xl font-black text-(--text-main) mb-3">
+            <h2 className="mb-3 text-3xl font-black text-(--text-main)">
                 {title}
             </h2>
             
-            <p className="text-(--text-muted) max-w-md mx-auto mb-8">
+            <p className="mx-auto mb-8 max-w-md text-(--text-muted)">
                 {error.message || "Onze servers konden het verzoek niet verwerken. Probeer het opnieuw of ga terug naar de homepagina."}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <button
                     onClick={() => reset()}
-                    className="flex items-center gap-2 squircle bg-purple-500 text-white px-8 py-3.5 font-bold shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all"
+                    className="squircle flex items-center gap-2 bg-purple-500 px-8 py-3.5 font-bold text-white shadow-lg shadow-purple-500/20 transition-all hover:-translate-y-0.5 hover:shadow-purple-500/40"
                 >
-                    <RefreshCcw className="h-4 w-4" />
+                    <RefreshCcw className="size-4" />
                     Opnieuw Proberen
                 </button>
 
@@ -55,7 +55,7 @@ export default function GlobalError({
             </div>
 
             {error.digest && (
-                <p className="mt-8 text-xs font-mono text-(--text-muted) opacity-50 uppercase tracking-widest">
+                <p className="mt-8 font-mono text-xs tracking-widest text-(--text-muted) uppercase opacity-50">
                     Err-ID: {error.digest}
                 </p>
             )}

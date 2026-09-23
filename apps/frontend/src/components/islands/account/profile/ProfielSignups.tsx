@@ -26,27 +26,27 @@ export default function ProfielSignups({
     return (
         <Tile
             title="Mijn aanmeldingen"
-            icon={<Calendar className="h-5 w-5" />}
+            icon={<Calendar className="size-5" />}
             className="h-fit"
             actions={
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowPastEvents((previousValue) => !previousValue)}
-                        className="tab-button inline-flex items-center justify-center rounded-xl bg-purple-50 dark:bg-white/5 px-4 py-2 text-[10px] font-black uppercase text-purple-700 dark:text-white hover:bg-purple-100 dark:hover:bg-white/10 transition border border-purple-100 dark:border-white/10 disabled:opacity-50"
+                        className="tab-button inline-flex items-center justify-center rounded-xl border border-purple-100 bg-purple-50 px-4 py-2 text-[10px] font-black text-purple-700 uppercase transition hover:bg-purple-100 disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                     >
                         {showPastEvents ? "Verberg oude" : "Toon oude"}
                     </button>
                     <Link
                         href="/profiel/tickets"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-purple-50 dark:bg-white/5 px-4 py-2 text-[10px] font-black uppercase text-purple-700 dark:text-white hover:bg-purple-100 dark:hover:bg-white/10 transition border border-purple-100 dark:border-white/10"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple-100 bg-purple-50 px-4 py-2 text-[10px] font-black text-purple-700 uppercase transition hover:bg-purple-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                     >
-                        Tickets <ChevronRight className="h-3 w-3" />
+                        Tickets <ChevronRight className="size-3" />
                     </Link>
                     <Link
                         href="/activiteiten"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-purple-500 px-4 py-2 text-[10px] font-black uppercase text-white hover:bg-purple-600 transition shadow-lg"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-purple-500 px-4 py-2 text-[10px] font-black text-white uppercase shadow-lg transition hover:bg-purple-600"
                     >
-                        Kalender <ChevronRight className="h-3 w-3" />
+                        Kalender <ChevronRight className="size-3" />
                     </Link>
                 </div>
             }
@@ -65,7 +65,7 @@ export default function ProfielSignups({
 
                         const eventDateStr = isEvent ? eventData.event_date : eventData.date;
                         const detailHref = isEvent ? `/activiteiten/${slugify(eventData.name)}` : `/kroegentocht`;
-                        const icon = isEvent ? <Calendar className="h-7 w-7" /> : <CreditCard className="h-7 w-7" />;
+                        const icon = isEvent ? <Calendar className="size-7" /> : <CreditCard className="size-7" />;
 
                         const isPast = (() => {
                             try {
@@ -82,43 +82,43 @@ export default function ProfielSignups({
                             <Link
                                 key={`${signup._type}-${signup.id}`}
                                 href={detailHref}
-                                className={`group h-full flex items-center justify-between gap-4 squircle-lg p-5 text-left transition-all border shadow-sm ${isPast
-                                    ? "bg-licht-paars/5 dark:bg-white/5 opacity-60 grayscale border-licht-paars/10 dark:border-white/5"
-                                    : "bg-licht-paars/10 dark:bg-white/5 border-licht-paars/20 dark:border-white/10 hover:shadow-lg hover:-translate-y-0.5"
+                                className={`group squircle-lg flex h-full items-center justify-between gap-4 border p-5 text-left shadow-sm transition-all ${isPast
+                                    ? "border-licht-paars/10 bg-licht-paars/5 opacity-60 grayscale dark:border-white/5 dark:bg-white/5"
+                                    : "border-licht-paars/20 bg-licht-paars/10 hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:bg-white/5"
                                     }`}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="shrink-0 h-16 w-16 flex items-center justify-center rounded-2xl bg-purple-100 dark:bg-transparent text-purple-500 dark:text-purple-300 shadow-sm dark:shadow-none">
+                                    <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-purple-100 text-purple-500 shadow-sm dark:bg-transparent dark:text-purple-300 dark:shadow-none">
                                         {icon}
                                     </div>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <h3 className="text-lg font-bold text-purple-700 dark:text-white line-clamp-1">
+                                            <h3 className="line-clamp-1 text-lg font-bold text-purple-700 dark:text-white">
                                                 {eventData.name}
                                             </h3>
                                         </div>
                                         <p className="mt-1 flex items-center gap-2 text-xs font-bold text-(--text-muted)">
-                                            <Calendar className="h-3.5 w-3.5" />
+                                            <Calendar className="size-3.5" />
                                             {eventDateStr && formatDate(eventDateStr)}
                                         </p>
                                     </div>
                                 </div>
-                                <ChevronRight className="h-6 w-6 shrink-0 text-purple-200 transition-transform group-hover:translate-x-1" />
+                                <ChevronRight className="size-6 shrink-0 text-purple-200 transition-transform group-hover:translate-x-1" />
                             </Link>
                         );
                     })}
                 </div>
             ) : (
-                <div className="squircle-lg border-2 border-dashed border-licht-paars/20 dark:border-white/10 bg-licht-paars/5 dark:bg-white/5 p-12 text-center shadow-inner">
-                    <p className="text-purple-700 dark:text-white font-bold text-lg mb-2">
+                <div className="squircle-lg border-2 border-dashed border-licht-paars/20 bg-licht-paars/5 p-12 text-center shadow-inner dark:border-white/10 dark:bg-white/5">
+                    <p className="mb-2 text-lg font-bold text-purple-700 dark:text-white">
                         Je bent nog niet aangemeld voor activiteiten.
                     </p>
-                    <p className="text-(--text-muted) text-sm mb-6">
+                    <p className="mb-6 text-sm text-(--text-muted)">
                         Bekijk de kalender om aankomende activiteiten te ontdekken
                     </p>
                     <Link
                         href="/activiteiten"
-                        className="inline-flex items-center gap-2 squircle bg-purple-500 px-8 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+                        className="squircle inline-flex items-center gap-2 bg-purple-500 px-8 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
                     >
                         Ontdek activiteiten
                     </Link>

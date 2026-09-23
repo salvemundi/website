@@ -48,21 +48,21 @@ export default async function AdminWebshopPage() {
              title="Webshop Beheer" 
              backHref="/beheer"
              actions={
-                 <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                 <div className="flex flex-col items-start gap-4 md:flex-row md:items-center">
                      <div className="flex items-center gap-2">
                          <Link
                              href="/beheer/webshop/bestellingen"
-                             className="flex items-center justify-center gap-2 px-4 py-2 bg-bg-card border border-border-color text-text-main rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm"
+                             className="flex items-center justify-center gap-2 rounded-xl border border-border-color bg-bg-card px-4 py-2 text-xs font-semibold text-text-main shadow-sm transition-all hover:border-theme-purple hover:bg-theme-purple/5"
                          >
-                             <ClipboardList className="h-3.5 w-3.5" />
+                             <ClipboardList className="size-3.5" />
                              <span>Bestellingen</span>
                          </Link>
                          {isBoardOrIct && (
                              <Link
                                  href="/beheer/webshop/afhalen"
-                                 className="flex items-center justify-center gap-2 px-4 py-2 bg-bg-card border border-border-color text-text-main rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm"
+                                 className="flex items-center justify-center gap-2 rounded-xl border border-border-color bg-bg-card px-4 py-2 text-xs font-semibold text-text-main shadow-sm transition-all hover:border-theme-purple hover:bg-theme-purple/5"
                              >
-                                 <ClipboardCheck className="h-3.5 w-3.5" />
+                                 <ClipboardCheck className="size-3.5" />
                                  <span>Afhaallijst</span>
                              </Link>
                          )}

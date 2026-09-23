@@ -164,24 +164,24 @@ export default function ReisForm({
                 <input type="hidden" name="existing_image_id" value={existingImageId || ''} />
 
                 {imageError && (
-                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-500 text-[10px] font-semibold tracking-widest uppercase">
-                        <Info className="h-4 w-4 shrink-0" />
+                    <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-[10px] font-semibold tracking-widest text-red-500 uppercase">
+                        <Info className="size-4 shrink-0" />
                         <span>{imageError}</span>
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
                     {/* Main Content Area */}
-                    <div className="lg:col-span-8 space-y-6">
+                    <div className="space-y-6 lg:col-span-8">
                         {/* Section 1: Algemene Informatie */}
-                        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border) overflow-hidden">
-                            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3">
-                                <Info className="h-4 w-4 text-(--beheer-accent)" />
+                        <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
+                            <div className="flex items-center gap-3 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
+                                <Info className="size-4 text-(--beheer-accent)" />
                                 <h2 className="text-[10px] font-semibold tracking-widest text-(--beheer-text)">Algemene Informatie</h2>
                             </div>
-                            <div className="p-6 space-y-6">
+                            <div className="space-y-6 p-6">
                                 <div>
-                                    <label htmlFor="name" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Naam van de reis *</label>
+                                    <label htmlFor="name" className="mb-2 block text-[10px] font-semibold tracking-widest text-(--beheer-text-muted)">Naam van de reis *</label>
                                     <input
                                         type="text"
                                         id="name"
@@ -191,11 +191,11 @@ export default function ReisForm({
                                         placeholder="Bijv. Skiereis 2025"
                                         defaultValue={(state?.initialData?.name as string | undefined) ?? editingTrip?.name ?? undefined}
                                     />
-                                    {formErrors.name && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.name[0]}</p>}
+                                    {formErrors.name && <p className="mt-2 text-[10px] font-semibold tracking-widest text-red-500">{formErrors.name[0]}</p>}
                                 </div>
 
                                 <div>
-                                    <label htmlFor="description" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Beschrijving</label>
+                                    <label htmlFor="description" className="mb-2 block text-[10px] font-semibold tracking-widest text-(--beheer-text-muted)">Beschrijving</label>
                                     <textarea
                                         id="description"
                                         name="description"
@@ -204,31 +204,31 @@ export default function ReisForm({
                                         placeholder="Wat gaan we beleven op deze reis?"
                                         defaultValue={(state?.initialData?.description as string | undefined) ?? editingTrip?.description ?? undefined}
                                     />
-                                    {formErrors.description && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.description[0]}</p>}
+                                    {formErrors.description && <p className="mt-2 text-[10px] font-semibold tracking-widest text-red-500">{formErrors.description[0]}</p>}
                                 </div>
                             </div>
                         </div>
 
                         {/* Section 2: Planning & Capaciteit */}
-                        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border)">
-                            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3 rounded-t-(--beheer-radius)">
-                                <CalendarIcon className="h-4 w-4 text-(--beheer-accent)" />
+                        <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
+                            <div className="flex items-center gap-3 rounded-t-(--beheer-radius) border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
+                                <CalendarIcon className="size-4 text-(--beheer-accent)" />
                                 <h2 className="text-[10px] font-semibold tracking-widest text-(--beheer-text)">Planning & Capaciteit</h2>
                             </div>
-                            <div className="p-6 space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-6 p-6">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div>
-                                        <label htmlFor="start_date" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Startdatum *</label>
+                                        <label htmlFor="start_date" className="mb-2 block text-[10px] font-semibold tracking-widest text-(--beheer-text-muted)">Startdatum *</label>
                                         <input type="hidden" name="start_date" value={startDate ? toISODateString(startDate) : ''} />
                                         <AdminDatepicker
                                             value={startDate}
                                             onChange={setStartDate}
                                             className={formErrors.start_date ? 'border-red-500' : ''}
                                         />
-                                        {formErrors.start_date && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.start_date[0]}</p>}
+                                        {formErrors.start_date && <p className="mt-2 text-[10px] font-semibold tracking-widest text-red-500">{formErrors.start_date[0]}</p>}
                                     </div>
                                     <div>
-                                        <label htmlFor="end_date" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Einddatum</label>
+                                        <label htmlFor="end_date" className="mb-2 block text-[10px] font-semibold tracking-widest text-(--beheer-text-muted)">Einddatum</label>
                                         <input type="hidden" name="end_date" value={endDate ? toISODateString(endDate) : ''} />
                                         <AdminDatepicker
                                             value={endDate}
@@ -238,14 +238,14 @@ export default function ReisForm({
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-(--beheer-border)/30">
+                                <div className="grid grid-cols-1 gap-4 border-t border-(--beheer-border)/30 pt-4 md:grid-cols-2">
                                     <div>
-                                        <label htmlFor="max_participants" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Max. Deelnemers *</label>
+                                        <label htmlFor="max_participants" className="mb-2 block text-[10px] font-semibold tracking-widest text-(--beheer-text-muted)">Max. Deelnemers *</label>
                                         <input type="number" id="max_participants" name="max_participants" min="0" className={`beheer-input ${formErrors.max_participants ? 'border-red-500' : ''}`} placeholder="Bijv. 50" defaultValue={(state?.initialData?.max_participants as number | undefined) ?? editingTrip?.max_participants ?? undefined} />
-                                        {formErrors.max_participants && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.max_participants[0]}</p>}
+                                        {formErrors.max_participants && <p className="mt-2 text-[10px] font-semibold tracking-widest text-red-500">{formErrors.max_participants[0]}</p>}
                                     </div>
                                     <div>
-                                        <label htmlFor="registration_start_date" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Auto-open Datum</label>
+                                        <label htmlFor="registration_start_date" className="mb-2 block text-[10px] font-semibold tracking-widest text-(--beheer-text-muted)">Auto-open Datum</label>
                                         <AdminDatetimepicker
                                             id="registration_start_date"
                                             name="registration_start_date"
@@ -257,27 +257,27 @@ export default function ReisForm({
                         </div>
 
                         {/* Section 3: Financiën */}
-                        <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-xl border border-(--beheer-border) overflow-hidden">
-                            <div className="px-6 py-4 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 flex items-center gap-3">
-                                <Euro className="h-4 w-4 text-(--beheer-accent)" />
+                        <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
+                            <div className="flex items-center gap-3 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
+                                <Euro className="size-4 text-(--beheer-accent)" />
                                 <h2 className="text-[10px] font-semibold tracking-widest text-(--beheer-text)">Financiën</h2>
                             </div>
-                            <div className="p-6 space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-6 p-6">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                     <div>
-                                        <label htmlFor="base_price" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Totale Prijs (€) *</label>
+                                        <label htmlFor="base_price" className="mb-2 block text-[10px] font-semibold tracking-widest text-(--beheer-text-muted)">Totale Prijs (€) *</label>
                                         <input type="number" id="base_price" name="base_price" step="0.01" min="0" className={`beheer-input ${formErrors.base_price ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={(state?.initialData?.base_price as number | undefined) ?? editingTrip?.base_price ?? undefined} />
-                                        {formErrors.base_price && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.base_price[0]}</p>}
+                                        {formErrors.base_price && <p className="mt-2 text-[10px] font-semibold tracking-widest text-red-500">{formErrors.base_price[0]}</p>}
                                     </div>
                                     <div>
-                                        <label htmlFor="crew_discount" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Crewkorting (€)</label>
+                                        <label htmlFor="crew_discount" className="mb-2 block text-[10px] font-semibold tracking-widest text-(--beheer-text-muted)">Crewkorting (€)</label>
                                         <input type="number" id="crew_discount" name="crew_discount" step="0.01" min="0" className={`beheer-input ${formErrors.crew_discount ? 'border-red-500' : ''}`} placeholder="20.00" defaultValue={(state?.initialData?.crew_discount as number | undefined) ?? editingTrip?.crew_discount ?? undefined} />
-                                        {formErrors.crew_discount && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.crew_discount[0]}</p>}
+                                        {formErrors.crew_discount && <p className="mt-2 text-[10px] font-semibold tracking-widest text-red-500">{formErrors.crew_discount[0]}</p>}
                                     </div>
                                     <div>
-                                        <label htmlFor="deposit_amount" className="block text-[10px] font-semibold text-(--beheer-text-muted) tracking-widest mb-2">Aanbetaling (€) *</label>
+                                        <label htmlFor="deposit_amount" className="mb-2 block text-[10px] font-semibold tracking-widest text-(--beheer-text-muted)">Aanbetaling (€) *</label>
                                         <input type="number" id="deposit_amount" name="deposit_amount" step="0.01" min="0" className={`beheer-input ${formErrors.deposit_amount ? 'border-red-500' : ''}`} placeholder="0.00" defaultValue={(state?.initialData?.deposit_amount as number | undefined) ?? editingTrip?.deposit_amount ?? undefined} />
-                                        {formErrors.deposit_amount && <p className="text-red-500 text-[10px] font-semibold tracking-widest mt-2">{formErrors.deposit_amount[0]}</p>}
+                                        {formErrors.deposit_amount && <p className="mt-2 text-[10px] font-semibold tracking-widest text-red-500">{formErrors.deposit_amount[0]}</p>}
                                     </div>
                                 </div>
                             </div>

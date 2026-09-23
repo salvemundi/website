@@ -79,10 +79,10 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
         <header
             ref={headerRef}
             className={cn(
-            "fixed z-[100] w-full transition-all duration-300 flex flex-col justify-center",
+            "fixed z-100 flex w-full flex-col justify-center transition-all duration-300",
                 (mounted && isScrolled)
-                    ? "bg-white/95 dark:bg-black/95 backdrop-blur-md shadow-md"
-                    : "bg-white/50 dark:bg-black/50 backdrop-blur-sm"
+                    ? "bg-white/95 shadow-md backdrop-blur-md dark:bg-black/95"
+                    : "bg-white/50 backdrop-blur-sm dark:bg-black/50"
             )}
             style={{
                 top: 'var(--impersonation-banner-height, 0px)',
@@ -90,7 +90,7 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
                 paddingTop: 'env(safe-area-inset-top, 0px)'
             }}
         >
-            <div className="w-full flex-1 flex items-center min-h-[80px]">
+            <div className="flex min-h-20 w-full flex-1 items-center">
                 {children}
             </div>
             {mobileMenu}

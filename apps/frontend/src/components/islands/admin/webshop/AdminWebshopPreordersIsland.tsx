@@ -59,20 +59,20 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                 backHref="/beheer/webshop" 
             />
 
-            <div className="admin-container py-4 md:py-8 space-y-4">
-                <div className="bg-(--beheer-card-bg) rounded-(--beheer-radius) border border-(--beheer-border) overflow-hidden shadow-xl">
+            <div className="admin-container space-y-4 py-4 md:py-8">
+                <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
                     {preorders.length === 0 ? (
                         <div className="py-24 text-center">
-                            <ClipboardList className="h-12 w-12 text-(--beheer-text-muted) mx-auto mb-4 opacity-10" />
-                            <p className="font-semibold text-sm text-(--beheer-text-muted)">Nog geen bestellingen</p>
+                            <ClipboardList className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-10" />
+                            <p className="text-sm font-semibold text-(--beheer-text-muted)">Nog geen bestellingen</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-(--beheer-card-soft) border-b border-(--beheer-border)">
+                                <thead className="border-b border-(--beheer-border) bg-(--beheer-card-soft)">
                                     <tr>
                                         <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Besteller</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) hidden sm:table-cell">Datum</th>
+                                        <th className="hidden px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) sm:table-cell">Datum</th>
                                         <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Totaal</th>
                                         <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Status</th>
                                         <th className="px-6 py-4 text-right text-xs font-semibold text-(--beheer-text-muted)">Acties</th>
@@ -81,18 +81,18 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                 <tbody className="divide-y divide-(--beheer-border)">
                                     {preorders.map((preorder) => (
                                         <Fragment key={preorder.id}>
-                                            <tr className="hover:bg-(--beheer-card-soft)/30 transition-colors">
+                                            <tr className="transition-colors hover:bg-(--beheer-card-soft)/30">
                                                 <td className="px-6 py-4">
                                                     <button 
                                                         onClick={() => setExpandedId(expandedId === preorder.id ? null : preorder.id)} 
-                                                        className="beheer-button w-fit flex items-center gap-2 font-semibold text-(--beheer-text) text-sm cursor-pointer hover:text-(--beheer-accent) transition-colors"
+                                                        className="beheer-button flex w-fit cursor-pointer items-center gap-2 text-sm font-semibold text-(--beheer-text) transition-colors hover:text-(--beheer-accent)"
                                                     >
-                                                        {expandedId === preorder.id ? <ChevronUp className="h-4 w-4 shrink-0 text-(--beheer-accent)" /> : <ChevronDown className="h-4 w-4 shrink-0 text-(--beheer-text-muted)" />}
+                                                        {expandedId === preorder.id ? <ChevronUp className="size-4 shrink-0 text-(--beheer-accent)" /> : <ChevronDown className="size-4 shrink-0 text-(--beheer-text-muted)" />}
                                                         <span>{preorder.first_name} {preorder.last_name}</span>
                                                     </button>
-                                                    <p className="text-xs text-(--beheer-text-muted) ml-6 opacity-80">{preorder.email}</p>
+                                                    <p className="ml-6 text-xs text-(--beheer-text-muted) opacity-80">{preorder.email}</p>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-(--beheer-text-muted) hidden sm:table-cell">
+                                                <td className="hidden px-6 py-4 text-sm text-(--beheer-text-muted) sm:table-cell">
                                                     {preorder.created_at ? formatDate(new Date(preorder.created_at), 'd MMM yyyy') : '-'}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm font-semibold text-(--beheer-text)">€{Number(preorder.subtotal_amount).toFixed(2)}</td>
@@ -101,7 +101,7 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                                         value={preorder.status || ''}
                                                         disabled={isPending && updatingId === preorder.id}
                                                         onChange={(e) => handleStatusChange(preorder.id, e.target.value)}
-                                                        className="beheer-select px-3 py-1.5 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) text-xs font-semibold outline-none focus:border-(--beheer-accent) transition-all cursor-pointer disabled:opacity-50"
+                                                        className="beheer-select cursor-pointer rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-3 py-1.5 text-xs font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) disabled:opacity-50"
                                                     >
                                                         {STATUS_OPTIONS.map(opt => (
                                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -114,9 +114,9 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                                             <button
                                                                 onClick={() => handleCopyLink(preorder.id)}
                                                                 title="Kopieer betaallink"
-                                                                className="icon-button p-2 rounded-lg text-(--beheer-text-muted) hover:text-(--beheer-accent) hover:bg-(--beheer-accent)/10 transition-all cursor-pointer"
+                                                                className="icon-button cursor-pointer rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
                                                             >
-                                                                <Copy className="h-4 w-4" />
+                                                                <Copy className="size-4" />
                                                             </button>
                                                         )}
                                                     </div>
@@ -124,24 +124,24 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                             </tr>
                                             {expandedId === preorder.id && (
                                                 <tr>
-                                                    <td colSpan={5} className="px-6 py-4 bg-(--beheer-card-soft)/50 border-t border-b border-(--beheer-border)/50">
+                                                    <td colSpan={5} className="border-y border-(--beheer-border)/50 bg-(--beheer-card-soft)/50 px-6 py-4">
                                                         <div className="space-y-2">
                                                             {preorder.lines.map((line) => (
                                                                 <div key={line.id} className="flex items-center justify-between text-sm">
-                                                                    <span className="text-(--beheer-text) font-medium">
+                                                                    <span className="font-medium text-(--beheer-text)">
                                                                         {line.product_name_snapshot}
                                                                         {line.variant_label_snapshot && ` (${line.variant_label_snapshot})`}
                                                                         {' '}&times; {line.quantity}
                                                                     </span>
-                                                                    <span className="text-(--beheer-text-muted) font-mono">€{(Number(line.unit_price) * line.quantity).toFixed(2)}</span>
+                                                                    <span className="font-mono text-(--beheer-text-muted)">€{(Number(line.unit_price) * line.quantity).toFixed(2)}</span>
                                                                 </div>
                                                             ))}
-                                                            <div className="flex items-center justify-between text-sm pt-2 border-t border-(--beheer-border)/50 font-semibold">
+                                                            <div className="flex items-center justify-between border-t border-(--beheer-border)/50 pt-2 text-sm font-semibold">
                                                                 <span className="text-(--beheer-text-muted)">Betaald {preorder.deposit_paid ? '(ja)' : '(nog niet)'}</span>
-                                                                <span className="text-(--beheer-text) font-mono">€{Number(preorder.subtotal_amount).toFixed(2)}</span>
+                                                                <span className="font-mono text-(--beheer-text)">€{Number(preorder.subtotal_amount).toFixed(2)}</span>
                                                             </div>
                                                             {preorder.pickup_notes && (
-                                                                <p className="text-xs text-(--beheer-text-muted) italic pt-2 opacity-80">Opmerking: {preorder.pickup_notes}</p>
+                                                                <p className="pt-2 text-xs text-(--beheer-text-muted) italic opacity-80">Opmerking: {preorder.pickup_notes}</p>
                                                             )}
                                                             {preorder.phone_number && (
                                                                 <p className="text-xs text-(--beheer-text-muted) opacity-80">Telefoon: {preorder.phone_number}</p>

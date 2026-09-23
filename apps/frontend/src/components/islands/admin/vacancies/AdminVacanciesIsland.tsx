@@ -118,35 +118,35 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                         <button
                             type="button"
                             onClick={() => { void handleCopySubmissionLink(); }}
-                            className="form-button flex items-center justify-center gap-1.5 px-4 py-2 bg-(--beheer-card-bg) border border-(--beheer-border) text-(--beheer-text) rounded-xl squircle text-xs font-semibold shadow-sm hover:border-(--beheer-accent)/50 transition-all active:scale-95 whitespace-nowrap"
+                            className="squircle form-button flex items-center justify-center gap-1.5 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-xs font-semibold whitespace-nowrap text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 active:scale-95"
                         >
-                            <Link2 className="h-4 w-4" />
+                            <Link2 className="size-4" />
                             Aanmeldlink kopiëren
                         </button>
                         <Link
                             href="/beheer/bijbanenbank/nieuw"
-                            className="flex items-center justify-center gap-1.5 px-4 py-2 bg-theme-purple text-white rounded-xl squircle text-xs font-semibold shadow-lg hover:opacity-90 transition-all active:scale-95 border border-white/10 whitespace-nowrap"
+                            className="squircle flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-theme-purple px-4 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
                         >
-                            <Plus className="h-4 w-4" />
+                            <Plus className="size-4" />
                             Nieuwe Vacature
                         </Link>
                     </div>
                 }
             />
 
-            <div className="admin-container py-4 md:py-8 flex flex-col gap-6">
-                <div className="flex p-1 bg-(--beheer-card-soft) rounded-(--beheer-radius) border border-(--beheer-border) shadow-sm w-full lg:w-auto">
+            <div className="admin-container flex flex-col gap-6 py-4 md:py-8">
+                <div className="flex w-full rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-soft) p-1 shadow-sm lg:w-auto">
                     <button
                         type="button"
                         onClick={() => setTab('vacatures')}
-                        className={`tab-button flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${tab === 'vacatures' ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
+                        className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all ${tab === 'vacatures' ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
                     >
                         Vacatures ({vacancies.length})
                     </button>
                     <button
                         type="button"
                         onClick={() => setTab('aanmeldingen')}
-                        className={`tab-button flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${tab === 'aanmeldingen' ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
+                        className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all ${tab === 'aanmeldingen' ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
                     >
                         Aanmeldingen {pendingCount > 0 && `(${pendingCount})`}
                     </button>
@@ -155,38 +155,38 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                 {tab === 'vacatures' ? (
                     <div className="flex flex-col gap-3">
                         {vacancies.length === 0 ? (
-                            <p className="text-(--text-muted) text-sm py-8 text-center">Nog geen vacatures aangemaakt.</p>
+                            <p className="py-8 text-center text-sm text-(--text-muted)">Nog geen vacatures aangemaakt.</p>
                         ) : (
                             vacancies.map((vacancy) => (
-                                <div key={vacancy.id} className="flex items-center justify-between gap-4 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) p-4">
+                                <div key={vacancy.id} className="flex items-center justify-between gap-4 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-4">
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider text-white ${vacancy.type === 'internship' ? 'bg-(--theme-purple)' : 'bg-(--theme-success)'}`}>
+                                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase ${vacancy.type === 'internship' ? 'bg-(--theme-purple)' : 'bg-(--theme-success)'}`}>
                                                 {vacancy.type === 'internship' ? 'Stage' : 'Bijbaan'}
                                             </span>
                                             {!vacancy.is_visible && (
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-(--bg-soft) text-(--text-muted)">Verborgen</span>
+                                                <span className="rounded-full bg-(--bg-soft) px-2 py-0.5 text-[10px] font-bold tracking-wider text-(--text-muted) uppercase">Verborgen</span>
                                             )}
                                         </div>
-                                        <p className="font-bold text-(--beheer-text) truncate mt-1">{vacancy.title}</p>
+                                        <p className="mt-1 truncate font-bold text-(--beheer-text)">{vacancy.title}</p>
                                         <p className="text-xs text-(--beheer-text-muted)">{vacancy.company}</p>
                                     </div>
-                                    <div className="flex items-center gap-2 shrink-0">
+                                    <div className="flex shrink-0 items-center gap-2">
                                         <Link
                                             href={`/beheer/bijbanenbank/${vacancy.id}/bewerken`}
-                                            className="p-2 rounded-lg bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:text-(--beheer-accent) transition-colors"
+                                            className="rounded-lg bg-(--beheer-card-soft) p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-accent)"
                                             title="Bewerken"
                                         >
-                                            <Pencil className="h-4 w-4" />
+                                            <Pencil className="size-4" />
                                         </Link>
                                         <button
                                             type="button"
                                             disabled={isPending}
                                             onClick={() => handleDelete(vacancy.id, vacancy.title)}
-                                            className="icon-button p-2 rounded-lg bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:text-(--theme-error) transition-colors disabled:opacity-50"
+                                            className="icon-button rounded-lg bg-(--beheer-card-soft) p-2 text-(--beheer-text-muted) transition-colors hover:text-(--theme-error) disabled:opacity-50"
                                             title="Verwijderen"
                                         >
-                                            <Trash2 className="h-4 w-4" />
+                                            <Trash2 className="size-4" />
                                         </button>
                                     </div>
                                 </div>
@@ -196,7 +196,7 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                 ) : (
                     <div className="flex flex-col gap-3">
                         {submissions.length === 0 ? (
-                            <p className="text-(--text-muted) text-sm py-8 text-center">Nog geen aanmeldingen ontvangen.</p>
+                            <p className="py-8 text-center text-sm text-(--text-muted)">Nog geen aanmeldingen ontvangen.</p>
                         ) : (
                             submissions.map((submission) => {
                                 const statusMeta = STATUS_LABELS[submission.status] || {
@@ -204,66 +204,66 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                                     className: 'bg-(--bg-soft) text-(--text-muted)'
                                 };
                                 return (
-                                    <div key={submission.id} className="flex flex-col gap-3 bg-(--beheer-card-bg) border border-(--beheer-border) rounded-(--beheer-radius) p-4">
+                                    <div key={submission.id} className="flex flex-col gap-3 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-4">
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="min-w-0">
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider text-white ${submission.type === 'internship' ? 'bg-(--theme-purple)' : 'bg-(--theme-success)'}`}>
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase ${submission.type === 'internship' ? 'bg-(--theme-purple)' : 'bg-(--theme-success)'}`}>
                                                         {submission.type === 'internship' ? 'Stage' : 'Bijbaan'}
                                                     </span>
-                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${statusMeta.className}`}>
+                                                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${statusMeta.className}`}>
                                                         {statusMeta.label}
                                                     </span>
                                                 </div>
-                                                <p className="font-bold text-(--beheer-text) mt-1">{submission.title}</p>
-                                                <p className="text-xs text-(--beheer-text-muted) flex items-center gap-1.5">
-                                                    <Mail className="h-3 w-3" /> {submission.company} &middot; {submission.contact_email}
+                                                <p className="mt-1 font-bold text-(--beheer-text)">{submission.title}</p>
+                                                <p className="flex items-center gap-1.5 text-xs text-(--beheer-text-muted)">
+                                                    <Mail className="size-3" /> {submission.company} &middot; {submission.contact_email}
                                                 </p>
                                                 {submission.status === 'rejected' && submission.rejection_reason && (
-                                                    <p className="text-xs text-(--theme-error) mt-1">Reden: {submission.rejection_reason}</p>
+                                                    <p className="mt-1 text-xs text-(--theme-error)">Reden: {submission.rejection_reason}</p>
                                                 )}
                                             </div>
                                             {submission.status === 'pending_review' && (
-                                                <div className="flex items-center gap-2 shrink-0">
+                                                <div className="flex shrink-0 items-center gap-2">
                                                     <button
                                                         type="button"
                                                         disabled={isPending}
                                                         onClick={() => handleApprove(submission)}
-                                                        className="btn-approve flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--theme-success) text-white text-xs font-bold disabled:opacity-50"
+                                                        className="btn-approve flex items-center gap-1.5 rounded-lg bg-(--theme-success) px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
                                                     >
-                                                        <Check className="h-3.5 w-3.5" /> Goedkeuren
+                                                        <Check className="size-3.5" /> Goedkeuren
                                                     </button>
                                                     <button
                                                         type="button"
                                                         disabled={isPending}
                                                         onClick={() => { setRejectTarget(submission); setRejectReason(''); }}
-                                                        className="btn-reject flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--theme-error) text-white text-xs font-bold disabled:opacity-50"
+                                                        className="btn-reject flex items-center gap-1.5 rounded-lg bg-(--theme-error) px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
                                                     >
-                                                        <X className="h-3.5 w-3.5" /> Afwijzen
+                                                        <X className="size-3.5" /> Afwijzen
                                                     </button>
                                                 </div>
                                             )}
                                             {submission.status === 'pending_verification' && (
-                                                <div className="flex items-center gap-2 shrink-0">
+                                                <div className="flex shrink-0 items-center gap-2">
                                                     <button
                                                         type="button"
                                                         disabled={isPending}
                                                         onClick={() => handleDeleteSubmission(submission)}
-                                                        className="btn-reject flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--theme-error) text-white text-xs font-bold disabled:opacity-50"
+                                                        className="btn-reject flex items-center gap-1.5 rounded-lg bg-(--theme-error) px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
                                                         title="Verwijderen voordat het e-mailadres is bevestigd"
                                                     >
-                                                        <Trash2 className="h-3.5 w-3.5" /> Verwijderen
+                                                        <Trash2 className="size-3.5" /> Verwijderen
                                                     </button>
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="flex items-center gap-4 text-[11px] text-(--beheer-text-muted) font-medium">
+                                        <div className="flex items-center gap-4 text-[11px] font-medium text-(--beheer-text-muted)">
                                             <span className="flex items-center gap-1">
-                                                <ShieldCheck className="h-3.5 w-3.5" />
+                                                <ShieldCheck className="size-3.5" />
                                                 {submission.verified_at ? 'E-mail geverifieerd' : 'Nog niet geverifieerd'}
                                             </span>
                                             <span className="flex items-center gap-1">
-                                                <Clock className="h-3.5 w-3.5" />
+                                                <Clock className="size-3.5" />
                                                 Aangemeld op {new Date(submission.created_at).toLocaleDateString('nl-NL')}
                                             </span>
                                         </div>
@@ -296,7 +296,7 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                         <button
                             type="button"
                             onClick={() => setRejectTarget(null)}
-                            className="btn-cancel px-4 py-2 rounded-xl text-sm font-bold text-(--text-muted) hover:text-(--text-main)"
+                            className="btn-cancel rounded-xl px-4 py-2 text-sm font-bold text-(--text-muted) hover:text-(--text-main)"
                         >
                             Annuleren
                         </button>
@@ -304,7 +304,7 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                             type="button"
                             disabled={isPending || rejectReason.trim().length === 0}
                             onClick={handleReject}
-                            className="btn-reject px-4 py-2 rounded-xl text-sm font-bold bg-(--theme-error) text-white disabled:opacity-50"
+                            className="btn-reject rounded-xl bg-(--theme-error) px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
                         >
                             Afwijzen
                         </button>

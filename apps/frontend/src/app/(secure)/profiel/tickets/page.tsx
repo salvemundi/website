@@ -13,7 +13,7 @@ export default async function TicketsPage() {
         <div className="pt-8">
             <h1 className="sr-only">Mijn Tickets</h1>
             
-            <div className="container mx-auto px-4 py-12 max-w-7xl">
+            <div className="container mx-auto max-w-7xl px-4 py-12">
                 <div className="mb-8 flex items-center justify-between">
                     <BackButton href="/profiel" />
                 </div>

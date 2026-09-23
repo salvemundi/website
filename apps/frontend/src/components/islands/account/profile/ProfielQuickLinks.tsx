@@ -13,37 +13,37 @@ interface ProfielQuickLinksProps {
 export default function ProfielQuickLinks({ user = {} }: ProfielQuickLinksProps) {
     const isMember = user.membership_status === 'active';
     return (
-        <Tile title="Snelle links" icon={<ChevronRight className="h-5 w-5" />} className="h-fit">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Tile title="Snelle links" icon={<ChevronRight className="size-5" />} className="h-fit">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <QuickLink
                     label="Lidmaatschap"
-                    icon={<CreditCard className="h-6 w-6" />}
+                    icon={<CreditCard className="size-6" />}
                     href="/lidmaatschap"
                 />
                 <QuickLink
                     label="Transacties"
-                    icon={<CreditCard className="h-6 w-6" />}
+                    icon={<CreditCard className="size-6" />}
                     href="/profiel/transacties"
                 />
                 <QuickLink
                     label="WhatsApp"
-                    icon={<MessageCircle className="h-6 w-6" />}
+                    icon={<MessageCircle className="size-6" />}
                     href="/profiel/whatsapp"
                     locked={!isMember}
                 />
                 <QuickLink
                     label="Bijbanenbank"
-                    icon={<Briefcase className="h-6 w-6" />}
+                    icon={<Briefcase className="size-6" />}
                     href={ROUTES.BIJBANENBANK}
                 />
                 <QuickLink
                     label="Clubs"
-                    icon={<Users className="h-6 w-6" />}
+                    icon={<Users className="size-6" />}
                     href={ROUTES.CLUBS}
                 />
                 <QuickLink
                     label="Mijn NDA's"
-                    icon={<FileSignature className="h-6 w-6" />}
+                    icon={<FileSignature className="size-6" />}
                     href="/profiel/nda"
                 />
             </div>

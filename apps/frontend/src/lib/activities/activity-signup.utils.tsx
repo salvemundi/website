@@ -33,15 +33,15 @@ export function getSignupPhone(signup: Signup): string {
 export function MemberBadge({ signup }: { signup: Signup }) {
     if (signup.is_member || signup.directus_relations) {
         return (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] font-semibold tracking-wider border border-emerald-500/20">
-                <CheckCircle className="h-3 w-3" />
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[9px] font-semibold tracking-wider text-emerald-500">
+                <CheckCircle className="size-3" />
                 <span>Lid</span>
             </div>
         );
     }
     return (
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-(--beheer-card-soft) text-(--beheer-text-muted) text-[9px] font-semibold tracking-wider border border-(--beheer-border)">
-            <User className="h-3 w-3 opacity-50" />
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-(--beheer-border) bg-(--beheer-card-soft) px-2.5 py-1 text-[9px] font-semibold tracking-wider text-(--beheer-text-muted)">
+            <User className="size-3 opacity-50" />
             <span>Gast</span>
         </div>
     );
@@ -56,16 +56,16 @@ const formatAmount = (amount: number) =>
 export function PaymentBadge({ status, amount }: { status: string; amount?: number | null }) {
     if (status === 'paid') {
         return (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-(--beheer-accent)/10 text-(--beheer-accent) text-[9px] font-semibold tracking-wider border border-(--beheer-accent)/20">
-                <CheckCircle2 className="h-3 w-3" />
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 px-2.5 py-1 text-[9px] font-semibold tracking-wider text-(--beheer-accent)">
+                <CheckCircle2 className="size-3" />
                 <span>{typeof amount === 'number' ? formatAmount(amount) : 'Betaald'}</span>
             </div>
         );
     }
     if (status === 'open') {
         return (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[9px] font-semibold tracking-wider border border-amber-500/20">
-                <CreditCard className="h-3 w-3" />
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-[9px] font-semibold tracking-wider text-amber-600">
+                <CreditCard className="size-3" />
                 <span>{typeof amount === 'number' ? `Open · ${formatAmount(amount)}` : 'Open'}</span>
             </div>
         );

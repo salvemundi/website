@@ -76,17 +76,17 @@ export default function PaymentStatusIsland({
     }, [status, checkStatus]);
 
     return (
-        <div className="flex flex-col items-center justify-center text-center p-12 bg-white/5 border border-white/5 rounded-3xl backdrop-blur-xl">
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-white/5 bg-white/5 p-12 text-center backdrop-blur-xl">
             {status === 'loading' || status === 'open' ? (
                 <div className="animate-in fade-in zoom-in duration-500">
                     <div className="relative mb-8">
-                        <div className="absolute inset-0 bg-orange-500/20 blur-3xl rounded-full" />
-                        <Loader2 className="w-20 h-20 text-orange-500 animate-spin relative z-10 mx-auto" />
+                        <div className="absolute inset-0 rounded-full bg-orange-500/20 blur-3xl" />
+                        <Loader2 className="relative z-10 mx-auto size-20 animate-spin text-orange-500" />
                     </div>
-                    <h2 className="text-3xl font-black text-white tracking-tighter mb-4">
+                    <h2 className="mb-4 text-3xl font-black tracking-tighter text-white">
                         Betaling Verwerken...
                     </h2>
-                    <p className="text-gray-400 max-w-sm mx-auto leading-relaxed text-base font-semibold">
+                    <p className="mx-auto max-w-sm text-base leading-relaxed font-semibold text-gray-400">
                         We wachten op bevestiging van Mollie. Dit duurt meestal enkele seconden.
                         Blijf nog even op deze pagina.
                     </p>
@@ -97,47 +97,47 @@ export default function PaymentStatusIsland({
             ) : status === 'paid' ? (
                 <div className="animate-in fade-in zoom-in duration-500">
                     <div className="relative mb-8">
-                        <div className="absolute inset-0 bg-green-500/20 blur-3xl rounded-full" />
-                        <CheckCircle2 className="w-20 h-20 text-green-500 relative z-10 mx-auto" />
+                        <div className="absolute inset-0 rounded-full bg-green-500/20 blur-3xl" />
+                        <CheckCircle2 className="relative z-10 mx-auto size-20 text-green-500" />
                     </div>
-                    <h2 className="text-4xl font-black text-white tracking-tighter mb-4">
+                    <h2 className="mb-4 text-4xl font-black tracking-tighter text-white">
                         Betaling Geslaagd!
                     </h2>
-                    <p className="text-gray-400 max-w-sm mx-auto leading-relaxed mb-10 text-base font-semibold">
+                    <p className="mx-auto mb-10 max-w-sm text-base leading-relaxed font-semibold text-gray-400">
                         {successText}
                     </p>
                     <button
                         onClick={() => window.location.href = returnUrl}
-                        className="form-button px-10 py-5 rounded-2xl bg-white text-black font-bold text-base hover:bg-green-500 hover:text-white transition-all shadow-2xl shadow-green-500/10 flex items-center gap-2 mx-auto"
+                        className="mx-auto form-button flex items-center gap-2 rounded-2xl bg-white px-10 py-5 text-base font-bold text-black shadow-2xl shadow-green-500/10 transition-all hover:bg-green-500 hover:text-white"
                     >
                         {returnText}
-                        <ChevronRight className="w-5 h-5" />
+                        <ChevronRight className="size-5" />
                     </button>
                 </div>
             ) : (
                 <div className="animate-in fade-in zoom-in duration-500">
                     <div className="relative mb-8">
-                        <div className="absolute inset-0 bg-red-500/20 blur-3xl rounded-full" />
-                        <XCircle className="w-20 h-20 text-red-500 relative z-10 mx-auto" />
+                        <div className="absolute inset-0 rounded-full bg-red-500/20 blur-3xl" />
+                        <XCircle className="relative z-10 mx-auto size-20 text-red-500" />
                     </div>
-                    <h2 className="text-3xl font-black text-white tracking-tighter mb-4">
+                    <h2 className="mb-4 text-3xl font-black tracking-tighter text-white">
                         Status Onbekend
                     </h2>
-                    <p className="text-gray-400 max-w-sm mx-auto leading-relaxed mb-10 text-base font-semibold">
+                    <p className="mx-auto mb-10 max-w-sm text-base leading-relaxed font-semibold text-gray-400">
                         We kunnen de status op dit moment niet direct bevestigen.
                         Dit kan betekenen dat de betaling nog even nodig heeft of is afgebroken.
                     </p>
                     <div className="flex flex-col gap-4">
                         <button
                             onClick={() => window.location.reload()}
-                            className="form-button px-10 py-5 rounded-2xl bg-white text-black font-bold text-base hover:bg-orange-500 hover:text-white transition-all flex items-center gap-2 mx-auto"
+                            className="mx-auto form-button flex items-center gap-2 rounded-2xl bg-white px-10 py-5 text-base font-bold text-black transition-all hover:bg-orange-500 hover:text-white"
                         >
-                            <RefreshCw className="w-5 h-5" />
+                            <RefreshCw className="size-5" />
                             Controleer Handmatig
                         </button>
                         <button
                             onClick={() => window.location.href = returnUrl}
-                            className="form-button text-gray-500 text-base font-bold hover:text-white transition-all"
+                            className="form-button text-base font-bold text-gray-500 transition-all hover:text-white"
                         >
                             Ik check het later wel
                         </button>

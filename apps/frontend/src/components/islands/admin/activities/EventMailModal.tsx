@@ -101,91 +101,91 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
     if (!mounted || !isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6 isolate">
+        <div className="fixed inset-0 isolate z-9999 flex items-center justify-center p-4 sm:p-6">
             <div
-                className="absolute inset-0 bg-slate-950/60 backdrop-blur-xl animate-in fade-in duration-300"
+                className="animate-in fade-in absolute inset-0 bg-slate-950/60 backdrop-blur-xl duration-300"
                 onClick={onClose}
             />
 
             <div
-                className="bg-(--beheer-card-bg) w-full max-w-xl rounded-4xl shadow-(--shadow-card-elevated) ring-1 ring-white/10 overflow-hidden flex flex-col max-h-[90vh] relative z-10 border border-(--beheer-border) animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 duration-300 ease-out"
+                className="animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 relative z-10 flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-4xl border border-(--beheer-border) bg-(--beheer-card-bg) shadow-(--shadow-card-elevated) ring-1 ring-white/10 duration-300 ease-out"
             >
-                <div className="px-8 py-6 border-b border-(--beheer-border) flex justify-between items-center bg-(--beheer-card-soft)/80 relative">
+                <div className="relative flex items-center justify-between border-b border-(--beheer-border) bg-(--beheer-card-soft)/80 px-8 py-6">
                     <div className="absolute inset-x-0 -bottom-px h-px bg-linear-to-r from-transparent via-(--beheer-accent)/30 to-transparent" />
-                    <h2 className="text-[10px] font-semibold text-(--beheer-text) tracking-[0.2em] flex items-center gap-3">
-                        <div className="bg-(--beheer-accent) text-white p-2.5 rounded-2xl shadow-(--shadow-glow)">
-                            <Mail className="h-4 w-4" />
+                    <h2 className="flex items-center gap-3 text-[10px] font-semibold tracking-[0.2em] text-(--beheer-text)">
+                        <div className="rounded-2xl bg-(--beheer-accent) p-2.5 text-white shadow-(--shadow-glow)">
+                            <Mail className="size-4" />
                         </div>
                         Mail naar Deelnemers
                     </h2>
                     <button
                         onClick={onClose}
-                        className="icon-button text-(--beheer-text-muted) hover:text-(--beheer-text) hover:bg-(--beheer-card-bg) p-2.5 rounded-full transition-all active:scale-90 focus:outline-none border border-transparent hover:border-(--beheer-border)"
+                        className="icon-button rounded-full border border-transparent p-2.5 text-(--beheer-text-muted) transition-all hover:border-(--beheer-border) hover:bg-(--beheer-card-bg) hover:text-(--beheer-text) focus:outline-none active:scale-90"
                     >
-                        <X className="h-5 w-5" />
+                        <X className="size-5" />
                     </button>
                 </div>
 
-                <div className="px-8 pb-8 pt-6 overflow-y-auto custom-scrollbar">
+                <div className="custom-scrollbar overflow-y-auto px-8 pt-6 pb-8">
                     {error && (
-                        <div className="mb-6 p-4 bg-red-500/10 text-red-500 rounded-2xl text-[10px] font-semibold tracking-widest border border-red-500/20 flex items-start gap-4 animate-in slide-in-from-top-2">
-                            <XCircle className="h-5 w-5 shrink-0" />
+                        <div className="animate-in slide-in-from-top-2 mb-6 flex items-start gap-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-[10px] font-semibold tracking-widest text-red-500">
+                            <XCircle className="size-5 shrink-0" />
                             <span className="leading-relaxed">{error}</span>
                         </div>
                     )}
                     {successMessage && (
-                        <div className="mb-6 p-4 bg-emerald-500/10 text-emerald-500 rounded-2xl text-[10px] font-semibold tracking-widest border border-emerald-500/20 flex items-center gap-4 animate-in slide-in-from-top-2">
-                            <CheckCircle className="h-5 w-5 shrink-0" />
+                        <div className="animate-in slide-in-from-top-2 mb-6 flex items-center gap-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-[10px] font-semibold tracking-widest text-emerald-500">
+                            <CheckCircle className="size-5 shrink-0" />
                             <span className="leading-relaxed">{successMessage}</span>
                         </div>
                     )}
 
                     <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-6" autoComplete="off">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-semibold uppercase tracking-widest text-(--beheer-text-muted) ml-1 opacity-70">Onderwerp</label>
+                            <label className="ml-1 text-[10px] font-semibold tracking-widest text-(--beheer-text-muted) uppercase opacity-70">Onderwerp</label>
                             <input
                                 type="text"
                                 placeholder="Bijv: Belangrijke update over de activiteit..."
                                 value={subject}
                                 onChange={(e) => setSubject(e.target.value)}
-                                className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border border-(--beheer-border)/50 rounded-2xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main) transition-all font-semibold shadow-inner outline-none placeholder:opacity-30"
+                                className="beheer-input w-full rounded-2xl border border-(--beheer-border)/50 bg-(--bg-main)/50 px-5 py-4 text-sm font-semibold text-(--beheer-text) shadow-inner transition-all outline-none placeholder:opacity-30 focus:bg-(--bg-main) focus:ring-2 focus:ring-(--beheer-accent)"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-semibold uppercase tracking-widest text-(--beheer-text-muted) ml-1 opacity-70">Bericht</label>
+                            <label className="ml-1 text-[10px] font-semibold tracking-widest text-(--beheer-text-muted) uppercase opacity-70">Bericht</label>
                             <textarea
                                 rows={8}
                                 placeholder="Typ hier je bericht voor de deelnemers..."
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
-                                className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border border-(--beheer-border)/50 rounded-2xl text-sm text-(--beheer-text) focus:ring-2 focus:ring-(--beheer-accent) focus:bg-(--bg-main) transition-all resize-none custom-scrollbar shadow-inner outline-none placeholder:opacity-30 leading-relaxed"
+                                className="custom-scrollbar beheer-input w-full resize-none rounded-2xl border border-(--beheer-border)/50 bg-(--bg-main)/50 px-5 py-4 text-sm leading-relaxed text-(--beheer-text) shadow-inner transition-all outline-none placeholder:opacity-30 focus:bg-(--bg-main) focus:ring-2 focus:ring-(--beheer-accent)"
                             />
                         </div>
 
-                        <label className="flex items-center gap-3 cursor-pointer select-none">
+                        <label className="flex cursor-pointer items-center gap-3 select-none">
                             <input
                                 type="checkbox"
                                 checked={paidOnly}
                                 onChange={(e) => setPaidOnly(e.target.checked)}
-                                className="h-4 w-4 rounded accent-(--beheer-accent)"
+                                className="size-4 rounded accent-(--beheer-accent)"
                             />
                             <span className="text-[11px] font-semibold text-(--beheer-text-muted)">Alleen betaalde aanmeldingen</span>
                         </label>
 
-                        <div className="flex items-center gap-3 p-4 bg-(--beheer-accent)/5 rounded-2xl border border-(--beheer-accent)/10">
-                            <Users className="h-4 w-4 text-(--beheer-accent) shrink-0" />
+                        <div className="flex items-center gap-3 rounded-2xl border border-(--beheer-accent)/10 bg-(--beheer-accent)/5 p-4">
+                            <Users className="size-4 shrink-0 text-(--beheer-accent)" />
                             <span className="text-[11px] font-semibold text-(--beheer-text)">
                                 {recipients.length} ontvanger{recipients.length === 1 ? '' : 's'} geselecteerd
                             </span>
-                            <span className="text-[10px] text-(--beheer-text-muted) opacity-60 ml-auto">via BCC, iedereen krijgt een eigen mail</span>
+                            <span className="ml-auto text-[10px] text-(--beheer-text-muted) opacity-60">via BCC, iedereen krijgt een eigen mail</span>
                         </div>
 
-                        <div className="flex gap-4 pt-4 border-t border-(--beheer-border)">
+                        <div className="flex gap-4 border-t border-(--beheer-border) pt-4">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="beheer-button flex-1 h-14 rounded-2xl font-semibold tracking-widest text-[10px] border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-card-soft) transition-all active:scale-[0.98] cursor-pointer"
+                                className="active:scale-0.98 beheer-button h-14 flex-1 cursor-pointer rounded-2xl border border-(--beheer-border) text-[10px] font-semibold tracking-widest text-(--beheer-text) transition-all hover:bg-(--beheer-card-soft)"
                                 disabled={isLoading}
                             >
                                 Annuleren
@@ -193,14 +193,14 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
                             <button
                                 type="submit"
                                 disabled={isLoading || recipients.length === 0 || !subject.trim() || !message.trim()}
-                                className="form-button flex-[1.5] h-14 rounded-2xl font-semibold tracking-widest text-[10px] bg-(--beheer-accent) text-white shadow-(--shadow-glow) hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3 border border-white/10 group"
+                                className="group active:scale-0.98 form-button flex h-14 flex-[1.5] items-center justify-center gap-3 rounded-2xl border border-white/10 bg-(--beheer-accent) text-[10px] font-semibold tracking-widest text-white shadow-(--shadow-glow) transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
                             >
                                 {isLoading ? (
-                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                    <Loader2 className="size-5 animate-spin" />
                                 ) : (
                                     <>
                                         <span>Versturen</span>
-                                        <Send className="h-4 w-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                        <Send className="size-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                                     </>
                                 )}
                             </button>

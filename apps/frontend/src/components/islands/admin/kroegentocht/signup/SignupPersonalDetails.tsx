@@ -55,69 +55,69 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-2">
-                    <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
-                        <User className="h-3 w-3" /> Naam
+                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
+                        <User className="size-3" /> Naam
                     </label>
                     <input
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
+                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
                         required
                         autoComplete="off"
                     />
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
-                        <Mail className="h-3 w-3" /> E-mailadres
+                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
+                        <Mail className="size-3" /> E-mailadres
                     </label>
                     <input
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
+                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
                         required
                         autoComplete="off"
                     />
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-2">
-                    <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
-                        <Building2 className="h-3 w-3" /> Vereniging
+                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
+                        <Building2 className="size-3" /> Vereniging
                     </label>
                     <input
                         type="text"
                         value={formData.association}
                         onChange={(e) => setFormData({ ...formData, association: e.target.value })}
-                        className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
+                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
                         autoComplete="off"
                     />
                 </div>
 
                 <div className="space-y-2" ref={paymentRef}>
-                    <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
-                        <Tag className="h-3 w-3" /> Betaalstatus
+                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
+                        <Tag className="size-3" /> Betaalstatus
                     </label>
                     <div className="relative">
                         <button
                             type="button"
                             onClick={() => setIsPaymentOpen(!isPaymentOpen)}
-                            className="beheer-button w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main) flex items-center justify-between hover:border-(--theme-purple)/30 text-left"
+                            className="beheer-button flex w-full items-center justify-between rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 text-left font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/30 focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
                         >
                             <span className="flex items-center gap-2">
-                                <span className={`h-2.5 w-2.5 rounded-full ${selectedPayment.color}`} />
+                                <span className={`size-2.5 rounded-full ${selectedPayment.color}`} />
                                 {selectedPayment.label}
                             </span>
-                            <ChevronDown className={`h-4 w-4 text-(--text-muted) transition-transform duration-200 ${isPaymentOpen ? 'rotate-180 text-(--theme-purple)' : ''}`} />
+                            <ChevronDown className={`size-4 text-(--text-muted) transition-transform duration-200 ${isPaymentOpen ? 'rotate-180 text-(--theme-purple)' : ''}`} />
                         </button>
                         
                         {isPaymentOpen && (
-                            <div className="absolute left-0 right-0 z-50 mt-2 rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1.5 shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-top-1 duration-100">
+                            <div className="animate-in fade-in slide-in-from-top-1 absolute inset-x-0 z-50 mt-2 rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1.5 shadow-xl ring-1 ring-black/5 duration-100">
                                 <div className="space-y-0.5">
                                     {PAYMENT_STATUS_OPTIONS.map((opt) => (
                                         <button
@@ -127,13 +127,13 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                                                 setFormData({ ...formData, payment_status: opt.value });
                                                 setIsPaymentOpen(false);
                                             }}
-                                            className={`beheer-button w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2.5 ${
+                                            className={`beheer-button flex w-full items-center gap-2.5 rounded-lg px-4 py-3 text-left text-sm font-semibold transition-colors ${
                                                 formData.payment_status === opt.value
                                                     ? 'bg-(--theme-purple) text-white'
                                                     : 'text-(--text-main) hover:bg-(--bg-main)'
                                             }`}
                                         >
-                                            <span className={`h-2 w-2 rounded-full ${formData.payment_status === opt.value ? 'bg-white' : opt.color}`} />
+                                            <span className={`size-2 rounded-full ${formData.payment_status === opt.value ? 'bg-white' : opt.color}`} />
                                             <span className={formData.payment_status === opt.value ? 'text-white' : ''}>
                                                 {opt.label}
                                             </span>
@@ -146,33 +146,33 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-2" ref={groupRef}>
-                    <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
-                        <Users className="h-3 w-3" /> Groepsindeling
+                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
+                        <Users className="size-3" /> Groepsindeling
                     </label>
                     <div className="relative">
                         <button
                             type="button"
                             onClick={() => setIsGroupOpen(!isGroupOpen)}
-                            className="beheer-button w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main) flex items-center justify-between hover:border-(--theme-purple)/30 text-left"
+                            className="beheer-button flex w-full items-center justify-between rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 text-left font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/30 focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
                         >
                             <span className="truncate">
                                 {formData.group_name || 'Geen groep (nog niet ingedeeld)'}
                             </span>
-                            <ChevronDown className={`h-4 w-4 text-(--text-muted) transition-transform duration-200 ${isGroupOpen ? 'rotate-180 text-(--theme-purple)' : ''}`} />
+                            <ChevronDown className={`size-4 text-(--text-muted) transition-transform duration-200 ${isGroupOpen ? 'rotate-180 text-(--theme-purple)' : ''}`} />
                         </button>
                         
                         {isGroupOpen && (
-                            <div className="absolute left-0 right-0 z-50 mt-2 rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1.5 shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-top-1 duration-100">
-                                <div className="max-h-60 overflow-y-auto space-y-0.5">
+                            <div className="animate-in fade-in slide-in-from-top-1 absolute inset-x-0 z-50 mt-2 rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1.5 shadow-xl ring-1 ring-black/5 duration-100">
+                                <div className="max-h-60 space-y-0.5 overflow-y-auto">
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setFormData({ ...formData, group_name: null });
                                             setIsGroupOpen(false);
                                         }}
-                                        className={`beheer-button w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
+                                        className={`beheer-button w-full rounded-lg px-4 py-3 text-left text-sm font-semibold transition-colors ${
                                             !formData.group_name
                                                 ? 'bg-(--theme-purple) text-white'
                                                 : 'text-(--text-muted) hover:bg-(--bg-main) hover:text-(--text-main)'
@@ -188,7 +188,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                                                 setFormData({ ...formData, group_name: g });
                                                 setIsGroupOpen(false);
                                             }}
-                                            className={`beheer-button w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
+                                            className={`beheer-button w-full rounded-lg px-4 py-3 text-left text-sm font-semibold transition-colors ${
                                                 formData.group_name === g
                                                     ? 'bg-(--theme-purple) text-white'
                                                     : 'text-(--text-main) hover:bg-(--bg-main)'

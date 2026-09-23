@@ -130,29 +130,29 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
 
     return (
         <>
-            <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl mx-auto">
-                <div className="bg-(--bg-card) rounded-2xl shadow-(--shadow-card) ring-1 ring-(--border-color)/30">
-                    <div className="p-8 space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div className="md:col-span-2 space-y-6">
+            <form onSubmit={handleSubmit} className="mx-auto max-w-4xl space-y-8">
+                <div className="rounded-2xl bg-(--bg-card) shadow-(--shadow-card) ring-1 ring-(--border-color)/30">
+                    <div className="space-y-8 p-8">
+                        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+                            <div className="space-y-6 md:col-span-2">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
-                                        <Type className="h-3 w-3" /> Event Naam
+                                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
+                                        <Type className="size-3" /> Event Naam
                                     </label>
                                     <input
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
+                                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
                                         placeholder="Bijv. Kroegentocht Stratumseind"
                                         required
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
-                                            <Calendar className="h-3 w-3" /> Datum
+                                        <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
+                                            <Calendar className="size-3" /> Datum
                                         </label>
                                         <AdminDatepicker
                                             value={eventDate}
@@ -164,64 +164,64 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
-                                            <Mail className="h-3 w-3" /> Contact E-mail
+                                        <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
+                                            <Mail className="size-3" /> Contact E-mail
                                         </label>
                                         <input
                                             type="email"
                                             value={formData.email}
                                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                            className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
+                                            className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
                                             placeholder="Bijv. feest@salvemundi.nl"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
-                                        <MessageCircle className="h-3 w-3" /> WhatsApp Community Link
+                                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
+                                        <MessageCircle className="size-3" /> WhatsApp Community Link
                                     </label>
                                     <input
                                         type="url"
                                         value={formData.whatsapp_community_url}
                                         onChange={(e) => setFormData({ ...formData, whatsapp_community_url: e.target.value })}
-                                        className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main)"
+                                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
                                         placeholder="Bijv. https://chat.whatsapp.com/..."
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
-                                    <ImagePlus className="h-3 w-3" /> Event Afbeelding
+                                <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
+                                    <ImagePlus className="size-3" /> Event Afbeelding
                                 </label>
-                                <div className="relative group/img h-46">
+                                <div className="group/img relative h-46">
                                     {formData.image ? (
-                                        <div className="relative w-full h-full rounded-xl overflow-hidden border-2 border-(--theme-purple)/30 group">
+                                        <div className="group relative size-full overflow-hidden rounded-xl border-2 border-(--theme-purple)/30">
                                             <MediaAsset
                                                 asset={formData.image}
                                                 alt="Preview"
                                                 fill
                                                 className="object-cover transition-transform duration-500 group-hover:scale-110"
                                             />
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                                                 <button
                                                     type="button"
                                                     onClick={() => setFormData(prev => ({ ...prev, image: null }))}
-                                                    className="icon-button p-3 bg-red-500 text-white rounded-full shadow-xl hover:scale-110 transition-transform"
+                                                    className="icon-button rounded-full bg-red-500 p-3 text-white shadow-xl transition-transform hover:scale-110"
                                                 >
-                                                    <X className="h-5 w-5" />
+                                                    <X className="size-5" />
                                                 </button>
                                             </div>
                                         </div>
                                     ) : (
-                                        <label className="flex flex-col items-center justify-center w-full h-full bg-(--bg-main)/50 border-2 border-dashed border-(--border-color)/50 rounded-xl hover:border-(--theme-purple)/50 hover:bg-(--theme-purple)/5 transition-all cursor-pointer group">
+                                        <label className="group flex size-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-(--border-color)/50 bg-(--bg-main)/50 transition-all hover:border-(--theme-purple)/50 hover:bg-(--theme-purple)/5">
                                             {uploading ? (
-                                                <Loader2 className="h-8 w-8 text-(--theme-purple) animate-spin" />
+                                                <Loader2 className="size-8 animate-spin text-(--theme-purple)" />
                                             ) : (
                                                 <>
-                                                    <div className="p-4 rounded-full bg-(--bg-card) mb-2 group-hover:scale-110 transition-transform">
-                                                        <ImagePlus className="h-6 w-6 text-(--text-muted)" />
+                                                    <div className="mb-2 rounded-full bg-(--bg-card) p-4 transition-transform group-hover:scale-110">
+                                                        <ImagePlus className="size-6 text-(--text-muted)" />
                                                     </div>
                                                     <span className="text-[10px] font-semibold text-(--text-muted)">Upload Image</span>
                                                 </>
@@ -240,29 +240,29 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-semibold text-(--text-muted) ml-1 flex items-center gap-2">
-                                <FileText className="h-3 w-3" /> Beschrijving
+                            <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
+                                <FileText className="size-3" /> Beschrijving
                             </label>
                             <textarea
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                className="beheer-input w-full px-5 py-4 bg-(--bg-main)/50 border-2 border-(--border-color)/50 rounded-xl focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all font-semibold text-(--text-main) min-h-40"
+                                className="min-h-40 beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
                                 placeholder="Korte omschrijving voor de deelnemers..."
                             />
                         </div>
 
-                        <div className="border-t border-(--border-color)/20 pt-8 space-y-4">
-                            <h3 className="text-sm font-semibold text-(--text-main) flex items-center gap-2">
-                                <Users className="h-4 w-4 text-(--theme-purple)" />
+                        <div className="space-y-4 border-t border-(--border-color)/20 pt-8">
+                            <h3 className="flex items-center gap-2 text-sm font-semibold text-(--text-main)">
+                                <Users className="size-4 text-(--theme-purple)" />
                                 Groepen Indeling ({formData.groups.length})
                             </h3>
-                            <p className="text-xs text-(--text-muted) leading-relaxed">
+                            <p className="text-xs leading-relaxed text-(--text-muted)">
                                 Definieer de groepen voor deze kroegentocht. Deelnemers kunnen vervolgens over deze groepen verdeeld worden.
                             </p>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
                                 {formData.groups.map((group, index) => (
-                                    <div key={index} className="flex flex-col gap-2 bg-(--bg-main)/50 p-3 border border-(--border-color)/50 rounded-xl focus-within:border-(--theme-purple)/50 transition-all">
+                                    <div key={index} className="flex flex-col gap-2 rounded-xl border border-(--border-color)/50 bg-(--bg-main)/50 p-3 transition-all focus-within:border-(--theme-purple)/50">
                                         <div className="flex items-center gap-2">
                                             <input
                                                 type="text"
@@ -275,7 +275,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                         )
                                                     });
                                                 }}
-                                                className="beheer-input flex-1 bg-transparent border-0 focus:ring-0 text-xs font-semibold text-(--text-main) px-2 py-1 focus:outline-none"
+                                                className="beheer-input flex-1 border-0 bg-transparent px-2 py-1 text-xs font-semibold text-(--text-main) focus:ring-0 focus:outline-none"
                                                 placeholder={`Groep ${index + 1}`}
                                                 required
                                             />
@@ -285,19 +285,19 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                     const updated = formData.groups.filter((_, i) => i !== index);
                                                     setFormData({ ...formData, groups: updated });
                                                 }}
-                                                className="icon-button p-1 text-(--text-muted) hover:text-red-500 transition-colors cursor-pointer"
+                                                className="icon-button cursor-pointer p-1 text-(--text-muted) transition-colors hover:text-red-500"
                                                 title="Verwijder groep"
                                             >
-                                                <X className="h-3.5 w-3.5" />
+                                                <X className="size-3.5" />
                                             </button>
                                         </div>
 
                                         {group.leaders && group.leaders.length > 0 && (
-                                            <div className="px-2 pb-1 space-y-1">
-                                                <p className="text-[9px] font-bold text-(--text-muted) uppercase tracking-wider">Leiders:</p>
+                                            <div className="space-y-1 px-2 pb-1">
+                                                <p className="text-[9px] font-bold tracking-wider text-(--text-muted) uppercase">Leiders:</p>
                                                 <div className="flex flex-wrap gap-1">
                                                     {group.leaders.map((leader, lIdx) => (
-                                                        <span key={lIdx} className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-(--bg-card) border border-(--border-color)/50 rounded text-[9px] font-semibold text-(--text-muted)">
+                                                        <span key={lIdx} className="inline-flex items-center gap-1 rounded border border-(--border-color)/50 bg-(--bg-card) px-1.5 py-0.5 text-[9px] font-semibold text-(--text-muted)">
                                                             {leader.name}
                                                             <button
                                                                 type="button"
@@ -310,7 +310,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                                         })
                                                                     });
                                                                 }}
-                                                                className="icon-button text-red-500 hover:text-red-700 font-bold ml-1 cursor-pointer"
+                                                                className="ml-1 icon-button cursor-pointer font-bold text-red-500 hover:text-red-700"
                                                                 title="Verwijder leider"
                                                             >
                                                                 &times;
@@ -331,9 +331,9 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                             groups: [...formData.groups, { name: `Groep ${formData.groups.length + 1}`, leaders: [] }]
                                         });
                                     }}
-                                    className="beheer-button flex items-center justify-center gap-2 p-3 bg-(--bg-main)/30 border-2 border-dashed border-(--border-color)/50 rounded-xl hover:border-(--theme-purple)/50 hover:bg-(--theme-purple)/5 transition-all text-xs font-semibold text-(--text-muted) hover:text-(--theme-purple) cursor-pointer h-fit self-center"
+                                    className="beheer-button flex h-fit cursor-pointer items-center justify-center gap-2 self-center rounded-xl border-2 border-dashed border-(--border-color)/50 bg-(--bg-main)/30 p-3 text-xs font-semibold text-(--text-muted) transition-all hover:border-(--theme-purple)/50 hover:bg-(--theme-purple)/5 hover:text-(--theme-purple)"
                                 >
-                                    <Plus className="h-4 w-4" />
+                                    <Plus className="size-4" />
                                     Groep toevoegen
                                 </button>
                             </div>
@@ -341,24 +341,24 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                     </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
                     <Link
                         href="/beheer/kroegentocht"
-                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-(--bg-card) border border-(--border-color) rounded-xl text-xs font-semibold text-(--text-muted) hover:text-(--text-main) hover:bg-(--bg-main) transition-all active:scale-95"
+                        className="flex w-full items-center justify-center gap-2 rounded-xl border border-(--border-color) bg-(--bg-card) px-8 py-4 text-xs font-semibold text-(--text-muted) transition-all hover:bg-(--bg-main) hover:text-(--text-main) active:scale-95 sm:w-auto"
                     >
-                        <ArrowLeft className="h-4 w-4" />
+                        <ArrowLeft className="size-4" />
                         Annuleren
                     </Link>
 
                     <button
                         type="submit"
                         disabled={isPending}
-                        className="beheer-button w-full sm:w-auto flex items-center justify-center gap-3 px-12 py-5 bg-(--theme-purple) text-white font-semibold text-sm rounded-xl shadow-(--shadow-glow) hover:opacity-95 transition-all active:scale-95 disabled:opacity-50"
+                        className="beheer-button flex w-full items-center justify-center gap-3 rounded-xl bg-(--theme-purple) px-12 py-5 text-sm font-semibold text-white shadow-(--shadow-glow) transition-all hover:opacity-95 active:scale-95 disabled:opacity-50 sm:w-auto"
                     >
                         {isPending ? (
-                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <Loader2 className="size-5 animate-spin" />
                         ) : (
-                            <Save className="h-5 w-5" />
+                            <Save className="size-5" />
                         )}
                         {isEdit ? 'Wijzigingen Opslaan' : 'Event Aanmaken'}
                     </button>

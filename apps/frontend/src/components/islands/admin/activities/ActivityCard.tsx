@@ -45,11 +45,11 @@ export default function ActivityCard({
 
     return (
         <div
-            className={`flex flex-col md:flex-row bg-(--beheer-card-bg) rounded-(--beheer-radius) shadow-lg transition-all border border-(--beheer-border) hover:shadow-2xl group/card relative overflow-hidden ${isPast ? 'opacity-60 grayscale-[0.5]' : ''}`}
+            className={`group/card relative flex flex-col overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-lg transition-all hover:shadow-2xl md:flex-row ${isPast ? 'grayscale-0.5 opacity-60' : ''}`}
         >
-            <div className="hidden md:block relative w-full md:w-48 lg:w-56 min-h-40 md:min-h-full bg-(--beheer-card-soft)/50 shrink-0 border-r border-(--beheer-border)">
+            <div className="relative hidden min-h-40 w-full shrink-0 border-r border-(--beheer-border) bg-(--beheer-card-soft)/50 md:block md:min-h-full md:w-48 lg:w-56">
                 <div className="absolute inset-0 p-4">
-                    <div className="relative w-full h-full">
+                    <div className="relative size-full">
                         <MediaAsset
                             asset={event.image}
                             alt={event.name}
@@ -61,52 +61,52 @@ export default function ActivityCard({
                 </div>
             </div>
 
-            <div className="flex-1 px-6 py-4 sm:px-8 sm:py-5 min-w-0 flex flex-col justify-center">
-                <div className="flex flex-wrap items-center gap-3 mb-2">
-                    <h3 className="text-2xl font-semibold text-(--beheer-text) leading-tight">
+            <div className="flex min-w-0 flex-1 flex-col justify-center px-6 py-4 sm:px-8 sm:py-5">
+                <div className="mb-2 flex flex-wrap items-center gap-3">
+                    <h3 className="text-2xl leading-tight font-semibold text-(--beheer-text)">
                         {event.name}
                     </h3>
                     <div className="flex gap-2">
-                        {isDraft && <span className="px-3 py-1 text-[8px] font-semibold bg-(--beheer-text-muted)/10 text-(--beheer-text-muted) border border-(--beheer-border) rounded-full">Draft</span>}
-                        {isScheduled && <span className="px-3 py-1 text-[8px] font-semibold bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full">Ingepland</span>}
-                        {isPast && <span className="px-3 py-1 text-[8px] font-semibold bg-(--beheer-border) text-(--beheer-text-muted) rounded-full">Verleden</span>}
+                        {isDraft && <span className="rounded-full border border-(--beheer-border) bg-(--beheer-text-muted)/10 px-3 py-1 text-[8px] font-semibold text-(--beheer-text-muted)">Draft</span>}
+                        {isScheduled && <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-[8px] font-semibold text-blue-500">Ingepland</span>}
+                        {isPast && <span className="rounded-full bg-(--beheer-border) px-3 py-1 text-[8px] font-semibold text-(--beheer-text-muted)">Verleden</span>}
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-(--beheer-text-muted) mb-4">
+                <div className="mb-4 flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-(--beheer-text-muted)">
                     <div className="flex items-center gap-2">
-                        <Calendar className="h-3.5 w-3.5 text-(--beheer-accent)" />
+                        <Calendar className="size-3.5 text-(--beheer-accent)" />
                         <span>{formatDate(event.event_date)}</span>
                     </div>
                     {event.location && (
                         <div className="flex items-center gap-2">
-                            <MapPin className="h-3.5 w-3.5 text-red-500" />
+                            <MapPin className="size-3.5 text-red-500" />
                             <span className="truncate">{event.location}</span>
                         </div>
                     )}
                 </div>
 
                 {event.description && (
-                    <p className="text-(--beheer-text-muted) text-sm mb-4 line-clamp-2 leading-relaxed font-medium">
+                    <p className="mb-4 line-clamp-2 text-sm leading-relaxed font-medium text-(--beheer-text-muted)">
                         {event.description}
                     </p>
                 )}
 
-                <div className="flex flex-wrap gap-4 items-center">
-                    <div className="flex items-center gap-3 bg-(--beheer-card-soft)/50 border border-(--beheer-border) px-5 py-2.5 rounded-2xl group/stats">
-                        <div className="p-2 rounded-full bg-(--beheer-accent)/10 text-(--beheer-accent) group-hover/stats:rotate-12 transition-transform">
-                            <Users className="h-4 w-4" />
+                <div className="flex flex-wrap items-center gap-4">
+                    <div className="group/stats flex items-center gap-3 rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft)/50 px-5 py-2.5">
+                        <div className="rounded-full bg-(--beheer-accent)/10 p-2 text-(--beheer-accent) transition-transform group-hover/stats:rotate-12">
+                            <Users className="size-4" />
                         </div>
                         <div className="flex items-baseline gap-1.5">
-                            <span className="font-semibold text-xl text-(--beheer-text) leading-none">{event.signup_count || 0}</span>
-                            {event.max_sign_ups && <span className="text-(--beheer-text-muted) font-semibold text-sm">/ {event.max_sign_ups}</span>}
-                            <span className="text-[10px] font-semibold text-(--beheer-text-muted) ml-1">aanmeldingen</span>
+                            <span className="text-xl leading-none font-semibold text-(--beheer-text)">{event.signup_count || 0}</span>
+                            {event.max_sign_ups && <span className="text-sm font-semibold text-(--beheer-text-muted)">/ {event.max_sign_ups}</span>}
+                            <span className="ml-1 text-[10px] font-semibold text-(--beheer-text-muted)">aanmeldingen</span>
                         </div>
                     </div>
                     {(event.price_members !== undefined || event.price_non_members !== undefined) && (
-                        <div className="flex items-center gap-4 bg-(--beheer-card-soft)/50 border border-(--beheer-border) px-5 py-2.5 rounded-2xl group/price">
-                            <div className="p-2 rounded-full bg-emerald-500/10 text-emerald-500 group-hover/price:scale-110 transition-transform">
-                                <Euro className="h-4 w-4" />
+                        <div className="group/price flex items-center gap-4 rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft)/50 px-5 py-2.5">
+                            <div className="rounded-full bg-emerald-500/10 p-2 text-emerald-500 transition-transform group-hover/price:scale-110">
+                                <Euro className="size-4" />
                             </div>
                             <div className="flex items-center gap-2 font-semibold text-(--beheer-text)">
                                 {event.price_members === 0 && event.price_non_members === 0 ? (
@@ -124,29 +124,29 @@ export default function ActivityCard({
                 </div>
             </div>
 
-            <div className="flex flex-col gap-2 md:gap-3 justify-center items-stretch md:w-64 p-4 md:p-6 border-t md:border-t-0 md:border-l border-(--beheer-border) bg-(--beheer-card-soft)/20">
+            <div className="flex flex-col items-stretch justify-center gap-2 border-t border-(--beheer-border) bg-(--beheer-card-soft)/20 p-4 md:w-64 md:gap-3 md:border-t-0 md:border-l md:p-6">
                 <button
                     onClick={() => onViewSignups(event.id)}
-                    className="beheer-button flex-1 flex items-center justify-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-5 text-[11px] bg-(--beheer-accent)/10 text-(--beheer-accent) hover:bg-(--beheer-accent) hover:text-white rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
+                    className="group/btn beheer-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-(--beheer-accent)/10 px-4 py-3 text-[11px] font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent) hover:text-white active:scale-95 md:gap-4 md:px-6 md:py-5"
                 >
-                    <Eye className="h-5 w-5 group-hover/btn:scale-110 transition-transform" />
+                    <Eye className="size-5 transition-transform group-hover/btn:scale-110" />
                     <span>Aanmeldingen</span>
                 </button>
 
                 <button
                     onClick={() => onViewAttendance(event.id)}
-                    className="beheer-button flex-1 flex items-center justify-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-5 text-[11px] bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
+                    className="group/btn beheer-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-emerald-500/10 px-4 py-3 text-[11px] font-semibold text-emerald-600 transition-all hover:bg-emerald-500 hover:text-white active:scale-95 md:gap-4 md:px-6 md:py-5"
                 >
-                    <Users className="h-5 w-5 group-hover/btn:scale-110 transition-transform" />
+                    <Users className="size-5 transition-transform group-hover/btn:scale-110" />
                     <span>Aanwezigheid</span>
                 </button>
 
                 {canEdit && (
                     <button
                         onClick={() => onEdit(event.id)}
-                        className="beheer-button flex-1 flex items-center justify-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-5 text-[11px] border border-(--beheer-border) text-(--beheer-text) hover:bg-(--beheer-border) rounded-2xl transition-all font-semibold cursor-pointer active:scale-95 group/btn"
+                        className="group/btn beheer-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-(--beheer-border) px-4 py-3 text-[11px] font-semibold text-(--beheer-text) transition-all hover:bg-(--beheer-border) active:scale-95 md:gap-4 md:px-6 md:py-5"
                     >
-                        <Edit className="h-5 w-5 group-hover/btn:rotate-12 transition-transform" />
+                        <Edit className="size-5 transition-transform group-hover/btn:rotate-12" />
                         <span>Bewerken</span>
                     </button>
                 )}
