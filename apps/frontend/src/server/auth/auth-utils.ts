@@ -3,12 +3,12 @@
 import { auth } from "@/server/auth/auth";
 import { headers } from "next/headers";
 import { hasPermission } from "@/shared/lib/permissions";
-import { type AdminResource } from "@/shared/lib/permissions-config";
+import { type BeheerFeature } from "@/shared/lib/permissions-config";
 import { type Session } from "better-auth";
 import { type EnrichedUser } from "@/types/auth";
 import { safeConsoleError } from '../utils/logger';
 
-export async function requireAdminResource(resource: AdminResource) {
+export async function requireBeheerFeature(feature: BeheerFeature) {
     const session = await getEnrichedSession();
 
     if (!session) {
@@ -24,7 +24,7 @@ export async function requireAdminResource(resource: AdminResource) {
         user.committees = committees;
     }
 
-    if (!hasPermission(committees, resource)) {
+    if (!hasPermission(committees, feature)) {
         throw new Error(`Helaas, je hebt geen rechten om deze pagina te bekijken.`);
     }
 

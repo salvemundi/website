@@ -15,10 +15,10 @@ export default async function WebshopPage() {
 
     return (
         <PublicPageShell>
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-16 sm:pb-24">
+            <div className="mx-auto max-w-7xl px-4 pt-8 pb-16 sm:px-6 sm:pt-12 sm:pb-24 lg:px-8">
                 <div className="mb-8 space-y-2">
                     <h1 className="text-3xl font-bold text-(--theme-purple)/90">Webshop</h1>
-                    <p className="text-(--text-muted) max-w-2xl">
+                    <p className="max-w-2xl text-(--text-muted)">
                         Bestel je favoriete Salve Mundi kleding en items. Dit zijn preorders: je betaalt nu de
                         volledige prijs en je haalt je bestelling op tijdens een afgesproken afhaalmoment.
                     </p>

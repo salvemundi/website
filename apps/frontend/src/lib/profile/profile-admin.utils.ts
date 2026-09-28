@@ -1,6 +1,6 @@
 'use client';
 
-import { type EventSignup } from '@salvemundi/validations/schema/profiel.zod';
+import { type ProfileEventSignup } from '@salvemundi/validations/schema/profiel.zod';
 import { type EnrichedPubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -101,7 +101,7 @@ export function calculateMembershipStatus(user: SessionUser) {
 }
 
 export function filterProfileSignups(
-    eventSignups: EventSignup[],
+    eventSignups: ProfileEventSignup[],
     pubCrawlSignups: EnrichedPubCrawlSignup[],
     showPastEvents: boolean
 ) {

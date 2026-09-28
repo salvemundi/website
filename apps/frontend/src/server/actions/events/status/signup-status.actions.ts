@@ -8,7 +8,7 @@ import { fetchEventSignupByIdDb } from '@/server/internal/activiteiten/activitei
 import { fetchPubCrawlSignupByIdDb } from '@/server/internal/kroegentocht/kroegentocht-signup-db.utils';;
 import { fetchTripSignupByIdDb } from '@/server/internal/reis/reis-signup-db.utils';;
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteiten/activiteiten.utils';
-import { type PubCrawlSignup } from '@salvemundi/validations/directus/schema';
+import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { type PaymentStatus, type SignupStatusResult } from './types';
 import { safeConsoleError } from '@/server/utils/logger';
 import { canAccess } from '@/shared/lib/permissions';
@@ -22,9 +22,6 @@ interface FinanceStatusResponse {
     pub_crawl_signup?: number | string;
 }
 
-/**
- * Resolves the payment and registration status for a given identifier.
- */
 export async function getSignupStatus(
     id?: string,
     transactionId?: string

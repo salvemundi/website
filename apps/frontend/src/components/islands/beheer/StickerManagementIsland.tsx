@@ -1,0 +1,71 @@
+'use client';
+
+import { useState } from 'react';
+import { AlertCircle } from 'lucide-react';
+import BeheerToast from '@/components/ui/beheer/BeheerToast';
+import { useAdminToast } from '@/hooks/use-beheer-toast';
+import { deleteSticker, updateSticker } from '@/server/actions/beheer/stickers/beheer-stickers.actions';
+import StickersTable from '@/components/admin/stickers/StickersTable';
+import { type StickerPublic } from '@salvemundi/validations';
+import { safeConsoleError } from '@/server/utils/logger';
+
+type AdminSticker = Omit<StickerPublic, 'user_updated' | 'date_updated'>;
+
+interface StickerManagementIslandProps {
+    initialStickers: AdminSticker[];
+}
+
+export default function StickerManagementIsland({
+    initialStickers
+}: StickerManagementIslandProps) {
+    const { toast, showToast, hideToast } = useAdminToast();
+    const [stickers, setStickers] = useState(initialStickers);
+
+    const handleDelete = async (id: number) => {
+        try {
+            await deleteSticker(id);
+            setStickers(prev => prev.filter(s => s.id !== id));
+            showToast('Sticker succesvol verwijderd', 'success');
+        } catch (error) {
+            safeConsoleError('[StickerManagementIsland.tsx][StickerManagementIsland] ', error);
+            showToast('Fout bij verwijderen', 'error');
+        }
+    };
+
+    const handleApprove = async (id: number) => {
+        try {
+            await updateSticker(id, { status: 'published' });
+            setStickers(prev => prev.map(s => s.id === id ? { ...s, status: 'published' } : s));
+            showToast('Sticker succesvol gepubliceerd', 'success');
+        } catch (error) {
+            safeConsoleError('[StickerManagementIsland.tsx][StickerManagementIsland] ', error);
+            showToast('Fout bij publiceren', 'error');
+        }
+    };
+
+    return (
+        <div className="container mx-auto max-w-7xl px-4 py-8">
+            <div>
+                {stickers.length > 0 ? (
+                    <StickersTable
+                        stickers={stickers}
+                        onDelete={(id) => {
+                            void handleDelete(id);
+                        }}
+                        onApprove={(id) => {
+                            void handleApprove(id);
+                        }}
+                    />
+                ) : (
+                    <div className="rounded-(--beheer-radius) border border-dashed border-(--beheer-border) bg-(--beheer-card-bg) py-32 text-center">
+                        <AlertCircle className="mx-auto mb-4 size-16 text-(--beheer-text-muted) opacity-20" />
+                        <h2 className="text-xl font-semibold tracking-tight text-(--beheer-text)">Geen stickers gevonden</h2>
+                        <p className="mt-2 text-sm font-semibold text-(--beheer-text-muted)">Er zijn nog geen stickers geregistreerd.</p>
+                    </div>
+                )}
+            </div>
+
+            <BeheerToast toast={toast} onClose={hideToast} />
+        </div>
+    );
+}

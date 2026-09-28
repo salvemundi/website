@@ -26,30 +26,30 @@ export function StandardFormCard({
     className = ""
 }: StandardFormCardProps) {
     return (
-        <section className={`@container relative bg-bg-card dark:border dark:border-white/10 rounded-[2rem] shadow-2xl p-6 sm:p-8 md:p-10 overflow-hidden group ${className}`}>
+        <section className={`group @container relative overflow-hidden rounded-4xl bg-bg-card p-6 shadow-2xl sm:p-8 md:p-10 dark:border dark:border-white/10 ${className}`}>
             {/* Subtle decorative background element */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl group-hover:bg-purple-500/10 transition-colors duration-700" />
+            <div className="absolute -top-24 -right-24 size-48 rounded-full bg-purple-500/5 blur-3xl transition-colors duration-700 group-hover:bg-purple-500/10" />
 
-            <div className="relative z-10 flex flex-col h-full flex-1">
-                <header className="flex flex-col @md:flex-row justify-between items-start gap-4 mb-8 @md:mb-10 shrink-0">
+            <div className="relative z-10 flex h-full flex-1 flex-col">
+                <header className="mb-8 flex shrink-0 flex-col items-start justify-between gap-4 @md:mb-10 @md:flex-row">
                     <div className="space-y-1">
                         {subtitle && (
-                            <p className="text-[11px] font-bold text-text-muted opacity-75 mb-2">
+                            <p className="mb-2 text-[11px] font-bold text-text-muted opacity-75">
                                 {subtitle}
                             </p>
                         )}
-                        <h2 className="form-title flex items-start gap-3 break-words">
-                            {icon && <span className="shrink-0 mt-1 text-purple-500">{icon}</span>}
+                        <h2 className="form-title flex items-start gap-3 wrap-break-word">
+                            {icon && <span className="mt-1 shrink-0 text-purple-500">{icon}</span>}
                             <span className="flex-1">{title}</span>
                         </h2>
                         {description && (
-                            <p className="text-sm font-medium text-text-muted leading-relaxed max-w-lg">
+                            <p className="max-w-lg text-sm leading-relaxed font-medium text-text-muted">
                                 {description}
                             </p>
                         )}
                     </div>
 
-                    <div className="flex flex-col items-end gap-3 self-stretch @md:self-auto shrink-0">
+                    <div className="flex shrink-0 flex-col items-end gap-3 self-stretch @md:self-auto">
                         {headerActions && (
                             <div className="flex items-center gap-2">
                                 {headerActions}
@@ -66,7 +66,7 @@ export function StandardFormCard({
                     </div>
                 </header>
 
-                <div className="w-full flex-1 flex flex-col">
+                <div className="flex w-full flex-1 flex-col">
                     {children}
                 </div>
             </div>

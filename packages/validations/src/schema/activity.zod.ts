@@ -1,7 +1,9 @@
 import { z } from 'zod';
-import { selectEventsSchema, insertEventsSchema } from './db.zod.js';
+import { selectEventsSchema, insertEventsSchema, selectEventSignupsSchema } from './db.zod.js';
 import { phoneNumberSchema } from './shared.zod.js';
 import { userBasicSchema } from './members.zod.js';
+
+export type EventSignup = z.infer<typeof selectEventSignupsSchema>;
 
 const phoneRegex = /(?:\+31|0)[1-9][0-9\s-]{7,12}/;
 const noPhoneMessage = "Om privacyredenen (AVG) mogen er geen telefoonnummers in de tekst staan.";

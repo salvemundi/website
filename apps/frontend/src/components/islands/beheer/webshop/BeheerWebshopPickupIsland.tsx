@@ -1,0 +1,109 @@
+'use client';
+
+import { useState, useTransition } from 'react';
+import { ClipboardCheck, CheckCircle2 } from 'lucide-react';
+import BeheerToolbar from '@/components/ui/beheer/BeheerToolbar';
+import BeheerToast from '@/components/ui/beheer/BeheerToast';
+import { useAdminToast } from '@/hooks/use-beheer-toast';
+import { toggleOrderPickedUp } from '@/server/actions/beheer/webshop/beheer-webshop-preorders.actions';
+import { formatDate } from '@/shared/lib/utils/date';
+import { type AdminPickupOrder } from './webshop-admin-types';
+
+interface Props {
+    initialPreorders: AdminPickupOrder[];
+}
+
+export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
+    const { toast, showToast, hideToast } = useAdminToast();
+    const [preorders, setPreorders] = useState(initialPreorders);
+    const [isPending, startTransition] = useTransition();
+    const [updatingId, setUpdatingId] = useState<number | null>(null);
+
+    const handleToggle = (id: number, pickedUp: boolean) => {
+        setUpdatingId(id);
+        startTransition(async () => {
+            const res = await toggleOrderPickedUp(id, pickedUp);
+            if (res.success) {
+                setPreorders(prev => prev.map(p => p.id === id ? { ...p, picked_up: pickedUp, picked_up_at: pickedUp ? new Date().toISOString() : null } : p));
+                showToast(pickedUp ? 'Gemarkeerd als opgehaald' : 'Markering ongedaan gemaakt', 'success');
+            } else {
+                showToast(res.error || 'Bijwerken mislukt', 'error');
+            }
+            setUpdatingId(null);
+        });
+    };
+
+    const openCount = preorders.filter(p => !p.picked_up).length;
+
+    return (
+        <>
+            <BeheerToolbar
+                title="Afhaallijst"
+                backHref="/beheer/webshop"
+            />
+
+            <div className="admin-container space-y-4 py-4 md:py-8">
+                <p className="text-sm text-(--beheer-text-muted)">{openCount} van de {preorders.length} bestellingen nog niet opgehaald.</p>
+
+                <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
+                    {preorders.length === 0 ? (
+                        <div className="py-24 text-center">
+                            <ClipboardCheck className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-10" />
+                            <p className="text-sm font-semibold text-(--beheer-text-muted)">Nog geen betaalde bestellingen</p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="border-b border-(--beheer-border) bg-(--beheer-card-soft)">
+                                    <tr>
+                                        <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Lid</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Bestelling</th>
+                                        <th className="hidden px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) sm:table-cell">Opgehaald op</th>
+                                        <th className="px-6 py-4 text-right text-xs font-semibold text-(--beheer-text-muted)">Opgehaald</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-(--beheer-border)">
+                                    {preorders.map((preorder) => (
+                                        <tr key={preorder.id} className={`transition-colors hover:bg-(--beheer-card-soft)/30 ${preorder.picked_up ? 'opacity-60' : ''}`}>
+                                            <td className="px-6 py-4">
+                                                <p className="text-sm font-semibold text-(--beheer-text)">{preorder.first_name} {preorder.last_name}</p>
+                                                <p className="text-xs text-(--beheer-text-muted) opacity-80">{preorder.email}</p>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-(--beheer-text)">
+                                                {preorder.lines.map((line) => (
+                                                    <p key={line.id}>
+                                                        {line.product_name_snapshot}
+                                                        {line.variant_label_snapshot && ` (${line.variant_label_snapshot})`}
+                                                        {' '}&times; {line.quantity}
+                                                    </p>
+                                                ))}
+                                            </td>
+                                            <td className="hidden px-6 py-4 text-sm text-(--beheer-text-muted) sm:table-cell">
+                                                {preorder.picked_up_at ? formatDate(new Date(preorder.picked_up_at), 'd MMM yyyy HH:mm') : '-'}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center justify-end">
+                                                    <button
+                                                        type="button"
+                                                        disabled={isPending && updatingId === preorder.id}
+                                                        onClick={() => handleToggle(preorder.id, !preorder.picked_up)}
+                                                        className={`beheer-button flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all disabled:opacity-50 ${preorder.picked_up ? 'bg-green-500/10 text-green-600' : 'bg-(--beheer-accent)/10 text-(--beheer-accent) hover:bg-(--beheer-accent)/20'}`}
+                                                    >
+                                                        <CheckCircle2 className="size-4" />
+                                                        {preorder.picked_up ? 'Opgehaald' : 'Markeer als opgehaald'}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <BeheerToast toast={toast} onClose={hideToast} />
+        </>
+    );
+}

@@ -16,7 +16,7 @@ import { revalidatePath } from 'next/cache';
 
 import { normalizeDate } from '@/lib/utils/date-utils';
 import { safeConsoleError } from '@/server/utils/logger';
-import { getIntroPlanningInternal, getIntroConfidantsInternal, getIntroPlanningImageInternal, getIntroInfoBookletInternal, incrementIntroQrScanCountInternal, getIntroSignupSettingsInternal } from '@/server/queries/intro/admin-intro.queries';
+import { getIntroPlanningInternal, getIntroConfidantsInternal, getIntroPlanningImageInternal, getIntroInfoBookletInternal, incrementIntroQrScanCountInternal, getIntroSignupSettingsInternal } from '@/server/queries/intro/beheer-intro.queries';
 
 
 

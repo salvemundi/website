@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import BoardHistoryTimeline from '@/components/ui/commissies/BoardHistoryTimeline';
-import { getBoardHistory } from '@/server/actions/admin/admin-board.actions';
+import { getBoardHistory } from '@/server/actions/beheer/beheer-board.actions';
 import BackButton from '@/components/ui/navigation/BackButton';
 import { History } from 'lucide-react';
 import { connection } from 'next/server';

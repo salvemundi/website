@@ -1,4 +1,4 @@
-import type { TripSignup, TripSignupActivity } from '@salvemundi/validations';
+import type { TripSignup, TripSignupActivity } from '@salvemundi/validations/schema/trip.zod';
 
 export function groupActivitiesBySignup(
     signups: TripSignup[],
@@ -6,17 +6,14 @@ export function groupActivitiesBySignup(
 ): Record<number, TripSignupActivity[]> {
     const activitiesMap = new Map<number, TripSignupActivity[]>();
     
-    signups.forEach(s => {
+    signups.forEach((s: TripSignup) => {
         if (s.id) {
             activitiesMap.set(s.id, []);
         }
     });
 
-    allSignupSelections.forEach((sa) => {
-        const signupId = (sa.trip_signup_id && typeof sa.trip_signup_id === 'object') 
-            ? (sa.trip_signup_id as { id: number }).id 
-            : sa.trip_signup_id as number;
-            
+    allSignupSelections.forEach((sa: TripSignupActivity) => {
+        const signupId = Number(sa.trip_signup_id);
         const existing = activitiesMap.get(signupId);
         if (existing) {
             existing.push(sa);

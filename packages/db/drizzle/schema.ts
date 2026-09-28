@@ -1537,8 +1537,8 @@ export const trip_signups = pgTable("trip_signups", {
 	allergies: text(),
 	special_notes: text(),
 	willing_to_drive: boolean(),
-	role: varchar({ length: 255 }).default('participant'),
-	status: varchar({ length: 255 }).default('registered'),
+	role: varchar({ length: 255 }).$type<'participant' | 'crew'>().default('participant'),
+	status: varchar({ length: 255 }).$type<'registered' | 'waitlist' | 'confirmed' | 'cancelled'>().default('registered'),
 	deposit_paid: boolean().default(false),
 	deposit_paid_at: timestamp({ mode: 'string' }),
 	full_payment_paid: boolean().default(false),
@@ -1576,7 +1576,7 @@ export const trip_activities = pgTable("trip_activities", {
 	max_participants: integer(),
 	is_active: boolean(),
 	display_order: integer(),
-	options: json().default([]),
+	options: json().$type<{ id?: string | null; name?: string | null; price?: number | null }[]>().default([]),
 	max_selections: integer(),
 }, (table) => [
 	foreignKey({

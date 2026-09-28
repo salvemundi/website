@@ -176,8 +176,8 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
     return (
         <div className="relative w-full">
             <div
-                className={`flex items-center w-full rounded-2xl bg-bg-soft transition-colors ${
-                    isError ? 'ring-2 ring-theme-error' : 'focus-within:ring-2 focus-within:ring-theme-purple/20'
+                className={`flex w-full items-center rounded-2xl bg-bg-soft transition-colors ${
+                    isError ? 'ring-theme-error ring-2' : 'focus-within:ring-2 focus-within:ring-theme-purple/20'
                 } ${className}`}
             >
                 <button
@@ -185,15 +185,15 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
                     type="button"
                     disabled={disabled}
                     onClick={toggleOpen}
-                    className="flex items-center gap-2 px-3.5 h-14 bg-bg-soft hover:bg-black/5 dark:hover:bg-white/5 rounded-l-2xl border-r border-border-color/40 text-text-main font-bold text-sm transition-colors shrink-0 focus:outline-none cursor-pointer select-none"
+                    className="flex h-14 shrink-0 cursor-pointer items-center gap-2 rounded-l-2xl border-r border-border-color/40 bg-bg-soft px-3.5 text-sm font-bold text-text-main transition-colors select-none hover:bg-black/5 focus:outline-none dark:hover:bg-white/5"
                     aria-label={`Selecteer land, huidig: ${countryDisplayName} (${selectedCountry.dialCode})`}
                     aria-expanded={isOpen}
                 >
-                    <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-md bg-theme-purple/10 text-theme-purple font-black text-xs tracking-wider">
+                    <span className="inline-flex items-center justify-center rounded-md bg-theme-purple/10 px-1.5 py-0.5 text-xs font-black tracking-wider text-theme-purple">
                         {selectedCountry.code}
                     </span>
-                    <span className="font-bold text-sm text-text-main">{selectedCountry.dialCode}</span>
-                    <ChevronDown className={`h-3.5 w-3.5 text-text-muted transition-transform duration-200 ${isOpen ? 'rotate-180 text-theme-purple' : ''}`} />
+                    <span className="text-sm font-bold text-text-main">{selectedCountry.dialCode}</span>
+                    <ChevronDown className={`size-3.5 text-text-muted transition-transform duration-200 ${isOpen ? 'rotate-180 text-theme-purple' : ''}`} />
                 </button>
 
                 <input
@@ -207,7 +207,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
                     placeholder={selectedCountry.placeholder}
                     value={nationalNumber}
                     onChange={handleNumberChange}
-                    className="flex-1 min-w-0 h-14 px-4 bg-transparent border-none rounded-r-2xl font-bold text-text-main placeholder:text-text-muted/50 placeholder:font-normal focus:outline-none text-base"
+                    className="h-14 min-w-0 flex-1 rounded-r-2xl border-none bg-transparent px-4 text-base font-bold text-text-main placeholder:font-normal placeholder:text-text-muted/50 focus:outline-none"
                 />
             </div>
 
@@ -221,23 +221,23 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
                         width: `${coords.width}px`,
                         zIndex: 999999
                     }}
-                    className="bg-bg-card border border-border-color rounded-2xl shadow-2xl shadow-theme-purple/15 overflow-hidden animate-in fade-in zoom-in-95 duration-150 ease-out"
+                    className="animate-in fade-in zoom-in-95 overflow-hidden rounded-2xl border border-border-color bg-bg-card shadow-2xl shadow-theme-purple/15 duration-150 ease-out"
                 >
-                    <div className="p-3 border-b border-border-color/60 bg-bg-soft/50">
+                    <div className="border-b border-border-color/60 bg-bg-soft/50 p-3">
                         <div className="relative flex items-center">
-                            <Search className="absolute left-3 h-4 w-4 text-text-muted pointer-events-none" />
+                            <Search className="pointer-events-none absolute left-3 size-4 text-text-muted" />
                             <input
                                 ref={searchInputRef}
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Zoek land of code..."
-                                className="w-full pl-9 pr-3 py-2 bg-bg-card border border-border-color/60 rounded-xl text-sm font-semibold text-text-main placeholder:text-text-muted/60 focus:outline-none focus:ring-2 focus:ring-theme-purple/30"
+                                className="w-full rounded-xl border border-border-color/60 bg-bg-card py-2 pr-3 pl-9 text-sm font-semibold text-text-main placeholder:text-text-muted/60 focus:ring-2 focus:ring-theme-purple/30 focus:outline-none"
                             />
                         </div>
                     </div>
 
-                    <div className="max-h-64 overflow-y-auto p-1.5 space-y-0.5 custom-scrollbar">
+                    <div className="custom-scrollbar max-h-64 space-y-0.5 overflow-y-auto p-1.5">
                         {filteredCountries.length > 0 ? (
                             filteredCountries.map((c) => {
                                 const isSelected = c.code === selectedCountry.code;
@@ -247,21 +247,21 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
                                         key={c.code}
                                         type="button"
                                         onClick={() => handleSelectCountry(c)}
-                                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-sm transition-colors cursor-pointer ${
+                                        className={`flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
                                             isSelected
-                                                ? 'bg-theme-purple/10 text-theme-purple font-bold'
-                                                : 'hover:bg-bg-soft text-text-main font-medium'
+                                                ? 'bg-theme-purple/10 font-bold text-theme-purple'
+                                                : 'font-medium text-text-main hover:bg-bg-soft'
                                         }`}
                                     >
                                         <div className="flex items-center gap-2.5 truncate">
-                                            <span className="inline-flex items-center justify-center min-w-8 px-1.5 py-0.5 rounded-md bg-theme-purple/10 text-theme-purple font-black text-xs tracking-wider">
+                                            <span className="inline-flex min-w-8 items-center justify-center rounded-md bg-theme-purple/10 px-1.5 py-0.5 text-xs font-black tracking-wider text-theme-purple">
                                                 {c.code}
                                             </span>
                                             <span className="truncate">{countryName}</span>
                                         </div>
-                                        <div className="flex items-center gap-2 shrink-0 ml-2">
-                                            <span className="font-bold text-xs text-text-muted">{c.dialCode}</span>
-                                            {isSelected && <Check className="h-4 w-4 text-theme-purple" />}
+                                        <div className="ml-2 flex shrink-0 items-center gap-2">
+                                            <span className="text-xs font-bold text-text-muted">{c.dialCode}</span>
+                                            {isSelected && <Check className="size-4 text-theme-purple" />}
                                         </div>
                                     </button>
                                 );

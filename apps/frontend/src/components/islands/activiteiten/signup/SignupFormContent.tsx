@@ -67,29 +67,29 @@ export default function SignupFormContent({
     return (
         <StandardFormCard
             title="Aanmelden"
-            icon={<Users className="h-8 w-8" />}
+            icon={<Users className="size-8" />}
             price={price > 0 ? price : undefined}
             className="h-fit"
         >
             <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6" autoComplete="off">
                 {isLoggedIn ? (
                     <div className="space-y-4">
-                        <div className="rounded-2xl bg-bg-soft/80 border border-border-color/80 p-4 flex items-center gap-4 shadow-xs">
-                            <div className="h-12 w-12 rounded-2xl bg-linear-to-br from-theme-purple to-purple-600 text-white font-black flex items-center justify-center text-base shrink-0 shadow-md shadow-theme-purple/20">
+                        <div className="flex items-center gap-4 rounded-2xl border border-border-color/80 bg-bg-soft/80 p-4 shadow-xs">
+                            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-theme-purple to-purple-600 text-base font-black text-white shadow-md shadow-theme-purple/20">
                                 {initials}
                             </div>
-                            <div className="flex-1 min-w-0">
+                            <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
-                                    <p className="font-bold text-text-main text-sm truncate">
+                                    <p className="truncate text-sm font-bold text-text-main">
                                         {displayName}
                                     </p>
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-theme-purple/10 text-theme-purple">
-                                        <CheckCircle2 className="h-3 w-3" /> Ingelogd
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-theme-purple/10 px-2 py-0.5 text-[10px] font-black tracking-wider text-theme-purple uppercase">
+                                        <CheckCircle2 className="size-3" /> Ingelogd
                                     </span>
                                 </div>
-                                <p className="text-xs text-text-muted font-medium truncate mt-0.5">{user?.email || initialData.email}</p>
+                                <p className="mt-0.5 truncate text-xs font-medium text-text-muted">{user?.email || initialData.email}</p>
                                 {initialData.phoneNumber ? (
-                                    <p className="text-[11px] text-text-muted/80 font-mono mt-0.5">{initialData.phoneNumber}</p>
+                                    <p className="mt-0.5 font-mono text-[11px] text-text-muted/80">{initialData.phoneNumber}</p>
                                 ) : null}
                             </div>
                         </div>
@@ -111,7 +111,7 @@ export default function SignupFormContent({
                                 {...register('name')}
                                 id="field-name"
                                 placeholder="Naam Achternaam"
-                                className="bg-bg-soft border-none rounded-2xl h-14 px-6 focus:ring-2 focus:ring-theme-purple/20 transition-all font-bold text-text-main"
+                                className="h-14 rounded-2xl border-none bg-bg-soft px-6 font-bold text-text-main transition-all focus:ring-2 focus:ring-theme-purple/20"
                             />
                         </FormField>
 
@@ -126,7 +126,7 @@ export default function SignupFormContent({
                                 id="field-email"
                                 type="email"
                                 placeholder="voorbeeld@mail.com"
-                                className="bg-bg-soft border-none rounded-2xl h-14 px-6 focus:ring-2 focus:ring-theme-purple/20 transition-all font-bold text-text-main"
+                                className="h-14 rounded-2xl border-none bg-bg-soft px-6 font-bold text-text-main transition-all focus:ring-2 focus:ring-theme-purple/20"
                             />
                         </FormField>
 
@@ -145,7 +145,7 @@ export default function SignupFormContent({
                                         id="field-phoneNumber"
                                         autoComplete="tel"
                                         error={!!errors.phoneNumber}
-                                        className="bg-bg-soft border-none rounded-2xl h-14 px-6 focus:ring-2 focus:ring-theme-purple/20 transition-all font-bold text-text-main"
+                                        className="h-14 rounded-2xl border-none bg-bg-soft px-6 font-bold text-text-main transition-all focus:ring-2 focus:ring-theme-purple/20"
                                     />
                                 )}
                             />
@@ -154,25 +154,25 @@ export default function SignupFormContent({
                 )}
 
                 {serverError && (
-                    <div className="p-4 rounded-2xl bg-red-50 border border-red-100 flex items-start gap-3">
-                        <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-                        <p className="text-xs text-red-700 font-bold italic">{serverError}</p>
+                    <div className="flex items-start gap-3 rounded-2xl border border-red-100 bg-red-50 p-4">
+                        <AlertCircle className="mt-0.5 size-5 shrink-0 text-red-500" />
+                        <p className="text-xs font-bold text-red-700 italic">{serverError}</p>
                     </div>
                 )}
 
-                <div className="pt-2 space-y-4">
+                <div className="space-y-4 pt-2">
                     <button
                         type="submit"
                         disabled={isPending}
-                        className="form-button w-full relative group py-4 bg-linear-to-br from-theme-purple via-purple-600 to-theme-purple bg-size-[200%_auto] enabled:hover:bg-position-[right_center] text-white font-black rounded-2xl shadow-xl shadow-theme-purple/20 enabled:hover:shadow-2xl enabled:hover:shadow-theme-purple/40 enabled:hover:-translate-y-1 enabled:active:scale-95 transition-all duration-500 disabled:opacity-70"
+                        className="group relative form-button w-full rounded-2xl bg-linear-to-br from-theme-purple via-purple-600 to-theme-purple bg-size-[200%_auto] py-4 font-black text-white shadow-xl shadow-theme-purple/20 transition-all duration-500 enabled:hover:-translate-y-1 enabled:hover:bg-position-[right_center] enabled:hover:shadow-2xl enabled:hover:shadow-theme-purple/40 enabled:active:scale-95 disabled:opacity-70"
                     >
                         <div className="flex items-center justify-center gap-3">
                             {isPending ? (
-                                <><Loader2 className="h-6 w-6 animate-spin" /><span className="tracking-widest">VERWERKEN...</span></>
+                                <><Loader2 className="size-6 animate-spin" /><span className="tracking-widest">VERWERKEN...</span></>
                             ) : isPaid ? (
-                                <><CreditCard className="h-6 w-6" /><span className="tracking-widest">Naar betaling (€{price.toFixed(2).replace('.', ',')})</span></>
+                                <><CreditCard className="size-6" /><span className="tracking-widest">Naar betaling (€{price.toFixed(2).replace('.', ',')})</span></>
                             ) : (
-                                <><Send className="h-6 w-6" /><span className="tracking-widest">Aanmelden</span></>
+                                <><Send className="size-6" /><span className="tracking-widest">Aanmelden</span></>
                             )}
                         </div>
                     </button>

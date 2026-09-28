@@ -47,11 +47,12 @@ export async function validateCouponAction(formData: FormData) {
 
     const { coupon } = result;
 
+    const discountVal = Number(coupon.discount_value || 0);
     return {
         success: true,
-        discount: coupon.discount_value,
+        discount: discountVal,
         type: coupon.discount_type,
-        description: `Korting: ${coupon.discount_value}${coupon.discount_type === 'percentage' ? '%' : ' EUR'}`
+        description: `Korting: ${discountVal}${coupon.discount_type === 'percentage' ? '%' : ' EUR'}`
     };
 }
 
@@ -113,9 +114,10 @@ export async function initiateMembershipPaymentAction(formData: SignupFormData) 
         if (result.valid && result.coupon) {
             couponClaimed = true;
             const { coupon } = result;
+            const numDiscount = Number(coupon.discount_value || 0);
             const discountValue = coupon.discount_type === 'percentage'
-                ? (baseAmount * coupon.discount_value / 100)
-                : coupon.discount_value;
+                ? (baseAmount * numDiscount / 100)
+                : numDiscount;
 
             finalAmount = Math.round(Math.max(0, Math.min(baseAmount, baseAmount - discountValue)) * 100) / 100;
         } else {

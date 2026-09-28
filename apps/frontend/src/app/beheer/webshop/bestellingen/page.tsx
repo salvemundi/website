@@ -1,20 +1,20 @@
 import type { Metadata } from 'next';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import AdminWebshopPreordersIsland from '@/components/islands/admin/webshop/AdminWebshopPreordersIsland';
-import { getAdminPreorders } from '@/server/queries/webshop/admin-webshop.queries';
+import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
+import BeheerWebshopPreordersIsland from '@/components/islands/beheer/webshop/BeheerWebshopPreordersIsland';
+import { getBeheerPreorders } from '@/server/queries/webshop/beheer-webshop.queries';
 
 export const metadata: Metadata = {
     title: 'Webshop Bestellingen | SV Salve Mundi'
 };
 
 export default async function AdminWebshopPreordersPage() {
-    const preorders = await getAdminPreorders();
+    const preorders = await getBeheerPreorders();
 
     return (
-        <AdminPageShell
+        <BeheerPageShell
         title="Webshop Bestellingen"
         backHref="/beheer/webshop" hideToolbar={true}>
-            <AdminWebshopPreordersIsland initialPreorders={preorders} />
-        </AdminPageShell>
+            <BeheerWebshopPreordersIsland initialPreorders={preorders} />
+        </BeheerPageShell>
     );
 }

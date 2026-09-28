@@ -13,14 +13,14 @@ interface DocumentenLijstProps {
 export default function DocumentenLijst({ documenten }: DocumentenLijstProps) {
     if (documenten.length === 0) {
         return (
-            <p className="text-(--text-muted) text-sm">
+            <p className="text-sm text-(--text-muted)">
                 Geen documenten beschikbaar
             </p>
         );
     }
 
     return (
-        <div className="space-y-1.5 ml-14">
+        <div className="ml-14 space-y-1.5">
             {documenten.map((doc) => {
                 // Asset-URL opbouwen via de publieke Directus URL
                 const fileUrl = getImageUrl(doc.file) || '#';
@@ -31,11 +31,11 @@ export default function DocumentenLijst({ documenten }: DocumentenLijstProps) {
                         href={fileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-fit block text-(--text-muted) hover:text-(--text-main) transition-colors group"
+                        className="group block w-fit text-(--text-muted) transition-colors hover:text-(--text-main)"
                         title={doc.description !== null ? doc.description : undefined}
                     >
                         {/* Kleine pijl-animatie op hover */}
-                        <span className="group-hover:translate-x-1 inline-block transition-transform">→</span>{' '}
+                        <span className="inline-block transition-transform group-hover:translate-x-1">→</span>{' '}
                         {doc.title}
                     </a>
                 );

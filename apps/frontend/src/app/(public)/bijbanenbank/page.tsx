@@ -40,14 +40,14 @@ export default async function BijbanenbankPage() {
 
     return (
         <div className="pt-8">
-            <div className="container mx-auto px-4 py-12 max-w-7xl">
+            <div className="container mx-auto max-w-7xl px-4 py-12">
                 <div className="mb-8 flex items-center justify-between">
                     <BackButton href={isLoggedIn ? '/profiel' : '/'} />
                 </div>
 
                 <div className="mb-8">
                     <h1 className="form-title">Bijbanenbank</h1>
-                    <p className="text-(--text-muted) mt-2 max-w-2xl">
+                    <p className="mt-2 max-w-2xl text-(--text-muted)">
                         Stages en bijbanen aangeboden door bedrijven aan leden van Salve Mundi.
                     </p>
                 </div>

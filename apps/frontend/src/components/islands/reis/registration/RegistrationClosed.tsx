@@ -9,14 +9,14 @@ export function RegistrationClosed({ registrationStartText }: RegistrationClosed
     const isWaitingForDate = registrationStartText.includes('opent op');
     
     return (
-        <div className="flex flex-col items-center justify-center py-10 px-6 text-center bg-theme-purple/5 rounded-2xl border border-(--border-color)/20">
-            <div className="w-12 h-12 bg-theme-purple/10 rounded-full flex items-center justify-center mb-4 text-theme-purple opacity-60">
-                {isWaitingForDate ? <Clock className="w-6 h-6" /> : <Lock className="w-6 h-6" />}
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-(--border-color)/20 bg-theme-purple/5 px-6 py-10 text-center">
+            <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-theme-purple/10 text-theme-purple opacity-60">
+                {isWaitingForDate ? <Clock className="size-6" /> : <Lock className="size-6" />}
             </div>
-            <h3 className="text-lg font-bold text-(--text-main) dark:text-gray-300 mb-1">
+            <h3 className="mb-1 text-lg font-bold text-(--text-main) dark:text-gray-300">
                 {isWaitingForDate ? 'Binnenkort Open' : 'Inschrijving Gesloten'}
             </h3>
-            <p className="text-(--text-muted) text-sm max-w-xs">
+            <p className="max-w-xs text-sm text-(--text-muted)">
                 {registrationStartText}
             </p>
         </div>

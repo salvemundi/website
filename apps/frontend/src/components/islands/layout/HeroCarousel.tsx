@@ -57,21 +57,21 @@ export function HeroCarousel({ slideUrls }: HeroCarouselProps) {
 
     return (
         <div 
-            className="w-full h-full relative group bg-(--bg-main) overflow-hidden"
+            className="group relative size-full overflow-hidden bg-(--bg-main)"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
         >
             {/* Sliding container wrapper */}
             <div 
-                className="w-full h-full flex transition-transform duration-500 ease-in-out"
+                className="flex size-full transition-transform duration-500 ease-in-out"
                 style={{ transform: `translate3d(-${currentIndex * 100}%, 0, 0)` }}
             >
                 {slideUrls.map((src, index) => {
                     return (
                         <div
                             key={index}
-                            className="w-full h-full shrink-0 relative"
+                            className="relative size-full shrink-0"
                         >
                             <Image
                                 src={src}

@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
-import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
+import { checkBeheerAccess } from '@/server/actions/beheer/beheer-utils.actions';
 
 interface BeheerLayoutProps {
     children: React.ReactNode;
@@ -10,7 +10,7 @@ interface BeheerLayoutProps {
 export default async function BeheerLayout({ children }: BeheerLayoutProps) {
     await connection();
     
-    const { user, isAuthorized } = await checkAdminAccess();
+    const { user, isAuthorized } = await checkBeheerAccess();
     
     if (!isAuthorized || !user) {
         notFound();

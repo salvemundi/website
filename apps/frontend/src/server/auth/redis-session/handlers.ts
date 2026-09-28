@@ -53,7 +53,7 @@ export async function beforeHandler(ctx: AuthContext) {
             }
         }
 
-        if (!token || (cookieHeader && cookieHeader.includes("directus_test_token="))) return;
+        if (!token || (cookieHeader && cookieHeader.includes("directus_impersonation_token="))) return;
 
         const redis = await getRedis();
         const cached = await redis.get(`session:${token}`);
@@ -150,7 +150,7 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
         if (requestHeaders) {
             const cookies = requestHeaders.get("cookie") || "";
             let testToken: string | undefined = undefined;
-            const cookieParts = cookies.split("directus_test_token=");
+            const cookieParts = cookies.split("directus_impersonation_token=");
             if (cookieParts.length > 1) {
                 const part = cookieParts[1];
                 if (part) {

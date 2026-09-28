@@ -1,7 +1,7 @@
 import 'server-only';
 import { db, schema } from '@salvemundi/db';
 import { eq, and, or, count, sql, desc } from 'drizzle-orm';
-import { type EventSignup } from '@salvemundi/validations/directus/schema';
+import { type EventSignup } from '@salvemundi/validations/schema/activity.zod';
 
 export async function countActiveEventSignupsDb(
     eventId: number,
@@ -25,18 +25,11 @@ export async function countActiveEventSignupsDb(
     return result[0]?.value ?? 0;
 }
 
-export type EnrichedEvent = {
-    id: number;
-    name: string;
-    event_date?: string;
-    description?: string;
-    image?: string;
-    contact?: string;
-    location?: string;
-};
+export type EventSignupDbRow = typeof schema.event_signups.$inferSelect;
+export type EventDbRow = typeof schema.events.$inferSelect;
 
-export type EnrichedEventSignup = EventSignup & {
-    event_id: EnrichedEvent;
+export type EventSignupWithEvent = EventSignupDbRow & {
+    event: EventDbRow | null;
 };
 
 export async function deleteEventDb(id: number): Promise<boolean> {
@@ -45,15 +38,15 @@ export async function deleteEventDb(id: number): Promise<boolean> {
 }
 
 export async function createEventSignupDb(data: Partial<EventSignup>): Promise<number | null> {
-    const eventIdNum = typeof data.event_id === 'object' && 'id' in data.event_id ? (data.event_id as { id: number }).id : (data.event_id as number);
+    const eventIdNum = Number(data.event_id);
     const result = await db.insert(schema.event_signups).values({
-        event_id: eventIdNum as number,
+        event_id: eventIdNum,
         participant_name: data.participant_name || null,
         participant_email: data.participant_email || null,
         participant_phone: data.participant_phone || null,
         payment_status: data.payment_status || 'open',
         qr_token: data.qr_token || null,
-        directus_relations: typeof data.directus_relations === 'object' && data.directus_relations !== null && 'id' in data.directus_relations ? String((data.directus_relations as { id: unknown }).id) : (data.directus_relations as string | undefined) || null,
+        directus_relations: typeof data.directus_relations === 'string' ? data.directus_relations : null,
         checked_in: !!data.checked_in,
         checked_in_at: data.checked_in_at || null,
         is_member: !!data.is_member
@@ -63,7 +56,7 @@ export async function createEventSignupDb(data: Partial<EventSignup>): Promise<n
 }
 
 export async function updateEventSignupDb(id: number, data: Partial<EventSignup>): Promise<boolean> {
-    const updateData: Partial<EventSignup> = {};
+    const updateData: Partial<typeof schema.event_signups.$inferInsert> = {};
     if (data.payment_status !== undefined) updateData.payment_status = data.payment_status;
     if (data.checked_in !== undefined) updateData.checked_in = data.checked_in;
     if (data.checked_in_at !== undefined) updateData.checked_in_at = data.checked_in_at;
@@ -75,7 +68,7 @@ export async function updateEventSignupDb(id: number, data: Partial<EventSignup>
     if (Object.keys(updateData).length === 0) return true;
 
     const result = await db.update(schema.event_signups)
-        .set(updateData as NonNullable<unknown>)
+        .set(updateData)
         .where(eq(schema.event_signups.id, id));
         
     return result.count > 0;
@@ -86,7 +79,7 @@ export async function deleteEventSignupDb(id: number): Promise<boolean> {
     return result.count > 0;
 }
 
-export async function fetchUserEventSignupsDb(email: string): Promise<EnrichedEventSignup[]> {
+export async function fetchUserEventSignupsDb(email: string): Promise<EventSignupWithEvent[]> {
     const rows = await db.select({
         signup: schema.event_signups,
         event: schema.events
@@ -96,24 +89,13 @@ export async function fetchUserEventSignupsDb(email: string): Promise<EnrichedEv
     .where(sql`LOWER(${schema.event_signups.participant_email}) = LOWER(${email})`)
     .orderBy(desc(schema.events.event_date));
 
-    const { toLocalISOString } = await import('@/lib/utils/date-utils');
-
-    return rows.map((row) => ({
+    return rows.map((row): EventSignupWithEvent => ({
         ...row.signup,
-        created_at: toLocalISOString(row.signup.created_at),
-        checked_in_at: toLocalISOString(row.signup.checked_in_at),
-        event_id: {
-            id: row.event.id,
-            name: row.event.name,
-            event_date: toLocalISOString(row.event.event_date) ?? undefined,
-            description: row.event.description ?? undefined,
-            image: row.event.image ?? undefined,
-            contact: row.event.contact ?? undefined
-        }
-    })) as unknown as EnrichedEventSignup[];
+        event: row.event
+    }));
 }
 
-export async function fetchEventSignupByIdDb(id: number): Promise<EnrichedEventSignup | null> {
+export async function fetchEventSignupByIdDb(id: number): Promise<EventSignupWithEvent | null> {
     const rows = await db.select({
         signup: schema.event_signups,
         event: schema.events
@@ -125,24 +107,13 @@ export async function fetchEventSignupByIdDb(id: number): Promise<EnrichedEventS
 
     if (rows.length === 0) return null;
 
-    const row = rows[0];
-    const { toLocalISOString } = await import('@/lib/utils/date-utils');
     return {
-        ...row.signup,
-        created_at: toLocalISOString(row.signup.created_at),
-        checked_in_at: toLocalISOString(row.signup.checked_in_at),
-        event_id: {
-            id: row.event.id,
-            name: row.event.name,
-            event_date: toLocalISOString(row.event.event_date) ?? undefined,
-            description: row.event.description ?? undefined,
-            image: row.event.image ?? undefined,
-            contact: row.event.contact ?? undefined
-        }
-    } as unknown as EnrichedEventSignup;
+        ...rows[0].signup,
+        event: rows[0].event
+    };
 }
 
-export async function fetchEventSignupByTokenDb(token: string): Promise<EnrichedEventSignup | null> {
+export async function fetchEventSignupByTokenDb(token: string): Promise<EventSignupWithEvent | null> {
     const rows = await db.select({
         signup: schema.event_signups,
         event: schema.events
@@ -154,19 +125,8 @@ export async function fetchEventSignupByTokenDb(token: string): Promise<Enriched
 
     if (rows.length === 0) return null;
 
-    const row = rows[0];
-    const { toLocalISOString } = await import('@/lib/utils/date-utils');
     return {
-        ...row.signup,
-        created_at: toLocalISOString(row.signup.created_at),
-        checked_in_at: toLocalISOString(row.signup.checked_in_at),
-        event_id: {
-            id: row.event.id,
-            name: row.event.name,
-            event_date: toLocalISOString(row.event.event_date) ?? undefined,
-            description: row.event.description ?? undefined,
-            image: row.event.image ?? undefined,
-            contact: row.event.contact ?? undefined
-        }
-    } as unknown as EnrichedEventSignup;
+        ...rows[0].signup,
+        event: rows[0].event
+    };
 }

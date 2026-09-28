@@ -8,8 +8,8 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { safeConsoleError } from '@/server/utils/logger';
 import { uploadToDirectus, uploadBufferToDirectus } from '@/server/utils/media';
 import { fillMemberSignatureOnPdf } from '@/server/utils/nda-pdf';
-import { sendNdaMail } from '@/server/actions/admin/nda/nda-mail.utils';
-import { getNdaSettingsInternal } from '@/server/queries/nda/admin-nda.queries';
+import { sendNdaMail } from '@/server/actions/beheer/nda/nda-mail.utils';
+import { getNdaSettingsInternal } from '@/server/queries/nda/beheer-nda.queries';
 import { ndaSignatureLayoutSchema } from '@salvemundi/validations';
 
 export async function isNdaSystemActive(): Promise<boolean> {

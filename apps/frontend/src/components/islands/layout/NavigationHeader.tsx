@@ -49,10 +49,10 @@ const NavigationHeader = ({
 
     return (
         <HeaderShell>
-            <div className="w-full px-4 lg:px-8 z-10 relative @container h-20 flex items-center justify-between">
+            <div className="@container relative z-10 flex h-20 w-full items-center justify-between px-4 lg:px-8">
                 <div className="shrink-0">
-                    <Link href="/" className="group flex items-center gap-3 transition-transform duration-300 hover:scale-[1.03] active:scale-95">
-                        <div className="relative w-12 h-12">
+                    <Link href="/" className="group hover:scale-1.03 flex items-center gap-3 transition-transform duration-300 active:scale-95">
+                        <div className="relative size-12">
                             <Image
                                 src={BRAND_CONFIG.logoLightMode}
                                 alt="Salve Mundi Logo"
@@ -64,18 +64,18 @@ const NavigationHeader = ({
                                 src={BRAND_CONFIG.logoDarkMode}
                                 alt="Salve Mundi Logo"
                                 fill
-                                className="object-contain hidden dark:block"
+                                className="hidden object-contain dark:block"
                                 priority
                             />
                         </div>
-                        <div className="hidden text-left @[1024px]:block whitespace-nowrap transition-all duration-300">
-                            <p className="text-[13px] font-semibold text-purple-500 leading-none">Salve Mundi</p>
-                            <p className="text-xs font-semibold text-(--text-main) mt-0.5">Fontys ICT</p>
+                        <div className="hidden text-left whitespace-nowrap transition-all duration-300 @[1024px]:block">
+                            <p className="text-[13px] leading-none font-semibold text-purple-500">Salve Mundi</p>
+                            <p className="mt-0.5 text-xs font-semibold text-(--text-main)">Fontys ICT</p>
                         </div>
                     </Link>
                 </div>
 
-                <nav className="hidden lg:flex flex-1 items-center justify-center px-4 gap-x-[clamp(0.4rem,0.8vw,1.1rem)] min-w-0">
+                <nav className="hidden min-w-0 flex-1 items-center justify-center gap-x-[clamp(0.4rem,0.8vw,1.1rem)] px-4 lg:flex">
                     {navItems.map((link) => {
                         const active = isPathActive(pathname, link.href);
                         return (
@@ -83,7 +83,7 @@ const NavigationHeader = ({
                                 key={link.href}
                                 href={link.href}
                                 className={cn(
-                                    'group relative inline-flex items-center gap-2 text-sm font-semibold transition-all duration-200 whitespace-nowrap shrink-0',
+                                    'group relative inline-flex shrink-0 items-center gap-2 text-sm font-semibold whitespace-nowrap transition-all duration-200',
                                     active ? 'text-purple-500' : 'text-(--text-main)',
                                     !active && 'hover:text-purple-500'
                                 )}
@@ -98,7 +98,7 @@ const NavigationHeader = ({
                     })}
                 </nav>
 
-                <div className="shrink-0 flex items-center justify-end gap-3">
+                <div className="flex shrink-0 items-center justify-end gap-3">
                     <NavUserSection
                         initialSession={initialSession}
                         canAccessAdmin={canAccessAdmin}

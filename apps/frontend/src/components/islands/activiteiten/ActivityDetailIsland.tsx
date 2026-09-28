@@ -31,7 +31,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
     );
 
     return (
-        <div className="w-full flex flex-col min-h-screen">
+        <div className="flex min-h-screen w-full flex-col">
             {activity?.afbeelding_id ? (
                 <div className="relative h-[45vh] min-h-100 w-full overflow-hidden bg-bg-soft">
                     <MediaAsset
@@ -41,99 +41,99 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                         priority
                         className="object-cover"
                     />
-                    <div className="absolute inset-0 bg-linear-to-t from-bg-main via-bg-main/40 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 max-w-7xl mx-auto px-4 pb-12">
+                    <div className="from-bg-main via-bg-main/40 absolute inset-0 bg-linear-to-t to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 mx-auto max-w-7xl px-4 pb-12">
                         <div className="max-w-3xl space-y-4">
-                            <span className="inline-block px-4 py-1.5 rounded-full bg-theme-purple text-white text-[11px] font-black uppercase tracking-widest mb-4 shadow-xl border border-white/10">
+                            <span className="mb-4 inline-block rounded-full border border-white/10 bg-theme-purple px-4 py-1.5 text-[11px] font-black tracking-widest text-white uppercase shadow-xl">
                                 {activity.committee_name || 'Algemene Activiteit'}
                             </span>
-                            <h1 className="text-4xl md:text-7xl font-black text-text-main drop-shadow-sm tracking-tight leading-tight">
+                            <h1 className="text-4xl leading-tight font-black tracking-tight text-text-main drop-shadow-sm md:text-7xl">
                                 {activity.name}
                             </h1>
                         </div>
                     </div>
                 </div>
             ) : (
-                <div className="pt-20 pb-10 max-w-7xl mx-auto px-4">
-                    <span className="inline-block px-4 py-1.5 rounded-full bg-theme-purple text-white text-[11px] font-black uppercase tracking-widest mb-4 shadow-xl border border-white/10">
+                <div className="mx-auto max-w-7xl px-4 pt-20 pb-10">
+                    <span className="mb-4 inline-block rounded-full border border-white/10 bg-theme-purple px-4 py-1.5 text-[11px] font-black tracking-widest text-white uppercase shadow-xl">
                         {activity?.committee_name || 'Algemene Activiteit'}
                     </span>
-                    <h1 className="text-4xl md:text-7xl font-black text-text-main tracking-tight leading-tight">
+                    <h1 className="text-4xl leading-tight font-black tracking-tight text-text-main md:text-7xl">
                         {activity?.name}
                     </h1>
                 </div>
             )}
 
-            <main className="w-full max-w-7xl mx-auto px-4 py-8 md:py-12">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                    <div className="order-1 lg:order-1 flex flex-col gap-6">
+            <main className="mx-auto w-full max-w-7xl px-4 py-8 md:py-12">
+                <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2">
+                    <div className="order-1 flex flex-col gap-6 lg:order-1">
                         {children}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="squircle bg-bg-card border border-border-color p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30 flex flex-col justify-center">
-                                <div className="flex items-center gap-2 mb-1.5">
-                                    <CalendarClock className="h-4 w-4 text-theme-purple" />
-                                    <p className="text-[10px] uppercase font-black text-text-muted tracking-[0.2em]">Datum & Tijd</p>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="squircle flex flex-col justify-center border border-border-color bg-bg-card p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30">
+                                <div className="mb-1.5 flex items-center gap-2">
+                                    <CalendarClock className="size-4 text-theme-purple" />
+                                    <p className="text-[10px] font-black tracking-[0.2em] text-text-muted uppercase">Datum & Tijd</p>
                                 </div>
-                                <p className="text-base font-bold text-text-main leading-snug">
+                                <p className="text-base leading-snug font-bold text-text-main">
                                     {displayDate}
                                 </p>
                                 {timeRange && (
-                                    <p className="text-sm font-semibold text-theme-purple mt-0.5">
+                                    <p className="mt-0.5 text-sm font-semibold text-theme-purple">
                                         {timeRange}
                                     </p>
                                 )}
                             </div>
 
                             {activity?.location && (
-                                <div className="squircle bg-bg-card border border-border-color p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30 flex flex-col justify-center">
-                                    <div className="flex items-center gap-2 mb-1.5">
-                                        <MapPin className="h-4 w-4 text-theme-purple" />
-                                        <p className="text-[10px] uppercase font-black text-text-muted tracking-[0.2em]">Locatie</p>
+                                <div className="squircle flex flex-col justify-center border border-border-color bg-bg-card p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30">
+                                    <div className="mb-1.5 flex items-center gap-2">
+                                        <MapPin className="size-4 text-theme-purple" />
+                                        <p className="text-[10px] font-black tracking-[0.2em] text-text-muted uppercase">Locatie</p>
                                     </div>
-                                    <p className="text-base font-bold text-text-main leading-snug wrap-break-word">
+                                    <p className="text-base leading-snug font-bold wrap-break-word text-text-main">
                                         {activity.location}
                                     </p>
                                 </div>
                             )}
 
-                            <div className="squircle bg-bg-card border border-border-color p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30 flex flex-col justify-center">
-                                <div className="flex items-center gap-2 mb-1.5">
-                                    <User className="h-4 w-4 text-theme-purple" />
-                                    <p className="text-[10px] uppercase font-black text-text-muted tracking-[0.2em]">Organisatie</p>
+                            <div className="squircle flex flex-col justify-center border border-border-color bg-bg-card p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30">
+                                <div className="mb-1.5 flex items-center gap-2">
+                                    <User className="size-4 text-theme-purple" />
+                                    <p className="text-[10px] font-black tracking-[0.2em] text-text-muted uppercase">Organisatie</p>
                                 </div>
-                                <p className="text-base font-bold text-text-main leading-snug wrap-break-word">
+                                <p className="text-base leading-snug font-bold wrap-break-word text-text-main">
                                     {activity?.committee_name || 'Bestuur'}
                                 </p>
                             </div>
 
-                            <div className="squircle bg-bg-card border border-border-color p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30 flex flex-col justify-center">
-                                <div className="flex items-center gap-2 mb-1.5">
-                                    <Mail className="h-4 w-4 text-theme-purple" />
-                                    <p className="text-[10px] uppercase font-black text-text-muted tracking-[0.2em]">Contact</p>
+                            <div className="squircle flex flex-col justify-center border border-border-color bg-bg-card p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30">
+                                <div className="mb-1.5 flex items-center gap-2">
+                                    <Mail className="size-4 text-theme-purple" />
+                                    <p className="text-[10px] font-black tracking-[0.2em] text-text-muted uppercase">Contact</p>
                                 </div>
-                                <div className="text-sm font-bold text-theme-purple leading-snug">
+                                <div className="text-sm leading-snug font-bold text-theme-purple">
                                     <ObfuscatedEmail email={committeeEmail || 'bestuur@salvemundi.nl'} showIcon={false} />
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="order-2 lg:order-2 h-full">
-                        <div className="squircle-lg bg-bg-card border border-border-color p-8 shadow-xl shadow-theme-purple/5 h-full">
-                            <div className="flex items-center gap-3 mb-8">
-                                <div className="h-8 w-2 bg-theme-purple rounded-full shadow-[0_0_15px_var(--theme-purple)]" />
-                                <h2 className="text-2xl font-black text-theme-purple uppercase tracking-widest">
+                    <div className="order-2 h-full lg:order-2">
+                        <div className="squircle-lg h-full border border-border-color bg-bg-card p-8 shadow-xl shadow-theme-purple/5">
+                            <div className="mb-8 flex items-center gap-3">
+                                <div className="h-8 w-2 rounded-full bg-theme-purple shadow-[0_0_15px_var(--theme-purple)]" />
+                                <h2 className="text-2xl font-black tracking-widest text-theme-purple uppercase">
                                     Over deze activiteit
                                 </h2>
                             </div>
-                            <div className="prose prose-purple max-w-none text-text-main font-medium leading-relaxed">
+                            <div className="prose max-w-none leading-relaxed font-medium text-text-main prose-purple">
                                 <SafeMarkdown content={activity?.description || 'Geen beschrijving beschikbaar.'} />
                                 {isLoggedIn && activity?.description_logged_in && (
                                     <>
                                         <hr className="my-8 border-border-color/50" />
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="h-6 w-1.5 bg-text-muted rounded-full shadow-[0_0_10px_var(--color-text-muted)]" />
-                                            <h3 className="text-xl font-black text-text-muted/90 uppercase tracking-widest">
+                                        <div className="mb-6 flex items-center gap-3">
+                                            <div className="h-6 w-1.5 rounded-full bg-text-muted shadow-[0_0_10px_var(--color-text-muted)]" />
+                                            <h3 className="text-xl font-black tracking-widest text-text-muted/90 uppercase">
                                                 Extra Informatie (alleen ingelogd)
                                             </h3>
                                         </div>

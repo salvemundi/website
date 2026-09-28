@@ -1,8 +1,8 @@
 import React from 'react';
-import SystemManagementIsland from '@/components/islands/admin/SystemManagementIsland';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+import SystemManagementIsland from '@/components/islands/beheer/SystemManagementIsland';
+import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
 import { getServicesStatusAction } from '@/server/actions/infrastructure/services-status.actions';
-import { getSystemAutomationSettings } from '@/server/actions/admin/admin-automation.actions';
+import { getSystemAutomationSettings } from '@/server/actions/beheer/services/beheer-automation.actions';
 
 export const metadata = {
     title: 'Systeem Beheer | SV Salve Mundi' 
@@ -21,29 +21,29 @@ export default async function ServicesStatusPage() {
     const mailCount = initialAutomationSettings.filter(s => s.id.startsWith('mail') && s.isActive).length;
 
     return (
-        <AdminPageShell 
+        <BeheerPageShell 
             title="Systeem & Automatisering"
             backHref="/beheer"
             actions={
-                <div className="flex items-center gap-4 bg-bg-soft px-4 py-2 rounded-2xl border border-border-color/50 shadow-sm">
+                <div className="flex items-center gap-4 rounded-2xl border border-border-color/50 bg-bg-soft px-4 py-2 shadow-sm">
                     <div className="flex flex-col items-center px-2">
-                        <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Systemen</span>
-                        <span className="text-sm font-bold text-text-main leading-none">{initialStatuses.length}</span>
+                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Systemen</span>
+                        <span className="text-sm leading-none font-bold text-text-main">{initialStatuses.length}</span>
                     </div>
-                    <div className="w-px h-6 bg-border-color/20" />
+                    <div className="h-6 w-px bg-border-color/20" />
                     <div className="flex flex-col items-center px-2">
-                        <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Automatisering</span>
-                        <span className="text-sm font-bold text-text-main leading-none">{automationCount}</span>
+                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Automatisering</span>
+                        <span className="text-sm leading-none font-bold text-text-main">{automationCount}</span>
                     </div>
-                    <div className="w-px h-6 bg-border-color/20" />
+                    <div className="h-6 w-px bg-border-color/20" />
                     <div className="flex flex-col items-center px-2">
-                        <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Mail Flows</span>
-                        <span className="text-sm font-bold text-text-main leading-none">{mailCount}</span>
+                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Mail Flows</span>
+                        <span className="text-sm leading-none font-bold text-text-main">{mailCount}</span>
                     </div>
-                    <div className="w-px h-6 bg-border-color/20" />
+                    <div className="h-6 w-px bg-border-color/20" />
                     <div className="flex flex-col items-center px-2">
-                        <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Gezondheid</span>
-                        <span className={`text-sm font-bold leading-none ${issuesCount === 0 ? 'text-emerald-500' : 'text-amber-500'}`}>
+                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Gezondheid</span>
+                        <span className={`text-sm leading-none font-bold ${issuesCount === 0 ? 'text-emerald-500' : 'text-amber-500'}`}>
                             {issuesCount === 0 ? '100%' : 'Check'}
                         </span>
                     </div>
@@ -54,6 +54,6 @@ export default async function ServicesStatusPage() {
                 initialStatuses={initialStatuses} 
                 initialAutomationSettings={initialAutomationSettings}
             />
-        </AdminPageShell>
+        </BeheerPageShell>
     );
 }

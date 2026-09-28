@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import NdaCommitteeDetailIsland from '@/components/islands/admin/nda/NdaCommitteeDetailIsland';
-import { getCommitteeNdaDetail } from '@/server/actions/admin/nda/admin-nda-templates.actions';
-import { getNdaSettings } from '@/server/actions/admin/nda/admin-nda-settings.actions';
+import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
+import NdaCommitteeDetailIsland from '@/components/islands/beheer/nda/NdaCommitteeDetailIsland';
+import { getCommitteeNdaDetail } from '@/server/actions/beheer/nda/beheer-nda-templates.actions';
+import { getNdaSettings } from '@/server/actions/beheer/nda/beheer-nda-settings.actions';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 
 export const metadata: Metadata = {
@@ -27,8 +27,8 @@ export default async function BeheerNdaCommitteePage({ params }: { params: Promi
     const isSecretary = !!settings.secretaryUserId && settings.secretaryUserId === session?.user.id;
 
     return (
-        <AdminPageShell title={`NDA — ${detail.committee.name}`} backHref="/beheer/nda">
+        <BeheerPageShell title={`NDA — ${detail.committee.name}`} backHref="/beheer/nda">
             <NdaCommitteeDetailIsland detail={detail} isSecretary={isSecretary} />
-        </AdminPageShell>
+        </BeheerPageShell>
     );
 }

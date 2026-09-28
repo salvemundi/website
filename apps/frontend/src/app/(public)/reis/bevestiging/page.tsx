@@ -21,11 +21,11 @@ export default async function TripConfirmationPage({ searchParams }: PageProps) 
     if (!token) {
         return (
             <PublicPageShell title="Bevestiging" hideHeader={true}>
-                <div className="min-h-[70vh] flex items-center justify-center p-6">
-                    <div className="max-w-md w-full p-12 bg-bg-card border border-border-color squircle-lg text-center shadow-xl">
-                        <XCircle className="w-16 h-16 text-red-500 mx-auto mb-6" />
-                        <h1 className="text-2xl font-black text-theme-purple mb-4">Ongeldige Status</h1>
-                        <p className="text-text-muted mb-8 leading-relaxed">We kunnen de status van je betaling niet verifiëren zonder een geldige transactie- of token-ID.</p>
+                <div className="flex min-h-[70vh] items-center justify-center p-6">
+                    <div className="squircle-lg w-full max-w-md border border-border-color bg-bg-card p-12 text-center shadow-xl">
+                        <XCircle className="mx-auto mb-6 size-16 text-red-500" />
+                        <h1 className="mb-4 text-2xl font-black text-theme-purple">Ongeldige Status</h1>
+                        <p className="mb-8 leading-relaxed text-text-muted">We kunnen de status van je betaling niet verifiëren zonder een geldige transactie- of token-ID.</p>
                         <BackButton href="/reis" text="Terug naar Reizen" />
                     </div>
                 </div>
@@ -40,17 +40,17 @@ export default async function TripConfirmationPage({ searchParams }: PageProps) 
 
     return (
         <PublicPageShell title="Betaling Status" hideHeader={true}>
-            <div className="container mx-auto px-4 py-32 max-w-2xl min-h-[80vh] flex items-center justify-center">
+            <div className="container mx-auto flex min-h-[80vh] max-w-2xl items-center justify-center px-4 py-32">
                 {isPaid ? (
-                    <div className="flex flex-col items-center justify-center text-center p-12 bg-bg-card border border-border-color squircle-lg backdrop-blur-xl shadow-2xl">
+                    <div className="squircle-lg flex flex-col items-center justify-center border border-border-color bg-bg-card p-12 text-center shadow-2xl backdrop-blur-xl">
                         <div className="relative mb-8">
-                            <div className="absolute inset-0 bg-green-500/20 blur-3xl rounded-full" />
-                            <CheckCircle2 className="w-20 h-20 text-green-500 relative z-10 mx-auto" />
+                            <div className="absolute inset-0 rounded-full bg-green-500/20 blur-3xl" />
+                            <CheckCircle2 className="relative z-10 mx-auto size-20 text-green-500" />
                         </div>
-                        <h2 className="text-4xl font-black text-theme-purple mb-4">
+                        <h2 className="mb-4 text-4xl font-black text-theme-purple">
                             Betaling Geslaagd!
                         </h2>
-                        <p className="text-text-muted max-w-sm mx-auto leading-relaxed mb-10">
+                        <p className="mx-auto mb-10 max-w-sm leading-relaxed text-text-muted">
                             Je betaling is succesvol verwerkt. Je ontvangt binnen enkele minuten een bevestiging in je e-mail.
                         </p>
                         <BackButton 

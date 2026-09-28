@@ -25,14 +25,14 @@ export default function BackButton({
     icon: Icon = ChevronLeft
 }: BackButtonProps) {
     const commonClasses = cn(
-        "inline-flex items-center gap-2 p-3 squircle bg-(--bg-card) border border-(--border-color) text-(--text-muted) hover:text-(--theme-purple) transition-all active:scale-95 shadow-sm no-underline",
+        "squircle inline-flex items-center gap-2 border border-(--border-color) bg-(--bg-card) p-3 text-(--text-muted) no-underline shadow-sm transition-all hover:text-(--theme-purple) active:scale-95",
         className
     );
 
     const content = (
         <>
-            <Icon className="h-5 w-5" />
-            <span className="text-sm font-bold pr-1">{text}</span>
+            <Icon className="size-5" />
+            <span className="pr-1 text-sm font-bold">{text}</span>
         </>
     );
 

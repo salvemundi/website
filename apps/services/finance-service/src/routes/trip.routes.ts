@@ -1,4 +1,4 @@
-import { type FastifyInstance} from 'fastify';
+import { type FastifyInstance } from 'fastify';
 import { getMollieClient } from '../services/mollie.service.js';
 import crypto from 'node:crypto';
 import { verifyInternalToken } from '../middleware/auth.js';
@@ -9,11 +9,6 @@ interface TripPaymentRequest {
     tripId?: number;
     paymentType?: 'deposit' | 'final';
     isConfirmedByUser?: boolean;
-}
-
-interface SignupActivityOption {
-    id?: string;
-    price?: number;
 }
 
 export default async function tripRoutes(fastify: FastifyInstance) {
@@ -67,17 +62,17 @@ export default async function tripRoutes(fastify: FastifyInstance) {
             if (paymentType === 'deposit' && signup.deposit_paid) {
                 return reply.status(400).send({ error: 'Aanbetaling is al voldaan.' });
             }
-            if (paymentType === 'deposit' && !trip.allow_deposit_payments && signup.role !== 'admin') {
+            if (paymentType === 'deposit' && !trip.allow_deposit_payments && signup.role !== 'crew') {
                 return reply.status(403).send({ error: 'Aanbetalingen zijn nog niet geopend voor deze reis.' });
             }
             if (paymentType === 'final' && signup.full_payment_paid) {
                 return reply.status(400).send({ error: 'Restbetaling is al voldaan.' });
             }
-            if (paymentType === 'final' && !trip.allow_final_payments && signup.role !== 'admin') {
+            if (paymentType === 'final' && !trip.allow_final_payments && signup.role !== 'crew') {
                 return reply.status(403).send({ error: 'Restbetalingen zijn nog niet geopend voor deze reis.' });
             }
 
-            if (signup.status !== 'confirmed' && signup.role !== 'admin') {
+            if (signup.status !== 'confirmed' && signup.role !== 'crew') {
                 return reply.status(403).send({
                     error: 'Je staat nog op de wachtlijst of je aanmelding is nog niet goedgekeurd. Je kunt pas betalen als je status op "bevestigd" staat.'
                 });
@@ -91,10 +86,10 @@ export default async function tripRoutes(fastify: FastifyInstance) {
                 let price = Number(activity?.price || 0);
 
                 const selectedOpts = (sa.selected_options || {}) as Record<string, unknown>;
-                const availableOpts = activity?.options || [];
+                const availableOpts = activity?.options;
 
                 if (Array.isArray(availableOpts)) {
-                    availableOpts.forEach((opt: SignupActivityOption) => {
+                    availableOpts.forEach(opt => {
                         if (opt.id && selectedOpts[opt.id]) {
                             price += Number(opt.price || 0);
                         }

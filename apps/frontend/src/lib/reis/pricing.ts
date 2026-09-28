@@ -1,4 +1,4 @@
-import type { Trip, TripActivity } from '@salvemundi/validations/schema/admin-trip.zod';
+import type { Trip, TripActivity } from '@salvemundi/validations';
 
 export interface TripPricingResult {
     base: number;

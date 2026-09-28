@@ -4,8 +4,8 @@ import { eq, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { db, schema } from '@salvemundi/db';
 import { vacancyAdminSchema, type VacancyAdminForm, type VacancySubmissionDTO } from '@salvemundi/validations';
-import { enforceFeatureAccess } from '@/server/actions/admin/admin-utils.actions';
-import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
+import { enforceFeatureAccess } from '@/server/actions/beheer/beheer-utils.actions';
+import { logAuditAction } from '@/server/actions/infrastructure/audit.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 import { uploadToDirectus, uploadDocumentToDirectus } from '@/server/utils/media';
 import { sendVacancyMail } from './vacancy-mail.utils';
@@ -173,7 +173,7 @@ export async function createVacancyAction(formData: FormData) {
             }
         }
 
-        await logAdminAction('admin_vacancy_created', 'SUCCESS', { context: 'vacature', context_name: value.title, id: inserted.id });
+        await logAuditAction('admin_vacancy_created', 'SUCCESS', { context: 'vacature', context_name: value.title, id: inserted.id });
         revalidateVacancyPaths();
         return { success: true, id: inserted.id };
     } catch (error) {
@@ -230,7 +230,7 @@ export async function updateVacancyAction(id: number, formData: FormData) {
             }
         }
 
-        await logAdminAction('admin_vacancy_updated', 'SUCCESS', { context: 'vacature', context_name: value.title, id });
+        await logAuditAction('admin_vacancy_updated', 'SUCCESS', { context: 'vacature', context_name: value.title, id });
         revalidateVacancyPaths();
         return { success: true };
     } catch (error) {
@@ -244,7 +244,7 @@ export async function deleteVacancyAction(id: number) {
 
     try {
         await db.delete(schema.vacancies).where(eq(schema.vacancies.id, id));
-        await logAdminAction('admin_vacancy_deleted', 'SUCCESS', { context: 'vacature', id });
+        await logAuditAction('admin_vacancy_deleted', 'SUCCESS', { context: 'vacature', id });
         revalidateVacancyPaths();
         return { success: true };
     } catch (error) {
@@ -308,7 +308,7 @@ export async function approveSubmissionAction(submissionId: number) {
             title: submission.title ?? ''
         });
 
-        await logAdminAction('admin_vacancy_submission_approved', 'SUCCESS', { context: 'vacature', context_name: submission.title, id: submissionId, vacancy_id: vacancy.id });
+        await logAuditAction('admin_vacancy_submission_approved', 'SUCCESS', { context: 'vacature', context_name: submission.title, id: submissionId, vacancy_id: vacancy.id });
         revalidateVacancyPaths();
         return { success: true, vacancyId: vacancy.id };
     } catch (error) {
@@ -344,7 +344,7 @@ export async function rejectSubmissionAction(submissionId: number, reason: strin
             reason
         });
 
-        await logAdminAction('admin_vacancy_submission_rejected', 'SUCCESS', { context: 'vacature', context_name: submission.title, id: submissionId });
+        await logAuditAction('admin_vacancy_submission_rejected', 'SUCCESS', { context: 'vacature', context_name: submission.title, id: submissionId });
         revalidateVacancyPaths();
         return { success: true };
     } catch (error) {
@@ -364,7 +364,7 @@ export async function deleteSubmissionAction(submissionId: number) {
 
         await db.delete(schema.vacancy_submissions).where(eq(schema.vacancy_submissions.id, submissionId));
 
-        await logAdminAction('admin_vacancy_submission_deleted', 'SUCCESS', { context: 'vacature', context_name: submission.title, id: submissionId });
+        await logAuditAction('admin_vacancy_submission_deleted', 'SUCCESS', { context: 'vacature', context_name: submission.title, id: submissionId });
         revalidateVacancyPaths();
         return { success: true };
     } catch (error) {

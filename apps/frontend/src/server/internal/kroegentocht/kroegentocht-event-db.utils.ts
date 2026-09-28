@@ -1,7 +1,7 @@
 import 'server-only';
 import { db, schema } from '@salvemundi/db';
 import { eq, desc } from 'drizzle-orm';
-import { type PubCrawlEvent } from '@salvemundi/validations/schema/pub-crawl.zod';
+import { pubCrawlEventSchema, type PubCrawlEvent } from '@salvemundi/validations/schema/pub-crawl.zod';
 
 interface GroupConfig {
     name: string;
@@ -43,14 +43,15 @@ export async function fetchPubCrawlEventsDb(): Promise<PubCrawlEvent[]> {
     const { toLocalISOString } = await import('@/lib/utils/date-utils');
     return rows.map((raw) => {
         const groups = normalizeGroups(raw.groups);
-        return {
+        return pubCrawlEventSchema.parse({
             ...raw,
+            id: Number(raw.id),
             date: raw.date ? toLocalISOString(raw.date) : undefined,
             price: 1,
             max_tickets_per_person: 10,
             groups
-        };
-    }) as unknown as PubCrawlEvent[];
+        });
+    });
 }
 
 export async function fetchPubCrawlEventByIdDb(id: number): Promise<PubCrawlEvent | null> {
@@ -62,11 +63,12 @@ export async function fetchPubCrawlEventByIdDb(id: number): Promise<PubCrawlEven
     
     const groups = normalizeGroups(raw.groups);
 
-    return {
+    return pubCrawlEventSchema.parse({
         ...raw,
+        id: Number(raw.id),
         date: raw.date ? toLocalISOString(raw.date) : undefined,
         price: 1,
         max_tickets_per_person: 10,
         groups
-    } as unknown as PubCrawlEvent;
+    });
 }

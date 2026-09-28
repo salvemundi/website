@@ -9,7 +9,7 @@ interface ClubsListProps {
 export default function ClubsList({ initialClubs = [], isActiveMember = false }: ClubsListProps) {
     if (initialClubs.length === 0) {
         return (
-            <div className="rounded-3xl bg-bg-card/80 dark:border dark:border-white/10 p-12 text-center shadow-lg">
+            <div className="rounded-3xl bg-bg-card/80 p-12 text-center shadow-lg dark:border dark:border-white/10">
                 <p className="text-lg text-text-muted italic">Geen clubs gevonden.</p>
             </div>
         );

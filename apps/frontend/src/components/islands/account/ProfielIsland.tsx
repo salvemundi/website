@@ -2,10 +2,10 @@
 
 import React, { useState, useMemo } from 'react';
 import { authClient } from '@/lib/auth';
-import { type EventSignup } from '@salvemundi/validations/schema/profiel.zod';
+import { type ProfileEventSignup } from '@salvemundi/validations/schema/profiel.zod';
 import { type EnrichedPubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
-import AdminToast from '@/components/ui/admin/AdminToast';
-import { useAdminToast } from '@/hooks/use-admin-toast';
+import BeheerToast from '@/components/ui/beheer/BeheerToast';
+import { useAdminToast } from '@/hooks/use-beheer-toast';
 
 import {
     mergeUserData,
@@ -23,7 +23,7 @@ import ProfielQuickLinks from './profile/ProfielQuickLinks';
 import ProfielSignups from './profile/ProfielSignups';
 
 interface ProfielIslandProps {
-    initialSignups?: EventSignup[];
+    initialSignups?: ProfileEventSignup[];
     pubCrawlSignups?: EnrichedPubCrawlSignup[];
     user?: SessionUser;
 }
@@ -66,8 +66,8 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
     }, [optimisticUser]);
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-            <div className="md:col-span-12 lg:col-span-4 flex flex-col gap-6">
+        <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-12">
+            <div className="flex flex-col gap-6 md:col-span-12 lg:col-span-4">
                 <ProfielHeader
                     user={{
                         ...optimisticUser,
@@ -93,7 +93,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
                 />
             </div>
 
-            <div className="md:col-span-12 lg:col-span-8 flex flex-col gap-6">
+            <div className="flex flex-col gap-6 md:col-span-12 lg:col-span-8">
                 <ProfielDetails
                     user={optimisticUser}
                     isEditingPhoneNumber={isEditingPhoneNumber}
@@ -118,7 +118,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
                 />
             </div>
 
-            <AdminToast toast={toast} onClose={hideToast} />
+            <BeheerToast toast={toast} onClose={hideToast} />
 
             {pendingAvatar && (
                 <AvatarPreviewModal

@@ -109,7 +109,7 @@ export class DirectusService {
         return await getDirectusClient().request(readItems('events', {
             filter: { event_date: { _eq: dateStr } },
             fields: ['id', 'name', 'event_date', 'event_time', 'location']
-        })) as unknown as Event[];
+        }));
     }
 
     static async getPaidEventSignups(eventId: number): Promise<EventSignup[]> {
@@ -119,7 +119,7 @@ export class DirectusService {
                 payment_status: { _eq: 'paid' }
             },
             fields: ['id', 'participant_name', 'participant_email']
-        })) as unknown as EventSignup[];
+        }));
     }
 
     static async isFlagActive(key: string): Promise<boolean> {

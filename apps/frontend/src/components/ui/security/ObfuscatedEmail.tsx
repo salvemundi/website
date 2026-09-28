@@ -36,15 +36,15 @@ export function ObfuscatedEmail({ email, showIcon = true, className = "" }: Obfu
         <a
             href={isMounted ? `mailto:${user}@${domain}` : undefined}
             onClick={handleMailClick}
-            className={`inline-flex items-center gap-2 hover:text-purple-500 transition-colors cursor-pointer ${className}`}
+            className={`inline-flex cursor-pointer items-center gap-2 transition-colors hover:text-purple-500 ${className}`}
             title="Klik om te e-mailen"
         >
-            {showIcon && <Mail className="h-4 w-4 shrink-0 opacity-70" />}
+            {showIcon && <Mail className="size-4 shrink-0 opacity-70" />}
 
             {/* Visueel ziet dit eruit als "user@domain.nl". 
               Bots die de pure HTML scrapen zien: "user[spam-trap]@[verwijder-dit]domain.nl"
             */}
-            <span className="font-semibold inline-flex items-center">
+            <span className="inline-flex items-center font-semibold">
                 <span>{user}</span>
                 <span className="hidden" aria-hidden="true"> [anti-spam] </span>
                 <span>@</span>

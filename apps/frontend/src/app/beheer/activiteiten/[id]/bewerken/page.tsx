@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import BeheerUnauthorized from '@/components/ui/beheer/BeheerUnauthorized';
 import { notFound } from 'next/navigation';
-import ActiviteitBewerkenIsland from '@/components/islands/admin/activities/ActiviteitBewerkenIsland';
-import { getActivityByIdInternal } from '@/server/queries/activiteiten/admin-activiteiten.queries';
+import ActiviteitBewerkenIsland from '@/components/islands/beheer/activities/ActiviteitBewerkenIsland';
+import { getActivityByIdInternal } from '@/server/queries/activiteiten/beheer-activiteiten.queries';
 import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/internal/leden/leden-db.utils';
 import { safeConsoleError } from '@/server/utils/logger';
 import { type EnrichedUser } from '@/types/auth';
-import { type AdminActivity } from "@salvemundi/validations";
+import { type BeheerActivity } from "@salvemundi/validations";
 import { type Committee } from '@salvemundi/validations';
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
     const id = resolvedParams.id;
 
     const session = await getEnrichedSession();
-    if (!session) return <AdminUnauthorized title="Activiteit Bewerken" />;
+    if (!session) return <BeheerUnauthorized title="Activiteit Bewerken" />;
 
     const user = session.user as unknown as EnrichedUser;
 
@@ -37,7 +37,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
 
     if (!permissions.includes('activiteiten:edit')) {
         return (
-            <AdminUnauthorized
+            <BeheerUnauthorized
                 title="Activiteit Bewerken"
                 description="Je hebt geen rechten om activiteiten te bewerken."
             />
@@ -88,7 +88,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
     return (
         <div className="pb-20">
             <ActiviteitBewerkenIsland
-                event={event as unknown as AdminActivity}
+                event={event as unknown as BeheerActivity}
                 committees={allowedCommitteesForDropdown as unknown as Committee[]}
             />
         </div>

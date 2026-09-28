@@ -38,51 +38,51 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
     return (
         <Tile
             title="Mijn Betalingen"
-            icon={<CreditCard className="h-6 w-6" />}
+            icon={<CreditCard className="size-6" />}
             className="w-full"
         >
             {paidTransactions.length === 0 ? (
-                <div className="squircle-lg border-2 border-dashed border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-black/10 p-12 text-center shadow-inner">
-                    <p className="text-(--text-main) font-bold text-lg mb-2">Geen betaalde transacties gevonden.</p>
-                    <p className="text-(--text-muted) text-sm">Zodra je een betaling afrondt, verschijnt deze hier.</p>
+                <div className="squircle-lg border-2 border-dashed border-slate-300 bg-slate-50 p-12 text-center shadow-inner dark:border-white/10 dark:bg-black/10">
+                    <p className="mb-2 text-lg font-bold text-(--text-main)">Geen betaalde transacties gevonden.</p>
+                    <p className="text-sm text-(--text-muted)">Zodra je een betaling afrondt, verschijnt deze hier.</p>
                 </div>
             ) : (
-                <div className="overflow-x-auto -mx-6 sm:mx-0">
+                <div className="-mx-6 overflow-x-auto sm:mx-0">
                     <table className="w-full border-separate border-spacing-0">
                         <thead>
                             <tr className="border-b border-slate-200 dark:border-white/5">
-                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-purple-500 opacity-60">Datum</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-purple-500 opacity-60">Product</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest text-purple-500 opacity-60">Type</th>
-                                <th className="px-6 py-4 text-right text-[10px] font-black uppercase tracking-widest text-purple-500 opacity-60">Bedrag</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Datum</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Product</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Type</th>
+                                <th className="px-6 py-4 text-right text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Bedrag</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                             {paidTransactions.map((transaction) => (
-                                <tr key={transaction.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-all group">
-                                    <td className="px-6 py-6 whitespace-nowrap">
+                                <tr key={transaction.id} className="group transition-all hover:bg-slate-50 dark:hover:bg-white/5">
+                                    <td className="p-6 whitespace-nowrap">
                                         <div className="flex items-center gap-2 text-sm font-bold text-(--text-main)">
-                                            <Clock className="h-4 w-4 text-purple-500 opacity-40" />
+                                            <Clock className="size-4 text-purple-500 opacity-40" />
                                             {formatDate(new Date(transaction.created_at || transaction.date_created || new Date()))}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-6 transition-transform group-hover:translate-x-1">
-                                        <div className="text-sm font-black text-purple-700 dark:text-white leading-tight">
+                                    <td className="p-6 transition-transform group-hover:translate-x-1">
+                                        <div className="text-sm leading-tight font-black text-purple-700 dark:text-white">
                                             {transaction.product_name || transaction.description || 'Betaling'}
                                         </div>
                                         {transaction.coupon_code && (
-                                            <div className="flex items-center gap-1.5 text-[9px] text-purple-500 font-black uppercase tracking-widest mt-1 opacity-70">
-                                                <Tag className="h-3 w-3" />
+                                            <div className="mt-1 flex items-center gap-1.5 text-[9px] font-black tracking-widest text-purple-500 uppercase opacity-70">
+                                                <Tag className="size-3" />
                                                 {transaction.coupon_code}
                                             </div>
                                         )}
                                     </td>
-                                    <td className="px-6 py-6 whitespace-nowrap">
-                                        <span className="px-3 py-1 inline-flex text-[9px] font-black uppercase tracking-widest rounded-full bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-300 border border-purple-200 dark:border-purple-500/20 shadow-sm">
+                                    <td className="p-6 whitespace-nowrap">
+                                        <span className="inline-flex rounded-full border border-purple-200 bg-purple-100 px-3 py-1 text-[9px] font-black tracking-widest text-purple-700 uppercase shadow-sm dark:border-purple-500/20 dark:bg-purple-500/10 dark:text-purple-300">
                                             {getInferredTransactionType(transaction)}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-6 whitespace-nowrap text-right text-sm font-black text-(--text-main)">
+                                    <td className="p-6 text-right text-sm font-black whitespace-nowrap text-(--text-main)">
                                         {formatAmount(transaction.amount)}
                                     </td>
                                 </tr>

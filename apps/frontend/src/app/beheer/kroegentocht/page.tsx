@@ -1,7 +1,7 @@
 import { unstable_noStore as noStore } from 'next/cache';
-import { getPubCrawlEvents, getKroegentochtSettings, getPubCrawlSignups } from '@/server/actions/admin/kroegentocht/admin-kroegentocht-core.actions';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import KroegentochtManagementIsland from '@/components/islands/admin/KroegentochtManagementIsland';
+import { getPubCrawlEvents, getKroegentochtSettings, getPubCrawlSignups } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
+import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
+import KroegentochtManagementIsland from '@/components/islands/beheer/KroegentochtManagementIsland';
 
 export const metadata = {
     title: 'Kroegentocht Beheer | Salve Mundi',
@@ -20,7 +20,7 @@ export default async function KroegentochtPage() {
     const initialSignups = initialEvent ? await getPubCrawlSignups(Number(initialEvent.id)).catch(() => []) : [];
 
     return (
-        <AdminPageShell
+        <BeheerPageShell
             title="Kroegentocht Beheer"
             backHref="/beheer"
             hideToolbar={true}
@@ -30,7 +30,7 @@ export default async function KroegentochtPage() {
                 initialSettings={settings} 
                 initialSignups={initialSignups}
             />
-        </AdminPageShell>
+        </BeheerPageShell>
     );
 }
 

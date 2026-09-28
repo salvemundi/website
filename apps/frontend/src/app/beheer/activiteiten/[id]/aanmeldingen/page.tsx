@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import BeheerUnauthorized from '@/components/ui/beheer/BeheerUnauthorized';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import ActiviteitAanmeldingenIsland, { type Signup, type AdminEvent } from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
+import ActiviteitAanmeldingenIsland, { type Signup, type AdminEvent } from '@/components/islands/beheer/activities/ActiviteitAanmeldingenIsland';
 import {
     getActivityByIdInternal,
     getActivitySignupsInternal
-} from '@/server/queries/activiteiten/admin-activiteiten.queries';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+} from '@/server/queries/activiteiten/beheer-activiteiten.queries';
+import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
 import { type EnrichedUser } from '@/types/auth';
 
 export const metadata: Metadata = {
@@ -20,7 +20,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
     const id = resolvedParams.id;
 
     const session = await getEnrichedSession();
-    if (!session) return <AdminUnauthorized title="Activiteit Aanmeldingen" />;
+    if (!session) return <BeheerUnauthorized title="Activiteit Aanmeldingen" />;
 
     const user = session.user as unknown as EnrichedUser;
     const hasAccess = !!user.permissions?.includes('activiteiten');
@@ -31,7 +31,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
 
     if (!hasAccess) {
         return (
-            <AdminUnauthorized
+            <BeheerUnauthorized
                 title="Activiteit Aanmeldingen"
                 description="Je hebt geen rechten om deze aanmeldingen te bekijken. Dit gedeelte is alleen voor commissieleden, bestuur of ICT."
             />
@@ -65,33 +65,33 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
     const spotsLeft = event.max_sign_ups ? event.max_sign_ups - totalSignups : null;
 
     return (
-        <AdminPageShell
+        <BeheerPageShell
             title="Aanmeldingen"
             subtitle={`Lijst van deelnemers voor "${event.name}"`}
             backHref={`/beheer/activiteiten`}
             actions={
                 <div className="flex items-center gap-4">
                     <Link href={`/beheer/activiteiten/${id}/scanner`} className="hidden md:inline-block">
-                        <button className="beheer-button h-10 px-4 rounded-xl bg-theme-purple text-white font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-theme-purple/20 text-sm">
+                        <button className="beheer-button flex h-10 items-center gap-2 rounded-xl bg-theme-purple px-4 text-sm font-bold text-white shadow-lg shadow-theme-purple/20 transition-all hover:scale-105">
                             Scanner
                         </button>
                     </Link>
-                    <div className="hidden md:flex items-center gap-4 bg-bg-soft px-4 py-2 rounded-2xl border border-border-color/50 shadow-sm">
+                    <div className="hidden items-center gap-4 rounded-2xl border border-border-color/50 bg-bg-soft px-4 py-2 shadow-sm md:flex">
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Totaal</span>
-                            <span className="text-sm font-bold text-text-main leading-none">{totalSignups}</span>
+                            <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Totaal</span>
+                            <span className="text-sm leading-none font-bold text-text-main">{totalSignups}</span>
                         </div>
-                        <div className="w-px h-6 bg-border-color/20" />
+                        <div className="h-6 w-px bg-border-color/20" />
                         <div className="flex flex-col items-center px-2">
-                            <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Ingecheckt</span>
-                            <span className="text-sm font-bold text-beheer-active leading-none">{checkedInCount}</span>
+                            <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Ingecheckt</span>
+                            <span className="text-sm leading-none font-bold text-beheer-active">{checkedInCount}</span>
                         </div>
                         {spotsLeft !== null && (
                             <>
-                                <div className="w-px h-6 bg-border-color/20" />
+                                <div className="h-6 w-px bg-border-color/20" />
                                 <div className="flex flex-col items-center px-2">
-                                    <span className="text-[10px] font-semibold text-text-muted leading-none mb-1">Plekken over</span>
-                                    <span className="text-sm font-bold text-text-main leading-none">{spotsLeft}</span>
+                                    <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Plekken over</span>
+                                    <span className="text-sm leading-none font-bold text-text-main">{spotsLeft}</span>
                                 </div>
                             </>
                         )}
@@ -106,6 +106,6 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
                     canAccessEdit={!!user.permissions?.includes('activiteiten:edit')}
                 />
             </div>
-        </AdminPageShell>
+        </BeheerPageShell>
     );
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { timingSafeCompare } from '@salvemundi/validations/security';
-import { runNdaExpiryCheckInternal } from '@/server/actions/admin/nda/admin-nda-signatures.actions';
-import { getNdaSettingsInternal } from '@/server/queries/nda/admin-nda.queries';
+import { runNdaExpiryCheckInternal } from '@/server/actions/beheer/nda/beheer-nda-signatures.actions';
+import { getNdaSettingsInternal } from '@/server/queries/nda/beheer-nda.queries';
 import { safeConsoleError } from '@/server/utils/logger';
 
 export async function GET(request: NextRequest) {

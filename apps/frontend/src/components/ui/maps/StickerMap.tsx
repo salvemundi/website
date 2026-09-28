@@ -123,7 +123,7 @@ export default function StickerMap({
 
     return (
         <div
-            className={`rounded-2xl overflow-hidden ring-1 ring-(--border-color)/30 w-full relative z-0 ${className ?? 'shadow-(--shadow-card)'}`}
+            className={`relative z-0 w-full overflow-hidden rounded-2xl ring-1 ring-(--border-color)/30 ${className ?? 'shadow-(--shadow-card)'}`}
             style={{ height: stretchToContainer ? '100%' : 'min(75vh, var(--map-height, 600px))' }}
         >
             <style jsx>{`
@@ -185,7 +185,7 @@ export default function StickerMap({
                                             className="samu-marker__img object-cover"
                                         />
                                     ) : (
-                                        <div className="samu-marker__img samu-marker__img--logo relative w-full h-full">
+                                        <div className="samu-marker__img samu-marker__img--logo relative size-full">
                                             <FallbackLogo className="object-contain p-1" />
                                         </div>
                                     )}
@@ -197,8 +197,8 @@ export default function StickerMap({
 
                     {selectedLocation && (
                         <Marker latitude={selectedLocation.lat} longitude={selectedLocation.lng}>
-                            <div className="samu-marker samu-marker--selected shadow-2xl scale-110">
-                                <MapPin className="h-6 w-6 text-white" />
+                            <div className="samu-marker samu-marker--selected scale-110 shadow-2xl">
+                                <MapPin className="size-6 text-white" />
                             </div>
                         </Marker>
                     )}
@@ -212,41 +212,41 @@ export default function StickerMap({
                             anchor="bottom"
                             className="map-popup-theme"
                         >
-                            <div className="map-popup p-5 relative w-[290px] sm:w-[360px] bg-(--bg-card) rounded-3xl shadow-2xl border border-(--border-color)/25 flex flex-col gap-4 text-(--text-main)">
+                            <div className="map-popup relative flex w-[290px] flex-col gap-4 rounded-3xl border border-(--border-color)/25 bg-(--bg-card) p-5 text-(--text-main) shadow-2xl sm:w-90">
                                 <button
                                     type="button"
-                                    className="absolute top-3 right-3 p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors z-10"
+                                    className="absolute top-3 right-3 z-10 rounded-full p-1.5 transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                                     onClick={() => { setPopupInfo(null); setShowImage(false); }}
                                 >
-                                    <X className="h-4 w-4 text-(--text-muted)" />
+                                    <X className="size-4 text-(--text-muted)" />
                                 </button>
 
-                                <div className="flex gap-3 items-center pr-6">
+                                <div className="flex items-center gap-3 pr-6">
                                     {popupInfo.user_created?.avatar ? (
                                         <MediaAsset
                                             asset={popupInfo.user_created.avatar}
                                             alt="avatar"
                                             width={128}
                                             height={128}
-                                            className="w-11 h-11 rounded-full ring-2 ring-(--theme-purple)/20 shrink-0 object-cover"
+                                            className="size-11 shrink-0 rounded-full object-cover ring-2 ring-(--theme-purple)/20"
                                         />
                                     ) : (
-                                        <div className="w-11 h-11 rounded-full ring-2 ring-(--theme-purple)/20 shrink-0 bg-(--bg-card) relative overflow-hidden">
+                                        <div className="relative size-11 shrink-0 overflow-hidden rounded-full bg-(--bg-card) ring-2 ring-(--theme-purple)/20">
                                             <FallbackLogo className="object-contain p-1.5" />
                                         </div>
                                     )}
                                     <div className="min-w-0">
-                                        <h3 className="font-semibold text-(--text-main) text-sm sm:text-base leading-tight truncate">
+                                        <h3 className="truncate text-sm leading-tight font-semibold text-(--text-main) sm:text-base">
                                             {popupInfo.location_name === 'Imported' ? (popupInfo.city || popupInfo.address || 'Imported') : (popupInfo.location_name || 'Sticker Locatie')}
                                         </h3>
-                                        <p className="text-xs font-medium text-(--text-muted) mt-0.5 truncate">
+                                        <p className="mt-0.5 truncate text-xs font-medium text-(--text-muted)">
                                             {[popupInfo.city || popupInfo.address, popupInfo.country].filter(Boolean).join(', ')}
                                         </p>
                                     </div>
                                 </div>
 
                                 {popupInfo.description && (
-                                    <p className="text-xs sm:text-sm text-(--text-subtle) leading-relaxed bg-(--bg-main)/50 p-3 rounded-2xl border border-(--border-color)/10 wrap-break-word">
+                                    <p className="rounded-2xl border border-(--border-color)/10 bg-(--bg-main)/50 p-3 text-xs leading-relaxed wrap-break-word text-(--text-subtle) sm:text-sm">
                                         {popupInfo.description}
                                     </p>
                                 )}
@@ -254,7 +254,7 @@ export default function StickerMap({
                                 {popupInfo.image && (
                                     <div className="mt-1">
                                         {showImage ? (
-                                            <div className="relative w-full h-40 sm:h-48 overflow-hidden rounded-2xl border border-(--border-color)/20 shadow-md">
+                                            <div className="relative h-40 w-full overflow-hidden rounded-2xl border border-(--border-color)/20 shadow-md sm:h-48">
                                                 <MediaAsset
                                                     asset={popupInfo.image}
                                                     alt="Sticker proof"
@@ -266,16 +266,16 @@ export default function StickerMap({
                                             <button
                                                 type="button"
                                                 onClick={() => setShowImage(true)}
-                                                className="w-full py-2.5 bg-linear-to-r from-(--theme-purple) to-(--theme-purple-dark) text-white rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-[9px] sm:text-[10px]"
+                                                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-(--theme-purple) to-(--theme-purple-dark) py-2.5 text-[9px] font-bold tracking-widest text-white uppercase shadow-lg transition-all hover:shadow-xl sm:text-[10px]"
                                             >
-                                                <Camera className="h-3.5 w-3.5" />
+                                                <Camera className="size-3.5" />
                                                 Bekijk Foto Bewijs
                                             </button>
                                         )}
                                     </div>
                                 )}
 
-                                <div className="pt-3 border-t border-(--border-color)/10 flex flex-col gap-1 text-[9px] sm:text-[10px] font-medium text-(--text-muted)">
+                                <div className="flex flex-col gap-1 border-t border-(--border-color)/10 pt-3 text-[9px] font-medium text-(--text-muted) sm:text-[10px]">
                                     <p suppressHydrationWarning>
                                         Toegevoegd op {formatDate(popupInfo.date_created)}
                                     </p>
@@ -290,10 +290,10 @@ export default function StickerMap({
                     )}
                 </Map>
             ) : (
-                <div className="w-full h-full bg-(--bg-card) flex items-center justify-center">
-                    <div className="animate-pulse flex flex-col items-center gap-4">
-                        <div className="w-12 h-12 rounded-full border-4 border-(--theme-purple) border-t-transparent animate-spin" />
-                        <span className="text-xs font-bold uppercase tracking-widest text-(--text-muted)">Kaart Laden...</span>
+                <div className="flex size-full items-center justify-center bg-(--bg-card)">
+                    <div className="flex animate-pulse flex-col items-center gap-4">
+                        <div className="size-12 animate-spin rounded-full border-4 border-(--theme-purple) border-t-transparent" />
+                        <span className="text-xs font-bold tracking-widest text-(--text-muted) uppercase">Kaart Laden...</span>
                     </div>
                 </div>
             )}

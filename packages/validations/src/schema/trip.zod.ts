@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { dateOfBirthSchema, phoneNumberSchema } from './shared.zod.js';
-import { selectTripsSchema, selectTripSignupsSchema } from './db.zod.js';
+import { selectTripSignupsSchema, selectTripSignupActivitiesSchema } from './db.zod.js';
 
 export const reisSiteSettingsSchema = z.object({
     id: z.string().optional(),
@@ -9,24 +9,25 @@ export const reisSiteSettingsSchema = z.object({
 });
 export type ReisSiteSettings = z.infer<typeof reisSiteSettingsSchema>;
 
-export const reisTripSchema = selectTripsSchema.extend({
-    image: z.union([
-        z.string(),
-        z.object({
-            id: z.string(),
-            type: z.string().nullable().optional(),
-        }),
-    ]).nullable().optional(),
-});
-export type ReisTrip = z.infer<typeof reisTripSchema>;
 
-export const reisTripSignupSchema = selectTripSignupsSchema.extend({
+export const TRIP_SIGNUP_ROLES = ['participant', 'crew'] as const;
+export type TripSignupRole = typeof TRIP_SIGNUP_ROLES[number];
+
+export const TRIP_SIGNUP_STATUSES = ['registered', 'waitlist', 'confirmed', 'cancelled'] as const;
+export type TripSignupStatus = typeof TRIP_SIGNUP_STATUSES[number];
+
+export const tripSignupSchema = selectTripSignupsSchema.extend({
     first_name: z.string().min(1, 'Voornaam is verplicht'),
     last_name: z.string().min(1, 'Achternaam is verplicht'),
     email: z.string().email('Ongeldig e-mailadres'),
-    status: z.enum(['registered', 'waitlist', 'confirmed', 'cancelled']).optional().nullable(),
+    role: z.enum(TRIP_SIGNUP_ROLES).default('participant'),
+    status: z.enum(TRIP_SIGNUP_STATUSES).default('registered'),
 });
-export type ReisTripSignup = z.infer<typeof reisTripSignupSchema>;
+export type TripSignup = z.infer<typeof tripSignupSchema>;
+
+export const tripSignupActivityDbSchema = selectTripSignupActivitiesSchema;
+export type TripSignupActivity = z.infer<typeof tripSignupActivityDbSchema>;
+
 
 const reisDateOfBirthSchema = dateOfBirthSchema.refine(dateOfBirthValue => {
     if (!dateOfBirthValue) return true;
@@ -42,7 +43,7 @@ export const reisSignupFormSchema = z.object({
     trip_id: z.number().min(1, 'Trip is verplicht'),
     first_name: z.string().min(1, 'Voornaam is verplicht'),
     last_name: z.string().min(1, 'Achternaam is verplicht'),
-    email: z.string().email('Ongeldig emailadres'),
+    email: z.email(),
     phone_number: phoneNumberSchema,
     date_of_birth: reisDateOfBirthSchema,
     terms_accepted: z.boolean().refine(termsValue => termsValue === true, {

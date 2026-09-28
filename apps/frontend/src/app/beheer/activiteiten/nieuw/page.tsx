@@ -1,6 +1,6 @@
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
-import ActiviteitNieuwIsland from '@/components/islands/admin/activities/ActiviteitNieuwIsland';
+import BeheerUnauthorized from '@/components/ui/beheer/BeheerUnauthorized';
+import ActiviteitNieuwIsland from '@/components/islands/beheer/activities/ActiviteitNieuwIsland';
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/internal/leden/leden-db.utils';
 import { db, schema } from '@salvemundi/db';
@@ -52,7 +52,7 @@ export default async function ActivityCreatePage() {
 
     if (!session) {
         return (
-            <AdminUnauthorized
+            <BeheerUnauthorized
                 title="Activiteit Aanmaken"
                 description="Je moet ingelogd zijn met een Salve Mundi account om activiteiten te kunnen aanmaken."
             />
@@ -73,7 +73,7 @@ export default async function ActivityCreatePage() {
 
     if (!permissions.includes('activiteiten:edit')) {
         return (
-            <AdminUnauthorized
+            <BeheerUnauthorized
                 title="Activiteit Aanmaken"
                 description="Je hebt geen rechten om activiteiten aan te maken."
             />

@@ -17,7 +17,7 @@ import tsEslint from "@typescript-eslint/eslint-plugin";
 import tailwindPlugin from "eslint-plugin-tailwindcss";
 
 const eslintConfig = [
-    { ignores: [".next/", "node_modules/", "dist/"] },
+    { ignores: [".next/", "node_modules/", "dist/", "public/sw.js", "public/workbox-*.js"] },
     ...nextConfig,
     securityPlugin.configs.recommended,
     tailwindPlugin.configs.recommended,
@@ -33,6 +33,7 @@ const eslintConfig = [
         },
     },
     {
+        files: ["src/**/*.{js,mjs,cjs,ts,jsx,tsx}"],
         languageOptions: {
             parserOptions: {
                 project: true,
@@ -88,7 +89,7 @@ const eslintConfig = [
             "@next/next/no-html-link-for-pages": "error",
 
             "no-restricted-syntax": [
-                "warn",
+                "error",
                 {
                     "selector": "CallExpression[callee.object.name='console'][callee.property.name=/^(log|warn|error|info|debug)$/]",
                     "message": "Do not use console methods directly. Use safeConsoleError or logInternalError from '@/server/utils/logger' to ensure PII is sanitized and logs are centralized."

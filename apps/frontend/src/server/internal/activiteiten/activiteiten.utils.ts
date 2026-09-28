@@ -18,7 +18,7 @@ export async function getSession() {
     return await getEnrichedSession();
 }
 
-export async function checkAdminAccess() {
+export async function checkBeheerAccess() {
     const session = await getSession();
     if (!session?.user) return null;
 

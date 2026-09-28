@@ -1,7 +1,7 @@
-import KroegentochtEventForm from '@/components/islands/admin/kroegentocht/KroegentochtEventForm';
-import { getPubCrawlEvent } from '@/server/actions/admin/kroegentocht/admin-kroegentocht-core.actions';
+import KroegentochtEventForm from '@/components/islands/beheer/kroegentocht/KroegentochtEventForm';
+import { getPubCrawlEvent } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
 import { notFound } from 'next/navigation';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
 
 export const metadata = {
     title: 'Kroegentocht Event Bewerken | Salve Mundi'
@@ -18,12 +18,12 @@ export default async function EditKroegentochtPage({ params }: EditKroegentochtP
     if (!event) notFound();
 
     return (
-        <AdminPageShell
+        <BeheerPageShell
             title="Event Bewerken"
             subtitle={`Beheer de gegevens van ${event.name}`}
             backHref="/beheer/kroegentocht"
         >
             <KroegentochtEventForm event={event} />
-        </AdminPageShell>
+        </BeheerPageShell>
     );
 }

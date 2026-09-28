@@ -1,4 +1,4 @@
-import type { TripSignup } from '@salvemundi/validations/schema/admin-trip.zod';
+import type { TripSignup } from '@salvemundi/validations';
 
 /**
  * Bepaalt de kleur en het label voor de betalingsstatus van een reisaanmelding.

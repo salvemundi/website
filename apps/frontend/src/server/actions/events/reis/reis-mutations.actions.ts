@@ -143,7 +143,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         }
 
         const participantsCount = existingSignups.filter(s => s.status === 'confirmed' || s.status === 'registered').length;
-        const shouldBeWaitlisted = participantsCount >= (targetTrip.max_participants ?? 0);
+        const shouldBeWaitlisted = targetTrip.max_participants ? participantsCount >= targetTrip.max_participants : false;
 
         const payload = {
             trip_id: Number(tripId),

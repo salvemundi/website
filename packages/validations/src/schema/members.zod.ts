@@ -28,3 +28,4 @@ export const userBasicSchema = selectDirectusUsersSchema.pick({
 });
 
 export type UserBasic = z.infer<typeof userBasicSchema>;
+export type DirectusUser = z.infer<typeof selectDirectusUsersSchema>;

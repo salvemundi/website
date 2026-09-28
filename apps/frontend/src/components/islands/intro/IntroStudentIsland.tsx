@@ -69,13 +69,13 @@ export const IntroStudentIsland = ({ className = '', isOpen = true }: IntroStude
 
     if (!isOpen) {
         return (
-            <div className={`bg-bg-card dark:bg-gradient-theme border border-border-color squircle-xl p-10 shadow-xl text-center flex flex-col items-center justify-center min-h-75 ${className}`}>
-                <div className="w-20 h-20 bg-purple-100 dark:bg-white/20 rounded-full flex items-center justify-center mb-6">
+            <div className={`dark:bg-gradient-theme squircle-xl flex min-h-75 flex-col items-center justify-center border border-border-color bg-bg-card p-10 text-center shadow-xl ${className}`}>
+                <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-purple-100 dark:bg-white/20">
 
-                    <Lock className="w-10 h-10 text-brand-primary dark:text-white" />
+                    <Lock className="size-10 text-brand-primary dark:text-white" />
                 </div>
-                <h3 className="text-3xl font-black text-text-main dark:text-white mb-4 tracking-tight">Inschrijvingen Gesloten</h3>
-                <p className="text-text-muted dark:text-white/80 font-medium max-w-sm">
+                <h3 className="mb-4 text-3xl font-black tracking-tight text-text-main dark:text-white">Inschrijvingen Gesloten</h3>
+                <p className="max-w-sm font-medium text-text-muted dark:text-white/80">
                     De inschrijvingen voor de introductie zijn momenteel gesloten.
                 </p>
             </div>
@@ -84,12 +84,12 @@ export const IntroStudentIsland = ({ className = '', isOpen = true }: IntroStude
 
     if (submitted) {
         return (
-            <div className="bg-bg-card dark:bg-gradient-theme border border-border-color squircle-lg p-6 lg:p-8 text-center shadow-lg">
-                <div className="w-16 h-16 lg:w-20 lg:h-20 bg-purple-100 dark:bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <CheckCircle2 className="w-8 h-8 lg:w-10 lg:h-10 text-brand-primary dark:text-white" />
+            <div className="dark:bg-gradient-theme squircle-lg border border-border-color bg-bg-card p-6 text-center shadow-lg lg:p-8">
+                <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-purple-100 lg:size-20 dark:bg-white/20">
+                    <CheckCircle2 className="size-8 text-brand-primary lg:size-10 dark:text-white" />
                 </div>
-                <h2 className="text-2xl lg:text-3xl font-bold text-text-main dark:text-white mb-4">Bedankt!</h2>
-                <p className="text-text-muted dark:text-white/80 text-base lg:text-lg">We hebben je inschrijving ontvangen.</p>
+                <h2 className="mb-4 text-2xl font-bold text-text-main lg:text-3xl dark:text-white">Bedankt!</h2>
+                <p className="text-base text-text-muted lg:text-lg dark:text-white/80">We hebben je inschrijving ontvangen.</p>
             </div>
         );
     }
@@ -98,14 +98,14 @@ export const IntroStudentIsland = ({ className = '', isOpen = true }: IntroStude
     return (
         <StandardFormCard
             title="Schrijf je nu in!"
-            icon={<Send className="w-8 h-8" />}
+            icon={<Send className="size-8" />}
             description="Meld je aan voor de gezelligste week van het jaar!"
             className={className}
         >
             <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-4 lg:space-y-6" autoComplete="off">
                 <input {...register('website')} type="text" className="hidden" tabIndex={-1} autoComplete="off" />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <FormField id="field-voornaam" label="Voornaam" required error={errors.voornaam?.message}>
                         <Input
                             {...register('voornaam')}
@@ -133,7 +133,7 @@ export const IntroStudentIsland = ({ className = '', isOpen = true }: IntroStude
                     />
                 </FormField>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <FormField id="field-geboortedatum" label="Geboortedatum" required error={errors.geboortedatum?.message}>
                         <Controller
                             name="geboortedatum"
@@ -184,11 +184,11 @@ export const IntroStudentIsland = ({ className = '', isOpen = true }: IntroStude
                     />
                 </FormField>
 
-                {error && <p className="text-red-500 dark:text-red-400 text-xs lg:text-sm">{error}</p>}
+                {error && <p className="text-xs text-red-500 lg:text-sm dark:text-red-400">{error}</p>}
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="form-button w-full mt-4"
+                    className="mt-4 form-button w-full"
                 >
                     {isSubmitting ? 'Bezig...' : 'Verstuur'}
                 </button>

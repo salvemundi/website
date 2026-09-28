@@ -1,0 +1,261 @@
+'use client';
+
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { Users } from 'lucide-react';
+import type { Committee, CommitteeMember } from '@/server/queries/commissies/beheer-commissies.queries';
+import {
+    getCommitteeMembers,
+    addCommitteeMember,
+    removeCommitteeMember,
+    toggleCommitteeLeader,
+    updateCommitteeDetails
+} from '@/server/actions/beheer/committees/beheer-committees.actions';
+
+
+import CommitteeSidebar from './CommitteeSidebar';
+import CommitteeDetail from './CommitteeDetail';
+import BeheerToast from '@/components/ui/beheer/BeheerToast';
+import { useAdminToast } from '@/hooks/use-beheer-toast';
+import { type UserBasic } from '@salvemundi/validations';
+
+const STANDARD_COMMITTEES = [
+    'feestcommissie', 'mediacommissie', 'introcommissie', 'kascommissie',
+    'ict-commissie', 'ictcommissie', 'kampcommissie', 'activiteitencommissie',
+    'studiecommissie', 'reiscommissie', 'marketingcommissie',
+];
+
+const normalizeName = (name: string) =>
+    name.toLowerCase().replace(/\s*(\|\||\|)\s*salve mundi/gi, '').trim();
+
+interface Props {
+    initialCommittees: Committee[];
+    initialMembers?: CommitteeMember[];
+}
+
+export default function CommitteeManagementIsland({ initialCommittees, initialMembers = [] }: Props) {
+    const { toast, showToast, hideToast } = useAdminToast();
+    const [committees] = useState<Committee[]>(initialCommittees);
+    const [selected, setSelected] = useState<Committee | null>(initialCommittees[0] || null);
+    const [members, setMembers] = useState<CommitteeMember[]>(initialMembers);
+    const [membersLoading, setMembersLoading] = useState(false);
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showAll, setShowAll] = useState(false);
+
+    const activeCommitteeIdRef = useRef<number | null>(initialCommittees[0]?.id || null);
+    const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+    const [addingMember, setAddingMember] = useState(false);
+    const [addError, setAddError] = useState<string | null>(null);
+
+    const [editingDetail, setEditingDetail] = useState(false);
+    const [editShortDesc, setEditShortDesc] = useState(initialCommittees[0]?.short_description || '');
+    const [editDesc, setEditDesc] = useState(initialCommittees[0]?.description || '');
+    const [savingDetail, setSavingDetail] = useState(false);
+
+    // Filtering logic
+    const filteredCommittees = useMemo(() => {
+        const sorted = [...committees]
+            .map(c => ({ ...c, isStandard: STANDARD_COMMITTEES.includes(normalizeName(c.name)) }))
+            .sort((a, b) => {
+                if (a.isStandard && !b.isStandard) return -1;
+                if (!a.isStandard && b.isStandard) return 1;
+                return a.name.localeCompare(b.name);
+            });
+
+        return sorted.filter(c => {
+            if (!c.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+            return showAll ? true : c.isStandard;
+        });
+    }, [committees, searchQuery, showAll]);
+
+
+    const handleSelectCommittee = useCallback(async (c: Committee) => {
+        activeCommitteeIdRef.current = c.id;
+        setMembersLoading(true);
+        setSelected(c);
+        setMembers([]);
+        setEditingDetail(false);
+        setEditShortDesc(c.short_description || '');
+        setEditDesc(c.description || '');
+        setAddError(null);
+
+        try {
+            localStorage.setItem('sm_admin_comm_selected_id', c.id.toString());
+        } catch {
+            // Ignore storage/security errors
+        }
+
+        try {
+            const m = await getCommitteeMembers(c.id.toString()).catch(() => []);
+            if (activeCommitteeIdRef.current === c.id) {
+                setMembers(m);
+                setMembersLoading(false);
+            }
+        } catch {
+            if (activeCommitteeIdRef.current === c.id) {
+                showToast('Fout bij ophalen leden', 'error');
+                setMembersLoading(false);
+            }
+        }
+    }, [showToast]);
+
+    const handleShowAllChange = useCallback((all: boolean) => {
+        setShowAll(all);
+        try {
+            localStorage.setItem('sm_admin_comm_show_all', String(all));
+        } catch {
+            // Ignore
+        }
+    }, []);
+
+    // Read from localStorage on mount (client-side only)
+    useEffect(() => {
+        const savedShowAll = localStorage.getItem('sm_admin_comm_show_all');
+        if (savedShowAll !== null) {
+            setShowAll(savedShowAll === 'true');
+        }
+
+        const savedSelectedId = localStorage.getItem('sm_admin_comm_selected_id');
+        if (savedSelectedId !== null) {
+            const idNum = Number(savedSelectedId);
+            const found = committees.find(c => c.id === idNum);
+            if (found) {
+                void handleSelectCommittee(found);
+            }
+        }
+    }, [committees, handleSelectCommittee]);
+
+    const handleAddMember = async (user: UserBasic) => {
+        if (!selected?.azure_group_id || !user.email) return;
+        setAddingMember(true);
+        setAddError(null);
+        const res = await addCommitteeMember(selected.azure_group_id, selected.id.toString(), user.email);
+        if (!res.success) {
+            setAddError(res.error ?? 'Toevoegen mislukt');
+            showToast(res.error ?? 'Toevoegen mislukt', 'error');
+        } else {
+            showToast(`${user.first_name} succesvol toegevoegd aan de commissie`, 'success');
+            // Sync is done on server, so we can reload immediately
+            void handleSelectCommittee(selected);
+        }
+        setAddingMember(false);
+    };
+
+    const handleRemoveMember = async (member: CommitteeMember) => {
+        if (!selected?.azure_group_id) return;
+        if (!confirm(`Weet je zeker dat je ${member.displayName} wilt verwijderen?`)) return;
+
+        // Optimistic UI Update
+        const previousMembers = [...members];
+        setMembers(prev => prev.filter(m => m.entraId !== member.entraId));
+        setActionLoading(`remove-${member.entraId}`);
+
+        const res = await removeCommitteeMember(selected.azure_group_id, member.entraId, member.isLeader);
+        if (res.success) {
+            showToast('Lid succesvol verwijderd uit de commissie', 'success');
+        } else {
+            setMembers(previousMembers); // Rollback
+            showToast(res.error ?? 'Verwijderen mislukt', 'error');
+        }
+        setActionLoading(null);
+    };
+
+    const handleToggleLeader = async (member: CommitteeMember) => {
+        if (!member.directusMembershipId) {
+            showToast('Lidmaatschapsrecord niet gevonden.', 'error');
+            return;
+        }
+
+        // Optimistic UI Update
+        const previousMembers = [...members];
+        setMembers(prev => prev.map(m => m.entraId === member.entraId ? { ...m, isLeader: !m.isLeader } : m));
+        setActionLoading(`leader-${member.entraId}`);
+
+        const res = await toggleCommitteeLeader(
+            member.directusMembershipId,
+            member.isLeader,
+            selected?.azure_group_id,
+            member.entraId
+        );
+        if (res.success) {
+            showToast(`Status '${member.isLeader ? 'Lid' : 'Leider'}' succesvol bijgewerkt`, 'success');
+        } else {
+            setMembers(previousMembers); // Rollback
+            showToast(res.error ?? 'Bijwerken mislukt', 'error');
+        }
+        setActionLoading(null);
+    };
+
+    const handleSaveDetail = async () => {
+        if (!selected) return;
+        setSavingDetail(true);
+        const res = await updateCommitteeDetails(selected.id.toString(), {
+            short_description: editShortDesc,
+            description: editDesc
+        });
+        if (res.success) {
+            setSelected(prev => prev ? { ...prev, short_description: editShortDesc, description: editDesc } : prev);
+            setEditingDetail(false);
+            showToast('Commissie details succesvol bijgewerkt', 'success');
+        } else {
+            showToast(res.error ?? 'Opslaan mislukt', 'error');
+        }
+        setSavingDetail(false);
+    };
+
+
+
+    return (
+        <div className="w-full">
+            <div className="grid grid-cols-1 items-stretch gap-4 md:gap-8 lg:grid-cols-12">
+                <div className="lg:col-span-4">
+                    <div className="w-full lg:sticky lg:top-45 lg:self-start">
+                        <CommitteeSidebar
+                            committees={filteredCommittees}
+                            selectedId={selected?.id || null}
+                            onSelect={(c) => { void handleSelectCommittee(c); }}
+                            searchQuery={searchQuery}
+                            onSearchChange={setSearchQuery}
+                            showAll={showAll}
+                            onShowAllChange={handleShowAllChange}
+                        />
+                    </div>
+                </div>
+
+                <div className="lg:col-span-8">
+                    {!selected ? (
+                        <div className="rounded-(--beheer-radius) border-2 border-dashed border-(--beheer-border) bg-(--beheer-card-bg) p-24 text-center opacity-60 shadow-sm ring-1 ring-(--beheer-border)">
+                            <Users className="mx-auto mb-6 size-16 text-(--beheer-text-muted) opacity-20" />
+                            <h3 className="mb-2 text-xl font-semibold text-(--beheer-text)">Geen selectie</h3>
+                            <p className="mx-auto max-w-xs text-xs font-semibold text-(--beheer-text-muted) opacity-60">
+                                Kies een groep uit de lijst om de details en leden te beheren.
+                            </p>
+                        </div>
+                    ) : (
+                        <CommitteeDetail
+                            selected={selected}
+                            members={members}
+                            isUpdating={membersLoading}
+                            actionLoading={actionLoading}
+                            editingDetail={editingDetail}
+                            onToggleEditing={() => setEditingDetail(!editingDetail)}
+                            editShortDesc={editShortDesc}
+                            onShortDescChange={setEditShortDesc}
+                            editDesc={editDesc}
+                            onDescChange={setEditDesc}
+                            onSaveDetail={() => { void handleSaveDetail(); }}
+                            savingDetail={savingDetail}
+                            onAddMember={(user) => { void handleAddMember(user); }}
+                            addingMember={addingMember}
+                            addError={addError}
+                            onRemoveMember={(member) => { void handleRemoveMember(member); }}
+                            onToggleLeader={(member) => { void handleToggleLeader(member); }}
+                        />
+                    )}
+                </div>
+            </div>
+            <BeheerToast toast={toast} onClose={hideToast} />
+        </div>
+    );
+}

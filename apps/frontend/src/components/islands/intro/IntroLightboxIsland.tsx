@@ -39,14 +39,14 @@ export const IntroLightboxIsland = () => {
 
     return (
         <>
-            <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {IMAGES.map((img, idx) => {
                     const isFailed = failedImages.has(img.src);
 
                     return (
                         <div
                             key={idx}
-                            className="relative h-32 w-full bg-purple-50 dark:bg-white/5 rounded-lg overflow-hidden border border-purple-100 dark:border-white/10 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                            className="relative flex h-32 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-purple-100 bg-purple-50 transition-opacity hover:opacity-80 dark:border-white/10 dark:bg-white/5"
                             onClick={() => openLightbox(img.src)}
                         >
                             {isFailed ? (
@@ -68,7 +68,7 @@ export const IntroLightboxIsland = () => {
 
             {lightboxOpen && lightboxSrc && (
                 <div
-                    className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-300"
+                    className="bg-background/80 animate-in fade-in fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm duration-300 sm:p-6"
                     onClick={(e) => {
                         if (e.target === e.currentTarget) {
                             closeLightbox();
@@ -77,14 +77,14 @@ export const IntroLightboxIsland = () => {
                 >
                     <button
                         onClick={closeLightbox}
-                        className="icon-button absolute top-4 right-4 z-50 p-2 rounded-full bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground backdrop-blur-sm transition-colors border border-border"
+                        className="bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground border-border absolute top-4 right-4 z-50 icon-button rounded-full border p-2 backdrop-blur-sm transition-colors"
                         aria-label="Sluiten"
                     >
                         ×
                     </button>
 
                     <div
-                        className="relative w-full max-w-7xl h-[80vh] overflow-hidden rounded-3xl bg-black/20 p-2"
+                        className="relative h-[80vh] w-full max-w-7xl overflow-hidden rounded-3xl bg-black/20 p-2"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {failedImages.has(lightboxSrc) ? (
@@ -94,7 +94,7 @@ export const IntroLightboxIsland = () => {
                                 src={lightboxSrc}
                                 alt="Foto"
                                 fill
-                                className="object-contain rounded-2xl"
+                                className="rounded-2xl object-contain"
                             />
                         )}
                     </div>

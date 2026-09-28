@@ -1,23 +1,14 @@
 import 'server-only';
-import { db, schema } from '@/lib/database/db';
+import { db, schema } from '@salvemundi/db';
 import { eq, and, or, isNull, sql } from 'drizzle-orm';
 import { safeConsoleError } from '@/server/utils/logger';
 
-export interface CouponData {
-    id: string;
-    discount_type: 'fixed' | 'percentage';
-    discount_value: number;
-    usage_count: number;
-    usage_limit: number | null;
-    valid_from: string | null;
-    valid_until: string | null;
-    is_active: boolean;
-}
+export type CouponDbRow = typeof schema.coupons.$inferSelect;
 
 export interface CouponValidationResult {
     valid: boolean;
     error?: string;
-    coupon?: CouponData;
+    coupon?: CouponDbRow;
 }
 
 export async function getValidCoupon(code: string): Promise<CouponValidationResult> {
@@ -26,25 +17,16 @@ export async function getValidCoupon(code: string): Promise<CouponValidationResu
     }
 
     try {
-        const rows = await db.select({
-            id: schema.coupons.id,
-            discount_type: schema.coupons.discount_type,
-            discount_value: schema.coupons.discount_value,
-            usage_count: schema.coupons.usage_count,
-            usage_limit: schema.coupons.usage_limit,
-            valid_from: schema.coupons.valid_from,
-            valid_until: schema.coupons.valid_until,
-            is_active: schema.coupons.is_active
-        })
-        .from(schema.coupons)
-        .where(sql`UPPER(${schema.coupons.coupon_code}) = UPPER(${code.trim()})`)
-        .limit(1);
+        const rows = await db.select()
+            .from(schema.coupons)
+            .where(sql`UPPER(${schema.coupons.coupon_code}) = UPPER(${code.trim()})`)
+            .limit(1);
 
-        const coupon = rows[0] as unknown as CouponData | undefined;
-
-        if (!coupon) {
+        if (rows.length === 0) {
             return { valid: false, error: 'Coupon code niet gevonden' };
         }
+
+        const coupon = rows[0];
 
         if (!coupon.is_active) {
             return { valid: false, error: 'Deze coupon is momenteel niet actief' };
@@ -92,20 +74,9 @@ export async function claimCoupon(code: string): Promise<CouponValidationResult>
                     or(isNull(schema.coupons.usage_limit), sql`${schema.coupons.usage_count} < ${schema.coupons.usage_limit}`)
                 )
             )
-            .returning({
-                id: schema.coupons.id,
-                discount_type: schema.coupons.discount_type,
-                discount_value: schema.coupons.discount_value,
-                usage_count: schema.coupons.usage_count,
-                usage_limit: schema.coupons.usage_limit,
-                valid_from: schema.coupons.valid_from,
-                valid_until: schema.coupons.valid_until,
-                is_active: schema.coupons.is_active
-            });
+            .returning();
 
-        const coupon = rows[0] as unknown as CouponData | undefined;
-
-        if (!coupon) {
+        if (rows.length === 0) {
             const checkResult = await getValidCoupon(code);
             return {
                 valid: false,
@@ -115,7 +86,7 @@ export async function claimCoupon(code: string): Promise<CouponValidationResult>
 
         return {
             valid: true,
-            coupon
+            coupon: rows[0]
         };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));

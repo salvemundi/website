@@ -65,17 +65,11 @@ export async function fetchUserProfileByEmailDb(email: string): Promise<UserProf
     if (result.length === 0) return null;
 
     const raw = result[0];
-    const parsed = userProfileSchema.safeParse({
+    return userProfileSchema.parse({
         ...raw,
         date_of_birth: toLocalISOString(raw.date_of_birth),
         membership_expiry: toLocalISOString(raw.membership_expiry)
     });
-
-    if (!parsed.success) {
-        return raw as unknown as UserProfile;
-    }
-
-    return parsed.data;
 }
 
 export async function fetchUserCommitteesDb(userId: string): Promise<Committee[]> {

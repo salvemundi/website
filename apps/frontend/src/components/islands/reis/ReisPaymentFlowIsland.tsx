@@ -6,16 +6,9 @@ import { z } from 'zod';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, ChevronLeft, ChevronRight, CreditCard, Compass, User } from 'lucide-react';
-import {
-    type Trip,
-    type TripSignup,
-    type TripActivity,
-    type TripSignupActivity
-} from '@salvemundi/validations/schema/admin-trip.zod';
-import {
-    reisPaymentEnrichmentSchema,
-    type ReisPaymentEnrichment
-} from '@salvemundi/validations/schema/trip.zod';
+import type { Trip, TripActivity } from '@salvemundi/validations/schema/beheer-trip.zod';
+import type { TripSignup, ReisPaymentEnrichment } from '@salvemundi/validations/schema/trip.zod';
+import { reisPaymentEnrichmentSchema } from '@salvemundi/validations/schema/trip.zod';
 import ActivitySelector from './ActivitySelector';
 import {
     updateSignupDetails,
@@ -38,7 +31,7 @@ interface TripPaymentFlowProps {
     signup: TripSignup;
     trip: Trip;
     allActivities: TripActivity[];
-    selectedActivities: TripSignupActivity[];
+    selectedActivities: TripActivity[];
     paymentType: 'deposit' | 'final';
     token?: string;
 }
@@ -129,16 +122,10 @@ export default function ReisPaymentFlowIsland({
     const { watch, getValues, trigger } = methods;
     const firstName = watch('first_name');
     const [activitySelections, setActivitySelections] = useState<ActivitySelection[]>(() =>
-        selectedActivities.map(sa => {
-            const activityId = sa.trip_activity_id && typeof sa.trip_activity_id === 'object'
-                ? (sa.trip_activity_id as { id: number }).id
-                : Number(sa.trip_activity_id);
-
-            return {
-                activityId,
-                options: (sa.selected_options as Record<string, boolean> | undefined) || {}
-            };
-        })
+        selectedActivities.map(sa => ({
+            activityId: sa.id,
+            options: {}
+        }))
     );
 
     const pricing = useMemo(() => {

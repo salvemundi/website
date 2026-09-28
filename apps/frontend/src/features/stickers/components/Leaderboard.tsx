@@ -39,22 +39,22 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
     ];
 
     return (
-        <div className="bg-bg-card rounded-2xl md:rounded-3xl shadow-lg p-4 md:p-6 h-full flex flex-col border border-border-color/20">
-            <div className="flex items-center justify-between mb-3 md:mb-8">
+        <div className="flex h-full flex-col rounded-2xl border border-border-color/20 bg-bg-card p-4 shadow-lg md:rounded-3xl md:p-6">
+            <div className="mb-3 flex items-center justify-between md:mb-8">
                 <div>
-                    <h2 className="text-xl md:text-2xl font-black tracking-tight text-theme-purple mt-0.5">Leaderboard</h2>
+                    <h2 className="mt-0.5 text-xl font-black tracking-tight text-theme-purple md:text-2xl">Leaderboard</h2>
                 </div>
-                <Trophy className="h-6 w-6 text-orange-500 animate-pulse" />
+                <Trophy className="size-6 animate-pulse text-orange-500" />
             </div>
 
             {leaderboard.length === 0 ? (
-                <div className="flex-1 flex items-center justify-center p-8 text-center border-2 border-dashed border-border-color/25 rounded-2xl">
-                    <p className="text-sm text-text-muted font-medium italic">Geen plakkers gevonden...</p>
+                <div className="flex flex-1 items-center justify-center rounded-2xl border-2 border-dashed border-border-color/25 p-8 text-center">
+                    <p className="text-sm font-medium text-text-muted italic">Geen plakkers gevonden...</p>
                 </div>
             ) : (
                 <>
                     {/* Podium Section */}
-                    <div className="grid grid-cols-3 gap-2 items-end mb-4 md:mb-10 px-2">
+                    <div className="mb-4 grid grid-cols-3 items-end gap-2 px-2 md:mb-10">
                         {podiumDisplay.map((user, idx) => {
                             if (!user) return <div key={idx} />;
 
@@ -64,14 +64,14 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
 
                             return (
                                 <div key={user.id} className="flex flex-col items-center">
-                                    <div className="relative mb-3 group">
+                                    <div className="group relative mb-3">
                                         <div className={`
-                                            absolute inset-0 rounded-full blur-md opacity-40 group-hover:opacity-60 transition-opacity
+                                            absolute inset-0 rounded-full opacity-40 blur-md transition-opacity group-hover:opacity-60
                                             ${isGold ? 'bg-yellow-400' : isSilver ? 'bg-slate-300' : 'bg-orange-400'}
                                         `} />
                                         <div className={`
-                                            relative w-12 h-12 md:w-16 md:h-16 rounded-full border-2 flex items-center justify-center text-white font-semibold text-base md:text-lg overflow-hidden
-                                            ${isGold ? 'border-yellow-400 bg-linear-to-br from-yellow-300 to-yellow-600 scale-110' :
+                                            relative flex size-12 items-center justify-center overflow-hidden rounded-full border-2 text-base font-semibold text-white md:size-16 md:text-lg
+                                            ${isGold ? 'scale-110 border-yellow-400 bg-linear-to-br from-yellow-300 to-yellow-600' :
                                                 isSilver ? 'border-slate-300 bg-linear-to-br from-slate-200 to-slate-400' :
                                                     'border-orange-400 bg-linear-to-br from-orange-300 to-orange-500'}
                                             ${isMe ? 'ring-2 ring-white ring-offset-2' : ''}
@@ -79,27 +79,27 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                                             {user.name ? user.name.split(' ').map(x => x[0]).slice(0, 2).join('') : '#'}
                                         </div>
                                         <div className={`
-                                            absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center shadow-lg
+                                            absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full shadow-lg
                                             ${isGold ? 'bg-yellow-500' : isSilver ? 'bg-slate-400' : 'bg-orange-500'}
                                         `}>
-                                            {isGold ? <Trophy className="h-3 w-3 text-white" /> :
-                                                isSilver ? <Medal className="h-3 w-3 text-white" /> :
-                                                    <Award className="h-3 w-3 text-white" />}
+                                            {isGold ? <Trophy className="size-3 text-white" /> :
+                                                isSilver ? <Medal className="size-3 text-white" /> :
+                                                    <Award className="size-3 text-white" />}
                                         </div>
                                     </div>
-                                    <div className="text-center min-w-0 w-full px-1">
-                                        <div className="text-xs font-semibold truncate text-(--text-main)">
+                                    <div className="w-full min-w-0 px-1 text-center">
+                                        <div className="truncate text-xs font-semibold text-(--text-main)">
                                             {user.name}
                                         </div>
-                                        <div className={`text-[9px] md:text-[10px] font-bold ${isGold ? 'text-yellow-600' : isSilver ? 'text-slate-500' : 'text-orange-600'}`}>
+                                        <div className={`text-[9px] font-bold md:text-[10px] ${isGold ? 'text-yellow-600' : isSilver ? 'text-slate-500' : 'text-orange-600'}`}>
                                             {user.count} stickers
                                         </div>
                                     </div>
                                     <div className={`
-                                        mt-2 w-full rounded-t-lg flex items-center justify-center font-bold text-white text-xs
-                                        ${isGold ? 'h-16 md:h-20 bg-linear-to-t from-yellow-500 to-yellow-400' :
-                                            isSilver ? 'h-12 md:h-16 bg-linear-to-t from-slate-400 to-slate-300' :
-                                                'h-8 md:h-12 bg-linear-to-t from-orange-500 to-orange-400'}
+                                        mt-2 flex w-full items-center justify-center rounded-t-lg text-xs font-bold text-white
+                                        ${isGold ? 'h-16 bg-linear-to-t from-yellow-500 to-yellow-400 md:h-20' :
+                                            isSilver ? 'h-12 bg-linear-to-t from-slate-400 to-slate-300 md:h-16' :
+                                                'h-8 bg-linear-to-t from-orange-500 to-orange-400 md:h-12'}
                                     `}>
                                         {isGold ? '1' : isSilver ? '2' : '3'}
                                     </div>
@@ -109,23 +109,23 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                     </div>
 
                     {/* Scrollable List */}
-                    <div className="flex-1 overflow-y-auto custom-scrollbar -mr-2 pr-2">
+                    <div className="custom-scrollbar -mr-2 flex-1 overflow-y-auto pr-2">
                         <div className="space-y-1">
                             {rest.map((c, idx) => {
                                 const isMe = Boolean(currentUser && String(c.id) === String(currentUser.id));
                                 return (
-                                    <div key={c.id} className={`group flex items-center justify-between p-2.5 rounded-xl transition-all duration-200 ${isMe ? 'bg-orange-500/10 border border-orange-500/20' : 'hover:bg-bg-main/50 border border-transparent'}`}>
-                                        <div className="flex items-center gap-3 min-w-0">
+                                    <div key={c.id} className={`group flex items-center justify-between rounded-xl p-2.5 transition-all duration-200 ${isMe ? 'border border-orange-500/20 bg-orange-500/10' : 'hover:bg-bg-main/50 border border-transparent'}`}>
+                                        <div className="flex min-w-0 items-center gap-3">
                                             <div className="min-w-0">
-                                                <div className="text-xs sm:text-sm font-medium text-text-main truncate group-hover:text-theme-purple transition-colors">
+                                                <div className="truncate text-xs font-medium text-text-main transition-colors group-hover:text-theme-purple sm:text-sm">
                                                     {c.name}
                                                 </div>
-                                                <div className="text-[10px] font-normal text-text-muted mt-0.5">
+                                                <div className="mt-0.5 text-[10px] font-normal text-text-muted">
                                                     {c.count} sticker{c.count !== 1 ? 's' : ''}
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="text-xs font-semibold text-text-muted/50 group-hover:text-text-muted/80 transition-colors">
+                                        <div className="text-xs font-semibold text-text-muted/50 transition-colors group-hover:text-text-muted/80">
                                             #{idx + 4}
                                         </div>
                                     </div>

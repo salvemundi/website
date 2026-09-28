@@ -1,5 +1,5 @@
 import { downloadCSV } from '@/lib/utils/export';
-import { type Signup } from '@/components/islands/admin/activities/ActiviteitAanmeldingenIsland';
+import { type Signup } from '@/components/islands/beheer/activities/ActiviteitAanmeldingenIsland';
 import { getSignupName, getSignupEmail, getSignupPhone } from './activity-signup.utils';
 
 export function exportSignupsToCSV(signups: Signup[], eventName: string) {

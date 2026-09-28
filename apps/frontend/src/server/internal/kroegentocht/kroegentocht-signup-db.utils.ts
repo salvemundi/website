@@ -1,7 +1,7 @@
 import 'server-only';
 import { db, schema } from '@salvemundi/db';
 import { eq, desc, asc, ilike } from 'drizzle-orm';
-import { type PubCrawlSignup, type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
+import { pubCrawlSignupSchema, enrichedPubCrawlSignupSchema, type PubCrawlSignup, type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { type EnrichedPubCrawlSignup } from './kroegentocht-types';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -26,12 +26,17 @@ export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawl
             }
         }
 
-        return {
+        const parsedSignup = pubCrawlSignupSchema.parse({
             ...raw,
             id: Number(raw.id),
+            pub_crawl_event_id: Number(raw.pub_crawl_event_id)
+        });
+
+        return {
+            ...parsedSignup,
             participants
         };
-    }) as unknown as (PubCrawlSignup & { participants: { name: string, initial: string }[] })[];
+    });
 }
 
 export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<EnrichedPubCrawlSignup | null> {
@@ -82,7 +87,7 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<Enric
     });
 
     const { toLocalISOString } = await import('@/lib/utils/date-utils');
-    return {
+    return enrichedPubCrawlSignupSchema.parse({
         ...signup,
         id: Number(signup.id),
         pub_crawl_event_id: {
@@ -93,7 +98,7 @@ export async function fetchPubCrawlSignupByIdDb(signupId: number): Promise<Enric
             image: event.image ?? undefined
         },
         tickets
-    } as unknown as EnrichedPubCrawlSignup;
+    });
 }
 
 export async function fetchUserPubCrawlSignupsDb(email: string): Promise<EnrichedPubCrawlSignup[]> {
@@ -106,7 +111,7 @@ export async function fetchUserPubCrawlSignupsDb(email: string): Promise<Enriche
       .orderBy(desc(schema.pub_crawl_signups.created_at));
 
     const { toLocalISOString } = await import('@/lib/utils/date-utils');
-    return rows.map(row => ({
+    return rows.map(row => enrichedPubCrawlSignupSchema.parse({
         ...row.s,
         id: Number(row.s.id),
         pub_crawl_event_id: {
@@ -116,7 +121,7 @@ export async function fetchUserPubCrawlSignupsDb(email: string): Promise<Enriche
             description: row.e.description ?? undefined,
             image: row.e.image ?? undefined
         }
-    })) as unknown as EnrichedPubCrawlSignup[];
+    }));
 }
 
 export async function createPubCrawlSignupDb(data: {

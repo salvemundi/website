@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import ReisParticipantDetailIsland from '@/components/islands/admin/reis/ReisParticipantDetailIsland';
-import { getTrips, getTripActivities } from '@/server/queries/reis/admin-reis.queries';
-import { Trip, TripActivity } from '@salvemundi/validations/schema/admin-trip.zod';
-import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/admin/reis/admin-reis-signups.actions';
+import ReisParticipantDetailIsland from '@/components/islands/beheer/reis/ReisParticipantDetailIsland';
+import { getTrips, getTripActivities } from '@/server/queries/reis/beheer-reis.queries';
+import { Trip, TripActivity } from '@salvemundi/validations';
+import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/beheer/reis/beheer-reis-signups.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 import { db, schema } from "@salvemundi/db";
 import { eq } from "drizzle-orm";

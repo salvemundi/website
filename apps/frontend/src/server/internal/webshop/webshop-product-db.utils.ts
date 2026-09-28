@@ -51,8 +51,7 @@ async function hydrateProducts(products: ProductRow[]): Promise<WebshopCatalogPr
             drop_window: product.drop_window_id ? dropWindowsById.get(product.drop_window_id) ?? null : null,
         };
 
-        const parsed = webshopCatalogProductSchema.safeParse(candidate);
-        return parsed.success ? parsed.data : (candidate as unknown as WebshopCatalogProduct);
+        return webshopCatalogProductSchema.parse(candidate);
     });
 }
 

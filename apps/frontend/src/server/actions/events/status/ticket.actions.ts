@@ -60,9 +60,9 @@ export async function getMyTickets() {
             qr_token: s.qr_token || '',
             participant_name: s.participant_name || undefined,
             event_id: {
-                name: s.event_id.name || undefined,
-                event_date: s.event_id.event_date ? String(s.event_id.event_date) : undefined,
-                location: s.event_id.location || undefined
+                name: s.event?.name || undefined,
+                event_date: s.event?.event_date ? String(s.event.event_date) : undefined,
+                location: s.event?.location || undefined
             }
         }));
 

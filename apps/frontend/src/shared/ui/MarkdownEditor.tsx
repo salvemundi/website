@@ -21,11 +21,11 @@ interface ToolbarAction {
 }
 
 const TOOLBAR_ACTIONS: ToolbarAction[] = [
-    { label: 'Vet', icon: <Bold className="h-4 w-4" />, before: '**', after: '**' },
-    { label: 'Cursief', icon: <Italic className="h-4 w-4" />, before: '*', after: '*' },
-    { label: 'Kop', icon: <Heading2 className="h-4 w-4" />, before: '## ', after: '', block: true },
-    { label: 'Lijst', icon: <List className="h-4 w-4" />, before: '- ', after: '', block: true },
-    { label: 'Link', icon: <LinkIcon className="h-4 w-4" />, before: '[', after: '](https://)' }
+    { label: 'Vet', icon: <Bold className="size-4" />, before: '**', after: '**' },
+    { label: 'Cursief', icon: <Italic className="size-4" />, before: '*', after: '*' },
+    { label: 'Kop', icon: <Heading2 className="size-4" />, before: '## ', after: '', block: true },
+    { label: 'Lijst', icon: <List className="size-4" />, before: '- ', after: '', block: true },
+    { label: 'Link', icon: <LinkIcon className="size-4" />, before: '[', after: '](https://)' }
 ];
 
 export function MarkdownEditor({ id, value, onChange, placeholder, rows = 10 }: MarkdownEditorProps) {
@@ -61,8 +61,8 @@ export function MarkdownEditor({ id, value, onChange, placeholder, rows = 10 }: 
     };
 
     return (
-        <div className="rounded-xl border border-(--border-color) overflow-hidden bg-(--bg-main)/50">
-            <div className="flex items-center justify-between gap-2 px-2 py-1.5 bg-(--bg-soft) border-b border-(--border-color)">
+        <div className="overflow-hidden rounded-xl border border-(--border-color) bg-(--bg-main)/50">
+            <div className="flex items-center justify-between gap-2 border-b border-(--border-color) bg-(--bg-soft) px-2 py-1.5">
                 <div className="flex items-center gap-1">
                     {TOOLBAR_ACTIONS.map((action) => (
                         <button
@@ -71,26 +71,26 @@ export function MarkdownEditor({ id, value, onChange, placeholder, rows = 10 }: 
                             onClick={() => applyAction(action)}
                             disabled={mode === 'preview'}
                             title={action.label}
-                            className="icon-button p-1.5 rounded-lg text-(--text-muted) hover:text-(--theme-purple) hover:bg-(--bg-card) transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            className="icon-button rounded-lg p-1.5 text-(--text-muted) transition-colors hover:bg-(--bg-card) hover:text-(--theme-purple) disabled:cursor-not-allowed disabled:opacity-30"
                         >
                             {action.icon}
                         </button>
                     ))}
                 </div>
-                <div className="flex items-center gap-1 p-0.5 bg-(--bg-card) rounded-lg border border-(--border-color)">
+                <div className="flex items-center gap-1 rounded-lg border border-(--border-color) bg-(--bg-card) p-0.5">
                     <button
                         type="button"
                         onClick={() => setMode('edit')}
-                        className={`tab-button flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-colors ${mode === 'edit' ? 'bg-(--theme-purple) text-white' : 'text-(--text-muted)'}`}
+                        className={`tab-button flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition-colors ${mode === 'edit' ? 'bg-(--theme-purple) text-white' : 'text-(--text-muted)'}`}
                     >
-                        <Pencil className="h-3.5 w-3.5" /> Bewerken
+                        <Pencil className="size-3.5" /> Bewerken
                     </button>
                     <button
                         type="button"
                         onClick={() => setMode('preview')}
-                        className={`tab-button flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-colors ${mode === 'preview' ? 'bg-(--theme-purple) text-white' : 'text-(--text-muted)'}`}
+                        className={`tab-button flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition-colors ${mode === 'preview' ? 'bg-(--theme-purple) text-white' : 'text-(--text-muted)'}`}
                     >
-                        <Eye className="h-3.5 w-3.5" /> Voorbeeld
+                        <Eye className="size-3.5" /> Voorbeeld
                     </button>
                 </div>
             </div>
@@ -103,10 +103,10 @@ export function MarkdownEditor({ id, value, onChange, placeholder, rows = 10 }: 
                     onChange={(e) => onChange(e.target.value)}
                     rows={rows}
                     placeholder={placeholder}
-                    className="w-full p-4 bg-transparent outline-none border-none resize-y text-sm text-(--text-main)"
+                    className="w-full resize-y border-none bg-transparent p-4 text-sm text-(--text-main) outline-none"
                 />
             ) : (
-                <div className="p-4 overflow-y-auto" style={{ minHeight: `${rows * 1.5}rem` }}>
+                <div className="overflow-y-auto p-4" style={{ minHeight: `${rows * 1.5}rem` }}>
                     {value ? (
                         <SafeMarkdown content={value} />
                     ) : (

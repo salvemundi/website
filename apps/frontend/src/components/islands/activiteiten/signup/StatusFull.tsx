@@ -5,15 +5,15 @@ import { Users } from 'lucide-react';
 
 export default function StatusFull() {
     return (
-        <div className="h-full flex flex-col justify-center items-center p-8 sm:p-12 rounded-3xl bg-bg-soft/50 dark:bg-bg-soft/20 border border-dashed border-border-color/60 text-center space-y-4">
-            <div className="h-12 w-12 rounded-full bg-text-muted/5 flex items-center justify-center text-text-muted/60 border border-text-muted/10">
-                <Users className="h-6 w-6" />
+        <div className="flex h-full flex-col items-center justify-center space-y-4 rounded-3xl border border-dashed border-border-color/60 bg-bg-soft/50 p-8 text-center sm:p-12 dark:bg-bg-soft/20">
+            <div className="flex size-12 items-center justify-center rounded-full border border-text-muted/10 bg-text-muted/5 text-text-muted/60">
+                <Users className="size-6" />
             </div>
             <div>
-                <h3 className="text-lg sm:text-xl font-bold text-text-main tracking-tight">
+                <h3 className="text-lg font-bold tracking-tight text-text-main sm:text-xl">
                     Deze activiteit zit vol
                 </h3>
-                <p className="text-xs sm:text-sm font-medium text-text-muted max-w-[280px] mx-auto mt-2 leading-relaxed">
+                <p className="mx-auto mt-2 max-w-70 text-xs leading-relaxed font-medium text-text-muted sm:text-sm">
                     Het maximum aantal aanmeldingen is bereikt. Aanmelden is helaas niet meer mogelijk.
                 </p>
             </div>

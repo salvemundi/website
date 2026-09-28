@@ -8,7 +8,7 @@ interface IntroGroupsAppButtonsProps {
 export default function IntroGroupsAppButtons({ groups }: IntroGroupsAppButtonsProps) {
     if (groups.length === 0) {
         return (
-            <p className="text-sm text-text-muted font-medium">
+            <p className="text-sm font-medium text-text-muted">
                 De groepsapp-uitnodiging volgt binnenkort.
             </p>
         );
@@ -22,18 +22,18 @@ export default function IntroGroupsAppButtons({ groups }: IntroGroupsAppButtonsP
                     href={group.invite_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-start justify-between gap-3 squircle bg-purple-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl hover:scale-[1.01]"
+                    className="group squircle hover:scale-1.01 flex items-start justify-between gap-3 bg-purple-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl"
                 >
-                    <span className="flex items-start gap-3 min-w-0">
-                        <MessageCircle className="h-5 w-5 shrink-0 mt-0.5" />
+                    <span className="flex min-w-0 items-start gap-3">
+                        <MessageCircle className="mt-0.5 size-5 shrink-0" />
                         <span className="min-w-0">
-                            <span className="block font-semibold text-sm">{group.name}</span>
+                            <span className="block text-sm font-semibold">{group.name}</span>
                             {group.description && (
-                                <span className="block mt-1 text-xs text-white/80 leading-relaxed whitespace-pre-wrap">{group.description}</span>
+                                <span className="mt-1 block text-xs leading-relaxed whitespace-pre-wrap text-white/80">{group.description}</span>
                             )}
                         </span>
                     </span>
-                    <ExternalLink className="h-4 w-4 opacity-70 group-hover:opacity-100 shrink-0 mt-0.5" />
+                    <ExternalLink className="mt-0.5 size-4 shrink-0 opacity-70 group-hover:opacity-100" />
                 </a>
             ))}
         </div>

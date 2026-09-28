@@ -1,6 +1,6 @@
 'use server';
 
-import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";
+import { checkBeheerAccess } from "@/server/actions/beheer/beheer-utils.actions";
 import { getRedis } from "@/server/auth/redis-client";
 import { safeConsoleError } from "@/server/utils/logger";
 
@@ -11,7 +11,7 @@ const MAIL_URL = process.env.MAIL_SERVICE_URL;
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
 async function checkSystemAdminAccess() {
-    const access = await checkAdminAccess();
+    const access = await checkBeheerAccess();
     if (!access.isIct) return null;
     return access;
 }

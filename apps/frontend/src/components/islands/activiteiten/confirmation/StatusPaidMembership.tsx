@@ -4,25 +4,25 @@ import { UserPlus } from 'lucide-react';
 
 export default function StatusPaidMembership() {
     return (
-        <div className="space-y-12 animate-in zoom-in-95 duration-500 text-center">
+        <div className="animate-in zoom-in-95 space-y-12 text-center duration-500">
             <div className="space-y-4">
-                <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto ring-1 ring-green-500/20">
-                    <UserPlus className="h-12 w-12 text-green-500" />
+                <div className="mx-auto flex size-24 items-center justify-center rounded-full bg-green-500/10 ring-1 ring-green-500/20">
+                    <UserPlus className="size-12 text-green-500" />
                 </div>
-                <h1 className="text-4xl md:text-6xl font-semibold text-(--text-main) tracking-tighter italic leading-none">
+                <h1 className="text-4xl leading-none font-semibold tracking-tighter text-(--text-main) italic md:text-6xl">
                     Welkom <span className="text-green-500">lid!</span>
                 </h1>
-                <p className="text-(--text-muted) text-lg font-medium max-w-md mx-auto">
+                <p className="mx-auto max-w-md text-lg font-medium text-(--text-muted)">
                     Je betaling is geslaagd. Je bent nu officieel lid van SV Salve Mundi!
                 </p>
             </div>
 
-            <div className="max-w-md mx-auto p-8 rounded-[3rem] bg-(--bg-card) border border-(--border-color) shadow-2xl space-y-6">
-                <p className="text-base font-medium text-(--text-main) leading-relaxed">
+            <div className="mx-auto max-w-md space-y-6 rounded-[3rem] border border-(--border-color) bg-(--bg-card) p-8 shadow-2xl">
+                <p className="text-base leading-relaxed font-medium text-(--text-main)">
                     Je hebt zojuist een bevestigingsmail ontvangen met alle details.
                     Je kunt nu inloggen op de website om gebruik te maken van je ledenvoordelen.
                 </p>
-                <a href="/profiel" className="w-full h-14 rounded-2xl bg-(--theme-purple) text-white font-semibold flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-(--theme-purple)/20">
+                <a href="/profiel" className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-(--theme-purple) font-semibold text-white shadow-(--theme-purple)/20 shadow-xl transition-all hover:scale-105">
                     Naar mijn profiel
                 </a>
             </div>

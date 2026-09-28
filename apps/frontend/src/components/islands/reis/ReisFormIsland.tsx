@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import type { ReisTrip, ReisTripSignup } from '@salvemundi/validations/schema/trip.zod';
+import type { Trip } from '@salvemundi/validations/schema/beheer-trip.zod';
+import type { TripSignup } from '@salvemundi/validations/schema/trip.zod';
 import { authClient } from '@/lib/auth';
 import { ReisSignupStatus } from './ReisSignupStatus';
 import { ReisRegistrationForm } from './ReisRegistrationForm';
@@ -15,8 +16,8 @@ import { safeConsoleError } from '@/server/utils/logger';
 interface ReisFormIslandProps {
     isSignedUp?: boolean;
     isReisDisabled?: boolean;
-    nextTrip: ReisTrip | null;
-    userSignup: ReisTripSignup | null;
+    nextTrip: Trip | null;
+    userSignup: TripSignup | null;
     canSignUp: boolean;
     registrationStartText: string;
     participantsCount: number;
@@ -60,10 +61,10 @@ export function ReisFormIsland({
                 <button
                     onClick={() => { void handleRefresh(); }}
                     disabled={refreshing}
-                    className="icon-button p-3 bg-purple-500/5 hover:bg-purple-500/10 rounded-2xl text-(--text-muted) hover:text-purple-500 transition-all disabled:opacity-50 active:scale-90"
+                    className="icon-button rounded-2xl bg-purple-500/5 p-3 text-(--text-muted) transition-all hover:bg-purple-500/10 hover:text-purple-500 active:scale-90 disabled:opacity-50"
                     title="Gegevens vernieuwen"
                 >
-                    <RefreshCcw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+                    <RefreshCcw className={`size-5 ${refreshing ? 'animate-spin' : ''}`} />
                 </button>
             }
         >

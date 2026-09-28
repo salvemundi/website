@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import ReisActivitiesIsland from '@/components/islands/admin/reis/ReisActivitiesIsland';
-import { getTrips, getTripActivities } from '@/server/queries/reis/admin-reis.queries';
+import ReisActivitiesIsland from '@/components/islands/beheer/reis/ReisActivitiesIsland';
+import { getTrips, getTripActivities } from '@/server/queries/reis/beheer-reis.queries';
 import { notFound } from 'next/navigation';
-import { getTripSignupActivitiesAction } from '@/server/actions/admin/reis/admin-reis-signups.actions';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+import { getTripSignupActivitiesAction } from '@/server/actions/beheer/reis/beheer-reis-signups.actions';
+import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
 import { safeConsoleError } from '@/server/utils/logger';
 import { db, schema } from "@salvemundi/db";
 import { eq } from "drizzle-orm";
@@ -51,13 +51,13 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
 
     if (trips.length === 0) {
         return (
-            <AdminPageShell title="Reis Activiteiten" backHref="/beheer/reis">
-                <div className="py-20 text-center mx-auto">
-                    <p className="text-(--beheer-text-muted) font-bold text-base">
+            <BeheerPageShell title="Reis Activiteiten" backHref="/beheer/reis">
+                <div className="mx-auto py-20 text-center">
+                    <p className="text-base font-bold text-(--beheer-text-muted)">
                         Geen reizen gevonden.
                     </p>
                 </div>
-            </AdminPageShell>
+            </BeheerPageShell>
         );
     }
 
@@ -91,7 +91,7 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
     const signupsByActivityObj = Object.fromEntries(signupsByActivity.entries()) as unknown as Record<number, Signup[]>;
 
     return (
-        <AdminPageShell title="Reis Activiteiten" hideToolbar={true}>
+        <BeheerPageShell title="Reis Activiteiten" hideToolbar={true}>
             <ReisActivitiesIsland
                 initialTrips={trips}
                 initialActivities={activities}
@@ -99,6 +99,6 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
                 initialSignupsByActivity={signupsByActivityObj}
                 tripName={activeTrip.name || 'Onbekende reis'}
             />
-        </AdminPageShell>
+        </BeheerPageShell>
     );
 }

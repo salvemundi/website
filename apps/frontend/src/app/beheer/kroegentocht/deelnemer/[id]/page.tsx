@@ -1,6 +1,6 @@
-import SignupForm from '@/components/islands/admin/kroegentocht/SignupForm';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import { getPubCrawlSignup, getPubCrawlEvent } from '@/server/actions/admin/kroegentocht/admin-kroegentocht-core.actions';
+import SignupForm from '@/components/islands/beheer/kroegentocht/SignupForm';
+import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
+import { getPubCrawlSignup, getPubCrawlEvent } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
 import { notFound } from 'next/navigation';
 import { unstable_noStore as noStore } from 'next/cache';
 
@@ -37,12 +37,12 @@ export default async function DeelnemerPage({ params }: DeelnemerPageProps) {
         : [];
 
     return (
-        <AdminPageShell
+        <BeheerPageShell
             title="Deelnemer Beheer"
             subtitle={`Inschrijving van ${signup.name}`}
             backHref="/beheer/kroegentocht"
         >
             <SignupForm signup={signup} eventGroups={eventGroups} />
-        </AdminPageShell>
+        </BeheerPageShell>
     );
 }

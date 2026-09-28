@@ -22,18 +22,18 @@ export const introParentSignupFormSchema = z.object({
 
 export type IntroParentSignupForm = z.infer<typeof introParentSignupFormSchema>;
 
-// --- Admin Schemas (Direct DB Mapping) ---
+// --- Intro Signups Schemas ---
 
-export const introSignupDbSchema = selectIntroSignupsSchema.extend({
+export const introSignupSchema = selectIntroSignupsSchema.extend({
     id: z.coerce.number(),
     email: z.string().email(),
     status: z.string().nullable().optional().default('registered'),
     approved: z.boolean().nullable().optional().default(false),
 });
 
-export type IntroSignupDb = z.infer<typeof introSignupDbSchema>;
+export type IntroSignup = z.infer<typeof introSignupSchema>;
 
-export const introParentSignupDbSchema = selectIntroParentSignupsSchema.omit({
+export const introParentSignupSchema = selectIntroParentSignupsSchema.omit({
     date_updated: true,
     user_created: true,
     user_updated: true,
@@ -42,7 +42,7 @@ export const introParentSignupDbSchema = selectIntroParentSignupsSchema.omit({
     email: z.string().email(),
 });
 
-export type IntroParentSignupDb = z.infer<typeof introParentSignupDbSchema>;
+export type IntroParentSignup = z.infer<typeof introParentSignupSchema>;
 
 export const introBlogSchema = selectIntroBlogsSchema.omit({
     date_updated: true,

@@ -1,14 +1,14 @@
-import AdminGuard from '@/components/ui/admin/AdminGuard';
+import BeheerGuard from '@/components/ui/beheer/BeheerGuard';
 import type { ReactNode } from 'react';
 
 export default function IntroLayout({ children }: { children: ReactNode }) {
     return (
-        <AdminGuard
+        <BeheerGuard
             feature="intro"
             title="Introductie Beheer"
             description="Je hebt geen rechten om de introductie te beheren."
         >
             {children}
-        </AdminGuard>
+        </BeheerGuard>
     );
 }
