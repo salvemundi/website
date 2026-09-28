@@ -109,7 +109,7 @@ export default function PaymentStatusIsland({
                     <button
                         onClick={() => window.location.href = returnUrl}
                         className="mx-auto form-button flex items-center gap-2 rounded-2xl bg-white px-10 py-5 text-base font-bold text-black shadow-2xl shadow-green-500/10 transition-all hover:bg-green-500 hover:text-white"
-                    >
+                        type="button">
                         {returnText}
                         <ChevronRight className="size-5" />
                     </button>
@@ -131,14 +131,14 @@ export default function PaymentStatusIsland({
                         <button
                             onClick={() => window.location.reload()}
                             className="mx-auto form-button flex items-center gap-2 rounded-2xl bg-white px-10 py-5 text-base font-bold text-black transition-all hover:bg-orange-500 hover:text-white"
-                        >
+                            type="button">
                             <RefreshCw className="size-5" />
                             Controleer Handmatig
                         </button>
                         <button
                             onClick={() => window.location.href = returnUrl}
                             className="form-button text-base font-bold text-gray-500 transition-all hover:text-white"
-                        >
+                            type="button">
                             Ik check het later wel
                         </button>
                     </div>

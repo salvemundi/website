@@ -40,7 +40,7 @@ export default function ActivityFilters({
                     className="beheer-input w-full border-none bg-transparent p-0 text-sm font-semibold text-(--beheer-text) outline-none placeholder:text-(--beheer-text-muted)"
                 />
             </div>
-            
+
             {/* Filters Row */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:col-span-7">
                 {/* Committee Filter */}
@@ -85,7 +85,7 @@ export default function ActivityFilters({
                                 ? 'bg-(--beheer-accent) text-white shadow-sm' 
                                 : 'text-(--beheer-text-muted) hover:bg-white/50 hover:text-(--beheer-text) dark:hover:bg-white/5'
                             }`}
-                        >
+                            type="button">
                             {f === 'all' ? 'Alle' : f === 'upcoming' ? 'Aankomend' : 'Verleden'}
                         </button>
                     ))}

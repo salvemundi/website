@@ -50,7 +50,7 @@ export default function PendingTab({
                                 : 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-300 opacity-50'
                         }`}
                         title="Bulk Goedkeuren"
-                    >
+                        type="button">
                         {isBulkProcessing === 'approve' ? <Loader2 className="size-5 animate-spin" /> : <CheckCircle className="size-5" />}
                     </button>
                     <button
@@ -62,14 +62,14 @@ export default function PendingTab({
                                 : 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-300 opacity-50'
                         }`}
                         title="Bulk Afwijzen"
-                    >
+                        type="button">
                         {isBulkProcessing === 'reject' ? <Loader2 className="size-5 animate-spin" /> : <XCircle className="size-5" />}
                     </button>
                     
-                    <button 
+                    <button
                         onClick={onRefresh}
                         className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-accent)"
-                    >
+                        type="button">
                         <RefreshCw className="size-5" />
                     </button>
                 </div>
@@ -80,7 +80,10 @@ export default function PendingTab({
                     <thead>
                         <tr className="border-b border-(--beheer-border)/50 bg-(--beheer-card-soft)/50">
                             <th className="w-12 p-4 text-center">
-                                <button onClick={onToggleSelectAll} className="icon-button text-(--beheer-text-muted) transition-colors hover:text-(--beheer-accent)">
+                                <button
+                                    onClick={onToggleSelectAll}
+                                    className="icon-button text-(--beheer-text-muted) transition-colors hover:text-(--beheer-accent)"
+                                    type="button">
                                     {selectedIds.size > 0 && selectedIds.size === filteredSignups.length ? <CheckSquare className="size-5 text-(--beheer-accent)" /> : <Square className="size-5" />}
                                 </button>
                             </th>
@@ -106,7 +109,10 @@ export default function PendingTab({
                             filteredSignups.map(s => (
                                 <tr key={s.id} className={`group transition-colors hover:bg-(--beheer-accent)/2 ${selectedIds.has(s.id) ? 'bg-(--beheer-accent)/5' : ''}`}>
                                     <td className="p-4 text-center">
-                                        <button onClick={() => onToggleSelectOne(s.id)} className={`icon-button transition-colors ${selectedIds.has(s.id) ? 'text-(--beheer-accent)' : 'text-(--beheer-text-muted)/30'}`}>
+                                        <button
+                                            onClick={() => onToggleSelectOne(s.id)}
+                                            className={`icon-button transition-colors ${selectedIds.has(s.id) ? 'text-(--beheer-accent)' : 'text-(--beheer-text-muted)/30'}`}
+                                            type="button">
                                             {selectedIds.has(s.id) ? <CheckSquare className="size-5" /> : <Square className="size-5" />}
                                         </button>
                                     </td>
@@ -132,18 +138,18 @@ export default function PendingTab({
                                     </td>
                                     <td className="p-4">
                                         <div className="flex items-center justify-end gap-3">
-                                            <button 
+                                            <button
                                                 onClick={() => onApprove(s.id, s.type)}
                                                 disabled={!!isProcessing}
                                                 className="icon-button rounded-xl border border-(--beheer-active)/20 bg-(--beheer-active)/10 p-2 text-(--beheer-active) transition-all hover:bg-(--beheer-active) hover:text-white disabled:opacity-50"
-                                            >
+                                                type="button">
                                                 {isProcessing === s.id ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle className="size-4" />}
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={() => onReject(s.id, s.type)}
                                                 disabled={!!isProcessing}
                                                 className="icon-button rounded-xl border border-(--beheer-inactive)/20 bg-(--beheer-inactive)/10 p-2 text-(--beheer-inactive) transition-all hover:bg-(--beheer-inactive) hover:text-white disabled:opacity-50"
-                                            >
+                                                type="button">
                                                 {isProcessing === s.id ? <Loader2 className="size-4 animate-spin" /> : <XCircle className="size-4" />}
                                             </button>
                                         </div>

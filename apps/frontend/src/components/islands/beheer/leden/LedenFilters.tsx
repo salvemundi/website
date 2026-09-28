@@ -31,7 +31,7 @@ export default function LedenFilters({
                         ? 'bg-(--beheer-accent) text-white shadow-sm'
                         : 'text-(--beheer-text-muted) hover:bg-white/30 hover:text-(--beheer-text) dark:hover:bg-white/5'
                         }`}
-                >
+                    type="button">
                     <UserCheck className="size-4" />
                     Actief
                 </button>
@@ -41,7 +41,7 @@ export default function LedenFilters({
                         ? 'bg-(--beheer-accent) text-white shadow-sm'
                         : 'text-(--beheer-text-muted) hover:bg-white/30 hover:text-(--beheer-text) dark:hover:bg-white/5'
                         }`}
-                >
+                    type="button">
                     <UserMinus className="size-4" />
                     Verlopen
                 </button>
@@ -69,7 +69,7 @@ export default function LedenFilters({
                     <button
                         onClick={onExport}
                         className="beheer-button flex cursor-pointer items-center justify-center gap-2 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) px-5 py-2.5 text-xs font-semibold whitespace-nowrap text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 hover:bg-(--beheer-card-soft) active:scale-95 disabled:opacity-50"
-                    >
+                        type="button">
                         <Download className="size-4" />
                         Export
                     </button>
@@ -81,7 +81,7 @@ export default function LedenFilters({
                         onClick={onReminder}
                         disabled={isSendingReminder}
                         className="beheer-button flex cursor-pointer items-center justify-center gap-2 rounded-(--beheer-radius) bg-(--beheer-accent) px-5 py-2.5 text-xs font-semibold whitespace-nowrap text-white shadow-md transition-all hover:opacity-95 active:scale-95 disabled:opacity-50"
-                    >
+                        type="button">
                         {isSendingReminder ? <Loader2 className="size-4 animate-spin" /> : <Bell className="size-4" />}
                         Herinnering
                     </button>

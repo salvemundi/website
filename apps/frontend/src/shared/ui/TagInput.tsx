@@ -40,7 +40,7 @@ export function TagInput({ value, onChange, placeholder, id }: TagInputProps) {
                     <button
                         type="button"
                         onClick={() => onChange(value.filter((t) => t !== tag))}
-                        className="icon-button hover:text-(--theme-error)"
+                        className="form-button icon-button hover:text-(--theme-error)"
                         aria-label={`Verwijder ${tag}`}
                     >
                         <X className="size-3" />

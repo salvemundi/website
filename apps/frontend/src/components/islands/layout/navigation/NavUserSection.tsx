@@ -63,7 +63,7 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                         });
                     }}
                     className="squircle form-button flex h-9 shrink-0 cursor-pointer items-center justify-center gap-2 bg-purple-50 px-4 py-1.5 text-sm font-semibold text-purple-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
-                >
+                    type="button">
                     Inloggen
                 </button>
             )}

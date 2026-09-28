@@ -204,7 +204,7 @@ export default function GroupCard({
                                 <button
                                     onClick={() => setIsExpanded(!isExpanded)}
                                     className="col-span-full mt-2 beheer-button flex w-full items-center justify-center gap-1.5 rounded-lg border border-(--border-color)/40 bg-(--bg-main)/30 py-1.5 text-[10px] font-bold text-(--text-muted) transition-all hover:bg-(--bg-main)/60 hover:text-(--text-main)"
-                                >
+                                    type="button">
                                     {isExpanded ? (
                                         <>
                                             Toon minder <ChevronUp className="size-3" />

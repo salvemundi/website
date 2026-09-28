@@ -34,14 +34,14 @@ export function FilterField({ label, value, onChange, options }: { label: string
 
 export function TypeTab({ active, onClick, children }: { active: boolean, onClick: () => void, children: React.ReactNode }) {
     return (
-        <button 
+        <button
             onClick={onClick}
             className={`tab-button rounded-xl px-5 py-2.5 text-[10px] font-semibold tracking-widest uppercase transition-all active:scale-95 ${
                 active 
                     ? 'bg-(--beheer-accent) text-white shadow-lg' 
                     : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-bg) hover:text-(--beheer-text)'
             }`}
-        >
+            type="button">
             {children}
         </button>
     );

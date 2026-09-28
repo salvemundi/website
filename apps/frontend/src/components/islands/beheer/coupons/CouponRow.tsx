@@ -121,7 +121,7 @@ export default function CouponRow({
                                 disabled={isToggling}
                                 title={coupon.is_active ? 'Deactiveren' : 'Activeren'}
                                 className={`icon-button cursor-pointer rounded-xl p-3 transition-all ${coupon.is_active ? 'text-emerald-500 hover:bg-emerald-500/10' : 'text-slate-400 hover:bg-slate-500/10'}`}
-                            >
+                                type="button">
                                 {isToggling
                                     ? <Loader2 className="size-5 animate-spin" />
                                     : coupon.is_active
@@ -133,7 +133,7 @@ export default function CouponRow({
                                 disabled={isDeleting}
                                 title="Verwijderen"
                                 className="icon-button cursor-pointer rounded-xl p-3 text-(--beheer-text-muted) transition-all hover:bg-red-500/10 hover:text-red-500"
-                            >
+                                type="button">
                                 {isDeleting ? <Loader2 className="size-5 animate-spin" /> : <Trash className="size-5" />}
                             </button>
                         </>

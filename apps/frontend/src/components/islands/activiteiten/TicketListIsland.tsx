@@ -135,7 +135,7 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
                             <button
                                 onClick={handleCloseModal}
                                 className="group absolute top-6 right-6 z-20 icon-button flex size-10 items-center justify-center rounded-full bg-black/5 p-2 transition-colors hover:bg-black/10"
-                            >
+                                type="button">
                                 <X className="size-5 text-(--text-muted) transition-colors group-hover:text-(--text-main)" />
                             </button>
 

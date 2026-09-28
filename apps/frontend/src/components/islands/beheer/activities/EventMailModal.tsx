@@ -121,7 +121,7 @@ export default function EventMailModal({ isOpen, onClose, eventId, eventName, si
                     <button
                         onClick={onClose}
                         className="icon-button rounded-full border border-transparent p-2.5 text-(--beheer-text-muted) transition-all hover:border-(--beheer-border) hover:bg-(--beheer-card-bg) hover:text-(--beheer-text) focus:outline-none active:scale-90"
-                    >
+                        type="button">
                         <X className="size-5" />
                     </button>
                 </div>

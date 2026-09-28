@@ -117,7 +117,7 @@ export default function MemberAdminTab({
                         onClick={() => { void handleProvision(); }}
                         disabled={provisioningLoading}
                         className="beheer-button flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-amber-500 px-8 py-4 text-xs font-semibold text-white shadow-lg shadow-amber-500/20 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 sm:w-auto"
-                    >
+                        type="button">
                         {provisioningLoading ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
                         Azure AD Account Aanmaken
                     </button>
@@ -151,11 +151,11 @@ export default function MemberAdminTab({
                                             <Award className={`size-5 ${m.is_leader && m.committee_id.azure_group_id !== COMMITTEES.BESTUUR ? 'text-(--beheer-accent)' : 'text-(--beheer-text-muted) opacity-20'}`} />
                                             <span className="text-sm font-semibold text-(--beheer-text)">{cleanName(m.committee_id.name)}</span>
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={() => { void onMembershipChange(groupId, 'remove', m.committee_id.name); }}
                                             disabled={isActionInProgress === `remove-${m.committee_id.azure_group_id}`}
                                             className="icon-button cursor-pointer rounded-xl p-2 text-(--beheer-text-muted) transition-all hover:bg-red-500/10 hover:text-red-500 disabled:opacity-50"
-                                        >
+                                            type="button">
                                             {isActionInProgress === `remove-${m.committee_id.azure_group_id}` ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
                                         </button>
                                     </div>
@@ -178,7 +178,7 @@ export default function MemberAdminTab({
                                 }}
                                 disabled={isActionInProgress === `add-${c.azure_group_id}`}
                                 className="group beheer-button flex items-center justify-between rounded-2xl border border-(--beheer-border) bg-(--beheer-card-bg) p-4 text-left shadow-sm transition-all hover:border-(--beheer-accent)/50 hover:bg-(--beheer-accent)/5"
-                            >
+                                type="button">
                                 <div className="min-w-0 flex-1">
                                     <p className="truncate text-xs font-semibold text-(--beheer-text)">{cleanName(c.name)}</p>
                                     <p className="text-[9px] font-medium text-(--beheer-text-muted) opacity-60">Azure ID: {c.azure_group_id?.substring(0, 8)}...</p>
@@ -207,7 +207,11 @@ export default function MemberAdminTab({
                     <label className="text-xs font-semibold text-(--beheer-text-muted) opacity-60">Verlengen met:</label>
                     <div className="flex gap-2">
                         {[1, 6, 12].map(m => (
-                            <button key={m} onClick={() => setRenewMonths(m)} className={`beheer-button cursor-pointer rounded-xl px-4 py-3 text-xs font-semibold transition-all ${renewMonths === m ? 'bg-(--beheer-accent) text-white shadow-md' : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:bg-(--beheer-border)/50'}`}>
+                            <button
+                                key={m}
+                                onClick={() => setRenewMonths(m)}
+                                className={`beheer-button cursor-pointer rounded-xl px-4 py-3 text-xs font-semibold transition-all ${renewMonths === m ? 'bg-(--beheer-accent) text-white shadow-md' : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:bg-(--beheer-border)/50'}`}
+                                type="button">
                                 {m} maand{m > 1 ? 'en' : ''}
                             </button>
                         ))}
@@ -216,7 +220,7 @@ export default function MemberAdminTab({
                         onClick={() => { void handleRenew(); }}
                         disabled={renewLoading}
                         className="beheer-button flex cursor-pointer items-center gap-2 rounded-xl bg-green-500 px-6 py-3 text-xs font-semibold text-white shadow-lg shadow-green-500/20 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
-                    >
+                        type="button">
                         {renewLoading ? <Loader2 className="size-4 animate-spin" /> : <CalendarPlus className="size-4" />}
                         Verlengen
                     </button>
@@ -236,7 +240,7 @@ export default function MemberAdminTab({
                             onClick={() => { void handleSync(); }}
                             disabled={syncLoading}
                             className="beheer-button flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-(--beheer-border)/50 bg-(--beheer-card-soft) px-6 py-3 text-xs font-semibold text-(--beheer-text) transition-all hover:bg-(--beheer-border)/50 active:scale-95 sm:w-auto"
-                        >
+                            type="button">
                             <RefreshCw className={`size-4 ${syncLoading ? 'animate-spin' : ''}`} />
                             Synchroniseer
                         </button>

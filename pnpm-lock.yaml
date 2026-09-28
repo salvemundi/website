@@ -175,13 +175,13 @@ importers:
         version: 9.5.12(next@16.2.11(@babel/core@7.29.7(supports-color@7.2.0))(@playwright/test@1.61.1)(@types/node@26.1.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(typescript@6.0.3)
       '@serwist/precaching':
         specifier: ^9.5.12
-        version: 9.5.12(browserslist@4.28.7)(typescript@6.0.3)
+        version: 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
       '@serwist/sw':
         specifier: ^9.5.12
-        version: 9.5.12(browserslist@4.28.7)(typescript@6.0.3)
+        version: 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
       '@serwist/webpack-plugin':
         specifier: ^9.5.12
-        version: 9.5.12(browserslist@4.28.7)(typescript@6.0.3)
+        version: 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
       '@tailwindcss/postcss':
         specifier: ^4.3.3
         version: 4.3.3
@@ -241,7 +241,7 @@ importers:
         version: 8.5.14
       serwist:
         specifier: ^9.5.12
-        version: 9.5.12(browserslist@4.28.7)(typescript@6.0.3)
+        version: 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -6622,20 +6622,6 @@ snapshots:
     transitivePeerDependencies:
       - browserslist
 
-  '@serwist/build@9.5.12(browserslist@4.28.7)(typescript@6.0.3)':
-    dependencies:
-      '@serwist/utils': 9.5.12(browserslist@4.28.7)
-      common-tags: 1.8.2
-      glob: 13.0.6
-      pretty-bytes: 6.1.1
-      source-map: 0.7.6
-      type-fest: 5.8.0
-      zod: 4.4.3
-    optionalDependencies:
-      typescript: 6.0.3
-    transitivePeerDependencies:
-      - browserslist
-
   '@serwist/next@9.5.12(next@16.2.11(@babel/core@7.29.7(supports-color@7.2.0))(@playwright/test@1.61.1)(@types/node@26.1.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(typescript@6.0.3)':
     dependencies:
       '@serwist/build': 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
@@ -6655,17 +6641,17 @@ snapshots:
     transitivePeerDependencies:
       - webpack
 
-  '@serwist/precaching@9.5.12(browserslist@4.28.7)(typescript@6.0.3)':
+  '@serwist/precaching@9.5.12(browserslist@4.28.6)(typescript@6.0.3)':
     dependencies:
-      serwist: 9.5.12(browserslist@4.28.7)(typescript@6.0.3)
+      serwist: 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
     optionalDependencies:
       typescript: 6.0.3
     transitivePeerDependencies:
       - browserslist
 
-  '@serwist/sw@9.5.12(browserslist@4.28.7)(typescript@6.0.3)':
+  '@serwist/sw@9.5.12(browserslist@4.28.6)(typescript@6.0.3)':
     dependencies:
-      serwist: 9.5.12(browserslist@4.28.7)(typescript@6.0.3)
+      serwist: 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
     optionalDependencies:
       typescript: 6.0.3
     transitivePeerDependencies:
@@ -6675,24 +6661,9 @@ snapshots:
     optionalDependencies:
       browserslist: 4.28.6
 
-  '@serwist/utils@9.5.12(browserslist@4.28.7)':
-    optionalDependencies:
-      browserslist: 4.28.7
-
   '@serwist/webpack-plugin@9.5.12(browserslist@4.28.6)(typescript@6.0.3)':
     dependencies:
       '@serwist/build': 9.5.12(browserslist@4.28.6)(typescript@6.0.3)
-      '@serwist/utils': 9.5.12(browserslist@4.28.6)
-      pretty-bytes: 6.1.1
-      zod: 4.4.3
-    optionalDependencies:
-      typescript: 6.0.3
-    transitivePeerDependencies:
-      - browserslist
-
-  '@serwist/webpack-plugin@9.5.12(browserslist@4.28.7)(typescript@6.0.3)':
-    dependencies:
-      '@serwist/build': 9.5.12(browserslist@4.28.7)(typescript@6.0.3)
       '@serwist/utils': 9.5.12(browserslist@4.28.6)
       pretty-bytes: 6.1.1
       zod: 4.4.3
@@ -9910,15 +9881,6 @@ snapshots:
   serwist@9.5.12(browserslist@4.28.6)(typescript@6.0.3):
     dependencies:
       '@serwist/utils': 9.5.12(browserslist@4.28.6)
-      idb: 8.0.3
-    optionalDependencies:
-      typescript: 6.0.3
-    transitivePeerDependencies:
-      - browserslist
-
-  serwist@9.5.12(browserslist@4.28.7)(typescript@6.0.3):
-    dependencies:
-      '@serwist/utils': 9.5.12(browserslist@4.28.7)
       idb: 8.0.3
     optionalDependencies:
       typescript: 6.0.3

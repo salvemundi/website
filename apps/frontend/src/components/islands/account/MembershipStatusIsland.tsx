@@ -119,7 +119,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                             onClick={() => { void handleRenewal(); }}
                             disabled={isPending}
                             className="form-button shadow-glow transition-transform active:scale-95"
-                        >
+                            type="button">
                             {isPending ? 'Verwerken...' : `Nu Verlengen (€${baseAmount.toFixed(2).replace('.', ',')})`}
                         </button>
                     </div>
@@ -157,7 +157,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
                     onClick={() => { void handleRenewal(); }}
                     disabled={isPending}
                     className="form-button shadow-glow transition-transform active:scale-95"
-                >
+                    type="button">
                     {isPending ? 'Verwerken...' : `Nu Verlengen (€${baseAmount.toFixed(2).replace('.', ',')})`}
                 </button>
             </div>

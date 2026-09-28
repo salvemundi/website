@@ -69,7 +69,7 @@ export default function StatusPaidActivity({
                             onClick={() => downloadTicket(`ticket-card-${i}`, eventName)}
                             className="absolute top-4 right-4 icon-button rounded-full border border-(--border-color) bg-(--bg-soft) p-3 text-(--text-muted) shadow-lg backdrop-blur-md transition-all hover:scale-110 hover:bg-(--theme-purple) hover:text-white"
                             title="Download Ticket"
-                        >
+                            type="button">
                             <Save className="size-5" />
                         </button>
                     </div>

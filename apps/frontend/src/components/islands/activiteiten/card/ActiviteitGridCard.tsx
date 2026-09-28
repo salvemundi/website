@@ -116,7 +116,7 @@ export default function ActiviteitGridCard({
                                         : 'bg-(--theme-purple) text-white shadow-(--theme-purple)/20 shadow-lg hover:scale-105'
                                     }`}
                                 title={alreadySignedUp ? 'Al aangemeld' : isDeadlinePassed ? 'Aanmelding gesloten' : isFull ? 'Activiteit vol' : 'Aanmelden'}
-                            >
+                                type="button">
                                 {alreadySignedUp ? (
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                         <polyline points="20 6 9 17 4 12" />
@@ -138,7 +138,7 @@ export default function ActiviteitGridCard({
                             }}
                             className="icon-button rounded-full bg-(--bg-soft) p-2 text-(--theme-purple)"
                             title="Meer info"
-                        >
+                            type="button">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="12" cy="12" r="10" />
                                 <line x1="12" y1="16" x2="12" y2="12" />

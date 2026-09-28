@@ -128,7 +128,7 @@ export default function BeheerSelect<T extends string | number = string | number
                 type="button"
                 onClick={toggleDropdown}
                 disabled={disabled}
-                className={`active:scale-0.98 flex w-full cursor-pointer items-center justify-between rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) text-left font-semibold text-(--beheer-text) transition-all duration-200 outline-none hover:border-(--beheer-accent)/50 disabled:cursor-not-allowed disabled:opacity-50 ${
+                className={`active:scale-0.98 form-button flex w-full cursor-pointer items-center justify-between rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) text-left font-semibold text-(--beheer-text) transition-all duration-200 outline-none hover:border-(--beheer-accent)/50 disabled:cursor-not-allowed disabled:opacity-50 ${
                     size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2.5 text-sm'
                 }`}
             >
@@ -161,7 +161,7 @@ export default function BeheerSelect<T extends string | number = string | number
                                         key={option.value}
                                         type="button"
                                         onClick={() => handleSelect(option.value)}
-                                        className={`w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all ${
+                                        className={`form-button w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all ${
                                             isSelected
                                                 ? 'bg-(--beheer-accent) text-white'
                                                 : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) hover:text-(--beheer-text)'

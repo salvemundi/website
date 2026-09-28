@@ -35,7 +35,7 @@ export default function BeheerVisibilityToggle({
                 onClick={onToggle}
                 disabled={isPending || disabled}
                 aria-label={typeof label === 'string' ? label : 'Toggle zichtbaarheid'}
-                className={`relative flex h-5 w-9 shrink-0 items-center rounded-full p-1 transition-all sm:h-6 sm:w-12 ${
+                className={`relative form-button flex h-5 w-9 shrink-0 items-center rounded-full p-1 transition-all sm:h-6 sm:w-12 ${
                     isVisible ? 'bg-beheer-active' : 'bg-beheer-inactive'
                 } hover:opacity-90 active:scale-95 disabled:opacity-50`}
             >

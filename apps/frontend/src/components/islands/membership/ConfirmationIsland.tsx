@@ -75,7 +75,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
                         <button
                             onClick={() => router.push('/lidmaatschap')}
                             className="form-button rounded-2xl bg-theme-purple px-8 py-4 font-bold text-white shadow-lg transition-transform hover:scale-105 dark:bg-purple-500"
-                        >
+                            type="button">
                             Opnieuw proberen
                         </button>
                     </>
@@ -106,7 +106,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
                     <button
                         onClick={() => router.push('/profiel')}
                         className="form-button flex items-center justify-center gap-2 rounded-2xl bg-theme-purple px-8 py-4 font-bold text-white shadow-glow transition-all hover:scale-105"
-                    >
+                        type="button">
                         <User className="size-5" />
                         Naar mijn account
                     </button>
@@ -114,7 +114,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
                 <button
                     onClick={() => router.push('/')}
                     className="form-button flex items-center justify-center gap-2 rounded-2xl border border-purple-100 bg-purple-50 px-8 py-4 font-bold text-theme-purple transition-all hover:bg-purple-100 dark:border-white/10 dark:bg-white/5 dark:text-purple-400 dark:hover:bg-white/10"
-                >
+                    type="button">
                     <Home className="size-5" />
                     Terug naar Home
                 </button>

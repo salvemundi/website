@@ -79,23 +79,23 @@ export default function ReisActivityCard({ activity, onEdit, onDelete, onViewSig
 
                 <div className="space-y-3 border-t border-(--beheer-border)/20 pt-6">
                     <div className="flex gap-3">
-                        <button 
+                        <button
                             onClick={() => onEdit(activity)}
                             className="beheer-button flex flex-1 items-center justify-center gap-2 rounded-xl border border-(--beheer-border) px-4 py-3 text-[10px] font-semibold text-(--beheer-text) transition-all hover:border-(--beheer-accent) hover:bg-(--beheer-accent)/5 hover:text-(--beheer-accent) active:scale-95"
-                        >
+                            type="button">
                             <Pen className="size-3.5" /> Bewerken
                         </button>
-                        <button 
+                        <button
                             onClick={() => onDelete(activity.id as number)}
                             className="icon-button flex items-center justify-center rounded-xl border border-(--beheer-border) p-3 text-(--beheer-text-muted) transition-all hover:border-red-500/20 hover:bg-red-500/5 hover:text-red-500 active:scale-95"
-                        >
+                            type="button">
                             <Trash className="size-4" />
                         </button>
                     </div>
-                    <button 
+                    <button
                         onClick={() => onViewSignups(activity.id as number)}
                         className="beheer-button flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-(--beheer-accent)/10 bg-(--beheer-accent)/5 text-[10px] font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/10 active:scale-95"
-                    >
+                        type="button">
                         <Users className="size-3.5" /> Inschrijvingen
                     </button>
                 </div>

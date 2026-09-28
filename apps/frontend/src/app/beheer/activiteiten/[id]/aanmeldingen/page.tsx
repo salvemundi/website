@@ -72,7 +72,9 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
             actions={
                 <div className="flex items-center gap-4">
                     <Link href={`/beheer/activiteiten/${id}/scanner`} className="hidden md:inline-block">
-                        <button className="beheer-button flex h-10 items-center gap-2 rounded-xl bg-theme-purple px-4 text-sm font-bold text-white shadow-lg shadow-theme-purple/20 transition-all hover:scale-105">
+                        <button
+                            className="beheer-button flex h-10 items-center gap-2 rounded-xl bg-theme-purple px-4 text-sm font-bold text-white shadow-lg shadow-theme-purple/20 transition-all hover:scale-105"
+                            type="button">
                             Scanner
                         </button>
                     </Link>

@@ -131,7 +131,7 @@ export default function CouponManagementIsland({
                     <button
                         onClick={() => setIsAdding(true)}
                         className="squircle beheer-button flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-theme-purple px-4 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
-                    >
+                        type="button">
                         <Plus className="size-4" />
                         <span>Nieuwe Coupon</span>
                     </button>
@@ -208,7 +208,7 @@ export default function CouponManagementIsland({
                     <button
                         onClick={() => setShowExpired(!showExpired)}
                         className="group beheer-button flex cursor-pointer items-center gap-4 border-l-4 border-slate-500 py-1 pl-4 text-(--beheer-text-muted) transition-all hover:text-(--beheer-text)"
-                    >
+                        type="button">
                         <h2 className="flex items-center gap-3 text-sm font-semibold">
                             {showExpired ? <ToggleRight className="size-5 text-(--beheer-accent)" /> : <ToggleLeft className="size-5" />}
                             Verlopen Coupons

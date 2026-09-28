@@ -99,7 +99,7 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                                 onClick={handleClear}
                                 disabled={isPending}
                                 className="beheer-button flex items-center gap-2 rounded-(--beheer-radius) border border-(--beheer-inactive)/20 bg-(--beheer-inactive)/10 px-4 py-2 text-base font-semibold text-(--beheer-inactive) shadow-sm transition-all hover:bg-(--beheer-inactive) hover:text-white active:scale-95 disabled:opacity-50"
-                            >
+                                type="button">
                                 {isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
                                 <span className="hidden md:inline">Stop Testen</span>
                             </button>
@@ -163,8 +163,8 @@ export default function ImpersonateIsland({ activeToken, impersonatedName, imper
                         <button
                             onClick={handleSave}
                             disabled={!token || isPending}
-                            className="active:scale-0.98 flex w-full items-center justify-center gap-3 rounded-(--beheer-radius) bg-(--beheer-accent) py-(--beheer-btn-py) text-base font-semibold text-white shadow-(--shadow-glow) transition-all hover:opacity-90 disabled:opacity-50"
-                        >
+                            className="active:scale-0.98 form-button flex w-full items-center justify-center gap-3 rounded-(--beheer-radius) bg-(--beheer-accent) py-(--beheer-btn-py) text-base font-semibold text-white shadow-(--shadow-glow) transition-all hover:opacity-90 disabled:opacity-50"
+                            type="button">
                             {isPending ? (
                                 <><Loader2 className="size-5 animate-spin" /> Controleren...</>
                             ) : status === 'success' ? (

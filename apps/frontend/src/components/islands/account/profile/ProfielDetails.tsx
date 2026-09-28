@@ -56,7 +56,7 @@ export default function ProfielDetails({
                 void handleLogout();
             }}
             className="group form-button flex items-center gap-2 rounded-xl border border-red-500/10 bg-red-500/5 px-4 py-2 text-xs font-bold text-red-500 transition-all hover:bg-red-500/10 active:scale-95"
-        >
+            type="button">
             <LogOut className="size-3.5 transition-transform group-hover:-translate-x-0.5" />
             <span>Uitloggen</span>
         </button>
@@ -110,7 +110,10 @@ export default function ProfielDetails({
                             Telefoonnummer
                         </p>
                         {!isEditingPhoneNumber && (
-                            <button onClick={() => setIsEditingPhoneNumber(true)} className="icon-button rounded-md p-1 text-text-muted transition-colors hover:text-purple-500">
+                            <button
+                                onClick={() => setIsEditingPhoneNumber(true)}
+                                className="icon-button rounded-md p-1 text-text-muted transition-colors hover:text-purple-500"
+                                type="button">
                                 <Pen className="size-3.5" />
                             </button>
                         )}

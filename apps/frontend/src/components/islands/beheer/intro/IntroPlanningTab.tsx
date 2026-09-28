@@ -303,10 +303,16 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                     </Button>
                 )}
                 <div className="ml-auto flex gap-1 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-1.5 shadow-sm">
-                    <button onClick={() => setView('list')} className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${view === 'list' ? 'bg-(--beheer-accent) text-white shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
+                    <button
+                        onClick={() => setView('list')}
+                        className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${view === 'list' ? 'bg-(--beheer-accent) text-white shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
+                        type="button">
                         <List className="size-4" /> Lijst
                     </button>
-                    <button onClick={() => setView('calendar')} className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${view === 'calendar' ? 'bg-(--beheer-accent) text-white shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}>
+                    <button
+                        onClick={() => setView('calendar')}
+                        className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${view === 'calendar' ? 'bg-(--beheer-accent) text-white shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
+                        type="button">
                         <LayoutGrid className="size-4" /> Kalender
                     </button>
                 </div>
@@ -317,7 +323,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                     <button
                         onClick={() => setDayFilter(null)}
                         className={`tab-button shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap capitalize transition-all ${dayFilter === null ? 'bg-(--beheer-accent) text-white shadow-md' : 'border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
-                    >
+                        type="button">
                         Alle dagen
                     </button>
                     {availableDays.map(day => (
@@ -325,7 +331,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                             key={day}
                             onClick={() => setDayFilter(day)}
                             className={`tab-button shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap capitalize transition-all ${dayFilter === day ? 'bg-(--beheer-accent) text-white shadow-md' : 'border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
-                        >
+                            type="button">
                             {day}
                         </button>
                     ))}
@@ -338,7 +344,10 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         <h3 className="text-xs font-semibold text-(--beheer-text-muted)">
                             {editingPlanning.id ? 'Planning Bewerken' : 'Nieuw Planning Item'}
                         </h3>
-                        <button onClick={() => setEditingPlanning(null)} className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)">
+                        <button
+                            onClick={() => setEditingPlanning(null)}
+                            className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)"
+                            type="button">
                             <X className="size-5" />
                         </button>
                     </div>

@@ -73,7 +73,7 @@ export default function ActivitySignupTable({
                                                 ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500'
                                                 : 'border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:border-emerald-500/50 hover:text-emerald-500'
                                                 } ${!canAccessEdit ? 'cursor-not-allowed opacity-50' : ''}`}
-                                        >
+                                            type="button">
                                             {signup.checked_in ? (
                                                 <>
                                                     <CheckCircle2 className="size-4" />
@@ -125,7 +125,7 @@ export default function ActivitySignupTable({
                                             onClick={() => onDelete(signup.id, email)}
                                             className="icon-button inline-flex size-10 cursor-pointer items-center justify-center rounded-xl text-(--beheer-text-muted) opacity-30 transition-all hover:bg-red-500/10 hover:text-red-500 hover:opacity-100"
                                             title="Verwijder aanmelding"
-                                        >
+                                            type="button">
                                             {isRowDeleting ? (
                                                 <Loader2 className="size-5 animate-spin" />
                                             ) : (

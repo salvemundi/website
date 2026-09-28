@@ -83,10 +83,10 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                         <Fragment key={preorder.id}>
                                             <tr className="transition-colors hover:bg-(--beheer-card-soft)/30">
                                                 <td className="px-6 py-4">
-                                                    <button 
-                                                        onClick={() => setExpandedId(expandedId === preorder.id ? null : preorder.id)} 
+                                                    <button
+                                                        onClick={() => setExpandedId(expandedId === preorder.id ? null : preorder.id)}
                                                         className="beheer-button flex w-fit cursor-pointer items-center gap-2 text-sm font-semibold text-(--beheer-text) transition-colors hover:text-(--beheer-accent)"
-                                                    >
+                                                        type="button">
                                                         {expandedId === preorder.id ? <ChevronUp className="size-4 shrink-0 text-(--beheer-accent)" /> : <ChevronDown className="size-4 shrink-0 text-(--beheer-text-muted)" />}
                                                         <span>{preorder.first_name} {preorder.last_name}</span>
                                                     </button>
@@ -115,7 +115,7 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                                                 onClick={() => handleCopyLink(preorder.id)}
                                                                 title="Kopieer betaallink"
                                                                 className="icon-button cursor-pointer rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
-                                                            >
+                                                                type="button">
                                                                 <Copy className="size-4" />
                                                             </button>
                                                         )}

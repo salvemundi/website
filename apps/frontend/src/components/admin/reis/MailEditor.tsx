@@ -98,7 +98,7 @@ export default function MailEditor({
                             onClick={onSend}
                             disabled={sending || filteredCount === 0 || (emailType === 'custom' && (!subject.trim() || !message.trim()))}
                             className="group form-button flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-(--beheer-accent) px-10 py-4 text-[10px] font-semibold tracking-widest text-white uppercase shadow-xl transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 sm:w-auto"
-                        >
+                            type="button">
                             {sending ? <Loader2 className="size-5 animate-spin" /> : <Send className="size-5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />}
                             <span>Bericht Verzenden</span>
                         </button>

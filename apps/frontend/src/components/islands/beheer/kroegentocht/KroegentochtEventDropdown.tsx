@@ -49,7 +49,7 @@ export default function KroegentochtEventDropdown({
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="group beheer-button flex min-w-50 items-center gap-3 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 text-(--beheer-text) transition-all hover:border-(--beheer-accent)/50 active:scale-95"
-            >
+                type="button">
                 <div className="rounded-lg bg-(--beheer-accent)/10 p-1.5 text-(--beheer-accent)">
                     <Beer className="size-4" />
                 </div>
@@ -83,7 +83,7 @@ export default function KroegentochtEventDropdown({
                                         ? 'bg-(--beheer-accent)/10 text-(--beheer-accent)'
                                         : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) hover:text-(--beheer-text)'
                                         }`}
-                                >
+                                    type="button">
                                     <div className={`rounded-lg p-2 transition-colors ${isSelected ? 'bg-(--beheer-accent) text-white' : 'bg-(--beheer-border)/50 group-hover/item:bg-(--beheer-accent)/10 group-hover/item:text-(--beheer-accent)'}`}>
                                         <Calendar className="size-3.5" />
                                     </div>

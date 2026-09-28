@@ -132,14 +132,14 @@ export default function SignupTableView({
                                                         onClick={() => signup.id && onEdit(signup.id)}
                                                         className="icon-button cursor-pointer rounded-md p-1.5 text-(--text-muted) transition-all hover:bg-(--theme-purple)/10 hover:text-(--theme-purple)"
                                                         title="Inschrijving bewerken"
-                                                    >
+                                                        type="button">
                                                         <Edit className="size-3.5" />
                                                     </button>
                                                     <button
                                                         onClick={() => signup.id && onDelete(signup.id)}
                                                         className="icon-button cursor-pointer rounded-md p-1.5 text-(--text-muted) transition-all hover:bg-red-500/10 hover:text-red-500"
                                                         title="Inschrijving verwijderen"
-                                                    >
+                                                        type="button">
                                                         <Trash className="size-3.5" />
                                                     </button>
                                                 </div>

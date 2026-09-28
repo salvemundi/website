@@ -46,8 +46,8 @@ export default function ImpersonationBanner({ targetName, adminName, committees 
                     <button
                         onClick={handleStop}
                         disabled={isPending}
-                        className="flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3 py-1 text-base font-bold text-orange-700 transition-all hover:scale-105 hover:bg-orange-50 active:scale-95 disabled:opacity-50"
-                    >
+                        className="form-button flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3 py-1 text-base font-bold text-orange-700 transition-all hover:scale-105 hover:bg-orange-50 active:scale-95 disabled:opacity-50"
+                        type="button">
                         {isPending ? 'Bezig...' : (
                             <>
                                 <X className="size-3" />
@@ -57,7 +57,7 @@ export default function ImpersonationBanner({ targetName, adminName, committees 
                     </button>
                 </div>
             </div>
-            
+
             {/* Standardize the height variable for other components like Header and BeheerToolbar */}
             <style jsx global>{`
                 :root {

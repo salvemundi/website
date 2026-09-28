@@ -185,7 +185,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
                     type="button"
                     disabled={disabled}
                     onClick={toggleOpen}
-                    className="flex h-14 shrink-0 cursor-pointer items-center gap-2 rounded-l-2xl border-r border-border-color/40 bg-bg-soft px-3.5 text-sm font-bold text-text-main transition-colors select-none hover:bg-black/5 focus:outline-none dark:hover:bg-white/5"
+                    className="form-button flex h-14 shrink-0 cursor-pointer items-center gap-2 rounded-l-2xl border-r border-border-color/40 bg-bg-soft px-3.5 text-sm font-bold text-text-main transition-colors select-none hover:bg-black/5 focus:outline-none dark:hover:bg-white/5"
                     aria-label={`Selecteer land, huidig: ${countryDisplayName} (${selectedCountry.dialCode})`}
                     aria-expanded={isOpen}
                 >
@@ -247,7 +247,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
                                         key={c.code}
                                         type="button"
                                         onClick={() => handleSelectCountry(c)}
-                                        className={`flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
+                                        className={`form-button flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
                                             isSelected
                                                 ? 'bg-theme-purple/10 font-bold text-theme-purple'
                                                 : 'font-medium text-text-main hover:bg-bg-soft'

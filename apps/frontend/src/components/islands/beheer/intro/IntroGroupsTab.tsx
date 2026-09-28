@@ -81,7 +81,10 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                 <div className="mb-8 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-2xl">
                     <div className="mb-8 flex items-center justify-between">
                         <h3 className="text-xs font-semibold text-(--beheer-text-muted)">Nieuw Groepje</h3>
-                        <button onClick={() => setCreating(false)} className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)">
+                        <button
+                            onClick={() => setCreating(false)}
+                            className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)"
+                            type="button">
                             <X className="size-5" />
                         </button>
                     </div>
@@ -194,7 +197,7 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                                         onClick={() => { void onRemoveLeader(group.id, leader.user_id); }}
                                                         className="icon-button rounded-full p-1 text-(--beheer-text-muted) transition-colors hover:bg-red-500/10 hover:text-red-500"
                                                         title="Verwijderen"
-                                                    >
+                                                        type="button">
                                                         <X className="size-3" />
                                                     </button>
                                                 </div>

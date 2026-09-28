@@ -232,7 +232,7 @@ export default function LedenDetailIsland({
                                 ? 'border-(--beheer-accent) text-(--beheer-accent)'
                                 : 'border-transparent text-(--beheer-text-muted) hover:text-(--beheer-text)'
                                 }`}
-                        >
+                            type="button">
                             <tab.icon className="size-4" /> {tab.label}
                         </button>
                     )

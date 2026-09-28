@@ -103,7 +103,7 @@ export default function BeheerLedenSearch({
                         <button
                             type="button"
                             onClick={() => { setQuery(''); setResults([]); }}
-                            className="rounded-lg p-1 text-text-muted transition-all hover:bg-bg-soft hover:text-text-main"
+                            className="form-button rounded-lg p-1 text-text-muted transition-all hover:bg-bg-soft hover:text-text-main"
                         >
                             <X className="size-3.5" />
                         </button>
@@ -125,7 +125,7 @@ export default function BeheerLedenSearch({
                                     key={user.id}
                                     type="button"
                                     onClick={() => handleSelect(user)}
-                                    className="group flex w-full items-center justify-between rounded-2xl border border-transparent p-3.5 text-left transition-all hover:border-theme-purple/10 hover:bg-theme-purple/10"
+                                    className="group form-button flex w-full items-center justify-between rounded-2xl border border-transparent p-3.5 text-left transition-all hover:border-theme-purple/10 hover:bg-theme-purple/10"
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-bg-soft text-xs font-semibold text-text-muted shadow-inner ring-1 ring-border-color/50 transition-all group-hover:bg-theme-purple group-hover:text-white">
@@ -162,4 +162,4 @@ export default function BeheerLedenSearch({
             )}
         </div>
     );
-}
+}

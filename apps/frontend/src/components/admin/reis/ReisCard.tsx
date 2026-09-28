@@ -79,7 +79,7 @@ export default function ReisCard({ trip, onEdit, onDelete, isDeleting }: ReisCar
                     <button
                         onClick={onEdit}
                         className="beheer-button flex items-center justify-center gap-2 rounded-xl bg-(--bg-main) px-4 py-3 text-[10px] font-black tracking-widest text-(--beheer-text) uppercase ring-1 ring-(--beheer-border)/50 transition-all hover:bg-(--beheer-border)/10"
-                    >
+                        type="button">
                         <Pen className="size-3.5" />
                         Bewerken
                     </button>
@@ -87,7 +87,7 @@ export default function ReisCard({ trip, onEdit, onDelete, isDeleting }: ReisCar
                         onClick={onDelete}
                         disabled={isDeleting}
                         className="beheer-button flex items-center justify-center gap-2 rounded-xl bg-(--beheer-inactive)/5 px-4 py-3 text-[10px] font-black tracking-widest text-(--beheer-inactive) uppercase ring-1 ring-(--beheer-inactive)/20 transition-all hover:bg-(--beheer-inactive)/10"
-                    >
+                        type="button">
                         {isDeleting ? <Loader2 className="size-3.5 animate-spin" /> : <Trash className="size-3.5" />}
                         Wissen
                     </button>

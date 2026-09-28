@@ -90,7 +90,7 @@ export default function ReisFilters({
                         <button
                             onClick={onDownloadCSV}
                             className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-emerald-700 px-6 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-95"
-                        >
+                            type="button">
                             <Download className="size-3.5" />
                             Exporteer CSV
                         </button>

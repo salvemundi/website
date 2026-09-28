@@ -33,7 +33,7 @@ export default function ProfielSignups({
                     <button
                         onClick={() => setShowPastEvents((previousValue) => !previousValue)}
                         className="tab-button inline-flex items-center justify-center rounded-xl border border-purple-100 bg-purple-50 px-4 py-2 text-[10px] font-black text-purple-700 uppercase transition hover:bg-purple-100 disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
-                    >
+                        type="button">
                         {showPastEvents ? "Verberg oude" : "Toon oude"}
                     </button>
                     <Link

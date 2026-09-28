@@ -45,7 +45,7 @@ export default function DistributionPreviewModal({
                     <button
                         onClick={onClose}
                         className="icon-button cursor-pointer rounded-lg p-2 text-(--text-muted) transition-colors hover:bg-(--bg-main)/50 hover:text-(--text-main)"
-                    >
+                        type="button">
                         <X className="size-5" />
                     </button>
                 </div>

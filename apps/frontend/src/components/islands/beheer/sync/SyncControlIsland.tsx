@@ -50,7 +50,7 @@ export default function SyncControlIsland() {
                                                 ? 'border-(--beheer-accent) bg-(--beheer-accent) text-white shadow-sm' 
                                                 : 'border-(--beheer-border)/50 bg-(--beheer-card-bg) text-(--beheer-text-muted) hover:border-(--beheer-accent)/30 hover:text-(--beheer-text)'
                                         }`}
-                                    >
+                                        type="button">
                                         {field.label}
                                     </button>
                                 );
@@ -65,7 +65,7 @@ export default function SyncControlIsland() {
                                 onClick={() => item.setValue(!item.value)}
                                 disabled={isBusy}
                                 className={`beheer-button flex items-center justify-between rounded-xl border p-3.5 transition-all ${item.value ? 'border-(--beheer-accent) bg-(--beheer-card-soft)' : 'group border-(--beheer-border) bg-(--beheer-card-bg) hover:border-(--beheer-accent)/30'}`}
-                            >
+                                type="button">
                                 <span className={`text-[11px] font-semibold transition-colors ${item.value ? 'text-(--beheer-text)' : 'text-(--beheer-text-muted) group-hover:text-(--beheer-text)'}`}>
                                     {item.label}
                                 </span>
@@ -83,7 +83,7 @@ export default function SyncControlIsland() {
                                     onClick={() => { void handleStopSync(); }}
                                     disabled={isStopping || status.abortRequested}
                                     className="hover:scale-1.01 beheer-button flex w-full items-center justify-center gap-2 rounded-xl bg-(--beheer-inactive) py-3.5 text-xs font-semibold text-white shadow-md transition-all active:scale-95 disabled:opacity-50"
-                                >
+                                    type="button">
                                     <X className={`size-4 ${isStopping ? 'animate-spin' : ''}`} />
                                     {status.abortRequested ? 'Afbreken aangevraagd...' : 'Synchronisatie Stoppen'}
                                 </button>
@@ -92,7 +92,7 @@ export default function SyncControlIsland() {
                                         onClick={() => { void handleResetSync(); }}
                                         disabled={isResetting}
                                         className="beheer-button flex w-full items-center justify-center gap-2 py-2 text-[11px] font-semibold text-(--beheer-inactive) hover:underline disabled:opacity-50"
-                                    >
+                                        type="button">
                                         <RefreshCw className={`size-3 ${isResetting ? 'animate-spin' : ''}`} />
                                         Forceer Reset (Emergency)
                                     </button>
@@ -103,7 +103,7 @@ export default function SyncControlIsland() {
                                 onClick={() => { void handleFullSync(); }}
                                 disabled={isStartingSync || !!status?.error}
                                 className="hover:scale-1.01 beheer-button flex w-full items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) py-3.5 text-xs font-semibold text-white shadow-md transition-all active:scale-95 disabled:opacity-50"
-                            >
+                                type="button">
                                 <RefreshCw className={`size-4 ${isStartingSync ? 'animate-spin' : ''}`} />
                                 Start Volledige Synchronisatie
                             </button>

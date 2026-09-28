@@ -141,7 +141,7 @@ export default function LogsTab({
                                         ? 'border-(--beheer-accent)/20 bg-(--beheer-accent)/10 text-(--beheer-accent)'
                                         : 'border-transparent text-(--beheer-text-muted) hover:bg-(--beheer-card-soft)'
                                         }`}
-                                >
+                                    type="button">
                                     {f.label}
                                 </button>
                             ))}
@@ -168,7 +168,7 @@ export default function LogsTab({
                     <button
                         onClick={onRefresh}
                         className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-accent)"
-                    >
+                        type="button">
                         <RefreshCw className="size-5" />
                     </button>
                 </div>
@@ -393,7 +393,7 @@ export default function LogsTab({
                                                                                             toggleExpand(log.id);
                                                                                         }}
                                                                                         className="beheer-button flex items-center gap-1 rounded bg-(--beheer-accent)/10 px-2 py-0.5 text-[10px] font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/20 active:scale-95"
-                                                                                    >
+                                                                                        type="button">
                                                                                         {expandedLogs.has(log.id) ? 'Verberg details' : 'Toon details'}
                                                                                     </button>
                                                                                 ) : isArray ? (
@@ -428,7 +428,7 @@ export default function LogsTab({
                                                         onClick={() => { void handleAcknowledge(log.id); }}
                                                         disabled={acknowledging === log.id}
                                                         className="beheer-button text-[10px] text-(--beheer-accent) hover:text-(--beheer-accent)/80 hover:underline disabled:opacity-50"
-                                                    >
+                                                        type="button">
                                                         {acknowledging === log.id ? 'Bezig...' : 'Markeer als gezien'}
                                                     </button>
                                                 )}
@@ -452,7 +452,7 @@ export default function LogsTab({
                                                                 showToast('Gekopieerd naar klembord', 'success');
                                                             }}
                                                             className="beheer-button flex items-center gap-1 rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-1 text-xs font-semibold text-(--beheer-text) transition-all hover:bg-(--beheer-card-soft) active:scale-95"
-                                                        >
+                                                            type="button">
                                                             Kopieer JSON
                                                         </button>
                                                     </div>
@@ -479,7 +479,7 @@ export default function LogsTab({
                     <button
                         onClick={onLoadMore}
                         className="beheer-button rounded-xl border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 px-6 py-2 text-xs font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/20 active:scale-95"
-                    >
+                        type="button">
                         Meer laden
                     </button>
                 </div>

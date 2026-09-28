@@ -40,14 +40,14 @@ export default function AvatarPreviewModal({
                         onClick={onConfirm}
                         disabled={isPending}
                         className="squircle hover:scale-1.02 form-button w-full bg-purple-600 py-4 text-lg font-black text-white shadow-xl shadow-purple-600/20 transition-all hover:bg-purple-500 active:scale-95 disabled:opacity-50"
-                    >
+                        type="button">
                         {isPending ? 'Uploaden...' : 'Opslaan'}
                     </button>
                     <button
                         onClick={onCancel}
                         disabled={isPending}
                         className="squircle form-button w-full border-2 border-white/10 py-4 text-lg font-bold text-white transition-all hover:bg-white/5 active:scale-95 disabled:opacity-50"
-                    >
+                        type="button">
                         Annuleren
                     </button>
                 </div>

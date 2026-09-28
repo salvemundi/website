@@ -39,7 +39,10 @@ export default function ProfielGaming({
                         Minecraft Username
                     </p>
                     {!isEditingMinecraft && (
-                        <button onClick={() => setIsEditingMinecraft(true)} className="icon-button rounded-md p-1 text-text-muted transition-colors hover:text-purple-500">
+                        <button
+                            onClick={() => setIsEditingMinecraft(true)}
+                            className="icon-button rounded-md p-1 text-text-muted transition-colors hover:text-purple-500"
+                            type="button">
                             <Pen className="size-3.5" />
                         </button>
                     )}

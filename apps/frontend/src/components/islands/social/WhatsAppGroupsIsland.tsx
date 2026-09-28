@@ -73,7 +73,7 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
                                 <button
                                     onClick={() => handleJoinGroup(group.invite_link)}
                                     className="form-button flex items-center gap-2 rounded-full bg-purple-500 px-6 py-2 font-semibold text-white shadow-md transition-transform hover:-translate-y-0.5"
-                                >
+                                    type="button">
                                     <span>Word Lid</span>
                                     <ArrowRight className="size-4" />
                                 </button>

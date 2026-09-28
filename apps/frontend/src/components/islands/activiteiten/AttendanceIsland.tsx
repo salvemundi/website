@@ -186,7 +186,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                 <button
                     onClick={startScanner}
                     className="squircle form-button flex h-10 w-full items-center justify-center gap-2 bg-(--theme-purple) px-4 text-sm font-bold text-white shadow-(--theme-purple)/20 shadow-lg transition-all hover:scale-105 sm:h-12 sm:w-auto sm:justify-start sm:px-6 sm:text-base"
-                >
+                    type="button">
                     <QrCode className="size-4 sm:size-5" />
                     Scan QR
                 </button>
@@ -198,7 +198,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                     <button
                         onClick={handleCancelScanner}
                         className="squircle mt-6 form-button bg-white/20 px-8 py-3 text-base font-bold text-white transition-all hover:bg-white/30"
-                    >
+                        type="button">
                         Annuleren
                     </button>
                     <style jsx global>{`
@@ -218,7 +218,10 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                 <div className={`animate-in zoom-in flex items-center gap-3 rounded-xl p-4 duration-300 ${scanResult.success ? 'border border-green-100 bg-green-50 text-green-700' : 'border border-red-100 bg-red-50 text-red-700'}`}>
                     {scanResult.success ? <UserCheck className="size-6" /> : <UserX className="size-6" />}
                     <p className="text-base font-bold">{scanResult.message}</p>
-                    <button onClick={() => setScanResult(null)} className="ml-auto icon-button text-sm font-bold opacity-50">Sluiten</button>
+                    <button
+                        onClick={() => setScanResult(null)}
+                        className="ml-auto icon-button text-sm font-bold opacity-50"
+                        type="button">Sluiten</button>
                 </div>
             )}
 
@@ -270,7 +273,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                                         <button
                                             onClick={() => void handleToggleCheckIn(s.id, s.checked_in)}
                                             className={`form-button rounded-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-all sm:px-4 sm:text-sm ${s.checked_in ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
-                                        >
+                                            type="button">
                                             {s.checked_in ? 'Afmelden' : 'Inchecken'}
                                         </button>
                                     </td>
@@ -286,7 +289,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                     onClick={() => void fetchData()}
                     disabled={loading}
                     className="form-button flex items-center gap-2 text-base font-bold text-(--theme-purple)/60 transition-all hover:text-(--theme-purple) disabled:opacity-50"
-                >
+                    type="button">
                     <RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} />
                     Lijst vernieuwen
                 </button>

@@ -50,14 +50,14 @@ export default function StatusPending({ signupData, initialId, isLoggedIn }: Sta
                 <button
                     onClick={() => window.location.reload()}
                     className="form-button inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-(--border-color) bg-(--bg-soft) px-10 font-semibold text-(--text-main) transition-all hover:bg-(--bg-soft)/80"
-                >
+                    type="button">
                     <RefreshCw className="size-4" />
                     Check opnieuw
                 </button>
                 <button
                     onClick={() => { void handleRetry(); }}
                     className="form-button inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-(--theme-purple) px-10 font-semibold text-white shadow-(--theme-purple)/20 shadow-xl transition-all hover:scale-105"
-                >
+                    type="button">
                     <CreditCard className="size-4" />
                     Betaal nu
                 </button>

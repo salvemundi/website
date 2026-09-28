@@ -130,7 +130,7 @@ export default function ReisActivitiesIsland({
                                 <button
                                     onClick={() => setEditingActivity({})}
                                     className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--beheer-accent) px-6 py-2.5 text-xs font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
-                                >
+                                    type="button">
                                     <Plus className="size-3.5" />
                                     <span>Nieuwe Activiteit</span>
                                 </button>

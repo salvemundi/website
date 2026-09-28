@@ -38,7 +38,7 @@ export default function MembershipError({
                 <button
                     onClick={() => reset()}
                     className="squircle form-button flex items-center gap-2 bg-purple-500 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-purple-500/20 transition-all hover:-translate-y-0.5 hover:shadow-purple-500/40"
-                >
+                    type="button">
                     <RefreshCcw className="size-4" />
                     Opnieuw Proberen
                 </button>

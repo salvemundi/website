@@ -107,7 +107,10 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                     </div>
                     {activity?.id ? 'Bewerken' : 'Nieuwe Activiteit'}
                 </h2>
-                <button onClick={onCancel} className="icon-button rounded-xl bg-(--beheer-card-soft) p-3 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-card-soft)/80 hover:text-(--beheer-text) active:scale-90"><X className="size-5" /></button>
+                <button
+                    onClick={onCancel}
+                    className="icon-button rounded-xl bg-(--beheer-card-soft) p-3 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-card-soft)/80 hover:text-(--beheer-text) active:scale-90"
+                    type="button"><X className="size-5" /></button>
             </div>
 
             <form onSubmit={handleSubmit} className="relative z-10 space-y-10">

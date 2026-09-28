@@ -110,7 +110,10 @@ export default function MemberProfileTab({
                     <div className="mb-8 flex items-center justify-between">
                         <h3 className="text-xs font-semibold text-(--beheer-text-muted)">Gegevens</h3>
                         {hasAccess && !isEditing && (
-                            <button onClick={() => setIsEditing(true)} className="icon-button cursor-pointer rounded-xl p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)">
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="icon-button cursor-pointer rounded-xl p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
+                                type="button">
                                 <Edit className="size-4" />
                             </button>
                         )}
@@ -138,10 +141,17 @@ export default function MemberProfileTab({
                                 </div>
                             ))}
                             <div className="flex gap-3 pt-4">
-                                <button onClick={() => { void handleSave(); }} disabled={saving} className="beheer-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) px-4 py-3 text-xs font-semibold text-white shadow-(--shadow-glow) transition-all hover:opacity-90 disabled:opacity-50">
+                                <button
+                                    onClick={() => { void handleSave(); }}
+                                    disabled={saving}
+                                    className="beheer-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) px-4 py-3 text-xs font-semibold text-white shadow-(--shadow-glow) transition-all hover:opacity-90 disabled:opacity-50"
+                                    type="button">
                                     {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />} Opslaan
                                 </button>
-                                <button onClick={() => setIsEditing(false)} className="beheer-button flex-1 cursor-pointer rounded-xl border border-transparent px-4 py-3 text-xs font-semibold text-(--beheer-text-muted) transition-all hover:border-(--beheer-border) hover:bg-(--beheer-card-soft)">
+                                <button
+                                    onClick={() => setIsEditing(false)}
+                                    className="beheer-button flex-1 cursor-pointer rounded-xl border border-transparent px-4 py-3 text-xs font-semibold text-(--beheer-text-muted) transition-all hover:border-(--beheer-border) hover:bg-(--beheer-card-soft)"
+                                    type="button">
                                     X
                                 </button>
                             </div>

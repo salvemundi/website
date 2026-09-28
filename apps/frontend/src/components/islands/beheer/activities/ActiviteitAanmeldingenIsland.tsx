@@ -153,7 +153,7 @@ export default function ActiviteitAanmeldingenIsland({
                             onClick={() => exportSignupsToCSV(filteredSignups, event.name)}
                             disabled={filteredSignups.length === 0}
                             className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-6 py-2.5 text-xs font-semibold text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 active:scale-95 disabled:opacity-50"
-                        >
+                            type="button">
                             <Download className="size-3.5" />
                             Exporteer
                         </button>
@@ -161,7 +161,7 @@ export default function ActiviteitAanmeldingenIsland({
                             <button
                                 onClick={() => setIsManualModalOpen(true)}
                                 className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--beheer-accent) px-6 py-2.5 text-xs font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
-                            >
+                                type="button">
                                 <UserPlus className="size-3.5" />
                                 Handmatig
                             </button>
@@ -171,7 +171,7 @@ export default function ActiviteitAanmeldingenIsland({
                                 onClick={() => setIsMailModalOpen(true)}
                                 disabled={optimisticSignups.length === 0}
                                 className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-6 py-2.5 text-xs font-semibold text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 active:scale-95 disabled:opacity-50"
-                            >
+                                type="button">
                                 <Mail className="size-3.5" />
                                 Mail
                             </button>

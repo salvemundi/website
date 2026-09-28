@@ -296,7 +296,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                                 key={tab.id}
                                 onClick={() => handleTabChange(tab.id as typeof activeTab)}
                                 className={`tab-button flex items-center gap-2 rounded-xl px-4 py-2 text-[11px] font-semibold transition-all ${activeTab === tab.id ? 'bg-(--beheer-card-bg) text-(--beheer-accent) shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
-                            >
+                                type="button">
                                 <tab.icon className="size-3" /> {tab.label}
                             </button>
                         ))}
@@ -315,7 +315,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         <button
                             onClick={() => { void toggleManualApproval(); }}
                             className={`relative beheer-button inline-flex h-5 w-10 shrink-0 items-center rounded-full transition-all focus:outline-none ${manualApproval ? 'bg-amber-500' : 'bg-green-500'}`}
-                        >
+                            type="button">
                             <span className={`inline-block size-3 transform rounded-full bg-white shadow-sm transition-transform ${manualApproval ? 'translate-x-[1.2rem]' : 'translate-x-1'}`} />
                         </button>
                     </div>

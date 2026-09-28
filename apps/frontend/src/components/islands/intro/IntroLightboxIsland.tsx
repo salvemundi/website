@@ -79,7 +79,7 @@ export const IntroLightboxIsland = () => {
                         onClick={closeLightbox}
                         className="bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground border-border absolute top-4 right-4 z-50 icon-button rounded-full border p-2 backdrop-blur-sm transition-colors"
                         aria-label="Sluiten"
-                    >
+                        type="button">
                         ×
                     </button>
 

@@ -45,14 +45,13 @@ export default function IntroFilters({
                         <button
                             onClick={onExport}
                             className="beheer-button flex items-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-sm font-semibold text-(--beheer-text) shadow-sm transition-colors hover:bg-(--beheer-card-soft) active:scale-95"
-                        >
+                            type="button">
                             <Download className="size-4 text-(--beheer-text-muted)" />
                             <span className="hidden sm:inline">Exporteer CSV</span>
                         </button>
                     )}
                 </div>
             </div>
-
 
             {/* Compact dropdown for narrow screens, where a full tab row doesn't fit */}
             <div className="lg:hidden">
@@ -80,7 +79,7 @@ export default function IntroFilters({
                             ? 'bg-(--beheer-accent) text-white shadow-sm'
                             : 'text-(--beheer-text-muted) hover:bg-(--beheer-border)/30 hover:text-(--beheer-text)'
                             }`}
-                    >
+                        type="button">
                         <tab.icon className="size-4" />
                         {tab.label}
                         <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] ${activeTab === tab.id

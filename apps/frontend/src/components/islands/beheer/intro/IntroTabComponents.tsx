@@ -44,7 +44,7 @@ export function Button({
             onClick={onClick}
             disabled={disabled || loading}
             className={`beheer-button flex items-center justify-center gap-2 rounded-(--beheer-radius) px-6 py-3 text-sm font-semibold transition-all active:scale-95 disabled:opacity-50 ${variants.get(variant) || ''} ${className}`}
-        >
+            type="button">
             {loading ? <Loader2 className="size-4 animate-spin" /> : Icon && <Icon className="size-4" />}
             {children}
         </button>
@@ -78,7 +78,7 @@ export function ActionButton({
             disabled={disabled || loading}
             title={title}
             className={`icon-button rounded-xl border p-2.5 transition-all active:scale-90 disabled:opacity-50 ${variants.get(variant) || ''}`}
-        >
+            type="button">
             {loading ? <Loader2 className="size-4 animate-spin" /> : <Icon className="size-4" />}
         </button>
     );

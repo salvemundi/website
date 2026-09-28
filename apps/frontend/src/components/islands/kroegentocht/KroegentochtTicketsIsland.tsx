@@ -28,22 +28,22 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
             canvas.width = width;
             canvas.height = height;
 
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = 'var(--bg-main, #ffffff)';
             ctx.fillRect(0, 0, width, height);
 
-            ctx.fillStyle = '#7B2CBF';
+            ctx.fillStyle = 'var(--theme-purple, #7B2CBF)';
             ctx.fillRect(0, 0, width, 120);
 
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = 'var(--bg-main, #ffffff)';
             ctx.font = 'bold 36px Arial';
             ctx.textAlign = 'center';
             ctx.fillText(`KROEGENTOCHT TICKET ${index + 1}`, width / 2, 75);
 
-            ctx.fillStyle = '#1e1e1e';
+            ctx.fillStyle = 'var(--text-main, #1e1e1e)';
             ctx.font = 'bold 48px Arial';
             ctx.fillText(`${ticket.name} ${ticket.initial}.`, width / 2, 220);
 
-            ctx.strokeStyle = '#eeeeee';
+            ctx.strokeStyle = 'var(--border-color, #eeeeee)';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(100, 280);
@@ -64,7 +64,7 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
                 qrImg.src = qrDataUrl;
             });
 
-            ctx.fillStyle = '#666666';
+            ctx.fillStyle = 'var(--text-muted, #666666)';
             ctx.font = '20px Arial';
             ctx.fillText('Laat deze code scannen bij de ingang', width / 2, 750);
 
@@ -123,7 +123,7 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
                             <button
                                 onClick={() => { void downloadTicketAsImage(ticket, i); }}
                                 className="active:scale-0.98 mt-6 form-button flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-3 text-xs font-black text-purple-700 shadow-sm transition-all hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-purple-300 dark:hover:bg-white/10"
-                            >
+                                type="button">
                                 <Download className="size-4" />
                                 Download Ticket
                             </button>

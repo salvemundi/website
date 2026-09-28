@@ -31,7 +31,7 @@ function FilterTab({ active, label, count, onClick, color = 'indigo' }: FilterTa
                 ? `${colorVariants.get(color)} border-transparent shadow-sm`
                 : 'border-(--beheer-border)/50 bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:border-(--beheer-accent)/30 hover:text-(--beheer-text)'
                 }`}
-        >
+            type="button">
             <span>{label}</span>
             <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${active ? 'bg-white/20' : 'bg-(--beheer-border)/30'}`}>
                 {count}
@@ -105,7 +105,7 @@ export default function SyncMonitorIsland() {
                                     <button
                                         onClick={() => setShowStack(!showStack)}
                                         className="beheer-button flex items-center gap-1 text-[11px] font-semibold text-(--theme-error) transition-colors hover:underline"
-                                    >
+                                        type="button">
                                         {showStack ? 'Verberg details' : 'Bekijk technische details (Stack Trace)'}
                                     </button>
 

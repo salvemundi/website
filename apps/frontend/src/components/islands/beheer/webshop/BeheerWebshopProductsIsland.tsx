@@ -139,7 +139,7 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
                         <button
                             onClick={() => setDropWindowModal({ open: true, editing: null })}
                             className="beheer-button flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:opacity-95 active:scale-95"
-                        >
+                            type="button">
                             <Plus className="size-4" />
                             <span>Nieuwe drop</span>
                         </button>
@@ -176,10 +176,19 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-end gap-2">
-                                                        <button onClick={() => setDropWindowModal({ open: true, editing: dw })} className="icon-button cursor-pointer rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)" aria-label="Bewerken">
+                                                        <button
+                                                            onClick={() => setDropWindowModal({ open: true, editing: dw })}
+                                                            className="icon-button cursor-pointer rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
+                                                            aria-label="Bewerken"
+                                                            type="button">
                                                             <Edit2 className="size-4" />
                                                         </button>
-                                                        <button onClick={() => handleDeleteDropWindow(dw.id)} disabled={deletingId === dw.id} className="icon-button cursor-pointer rounded-lg p-2 text-red-500 transition-all hover:bg-red-500/10 disabled:opacity-50" aria-label="Verwijderen">
+                                                        <button
+                                                            onClick={() => handleDeleteDropWindow(dw.id)}
+                                                            disabled={deletingId === dw.id}
+                                                            className="icon-button cursor-pointer rounded-lg p-2 text-red-500 transition-all hover:bg-red-500/10 disabled:opacity-50"
+                                                            aria-label="Verwijderen"
+                                                            type="button">
                                                             <Trash2 className="size-4" />
                                                         </button>
                                                     </div>
@@ -205,7 +214,7 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
                         <button
                             onClick={() => setProductModal({ open: true, editing: null })}
                             className="beheer-button flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:opacity-95 active:scale-95"
-                        >
+                            type="button">
                             <Plus className="size-4" />
                             <span>Nieuw product</span>
                         </button>
@@ -242,16 +251,29 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
                                                 <td className="px-6 py-4 text-sm text-(--beheer-text-muted)">€{Number(product.price).toFixed(2)}</td>
                                                 <td className="px-6 py-4 text-sm text-(--beheer-text-muted)"><StockBadge product={product} /></td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <button onClick={() => handleToggleActive(product)} disabled={togglingId === product.id} className="icon-button cursor-pointer text-(--beheer-text-muted) transition-all hover:text-(--beheer-accent) disabled:opacity-50">
+                                                    <button
+                                                        onClick={() => handleToggleActive(product)}
+                                                        disabled={togglingId === product.id}
+                                                        className="icon-button cursor-pointer text-(--beheer-text-muted) transition-all hover:text-(--beheer-accent) disabled:opacity-50"
+                                                        type="button">
                                                         {product.is_active ? <ToggleRight className="mx-auto size-6 text-emerald-500" /> : <ToggleLeft className="mx-auto size-6" />}
                                                     </button>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-end gap-2">
-                                                        <button onClick={() => setProductModal({ open: true, editing: product })} className="icon-button cursor-pointer rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)" aria-label="Bewerken">
+                                                        <button
+                                                            onClick={() => setProductModal({ open: true, editing: product })}
+                                                            className="icon-button cursor-pointer rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
+                                                            aria-label="Bewerken"
+                                                            type="button">
                                                             <Edit2 className="size-4" />
                                                         </button>
-                                                        <button onClick={() => handleDeleteProduct(product.id)} disabled={deletingId === product.id} className="icon-button cursor-pointer rounded-lg p-2 text-red-500 transition-all hover:bg-red-500/10 disabled:opacity-50" aria-label="Verwijderen">
+                                                        <button
+                                                            onClick={() => handleDeleteProduct(product.id)}
+                                                            disabled={deletingId === product.id}
+                                                            className="icon-button cursor-pointer rounded-lg p-2 text-red-500 transition-all hover:bg-red-500/10 disabled:opacity-50"
+                                                            aria-label="Verwijderen"
+                                                            type="button">
                                                             <Trash2 className="size-4" />
                                                         </button>
                                                     </div>

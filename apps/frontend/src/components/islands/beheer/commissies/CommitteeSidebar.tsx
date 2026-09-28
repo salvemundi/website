@@ -54,13 +54,13 @@ export default function CommitteeSidebar({
                         <button
                             onClick={() => onShowAllChange(false)}
                             className={`tab-button flex-1 rounded-lg py-2 text-xs font-semibold transition-all ${!showAll ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
-                        >
+                            type="button">
                             Kern
                         </button>
                         <button
                             onClick={() => onShowAllChange(true)}
                             className={`tab-button flex-1 rounded-lg py-2 text-xs font-semibold transition-all ${showAll ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
-                        >
+                            type="button">
                             Alles
                         </button>
                     </div>
@@ -81,7 +81,7 @@ export default function CommitteeSidebar({
                             className={`group beheer-button flex w-full items-center justify-between rounded-xl border-none p-4 transition-all ${selectedId === c.id
                                 ? 'bg-(--beheer-accent) text-white shadow-(--shadow-glow)'
                                 : 'bg-(--beheer-card-soft)/40 text-(--beheer-text) hover:translate-x-1 hover:bg-(--beheer-card-soft)'}`}
-                        >
+                            type="button">
                             <div className="min-w-0 text-left">
                                 <div className={`truncate text-sm font-semibold ${selectedId === c.id ? 'text-white' : 'text-(--beheer-text)'}`}>
                                     {normalizeName(c.name)}

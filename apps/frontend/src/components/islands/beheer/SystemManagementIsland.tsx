@@ -117,7 +117,7 @@ export default function SystemManagementIsland({
                                     ? "border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-accent) shadow-sm"
                                     : "text-(--beheer-text-muted) hover:bg-(--beheer-card-bg)/40 hover:text-(--beheer-text)"
                             )}
-                        >
+                            type="button">
                             <Activity className="size-3.5" />
                             Status
                         </button>
@@ -129,7 +129,7 @@ export default function SystemManagementIsland({
                                     ? "border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-accent) shadow-sm"
                                     : "text-(--beheer-text-muted) hover:bg-(--beheer-card-bg)/40 hover:text-(--beheer-text)"
                             )}
-                        >
+                            type="button">
                             <Settings2 className="size-3.5" />
                             Automatisering
                         </button>
@@ -139,7 +139,7 @@ export default function SystemManagementIsland({
                         onClick={() => { void fetchStatus(); }}
                         disabled={isRefreshing}
                         className="beheer-button flex items-center justify-center gap-2 rounded-2xl border border-(--beheer-border) bg-(--beheer-card-bg) px-8 py-3 text-[10px] font-semibold text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 active:scale-95 disabled:opacity-50"
-                    >
+                        type="button">
                         <RefreshCw className={cn("size-3.5", isRefreshing && "animate-spin")} />
                         Update Status
                     </button>

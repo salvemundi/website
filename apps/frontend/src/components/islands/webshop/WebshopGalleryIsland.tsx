@@ -109,7 +109,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                         onClick={() => setLightboxOpen(false)}
                         className="bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground border-border absolute top-4 right-4 z-50 form-button rounded-full border p-2 backdrop-blur-sm transition-colors"
                         aria-label="Sluiten"
-                    >
+                        type="button">
                         ×
                     </button>
 

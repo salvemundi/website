@@ -63,7 +63,7 @@ export function ReisFormIsland({
                     disabled={refreshing}
                     className="icon-button rounded-2xl bg-purple-500/5 p-3 text-(--text-muted) transition-all hover:bg-purple-500/10 hover:text-purple-500 active:scale-90 disabled:opacity-50"
                     title="Gegevens vernieuwen"
-                >
+                    type="button">
                     <RefreshCcw className={`size-5 ${refreshing ? 'animate-spin' : ''}`} />
                 </button>
             }

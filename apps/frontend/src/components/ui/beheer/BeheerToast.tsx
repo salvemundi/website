@@ -73,9 +73,9 @@ export default function BeheerToast({ toast, onClose }: AdminToastProps) {
                 {onClose && (
                     <button
                         onClick={onClose}
-                        className="shrink-0 cursor-pointer rounded-lg p-1.5 text-text-muted transition-colors hover:bg-white/5 sm:rounded-xl sm:p-2"
+                        className="form-button shrink-0 cursor-pointer rounded-lg p-1.5 text-text-muted transition-colors hover:bg-white/5 sm:rounded-xl sm:p-2"
                         aria-label="Sluiten"
-                    >
+                        type="button">
                         <XCircle className="size-4 opacity-40 hover:opacity-100" />
                     </button>
                 )}

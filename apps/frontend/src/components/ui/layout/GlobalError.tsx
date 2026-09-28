@@ -39,8 +39,9 @@ export default function GlobalError({
 
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <button
+                    type="button"
                     onClick={() => reset()}
-                    className="squircle flex items-center gap-2 bg-purple-500 px-8 py-3.5 font-bold text-white shadow-lg shadow-purple-500/20 transition-all hover:-translate-y-0.5 hover:shadow-purple-500/40"
+                    className="squircle form-button flex items-center gap-2 bg-purple-500 px-8 py-3.5 font-bold text-white shadow-lg shadow-purple-500/20 transition-all hover:-translate-y-0.5 hover:shadow-purple-500/40"
                 >
                     <RefreshCcw className="size-4" />
                     Opnieuw Proberen

@@ -128,7 +128,7 @@ export default function ActiviteitListCard({
                             onShowDetails?.();
                         }}
                         className="form-button rounded-full px-4 py-2 text-sm font-semibold text-white"
-                    >
+                        type="button">
                         Meer Informatie
                     </button>
 
@@ -140,7 +140,7 @@ export default function ActiviteitListCard({
                                     ? 'bg-(--bg-soft) text-(--text-muted)'
                                     : 'bg-(--theme-purple) text-white shadow-(--theme-purple)/30 shadow-lg hover:-translate-y-0.5 hover:shadow-xl'
                                 }`}
-                        >
+                            type="button">
                             {alreadySignedUp ? 'Al Aangemeld' : isDeadlinePassed ? 'Aanmelding Gesloten' : isFull ? 'Activiteit Vol' : 'Aanmelden'}
                         </button>
                     )}

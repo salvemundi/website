@@ -40,7 +40,10 @@ export default function ReisActivitySignupsModal({ activityName, options, signup
                         </h2>
                         <p className="ml-14 text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">{activityName}</p>
                     </div>
-                    <button onClick={onClose} className="group icon-button rounded-2xl bg-(--beheer-card-soft) p-4 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-card-soft)/80 hover:text-(--beheer-text) active:scale-90">
+                    <button
+                        onClick={onClose}
+                        className="group icon-button rounded-2xl bg-(--beheer-card-soft) p-4 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-card-soft)/80 hover:text-(--beheer-text) active:scale-90"
+                        type="button">
                         <X className="size-6" />
                     </button>
                 </div>
@@ -118,7 +121,7 @@ export default function ReisActivitySignupsModal({ activityName, options, signup
                     <button
                         onClick={onClose}
                         className="beheer-button rounded-xl border border-white/10 bg-(--beheer-accent) px-10 py-4 text-[10px] font-semibold text-white shadow-xl transition-all hover:opacity-90 active:scale-95"
-                    >
+                        type="button">
                         Venster Sluiten
                     </button>
                 </div>

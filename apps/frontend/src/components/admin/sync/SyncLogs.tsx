@@ -219,7 +219,7 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
                     <div className="divide-y divide-(--beheer-border)/10">{paginatedItems}</div>
                 )}
             </div>
-            
+
             {totalPages > 1 && (
                 <div className="flex items-center justify-between border-t border-(--beheer-border)/20 bg-(--beheer-card-soft) px-6 py-4">
                     <span className="text-[11px] font-semibold text-(--beheer-text-muted)">
@@ -230,7 +230,7 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
                             disabled={currentPage === 1}
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             className="beheer-button rounded-lg border border-(--beheer-border) px-3.5 py-1.5 text-[11px] font-bold text-(--beheer-text) transition-all hover:border-(--beheer-accent) disabled:opacity-40"
-                        >
+                            type="button">
                             Vorige
                         </button>
                         <span className="px-2 text-[11px] font-bold text-(--beheer-text)">
@@ -240,7 +240,7 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
                             disabled={currentPage === totalPages}
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             className="beheer-button rounded-lg border border-(--beheer-border) px-3.5 py-1.5 text-[11px] font-bold text-(--beheer-text) transition-all hover:border-(--beheer-accent) disabled:opacity-40"
-                        >
+                            type="button">
                             Volgende
                         </button>
                     </div>

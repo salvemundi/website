@@ -109,7 +109,10 @@ export default function IntroConfidantsTab({ confidants, onSave, onDelete, savin
                         <h3 className="text-xs font-semibold text-(--beheer-text-muted)">
                             {editing.id ? 'Vertrouwenspersoon Bewerken' : 'Nieuwe Vertrouwenspersoon'}
                         </h3>
-                        <button onClick={stopEditing} className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)">
+                        <button
+                            onClick={stopEditing}
+                            className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)"
+                            type="button">
                             <X className="size-5" />
                         </button>
                     </div>

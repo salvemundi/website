@@ -128,7 +128,7 @@ export default function ActivityCard({
                 <button
                     onClick={() => onViewSignups(event.id)}
                     className="group/btn beheer-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-(--beheer-accent)/10 px-4 py-3 text-[11px] font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent) hover:text-white active:scale-95 md:gap-4 md:px-6 md:py-5"
-                >
+                    type="button">
                     <Eye className="size-5 transition-transform group-hover/btn:scale-110" />
                     <span>Aanmeldingen</span>
                 </button>
@@ -136,7 +136,7 @@ export default function ActivityCard({
                 <button
                     onClick={() => onViewAttendance(event.id)}
                     className="group/btn beheer-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-emerald-500/10 px-4 py-3 text-[11px] font-semibold text-emerald-600 transition-all hover:bg-emerald-500 hover:text-white active:scale-95 md:gap-4 md:px-6 md:py-5"
-                >
+                    type="button">
                     <Users className="size-5 transition-transform group-hover/btn:scale-110" />
                     <span>Aanwezigheid</span>
                 </button>
@@ -145,7 +145,7 @@ export default function ActivityCard({
                     <button
                         onClick={() => onEdit(event.id)}
                         className="group/btn beheer-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-(--beheer-border) px-4 py-3 text-[11px] font-semibold text-(--beheer-text) transition-all hover:bg-(--beheer-border) active:scale-95 md:gap-4 md:px-6 md:py-5"
-                    >
+                        type="button">
                         <Edit className="size-5 transition-transform group-hover/btn:rotate-12" />
                         <span>Bewerken</span>
                     </button>

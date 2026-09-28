@@ -215,7 +215,7 @@ export default function StickerMap({
                             <div className="map-popup relative flex w-[290px] flex-col gap-4 rounded-3xl border border-(--border-color)/25 bg-(--bg-card) p-5 text-(--text-main) shadow-2xl sm:w-90">
                                 <button
                                     type="button"
-                                    className="absolute top-3 right-3 z-10 rounded-full p-1.5 transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                                    className="absolute top-3 right-3 z-10 icon-button rounded-full p-1.5 transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                                     onClick={() => { setPopupInfo(null); setShowImage(false); }}
                                 >
                                     <X className="size-4 text-(--text-muted)" />
@@ -266,7 +266,7 @@ export default function StickerMap({
                                             <button
                                                 type="button"
                                                 onClick={() => setShowImage(true)}
-                                                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-(--theme-purple) to-(--theme-purple-dark) py-2.5 text-[9px] font-bold tracking-widest text-white uppercase shadow-lg transition-all hover:shadow-xl sm:text-[10px]"
+                                                className="form-button flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-(--theme-purple) to-(--theme-purple-dark) py-2.5 text-[9px] font-bold tracking-widest text-white uppercase shadow-lg transition-all hover:shadow-xl sm:text-[10px]"
                                             >
                                                 <Camera className="size-3.5" />
                                                 Bekijk Foto Bewijs

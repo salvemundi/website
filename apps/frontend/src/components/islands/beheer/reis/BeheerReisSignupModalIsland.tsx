@@ -70,7 +70,7 @@ export default function BeheerReisSignupModalIsland({
                             disabled={isPending}
                             title="Verwijder Deelnemer"
                             className="icon-button rounded-full border border-transparent p-2.5 text-red-500/60 transition-all hover:border-red-500/20 hover:bg-red-500/5 hover:text-red-500 focus:outline-none active:scale-90"
-                        >
+                            type="button">
                             {isPending ? <Loader2 className="size-5 animate-spin" /> : <Trash className="size-5" />}
                         </button>
                         <div className="mx-1 h-6 w-px bg-(--beheer-border)/20" />
@@ -78,13 +78,13 @@ export default function BeheerReisSignupModalIsland({
                             onClick={onToggleEdit}
                             title={isEditing ? "Terug naar weergave" : "Bewerken"}
                             className={`icon-button rounded-full border p-2.5 transition-all focus:outline-none active:scale-90 ${isEditing ? 'border-(--beheer-accent) bg-(--beheer-accent) text-white shadow-glow' : 'border-transparent text-(--beheer-text-muted) hover:border-(--beheer-border) hover:text-(--beheer-accent)'}`}
-                        >
+                            type="button">
                             <Pen className="size-5" />
                         </button>
                         <button
                             onClick={onClose}
                             className="icon-button rounded-full border border-transparent p-2.5 text-(--beheer-text-muted) transition-all hover:border-(--beheer-border) hover:bg-(--beheer-card-bg) hover:text-(--beheer-text) focus:outline-none active:scale-90"
-                        >
+                            type="button">
                             <X className="size-5" />
                         </button>
                     </div>
@@ -166,7 +166,7 @@ export default function BeheerReisSignupModalIsland({
                             }}
                             disabled={isPending}
                             className="hover:scale-1.02 beheer-button flex items-center gap-3 rounded-2xl bg-(--beheer-accent) px-10 py-3 text-[10px] font-semibold text-white shadow-(--beheer-accent)/20 shadow-lg transition-all active:scale-95"
-                        >
+                            type="button">
                             {isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                             <span>Gegevens Opslaan</span>
                         </button>

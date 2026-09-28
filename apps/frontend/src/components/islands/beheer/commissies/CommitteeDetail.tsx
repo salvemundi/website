@@ -103,7 +103,7 @@ export default function CommitteeDetail({
                         <button
                             onClick={onToggleEditing}
                             className={`beheer-button flex flex-1 items-center justify-center gap-2 rounded-xl border px-6 py-3 text-xs font-semibold shadow-sm transition-all active:scale-95 md:flex-none ${editingDetail ? 'border-(--beheer-accent) bg-(--beheer-accent) text-white' : 'border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) hover:bg-white dark:hover:bg-white/5'}`}
-                        >
+                            type="button">
                             <Settings className={`size-4 ${editingDetail ? 'animate-spin' : ''}`} /> {editingDetail ? 'Annuleren' : 'Details'}
                         </button>
                     </div>
@@ -139,7 +139,7 @@ export default function CommitteeDetail({
                             onClick={onSaveDetail}
                             disabled={savingDetail}
                             className="active:scale-0.98 beheer-button flex w-full items-center justify-center gap-3 rounded-2xl bg-(--beheer-accent) py-5 text-sm font-semibold text-white shadow-(--beheer-accent)/20 shadow-xl transition-all hover:opacity-90 disabled:opacity-50"
-                        >
+                            type="button">
                             {savingDetail ? <Loader2 className="size-5 animate-spin" /> : <Save className="size-5" />}
                             Wijzigingen Opslaan
                         </button>
@@ -220,9 +220,9 @@ export default function CommitteeDetail({
                                             <button
                                                 onClick={() => onToggleLeader(member)}
                                                 disabled={!!actionLoading}
-                                                 className={`icon-button rounded-xl p-3 shadow-sm transition-all ${member.isLeader ? 'bg-amber-100 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400' : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950/20 dark:hover:text-amber-400'}`}
+                                                className={`icon-button rounded-xl p-3 shadow-sm transition-all ${member.isLeader ? 'bg-amber-100 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400' : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950/20 dark:hover:text-amber-400'}`}
                                                 title="Rechten status omschakelen"
-                                            >
+                                                type="button">
                                                 {actionLoading === `leader-${member.entraId}` ? <Loader2 className="size-4 animate-spin" /> : <Award className="size-4" />}
                                             </button>
                                         )}
@@ -232,7 +232,7 @@ export default function CommitteeDetail({
                                                 disabled={!!actionLoading}
                                                 className="icon-button rounded-xl bg-(--beheer-card-soft) p-3 text-(--beheer-text-muted) shadow-sm transition-all hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/20 dark:hover:text-red-400"
                                                 title="Verwijderen uit Azure groep"
-                                            >
+                                                type="button">
                                                 {actionLoading === `remove-${member.entraId}` ? <Loader2 className="size-4 animate-spin" /> : <UserMinus className="size-4" />}
                                             </button>
                                         )}

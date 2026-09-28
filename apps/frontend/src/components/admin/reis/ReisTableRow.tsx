@@ -57,7 +57,7 @@ export default function ReisTableRow({
                             onClick={(e) => { e.stopPropagation(); onSelect(signup, true); }}
                             className="icon-button rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-white/5 hover:text-(--beheer-accent)"
                             title="Bewerken"
-                        >
+                            type="button">
                             <Edit className="size-4" />
                         </button>
                         <div className="mx-0.5 h-4 w-px bg-(--beheer-border)/20" />
@@ -66,7 +66,7 @@ export default function ReisTableRow({
                             disabled={isDeleteLoading}
                             className="icon-button rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-red-400/5 hover:text-red-400 disabled:opacity-50"
                             title="Verwijderen"
-                        >
+                            type="button">
                             {isDeleteLoading ? (
                                 <Loader2 className="size-4 animate-spin" />
                             ) : (

@@ -146,7 +146,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                                     onClick={() => onApprove(sticker.id)}
                                                     className="icon-button rounded-lg bg-green-500/10 p-2 text-green-600 shadow-sm transition-all hover:bg-green-600 hover:text-white dark:text-green-400"
                                                     title="Publiceren"
-                                                >
+                                                    type="button">
                                                     <CheckCircle className="size-4" />
                                                 </button>
                                             )}
@@ -154,7 +154,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                                 onClick={() => onDelete(sticker.id)}
                                                 className="icon-button rounded-lg bg-red-500/10 p-2 text-red-600 shadow-sm transition-all hover:bg-red-500 hover:text-white dark:text-red-400"
                                                 title="Verwijderen"
-                                            >
+                                                type="button">
                                                 <Trash className="size-4" />
                                             </button>
                                         </div>
@@ -190,7 +190,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                         <button
                             className="absolute -top-4 -right-4 icon-button rounded-full border border-(--beheer-border) bg-(--beheer-card-bg) p-2 text-(--beheer-text) shadow-lg transition-colors hover:text-(--beheer-accent)"
                             onClick={() => setSelectedImage(null)}
-                        >
+                            type="button">
                             <X className="size-5" />
                             <span className="sr-only">Sluiten</span>
                         </button>

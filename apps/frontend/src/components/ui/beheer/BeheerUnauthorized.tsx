@@ -60,8 +60,8 @@ export default function BeheerUnauthorized({
                 ) : (
                     <button
                         onClick={() => window.history.back()}
-                        className="flex items-center gap-2 rounded-full border border-border-color/20 bg-bg-card px-8 py-3.5 text-base font-bold tracking-widest text-text-main transition-all hover:bg-black/5 dark:hover:bg-white/5"
-                    >
+                        className="form-button flex items-center gap-2 rounded-full border border-border-color/20 bg-bg-card px-8 py-3.5 text-base font-bold tracking-widest text-text-main transition-all hover:bg-black/5 dark:hover:bg-white/5"
+                        type="button">
                         <ArrowLeft className="size-4" />
                         Vorige Pagina
                     </button>

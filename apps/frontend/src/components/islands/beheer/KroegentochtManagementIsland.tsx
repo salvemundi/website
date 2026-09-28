@@ -172,7 +172,7 @@ export default function KroegentochtManagementIsland({
                             disabled={isPending}
                             className="icon-button rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-2.5 text-(--beheer-text-muted) transition-all hover:border-(--beheer-accent)/30 hover:text-(--beheer-accent) active:scale-90 disabled:opacity-50"
                             title="Vernieuwen"
-                        >
+                            type="button">
                             <RefreshCw className={`size-4 ${isPending ? 'animate-spin' : ''}`} />
                         </button>
 
@@ -203,7 +203,7 @@ export default function KroegentochtManagementIsland({
                             <button
                                 onClick={handleRefresh}
                                 className="ml-auto beheer-button underline"
-                            >
+                                type="button">
                                 Probeer opnieuw
                             </button>
                         </div>
