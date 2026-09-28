@@ -1,6 +1,7 @@
 'use server';
 
 import 'server-only';
+import { headers } from 'next/headers';
 import { db, schema } from '@salvemundi/db';
 import { eq, and, lte, isNull, gte, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
@@ -9,7 +10,16 @@ import { safeConsoleError } from '@/server/utils/logger';
 import { sendNdaMail } from './nda-mail.utils';
 import { getCommitteeMembersWithUserId, getNdaSettingsInternal } from '@/server/queries/nda/beheer-nda.queries';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://salvemundi.nl';
+async function getSiteUrl(): Promise<string> {
+    try {
+        const h = await headers();
+        const host = h.get('host') || h.get('x-forwarded-host') || 'localhost:3000';
+        const proto = h.get('x-forwarded-proto') || 'https';
+        return process.env.NEXT_PUBLIC_SITE_URL || `${proto}://${host}`;
+    } catch {
+        return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    }
+}
 
 function addYears(dateIso: string, years: number): string {
     const date = new Date(dateIso);
@@ -29,11 +39,13 @@ async function notifySecretaryOfBatch(committeeName: string, recipients: { name:
     const secretaryEmail = secretaryRows[0]?.email;
     if (!secretaryEmail) return;
 
+    const siteUrl = await getSiteUrl();
+
     await sendNdaMail(secretaryEmail, 'nda-secretary-batch-sent', {
         committeeName,
         recipientCount: recipients.length,
         recipients,
-        adminUrl: `${SITE_URL}/beheer/nda/${committeeId}`,
+        adminUrl: `${siteUrl}/beheer/nda/${committeeId}`,
     });
 }
 
@@ -75,10 +87,11 @@ export async function sendNdaToCommitteeMembers(templateId: number): Promise<{ s
             const signatureId = inserted[0]?.id;
             if (!signatureId) continue;
 
+            const siteUrl = await getSiteUrl();
             const sent = await sendNdaMail(member.email, 'nda-invite', {
                 name: member.displayName,
                 committeeName,
-                signUrl: `${SITE_URL}/profiel/nda/${signatureId}`,
+                signUrl: `${siteUrl}/profiel/nda/${signatureId}`,
             });
             if (sent) notified.push({ name: member.displayName, email: member.email });
         } catch (error) {
@@ -116,10 +129,11 @@ export async function resendNdaInvite(signatureId: number): Promise<{ success: b
         return { success: false, error: 'Geen e-mailadres bekend voor dit lid' };
     }
 
+    const siteUrl = await getSiteUrl();
     await sendNdaMail(member.email, 'nda-invite', {
         name: `${member.firstName ?? ''} ${member.lastName ?? ''}`.trim(),
         committeeName: committeeRows[0]?.name ?? 'de commissie',
-        signUrl: `${SITE_URL}/profiel/nda/${signatureId}`,
+        signUrl: `${siteUrl}/profiel/nda/${signatureId}`,
     });
 
     await db.update(schema.nda_signatures).set({ sent_at: new Date().toISOString() }).where(eq(schema.nda_signatures.id, signatureId));
@@ -179,10 +193,11 @@ export async function sendRenewalReminderToMember(expiredSignatureId: number): P
         return { success: false, error: 'Aanmaken van nieuwe NDA mislukt' };
     }
 
+    const siteUrl = await getSiteUrl();
     await sendNdaMail(member.email, 'nda-renewal-reminder', {
         name: `${member.firstName ?? ''} ${member.lastName ?? ''}`.trim(),
         committeeName,
-        signUrl: `${SITE_URL}/profiel/nda/${signatureId}`,
+        signUrl: `${siteUrl}/profiel/nda/${signatureId}`,
     });
 
     revalidatePath(`/beheer/nda/${row.committee_id}`);
@@ -272,10 +287,11 @@ export async function runNdaExpiryCheckInternal(): Promise<{ expiredCount: numbe
                 const secretaryRows = await db.select({ email: schema.directus_users.email })
                     .from(schema.directus_users).where(eq(schema.directus_users.id, secretarySettings.secretaryUserId)).limit(1);
                 if (secretaryRows[0]?.email) {
+                    const siteUrl = await getSiteUrl();
                     await sendNdaMail(secretaryRows[0].email, 'nda-secretary-missing-template', {
                         committeeName,
                         affectedCount: rows.length,
-                        adminUrl: `${SITE_URL}/beheer/nda/${committeeId}`,
+                        adminUrl: `${siteUrl}/beheer/nda/${committeeId}`,
                     });
                 }
             }
@@ -302,11 +318,12 @@ export async function runNdaExpiryCheckInternal(): Promise<{ expiredCount: numbe
             const signatureId = inserted[0]?.id;
             if (!signatureId) continue;
 
+            const siteUrl = await getSiteUrl();
             const name = `${member.firstName ?? ''} ${member.lastName ?? ''}`.trim();
             const sent = await sendNdaMail(member.email, 'nda-renewal-reminder', {
                 name,
                 committeeName,
-                signUrl: `${SITE_URL}/profiel/nda/${signatureId}`,
+                signUrl: `${siteUrl}/profiel/nda/${signatureId}`,
             });
             if (sent) {
                 notified.push({ name, email: member.email });
