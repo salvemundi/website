@@ -15,22 +15,24 @@ import {
 } from '@/lib/profile/profile-admin.utils';
 import { useProfileState } from '@/hooks/use-profile-state';
 import AvatarPreviewModal from './profile/AvatarPreviewModal';
-
 import ProfielHeader from './profile/ProfielHeader';
 import ProfielDetails from './profile/ProfielDetails';
 import ProfielGaming from './profile/ProfielGaming';
 import ProfielQuickLinks from './profile/ProfielQuickLinks';
 import ProfielSignups from './profile/ProfielSignups';
+import { type BorrelBarClaimStatus } from '@/server/actions/profile/borrelbar-claim.actions';
 
 interface ProfielIslandProps {
     initialSignups?: ProfileEventSignup[];
     pubCrawlSignups?: EnrichedPubCrawlSignup[];
+    borrelBarClaimStatus?: BorrelBarClaimStatus;
     user?: SessionUser;
 }
 
 export const ProfielIsland: React.FC<ProfielIslandProps> = ({
     initialSignups = [],
     pubCrawlSignups = [],
+    borrelBarClaimStatus,
     user: initialUser = {} as SessionUser
 }) => {
     const { toast, showToast, hideToast } = useAdminToast();
@@ -96,6 +98,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
             <div className="flex flex-col gap-6 md:col-span-12 lg:col-span-8">
                 <ProfielDetails
                     user={optimisticUser}
+                    borrelBarClaimStatus={borrelBarClaimStatus}
                     isEditingPhoneNumber={isEditingPhoneNumber}
                     setIsEditingPhoneNumber={setIsEditingPhoneNumber}
                     registerPhone={phoneForm.register}

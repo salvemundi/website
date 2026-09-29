@@ -8,6 +8,7 @@ import { checkBeheerAccess } from '@/server/actions/beheer/beheer-utils.actions'
 import { type SessionUser } from '@/lib/profile/profile-admin.utils';
 import { getIntroAttendanceAccess, getIntroAttendanceVisible } from '@/server/actions/public/intro-attendance.actions';
 import { getMyNdas } from '@/server/actions/nda/member-nda.actions';
+import { getBorrelBarClaimStatus } from '@/server/actions/profile/borrelbar-claim.actions';
 
 export const metadata = {
     title: 'Mijn Profiel | SV Salve Mundi',
@@ -15,13 +16,14 @@ export const metadata = {
 };
 
 export default async function ProfielPage() {
-    const [eventSignups, pubCrawlSignups, adminData, attendanceVisible, attendanceAccess, ndas] = await Promise.all([
+    const [eventSignups, pubCrawlSignups, adminData, attendanceVisible, attendanceAccess, ndas, borrelBarClaimStatus] = await Promise.all([
         getUserEventSignups(),
         getUserPubCrawlSignups(),
         checkBeheerAccess(),
         getIntroAttendanceVisible(),
         getIntroAttendanceAccess(),
-        getMyNdas()
+        getMyNdas(),
+        getBorrelBarClaimStatus()
     ]);
 
     const enrichedUser = adminData.user as SessionUser | null;
@@ -73,6 +75,7 @@ export default async function ProfielPage() {
                         user={enrichedUser}
                         initialSignups={eventSignups}
                         pubCrawlSignups={pubCrawlSignups}
+                        borrelBarClaimStatus={borrelBarClaimStatus}
                     />
                 )}
             </div>

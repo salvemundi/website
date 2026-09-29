@@ -20,6 +20,10 @@ export const selectIntroGroupAttendanceSchema = createSelectSchema(schema.intro_
 export const insertCoboSchema = createInsertSchema(schema.cobo);
 export const selectCoboSchema = createSelectSchema(schema.cobo);
 
+// --- borrelbar_claims ---
+export const insertBorrelbarClaimsSchema = createInsertSchema(schema.borrelbar_claims);
+export const selectBorrelbarClaimsSchema = createSelectSchema(schema.borrelbar_claims);
+
 // --- intro_group_member_notes ---
 export const insertIntroGroupMemberNotesSchema = createInsertSchema(schema.intro_group_member_notes);
 export const selectIntroGroupMemberNotesSchema = createSelectSchema(schema.intro_group_member_notes);
@@ -331,6 +335,10 @@ export const selectTransactionsSchema = createSelectSchema(schema.transactions);
 // --- auth_accounts ---
 export const insertAuthAccountsSchema = createInsertSchema(schema.auth_accounts);
 export const selectAuthAccountsSchema = createSelectSchema(schema.auth_accounts);
+
+// --- borrelbar_settings ---
+export const insertBorrelbarSettingsSchema = createInsertSchema(schema.borrelbar_settings);
+export const selectBorrelbarSettingsSchema = createSelectSchema(schema.borrelbar_settings);
 
 // --- auth_sessions ---
 export const insertAuthSessionsSchema = createInsertSchema(schema.auth_sessions);

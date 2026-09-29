@@ -48,6 +48,27 @@ export const cobo = pgTable("cobo", {
 	date_updated: timestamp({ mode: 'string' }).notNull(),
 });
 
+export const borrelbar_claims = pgTable("borrelbar_claims", {
+	id: serial().primaryKey().notNull(),
+	user_updated: uuid(),
+	date_updated: timestamp({ withTimezone: true, mode: 'string' }),
+	user_id: uuid(),
+	claimed_at: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+	pass_url: varchar({ length: 255 }),
+}, (table) => [
+	foreignKey({
+			columns: [table.user_id],
+			foreignColumns: [directus_users.id],
+			name: "borrelbar_claims_user_id_foreign"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.user_updated],
+			foreignColumns: [directus_users.id],
+			name: "borrelbar_claims_user_updated_foreign"
+		}),
+	unique("borrelbar_claims_user_id_unique").on(table.user_id),
+]);
+
 export const intro_group_member_notes = pgTable("intro_group_member_notes", {
 	id: serial().primaryKey().notNull(),
 	intro_group_member_id: integer().notNull(),
@@ -1537,8 +1558,8 @@ export const trip_signups = pgTable("trip_signups", {
 	allergies: text(),
 	special_notes: text(),
 	willing_to_drive: boolean(),
-	role: varchar({ length: 255 }).$type<'participant' | 'crew'>().default('participant'),
-	status: varchar({ length: 255 }).$type<'registered' | 'waitlist' | 'confirmed' | 'cancelled'>().default('registered'),
+	role: varchar({ length: 255 }).$type<'participant' | 'crew'>().default('participant').notNull(),
+	status: varchar({ length: 255 }).$type<'registered' | 'waitlist' | 'confirmed' | 'cancelled'>().default('registered').notNull(),
 	deposit_paid: boolean().default(false),
 	deposit_paid_at: timestamp({ mode: 'string' }),
 	full_payment_paid: boolean().default(false),
@@ -1811,6 +1832,20 @@ export const auth_accounts = pgTable("auth_accounts", {
 			foreignColumns: [directus_users.id],
 			name: "auth_accounts_userId_directus_users_id_fk"
 		}).onDelete("cascade"),
+]);
+
+export const borrelbar_settings = pgTable("borrelbar_settings", {
+	id: bigserial({ mode: "bigint" }).primaryKey().notNull(),
+	user_updated: uuid(),
+	date_updated: timestamp({ withTimezone: true, mode: 'string' }),
+	claim_url: text(),
+	is_active: boolean().default(false),
+}, (table) => [
+	foreignKey({
+			columns: [table.user_updated],
+			foreignColumns: [directus_users.id],
+			name: "borrelbar_settings_user_updated_foreign"
+		}),
 ]);
 
 export const auth_sessions = pgTable("auth_sessions", {

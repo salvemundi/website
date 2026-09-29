@@ -27,8 +27,8 @@ function sanitizeSignupRow(raw: typeof schema.trip_signups.$inferSelect): TripSi
         deposit_paid: !!raw.deposit_paid,
         full_payment_paid: !!raw.full_payment_paid,
         willing_to_drive: !!raw.willing_to_drive,
-        role: raw.role || 'participant',
-        status: raw.status || 'registered'
+        role: raw.role,
+        status: raw.status
     };
 }
 

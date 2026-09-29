@@ -212,7 +212,7 @@ export default function StickerMap({
                             anchor="bottom"
                             className="map-popup-theme"
                         >
-                            <div className="map-popup relative flex w-[290px] flex-col gap-4 rounded-3xl border border-(--border-color)/25 bg-(--bg-card) p-5 text-(--text-main) shadow-2xl sm:w-90">
+                            <div className="map-popup relative flex w-72.5 flex-col gap-4 rounded-3xl border border-(--border-color)/25 bg-(--bg-card) p-5 text-(--text-main) shadow-2xl sm:w-90">
                                 <button
                                     type="button"
                                     className="absolute top-3 right-3 z-10 icon-button rounded-full p-1.5 transition-colors hover:bg-black/5 dark:hover:bg-white/5"

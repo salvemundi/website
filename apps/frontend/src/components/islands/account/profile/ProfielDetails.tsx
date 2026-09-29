@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation';
 import { UseFormRegister, UseFormHandleSubmit, FieldErrors } from 'react-hook-form';
 import { safeConsoleError } from '@/server/utils/logger';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
+import BorrelBarClaimCard from './BorrelBarClaimCard';
+import { type BorrelBarClaimStatus } from '@/server/actions/profile/borrelbar-claim.actions';
 
 interface ProfielDetailsProps {
     user?: {
@@ -17,6 +19,7 @@ interface ProfielDetailsProps {
         phone_number?: string | null;
         date_of_birth?: string | null;
     };
+    borrelBarClaimStatus?: BorrelBarClaimStatus;
     isEditingPhoneNumber?: boolean;
     setIsEditingPhoneNumber?: (val: boolean) => void;
     registerPhone?: UseFormRegister<{ phone_number?: string | null }>;
@@ -29,6 +32,7 @@ interface ProfielDetailsProps {
 
 export default function ProfielDetails({
     user = {},
+    borrelBarClaimStatus,
     isEditingPhoneNumber = false,
     setIsEditingPhoneNumber = () => { },
     registerPhone = (() => ({ name: 'phone_number', onBlur: async () => { }, onChange: async () => { }, ref: () => { } })) as unknown as UseFormRegister<{ phone_number?: string | null }>,
@@ -163,6 +167,8 @@ export default function ProfielDetails({
                         </p>
                     </div>
                 </div>
+
+                <BorrelBarClaimCard initialStatus={borrelBarClaimStatus} />
             </div>
         </Tile>
     );
