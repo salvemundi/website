@@ -11,6 +11,7 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import sharp from 'sharp';
 import { safeConsoleError } from '@/server/utils/logger';
 import { imageUploadSchema } from '@salvemundi/validations/schema/shared.zod';
+import { sendWhitelistWebhook } from '../infrastructure/mcwhitelist.actions';
 
 interface AzureErrorResponse {
     details?: string;
@@ -81,6 +82,9 @@ export async function updateUserProfile(data: z.infer<typeof updateProfileSchema
         const directusData: { minecraft_username?: string | null; phone_number?: string | null } = {};
         if (parsed.data.minecraft_username !== undefined) {
             directusData.minecraft_username = parsed.data.minecraft_username;
+            await sendWhitelistWebhook(user.id, parsed.data.minecraft_username!).catch((error: unknown) => {
+                safeConsoleError(`[profiel-update.actions.ts][updateUserProfile] Error sending whitelist webhook:`, error);
+            });
         }
 
         // Always write the phone number to Directus to ensure it's saved locally immediately
