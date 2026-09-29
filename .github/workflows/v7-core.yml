@@ -91,6 +91,8 @@ jobs:
           AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}"
           DIRECTUS_STATIC_TOKEN="${{ secrets.DIRECTUS_STATIC_TOKEN }}"
           REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"
+          MC_WHITELIST_WEBHOOK_URL="${{ secrets.MC_WHITELIST_WEBHOOK_URL }}"
+          MC_WHITELIST_WEBHOOK_TOKEN="${{ secrets.MC_WHITELIST_WEBHOOK_TOKEN }}"
           EOF
 
           docker network create salve-mundi-v7-shared || true
