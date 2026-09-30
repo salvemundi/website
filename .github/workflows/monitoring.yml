@@ -70,13 +70,13 @@ jobs:
         uses: Alemiz112/netbird-connect@v1
         with:
           setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
-          management-url: https://vpn.salvemundi.nl
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
 
       - name: Wait for VPN routing to be ready
         run: |
-          echo "Waiting for SSH port on 100.77.182.130 to be reachable..."
+          echo "Waiting for SSH port on ${{ secrets.VPN_IP }} to be reachable..."
           for i in {1..30}; do
-            if timeout 1 bash -c 'cat < /dev/null > /dev/tcp/100.77.182.130/22' >/dev/null 2>&1; then
+            if timeout 1 bash -c 'cat < /dev/null > /dev/tcp/${{ secrets.VPN_IP }}/22' >/dev/null 2>&1; then
               echo "VPS SSH port is reachable!"
               exit 0
             fi
@@ -102,7 +102,7 @@ jobs:
             MONITORING_PORT="3006"
           fi
 
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@100.77.182.130 bash << ENDSSH
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }} bash << ENDSSH
           set -e
           cd /opt/salve-mundi-v7
           docker compose --env-file .env.${ENV_NAME} up -d monitoring-service
@@ -110,7 +110,7 @@ jobs:
 
       - name: Provision Uptime Kuma Monitors via NetBird VPN
         env:
-          KUMA_URL: "http://100.77.182.130:13006"
+          KUMA_URL: "http://${{ secrets.VPN_IP }}:13006"
           KUMA_ADMIN_USER: ${{ secrets.KUMA_ADMIN_USER }}
           KUMA_ADMIN_PASSWORD: ${{ secrets.KUMA_ADMIN_PASSWORD }}
           DISCORD_MONITORING_WEBHOOK_URL: ${{ secrets.DISCORD_MONITORING_WEBHOOK_URL }}
@@ -125,7 +125,7 @@ jobs:
           REDIS_PORT: "6379"
         run: |
           if [ "${{ github.ref_name }}" = "main" ]; then
-            export KUMA_URL="http://100.77.182.130:3006"
+            export KUMA_URL="http://${{ secrets.VPN_IP }}:3006"
             export FRONTEND_SERVICE_URL="http://v7-prod-app:3000"
             export FINANCE_SERVICE_URL="http://v7-prod-finance:3001"
             export AZURE_SYNC_SERVICE_URL="http://v7-prod-sync:3002"
