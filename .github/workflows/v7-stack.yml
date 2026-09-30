@@ -225,6 +225,8 @@ jobs:
           KUMA_ADMIN_USER="${{ secrets.KUMA_ADMIN_USER }}"
           KUMA_ADMIN_PASSWORD="${{ secrets.KUMA_ADMIN_PASSWORD }}"
           DISCORD_MONITORING_WEBHOOK_URL="${{ secrets.DISCORD_MONITORING_WEBHOOK_URL }}"
+          MC_WHITELIST_WEBHOOK_URL="${{ secrets.MC_WHITELIST_WEBHOOK_URL }}"
+          MC_WHITELIST_WEBHOOK_TOKEN="${{ secrets.MC_WHITELIST_WEBHOOK_TOKEN }}"
           EOF
 
           echo "IMAGE_TAG=${{ needs.prepare.outputs.tag }}" >> .env.${ENV_NAME}
