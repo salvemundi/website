@@ -153,8 +153,8 @@ export default function ReisActivityForm({ activity, onSave, onCancel, pending }
                                             unoptimized
                                         />
                                         <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                                            <button type="button" onClick={() => fileInputRef.current?.click()} className="icon-button cursor-pointer rounded-xl bg-white p-2 text-slate-900 shadow-xl transition hover:scale-110"><Upload className="size-4" /></button>
-                                            <button type="button" onClick={handleRemoveImage} className="icon-button cursor-pointer rounded-xl bg-red-500 p-2 text-white shadow-xl transition hover:scale-110"><X className="size-4" /></button>
+                                            <button type="button" onClick={() => fileInputRef.current?.click()} className="icon-button cursor-pointer rounded-xl bg-(--beheer-card-bg) p-2 text-(--beheer-text) shadow-xl transition-colors hover:bg-(--beheer-card-soft)"><Upload className="size-4" /></button>
+                                            <button type="button" onClick={handleRemoveImage} className="icon-button cursor-pointer rounded-xl bg-rose-600 p-2 text-white shadow-xl transition-colors hover:bg-rose-700"><X className="size-4" /></button>
                                         </div>
                                         <input ref={fileInputRef} type="file" name="image_file" accept="image/*" onChange={handleImageChange} className="hidden" />
                                     </div>

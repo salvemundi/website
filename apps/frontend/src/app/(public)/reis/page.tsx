@@ -165,7 +165,7 @@ export default async function ReisPage() {
                             {displayTrip && (
                                 <div className="relative overflow-hidden rounded-3xl bg-bg-card shadow-2xl dark:border dark:border-white/10">
                                     {displayTripImage && (
-                                        <div className="relative h-62.5 w-full overflow-hidden bg-slate-900/10 sm:h-87.5">
+                                        <div className="relative h-75 w-full overflow-hidden bg-purple-950/5 sm:h-105 dark:bg-black/20">
                                             <MediaAsset
                                                 asset={displayTripImage}
                                                 alt={displayTripName ?? 'Reis'}

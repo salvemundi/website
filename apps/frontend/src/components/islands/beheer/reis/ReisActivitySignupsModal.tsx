@@ -10,12 +10,11 @@ import { mapActivityOptionIdToName, parseActivityOptions, parseSelectedOptions }
 
 export interface Signup {
     id: number;
-    trip_signup_id?: {
-        first_name: string;
-        last_name: string;
-        email: string;
-    };
-    selected_options?: string | Record<string, boolean> | string[];
+    first_name: string;
+    last_name: string;
+    email: string;
+    trip_signup_id: number | null;
+    selected_options?: unknown;
 }
 
 interface Props {
@@ -72,14 +71,18 @@ export default function ReisActivitySignupsModal({ activityName, options, signup
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-(--beheer-border)/10">
-                                    {signups.map((s) => (
-                                        <tr key={s.id} className="transition-colors hover:bg-(--beheer-accent)/2">
-                                            <td className="px-8 py-6">
-                                                <div className="text-sm font-semibold tracking-tight text-(--beheer-text)">
-                                                    {s.trip_signup_id ? `${s.trip_signup_id.first_name} ${s.trip_signup_id.last_name}` : 'Onbekend'}
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6 text-xs font-medium text-(--beheer-text-muted) lowercase">{s.trip_signup_id?.email || '-'}</td>
+                                    {signups.map((s) => {
+                                        const travelerName = `${s.first_name} ${s.last_name}`.trim() || 'Onbekende reiziger';
+                                        const travelerEmail = s.email || '-';
+
+                                        return (
+                                            <tr key={s.id} className="transition-colors hover:bg-(--beheer-accent)/2">
+                                                <td className="px-8 py-6">
+                                                    <div className="text-sm font-semibold tracking-tight text-(--beheer-text)">
+                                                        {travelerName}
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-6 text-xs font-medium text-(--beheer-text-muted) lowercase">{travelerEmail}</td>
                                             <td className="px-8 py-6">
                                                 {(() => {
                                                     const rawSelected = parseSelectedOptions(s.selected_options);
@@ -103,7 +106,8 @@ export default function ReisActivitySignupsModal({ activityName, options, signup
                                                 })()}
                                             </td>
                                         </tr>
-                                    ))}
+                                    );
+                                })}
                                 </tbody>
                                 <tfoot className="border-t border-(--beheer-border)/50 bg-(--beheer-card-soft)/20">
                                     <tr>

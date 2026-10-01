@@ -92,14 +92,14 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                     <div className="mb-2 flex flex-col gap-3">
                         <button
                             onClick={onConfirm}
-                            className="group form-button flex w-full items-center justify-center gap-3 rounded-2xl bg-theme-purple py-5 text-sm font-bold tracking-widest text-white shadow-lg shadow-theme-purple/20 transition-all hover:bg-theme-purple-dark"
+                            className="form-button flex w-full items-center justify-center gap-3 rounded-2xl bg-theme-purple py-4 text-sm font-bold tracking-wider text-white shadow-lg shadow-theme-purple/20 transition-all hover:bg-theme-purple-dark"
                             type="button">
-                            <CheckCircle2 className="size-5 transition-transform group-hover:scale-110" />
+                            <CheckCircle2 className="size-5" />
                             Ja, dit klopt exact
                         </button>
                         <button
                             onClick={onCancel}
-                            className="form-button w-full rounded-2xl border border-(--border-color) bg-(--bg-soft) py-5 text-sm font-bold tracking-widest text-(--text-muted) transition-all hover:bg-(--bg-card) hover:text-(--text-main) dark:border-white/5"
+                            className="tab-button w-full rounded-2xl border border-(--border-color) bg-(--bg-card) py-4 text-sm font-bold text-(--text-main) transition-all hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
                             type="button">
                             Nee, aanpassen
                         </button>

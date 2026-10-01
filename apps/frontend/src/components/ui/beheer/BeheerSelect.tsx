@@ -128,12 +128,12 @@ export default function BeheerSelect<T extends string | number = string | number
                 type="button"
                 onClick={toggleDropdown}
                 disabled={disabled}
-                className={`active:scale-0.98 form-button flex w-full cursor-pointer items-center justify-between rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) text-left font-semibold text-(--beheer-text) transition-all duration-200 outline-none hover:border-(--beheer-accent)/50 disabled:cursor-not-allowed disabled:opacity-50 ${
+                className={`tab-button flex w-full cursor-pointer items-center justify-between rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) text-left font-semibold text-(--beheer-text) shadow-2xs transition-colors outline-none hover:border-(--beheer-accent)/50 disabled:cursor-not-allowed disabled:opacity-50 ${
                     size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2.5 text-sm'
                 }`}
             >
                 <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
-                <ChevronDown className={`size-4 shrink-0 text-(--beheer-text-muted) transition-transform duration-300 ${isOpen ? 'rotate-180 text-(--beheer-accent)' : ''}`} />
+                <ChevronDown className={`size-4 shrink-0 text-(--beheer-text-muted) transition-transform duration-200 ${isOpen ? 'rotate-180 text-(--beheer-accent)' : ''}`} />
             </button>
 
             {mounted && isOpen && createPortal(
@@ -161,13 +161,13 @@ export default function BeheerSelect<T extends string | number = string | number
                                         key={option.value}
                                         type="button"
                                         onClick={() => handleSelect(option.value)}
-                                        className={`form-button w-full cursor-pointer rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all ${
+                                        className={`tab-button flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors ${
                                             isSelected
-                                                ? 'bg-(--beheer-accent) text-white'
-                                                : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) hover:text-(--beheer-text)'
+                                                ? 'bg-(--beheer-accent) font-bold text-white'
+                                                : 'bg-transparent text-(--beheer-text) hover:bg-(--beheer-card-soft) hover:text-(--beheer-accent)'
                                         }`}
                                     >
-                                        {option.label}
+                                        <span>{option.label}</span>
                                     </button>
                                 );
                             })

@@ -1,12 +1,15 @@
 import { Redis } from "ioredis";
 import { safeConsoleError } from '@/server/utils/logger';
 
-const host = process.env.INTERNAL_REDIS_HOST;
+const host = process.env.INTERNAL_REDIS_HOST || process.env.REDIS_HOST;
+const port = process.env.INTERNAL_REDIS_PORT || process.env.REDIS_PORT || '6379';
 const password = process.env.REDIS_PASSWORD;
 
 let redisUrl = process.env.REDIS_URL;
-if (!redisUrl && host && password) {
-    redisUrl = `redis://default:${password}@${host}:6379`;
+if (!redisUrl && host) {
+    redisUrl = password 
+        ? `redis://default:${encodeURIComponent(password)}@${host}:${port}` 
+        : `redis://${host}:${port}`;
 }
 
 let redisClient: Redis | null = null;
@@ -29,15 +32,15 @@ export async function getRedis() {
     try {
         isConnecting = true;
         if (!redisUrl) {
-            throw new Error("Redis URL is missing and no host/password provided.");
+            throw new Error("Redis URL is missing and no REDIS_HOST / REDIS_PASSWORD provided.");
         }
 
         redisClient = new Redis(redisUrl, {
             maxRetriesPerRequest: null,
-            connectTimeout: 500,
+            connectTimeout: 5000,
             lazyConnect: true,
-            retryStrategy: (_times) => {
-                return Math.min(_times * 100, 3000);
+            retryStrategy: (times) => {
+                return Math.min(times * 500, 5000);
             }
         });
 

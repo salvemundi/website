@@ -186,7 +186,7 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
                 className={`beheer-button 
                     inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-semibold shadow-2xs transition-all duration-200
                     ${current.pillColor}
-                    ${isOpen ? 'scale-1.02 ring-2 ring-(--beheer-accent)/40' : ''}
+                    ${isOpen ? 'ring-2 ring-(--beheer-accent)/40' : ''}
                 `}
             >
                 <current.icon className={`size-3 shrink-0 ${current.iconColor}`} />
@@ -196,7 +196,7 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
 
             {isOpen && (
                 <div
-                    className="animate-in fade-in zoom-in-95 absolute bottom-full left-0 z-50 mb-1.5 w-44 space-y-0.5 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-xl duration-150 dark:border-slate-800 dark:bg-slate-900"
+                    className="animate-in fade-in zoom-in-95 absolute bottom-full left-0 z-50 mb-1.5 w-44 space-y-0.5 overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) p-1 shadow-xl duration-150"
                 >
                     {statuses.map((s) => {
                         const isSelected = currentStatus === s.value;
@@ -212,8 +212,8 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
                                 className={`beheer-button 
                                     flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-[11px] font-semibold transition-all
                                     ${isSelected
-                                        ? 'bg-slate-100 font-bold text-slate-900 ring-1 ring-slate-300 dark:bg-slate-800 dark:text-white dark:ring-slate-700'
-                                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white'}
+                                        ? 'bg-(--beheer-card-soft) font-bold text-(--beheer-text) ring-1 ring-(--beheer-border)'
+                                        : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) hover:text-(--beheer-text)'}
                                 `}
                             >
                                 <div className="flex items-center gap-2">

@@ -46,7 +46,7 @@
     --beheer-inactive: #ef4444;      /* Red-500 */
     --beheer-accent: var(--theme-purple);
     --beheer-card-bg: var(--bg-card);
-    --beheer-card-soft: var(--bg-soft);
+    --beheer-card-soft: var(--bg-main);
     --beheer-border: var(--border-color);
     --beheer-text: var(--text-main);
     --beheer-text-muted: var(--text-muted);
@@ -62,6 +62,6 @@
     --beheer-active: #4ade80;        /* Green-400 */
     --beheer-inactive: #f87171;      /* Red-400 */
     --beheer-card-bg: var(--bg-card);
-    --beheer-card-soft: rgba(255, 255, 255, 0.02);
+    --beheer-card-soft: rgba(255, 255, 255, 0.06);
     --beheer-border: rgba(255, 255, 255, 0.06);
 }

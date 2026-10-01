@@ -6,7 +6,7 @@ import { toLocalISOString } from '@/lib/utils/date-utils';
 
 export type TripSignupActivityRow = typeof schema.trip_signup_activities.$inferSelect;
 
-export type EnrichedTripSignupActivity = TripSignupActivityRow & {
+export type EnrichedTripSignupActivity = TripSignupActivity & {
     activity_name: string;
     activity_price: number;
     activity_options: unknown;
@@ -62,15 +62,38 @@ export async function fetchTripSignupByIdDb(signupId: number): Promise<TripSignu
     return sanitizeSignupRow(rows[0]);
 }
 
-export async function fetchTripSignupActivitiesDb(tripId: number): Promise<TripSignupActivity[]> {
+export async function fetchTripSignupActivitiesDb(tripId: number): Promise<EnrichedTripSignupActivity[]> {
     const rows = await db.select({
-        sa: schema.trip_signup_activities,
+        id: schema.trip_signup_activities.id,
+        created_at: schema.trip_signup_activities.created_at,
+        trip_signup_id: schema.trip_signup_activities.trip_signup_id,
+        trip_activity_id: schema.trip_signup_activities.trip_activity_id,
+        selected_options: schema.trip_signup_activities.selected_options,
+        activity_name: schema.trip_activities.name,
+        activity_price: schema.trip_activities.price,
+        activity_options: schema.trip_activities.options,
+        first_name: schema.trip_signups.first_name,
+        last_name: schema.trip_signups.last_name,
+        email: schema.trip_signups.email,
     })
     .from(schema.trip_signup_activities)
     .innerJoin(schema.trip_activities, eq(schema.trip_signup_activities.trip_activity_id, schema.trip_activities.id))
+    .leftJoin(schema.trip_signups, eq(schema.trip_signup_activities.trip_signup_id, schema.trip_signups.id))
     .where(eq(schema.trip_activities.trip_id, tripId));
 
-    return rows.map((row) => row.sa as TripSignupActivity);
+    return rows.map((row) => ({
+        id: row.id,
+        created_at: row.created_at ? String(row.created_at) : null,
+        trip_signup_id: row.trip_signup_id,
+        trip_activity_id: row.trip_activity_id,
+        selected_options: row.selected_options,
+        activity_name: row.activity_name ?? '',
+        activity_price: row.activity_price ? Number(row.activity_price) : 0,
+        activity_options: row.activity_options,
+        first_name: row.first_name ?? '',
+        last_name: row.last_name ?? '',
+        email: row.email ?? '',
+    }));
 }
 
 export async function fetchSelectedSignupActivitiesDb(signupId: number): Promise<TripSignupActivity[]> {

@@ -8,8 +8,6 @@ import {
     type TripSignup
 } from '@salvemundi/validations/schema/trip.zod';
 import {
-    tripSchema,
-    tripActivitySchema,
     type Trip,
     type TripActivity
 } from '@salvemundi/validations/schema/beheer-trip.zod';
@@ -87,40 +85,30 @@ export async function getTripSignupByToken(signupId: number, token?: string): Pr
 
         if (!signup.trip_id) return { success: false, error: 'Reisgegevens niet gekoppeld aan inschrijving.' };
 
-        const [tripRaw, allActivitiesRaw, selectedActivitiesRaw] = await Promise.all([
+        const [trip, allActivities, selectedActivitiesRaw] = await Promise.all([
             fetchTripByIdDb(signup.trip_id),
             fetchTripActivitiesByTripIdDb(signup.trip_id),
             fetchSelectedSignupActivitiesDb(signupId)
         ]);
 
-        if (!tripRaw) return { success: false, error: 'Reisgegevens niet gevonden.' };
+        if (!trip) return { success: false, error: 'Reisgegevens niet gevonden.' };
 
-        const tripVal = tripSchema.safeParse(tripRaw);
-        if (!tripVal.success) {
-            return { success: false, error: 'Reisgegevens zijn niet compatibel.' };
-        }
-
-        const activitiesVal = tripActivitySchema.array().safeParse(allActivitiesRaw.filter(a => a.is_active));
-        if (!activitiesVal.success) {
-            return { success: false, error: 'Sommige reisactiviteiten bevatten ongeldige data.' };
-        }
-
-        const selectionsVal = tripActivitySchema.array().safeParse(selectedActivitiesRaw);
-        if (!selectionsVal.success) {
-            return { success: false, error: 'Je eerdere activiteitskeuzes konden niet worden geladen.' };
-        }
+        const activeActivities = allActivities.filter(a => a.is_active);
+        const selectedActivityIds = new Set(selectedActivitiesRaw.map(s => Number(s.trip_activity_id)));
+        const selectedActivities = activeActivities.filter(a => selectedActivityIds.has(a.id));
 
         return {
             success: true,
             data: {
                 signup,
-                trip: tripVal.data,
-                allActivities: activitiesVal.data,
-                selectedActivities: selectionsVal.data
+                trip,
+                allActivities: activeActivities,
+                selectedActivities
             }
         };
 
-    } catch {
+    } catch (error: unknown) {
+        safeConsoleError('[reis-payment.actions.ts][getTripSignupByToken] Error:', error);
         return { success: false, error: 'Er is een fout opgetreden bij het ophalen van je gegevens. Probeer het later opnieuw.' };
     }
 }

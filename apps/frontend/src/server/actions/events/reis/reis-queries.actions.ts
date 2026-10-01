@@ -110,8 +110,10 @@ export async function getLatestPastTrip(): Promise<Trip | null> {
         const todayStr = new Date().toISOString().split('T')[0];
         
         // Find published (or status-null) trips that have already ended
-        const data = await db.select()
+        const data = await db
+            .select({ trip: schema.trips, image_type: schema.directus_files.type })
             .from(schema.trips)
+            .leftJoin(schema.directus_files, eq(schema.trips.image, schema.directus_files.id))
             .where(
                 and(
                     or(eq(schema.trips.status, 'published'), isNull(schema.trips.status)),
@@ -123,7 +125,7 @@ export async function getLatestPastTrip(): Promise<Trip | null> {
 
         if (data.length === 0) return null;
 
-        const trip = data[0];
+        const { trip, image_type } = data[0];
         const formattedTrip = {
             ...trip,
             max_participants: trip.max_participants !== null ? Number(trip.max_participants) : 0,
@@ -134,6 +136,7 @@ export async function getLatestPastTrip(): Promise<Trip | null> {
             registration_open: !!trip.registration_open,
             is_bus_trip: !!trip.is_bus_trip,
             allow_final_payments: !!trip.allow_final_payments,
+            image: trip.image ? (image_type ? { id: trip.image, type: image_type } : trip.image) : null,
         };
 
         const parsed = tripSchema.safeParse(formattedTrip);

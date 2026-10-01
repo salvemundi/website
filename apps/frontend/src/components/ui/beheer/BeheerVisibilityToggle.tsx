@@ -26,8 +26,8 @@ export default function BeheerVisibilityToggle({
     }
 
     return (
-        <div className={`flex items-center gap-1.5 rounded-full border border-border-color bg-bg-card px-2.5 py-1.5 shadow-sm sm:gap-3 sm:rounded-3xl sm:px-4 sm:py-2 ${disabled ? 'pointer-events-none opacity-50' : ''}`}>
-            <span className="text-[11px] font-semibold whitespace-nowrap text-text-muted sm:text-base">
+        <div className={`flex items-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-1.5 shadow-xs sm:gap-3 sm:px-4 sm:py-2 ${disabled ? 'pointer-events-none opacity-50' : ''}`}>
+            <span className="text-xs font-semibold whitespace-nowrap text-(--beheer-text) sm:text-sm">
                 {label}
             </span>
             <button
@@ -35,17 +35,17 @@ export default function BeheerVisibilityToggle({
                 onClick={onToggle}
                 disabled={isPending || disabled}
                 aria-label={typeof label === 'string' ? label : 'Toggle zichtbaarheid'}
-                className={`relative form-button flex h-5 w-9 shrink-0 items-center rounded-full p-1 transition-all sm:h-6 sm:w-12 ${
-                    isVisible ? 'bg-beheer-active' : 'bg-beheer-inactive'
-                } hover:opacity-90 active:scale-95 disabled:opacity-50`}
+                className={`tab-button relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors duration-200 outline-none ${
+                    isVisible ? 'bg-(--beheer-active)' : 'bg-(--beheer-inactive)'
+                } disabled:cursor-not-allowed disabled:opacity-50`}
             >
                 {isPending ? (
-                    <Loader2 className="mx-auto size-3 animate-spin text-white sm:size-4" />
+                    <Loader2 className="mx-auto size-3.5 animate-spin text-white" />
                 ) : (
-                    <div
-                        className={`size-3 rounded-full bg-white transition-transform sm:size-4 ${
-                            isVisible ? 'translate-x-4 sm:translate-x-6' : 'translate-x-0'
-                        } shadow-sm`}
+                    <span
+                        className={`pointer-events-none inline-block size-5 rounded-full bg-white shadow-xs transition-transform duration-200 ease-in-out ${
+                            isVisible ? 'translate-x-5' : 'translate-x-0'
+                        }`}
                     />
                 )}
             </button>

@@ -16,14 +16,24 @@ export async function fetchTripActivitiesByTripIdDb(tripId: number): Promise<Tri
     }));
 }
 
-export type TripActivityInsertInput = Partial<Omit<typeof schema.trip_activities.$inferInsert, 'price'>> & {
+export type TripActivityInsertInput = Partial<Omit<typeof schema.trip_activities.$inferInsert, 'price' | 'image'>> & {
     price?: number | string | null;
+    image?: string | { id: string; type?: string | null } | null;
 };
 
+function extractImageId(image: string | { id: string; type?: string | null } | null | undefined): string | null | undefined {
+    if (image === undefined) return undefined;
+    if (image === null) return null;
+    if (typeof image === 'object' && 'id' in image) return image.id;
+    return typeof image === 'string' ? image : null;
+}
+
 export async function createTripActivityDb(data: TripActivityInsertInput): Promise<number | null> {
+    const { image, price, ...rest } = data;
     const insertData: typeof schema.trip_activities.$inferInsert = {
-        ...data,
-        price: data.price !== undefined && data.price !== null ? String(data.price) : undefined
+        ...rest,
+        image: extractImageId(image),
+        price: price !== undefined && price !== null ? String(price) : undefined
     };
     const result = await db.insert(schema.trip_activities).values(insertData).returning({ id: schema.trip_activities.id });
     return result[0]?.id ?? null;
@@ -31,9 +41,11 @@ export async function createTripActivityDb(data: TripActivityInsertInput): Promi
 
 export async function updateTripActivityDb(id: number, data: TripActivityInsertInput): Promise<boolean> {
     if (Object.keys(data).length === 0) return true;
+    const { image, price, ...rest } = data;
     const updateData: Partial<typeof schema.trip_activities.$inferInsert> = {
-        ...data,
-        price: data.price !== undefined ? (data.price !== null ? String(data.price) : null) : undefined
+        ...rest,
+        ...(image !== undefined ? { image: extractImageId(image) } : {}),
+        ...(price !== undefined ? { price: price !== null ? String(price) : null } : {})
     };
     const result = await db.update(schema.trip_activities).set(updateData).where(eq(schema.trip_activities.id, id));
     return result.count > 0;

@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ReisParticipantDetailIsland from '@/components/islands/beheer/reis/ReisParticipantDetailIsland';
 import { getTrips, getTripActivities } from '@/server/queries/reis/beheer-reis.queries';
-import { Trip, TripActivity } from '@salvemundi/validations';
 import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/beheer/reis/beheer-reis-signups.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 import { db, schema } from "@salvemundi/db";
@@ -10,11 +9,6 @@ import { eq } from "drizzle-orm";
 
 interface PageProps {
     params: Promise<{ id: string }>;
-}
-
-interface RawSignupActivity {
-    trip_signup_id: number | { id: number };
-    trip_activity_id: number | { id: number };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -48,9 +42,7 @@ export default async function ReisParticipantPage({ params }: PageProps) {
         notFound();
     }
 
-    const tripId = (signup.trip_id && typeof signup.trip_id === 'object')
-        ? (signup.trip_id as { id: number }).id
-        : (signup.trip_id as number);
+    const tripId = Number(signup.trip_id);
 
     const [trips, activities, signupActivities] = await Promise.all([
         getTrips(),
@@ -58,20 +50,17 @@ export default async function ReisParticipantPage({ params }: PageProps) {
         getTripSignupActivitiesAction(tripId)
     ]);
 
-    const participantActivities = (signupActivities as unknown as RawSignupActivity[])
-        .filter((sa) => {
-            const saSignupId = typeof sa.trip_signup_id === 'object' ? sa.trip_signup_id.id : sa.trip_signup_id;
-            return saSignupId === signupId;
-        })
-        .map((sa) => typeof sa.trip_activity_id === 'object' ? sa.trip_activity_id.id : sa.trip_activity_id);
+    const participantActivities = signupActivities
+        .filter((sa) => sa.trip_signup_id === signupId && sa.trip_activity_id !== null)
+        .map((sa) => sa.trip_activity_id as number);
 
     return (
         <div className="w-full">
             <ReisParticipantDetailIsland
                 initialSignup={signup}
-                trips={trips as unknown as Trip[]}
-                allActivities={activities as unknown as TripActivity[]}
-                initialSelectedActivities={participantActivities as number[]}
+                trips={trips}
+                allActivities={activities}
+                initialSelectedActivities={participantActivities}
             />
         </div>
     );

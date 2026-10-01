@@ -41,7 +41,7 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
             {nextTrip && (
                 <div className="group relative overflow-hidden rounded-3xl bg-bg-card shadow-2xl dark:border dark:border-white/10">
                     {nextTrip.image ? (
-                        <div className="relative h-75 w-full overflow-hidden sm:h-100">
+                        <div className="relative h-75 w-full overflow-hidden bg-purple-950/5 sm:h-105 dark:bg-black/20">
                             <MediaAsset
                                 asset={nextTrip.image}
                                 alt={nextTrip.name ?? 'Reis'}

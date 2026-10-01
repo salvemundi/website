@@ -276,9 +276,9 @@ export default function ReisPaymentFlowIsland({
                             <div className="order-2 w-full sm:order-1 sm:w-auto">
                                 <button
                                     onClick={step === 1 ? () => router.push('/reis') : () => setStep(step - 1)}
-                                    className="form-button flex w-full items-center justify-center gap-2 rounded-xl px-8 py-3 text-sm font-bold text-(--text-muted) transition-all hover:text-(--text-main) sm:w-auto"
+                                    className="tab-button flex w-full items-center justify-center gap-2 rounded-xl border border-(--border-color) bg-(--bg-card) px-6 py-3 text-sm font-semibold text-(--text-main) transition-all hover:bg-black/5 sm:w-auto dark:hover:bg-white/5"
                                     type="button">
-                                    <ChevronLeft className="size-4" /> 
+                                    <ChevronLeft className="size-4 text-(--text-muted)" /> 
                                     {step === 1 ? 'Annuleren' : 'Vorige'}
                                 </button>
                             </div>
@@ -294,7 +294,7 @@ export default function ReisPaymentFlowIsland({
                                 <button
                                     onClick={() => void handleNext()}
                                     disabled={loading}
-                                    className={`form-button flex w-full items-center justify-center gap-2 bg-linear-to-br from-theme-purple to-theme-purple-dark px-10 sm:w-auto ${
+                                    className={`form-button flex w-full items-center justify-center gap-2 px-8 py-3 text-sm font-bold text-white shadow-md transition-all sm:w-auto ${
                                         loading ? 'cursor-not-allowed opacity-50 grayscale' : ''
                                     }`}
                                     type="button">

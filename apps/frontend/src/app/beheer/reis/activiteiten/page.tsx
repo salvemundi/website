@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import ReisActivitiesIsland from '@/components/islands/beheer/reis/ReisActivitiesIsland';
+import type { Signup } from '@/components/islands/beheer/reis/ReisActivitySignupsModal';
 import { getTrips, getTripActivities } from '@/server/queries/reis/beheer-reis.queries';
 import { notFound } from 'next/navigation';
 import { getTripSignupActivitiesAction } from '@/server/actions/beheer/reis/beheer-reis-signups.actions';
@@ -10,14 +11,6 @@ import { eq } from "drizzle-orm";
 
 interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-interface Signup {
-    id: number;
-    trip_activity_id: number | { id: number };
-    trip_signup_id?: { id?: number; first_name: string; last_name: string; email: string };
-    selected_options?: string | Record<string, boolean> | string[];
-    [key: string]: unknown;
 }
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
@@ -75,20 +68,19 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
 
     const signupsByActivity = new Map<number, Signup[]>();
 
-    const signupsArray = allSignups as unknown as Signup[];
-    signupsArray.forEach((s) => {
-        const activityId = (s.trip_activity_id && typeof s.trip_activity_id === 'object')
-            ? s.trip_activity_id.id
-            : (s.trip_activity_id as number);
+    allSignups.forEach((s) => {
+        const activityId = s.trip_activity_id;
+        if (!activityId) return;
 
-        if (!signupsByActivity.has(activityId)) {
-            signupsByActivity.set(activityId, []);
+        const existing = signupsByActivity.get(activityId);
+        if (existing) {
+            existing.push(s);
+        } else {
+            signupsByActivity.set(activityId, [s]);
         }
-
-        signupsByActivity.get(activityId)?.push(s);
     });
 
-    const signupsByActivityObj = Object.fromEntries(signupsByActivity.entries()) as unknown as Record<number, Signup[]>;
+    const signupsByActivityObj = Object.fromEntries(signupsByActivity.entries());
 
     return (
         <BeheerPageShell title="Reis Activiteiten" hideToolbar={true}>

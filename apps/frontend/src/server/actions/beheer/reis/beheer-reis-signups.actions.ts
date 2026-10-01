@@ -11,7 +11,8 @@ import {
     fetchTripSignupActivitiesDb,
     updateTripSignupDb,
     deleteTripSignupDb,
-    fetchSelectedSignupActivitiesDb
+    fetchSelectedSignupActivitiesDb,
+    type EnrichedTripSignupActivity
 } from '@/server/internal/reis/reis-signup-db.utils';
 import { fetchTripByIdDb } from '@/server/internal/reis/reis-trip-db.utils';
 import { db, schema } from '@salvemundi/db';
@@ -229,8 +230,13 @@ export async function updateSignupActivities(
     }
 }
 
-export async function getTripSignupActivitiesAction(tripId: number): Promise<TripSignupActivity[]> {
+export async function getTripSignupActivitiesAction(tripId: number): Promise<EnrichedTripSignupActivity[]> {
     await requireBeheerFeature('reis');
-    return await fetchTripSignupActivitiesDb(tripId);
+    try {
+        return await fetchTripSignupActivitiesDb(tripId);
+    } catch (error) {
+        safeConsoleError(`[beheer-reis-signups.actions.ts][getTripSignupActivitiesAction] Failed to fetch activities for trip ${tripId}:`, error);
+        throw new Error('Kon reisactiviteiten niet ophalen uit de database.');
+    }
 }
 

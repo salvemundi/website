@@ -11,9 +11,20 @@ export const tripSchema = selectTripsSchema.extend({
     }, z.string().nullable().optional()),
     image: z.preprocess((value) => {
         if (!value) return null;
-        if (typeof value === 'object' && 'id' in value && typeof value.id === 'string') return value.id;
+        if (typeof value === 'object' && 'id' in value && typeof value.id === 'string') {
+            return {
+                id: value.id,
+                type: 'type' in value && typeof value.type === 'string' ? value.type : null
+            };
+        }
         return typeof value === 'string' ? value : null;
-    }, selectTripsSchema.shape.image),
+    }, z.union([
+        z.string(),
+        z.object({
+            id: z.string(),
+            type: z.string().nullable().optional()
+        })
+    ]).nullable().optional()),
     start_date: z.preprocess((value) => {
         if (value === null || value === undefined || value === '') return null;
         if (typeof value === 'string') return value;
@@ -67,9 +78,20 @@ export const tripActivitySchema = selectTripActivitiesSchema.extend({
     }, z.number().nonnegative().optional().nullable()),
     image: z.preprocess((value) => {
         if (!value) return null;
-        if (typeof value === 'object' && 'id' in value && typeof value.id === 'string') return value.id;
+        if (typeof value === 'object' && 'id' in value && typeof value.id === 'string') {
+            return {
+                id: value.id,
+                type: 'type' in value && typeof value.type === 'string' ? value.type : null
+            };
+        }
         return typeof value === 'string' ? value : null;
-    }, selectTripActivitiesSchema.shape.image),
+    }, z.union([
+        z.string(),
+        z.object({
+            id: z.string(),
+            type: z.string().nullable().optional()
+        })
+    ]).nullable().optional()),
     max_participants: z.coerce.number().int().nullable().optional(),
     is_active: z.preprocess((value) => {
         if (value === undefined || value === null) return true;

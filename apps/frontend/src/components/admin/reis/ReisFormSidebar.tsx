@@ -67,8 +67,8 @@ export default function ReisFormSidebar({
                                 unoptimized
                             />
                             <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                                <button type="button" onClick={() => fileInputRef.current?.click()} className="icon-button cursor-pointer rounded-xl bg-white p-2.5 text-slate-900 shadow-xl transition hover:scale-110"><Upload className="size-4" /></button>
-                                <button type="button" onClick={onRemoveImage} className="icon-button cursor-pointer rounded-xl bg-red-500 p-2.5 text-white shadow-xl transition hover:scale-110"><X className="size-4" /></button>
+                                <button type="button" onClick={() => fileInputRef.current?.click()} className="icon-button cursor-pointer rounded-xl bg-(--beheer-card-bg) p-2.5 text-(--beheer-text) shadow-xl transition-colors hover:bg-(--beheer-card-soft)"><Upload className="size-4" /></button>
+                                <button type="button" onClick={onRemoveImage} className="icon-button cursor-pointer rounded-xl bg-rose-600 p-2.5 text-white shadow-xl transition-colors hover:bg-rose-700"><X className="size-4" /></button>
                             </div>
                             <input ref={fileInputRef} type="file" name="image_file" accept="image/*,video/*" onChange={onImageChange} className="hidden" />
                         </div>
@@ -82,7 +82,7 @@ export default function ReisFormSidebar({
                     <Eye className="size-4 text-(--beheer-accent)" />
                     <h2 className="text-[10px] font-semibold tracking-widest text-(--beheer-text)">Instellingen</h2>
                 </div>
-                    <div className="space-y-3">
+                    <div className="space-y-3 p-4">
                         <label className="group relative flex cursor-pointer items-center gap-4 rounded-xl border border-(--beheer-border)/30 bg-(--beheer-card-soft)/30 p-3 transition-all hover:bg-(--beheer-card-soft)/50">
                             <div className="relative flex items-center justify-center">
                                 <input type="checkbox" name="registration_open" checked={registrationOpen} onChange={(e) => setRegistrationOpen(e.target.checked)} className="peer sr-only" />
@@ -122,16 +122,16 @@ export default function ReisFormSidebar({
                                 </p>
                             </div>
                         )}
-                    </div>
 
-                    <label className="group relative flex cursor-pointer items-center gap-4 rounded-xl border border-(--beheer-border)/30 bg-(--beheer-card-soft)/30 p-3 transition-all hover:bg-(--beheer-card-soft)/50">
-                        <div className="relative flex items-center justify-center">
-                            <input type="checkbox" name="is_bus_trip" checked={isBusTrip} onChange={(e) => setIsBusTrip(e.target.checked)} className="peer sr-only" />
-                            <div className="size-5 rounded border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
-                            <Check className="absolute size-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" />
-                        </div>
-                        <span className="text-[10px] font-semibold tracking-widest text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">Busreis (Rijbewijs)</span>
-                    </label>
+                        <label className="group relative flex cursor-pointer items-center gap-4 rounded-xl border border-(--beheer-border)/30 bg-(--beheer-card-soft)/30 p-3 transition-all hover:bg-(--beheer-card-soft)/50">
+                            <div className="relative flex items-center justify-center">
+                                <input type="checkbox" name="is_bus_trip" checked={isBusTrip} onChange={(e) => setIsBusTrip(e.target.checked)} className="peer sr-only" />
+                                <div className="size-5 rounded border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
+                                <Check className="absolute size-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" />
+                            </div>
+                            <span className="text-[10px] font-semibold tracking-widest text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">Busreis (Rijbewijs)</span>
+                        </label>
+                    </div>
                 </div>
 
             {/* Actions */}
@@ -139,9 +139,9 @@ export default function ReisFormSidebar({
                 <button 
                     type="submit" 
                     disabled={pending} 
-                    className="group active:scale-0.98 form-button flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--beheer-accent) px-8 py-4 text-[10px] font-semibold tracking-widest text-white shadow-lg transition-all hover:opacity-90 disabled:opacity-50"
+                    className="form-button flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--beheer-accent) px-8 py-4 text-[10px] font-semibold tracking-widest text-white shadow-lg transition-all hover:opacity-90 disabled:opacity-50"
                 >
-                    {pending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4 transition-transform group-hover:scale-110" />}
+                    {pending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                     <span>{pending ? 'Bezig...' : isAdding ? 'Reis Aanmaken' : 'Wijzigingen Opslaan'}</span>
                 </button>
                 

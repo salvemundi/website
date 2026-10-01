@@ -12,6 +12,7 @@ import { DateInput } from '@/shared/ui/DateInput';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
+import { Switch } from '@/shared/ui/Switch';
 import { type ReisPaymentEnrichment } from '@salvemundi/validations/schema/trip.zod';
 import { type Trip } from '@salvemundi/validations';
 
@@ -132,34 +133,52 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
 
                 <div className="col-span-1 @md:col-span-2 @3xl:col-span-3">
                     {trip.is_bus_trip && (
-                        <div className="squircle flex items-center justify-start gap-8 bg-theme-purple/5 p-4">
-                            <div className="flex min-w-45 items-center gap-3">
-                                <Bus className="size-5 text-theme-purple" />
+                        <div className="flex items-center justify-between gap-6 rounded-2xl border border-(--border-color) bg-(--bg-card) p-4 dark:border-white/10">
+                            <div className="flex items-center gap-3">
+                                <div className="flex size-10 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/10 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/10 dark:text-purple-300">
+                                    <Bus className="size-5" />
+                                </div>
                                 <div>
                                     <p className="text-sm font-bold text-(--text-main)">Vrijwillige Chauffeur?</p>
-                                    <p className="text-[10px] text-(--text-muted)">Bereid om een busje te rijden.</p>
+                                    <p className="text-xs text-(--text-muted)">Bereid om een busje te rijden.</p>
                                 </div>
                             </div>
-                            <label className="relative inline-flex cursor-pointer items-center">
-                                <input {...register('willing_to_drive')} type="checkbox" className="peer sr-only" />
-                                <div className="peer h-6 w-11 rounded-full bg-(--bg-soft) peer-checked:bg-theme-purple peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:size-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-                            </label>
+                            <Controller
+                                name="willing_to_drive"
+                                control={control}
+                                render={({ field }) => (
+                                    <Switch
+                                        checked={Boolean(field.value)}
+                                        onChange={field.onChange}
+                                        ariaLabel="Vrijwillige chauffeur"
+                                    />
+                                )}
+                            />
                         </div>
                     )}
 
                     {!trip.is_bus_trip && (
-                        <div className="squircle flex items-center justify-start gap-8 bg-theme-purple/5 p-4">
-                            <div className="flex min-w-45 items-center gap-3">
-                                <Briefcase className="size-5 text-theme-purple" />
+                        <div className="flex items-center justify-between gap-6 rounded-2xl border border-(--border-color) bg-(--bg-card) p-4 dark:border-white/10">
+                            <div className="flex items-center gap-3">
+                                <div className="flex size-10 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/10 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/10 dark:text-purple-300">
+                                    <Briefcase className="size-5" />
+                                </div>
                                 <div>
                                     <p className="text-sm font-bold text-(--text-main)">Extra Koffer?</p>
-                                    <p className="text-[10px] text-(--text-muted)">Ik wil een grote koffer meenemen.</p>
+                                    <p className="text-xs text-(--text-muted)">Ik wil een grote koffer meenemen.</p>
                                 </div>
                             </div>
-                            <label className="relative inline-flex cursor-pointer items-center">
-                                <input {...register('extra_luggage')} type="checkbox" className="peer sr-only" />
-                                <div className="peer h-6 w-11 rounded-full bg-(--bg-soft) peer-checked:bg-theme-purple peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:size-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-                            </label>
+                            <Controller
+                                name="extra_luggage"
+                                control={control}
+                                render={({ field }) => (
+                                    <Switch
+                                        checked={Boolean(field.value)}
+                                        onChange={field.onChange}
+                                        ariaLabel="Extra koffer meenemen"
+                                    />
+                                )}
+                            />
                         </div>
                     )}
                 </div>

@@ -314,9 +314,11 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         </div>
                         <button
                             onClick={() => { void toggleManualApproval(); }}
-                            className={`relative beheer-button inline-flex h-5 w-10 shrink-0 items-center rounded-full transition-all focus:outline-none ${manualApproval ? 'bg-amber-500' : 'bg-green-500'}`}
-                            type="button">
-                            <span className={`inline-block size-3 transform rounded-full bg-white shadow-sm transition-transform ${manualApproval ? 'translate-x-[1.2rem]' : 'translate-x-1'}`} />
+                            aria-label="Toggle handmatige goedkeuring"
+                            className={`tab-button relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors duration-200 outline-none ${manualApproval ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                            type="button"
+                        >
+                            <span className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-xs transition-transform duration-200 ease-in-out ${manualApproval ? 'translate-x-5' : 'translate-x-0'}`} />
                         </button>
                     </div>
                 </div>

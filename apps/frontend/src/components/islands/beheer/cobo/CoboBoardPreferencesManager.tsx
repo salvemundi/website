@@ -179,12 +179,13 @@ export default function CoboBoardPreferencesManager({
                                     <button
                                         type="button"
                                         onClick={() => handleToggleAlcohol(pref)}
-                                        className={`relative beheer-button inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                            pref.drinks_alcohol ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-red-700'
+                                        aria-label="Toggle alcoholconsumptie"
+                                        className={`tab-button relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors duration-200 outline-none ${
+                                            pref.drinks_alcohol ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-neutral-700'
                                         }`}
                                     >
                                         <span
-                                            className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                                            className={`pointer-events-none inline-block size-5 rounded-full bg-white shadow-xs transition-transform duration-200 ease-in-out ${
                                                 pref.drinks_alcohol ? 'translate-x-5' : 'translate-x-0'
                                             }`}
                                         />

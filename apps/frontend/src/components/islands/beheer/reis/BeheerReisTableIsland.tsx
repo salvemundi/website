@@ -101,16 +101,22 @@ export default function AdminReisTableIsland({
         handleResendPaymentEmail(id, type);
     };
 
-    const filteredSignups = signups.filter(signup => {
-        if (searchQuery) {
-            const queryText = searchQuery.toLowerCase();
-            const fullName = `${signup.first_name} ${signup.last_name}`.toLowerCase();
-            if (!fullName.includes(queryText) && !signup.email.toLowerCase().includes(queryText)) return false;
-        }
-        if (statusFilter !== 'all' && signup.status !== statusFilter) return false;
-        if (roleFilter !== 'all' && signup.role !== roleFilter) return false;
-        return true;
-    });
+    const filteredSignups = signups
+        .filter(signup => {
+            if (searchQuery) {
+                const queryText = searchQuery.toLowerCase();
+                const fullName = `${signup.first_name} ${signup.last_name}`.toLowerCase();
+                if (!fullName.includes(queryText) && !signup.email.toLowerCase().includes(queryText)) return false;
+            }
+            if (statusFilter !== 'all' && signup.status !== statusFilter) return false;
+            if (roleFilter === 'driver') {
+                if (!signup.willing_to_drive) return false;
+            } else if (roleFilter !== 'all') {
+                if (signup.role !== roleFilter) return false;
+            }
+            return true;
+        })
+        .sort((a, b) => b.id - a.id);
 
     const downloadCSVExport = () => {
         if (filteredSignups.length === 0) return;

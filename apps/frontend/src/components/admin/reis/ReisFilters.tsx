@@ -25,8 +25,9 @@ const statusOptions = [
 
 const roleOptions = [
     { value: 'all', label: 'Alle rollen' },
-    { value: 'participant', label: 'Deelnemer' },
-    { value: 'crew', label: 'Crew' }
+    { value: 'participant', label: 'Deelnemers' },
+    { value: 'crew', label: 'Crew' },
+    { value: 'driver', label: 'Bestuurders' }
 ];
 
 export default function ReisFilters({
@@ -40,10 +41,10 @@ export default function ReisFilters({
     tripId
 }: ReisFiltersProps) {
     return (
-        <div className="rounded-4xl border border-(--beheer-border)/60 bg-(--beheer-card-bg) shadow-sm">
-            <div className="flex flex-col items-stretch gap-3 p-2.5 lg:flex-row lg:items-center">
+        <div className="rounded-3xl border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm">
+            <div className="flex flex-col items-stretch gap-3 p-3 lg:flex-row lg:items-center">
                 <div className="group relative flex-1">
-                    <Search className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-(--beheer-text-muted) opacity-40 transition-all group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100" />
+                    <Search className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-(--beheer-text-muted) opacity-50 transition-all group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100" />
                     <input
                         type="text"
                         placeholder="Zoek deelnemers..."
@@ -53,8 +54,8 @@ export default function ReisFilters({
                     />
                 </div>
 
-                <div className="flex flex-col items-center gap-2 sm:flex-row">
-                    <div className="w-full sm:w-45">
+                <div className="flex flex-col flex-wrap items-center gap-2 sm:flex-row">
+                    <div className="w-full sm:w-44">
                         <BeheerSelect
                             value={statusFilter}
                             onChange={onStatusChange}
@@ -63,7 +64,7 @@ export default function ReisFilters({
                         />
                     </div>
 
-                    <div className="w-full sm:w-[150px]">
+                    <div className="w-full sm:w-40">
                         <BeheerSelect
                             value={roleFilter}
                             onChange={onRoleChange}
@@ -89,8 +90,9 @@ export default function ReisFilters({
                         </Link>
                         <button
                             onClick={onDownloadCSV}
-                            className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-emerald-700 px-6 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-sm transition-all hover:bg-emerald-800 active:scale-95"
-                            type="button">
+                            className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-emerald-700 px-5 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-sm transition-all hover:bg-emerald-800"
+                            type="button"
+                        >
                             <Download className="size-3.5" />
                             Exporteer CSV
                         </button>

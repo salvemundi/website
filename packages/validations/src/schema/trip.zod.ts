@@ -25,7 +25,9 @@ export const tripSignupSchema = selectTripSignupsSchema.extend({
 });
 export type TripSignup = z.infer<typeof tripSignupSchema>;
 
-export const tripSignupActivityDbSchema = selectTripSignupActivitiesSchema;
+export const tripSignupActivityDbSchema = selectTripSignupActivitiesSchema.extend({
+    selected_options: z.unknown()
+});
 export type TripSignupActivity = z.infer<typeof tripSignupActivityDbSchema>;
 
 

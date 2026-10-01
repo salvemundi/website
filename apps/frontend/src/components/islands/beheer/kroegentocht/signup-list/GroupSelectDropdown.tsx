@@ -40,7 +40,7 @@ export default function GroupSelectDropdown({
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`beheer-button flex items-center justify-between gap-1.5 rounded-lg border border-(--border-color)/30 bg-(--bg-main)/50 font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/40 focus:outline-none active:scale-98 ${
+                className={`tab-button flex items-center justify-between gap-1.5 rounded-lg border border-(--border-color)/30 bg-(--bg-main)/50 font-semibold text-(--text-main) transition-colors hover:border-(--theme-purple)/40 focus:outline-none ${
                     size === 'xs' ? 'px-2 py-1 text-[10px]' : 'px-2.5 py-1.5 text-xs'
                 }`}
             >
@@ -57,13 +57,13 @@ export default function GroupSelectDropdown({
                                 onChange(null);
                                 setIsOpen(false);
                             }}
-                            className={`beheer-button w-full rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors ${
+                            className={`tab-button flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors ${
                                 !value
-                                    ? 'bg-(--theme-purple) text-white'
-                                    : 'text-(--text-muted) hover:bg-(--bg-main) hover:text-(--text-main)'
+                                    ? 'bg-(--theme-purple) font-bold text-white'
+                                    : 'bg-transparent text-(--text-muted) hover:bg-(--bg-main) hover:text-(--text-main)'
                             }`}
                         >
-                            {placeholder}
+                            <span>{placeholder}</span>
                         </button>
                         {options.map((option) => (
                             <button
@@ -73,13 +73,13 @@ export default function GroupSelectDropdown({
                                     onChange(option);
                                     setIsOpen(false);
                                 }}
-                                className={`beheer-button w-full rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors ${
+                                className={`tab-button flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors ${
                                     value === option
-                                        ? 'bg-(--theme-purple) text-white'
-                                        : 'text-(--text-main) hover:bg-(--bg-main)'
+                                        ? 'bg-(--theme-purple) font-bold text-white'
+                                        : 'bg-transparent text-(--text-main) hover:bg-(--bg-main)'
                                 }`}
                             >
-                                {option}
+                                <span>{option}</span>
                             </button>
                         ))}
                     </div>

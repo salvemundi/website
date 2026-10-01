@@ -1,10 +1,7 @@
-import type { Trip, TripSignup } from '@salvemundi/validations';
-import { schema } from '@salvemundi/db';
+import type { Trip, TripSignup, TripSignupActivity } from '@salvemundi/validations';
 import { parseSelectedOptions } from '@/lib/reis';
 import { getPaymentStatus, getStatusBadge } from './trip-admin.utils';
 import { safeConsoleError } from '@/server/utils/logger';
-
-type TripSignupActivityRow = typeof schema.trip_signup_activities.$inferSelect;
 
 const formatCSVDate = (dateInput: string | Date | null | undefined, includeTime: boolean = false) => {
     if (!dateInput) return '';
@@ -32,7 +29,7 @@ const formatCSVDate = (dateInput: string | Date | null | undefined, includeTime:
 
 export function generateReisCSVData(
     signups: TripSignup[],
-    signupActivitiesMap: Record<number, TripSignupActivityRow[]>,
+    signupActivitiesMap: Record<number, TripSignupActivity[]>,
     _trip: Trip
 ) {
     return signups.map(signup => {
