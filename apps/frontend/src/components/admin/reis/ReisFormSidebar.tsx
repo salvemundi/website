@@ -44,7 +44,6 @@ export default function ReisFormSidebar({
 
     return (
         <div className="space-y-6 lg:sticky lg:top-8 lg:col-span-4">
-            {/* Banner Section */}
             <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
                 <div className="flex items-center gap-3 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
                     <Upload className="size-4 text-(--beheer-accent)" />
@@ -76,7 +75,6 @@ export default function ReisFormSidebar({
                 </div>
             </div>
 
-            {/* Registration Settings */}
             <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
                 <div className="flex items-center gap-3 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
                     <Eye className="size-4 text-(--beheer-accent)" />
@@ -134,7 +132,6 @@ export default function ReisFormSidebar({
                     </div>
                 </div>
 
-            {/* Actions */}
             <div className="space-y-3">
                 <button 
                     type="submit" 
