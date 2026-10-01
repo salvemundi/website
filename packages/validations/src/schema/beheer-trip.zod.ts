@@ -51,6 +51,8 @@ export const tripSchema = selectTripsSchema.extend({
         return Boolean(value);
     }, z.boolean().optional()),
     max_participants: z.coerce.number().int(),
+    base_price: z.coerce.number().nonnegative().optional().nullable(),
+    crew_discount: z.coerce.number().nonnegative().optional().nullable(),
     deposit_amount: z.coerce.number().nonnegative().optional().nullable(),
     location: z.string().nullable().optional(),
 });

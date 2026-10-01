@@ -75,12 +75,14 @@ export async function createTrip(prevState: unknown, formData: FormData) {
 
         const rawImage = validated.data.image;
         const imageId: string | null = typeof rawImage === 'string' ? rawImage : null;
-        const depositAmount = validated.data.deposit_amount !== undefined
-            ? String(validated.data.deposit_amount)
-            : undefined;
+        const depositAmount = String(validated.data.deposit_amount);
+        const basePrice = String(validated.data.base_price);
+        const crewDiscount = String(validated.data.crew_discount);
         const newId = await createTripDb({
             ...validated.data,
             image: imageId,
+            base_price: basePrice,
+            crew_discount: crewDiscount,
             deposit_amount: depositAmount
         });
         if (!newId) throw new Error('Database insert failed');
@@ -153,9 +155,17 @@ export async function updateTrip(prevState: unknown, formData: FormData) {
         const depositAmount = validated.data.deposit_amount !== undefined
             ? String(validated.data.deposit_amount)
             : undefined;
+        const basePrice = validated.data.base_price !== undefined
+            ? String(validated.data.base_price)
+            : undefined;
+        const crewDiscount = validated.data.crew_discount !== undefined
+            ? String(validated.data.crew_discount)
+            : undefined;
         const success = await updateTripDb(id, {
             ...validated.data,
             image: imageIdUpdate,
+            base_price: basePrice,
+            crew_discount: crewDiscount,
             deposit_amount: depositAmount
         });
         if (!success) throw new Error('Database update failed');

@@ -85,7 +85,7 @@ export default function ReisFormSidebar({
                     <div className="space-y-3 p-4">
                         <label className="group relative flex cursor-pointer items-center gap-4 rounded-xl border border-(--beheer-border)/30 bg-(--beheer-card-soft)/30 p-3 transition-all hover:bg-(--beheer-card-soft)/50">
                             <div className="relative flex items-center justify-center">
-                                <input type="checkbox" name="registration_open" checked={registrationOpen} onChange={(e) => setRegistrationOpen(e.target.checked)} className="peer sr-only" />
+                                <input type="checkbox" checked={registrationOpen} onChange={(e) => setRegistrationOpen(e.target.checked)} className="peer sr-only" />
                                 <div className="size-5 rounded border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
                                 <Check className="absolute size-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" />
                             </div>
@@ -99,7 +99,7 @@ export default function ReisFormSidebar({
 
                         <label className="group relative flex cursor-pointer items-center gap-4 rounded-xl border border-(--beheer-border)/30 bg-(--beheer-card-soft)/30 p-3 transition-all hover:bg-(--beheer-card-soft)/50">
                             <div className="relative flex items-center justify-center">
-                                <input type="checkbox" name="allow_deposit_payments" checked={allowDepositPayments} onChange={(e) => setAllowDepositPayments(e.target.checked)} className="peer sr-only" />
+                                <input type="checkbox" checked={allowDepositPayments} onChange={(e) => setAllowDepositPayments(e.target.checked)} className="peer sr-only" />
                                 <div className="size-5 rounded border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
                                 <Check className="absolute size-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" />
                             </div>
@@ -108,7 +108,7 @@ export default function ReisFormSidebar({
 
                         <label className="group relative flex cursor-pointer items-center gap-4 rounded-xl border border-(--beheer-border)/30 bg-(--beheer-card-soft)/30 p-3 transition-all hover:bg-(--beheer-card-soft)/50">
                             <div className="relative flex items-center justify-center">
-                                <input type="checkbox" name="allow_final_payments" checked={allowFinalPayments} onChange={(e) => setAllowFinalPayments(e.target.checked)} className="peer sr-only" />
+                                <input type="checkbox" checked={allowFinalPayments} onChange={(e) => setAllowFinalPayments(e.target.checked)} className="peer sr-only" />
                                 <div className="size-5 rounded border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
                                 <Check className="absolute size-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" />
                             </div>
@@ -125,7 +125,7 @@ export default function ReisFormSidebar({
 
                         <label className="group relative flex cursor-pointer items-center gap-4 rounded-xl border border-(--beheer-border)/30 bg-(--beheer-card-soft)/30 p-3 transition-all hover:bg-(--beheer-card-soft)/50">
                             <div className="relative flex items-center justify-center">
-                                <input type="checkbox" name="is_bus_trip" checked={isBusTrip} onChange={(e) => setIsBusTrip(e.target.checked)} className="peer sr-only" />
+                                <input type="checkbox" checked={isBusTrip} onChange={(e) => setIsBusTrip(e.target.checked)} className="peer sr-only" />
                                 <div className="size-5 rounded border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
                                 <Check className="absolute size-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" />
                             </div>
@@ -148,7 +148,7 @@ export default function ReisFormSidebar({
                 <button 
                     type="button" 
                     onClick={onCancel} 
-                    className="beheer-button w-full cursor-pointer rounded-xl border border-(--beheer-border) px-8 py-4 text-[10px] font-semibold tracking-widest text-(--beheer-text) transition-all hover:bg-(--beheer-card-soft)"
+                    className="beheer-button flex w-full cursor-pointer items-center justify-center rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-8 py-4 text-[10px] font-semibold tracking-widest text-(--beheer-text) shadow-sm transition-all hover:bg-(--beheer-card-soft) active:scale-95"
                 >
                     Annuleren
                 </button>
