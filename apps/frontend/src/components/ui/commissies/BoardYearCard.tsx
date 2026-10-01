@@ -11,26 +11,22 @@ interface BoardYearCardProps {
 
 export const BoardYearCard = ({ board }: BoardYearCardProps) => {
     return (
-        <div className="group relative overflow-hidden squircle-xl bg-bg-card p-8 shadow-2xl transition-all duration-500 hover:shadow-purple-500/10 dark:border dark:border-white/10 dark:hover:border-purple-500/30">
-            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-purple-500/5 blur-3xl transition-opacity duration-700 group-hover:opacity-100 opacity-0" />
-
-            <div className="flex flex-col lg:flex-row gap-10">
-                <div className="relative w-full lg:w-[400px] aspect-[4/3] squircle-xl overflow-hidden shadow-lg ring-1 ring-black/5 dark:ring-white/5">
+        <section className="relative overflow-hidden rounded-2xl bg-(--bg-card) p-6 shadow-xl sm:rounded-3xl sm:p-8 dark:border dark:border-white/10">
+            <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
+                <div className="relative aspect-4/3 w-full shrink-0 overflow-hidden rounded-xl shadow-md ring-1 ring-black/5 sm:rounded-2xl lg:w-100 dark:ring-white/10">
                     {!board.image ? (
                         <>
                             <Image
                                 src={BRAND_CONFIG.logoFallbackLight}
                                 alt={board.naam || 'Bestuur'}
                                 fill
-                                className="transition-transform duration-700 group-hover:scale-105 object-contain p-6 opacity-40 dark:hidden"
-                                unoptimized
+                                className="object-contain p-6 opacity-40 dark:hidden"
                             />
                             <Image
                                 src={BRAND_CONFIG.logoFallbackDark}
                                 alt={board.naam || 'Bestuur'}
                                 fill
-                                className="transition-transform duration-700 group-hover:scale-105 object-contain p-6 opacity-40 hidden dark:block"
-                                unoptimized
+                                className="hidden object-contain p-6 opacity-40 dark:block"
                             />
                         </>
                     ) : (
@@ -38,50 +34,45 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
                             src={getImageUrl(board.image)}
                             alt={board.naam || 'Bestuur'}
                             fill
-                            className="transition-transform duration-700 group-hover:scale-105 object-cover"
-                            unoptimized
+                            className="object-cover"
                         />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
-                        <span className="text-white font-black text-sm">{board.year}</span>
-                    </div>
                 </div>
 
                 <div className="flex-1 space-y-6">
                     <div>
-                        <div className="inline-block px-4 py-1.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-bold mb-3 ring-1 ring-purple-500/20">
+                        <div className="mb-3 inline-block rounded-full border border-purple-500/20 bg-purple-500/10 px-3.5 py-1 text-xs font-bold text-purple-700 dark:text-purple-300">
                             {board.year}
                         </div>
-                        <h3 className="text-3xl font-black text-theme-purple tracking-tight">
+                        <h2 className="text-2xl font-black tracking-tight text-purple-700 sm:text-3xl dark:text-purple-300">
                             {board.naam}
-                        </h3>
+                        </h2>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
                         {board.members?.map((member, idx) => {
                             const name = member.name || (member.user_id ? `${member.user_id.first_name} ${member.user_id.last_name}` : 'Onbekend');
                             const isLeader = member.functie?.toLowerCase().includes('voorzitter');
 
                             return (
-                                <div key={idx} className="flex items-center gap-3 p-3 rounded-2xl bg-bg-main/50 border border-border-color/30 group-hover:border-purple-500/20 transition-all">
-                                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full ring-2 ring-purple-500/10">
+                                <div key={idx} className="flex items-center gap-3 rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 p-3 sm:rounded-2xl">
+                                    <div className="relative size-10 shrink-0 overflow-hidden rounded-full ring-2 ring-purple-500/10">
                                         {member.user_id?.avatar ? (
                                             <Image
                                                 src={getImageUrl(member.user_id.avatar)}
                                                 alt={name}
                                                 fill
                                                 className="object-cover"
-                                                unoptimized
                                             />
                                         ) : (
-                                            <div className="flex h-full w-full items-center justify-center bg-purple-500/5 text-purple-500">
-                                                {isLeader ? <Medal className="h-4 w-4" /> : <User className="h-4 w-4" />}
+                                            <div className="flex size-full items-center justify-center bg-purple-500/5 text-purple-600 dark:text-purple-400">
+                                                {isLeader ? <Medal className="size-4" /> : <User className="size-4" />}
                                             </div>
                                         )}
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-sm font-bold text-text-main truncate">{name}</p>
-                                        <p className="text-[10px] font-bold text-purple-600 dark:text-purple-400 opacity-80">
+                                        <p className="truncate text-sm font-bold text-(--text-main)">{name}</p>
+                                        <p className="text-[10px] font-bold text-purple-700 opacity-80 dark:text-purple-300">
                                             {member.functie || 'Bestuurslid'}
                                         </p>
                                     </div>
@@ -91,6 +82,6 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
     );
 };

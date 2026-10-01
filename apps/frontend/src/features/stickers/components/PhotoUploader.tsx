@@ -23,14 +23,14 @@ export const PhotoUploader = ({
                 id="photo-upload"
             />
             {imagePreview ? (
-                <div className="relative w-full h-48 sm:h-56 rounded-2xl overflow-hidden border border-(--border-color)/30 bg-black/20 group">
-                    <MediaAsset asset={imagePreview} className="w-full h-full object-cover" alt="Preview" fill />
-                    <div className="absolute inset-0 bg-black/40 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 p-4">
+                <div className="group relative h-48 w-full overflow-hidden rounded-2xl border border-(--border-color)/30 bg-black/20 sm:h-56">
+                    <MediaAsset asset={imagePreview} className="size-full object-cover" alt="Preview" fill />
+                    <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/40 p-4 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                         <label
                             htmlFor="photo-upload"
-                            className="cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white text-xs font-bold transition-all active:scale-95 select-none touch-manipulation min-h-11"
+                            className="inline-flex min-h-11 cursor-pointer touch-manipulation items-center gap-2 rounded-xl bg-white/20 px-3.5 py-2 text-xs font-bold text-white backdrop-blur-md transition-all select-none hover:bg-white/30 active:scale-95"
                         >
-                            <Camera className="h-4 w-4" />
+                            <Camera className="size-4" />
                             <span>Wijzigen</span>
                         </label>
                         <IconButton
@@ -39,19 +39,19 @@ export const PhotoUploader = ({
                             size="md"
                             onClick={onRemoveImage}
                             aria-label="Foto verwijderen"
-                            className="bg-red-500/80 hover:bg-red-600 text-white min-w-11 min-h-11"
+                            className="min-h-11 min-w-11 bg-red-500/80 text-white hover:bg-red-600"
                         >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="size-4" />
                         </IconButton>
                     </div>
                 </div>
             ) : (
                 <label
                     htmlFor="photo-upload"
-                    className="cursor-pointer flex flex-col items-center justify-center w-full h-40 bg-(--bg-main)/30 border-2 border-dashed border-(--border-color)/50 rounded-2xl hover:border-(--theme-purple)/50 hover:bg-(--theme-purple)/5 transition-all group/photo:shadow-inner overflow-hidden select-none touch-manipulation active:scale-[0.99]"
+                    className="group/photo:shadow-inner active:scale-0.99 flex h-40 w-full cursor-pointer touch-manipulation flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-(--border-color)/50 bg-(--bg-main)/30 transition-all select-none hover:border-(--theme-purple)/50 hover:bg-(--theme-purple)/5"
                 >
-                    <Camera className="h-8 w-8 text-(--text-muted) mb-2" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-(--text-muted)">Foto Selecteren</span>
+                    <Camera className="mb-2 size-8 text-(--text-muted)" />
+                    <span className="text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Foto Selecteren</span>
                 </label>
             )}
         </div>

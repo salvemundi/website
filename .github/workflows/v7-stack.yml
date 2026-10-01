@@ -142,13 +142,13 @@ jobs:
         uses: Alemiz112/netbird-connect@v1
         with:
           setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
-          management-url: https://vpn.salvemundi.nl
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
 
       - name: Wait for VPN routing to be ready
         run: |
-          echo "Waiting for SSH port on 100.77.182.130 to be reachable..."
+          echo "Waiting for SSH port on ${{ secrets.VPN_IP }} to be reachable..."
           for i in {1..30}; do
-            if timeout 1 bash -c 'cat < /dev/null > /dev/tcp/100.77.182.130/22' >/dev/null 2>&1; then
+            if timeout 1 bash -c 'cat < /dev/null > /dev/tcp/${{ secrets.VPN_IP }}/22' >/dev/null 2>&1; then
               echo "VPS SSH port is reachable!"
               exit 0
             fi
@@ -167,11 +167,11 @@ jobs:
 
       - name: Upload Docker Compose
         run: |
-          scp -i ~/.ssh/deploy_key docker-compose.yml ${{ secrets.SSH_USER }}@100.77.182.130:/opt/salve-mundi-v7/docker-compose.yml
+          scp -i ~/.ssh/deploy_key docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }}:/opt/salve-mundi-v7/docker-compose.yml
 
       - name: Execute Deployment
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@100.77.182.130 bash << 'ENDSSH'
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }} bash << 'ENDSSH'
           set -e
           cd /opt/salve-mundi-v7
 
@@ -221,10 +221,12 @@ jobs:
           REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"
           AZURE_WEBSITEV7_PROVISIONING_CLIENT_ID="${{ secrets.AZURE_WEBSITEV7_PROVISIONING_CLIENT_ID }}"
           AZURE_WEBSITEV7_PROVISIONING_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_PROVISIONING_CLIENT_SECRET }}"
-          VPN_IP="${{ secrets.VPS_IP }}"
+          VPN_IP="${{ secrets.VPN_IP }}"
           KUMA_ADMIN_USER="${{ secrets.KUMA_ADMIN_USER }}"
           KUMA_ADMIN_PASSWORD="${{ secrets.KUMA_ADMIN_PASSWORD }}"
           DISCORD_MONITORING_WEBHOOK_URL="${{ secrets.DISCORD_MONITORING_WEBHOOK_URL }}"
+          MC_WHITELIST_WEBHOOK_URL="${{ secrets.MC_WHITELIST_WEBHOOK_URL }}"
+          MC_WHITELIST_WEBHOOK_TOKEN="${{ secrets.MC_WHITELIST_WEBHOOK_TOKEN }}"
           EOF
 
           echo "IMAGE_TAG=${{ needs.prepare.outputs.tag }}" >> .env.${ENV_NAME}

@@ -1,7 +1,6 @@
 import { safeConsoleError } from '../utils/logger.js';
 import { type Redis } from 'ioredis';
 import { createDirectus, rest, staticToken, updateItem } from '@directus/sdk';
-import { Directus } from '@salvemundi/validations';
 import { z } from 'zod';
 
 const DirectusUpdateTaskSchema = z.object({
@@ -19,14 +18,14 @@ export class DirectusRetryService {
     private static shouldStop = false;
 
     private static getDirectusClient() {
-        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
-        const directusToken = process.env.DIRECTUS_STATIC_TOKEN || '';
+        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL;
+        const directusToken = process.env.DIRECTUS_STATIC_TOKEN;
 
         if (!directusUrl || !directusToken) {
             throw new Error('Directus configuration is missing');
         }
 
-        return createDirectus<Directus.Schema>(directusUrl)
+        return createDirectus(directusUrl)
             .with(staticToken(directusToken))
             .with(rest());
     }

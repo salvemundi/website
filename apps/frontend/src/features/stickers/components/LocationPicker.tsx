@@ -33,7 +33,7 @@ export const LocationPicker = ({
 }: LocationPickerProps) => {
     return (
         <div className="space-y-2">
-            <p className="text-[10px] uppercase tracking-widest font-black opacity-80">Locatie</p>
+            <p className="text-[10px] font-black tracking-widest uppercase opacity-80">Locatie</p>
             <div className="flex items-center gap-3">
                 <div className="text-sm text-(--text-main)">
                     {selectedLocation ? (
@@ -50,7 +50,7 @@ export const LocationPicker = ({
                     variant="secondary"
                     size="sm"
                     onClick={onReset}
-                    className="ml-auto inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest"
+                    className="ml-auto inline-flex items-center gap-2 text-xs font-black tracking-widest uppercase"
                 >
                     Reset
                 </Button>
@@ -62,9 +62,9 @@ export const LocationPicker = ({
                 size="md"
                 onClick={onUseCurrentLocation}
                 disabled={isLocatingCurrent}
-                className="w-full inline-flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest text-(--text-main)"
+                className="inline-flex w-full items-center justify-center gap-2 text-xs font-black tracking-widest text-(--text-main) uppercase"
             >
-                {isLocatingCurrent ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
+                {isLocatingCurrent ? <Loader2 className="size-4 animate-spin" /> : <LocateFixed className="size-4" />}
                 Gebruik mijn huidige locatie
             </Button>
 
@@ -74,7 +74,7 @@ export const LocationPicker = ({
                         value={addressQuery}
                         onChange={(e) => onAddressQueryChange(e.target.value)}
                         placeholder="Zoek adres of plaats"
-                        className="form-input flex-1 bg-(--bg-main)/50 border border-(--border-color)/30 rounded-xl px-3 py-2 text-sm outline-none"
+                        className="form-input flex-1 rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 px-3 py-2 text-sm outline-none"
                     />
                     <Button
                         type="button"
@@ -82,14 +82,14 @@ export const LocationPicker = ({
                         size="sm"
                         onClick={onAddressSearch}
                         disabled={isSearching}
-                        className="sm:hidden inline-flex items-center gap-2 uppercase text-xs"
+                        className="inline-flex items-center gap-2 text-xs uppercase sm:hidden"
                     >
                         {isSearching ? 'Zoeken…' : 'Zoek'}
                     </Button>
                 </div>
 
                 {searchResults.length > 0 && (
-                    <div className="absolute left-0 right-0 top-full mt-1 z-20 rounded-xl border border-(--border-color)/30 bg-(--bg-card) shadow-2xl overflow-hidden divide-y divide-(--border-color)/20">
+                    <div className="absolute inset-x-0 top-full z-20 mt-1 divide-y divide-(--border-color)/20 overflow-hidden rounded-xl border border-(--border-color)/30 bg-(--bg-card) shadow-2xl">
                         {searchResults.map((result, idx) => (
                             <Button
                                 key={`${result.lat}-${result.lng}-${idx}`}
@@ -97,7 +97,7 @@ export const LocationPicker = ({
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => onSelectResult(result)}
-                                className="w-full justify-start text-left px-3 py-2 text-xs text-(--text-main) hover:bg-(--theme-purple)/10 transition-colors"
+                                className="w-full justify-start px-3 py-2 text-left text-xs text-(--text-main) transition-colors hover:bg-(--theme-purple)/10"
                             >
                                 {result.displayName}
                             </Button>
@@ -107,7 +107,7 @@ export const LocationPicker = ({
             </div>
 
             {locationError && (
-                <p className="text-xs text-red-400 font-bold">{locationError}</p>
+                <p className="text-xs font-bold text-red-400">{locationError}</p>
             )}
         </div>
     );

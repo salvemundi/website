@@ -17,11 +17,6 @@
             "import": "./dist/schema/*.js",
             "default": "./dist/schema/*.js"
         },
-        "./directus/*": {
-            "types": "./dist/directus/*.d.ts",
-            "import": "./dist/directus/*.js",
-            "default": "./dist/directus/*.js"
-        },
         "./security": {
             "types": "./dist/security.d.ts",
             "import": "./dist/security.js",
@@ -32,7 +27,6 @@
         "build": "tsc",
         "type-check": "tsc --noEmit",
         "lint": "eslint .",
-        "typegen": "node scripts/typegen.mjs",
         "generate:zod": "node scripts/generate-zod.mjs"
     },
     "dependencies": {
@@ -44,10 +38,8 @@
         "drizzle-orm": "0.45.2"
     },
     "devDependencies": {
-        "@directus/sdk": "^22.0.0",
         "@types/node": "^26.0.0",
         "drizzle-orm": "0.45.2",
-        "directus-ts-typegen": "^0.6.0",
         "eslint": "^9.39.4",
         "typescript": "6.0.3"
     }

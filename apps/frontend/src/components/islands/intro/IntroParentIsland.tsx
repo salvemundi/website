@@ -66,13 +66,13 @@ export const IntroParentIsland = ({ initialPhone, className = '', isOpen = true 
 
     if (!isOpen) {
         return (
-            <div className={`bg-bg-card dark:bg-gradient-theme border border-border-color squircle-xl p-10 shadow-xl text-center flex flex-col items-center justify-center min-h-75 ${className}`}>
-                <div className="w-20 h-20 bg-purple-100 dark:bg-white/20 rounded-full flex items-center justify-center mb-6">
+            <div className={`dark:bg-gradient-theme squircle-xl flex min-h-75 flex-col items-center justify-center border border-border-color bg-bg-card p-10 text-center shadow-xl ${className}`}>
+                <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-purple-100 dark:bg-white/20">
 
-                    <Lock className="w-10 h-10 text-brand-primary dark:text-white" />
+                    <Lock className="size-10 text-brand-primary dark:text-white" />
                 </div>
-                <h3 className="text-3xl font-black text-text-main dark:text-white mb-4 tracking-tight">Inschrijvingen Gesloten</h3>
-                <p className="text-text-muted dark:text-white/80 font-medium max-w-sm">
+                <h3 className="mb-4 text-3xl font-black tracking-tight text-text-main dark:text-white">Inschrijvingen Gesloten</h3>
+                <p className="max-w-sm font-medium text-text-muted dark:text-white/80">
                     De inschrijvingen voor Intro Ouders zijn momenteel gesloten.
                 </p>
             </div>
@@ -81,8 +81,8 @@ export const IntroParentIsland = ({ initialPhone, className = '', isOpen = true 
 
     if (submitted) {
         return (
-            <div className="bg-bg-card dark:bg-gradient-theme border border-border-color squircle-lg p-6 lg:p-8 shadow-lg text-center">
-                <h3 className="text-xl lg:text-2xl font-bold text-text-main dark:text-white mb-4">Je hebt je aangemeld als Intro Ouder</h3>
+            <div className="dark:bg-gradient-theme squircle-lg border border-border-color bg-bg-card p-6 text-center shadow-lg lg:p-8">
+                <h3 className="mb-4 text-xl font-bold text-text-main lg:text-2xl dark:text-white">Je hebt je aangemeld als Intro Ouder</h3>
                 <p className="text-text-muted dark:text-white/80">
                     Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.
                 </p>
@@ -94,12 +94,12 @@ export const IntroParentIsland = ({ initialPhone, className = '', isOpen = true 
     return (
         <StandardFormCard
             title="Word Intro Ouder!"
-            icon={<Heart className="w-8 h-8" />}
+            icon={<Heart className="size-8" />}
             description="Begeleid de nieuwe lichting studenten tijdens de introweek."
             className={className}
         >
-            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-4 lg:space-y-6 flex-1 flex flex-col justify-between" autoComplete="off">
-                <div className="flex-1 flex flex-col space-y-4 lg:space-y-6">
+            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="flex flex-1 flex-col justify-between space-y-4 lg:space-y-6" autoComplete="off">
+                <div className="flex flex-1 flex-col space-y-4 lg:space-y-6">
                     {!hasValidPhone ? (
                         <FormField id="field-telefoonnummer" label="Telefoonnummer" required error={errors.telefoonnummer?.message}>
                             <Controller
@@ -119,7 +119,7 @@ export const IntroParentIsland = ({ initialPhone, className = '', isOpen = true 
                         <input type="hidden" {...register('telefoonnummer')} />
                     )}
 
-                    <FormField id="field-motivation" label="Motivatie" required error={errors.motivation?.message} className="flex-1 flex flex-col">
+                    <FormField id="field-motivation" label="Motivatie" required error={errors.motivation?.message} className="flex flex-1 flex-col">
                         <textarea
                             {...register('motivation')}
                             id="field-motivation"
@@ -132,12 +132,12 @@ export const IntroParentIsland = ({ initialPhone, className = '', isOpen = true 
                     </FormField>
                 </div>
 
-                {error && <p className="text-red-500 dark:text-red-400 text-xs lg:text-sm">{error}</p>}
+                {error && <p className="text-xs text-red-500 lg:text-sm dark:text-red-400">{error}</p>}
 
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="form-button w-full mt-4 shrink-0"
+                    className="mt-4 form-button w-full shrink-0"
                 >
                     {isSubmitting ? 'Bezig...' : 'Meld je aan als Intro Ouder'}
                 </button>

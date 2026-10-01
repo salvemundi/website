@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCoboGuestBoardsDb, getActiveBoardMembersDb } from '@/server/queries/cobo/admin-cobo.queries';
+import { getCoboGuestBoardsDb, getActiveBoardMembersDb } from '@/server/queries/cobo/beheer-cobo.queries';
 
 export const dynamic = 'force-dynamic';
 

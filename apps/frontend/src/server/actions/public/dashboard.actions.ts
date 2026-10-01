@@ -11,17 +11,17 @@ import {
     type RecentActivity,
     type TopSticker,
     TopStickerSchema
-} from "@salvemundi/validations/schema/admin-dashboard.zod";
+} from "@salvemundi/validations/schema/beheer-dashboard.zod";
 import {
     getDashboardStatsInternal,
     getRecentActivitiesInternal
-} from "@/server/queries/dashboard/admin-dashboard.queries";
+} from "@/server/queries/dashboard/beheer-dashboard.queries";
 import { getPermissions } from '@/shared/lib/permissions';
-import { checkAdminAccess } from "@/server/actions/admin/admin-utils.actions";
+import { checkBeheerAccess } from "@/server/actions/beheer/beheer-utils.actions";
 import { safeConsoleError } from '@/server/utils/logger';
 
 export async function getDashboardPermissions(): Promise<string[]> {
-    const { isAuthorized, user } = await checkAdminAccess();
+    const { isAuthorized, user } = await checkBeheerAccess();
 
     if (!isAuthorized || !user) {
         return [];
@@ -31,14 +31,14 @@ export async function getDashboardPermissions(): Promise<string[]> {
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
-    const { isAuthorized } = await checkAdminAccess();
+    const { isAuthorized } = await checkBeheerAccess();
     if (!isAuthorized) throw new Error("Geen toegang");
 
     return await getDashboardStatsInternal();
 }
 
 export async function getUpcomingBirthdays(): Promise<Birthday[]> {
-    const { isAuthorized } = await checkAdminAccess();
+    const { isAuthorized } = await checkBeheerAccess();
     if (!isAuthorized) return [];
     try {
         const users = await db.query.directus_users.findMany({
@@ -92,14 +92,14 @@ export async function getUpcomingBirthdays(): Promise<Birthday[]> {
 }
 
 export async function getRecentActivities(): Promise<RecentActivity[]> {
-    const { isAuthorized } = await checkAdminAccess();
+    const { isAuthorized } = await checkBeheerAccess();
     if (!isAuthorized) return [];
 
     return await getRecentActivitiesInternal();
 }
 
 export async function getTopStickers(): Promise<TopSticker[]> {
-    const { isAuthorized } = await checkAdminAccess();
+    const { isAuthorized } = await checkBeheerAccess();
     if (!isAuthorized) return [];
     try {
         const rows = await db.select({

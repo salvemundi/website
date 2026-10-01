@@ -7,7 +7,7 @@ import { fetchPreorderWithLinesDb, type PreorderWithLines } from '@/server/inter
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteiten/activiteiten.utils';
 import { type WebshopCatalogProduct } from '@salvemundi/validations/schema/webshop.zod';
 import { safeConsoleError } from '@/server/utils/logger';
-import { getFeatureFlagSettings } from '@/server/actions/admin/admin-utils.actions';
+import { getFeatureFlagSettings } from '@/server/actions/beheer/beheer-utils.actions';
 
 export async function getCatalogProducts(category?: 'clothing' | 'item'): Promise<WebshopCatalogProduct[]> {
     try {

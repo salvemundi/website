@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
-import AdminToast from '@/components/ui/admin/AdminToast';
-import { useAdminToast } from '@/hooks/use-admin-toast';
+import BeheerToast from '@/components/ui/beheer/BeheerToast';
+import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { formatActivityDateTime } from '@/shared/lib/activity-utils';
 import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import { isDeadlinePassed } from '@/shared/lib/utils/date';
@@ -29,6 +29,7 @@ interface ActiviteitCardProps {
     onShowDetails?: () => void;
     requiresLogin?: boolean;
     isSignedUp?: boolean;
+    isFull?: boolean;
     variant?: 'grid' | 'list';
     committeeName?: string;
     registrationDeadline?: string;
@@ -53,6 +54,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     onShowDetails,
     requiresLogin = false,
     isSignedUp = false,
+    isFull = false,
     variant = 'grid',
     committeeName,
     contact,
@@ -65,10 +67,11 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     const { login: loginWithMicrosoft } = useAuthActions();
 
     const alreadySignedUp = Boolean(isSignedUp);
+    const isFullActivity = Boolean(isFull);
     const isListVariant = variant === 'list';
     const now = serverTime ? new Date(serverTime) : new Date();
     const deadlinePassed = isDeadlinePassed(registrationDeadline, now);
-    const cannotSignUp = alreadySignedUp || deadlinePassed;
+    const cannotSignUp = alreadySignedUp || deadlinePassed || isFullActivity;
 
     const handleSignupClick = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -132,6 +135,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                     cannotSignUp={cannotSignUp}
                     alreadySignedUp={alreadySignedUp}
                     isDeadlinePassed={deadlinePassed}
+                    isFull={isFullActivity}
                     contact={contact}
                     handleSignupClick={handleSignupClick}
                     onShowDetails={onShowDetails}
@@ -150,11 +154,13 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
                     isPast={isPast}
                     cannotSignUp={cannotSignUp}
                     alreadySignedUp={alreadySignedUp}
+                    isDeadlinePassed={deadlinePassed}
+                    isFull={isFullActivity}
                     handleSignupClick={handleSignupClick}
                     onShowDetails={onShowDetails}
                 />
             )}
-            <AdminToast toast={toast} onClose={hideToast} />
+            <BeheerToast toast={toast} onClose={hideToast} />
         </>
     );
 };

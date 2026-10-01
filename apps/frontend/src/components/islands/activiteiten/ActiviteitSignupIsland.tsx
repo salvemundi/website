@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { signupForActivity } from '@/server/actions/events/activiteiten/activiteiten-public.actions';
 import { type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
@@ -48,6 +49,7 @@ export default function ActiviteitSignupIsland({
     isMember = false
 }: ActiviteitSignupIslandProps) {
     const user = initialUser;
+    const router = useRouter();
 
     const [isPending, startTransition] = useTransition();
     const [serverError, setServerError] = useState<string | null>(null);
@@ -77,7 +79,7 @@ export default function ActiviteitSignupIsland({
                 if (result.checkoutUrl) {
                     window.location.href = result.checkoutUrl;
                 } else if ('signupId' in result && result.signupId && 'qrToken' in result && result.qrToken) {
-                    window.location.href = `/activiteiten/bevestiging?id=${result.signupId}&transactionId=${result.qrToken}`;
+                    router.push(`/activiteiten/bevestiging?id=${result.signupId}&transactionId=${result.qrToken}`);
                 } else {
                     setSignupStatus({
                         isSignedUp: true,
@@ -151,7 +153,7 @@ export default function ActiviteitSignupIsland({
                 </p>
                 <a
                     href="/lidmaatschap"
-                    className="mt-4 inline-block rounded-xl bg-(--theme-purple) px-6 py-3 text-sm font-bold text-white uppercase tracking-widest transition-opacity hover:opacity-90"
+                    className="mt-4 inline-block rounded-xl bg-(--theme-purple) px-6 py-3 text-sm font-bold tracking-widest text-white uppercase transition-opacity hover:opacity-90"
                 >
                     Word lid van Salve Mundi
                 </a>

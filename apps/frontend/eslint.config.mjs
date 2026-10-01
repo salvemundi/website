@@ -14,12 +14,26 @@ import unusedImports from "eslint-plugin-unused-imports";
 import eslintComments from "eslint-plugin-eslint-comments";
 import nextConfig from "eslint-config-next";
 import tsEslint from "@typescript-eslint/eslint-plugin";
+import tailwindPlugin from "eslint-plugin-tailwindcss";
 
 const eslintConfig = [
-    { ignores: [".next/", "node_modules/", "dist/"] },
+    { ignores: [".next/", "node_modules/", "dist/", "public/sw.js", "public/workbox-*.js"] },
     ...nextConfig,
     securityPlugin.configs.recommended,
+    tailwindPlugin.configs.recommended,
     {
+        settings: {
+            tailwindcss: {
+                callees: ["cn", "clsx", "cva"],
+                cssConfigPath: "src/app/globals.css",
+            },
+        },
+        rules: {
+            "tailwindcss/no-custom-classname": "off",
+        },
+    },
+    {
+        files: ["src/**/*.{js,mjs,cjs,ts,jsx,tsx}"],
         languageOptions: {
             parserOptions: {
                 project: true,
@@ -75,7 +89,7 @@ const eslintConfig = [
             "@next/next/no-html-link-for-pages": "error",
 
             "no-restricted-syntax": [
-                "warn",
+                "error",
                 {
                     "selector": "CallExpression[callee.object.name='console'][callee.property.name=/^(log|warn|error|info|debug)$/]",
                     "message": "Do not use console methods directly. Use safeConsoleError or logInternalError from '@/server/utils/logger' to ensure PII is sanitized and logs are centralized."

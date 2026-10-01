@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import VacancyAdminFormIsland from '@/components/islands/admin/vacancies/VacancyAdminFormIsland';
+import VacancyAdminFormIsland from '@/components/islands/beheer/vacancies/VacancyAdminFormIsland';
 import { getAdminVacancyById } from '@/server/actions/vacancies/vacancies-admin.actions';
 
 interface EditVacancyPageProps {

@@ -47,7 +47,7 @@ export const transactionSchema = z.object({
   }).nullable().optional(),
 });
 
-export const eventSignupSchema = z.object({
+export const profileEventSignupSchema = z.object({
   id: z.number().or(z.string()),
   created_at: z.string().optional().nullable(),
   participant_name: z.string().optional().nullable(),
@@ -72,5 +72,5 @@ export const updateProfileSchema = z.object({
 
 export type WhatsAppGroup = z.infer<typeof whatsappGroupSchema>;
 export type Transaction = z.infer<typeof transactionSchema>;
-export type EventSignup = z.infer<typeof eventSignupSchema>;
+export type ProfileEventSignup = z.infer<typeof profileEventSignupSchema>;
 export type UpdateProfileData = z.infer<typeof updateProfileSchema>;

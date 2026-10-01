@@ -3,19 +3,21 @@
 import { z } from 'zod';
 
 import {
-    reisPaymentEnrichmentSchema
+    reisPaymentEnrichmentSchema,
+    type ReisPaymentEnrichment,
+    type TripSignup
 } from '@salvemundi/validations/schema/trip.zod';
 import {
     tripSchema,
     tripActivitySchema,
-    tripSignupActivitySchema
-} from '@salvemundi/validations/schema/admin-trip.zod';
-import { type ReisPaymentEnrichment } from '@salvemundi/validations/schema/trip.zod';
+    type Trip,
+    type TripActivity
+} from '@salvemundi/validations/schema/beheer-trip.zod';
 import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
 import { fetchTripSignupByIdDb, fetchSelectedSignupActivitiesDb } from '@/server/internal/reis/reis-signup-db.utils';
 import { fetchTripByIdDb } from '@/server/internal/reis/reis-trip-db.utils';
-import { fetchTripActivitiesByTripIdDb } from '@/server/internal/reis/reis-activity-db.utils';;
+import { fetchTripActivitiesByTripIdDb } from '@/server/internal/reis/reis-activity-db.utils';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { getRedis } from '@/server/auth/redis-client';
 import { normalizeDate } from '@/lib/utils/date-utils';
@@ -33,7 +35,27 @@ interface PaymentStatusResponse {
     payment_status: 'paid' | 'open' | 'expired' | 'failed' | 'canceled';
 }
 
-async function validateAccess(signupId: number, token?: string) {
+export type GetTripSignupByTokenResult =
+    | {
+          success: true;
+          data: {
+              signup: TripSignup;
+              trip: Trip;
+              allActivities: TripActivity[];
+              selectedActivities: TripActivity[];
+          };
+      }
+    | {
+          success: false;
+          error?: string;
+          data?: undefined;
+      };
+
+type ValidateAccessResult =
+    | { authorized: true; signup: TripSignup }
+    | { authorized: false; error: string; signup?: undefined };
+
+async function validateAccess(signupId: number, token?: string): Promise<ValidateAccessResult> {
     try {
         const session = await getEnrichedSession();
 
@@ -56,10 +78,10 @@ async function validateAccess(signupId: number, token?: string) {
     }
 }
 
-export async function getTripSignupByToken(signupId: number, token?: string) {
+export async function getTripSignupByToken(signupId: number, token?: string): Promise<GetTripSignupByTokenResult> {
     try {
         const access = await validateAccess(signupId, token);
-        if (!access.authorized || !access.signup) return { success: false, error: access.error };
+        if (!access.authorized) return { success: false, error: access.error };
 
         const signup = access.signup;
 
@@ -75,19 +97,16 @@ export async function getTripSignupByToken(signupId: number, token?: string) {
 
         const tripVal = tripSchema.safeParse(tripRaw);
         if (!tripVal.success) {
-
             return { success: false, error: 'Reisgegevens zijn niet compatibel.' };
         }
 
         const activitiesVal = tripActivitySchema.array().safeParse(allActivitiesRaw.filter(a => a.is_active));
         if (!activitiesVal.success) {
-
             return { success: false, error: 'Sommige reisactiviteiten bevatten ongeldige data.' };
         }
 
-        const selectionsVal = tripSignupActivitySchema.array().safeParse(selectedActivitiesRaw);
+        const selectionsVal = tripActivitySchema.array().safeParse(selectedActivitiesRaw);
         if (!selectionsVal.success) {
-
             return { success: false, error: 'Je eerdere activiteitskeuzes konden niet worden geladen.' };
         }
 
@@ -102,15 +121,18 @@ export async function getTripSignupByToken(signupId: number, token?: string) {
         };
 
     } catch {
-
         return { success: false, error: 'Er is een fout opgetreden bij het ophalen van je gegevens. Probeer het later opnieuw.' };
     }
 }
 
-export async function updateSignupDetails(signupId: number, data: ReisPaymentEnrichment, token?: string) {
+export async function updateSignupDetails(
+    signupId: number,
+    data: ReisPaymentEnrichment,
+    token?: string
+): Promise<{ success: true } | { success: false; error: string; fieldErrors?: Record<string, string[]> }> {
     try {
         const access = await validateAccess(signupId, token);
-        if (!access.authorized || !access.signup) {
+        if (!access.authorized) {
             return { success: false, error: access.error };
         }
 
@@ -134,10 +156,14 @@ export async function updateSignupDetails(signupId: number, data: ReisPaymentEnr
     }
 }
 
-export async function syncSignupActivities(signupId: number, selections: { activityId: number, options: { [key: string]: unknown } }[], token?: string) {
+export async function syncSignupActivities(
+    signupId: number,
+    selections: { activityId: number; options: { [key: string]: unknown } }[],
+    token?: string
+): Promise<{ success: true } | { success: false; error: string }> {
     try {
         const access = await validateAccess(signupId, token);
-        if (!access.authorized || !access.signup) return { success: false, error: access.error };
+        if (!access.authorized) return { success: false, error: access.error };
 
         const redis = await getRedis();
         const lockKey = `lock:trip-activity-sync:${signupId}`;
@@ -167,7 +193,6 @@ export async function syncSignupActivities(signupId: number, selections: { activ
                 .filter(c => !selections.find(s => s.activityId === Number(c.trip_activity_id)))
                 .map(c => Number(c.id));
 
-            // 2. Perform sync via Drizzle
             if (toRemove.length > 0) {
                 const { inArray } = await import('drizzle-orm');
                 await db.delete(schema.trip_signup_activities).where(inArray(schema.trip_signup_activities.id, toRemove));
@@ -193,15 +218,18 @@ export async function syncSignupActivities(signupId: number, selections: { activ
             await redis.del(lockKey);
         }
     } catch {
-
         return { success: false, error: 'Synchroniseren van activiteiten mislukt.' };
     }
 }
 
-export async function initiateTripPaymentAction(signupId: number, paymentType: 'deposit' | 'final', token?: string) {
+export async function initiateTripPaymentAction(
+    signupId: number,
+    paymentType: 'deposit' | 'final',
+    token?: string
+): Promise<{ success: true; checkoutUrl: string } | { success: false; error: string }> {
     try {
         const access = await validateAccess(signupId, token);
-        if (!access.authorized || !access.signup) return { success: false, error: access.error };
+        if (!access.authorized) return { success: false, error: access.error };
 
         const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL;
         if (!FINANCE_SERVICE_URL) return { success: false, error: 'Betaalservice niet geconfigureerd.' };
@@ -237,7 +265,9 @@ export async function initiateTripPaymentAction(signupId: number, paymentType: '
     }
 }
 
-export async function getPaymentStatusAction(mollieId: string) {
+export async function getPaymentStatusAction(
+    mollieId: string
+): Promise<{ success: true; payment_status: PaymentStatusResponse['payment_status'] } | { success: false; error: string }> {
     try {
         const FINANCE_SERVICE_URL = process.env.FINANCE_SERVICE_URL;
         if (!FINANCE_SERVICE_URL) return { success: false, error: 'Betaalservice niet geconfigureerd.' };
@@ -250,7 +280,6 @@ export async function getPaymentStatusAction(mollieId: string) {
         });
 
         if (!response.ok) {
-
             return { success: false, error: 'Status ophalen mislukt bij betaalservice.' };
         }
 
@@ -260,7 +289,6 @@ export async function getPaymentStatusAction(mollieId: string) {
             payment_status: data.payment_status
         };
     } catch {
-
         return { success: false, error: 'Interne fout bij ophalen betaalstatus.' };
     }
 }

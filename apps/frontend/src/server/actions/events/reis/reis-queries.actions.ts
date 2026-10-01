@@ -2,11 +2,11 @@
 
 import 'server-only';
 import {
-    reisTripSchema,
+    tripSchema,
     type ReisSiteSettings,
-    type ReisTrip,
-    type ReisTripSignup
-} from '@salvemundi/validations/schema/trip.zod';
+    type Trip,
+    type TripSignup
+} from '@salvemundi/validations';
 import { db, schema } from '@salvemundi/db';
 import { eq, inArray, count, lt, desc, and, or, isNull } from 'drizzle-orm';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
@@ -14,7 +14,7 @@ import { fetchUserSignupStatusDb, fetchAllTripSignupsDb } from '@/server/interna
 import { fetchPublicTripsDb } from '@/server/internal/reis/reis-trip-db.utils';;
 import { fetchUserProfileByEmailDb } from '@/server/internal/leden/leden-db.utils';
 import { safeConsoleError } from '@/server/utils/logger';
-import { getFeatureFlagSettings } from '../../admin/admin-utils.actions';
+import { getFeatureFlagSettings } from '../../beheer/beheer-utils.actions';
 
 export async function getReisSiteSettings(): Promise<ReisSiteSettings & { canToggleVisibility?: boolean } | null> {
     const settings = await getFeatureFlagSettings('/reis');
@@ -42,19 +42,19 @@ export async function getCurrentUserProfileAction(): Promise<{ success: boolean;
     return { success: true, data: user };
 }
 
-export async function getUpcomingTrips(): Promise<ReisTrip[]> {
+export async function getUpcomingTrips(): Promise<Trip[]> {
     const data = await fetchPublicTripsDb();
 
-    const parsed = reisTripSchema.array().safeParse(data);
+    const parsed = tripSchema.array().safeParse(data);
     if (!parsed.success) {
         safeConsoleError(`[trip-queries.actions.ts][getUpcomingTrips] Failed to parse trips:`, parsed.error);
-        return data as unknown as ReisTrip[];
+        return data;
     }
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const validTrips = parsed.data.filter((trip: ReisTrip) => {
+    const validTrips = parsed.data.filter((trip: Trip) => {
         if (trip.end_date) {
             const endDate = new Date(trip.end_date);
             endDate.setHours(23, 59, 59, 999);
@@ -90,7 +90,7 @@ export async function getTripParticipantsCount(tripId: number): Promise<number> 
     }
 }
 
-export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup | null> {
+export async function getUserTripSignup(tripId: number): Promise<TripSignup | null> {
     const session = await getEnrichedSession();
 
     if (!session) {
@@ -101,11 +101,11 @@ export async function getUserTripSignup(tripId: number): Promise<ReisTripSignup 
     return await fetchUserSignupStatusDb(userId, tripId);
 }
 
-export async function getTripSignupsInternal(tripId: number): Promise<ReisTripSignup[]> {
+export async function getTripSignupsInternal(tripId: number): Promise<TripSignup[]> {
     return await fetchAllTripSignupsDb(tripId);
 }
 
-export async function getLatestPastTrip(): Promise<ReisTrip | null> {
+export async function getLatestPastTrip(): Promise<Trip | null> {
     try {
         const todayStr = new Date().toISOString().split('T')[0];
         
@@ -136,10 +136,10 @@ export async function getLatestPastTrip(): Promise<ReisTrip | null> {
             allow_final_payments: !!trip.allow_final_payments,
         };
 
-        const parsed = reisTripSchema.safeParse(formattedTrip);
+        const parsed = tripSchema.safeParse(formattedTrip);
         if (!parsed.success) {
             safeConsoleError(`[trip-queries.actions.ts][getLatestPastTrip] Failed to parse trip:`, parsed.error);
-            return formattedTrip as unknown as ReisTrip;
+            return tripSchema.parse(formattedTrip);
         }
 
         return parsed.data;

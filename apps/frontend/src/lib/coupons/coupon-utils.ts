@@ -1,4 +1,4 @@
-import type { Coupon, CouponStatus } from '@/components/islands/admin/coupons/coupon-types';
+import type { Coupon, CouponStatus } from '@/components/islands/beheer/coupons/coupon-types';
 
 export function getComputedCouponStatus(coupon: Coupon): {
     type: CouponStatus;

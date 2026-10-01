@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-      - acceptance
     paths:
       - "infrastructure/**"
       - ".github/workflows/v7-core.yml"
@@ -13,13 +12,10 @@ on:
 permissions:
   contents: read
 
-env:
-  DOMAIN: admin.salvemundi.nl
-  ACC_DOMAIN: acc.salvemundi.nl
-
 jobs:
   deploy-core:
     runs-on: ubuntu-latest
+    environment: Production
     steps:
       - uses: actions/checkout@v4
 
@@ -27,13 +23,13 @@ jobs:
         uses: Alemiz112/netbird-connect@v1
         with:
           setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
-          management-url: https://vpn.salvemundi.nl
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
 
       - name: Wait for VPN routing to be ready
         run: |
-          echo "Waiting for SSH port on 100.77.182.130 to be reachable..."
+          echo "Waiting for SSH port on ${{ secrets.VPN_IP }} to be reachable..."
           for i in {1..30}; do
-            if timeout 1 bash -c 'cat < /dev/null > /dev/tcp/100.77.182.130/22' >/dev/null 2>&1; then
+            if timeout 1 bash -c 'cat < /dev/null > /dev/tcp/${{ secrets.VPN_IP }}/22' >/dev/null 2>&1; then
               echo "VPS SSH port is reachable!"
               exit 0
             fi
@@ -56,30 +52,20 @@ jobs:
 
       - name: Copy Infrastructure files to VPS
         run: |
-          scp -i ~/.ssh/deploy_key infrastructure/docker-compose.yml ${{ secrets.SSH_USER }}@100.77.182.130:/opt/salve-mundi-v7/infra/docker-compose.yml
-          scp -i ~/.ssh/deploy_key infrastructure/databases.json ${{ secrets.SSH_USER }}@100.77.182.130:/opt/salve-mundi-v7/infra/databases.json
+          scp -i ~/.ssh/deploy_key infrastructure/docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }}:/opt/salve-mundi-v7/infra/docker-compose.yml
+          scp -i ~/.ssh/deploy_key infrastructure/databases.json ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }}:/opt/salve-mundi-v7/infra/databases.json
 
       - name: Deploy Core Stack via SSH
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@100.77.182.130 bash << 'ENDSSH'
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }} bash << 'ENDSSH'
           set -e
           cd /opt/salve-mundi-v7/infra
 
-          echo "# Auto-generated V7 Core Environment" > .env
-
-          echo "PUBLIC_URL=https://${{ env.DOMAIN }}" >> .env
-          echo "CORS_ORIGIN=https://${{ env.DOMAIN }},https://${{ env.ACC_DOMAIN }}" >> .env
-          echo "INTERNAL_DIRECTUS_URL=http://v7-core-directus:8055" >> .env
-
-          COMBINED_REDIRECTS="${{ env.DOMAIN }},${{ env.ACC_DOMAIN }}"
-          DIRECTUS_ALLOWED_REDIRECTS="${{ secrets.DIRECTUS_ALLOWED_REDIRECTS }}"
-          if [ ! -z "$DIRECTUS_ALLOWED_REDIRECTS" ]; then
-            COMBINED_REDIRECTS="$COMBINED_REDIRECTS,$DIRECTUS_ALLOWED_REDIRECTS"
-          fi
-          echo "AUTH_SAFE_REDIRECT_HOSTS=\"$COMBINED_REDIRECTS\"" >> .env
-
-          cat >> .env << 'EOF'
-          INTERNAL_SERVER_IP="${{ secrets.INTERNAL_SERVER_IP }}"
+          cat > .env << 'EOF'
+          PUBLIC_URL="https://${{ secrets.DIRECTUS_HOST }}"
+          CORS_ORIGIN="https://${{ secrets.DIRECTUS_HOST }}"
+          AUTH_SAFE_REDIRECT_HOSTS="${{ secrets.DIRECTUS_HOST }}"
+          VPN_IP="${{ secrets.VPN_IP }}"
           DB_USER="${{ secrets.DB_USER }}"
           DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
           DB_NAME="${{ secrets.DB_NAME }}"
@@ -91,6 +77,8 @@ jobs:
           AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET="${{ secrets.AZURE_WEBSITEV7_DIRECTUS_CLIENT_SECRET }}"
           DIRECTUS_STATIC_TOKEN="${{ secrets.DIRECTUS_STATIC_TOKEN }}"
           REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"
+          MC_WHITELIST_WEBHOOK_URL="${{ secrets.MC_WHITELIST_WEBHOOK_URL }}"
+          MC_WHITELIST_WEBHOOK_TOKEN="${{ secrets.MC_WHITELIST_WEBHOOK_TOKEN }}"
           EOF
 
           docker network create salve-mundi-v7-shared || true
@@ -98,5 +86,5 @@ jobs:
           docker volume rm v7-core_v7_core_redisinsight_data || true
 
           docker compose -p v7-core up -d --remove-orphans
-          echo "--- Core Infrastructure Deployed to ${{ env.DOMAIN }} ---"
+          echo "--- Core Infrastructure Deployed ---"
           ENDSSH

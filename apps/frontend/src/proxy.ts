@@ -111,8 +111,8 @@ async function proxy(request: NextRequest) {
                 rawCookie.split('better-auth.session_token=')[1]?.split(';')[0]?.trim() ||
                 rawCookie.split('better-auth.session-token=')[1]?.split(';')[0]?.trim();
                 
-            const testTokenRaw = request.cookies.get('directus_test_token')?.value ||
-                rawCookie.split('directus_test_token=')[1]?.split(';')[0]?.trim();
+            const testTokenRaw = request.cookies.get('directus_impersonation_token')?.value ||
+                rawCookie.split('directus_impersonation_token=')[1]?.split(';')[0]?.trim();
                 
             const hasTestToken = !!testTokenRaw;
             const sessionToken = sessionTokenRaw ? sessionTokenRaw.split('.')[0] : undefined;

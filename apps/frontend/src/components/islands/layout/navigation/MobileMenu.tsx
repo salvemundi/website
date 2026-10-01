@@ -61,7 +61,7 @@ export default function MobileMenu({
 
             {/* Slide-out paneel */}
             <nav
-                className={`fixed right-0 z-200 flex w-full max-w-xs flex-col gap-6 bg-(--bg-main) px-6 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))] shadow-2xl transition-transform duration-300 overflow-y-auto ${isOpen ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed right-0 z-200 flex w-full max-w-xs flex-col gap-6 overflow-y-auto bg-(--bg-main) px-6 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))] shadow-2xl transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'
                     }`}
                 style={{ top: 0, height: '100dvh' }}
                 aria-label="Mobiele navigatie"
@@ -75,7 +75,7 @@ export default function MobileMenu({
                         onClick={onClose}
                         className="flex items-center gap-3"
                     >
-                        <span className="inline-flex relative h-10 w-10 items-center justify-center rounded-full bg-(--bg-card) shadow-sm overflow-hidden">
+                        <span className="relative inline-flex size-10 items-center justify-center overflow-hidden rounded-full bg-(--bg-card) shadow-sm">
                             {mounted && (user?.avatar || user?.image) ? (
                                 <Image
                                     src={(user.avatar ? getImageUrl(user.avatar) : (user.image || '')) as string}
@@ -86,7 +86,7 @@ export default function MobileMenu({
                                     unoptimized
                                 />
                             ) : (
-                                <div className="h-8 w-8 relative">
+                                <div className="relative size-8">
                                     <Image
                                         src={BRAND_CONFIG.logoLightMode}
                                         alt="Logo"
@@ -97,7 +97,7 @@ export default function MobileMenu({
                                         src={BRAND_CONFIG.logoDarkMode}
                                         alt="Logo"
                                         fill
-                                        className="object-contain hidden dark:block"
+                                        className="hidden object-contain dark:block"
                                     />
                                 </div>
                             )}
@@ -114,9 +114,9 @@ export default function MobileMenu({
                         <Link
                             href={ROUTES.ADMIN}
                             onClick={onClose}
-                            className="flex items-center gap-2 rounded-2xl bg-purple-500 text-white px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/20 active:scale-95 transition-all"
+                            className="flex items-center gap-2 rounded-2xl bg-purple-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition-all active:scale-95"
                         >
-                            <Shield className="h-5 w-5" />
+                            <Shield className="size-5" />
                             <span>Beheer</span>
                         </Link>
                     )}
@@ -125,10 +125,10 @@ export default function MobileMenu({
                         <Link
                             href={ROUTES.ACCOUNT}
                             onClick={onClose}
-                            className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-(--text-main) shadow-sm bg-(--bg-card) border border-(--border-color)/10 active:scale-95 transition-all"
+                            className="flex items-center justify-between rounded-2xl border border-(--border-color)/10 bg-(--bg-card) px-4 py-3 text-sm font-semibold text-(--text-main) shadow-sm transition-all active:scale-95"
                         >
                             <span className="flex items-center gap-3">
-                                <IconMap.User className="h-5 w-5 text-purple-500" />
+                                <IconMap.User className="size-5 text-purple-500" />
                                 <span>Mijn Profiel</span>
                             </span>
                             <span aria-hidden className="text-(--text-muted)">›</span>
@@ -150,14 +150,14 @@ export default function MobileMenu({
                                     href={link.href}
                                     onClick={onClose}
                                     className={cn(
-                                        'flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold shadow-sm active:scale-[0.98] transition-all',
+                                        'active:scale-0.98 flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold shadow-sm transition-all',
                                         active
                                             ? 'bg-purple-50 text-purple-500'
-                                            : 'text-(--text-main) bg-[color-mix(in_srgb,var(--bg-card)_70%,transparent)]'
+                                            : 'bg-[color-mix(in_srgb,var(--bg-card)_70%,transparent)] text-(--text-main)'
                                     )}
                                 >
                                     <span className="flex items-center gap-3 whitespace-nowrap">
-                                        <Icon className="h-5 w-5 text-purple-500" aria-hidden="true" />
+                                        <Icon className="size-5 text-purple-500" aria-hidden="true" />
                                         <span>{link.name}</span>
                                     </span>
                                     <span aria-hidden="true" className="text-(--text-muted)">›</span>
@@ -171,27 +171,27 @@ export default function MobileMenu({
                     <Link
                         href={ROUTES.MEMBERSHIP}
                         onClick={onClose}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 active:scale-95 transition-all"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 transition-all active:scale-95"
                         style={{
                             background: 'linear-gradient(135deg, var(--color-purple-500), var(--color-purple-700))',
                             color: 'white'
                         }}
                     >
-                        <Sparkles className="h-4 w-4" />
+                        <Sparkles className="size-4" />
                         Word lid
                     </Link>
                 )}
 
                 {/* Onderste acties: uitlogknop / inlogknop */}
-                <div className="mt-auto pt-6 border-t border-(--border-color)/10">
+                <div className="mt-auto border-t border-(--border-color)/10 pt-6">
                     {mounted && (
                         isAuthenticated ? (
                             <button
                                 type="button"
                                 onClick={onLogout}
-                                className="form-button flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-red-500 bg-red-500/5 hover:bg-red-500/10 active:scale-95 transition-all"
+                                className="form-button flex w-full items-center justify-center gap-2 rounded-2xl bg-red-500/5 px-4 py-3 text-sm font-semibold text-red-500 transition-all hover:bg-red-500/10 active:scale-95"
                             >
-                                <LogOut className="h-5 w-5" />
+                                <LogOut className="size-5" />
                                 <span>Uitloggen</span>
                             </button>
                         ) : (
@@ -208,7 +208,7 @@ export default function MobileMenu({
                                         }
                                     })();
                                 }}
-                                className="form-button flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 active:scale-95 transition-all"
+                                className="form-button flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 transition-all active:scale-95"
                                 style={{
                                     backgroundColor: 'var(--color-purple-500)',
                                     color: 'white'

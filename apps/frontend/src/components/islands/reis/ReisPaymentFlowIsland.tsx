@@ -1,20 +1,14 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, ChevronLeft, ChevronRight, CreditCard, Compass, User } from 'lucide-react';
-import {
-    type Trip,
-    type TripSignup,
-    type TripActivity,
-    type TripSignupActivity
-} from '@salvemundi/validations/schema/admin-trip.zod';
-import {
-    reisPaymentEnrichmentSchema,
-    type ReisPaymentEnrichment
-} from '@salvemundi/validations/schema/trip.zod';
+import type { Trip, TripActivity } from '@salvemundi/validations/schema/beheer-trip.zod';
+import type { TripSignup, ReisPaymentEnrichment } from '@salvemundi/validations/schema/trip.zod';
+import { reisPaymentEnrichmentSchema } from '@salvemundi/validations/schema/trip.zod';
 import ActivitySelector from './ActivitySelector';
 import {
     updateSignupDetails,
@@ -37,7 +31,7 @@ interface TripPaymentFlowProps {
     signup: TripSignup;
     trip: Trip;
     allActivities: TripActivity[];
-    selectedActivities: TripSignupActivity[];
+    selectedActivities: TripActivity[];
     paymentType: 'deposit' | 'final';
     token?: string;
 }
@@ -67,6 +61,7 @@ export default function ReisPaymentFlowIsland({
     token
 }: TripPaymentFlowProps) {
     const [step, setStep] = useState(1);
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showNameConfirm, setShowNameConfirm] = useState(false);
@@ -127,16 +122,10 @@ export default function ReisPaymentFlowIsland({
     const { watch, getValues, trigger } = methods;
     const firstName = watch('first_name');
     const [activitySelections, setActivitySelections] = useState<ActivitySelection[]>(() =>
-        selectedActivities.map(sa => {
-            const activityId = sa.trip_activity_id && typeof sa.trip_activity_id === 'object'
-                ? (sa.trip_activity_id as { id: number }).id
-                : Number(sa.trip_activity_id);
-
-            return {
-                activityId,
-                options: (sa.selected_options as Record<string, boolean> | undefined) || {}
-            };
-        })
+        selectedActivities.map(sa => ({
+            activityId: sa.id,
+            options: {}
+        }))
     );
 
     const pricing = useMemo(() => {
@@ -222,25 +211,25 @@ export default function ReisPaymentFlowIsland({
 
     return (
         <FormProvider {...methods}>
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+            <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
                 <form 
                     autoComplete="off" 
                     onSubmit={(e) => e.preventDefault()}
-                    className="flex flex-col gap-10 @container"
+                    className="@container flex flex-col gap-10"
                 >
                     {/* Seamless Header */}
-                    <div className="pb-6 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
+                    <div className="flex items-center justify-between border-b border-black/5 pb-6 dark:border-white/10">
                         <div>
-                            <h2 className="text-2xl sm:text-3xl font-black text-text-main italic tracking-tighter flex items-center gap-3">
-                                {step === 1 && <User className="w-7 h-7 text-theme-purple" />}
-                                {step === 2 && <Compass className="w-7 h-7 text-theme-purple" />}
-                                {step === 3 && <CreditCard className="w-7 h-7 text-theme-purple" />}
+                            <h2 className="flex items-center gap-3 text-2xl font-black tracking-tighter text-text-main italic sm:text-3xl">
+                                {step === 1 && <User className="size-7 text-theme-purple" />}
+                                {step === 2 && <Compass className="size-7 text-theme-purple" />}
+                                {step === 3 && <CreditCard className="size-7 text-theme-purple" />}
                                 {step === 1 && 'Reisgegevens'}
                                 {step === 2 && 'Optionele Activiteiten'}
                                 {step === 3 && 'Betalingssamenvatting'}
                                 {step === 4 && 'Gelukt!'}
                             </h2>
-                            <p className="text-(--text-muted) text-sm mt-1">
+                            <p className="mt-1 text-sm text-(--text-muted)">
                                 {step === 1 && `Vul je gegevens aan voor ${trip.name}`}
                                 {step === 2 && 'Kies de extra activiteiten die je wilt doen'}
                                 {step === 3 && 'Controleer je reissom en selecties'}
@@ -248,7 +237,7 @@ export default function ReisPaymentFlowIsland({
                             </p>
                         </div>
                         {step <= 3 && (
-                            <div className="text-xs font-bold text-theme-purple bg-theme-purple/10 px-3 py-1.5 rounded-full tracking-wider select-none">
+                            <div className="rounded-full bg-theme-purple/10 px-3 py-1.5 text-xs font-bold tracking-wider text-theme-purple select-none">
                                 Stap {step} van 3
                             </div>
                         )}
@@ -261,8 +250,8 @@ export default function ReisPaymentFlowIsland({
                         </div>
                         <div className={`animate-in fade-in duration-300 ${step === 2 ? 'block' : 'hidden'}`}>
                             {paymentType === 'deposit' && (
-                                <div className="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center gap-2.5 animate-in slide-in-from-top-2 duration-300">
-                                    <AlertCircle className="w-4 h-4 shrink-0" />
+                                <div className="animate-in slide-in-from-top-2 mb-6 flex items-center gap-2.5 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-amber-500 duration-300">
+                                    <AlertCircle className="size-4 shrink-0" />
                                     <p className="text-xs font-medium">Let op: De getoonde prijzen voor de activiteiten zijn op dit moment een schatting en kunnen nog wijzigen.</p>
                                 </div>
                             )}
@@ -283,21 +272,21 @@ export default function ReisPaymentFlowIsland({
 
                     {/* Seamless Footer */}
                     {step <= 3 && (
-                        <div className="pt-6 border-t border-black/5 dark:border-white/10 flex flex-col sm:flex-row gap-4 justify-between items-center">
-                            <div className="order-2 sm:order-1 w-full sm:w-auto">
+                        <div className="flex flex-col items-center justify-between gap-4 border-t border-black/5 pt-6 sm:flex-row dark:border-white/10">
+                            <div className="order-2 w-full sm:order-1 sm:w-auto">
                                 <button
-                                    onClick={step === 1 ? () => window.location.href = '/reis' : () => setStep(step - 1)}
-                                    className="form-button w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-sm text-(--text-muted) hover:text-(--text-main) transition-all flex items-center justify-center gap-2"
-                                >
-                                    <ChevronLeft className="w-4 h-4" /> 
+                                    onClick={step === 1 ? () => router.push('/reis') : () => setStep(step - 1)}
+                                    className="form-button flex w-full items-center justify-center gap-2 rounded-xl px-8 py-3 text-sm font-bold text-(--text-muted) transition-all hover:text-(--text-main) sm:w-auto"
+                                    type="button">
+                                    <ChevronLeft className="size-4" /> 
                                     {step === 1 ? 'Annuleren' : 'Vorige'}
                                 </button>
                             </div>
 
-                            <div className="order-1 sm:order-2 w-full sm:w-auto flex flex-col gap-4 items-end">
+                            <div className="order-1 flex w-full flex-col items-end gap-4 sm:order-2 sm:w-auto">
                                 {error && (
-                                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center gap-2 animate-in slide-in-from-top-2 duration-300">
-                                        <AlertCircle className="w-4 h-4 shrink-0" />
+                                    <div className="animate-in slide-in-from-top-2 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-red-500 duration-300">
+                                        <AlertCircle className="size-4 shrink-0" />
                                         <p className="text-xs">{error}</p>
                                     </div>
                                 )}
@@ -305,10 +294,10 @@ export default function ReisPaymentFlowIsland({
                                 <button
                                     onClick={() => void handleNext()}
                                     disabled={loading}
-                                    className={`form-button w-full sm:w-auto px-10 bg-linear-to-br from-theme-purple to-theme-purple-dark flex items-center justify-center gap-2 ${
-                                        loading ? 'opacity-50 cursor-not-allowed grayscale' : ''
+                                    className={`form-button flex w-full items-center justify-center gap-2 bg-linear-to-br from-theme-purple to-theme-purple-dark px-10 sm:w-auto ${
+                                        loading ? 'cursor-not-allowed opacity-50 grayscale' : ''
                                     }`}
-                                >
+                                    type="button">
                                     {loading ? (
                                         'Verwerken...'
                                     ) : (
@@ -316,11 +305,11 @@ export default function ReisPaymentFlowIsland({
                                             {step < 3 ? (
                                                 <>
                                                     Volgende
-                                                    <ChevronRight className="w-4 h-4" />
+                                                    <ChevronRight className="size-4" />
                                                 </>
                                             ) : (
                                                 <>
-                                                    <CreditCard className="w-5 h-5" />
+                                                    <CreditCard className="size-5" />
                                                     {paymentType === 'deposit' ? 'Aanbetaling voldoen' : 'Restbetaling voldoen'}
                                                 </>
                                             )}

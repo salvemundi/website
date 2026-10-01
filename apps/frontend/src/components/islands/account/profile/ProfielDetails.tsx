@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation';
 import { UseFormRegister, UseFormHandleSubmit, FieldErrors } from 'react-hook-form';
 import { safeConsoleError } from '@/server/utils/logger';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
+import BorrelBarClaimCard from './BorrelBarClaimCard';
+import { type BorrelBarClaimStatus } from '@/server/actions/profile/borrelbar-claim.actions';
 
 interface ProfielDetailsProps {
     user?: {
@@ -17,6 +19,7 @@ interface ProfielDetailsProps {
         phone_number?: string | null;
         date_of_birth?: string | null;
     };
+    borrelBarClaimStatus?: BorrelBarClaimStatus;
     isEditingPhoneNumber?: boolean;
     setIsEditingPhoneNumber?: (val: boolean) => void;
     registerPhone?: UseFormRegister<{ phone_number?: string | null }>;
@@ -29,6 +32,7 @@ interface ProfielDetailsProps {
 
 export default function ProfielDetails({
     user = {},
+    borrelBarClaimStatus,
     isEditingPhoneNumber = false,
     setIsEditingPhoneNumber = () => { },
     registerPhone = (() => ({ name: 'phone_number', onBlur: async () => { }, onChange: async () => { }, ref: () => { } })) as unknown as UseFormRegister<{ phone_number?: string | null }>,
@@ -43,11 +47,8 @@ export default function ProfielDetails({
     const handleLogout = async () => {
         try {
             await authClient.signOut();
-            if (typeof window !== 'undefined') {
-                window.location.href = '/?noAuto=true';
-            } else {
-                router.push('/');
-            }
+            router.push('/?noAuto=true');
+            router.refresh();
         } catch (error) {
             safeConsoleError('[ProfielDetails.tsx][ProfielDetails] ', error);
         }
@@ -58,9 +59,9 @@ export default function ProfielDetails({
             onClick={() => {
                 void handleLogout();
             }}
-            className="form-button flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-red-500 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 transition-all active:scale-95 group"
-        >
-            <LogOut className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+            className="group form-button flex items-center gap-2 rounded-xl border border-red-500/10 bg-red-500/5 px-4 py-2 text-xs font-bold text-red-500 transition-all hover:bg-red-500/10 active:scale-95"
+            type="button">
+            <LogOut className="size-3.5 transition-transform group-hover:-translate-x-0.5" />
             <span>Uitloggen</span>
         </button>
     );
@@ -68,22 +69,22 @@ export default function ProfielDetails({
     return (
         <Tile
             title="Mijn gegevens"
-            icon={<Mail className="h-5 w-5" />}
+            icon={<Mail className="size-5" />}
             className="h-fit"
             actions={logoutButton}
         >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center h-6 pl-1">
-                        <p className="text-[11px] text-licht-paars dark:text-geel font-black uppercase tracking-wider text-left">
+                    <div className="flex h-6 items-center pl-1">
+                        <p className="text-left text-[11px] font-black tracking-wider text-licht-paars uppercase dark:text-geel">
                             E-mailadres
                         </p>
                     </div>
-                    <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-17">
-                        <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-300">
-                            <Mail className="h-5 w-5" />
+                    <div className="squircle flex min-h-17 items-center gap-4 border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
+                        <div className="flex shrink-0 items-center justify-center text-purple-600 dark:text-purple-300">
+                            <Mail className="size-5" />
                         </div>
-                        <p className="font-bold text-purple-700 dark:text-white wrap-break-word text-xs sm:text-sm leading-tight min-w-0 flex-1">
+                        <p className="min-w-0 flex-1 text-xs leading-tight font-bold wrap-break-word text-purple-700 sm:text-sm dark:text-white">
                             {formatForBreak(user.email) || 'Geen email'}
                         </p>
                     </div>
@@ -91,57 +92,60 @@ export default function ProfielDetails({
 
                 {user.fontys_email && (
                     <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center h-6 pl-1">
-                            <p className="text-[11px] text-licht-paars dark:text-geel font-black uppercase tracking-wider text-left">
+                        <div className="flex h-6 items-center pl-1">
+                            <p className="text-left text-[11px] font-black tracking-wider text-licht-paars uppercase dark:text-geel">
                                 Fontys e-mail
                             </p>
                         </div>
-                        <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-17">
-                            <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-300">
-                                <Mail className="h-5 w-5" />
+                        <div className="squircle flex min-h-17 items-center gap-4 border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
+                            <div className="flex shrink-0 items-center justify-center text-purple-600 dark:text-purple-300">
+                                <Mail className="size-5" />
                             </div>
-                            <p className="font-bold text-purple-700 dark:text-white wrap-break-word text-xs sm:text-sm leading-tight min-w-0 flex-1">
+                            <p className="min-w-0 flex-1 text-xs leading-tight font-bold wrap-break-word text-purple-700 sm:text-sm dark:text-white">
                                 {formatForBreak(user.fontys_email)}
                             </p>
                         </div>
                     </div>
                 )}
 
-                <div className="flex flex-col gap-1.5 relative group">
-                    <div className="flex items-center justify-between gap-2 h-6 pl-1">
-                        <p className="text-[11px] font-black uppercase text-licht-paars dark:text-geel tracking-wider text-left">
+                <div className="group relative flex flex-col gap-1.5">
+                    <div className="flex h-6 items-center justify-between gap-2 pl-1">
+                        <p className="text-left text-[11px] font-black tracking-wider text-licht-paars uppercase dark:text-geel">
                             Telefoonnummer
                         </p>
                         {!isEditingPhoneNumber && (
-                            <button onClick={() => setIsEditingPhoneNumber(true)} className="icon-button text-text-muted hover:text-purple-500 p-1 rounded-md transition-colors">
-                                <Pen className="h-3.5 w-3.5" />
+                            <button
+                                onClick={() => setIsEditingPhoneNumber(true)}
+                                className="icon-button rounded-md p-1 text-text-muted transition-colors hover:text-purple-500"
+                                type="button">
+                                <Pen className="size-3.5" />
                             </button>
                         )}
                     </div>
-                    <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-17">
-                        <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-300">
-                            <Phone className="h-5 w-5" />
+                    <div className="squircle flex min-h-17 items-center gap-4 border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
+                        <div className="flex shrink-0 items-center justify-center text-purple-600 dark:text-purple-300">
+                            <Phone className="size-5" />
                         </div>
                         {isEditingPhoneNumber ? (
                             <form
                                 onSubmit={(e) => {
                                     void handleSubmitPhone(onSavePhone)(e);
                                 }}
-                                className="relative flex flex-1 min-w-0 pr-12"
+                                className="relative flex min-w-0 flex-1 pr-12"
                                 autoComplete="off"
                             >
                                 <div className="flex w-full items-center">
                                     <PhoneInput
                                         {...registerPhone("phone_number")}
-                                        className="flex-1 min-w-0 bg-white dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-lg text-sm font-medium"
+                                        className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white text-sm font-medium dark:border-white/20 dark:bg-black/40"
                                     />
-                                    <button type="submit" disabled={isPending} className="form-button absolute right-0 top-1/2 -translate-y-1/2 h-10 w-10 p-0 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center cursor-pointer disabled:opacity-50">
-                                        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                                    <button type="submit" disabled={isPending} className="absolute top-1/2 right-0 form-button flex size-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-lg bg-purple-500 p-0 text-white transition-colors hover:bg-purple-600 disabled:opacity-50">
+                                        {isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                                     </button>
                                 </div>
                             </form>
                         ) : (
-                            <p className="font-bold text-purple-700 dark:text-white text-sm">
+                            <p className="text-sm font-bold text-purple-700 dark:text-white">
                                 {formatPhoneNumber(user.phone_number) || "Niet ingesteld"}
                             </p>
                         )}
@@ -149,20 +153,22 @@ export default function ProfielDetails({
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center h-6 pl-1">
-                        <p className="text-[11px] font-black uppercase text-licht-paars dark:text-geel tracking-wider text-left">
+                    <div className="flex h-6 items-center pl-1">
+                        <p className="text-left text-[11px] font-black tracking-wider text-licht-paars uppercase dark:text-geel">
                             Geboortedatum
                         </p>
                     </div>
-                    <div className="flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 border border-licht-paars/20 dark:border-white/10 shadow-sm min-h-17">
-                        <div className="shrink-0 flex items-center justify-center text-purple-600 dark:text-purple-300">
-                            <Calendar className="h-5 w-5" />
+                    <div className="squircle flex min-h-17 items-center gap-4 border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
+                        <div className="flex shrink-0 items-center justify-center text-purple-600 dark:text-purple-300">
+                            <Calendar className="size-5" />
                         </div>
-                        <p className="font-bold text-purple-700 dark:text-white text-sm">
+                        <p className="text-sm font-bold text-purple-700 dark:text-white">
                             {formatDate(user.date_of_birth, "d MMMM yyyy")}
                         </p>
                     </div>
                 </div>
+
+                <BorrelBarClaimCard initialStatus={borrelBarClaimStatus} />
             </div>
         </Tile>
     );

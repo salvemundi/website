@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import AdminWebshopProductsIsland from '@/components/islands/admin/webshop/AdminWebshopProductsIsland';
-import WebshopVisibilityIsland from '@/components/islands/admin/webshop/WebshopVisibilityIsland';
+import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
+import BeheerWebshopProductsIsland from '@/components/islands/beheer/webshop/BeheerWebshopProductsIsland';
+import WebshopVisibilityIsland from '@/components/islands/beheer/webshop/WebshopVisibilityIsland';
 import {
-    getAdminDropWindows,
-    getAdminProducts,
-    getAdminProductVariants,
-    getAdminProductMedia
-} from '@/server/queries/webshop/admin-webshop.queries';
+    getBeheerDropWindows,
+    getBeheerProducts,
+    getBeheerProductVariants,
+    getBeheerProductMedia
+} from '@/server/queries/webshop/beheer-webshop.queries';
 import { getWebshopSettings } from '@/server/actions/public/webshop.actions';
-import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
+import { checkBeheerAccess } from '@/server/actions/beheer/beheer-utils.actions';
 import { COMMITTEES } from '@/shared/lib/permissions-config';
 import { ClipboardList, ClipboardCheck } from 'lucide-react';
 
@@ -20,14 +20,14 @@ export const metadata: Metadata = {
 
 async function loadWebshopAdminData() {
     const [dropWindows, products, settings] = await Promise.all([
-        getAdminDropWindows(),
-        getAdminProducts(),
+        getBeheerDropWindows(),
+        getBeheerProducts(),
         getWebshopSettings()
     ]);
     const productsWithDetails = await Promise.all(products.map(async (product) => {
         const [variants, media] = await Promise.all([
-            getAdminProductVariants(product.id),
-            getAdminProductMedia(product.id)
+            getBeheerProductVariants(product.id),
+            getBeheerProductMedia(product.id)
         ]);
         return { ...product, variants, media };
     }));
@@ -37,32 +37,32 @@ async function loadWebshopAdminData() {
 export default async function AdminWebshopPage() {
     const [{ dropWindows, products, settings }, accessData] = await Promise.all([
         loadWebshopAdminData(),
-        checkAdminAccess()
+        checkBeheerAccess()
     ]);
     const isBoardOrIct = Boolean(accessData.user?.committees.some(
         c => c.azure_group_id === COMMITTEES.BESTUUR || c.azure_group_id === COMMITTEES.ICT
     ));
 
     return (
-        <AdminPageShell 
+        <BeheerPageShell 
              title="Webshop Beheer" 
              backHref="/beheer"
              actions={
-                 <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                 <div className="flex flex-col items-start gap-4 md:flex-row md:items-center">
                      <div className="flex items-center gap-2">
                          <Link
                              href="/beheer/webshop/bestellingen"
-                             className="flex items-center justify-center gap-2 px-4 py-2 bg-bg-card border border-border-color text-text-main rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm"
+                             className="flex items-center justify-center gap-2 rounded-xl border border-border-color bg-bg-card px-4 py-2 text-xs font-semibold text-text-main shadow-sm transition-all hover:border-theme-purple hover:bg-theme-purple/5"
                          >
-                             <ClipboardList className="h-3.5 w-3.5" />
+                             <ClipboardList className="size-3.5" />
                              <span>Bestellingen</span>
                          </Link>
                          {isBoardOrIct && (
                              <Link
                                  href="/beheer/webshop/afhalen"
-                                 className="flex items-center justify-center gap-2 px-4 py-2 bg-bg-card border border-border-color text-text-main rounded-xl text-xs font-semibold hover:border-theme-purple hover:bg-theme-purple/5 transition-all shadow-sm"
+                                 className="flex items-center justify-center gap-2 rounded-xl border border-border-color bg-bg-card px-4 py-2 text-xs font-semibold text-text-main shadow-sm transition-all hover:border-theme-purple hover:bg-theme-purple/5"
                              >
-                                 <ClipboardCheck className="h-3.5 w-3.5" />
+                                 <ClipboardCheck className="size-3.5" />
                                  <span>Afhaallijst</span>
                              </Link>
                          )}
@@ -71,10 +71,10 @@ export default async function AdminWebshopPage() {
                  </div>
              }
         >
-            <AdminWebshopProductsIsland 
+            <BeheerWebshopProductsIsland 
                  initialDropWindows={dropWindows} 
                  initialProducts={products} 
              />
-        </AdminPageShell>
+        </BeheerPageShell>
     );
 }

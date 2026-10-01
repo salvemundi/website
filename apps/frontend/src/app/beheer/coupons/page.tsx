@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import CouponManagementIsland from '@/components/islands/admin/coupons/CouponManagementIsland';
-import { getCoupons } from '@/server/queries/coupon/admin-coupon.queries';
+import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
+import CouponManagementIsland from '@/components/islands/beheer/coupons/CouponManagementIsland';
+import { getCoupons } from '@/server/queries/coupon/beheer-coupon.queries';
 
 export const metadata: Metadata = {
     title: 'Coupons Beheer | SV Salve Mundi' 
@@ -14,12 +14,12 @@ async function CouponDataLoader() {
 
 export default async function BeheerCouponsPage() {
     return (
-        <AdminPageShell
+        <BeheerPageShell
             title="Coupons Beheer"
             backHref="/beheer"
             hideToolbar={true}
         >
             <CouponDataLoader />
-        </AdminPageShell>
+        </BeheerPageShell>
     );
 }

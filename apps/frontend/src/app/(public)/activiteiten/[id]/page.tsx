@@ -4,7 +4,6 @@ import { getActivityBySlug, checkUserSignupStatus, getActivitySignupCount } from
 import { getSignupStatus } from '@/server/actions/events/activiteiten/activiteiten-status.actions';
 import ActivityDetailIsland from '@/components/islands/activiteiten/ActivityDetailIsland';
 import ActiviteitSignupIsland from '@/components/islands/activiteiten/ActiviteitSignupIsland';
-import { type EventSignup } from '@salvemundi/validations/directus/schema';
 import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import BackButton from '@/components/ui/navigation/BackButton';
@@ -91,14 +90,14 @@ async function ActivityContent({ params, searchParams }: PageProps) {
         const statusRes = await getSignupStatus(undefined, sParams.token);
         if (statusRes.status === 'paid') {
             verifiedPaymentStatus = 'paid';
-            qrToken = (statusRes.signup as EventSignup).qr_token || sParams.token;
+            qrToken = (statusRes.signup as { qr_token?: string | null } | null)?.qr_token || sParams.token;
             isSignedUp = true;
         }
     }
 
     return (
         <>
-            <div className="container px-4 max-w-7xl pt-8 pb-4">
+            <div className="container max-w-7xl px-4 pt-8 pb-4">
                 <BackButton href="/activiteiten" title="Terug naar activiteiten" />
             </div>
 

@@ -25,22 +25,22 @@ export function ActiviteitenSection({ activities = [], count = 4 }: Activiteiten
                     : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full';
 
     return (
-        <section id="kalender" className="px-6 py-6 sm:py-8">
-            <div className="mx-auto max-w-app">
-                <div className="text-center mb-6 sm:mb-10">
-                    <h2 className="text-3xl font-black text-gradient sm:text-4xl md:text-5xl">
+        <section id="kalender" className="p-6 sm:py-8">
+            <div className="max-w-app mx-auto">
+                <div className="mb-6 text-center sm:mb-10">
+                    <h2 className="text-gradient text-3xl font-black sm:text-4xl md:text-5xl">
                         Aankomende activiteiten
                     </h2>
-                    <p className="mx-auto max-w-xl mt-2 text-xs sm:text-sm font-medium text-(--text-muted) dark:text-white/60 leading-relaxed">
+                    <p className="mx-auto mt-2 max-w-xl text-xs leading-relaxed font-medium text-(--text-muted) sm:text-sm dark:text-white/60">
                         Van legendarische borrels tot verrijkende workshops en onvergetelijke studiereizen. Er is altijd een plek voor jou!
                     </p>
                 </div>
 
                 <div className={`grid gap-4 ${gridLayoutClass}`}>
                     {!hasActivities ? (
-                        <div className="col-span-full flex flex-col items-center justify-center min-h-80 p-12 text-center bg-white/50 dark:bg-black/20 rounded-[2.5rem] border border-dashed border-purple-500/20">
-                            <div className="h-16 w-16 mb-4 rounded-full bg-purple-100 dark:bg-transparent flex items-center justify-center text-purple-600 dark:text-purple-300">
-                                <Calendar className="h-8 w-8" />
+                        <div className="col-span-full flex min-h-80 flex-col items-center justify-center rounded-[2.5rem] border border-dashed border-purple-500/20 bg-white/50 p-12 text-center dark:bg-black/20">
+                            <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-purple-100 text-purple-600 dark:bg-transparent dark:text-purple-300">
+                                <Calendar className="size-8" />
                             </div>
                             <p className="text-lg font-bold text-(--text-main) italic">
                                 Geen activiteiten gevonden.
@@ -61,11 +61,11 @@ export function ActiviteitenSection({ activities = [], count = 4 }: Activiteiten
                     <div className="mt-8 flex justify-center">
                         <Link 
                             href="/activiteiten"
-                            className="group relative inline-flex items-center gap-4 px-8 py-4 bg-(--bg-card) hover:bg-purple-500/10 dark:hover:bg-white/10 text-(--text-main) text-xs font-bold squircle border border-(--border-color)/20 shadow-lg transition-all hover:scale-105 active:scale-95 backdrop-blur-sm overflow-hidden"
+                            className="group squircle relative inline-flex items-center gap-4 overflow-hidden border border-(--border-color)/20 bg-(--bg-card) px-8 py-4 text-xs font-bold text-(--text-main) shadow-lg backdrop-blur-sm transition-all hover:scale-105 hover:bg-purple-500/10 active:scale-95 dark:hover:bg-white/10"
                         >
                             <div className="relative z-10">Alle activiteiten</div>
-                            <div className="relative z-10 h-6 w-6 rounded-full bg-purple-500 flex items-center justify-center text-white group-hover:bg-purple-600 transition-colors">
-                                <ChevronRight className="h-4 w-4" />
+                            <div className="relative z-10 flex size-6 items-center justify-center rounded-full bg-purple-500 text-white transition-colors group-hover:bg-purple-600">
+                                <ChevronRight className="size-4" />
                             </div>
                         </Link>
                     </div>

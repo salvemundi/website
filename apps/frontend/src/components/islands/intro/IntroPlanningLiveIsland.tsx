@@ -1,12 +1,13 @@
 'use client';
 
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { Clock, MapPin, Download, Rss, Check, Calendar, CalendarDays, CalendarPlus, ChevronDown, PartyPopper, ImageOff, X, ZoomIn, Sunrise, Copy } from 'lucide-react';
+import { Clock, MapPin, Calendar, CalendarDays, ChevronDown, PartyPopper, ImageOff, X, ZoomIn, Sunrise } from 'lucide-react';
 import type { IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { formatDate } from '@/shared/lib/utils/date';
+import CalendarExportButton from '@/components/islands/activiteiten/CalendarExportButton';
 
 const TOMORROW_OVERVIEW_HOUR = 22;
 
@@ -146,23 +147,23 @@ function ActivityCard({
             className={[
                 'squircle-lg p-5 sm:p-6 border shadow-lg',
                 accent === 'live'
-                    ? 'bg-gradient-to-br from-purple-600 to-purple-800 border-purple-500/40 text-white'
+                    ? 'bg-linear-to-br from-purple-600 to-purple-800 border-purple-500/40 text-white'
                     : 'bg-bg-card border-border-color dark:border-white/10'
             ].join(' ')}
         >
             <div className="flex items-center gap-2">
-                <span className={`flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider ${accent === 'live' ? 'text-white/80' : 'text-purple-500'}`}>
-                    {accent === 'live' && <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/70" /><span className="relative inline-flex rounded-full h-2 w-2 bg-white" /></span>}
+                <span className={`flex items-center gap-1.5 text-[11px] font-black tracking-wider uppercase ${accent === 'live' ? 'text-white/80' : 'text-purple-500'}`}>
+                    {accent === 'live' && <span className="relative flex size-2"><span className="absolute inline-flex size-full animate-ping rounded-full bg-white/70" /><span className="relative inline-flex size-2 rounded-full bg-white" /></span>}
                     {label}
                 </span>
             </div>
 
             {item ? (
                 <div className="mt-3">
-                    <h3 className={`text-xl sm:text-2xl font-black leading-tight ${accent === 'live' ? 'text-white' : 'text-text-main'}`}>{item.title}</h3>
+                    <h3 className={`text-xl leading-tight font-black sm:text-2xl ${accent === 'live' ? 'text-white' : 'text-text-main'}`}>{item.title}</h3>
                     <div className={`mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm font-semibold ${accent === 'live' ? 'text-white/90' : 'text-text-muted'}`}>
-                        <span className="flex items-center gap-1.5"><Clock className="h-4 w-4 shrink-0" />{formatTimeRange(item)}</span>
-                        {item.location && <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 shrink-0" />{item.location}</span>}
+                        <span className="flex items-center gap-1.5"><Clock className="size-4 shrink-0" />{formatTimeRange(item)}</span>
+                        {item.location && <span className="flex items-center gap-1.5"><MapPin className="size-4 shrink-0" />{item.location}</span>}
                     </div>
                     {item.description && (
                         <p className={`mt-3 text-sm leading-relaxed ${accent === 'live' ? 'text-white/80' : 'text-text-muted'}`}><FormattedText text={item.description} /></p>
@@ -170,7 +171,7 @@ function ActivityCard({
                 </div>
             ) : (
                 <div className={`mt-3 flex items-center gap-2 text-sm font-semibold ${accent === 'live' ? 'text-white/80' : 'text-text-muted'}`}>
-                    <Icon className="h-4 w-4" />
+                    <Icon className="size-4" />
                     {accent === 'live' ? 'Er is nu geen activiteit bezig' : 'De introweek zit erop, tot volgend jaar!'}
                 </div>
             )}
@@ -183,13 +184,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
     const previewTomorrow = searchParams.get('previewTomorrow') === '1';
 
     const [now, setNow] = useState('');
-    const [copied, setCopied] = useState(false);
-    const [googleInstructionsOpen, setGoogleInstructionsOpen] = useState(false);
-    const [googleLinkCopied, setGoogleLinkCopied] = useState(false);
-    const [googleIcsUrl, setGoogleIcsUrl] = useState('');
     const [lightboxOpen, setLightboxOpen] = useState(false);
-    const [subscribeMenuOpen, setSubscribeMenuOpen] = useState(false);
-    const subscribeMenuRef = useRef<HTMLDivElement>(null);
     const [fullPlanningOpen, setFullPlanningOpen] = useState(false);
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
@@ -200,24 +195,6 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
         const id = setInterval(() => setNow(nowKey()), 30000);
         return () => clearInterval(id);
     }, []);
-
-    useEffect(() => {
-        if (!subscribeMenuOpen) return;
-        const onClickOutside = (e: MouseEvent) => {
-            if (subscribeMenuRef.current && !subscribeMenuRef.current.contains(e.target as Node)) {
-                setSubscribeMenuOpen(false);
-            }
-        };
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setSubscribeMenuOpen(false);
-        };
-        document.addEventListener('mousedown', onClickOutside);
-        document.addEventListener('keydown', onKeyDown);
-        return () => {
-            document.removeEventListener('mousedown', onClickOutside);
-            document.removeEventListener('keydown', onKeyDown);
-        };
-    }, [subscribeMenuOpen]);
 
     useEffect(() => {
         if (!lightboxOpen) return;
@@ -345,74 +322,22 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
         });
     };
 
-    // Apple Calendar (iOS/macOS) has a registered handler for the webcal: scheme
-    // and opens it directly in Calendar.app. Chrome/Android have no such handler,
-    // so the same link there just does nothing — those apps need their own
-    // "subscribe by URL" deep link instead (handled below per app).
-    const handleAppleCalendar = async () => {
-        const webcalUrl = `webcal://${window.location.host}/api/intro/planning.ics`;
-        try {
-            await navigator.clipboard.writeText(webcalUrl);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2500);
-        } catch {
-            // clipboard not available, fall through to direct navigation
-        }
-        window.location.href = webcalUrl;
-        setSubscribeMenuOpen(false);
-    };
-
-    // The calendar/render?cid= deep link is unreliable — Google intermittently
-    // rejects perfectly valid feeds through it with a generic "kan agenda niet
-    // toevoegen" error. Manually pasting the same URL into Google's own
-    // "Add calendar > From URL" settings page works every time, so we send
-    // people there instead and copy the link for them to paste.
-    const handleGoogleCalendar = async () => {
-        const icsUrl = `${window.location.origin}/api/intro/planning.ics`;
-        setGoogleIcsUrl(icsUrl);
-        try {
-            await navigator.clipboard.writeText(icsUrl);
-            setGoogleLinkCopied(true);
-        } catch {
-            setGoogleLinkCopied(false);
-        }
-        window.open('https://calendar.google.com/calendar/r/settings/addbyurl', '_blank', 'noopener,noreferrer');
-        setGoogleInstructionsOpen(true);
-        setSubscribeMenuOpen(false);
-    };
-
-    const handleCopyGoogleIcsUrl = async () => {
-        try {
-            await navigator.clipboard.writeText(googleIcsUrl);
-            setGoogleLinkCopied(true);
-        } catch {
-            // clipboard not available; the URL is still shown as plain text to copy manually
-        }
-    };
-
-    const handleOutlookCalendar = () => {
-        const icsUrl = `${window.location.origin}/api/intro/planning.ics`;
-        const url = `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(icsUrl)}&name=${encodeURIComponent('Salve Mundi Introductie')}`;
-        window.open(url, '_blank', 'noopener,noreferrer');
-        setSubscribeMenuOpen(false);
-    };
-
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <ActivityCard label="Nu bezig" item={current} accent="live" icon={PartyPopper} />
                 <ActivityCard label="Volgende activiteit" item={next} accent="next" icon={Calendar} />
             </div>
 
             {showTomorrowOverview && tomorrowItems.length > 0 && (
-                <div className="squircle-lg bg-bg-card border border-border-color dark:border-white/10 shadow-lg p-5 sm:p-8">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="h-10 w-10 squircle bg-purple-600 flex items-center justify-center shrink-0">
-                            <Sunrise className="h-5 w-5 text-white" />
+                <div className="squircle-lg border border-border-color bg-bg-card p-5 shadow-lg sm:p-8 dark:border-white/10">
+                    <div className="mb-6 flex items-center gap-3">
+                        <div className="squircle flex size-10 shrink-0 items-center justify-center bg-purple-600">
+                            <Sunrise className="size-5 text-white" />
                         </div>
                         <div>
-                            <h2 className="text-xl sm:text-2xl font-black text-theme-purple leading-tight">Planning voor morgen</h2>
-                            <p className="text-sm text-text-muted font-medium capitalize">{formatDate(tomorrowItems[0].date, 'EEEE d MMMM')}</p>
+                            <h2 className="text-xl leading-tight font-black text-theme-purple sm:text-2xl">Planning voor morgen</h2>
+                            <p className="text-sm font-medium text-text-muted capitalize">{formatDate(tomorrowItems[0].date, 'EEEE d MMMM')}</p>
                         </div>
                     </div>
 
@@ -424,20 +349,20 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                     key={item.id}
                                     className={`squircle border px-3.5 py-3 ${
                                         isCurrentOrNext
-                                            ? 'bg-purple-500/10 border-purple-500/30'
+                                            ? 'border-purple-500/30 bg-purple-500/10'
                                             : 'bg-bg-main/60 border-border-color dark:border-white/10'
                                     }`}
                                 >
-                                    <span className={`inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wide ${isCurrentOrNext ? 'text-purple-500' : 'text-text-muted'}`}>
-                                        <Clock className="h-3.5 w-3.5 shrink-0" />
+                                    <span className={`inline-flex items-center gap-1.5 text-xs font-black tracking-wide uppercase ${isCurrentOrNext ? 'text-purple-500' : 'text-text-muted'}`}>
+                                        <Clock className="size-3.5 shrink-0" />
                                         {formatTimeRange(item)}
                                     </span>
-                                    <p className="mt-1.5 font-bold text-text-main leading-snug">{item.title}</p>
+                                    <p className="mt-1.5 leading-snug font-bold text-text-main">{item.title}</p>
                                     {item.location && (
-                                        <p className="mt-1.5 text-xs font-semibold text-text-muted flex items-center gap-1"><MapPin className="h-3.5 w-3.5 shrink-0" />{item.location}</p>
+                                        <p className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-text-muted"><MapPin className="size-3.5 shrink-0" />{item.location}</p>
                                     )}
                                     {item.description && (
-                                        <p className="mt-1.5 text-sm text-text-muted leading-relaxed"><FormattedText text={item.description} /></p>
+                                        <p className="mt-1.5 text-sm leading-relaxed text-text-muted"><FormattedText text={item.description} /></p>
                                     )}
                                 </div>
                             );
@@ -446,116 +371,34 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                 </div>
             )}
 
-            <div className="squircle-lg bg-bg-card border border-border-color dark:border-white/10 shadow-lg p-5 sm:p-8">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                    <h2 className="text-xl sm:text-2xl font-black text-theme-purple">Volledige planning</h2>
+            <div className="squircle-lg border border-border-color bg-bg-card p-5 shadow-lg sm:p-8 dark:border-white/10">
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <h2 className="text-xl font-black text-theme-purple sm:text-2xl">Volledige planning</h2>
                     <div className="flex flex-wrap gap-2">
                         {planning.length > 0 && (
                             <button
                                 type="button"
                                 onClick={openFullPlanning}
-                                className="btn-open-timeline inline-flex items-center justify-center gap-1.5 sm:gap-2 squircle bg-purple-600 text-white px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
+                                className="btn-open-timeline squircle hover:scale-1.02 inline-flex items-center justify-center gap-1.5 bg-purple-600 px-3 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:shadow-lg sm:gap-2 sm:px-4 sm:text-sm"
                             >
-                                <CalendarDays className="h-4 w-4 shrink-0" />
+                                <CalendarDays className="size-4 shrink-0" />
                                 <span className="whitespace-nowrap">Bekijk tijdlijn</span>
                             </button>
                         )}
-                        <a
-                            href="/api/intro/planning.ics?download=1"
-                            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 squircle bg-purple-600 text-white px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
-                        >
-                            <Download className="h-4 w-4 shrink-0" />
-                            <span className="whitespace-nowrap">Download .ics</span>
-                        </a>
-                        <div className="relative" ref={subscribeMenuRef}>
-                            <button
-                                type="button"
-                                onClick={() => setSubscribeMenuOpen(open => !open)}
-                                aria-expanded={subscribeMenuOpen}
-                                className="btn-subscribe inline-flex items-center justify-center gap-1.5 sm:gap-2 squircle bg-bg-main border border-border-color dark:border-white/10 text-text-main px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold shadow-sm hover:shadow-md transition-all"
-                            >
-                                {copied ? <Check className="h-4 w-4 text-emerald-500 shrink-0" /> : <Rss className="h-4 w-4 shrink-0" />}
-                                <span className="whitespace-nowrap">
-                                    <span className="sm:hidden">{copied ? 'Gekopieerd' : 'Abonneren'}</span>
-                                    <span className="hidden sm:inline">{copied ? 'Link gekopieerd' : 'Abonneer op agenda'}</span>
-                                </span>
-                                <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${subscribeMenuOpen ? 'rotate-180' : ''}`} />
-                            </button>
-
-                            {subscribeMenuOpen && (
-                                <div className="absolute right-0 z-20 mt-2 w-56 squircle bg-bg-card border border-border-color dark:border-white/10 shadow-xl overflow-hidden">
-                                    <button
-                                        type="button"
-                                        onClick={() => { void handleAppleCalendar(); }}
-                                        className="btn-subscribe-apple flex w-full items-center gap-2.5 px-4 py-3 text-sm font-semibold text-text-main hover:bg-bg-main transition-colors text-left"
-                                    >
-                                        <CalendarPlus className="h-4 w-4 shrink-0 text-purple-500" />
-                                        Apple Kalender (iPhone/Mac)
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => { void handleGoogleCalendar(); }}
-                                        className="btn-subscribe-google flex w-full items-center gap-2.5 px-4 py-3 text-sm font-semibold text-text-main hover:bg-bg-main transition-colors text-left border-t border-border-color dark:border-white/10"
-                                    >
-                                        <CalendarPlus className="h-4 w-4 shrink-0 text-purple-500" />
-                                        Google Calendar
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleOutlookCalendar}
-                                        className="btn-subscribe-outlook flex w-full items-center gap-2.5 px-4 py-3 text-sm font-semibold text-text-main hover:bg-bg-main transition-colors text-left border-t border-border-color dark:border-white/10"
-                                    >
-                                        <CalendarPlus className="h-4 w-4 shrink-0 text-purple-500" />
-                                        Outlook
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                        <CalendarExportButton
+                            feedPath="/api/intro/planning.ics"
+                            calendarName="Salve Mundi Introductie"
+                            label="Abonneer op agenda"
+                            buttonClassName="btn-subscribe inline-flex items-center justify-center gap-1.5 sm:gap-2 squircle bg-bg-main border border-border-color dark:border-white/10 text-text-main px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold shadow-sm hover:shadow-md transition-all cursor-pointer"
+                        />
                     </div>
                 </div>
-
-                {googleInstructionsOpen && (
-                    <div className="mt-4 squircle border border-purple-500/30 bg-purple-500/5 p-4 sm:p-5">
-                        <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-start gap-2.5">
-                                <CalendarPlus className="h-4 w-4 shrink-0 text-purple-500 mt-0.5" />
-                                <div className="text-sm text-text-main">
-                                    <p className="font-bold">We hebben Google Agenda voor je geopend</p>
-                                    <p className="mt-1 text-text-muted">
-                                        {googleLinkCopied ? 'De link is al gekopieerd — plak' : 'Kopieer de link hieronder en plak'} &apos;m daar in het veld &quot;Van URL&quot; en klik op toevoegen.
-                                    </p>
-                                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                                        <code className="squircle bg-bg-main border border-border-color dark:border-white/10 px-2.5 py-1.5 text-xs text-text-muted break-all">
-                                            {googleIcsUrl}
-                                        </code>
-                                        <button
-                                            type="button"
-                                            onClick={() => { void handleCopyGoogleIcsUrl(); }}
-                                            className="btn-copy-google-ics inline-flex items-center gap-1.5 squircle bg-purple-600 text-white px-3 py-1.5 text-xs font-semibold shadow-sm hover:shadow-md transition-all"
-                                        >
-                                            {googleLinkCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                                            {googleLinkCopied ? 'Gekopieerd' : 'Kopieer link'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setGoogleInstructionsOpen(false)}
-                                aria-label="Sluiten"
-                                className="btn-close-google-instructions shrink-0 text-text-muted hover:text-text-main transition-colors"
-                            >
-                                <X className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
-                )}
 
                 {planningImageUrl ? (
                     <button
                         type="button"
                         onClick={() => setLightboxOpen(true)}
-                        className="btn-open-lightbox group relative block -mx-9 sm:mx-0 sm:squircle overflow-hidden border-0 sm:border border-border-color dark:border-white/10 cursor-zoom-in"
+                        className="btn-open-lightbox group sm:squircle relative -mx-9 block cursor-zoom-in overflow-hidden border-0 border-border-color sm:mx-0 sm:border dark:border-white/10"
                     >
                         <Image
                             src={planningImageUrl}
@@ -563,18 +406,18 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                             width={1600}
                             height={2000}
                             unoptimized
-                            className="w-full h-auto"
+                            className="h-auto w-full"
                         />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                            <span className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-2 squircle bg-black/60 text-white px-4 py-2.5 text-sm font-semibold">
-                                <ZoomIn className="h-4 w-4" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30">
+                            <span className="squircle inline-flex items-center gap-2 bg-black/60 px-4 py-2.5 text-sm font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
+                                <ZoomIn className="size-4" />
                                 Bekijk fullscreen
                             </span>
                         </div>
                     </button>
                 ) : (
                     <div className="squircle bg-bg-main/50 border border-dashed border-border-color p-10 text-center">
-                        <ImageOff className="h-8 w-8 text-purple-500 mx-auto mb-4" />
+                        <ImageOff className="mx-auto mb-4 size-8 text-purple-500" />
                         <p className="text-lg font-bold text-text-main opacity-60">De planning wordt binnenkort bekendgemaakt</p>
                     </div>
                 )}
@@ -582,27 +425,27 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
 
             {fullPlanningOpen && (
                 <div
-                    className="fixed inset-0 z-[200] bg-black/70 flex items-end sm:items-center justify-center"
+                    className="fixed inset-0 z-200 flex items-end justify-center bg-black/70 sm:items-center"
                     onClick={() => setFullPlanningOpen(false)}
                 >
                     <div
-                        className="relative w-full sm:max-w-2xl lg:max-w-5xl xl:max-w-6xl max-h-[90vh] sm:max-h-[85vh] bg-bg-card rounded-t-3xl sm:squircle-lg overflow-hidden flex flex-col shadow-2xl"
+                        className="sm:squircle-lg relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-3xl bg-bg-card shadow-2xl sm:max-h-[85vh] sm:max-w-2xl lg:max-w-5xl xl:max-w-6xl"
                         onClick={e => e.stopPropagation()}
                     >
-                        <div className="flex items-center justify-between gap-4 px-5 sm:px-6 py-4 border-b border-border-color dark:border-white/10 shrink-0">
-                            <h2 className="text-lg sm:text-xl font-black text-theme-purple">Volledige planning</h2>
+                        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border-color px-5 py-4 sm:px-6 dark:border-white/10">
+                            <h2 className="text-lg font-black text-theme-purple sm:text-xl">Volledige planning</h2>
                             <button
                                 type="button"
                                 onClick={() => setFullPlanningOpen(false)}
                                 aria-label="Sluiten"
-                                className="btn-close-timeline shrink-0 squircle bg-bg-main hover:bg-border-color/40 text-text-main p-2.5 transition-colors"
+                                className="btn-close-timeline squircle bg-bg-main shrink-0 p-2.5 text-text-main transition-colors hover:bg-border-color/40"
                             >
-                                <X className="h-5 w-5" />
+                                <X className="size-5" />
                             </button>
                         </div>
 
                         {planningDates.length > 1 && (
-                            <div className="sm:hidden flex items-center gap-2 overflow-x-auto px-4 sm:px-6 py-3 border-b border-border-color dark:border-white/10 shrink-0">
+                            <div className="flex shrink-0 items-center gap-2 overflow-x-auto border-b border-border-color px-4 py-3 sm:hidden sm:px-6 dark:border-white/10">
                                 {planningDates.map(date => {
                                     const isToday = date === now.slice(0, 10);
                                     const isSelected = date === selectedDay;
@@ -611,15 +454,15 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                             key={date}
                                             type="button"
                                             onClick={() => setSelectedDay(date)}
-                                            className={`tab-button shrink-0 px-3.5 py-2 squircle text-xs sm:text-sm font-bold capitalize transition-all whitespace-nowrap ${
+                                            className={`tab-button squircle shrink-0 px-3.5 py-2 text-xs font-bold whitespace-nowrap capitalize transition-all sm:text-sm ${
                                                 isSelected
                                                     ? 'bg-purple-600 text-white shadow-md'
-                                                    : 'bg-bg-main border border-border-color dark:border-white/10 text-text-muted hover:text-text-main'
+                                                    : 'bg-bg-main border border-border-color text-text-muted hover:text-text-main dark:border-white/10'
                                             }`}
                                         >
                                             {formatDate(date, 'EEE d MMM')}
                                             {isToday && (
-                                                <span className={`ml-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle ${isSelected ? 'bg-white' : 'bg-purple-500'}`} />
+                                                <span className={`ml-1.5 inline-block size-1.5 rounded-full align-middle ${isSelected ? 'bg-white' : 'bg-purple-500'}`} />
                                             )}
                                         </button>
                                     );
@@ -627,10 +470,10 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                             </div>
                         )}
 
-                        <div className="sm:hidden flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 sm:px-6 py-5">
+                        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 sm:hidden sm:px-6">
                             {selectedDay ? (
                                 <>
-                                    <p className="text-sm font-bold text-text-muted capitalize mb-4">
+                                    <p className="mb-4 text-sm font-bold text-text-muted capitalize">
                                         {formatDate(selectedDay, 'EEEE d MMMM')}
                                     </p>
                                     <div className="space-y-2.5">
@@ -644,31 +487,31 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                                     type="button"
                                                     onClick={() => hasDescription && toggleExpanded(item.id)}
                                                     aria-expanded={hasDescription ? isExpanded : undefined}
-                                                    className={`btn-timeline-item w-full text-left squircle border px-3.5 py-3 transition-colors ${
+                                                    className={`btn-timeline-item squircle w-full border px-3.5 py-3 text-left transition-colors ${
                                                         isCurrentOrNext
-                                                            ? 'bg-purple-500/10 border-purple-500/30'
+                                                            ? 'border-purple-500/30 bg-purple-500/10'
                                                             : 'bg-bg-main/60 border-border-color dark:border-white/10'
-                                                    } ${hasDescription ? 'cursor-pointer hover:bg-bg-main active:bg-bg-main' : 'cursor-default'}`}
+                                                    } ${hasDescription ? 'hover:bg-bg-main active:bg-bg-main cursor-pointer' : 'cursor-default'}`}
                                                 >
                                                     <div className="flex items-start justify-between gap-2">
                                                         <div className="min-w-0">
-                                                            <span className={`inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wide ${isCurrentOrNext ? 'text-purple-500' : 'text-text-muted'}`}>
-                                                                <Clock className="h-3.5 w-3.5 shrink-0" />
+                                                            <span className={`inline-flex items-center gap-1.5 text-xs font-black tracking-wide uppercase ${isCurrentOrNext ? 'text-purple-500' : 'text-text-muted'}`}>
+                                                                <Clock className="size-3.5 shrink-0" />
                                                                 {formatTimeRange(item)}
                                                             </span>
-                                                            <p className="mt-1.5 font-bold text-text-main leading-snug">{item.title}</p>
+                                                            <p className="mt-1.5 leading-snug font-bold text-text-main">{item.title}</p>
                                                             {item.location && (
-                                                                <p className="mt-1.5 text-xs font-semibold text-text-muted flex items-center gap-1"><MapPin className="h-3.5 w-3.5 shrink-0" />{item.location}</p>
+                                                                <p className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-text-muted"><MapPin className="size-3.5 shrink-0" />{item.location}</p>
                                                             )}
                                                         </div>
                                                         {hasDescription && (
-                                                            <ChevronDown className={`h-4 w-4 shrink-0 text-text-muted mt-1 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                                            <ChevronDown className={`mt-1 size-4 shrink-0 text-text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                                                         )}
                                                     </div>
                                                     {item.description && (
-                                                        <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${isExpanded ? 'grid-rows-[1fr] mt-2' : 'grid-rows-[0fr]'}`}>
+                                                        <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${isExpanded ? 'mt-2 grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                                                             <div className="overflow-hidden">
-                                                                <p className="text-sm text-text-muted leading-relaxed"><FormattedText text={item.description} /></p>
+                                                                <p className="text-sm leading-relaxed text-text-muted"><FormattedText text={item.description} /></p>
                                                             </div>
                                                         </div>
                                                     )}
@@ -678,24 +521,24 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                     </div>
                                 </>
                             ) : (
-                                <p className="text-sm text-text-muted text-center py-10">Geen planning beschikbaar.</p>
+                                <p className="py-10 text-center text-sm text-text-muted">Geen planning beschikbaar.</p>
                             )}
                         </div>
 
                         {/* Desktop: full week as a calendar grid — every day side by side on a shared hour axis. */}
-                        <div className="hidden sm:block flex-1 min-h-0 overflow-auto overscroll-contain">
+                        <div className="hidden min-h-0 flex-1 overflow-auto overscroll-contain sm:block">
                             {planningDates.length > 0 ? (
                                 <>
-                                    <div className="flex sticky top-0 z-10 bg-bg-card border-b border-border-color dark:border-white/10">
+                                    <div className="sticky top-0 z-10 flex border-b border-border-color bg-bg-card dark:border-white/10">
                                         <div className="w-14 shrink-0" />
                                         {planningDates.map(date => {
                                             const isToday = date === now.slice(0, 10);
                                             return (
                                                 <div
                                                     key={date}
-                                                    className="flex-1 min-w-[9rem] px-2 py-2.5 text-center border-l border-border-color dark:border-white/10"
+                                                    className="min-w-36 flex-1 border-l border-border-color px-2 py-2.5 text-center dark:border-white/10"
                                                 >
-                                                    <p className={`text-[11px] font-black uppercase tracking-wide ${isToday ? 'text-purple-500' : 'text-text-muted'}`}>
+                                                    <p className={`text-[11px] font-black tracking-wide uppercase ${isToday ? 'text-purple-500' : 'text-text-muted'}`}>
                                                         {formatDate(date, 'EEE')}
                                                     </p>
                                                     <p className={`text-sm font-black capitalize ${isToday ? 'text-purple-500' : 'text-text-main'}`}>
@@ -706,8 +549,8 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                         })}
                                     </div>
 
-                                    <div className="flex px-4 sm:px-6 py-4">
-                                        <div className="w-14 shrink-0 relative" style={{ height: totalHeight }}>
+                                    <div className="flex p-4 sm:px-6">
+                                        <div className="relative w-14 shrink-0" style={{ height: totalHeight }}>
                                             {hours.map(hour => (
                                                 <span
                                                     key={hour}
@@ -724,13 +567,13 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                             return (
                                                 <div
                                                     key={date}
-                                                    className="flex-1 min-w-[9rem] relative border-l border-border-color dark:border-white/10 px-1"
+                                                    className="relative min-w-36 flex-1 border-l border-border-color px-1 dark:border-white/10"
                                                     style={{ height: totalHeight }}
                                                 >
                                                     {hours.map(hour => (
                                                         <div
                                                             key={hour}
-                                                            className="absolute left-0 right-0 border-t border-border-color/60 dark:border-white/5"
+                                                            className="absolute inset-x-0 border-t border-border-color/60 dark:border-white/5"
                                                             style={{ top: (hour - startHour) * HOUR_HEIGHT }}
                                                         />
                                                     ))}
@@ -742,12 +585,12 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                                                 key={item.id}
                                                                 type="button"
                                                                 onClick={() => setSelectedGridItemId(prev => (prev === item.id ? null : item.id))}
-                                                                className={`btn-grid-item absolute rounded-lg pl-2 pr-1.5 py-1 overflow-hidden text-left border border-l-4 shadow-sm cursor-pointer transition-shadow hover:shadow-md hover:brightness-110 ${
-                                                                    isSelected ? 'ring-2 ring-purple-400 z-10' : ''
+                                                                className={`btn-grid-item absolute cursor-pointer overflow-hidden rounded-lg border border-l-4 py-1 pr-1.5 pl-2 text-left shadow-sm transition-shadow hover:shadow-md hover:brightness-110 ${
+                                                                    isSelected ? 'z-10 ring-2 ring-purple-400' : ''
                                                                 } ${
                                                                     isCurrentOrNext
-                                                                        ? 'bg-purple-600 border-purple-500 border-l-purple-200 text-white shadow-md'
-                                                                        : 'bg-bg-card border-border-color dark:border-white/10 border-l-purple-500 text-text-main'
+                                                                        ? 'border-purple-500 border-l-purple-200 bg-purple-600 text-white shadow-md'
+                                                                        : 'border-border-color border-l-purple-500 bg-bg-card text-text-main dark:border-white/10'
                                                                 }`}
                                                                 style={{
                                                                     // 2px inset on top/bottom leaves a visible gap between
@@ -759,10 +602,10 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                                                 }}
                                                                 title={`${formatTimeRange(item)} — ${item.title}`}
                                                             >
-                                                                <p className={`text-[10px] font-black leading-tight ${isCurrentOrNext ? 'text-white/80' : 'text-purple-500'}`}>
+                                                                <p className={`text-[10px] leading-tight font-black ${isCurrentOrNext ? 'text-white/80' : 'text-purple-500'}`}>
                                                                     {item.time_start.slice(0, 5)}
                                                                 </p>
-                                                                <p className="text-[11px] font-bold leading-snug line-clamp-2">{item.title}</p>
+                                                                <p className="line-clamp-2 text-[11px] leading-snug font-bold">{item.title}</p>
                                                             </button>
                                                         );
                                                     })}
@@ -772,32 +615,32 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                     </div>
                                 </>
                             ) : (
-                                <p className="text-sm text-text-muted text-center py-10">Geen planning beschikbaar.</p>
+                                <p className="py-10 text-center text-sm text-text-muted">Geen planning beschikbaar.</p>
                             )}
                         </div>
 
                         {selectedGridItem && (
-                            <div className="hidden sm:flex items-start gap-3 border-t border-border-color dark:border-white/10 bg-bg-card px-5 sm:px-6 py-4 shrink-0">
+                            <div className="hidden shrink-0 items-start gap-3 border-t border-border-color bg-bg-card px-5 py-4 sm:flex sm:px-6 dark:border-white/10">
                                 <div className="min-w-0 flex-1">
-                                    <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wide text-purple-500">
-                                        <Clock className="h-3.5 w-3.5 shrink-0" />
+                                    <span className="inline-flex items-center gap-1.5 text-xs font-black tracking-wide text-purple-500 uppercase">
+                                        <Clock className="size-3.5 shrink-0" />
                                         {formatTimeRange(selectedGridItem)}
                                     </span>
-                                    <h3 className="mt-1 text-base sm:text-lg font-black text-text-main leading-snug">{selectedGridItem.title}</h3>
+                                    <h3 className="mt-1 text-base leading-snug font-black text-text-main sm:text-lg">{selectedGridItem.title}</h3>
                                     {selectedGridItem.location && (
-                                        <p className="mt-1.5 text-xs font-semibold text-text-muted flex items-center gap-1"><MapPin className="h-3.5 w-3.5 shrink-0" />{selectedGridItem.location}</p>
+                                        <p className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-text-muted"><MapPin className="size-3.5 shrink-0" />{selectedGridItem.location}</p>
                                     )}
                                     {selectedGridItem.description && (
-                                        <p className="mt-1.5 text-sm text-text-muted leading-relaxed"><FormattedText text={selectedGridItem.description} /></p>
+                                        <p className="mt-1.5 text-sm leading-relaxed text-text-muted"><FormattedText text={selectedGridItem.description} /></p>
                                     )}
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => setSelectedGridItemId(null)}
                                     aria-label="Sluiten"
-                                    className="btn-close-grid-item shrink-0 squircle bg-bg-main hover:bg-border-color/40 text-text-main p-2 transition-colors"
+                                    className="btn-close-grid-item squircle bg-bg-main shrink-0 p-2 text-text-main transition-colors hover:bg-border-color/40"
                                 >
-                                    <X className="h-4 w-4" />
+                                    <X className="size-4" />
                                 </button>
                             </div>
                         )}
@@ -807,16 +650,16 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
 
             {lightboxOpen && planningImageUrl && (
                 <div
-                    className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4 sm:p-8 cursor-zoom-out"
+                    className="fixed inset-0 z-200 flex cursor-zoom-out items-center justify-center bg-black/90 p-4 sm:p-8"
                     onClick={() => setLightboxOpen(false)}
                 >
                     <button
                         type="button"
                         onClick={() => setLightboxOpen(false)}
                         aria-label="Sluiten"
-                        className="btn-close-lightbox absolute top-4 right-4 sm:top-6 sm:right-6 squircle bg-white/10 hover:bg-white/20 text-white p-2.5 transition-colors"
+                        className="btn-close-lightbox squircle absolute top-4 right-4 bg-white/10 p-2.5 text-white transition-colors hover:bg-white/20 sm:top-6 sm:right-6"
                     >
-                        <X className="h-6 w-6" />
+                        <X className="size-6" />
                     </button>
                     <Image
                         src={planningImageUrl}
@@ -825,7 +668,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                         height={2000}
                         unoptimized
                         onClick={(e) => e.stopPropagation()}
-                        className="max-w-full max-h-full w-auto h-auto object-contain cursor-default"
+                        className="size-auto max-h-full max-w-full cursor-default object-contain"
                     />
                 </div>
             )}

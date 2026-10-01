@@ -1,10 +1,7 @@
+import { schema } from '@salvemundi/db';
 import { safeConsoleError } from '@/server/utils/logger';
 
-export interface ActivityOption {
-    id?: string | null;
-    name?: string | null;
-    price?: number | null;
-}
+export type ActivityOption = NonNullable<typeof schema.trip_activities.$inferSelect.options>[number];
 
 export function mapActivityOptionIdToName(optId: string, metaOptions: ActivityOption[]): string {
     if (!Array.isArray(metaOptions)) return optId;

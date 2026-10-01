@@ -21,7 +21,7 @@ export default async function AanbetalingPage({ searchParams }: PageProps) {
 
     const res = await getTripSignupByToken(signupId, token);
 
-    if (!res.success || !res.data) {
+    if (!res.success) {
         return <TripAccessDenied error={res.error} />;
     }
 
@@ -31,7 +31,7 @@ export default async function AanbetalingPage({ searchParams }: PageProps) {
         return <TripWaitlisted />;
     }
 
-    if (!trip.allow_deposit_payments && signup.role !== 'admin') {
+    if (!trip.allow_deposit_payments && signup.role !== 'crew') {
         return <TripAccessDenied error="De aanbetalingen zijn momenteel nog niet geopend voor deze reis. Je ontvangt een e-mail zodra je kunt betalen." />;
     }
 

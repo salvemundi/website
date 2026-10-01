@@ -35,9 +35,9 @@ export default function WebshopCatalogIsland({ products }: WebshopCatalogIslandP
                         role="tab"
                         aria-selected={category === filter.value}
                         onClick={() => setCategory(filter.value)}
-                        className={`form-button px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                        className={`form-button rounded-full px-4 py-2 text-sm font-bold transition-all ${
                             category === filter.value
-                                ? 'bg-(--theme-purple) text-white shadow-lg shadow-(--theme-purple)/20'
+                                ? 'bg-(--theme-purple) text-white shadow-(--theme-purple)/20 shadow-lg'
                                 : 'bg-(--bg-soft) text-(--text-muted) hover:text-(--theme-purple)'
                         }`}
                     >
@@ -48,11 +48,11 @@ export default function WebshopCatalogIsland({ products }: WebshopCatalogIslandP
 
             {filteredProducts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
-                    <ShoppingBag className="h-12 w-12 text-(--theme-purple)/20" />
+                    <ShoppingBag className="size-12 text-(--theme-purple)/20" />
                     <p className="text-(--text-muted)">Er zijn op dit moment geen producten beschikbaar in deze categorie.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {filteredProducts.map((product) => (
                         <WebshopProductCard key={product.id} product={product} />
                     ))}

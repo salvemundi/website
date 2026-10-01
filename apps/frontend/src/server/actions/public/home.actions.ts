@@ -14,10 +14,7 @@ import {
 } from '@salvemundi/validations';
 
 import { toLocalISOString } from '@/lib/utils/date-utils';
-import {
-    type Schema
-} from '@salvemundi/validations';
-import { getActivitiesInternal } from "@/server/queries/activiteiten/admin-activiteiten.queries";
+import { getActivitiesInternal } from "@/server/queries/activiteiten/beheer-activiteiten.queries";
 import { getUpcomingTrips } from "@/server/actions/events/reis/reis-public.actions";
 import { getDisabledRoutes } from '@/lib/config/feature-flags';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -83,7 +80,7 @@ export const getUpcomingActiviteiten = unstable_cache(async (limit: number = 4):
             image: item.image ?? null,
             publish_date: null,
             short_description: null,
-            location: 'Diverse locaties',
+            location: 'Stratumseind',
             event_date: item.date ? (toLocalISOString(item.date, true) ?? new Date().toISOString()) : new Date().toISOString(),
             event_date_end: null,
             afbeelding_id: item.image ? { id: item.image } : null,
@@ -102,7 +99,7 @@ export const getUpcomingActiviteiten = unstable_cache(async (limit: number = 4):
 
     const mappedTrips = disabledRoutes.includes('/reis')
         ? []
-        : (tripEvents as unknown as Schema['trips']).map((item) => {
+        : tripEvents.map((item) => {
             const rawImage = item.image as unknown as string | { id: string } | null;
             const tripImageId = typeof rawImage === 'object' && rawImage !== null ? rawImage.id : (rawImage as string | null);
 
@@ -119,13 +116,13 @@ export const getUpcomingActiviteiten = unstable_cache(async (limit: number = 4):
                 image: tripImageId ?? null,
                 publish_date: null,
                 short_description: null,
-                location: 'Studiereis',
+                location: 'SaMu Reis',
                 event_date: toLocalISOString(item.start_date, true) ?? toLocalISOString(now, true) ?? new Date().toISOString(),
                 event_date_end: toLocalISOString(item.end_date, true),
                 afbeelding_id: tripImageId ? { id: tripImageId } : null,
                 status: 'published',
-                price_members: item.base_price ? String(item.base_price) : '0.00',
-                price_non_members: item.base_price ? String(item.base_price) : '0.00',
+                price_members: item.base_price ? String(item.base_price) : '50.00',
+                price_non_members: item.base_price ? String(item.base_price) : '70.00',
                 only_members: true,
                 registration_deadline: item.registration_start_date ?? null,
                 contact: 'Reiscommissie',

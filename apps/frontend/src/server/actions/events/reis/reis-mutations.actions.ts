@@ -1,6 +1,7 @@
 'use server';
 
 import 'server-only';
+import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import {
     reisSignupFormSchema,
@@ -143,7 +144,7 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         }
 
         const participantsCount = existingSignups.filter(s => s.status === 'confirmed' || s.status === 'registered').length;
-        const shouldBeWaitlisted = participantsCount >= (targetTrip.max_participants ?? 0);
+        const shouldBeWaitlisted = targetTrip.max_participants ? participantsCount >= targetTrip.max_participants : false;
 
         const payload = {
             trip_id: Number(tripId),
@@ -179,7 +180,10 @@ export async function createTripSignup(data: ReisSignupForm, tripId: number): Pr
         revalidatePath('/beheer/reis');
 
         const statusDisplay = payload.status === 'waitlist' ? 'Wachtlijst' : 'Geregistreerd (Beoordeling)';
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://salvemundi.nl';
+        const h = await headers();
+        const host = h.get('host') || 'localhost:3000';
+        const proto = h.get('x-forwarded-proto') || 'https';
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `${proto}://${host}`;
 
         fetch(`${getMailUrl()}/api/mail/send`, {
             method: 'POST',

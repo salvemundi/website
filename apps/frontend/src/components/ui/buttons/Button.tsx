@@ -47,7 +47,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 ref={ref}
                 className={cn(baseStyles, getVariantClass(variant), getSizeClass(size), fullWidth ? 'w-full' : 'w-auto shrink-0', className)}
                 {...props}
-            >
+                type="button">
                 {children}
             </button>
         );

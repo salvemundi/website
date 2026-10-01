@@ -2,8 +2,7 @@ import { type FastifyInstance } from 'fastify';
 import { createDirectus, rest, staticToken, readItems} from '@directus/sdk';
 import {
     PaymentSuccessEventSchema,
-    type MolliePaymentMetadata,
-    type Directus
+    type MolliePaymentMetadata
 } from '@salvemundi/validations';
 import { schema, eq, sql } from '@salvemundi/db';
 import { RegistrationService } from './registration.service.js';
@@ -16,14 +15,14 @@ export interface FinanceMolliePaymentMetadata extends MolliePaymentMetadata {
 
 export class PaymentService {
     private static getDirectusClient() {
-        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL || '';
-        const directusToken = process.env.DIRECTUS_STATIC_TOKEN || '';
+        const directusUrl = process.env.DIRECTUS_SERVICE_URL || process.env.DIRECTUS_URL;
+        const directusToken = process.env.DIRECTUS_STATIC_TOKEN;
 
         if (!directusUrl || !directusToken) {
             throw new Error('Directus configuration is missing');
         }
 
-        return createDirectus<Directus.Schema>(directusUrl).with(staticToken(directusToken)).with(rest());
+        return createDirectus(directusUrl).with(staticToken(directusToken)).with(rest());
     }
 
     static async finalizePayment(

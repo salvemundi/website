@@ -1,4 +1,4 @@
-import AdminVacanciesIsland from '@/components/islands/admin/vacancies/AdminVacanciesIsland';
+import BeheerVacanciesIsland from '@/components/islands/beheer/vacancies/BeheerVacanciesIsland';
 import { getAdminVacancies, getPendingSubmissions } from '@/server/actions/vacancies/vacancies-admin.actions';
 
 export const dynamic = 'force-dynamic';
@@ -20,7 +20,7 @@ export default async function BijbanenbankAdminPage() {
 
     return (
         <div className="pb-20">
-            <AdminVacanciesIsland vacancies={vacancyRows} submissions={submissions} />
+            <BeheerVacanciesIsland vacancies={vacancyRows} submissions={submissions} />
         </div>
     );
 }

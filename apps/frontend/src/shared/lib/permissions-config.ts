@@ -4,23 +4,7 @@
  * This is the single source of truth for administrative access.
  */
 
-export enum AdminResource {
-    Intro = 'admin:intro',
-    Reis = 'admin:reis',
-    Committees = 'admin:committees',
-    Coupons = 'admin:coupons',
-    Stickers = 'admin:stickers',
-    Logging = 'admin:logging',
-    Sync = 'admin:sync',
-    Users = 'admin:users',
-    Kroegentocht = 'admin:kroegentocht',
-    ActivitiesView = 'admin:activities:view',
-    ActivitiesEdit = 'admin:activities:edit',
-    Webshop = 'admin:webshop',
-    WebshopPickup = 'admin:webshop:pickup',
-    Nda = 'admin:nda',
-    Cobo = 'admin:cobo'
-}
+
 
 export interface PermissionRequirement {
     allowedCommitteeIds: string[];
@@ -75,14 +59,13 @@ export const FEATURE_ACCESS: FeatureRegistry = {
     reis: [COMMITTEES.REIS, COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     // Beheer group dashboard.
     webshop: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
-    // Board-only pickup checklist — deliberately excludes KANDI, unlike the general webshop feature.
-    webshop_pickup: [COMMITTEES.BESTUUR],
+    webshop_pickup: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     commissies: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     coupons: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     leden: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     nda: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     stickers: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
-    vacatures: [COMMITTEES.BESTUUR],
+    vacatures: [COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     // system group dashboard.  
     impersonate: [],
     logging: [],
@@ -90,4 +73,5 @@ export const FEATURE_ACCESS: FeatureRegistry = {
     sync: [],
 } as const;
 
-export type AdminFeature = keyof FeatureRegistry;
+export type BeheerFeature = keyof FeatureRegistry;
+

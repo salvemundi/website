@@ -9,13 +9,13 @@ import './globals.css';
 
 import type { ExtendedSession, ImpersonationInfo } from '@/types/auth';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { checkAdminAccess } from '@/server/actions/admin/admin-utils.actions';
+import { checkBeheerAccess } from '@/server/actions/beheer/beheer-utils.actions';
 import { getDocumenten, getDisabledRoutes } from '@/server/actions/public/website.actions';
 import { getCommittees } from '@/server/actions/public/committees.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 
 import NavigationHeader from '@/components/islands/layout/NavigationHeader';
-import ImpersonationBanner from '@/components/ui/admin/ImpersonationBanner';
+import ImpersonationBanner from '@/components/ui/beheer/ImpersonationBanner';
 
 const FooterIsland = dynamic(() => import('@/components/islands/layout/FooterIsland'));
 
@@ -68,7 +68,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     const h = await headers();
     const nonce = h.get('x-nonce') || '';
     const session = await getEnrichedSession();
-    const adminAccess = await checkAdminAccess();
+    const adminAccess = await checkBeheerAccess();
 
     const { impersonation, isAuthorized } = adminAccess;
 
@@ -79,10 +79,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                     {"(function(){try{if(localStorage.theme==='light'){document.documentElement.classList.remove('dark')}else{document.documentElement.classList.add('dark')}}catch(e){}})()"}
                 </script>
             </head>
-            <body className={`${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}>
+            <body className={`${poppins.variable} flex min-h-screen flex-col font-sans antialiased`}>
                 <ImpersonationWrapper impersonation={impersonation} />
                 <HeaderWrapper initialSession={session} isAuthorized={isAuthorized} />
-                <main className="grow flex flex-col pt-header-total">
+                <main className="flex grow flex-col pt-header-total">
                     {children}
                     <FooterWrapper initialSession={session} className="mt-auto w-full" />
                 </main>

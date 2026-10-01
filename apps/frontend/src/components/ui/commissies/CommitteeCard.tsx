@@ -39,8 +39,8 @@ export const CommitteeCard = ({
     return (
         <NextLink
             href={`/commissies/${slug}`}
-            className={`group flex h-full flex-col overflow-hidden squircle-lg bg-bg-card dark:border dark:border-white/10 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl 
-                ${isBestuur ? 'ring-4 ring-purple-500/20 shadow-purple-500/10' : ''}`}
+            className={`group flex h-full flex-col overflow-hidden rounded-2xl bg-(--bg-card) shadow-lg transition hover:-translate-y-1 hover:shadow-2xl sm:rounded-3xl dark:border dark:border-white/10 
+                ${isBestuur ? 'ring-4 shadow-purple-500/10 ring-purple-500/20' : ''}`}
         >
             <div className={`relative w-full overflow-hidden bg-linear-to-br from-purple-500/20 to-purple-900/40 ${isBestuur ? 'h-61 sm:h-72 md:h-80' : 'h-61'}`}>
                 {hasImage && isBestuur && (
@@ -48,8 +48,7 @@ export const CommitteeCard = ({
                         src={imageUrl}
                         alt=""
                         fill
-                        className="object-cover blur-xl opacity-25 scale-105 select-none pointer-events-none"
-                        unoptimized
+                        className="pointer-events-none object-cover opacity-25 blur-xl select-none"
                     />
                 )}
                 {!hasImage ? (
@@ -58,16 +57,14 @@ export const CommitteeCard = ({
                             src={BRAND_CONFIG.logoFallbackLight}
                             alt={committee.name || 'Committee'}
                             fill
-                            className="transition-all duration-500 object-contain p-12 opacity-40 dark:hidden"
-                            unoptimized
+                            className="object-contain p-12 opacity-40 dark:hidden"
                             priority={index < 4}
                         />
                         <Image
                             src={BRAND_CONFIG.logoFallbackDark}
                             alt={committee.name || 'Committee'}
                             fill
-                            className="transition-all duration-500 object-contain p-12 opacity-40 hidden dark:block"
-                            unoptimized
+                            className="hidden object-contain p-12 opacity-40 dark:block"
                             priority={index < 4}
                         />
                     </>
@@ -76,62 +73,61 @@ export const CommitteeCard = ({
                         src={imageUrl}
                         alt={committee.name || 'Committee'}
                         fill
-                        className={`transition-all duration-500 ${isBestuur ? 'object-contain' : 'object-cover'}`}
-                        unoptimized
+                        className={isBestuur ? 'object-contain' : 'object-cover'}
                         priority={index < 4}
                     />
                 )}
-                <div className="absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+                <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent" />
 
                 {isBestuur && (
-                    <div className="absolute right-4 top-4 rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-purple-700 shadow-lg">
+                    <div className="absolute top-4 right-4 rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-purple-700 shadow-lg">
                         Huidig Bestuur
                     </div>
                 )}
             </div>
 
             <div className="flex flex-1 flex-col p-6 sm:p-8">
-                <div className="flex items-start justify-between gap-4 mb-4">
-                    <div className="flex-1 min-w-0">
-                        <h3 className="text-xl md:text-2xl lg:text-xl xl:text-2xl font-black tracking-tight text-theme-purple group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors wrap-break-word hyphens-auto">
+                <div className="mb-4 flex items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                        <h3 className="text-xl font-black tracking-tight wrap-break-word hyphens-auto text-purple-700 transition-colors group-hover:text-purple-600 md:text-2xl lg:text-xl xl:text-2xl dark:text-purple-300 dark:group-hover:text-purple-400">
                             {cleanedName || 'Commissie'}
                         </h3>
 
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="mt-1 flex items-center gap-2">
                             <div className="flex -space-x-2">
                                 {members.slice(0, 3).map((member, i) => (
-                                    <div key={i} className="relative h-6 w-6 rounded-full border-2 border-bg-card overflow-hidden bg-slate-200 dark:bg-slate-800">
+                                    <div key={i} className="relative size-6 overflow-hidden rounded-full border-2 border-(--bg-card) bg-slate-200 dark:bg-slate-800">
                                         {member.avatar ? (
-                                            <Image src={member.avatar} alt="Member" fill className="object-cover" unoptimized />
+                                            <Image src={member.avatar} alt="Member" fill className="object-cover" />
                                         ) : (
                                             <>
-                                                <Image src={BRAND_CONFIG.logoFallbackLight} alt="Member" fill className="object-cover dark:hidden" unoptimized />
-                                                <Image src={BRAND_CONFIG.logoFallbackDark} alt="Member" fill className="object-cover hidden dark:block" unoptimized />
+                                                <Image src={BRAND_CONFIG.logoFallbackLight} alt="Member" fill className="object-cover dark:hidden" />
+                                                <Image src={BRAND_CONFIG.logoFallbackDark} alt="Member" fill className="hidden object-cover dark:block" />
                                             </>
                                         )}
                                     </div>
                                 ))}
                             </div>
-                            <span className="text-xs font-semibold text-text-muted flex items-center gap-1.5 ml-1">
-                                <Users className="h-3 w-3" />
+                            <span className="ml-1 flex items-center gap-1.5 text-xs font-semibold text-(--text-muted)">
+                                <Users className="size-3" />
                                 {(committee.members?.length || 0)} Leden
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <p className="mb-8 line-clamp-3 text-sm leading-relaxed text-text-muted">
+                <p className="mb-8 line-clamp-3 text-sm leading-relaxed text-(--text-muted)">
                     {committee.short_description || `Maak kennis met de ${cleanedName} van SV Salve Mundi.`}
                 </p>
 
-                <div className="mt-auto flex items-center justify-between pt-6 border-t border-border-color/20">
-                    <span className="text-sm font-bold text-purple-500 decoration-2 underline-offset-4 group-hover:underline">
+                <div className="mt-auto flex items-center justify-between border-t border-(--border-color)/20 pt-6">
+                    <span className="text-sm font-bold text-purple-600 decoration-2 underline-offset-4 group-hover:underline dark:text-purple-400">
                         Meer informatie
                     </span>
 
                     {hasHistory && !isBestuur && (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-bg-soft text-text-muted transition" title="Historie">
-                            <History className="h-5 w-5" />
+                        <div className="flex size-10 items-center justify-center rounded-xl bg-(--bg-soft) text-(--text-muted) transition" title="Historie">
+                            <History className="size-5" />
                         </div>
                     )}
                 </div>

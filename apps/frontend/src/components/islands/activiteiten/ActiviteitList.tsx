@@ -19,7 +19,7 @@ export default function ActiviteitList({ events, onEventClick, variant = 'list',
 
     if (events.length === 0) {
         return (
-            <div className="text-center py-12 bg-(--bg-card) rounded-3xl shadow-sm">
+            <div className="rounded-3xl bg-(--bg-card) py-12 text-center shadow-sm">
                 <p className="text-(--text-muted)">Geen activiteiten gevonden.</p>
             </div>
         );
@@ -27,8 +27,51 @@ export default function ActiviteitList({ events, onEventClick, variant = 'list',
 
     if (variant === 'grid') {
         return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {events.map((event) => (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {events.map((event) => {
+                    const isFull = event.max_sign_ups !== null && (event.signup_count ?? 0) >= event.max_sign_ups;
+                    return (
+                        <ActiviteitCard
+                            key={event.id}
+                            id={event.id}
+                            title={event.name}
+                            description={stripHtml(event.description || '')}
+                            short_description={event.short_description}
+                            date={event.event_date}
+                            endDate={event.event_date_end ?? undefined}
+                            startTime={event.event_time ?? undefined}
+                            endTime={event.event_time_end ?? undefined}
+                            location={event.location ?? undefined}
+                            price={user && (user as unknown as MembershipUserData).membership_status === 'active' ? event.price_members : event.price_non_members}
+                            image={event.afbeelding_id ?? undefined}
+                            isPast={isEventPast(
+                                event.event_date_end || event.event_date,
+                                event.event_time_end || event.event_time,
+                                !!event.event_time_end,
+                                serverTime ? new Date(serverTime) : undefined
+                            )}
+                            serverTime={serverTime}
+                            isSignedUp={event.is_signed_up}
+                            isFull={isFull}
+                            variant="grid"
+                            committeeName={event.committee_name ?? undefined}
+                            contact={event.contact ?? undefined}
+                            registrationDeadline={event.registration_deadline ?? undefined}
+                            onlyMembers={event.only_members}
+                            onShowDetails={() => onEventClick(event)}
+                            onSignup={() => onEventClick(event)}
+                        />
+                    );
+                })}
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-4">
+            {events.map((event) => {
+                const isFull = event.max_sign_ups !== null && (event.signup_count ?? 0) >= event.max_sign_ups;
+                return (
                     <ActiviteitCard
                         key={event.id}
                         id={event.id}
@@ -50,7 +93,8 @@ export default function ActiviteitList({ events, onEventClick, variant = 'list',
                         )}
                         serverTime={serverTime}
                         isSignedUp={event.is_signed_up}
-                        variant="grid"
+                        isFull={isFull}
+                        variant="list"
                         committeeName={event.committee_name ?? undefined}
                         contact={event.contact ?? undefined}
                         registrationDeadline={event.registration_deadline ?? undefined}
@@ -58,44 +102,8 @@ export default function ActiviteitList({ events, onEventClick, variant = 'list',
                         onShowDetails={() => onEventClick(event)}
                         onSignup={() => onEventClick(event)}
                     />
-                ))}
-            </div>
-        );
-    }
-
-    return (
-        <div className="space-y-4">
-            {events.map((event) => (
-                <ActiviteitCard
-                    key={event.id}
-                    id={event.id}
-                    title={event.name}
-                    description={stripHtml(event.description || '')}
-                    short_description={event.short_description}
-                    date={event.event_date}
-                    endDate={event.event_date_end ?? undefined}
-                    startTime={event.event_time ?? undefined}
-                    endTime={event.event_time_end ?? undefined}
-                    location={event.location ?? undefined}
-                    price={user && (user as unknown as MembershipUserData).membership_status === 'active' ? event.price_members : event.price_non_members}
-                    image={event.afbeelding_id ?? undefined}
-                    isPast={isEventPast(
-                        event.event_date_end || event.event_date,
-                        event.event_time_end || event.event_time,
-                        !!event.event_time_end,
-                        serverTime ? new Date(serverTime) : undefined
-                    )}
-                    serverTime={serverTime}
-                    isSignedUp={event.is_signed_up}
-                    variant="list"
-                    committeeName={event.committee_name ?? undefined}
-                    contact={event.contact ?? undefined}
-                    registrationDeadline={event.registration_deadline ?? undefined}
-                    onlyMembers={event.only_members}
-                    onShowDetails={() => onEventClick(event)}
-                    onSignup={() => onEventClick(event)}
-                />
-            ))}
+                );
+            })}
         </div>
     );
 }

@@ -2,17 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getActivities } from '@/server/actions/events/activiteiten/activiteiten-public.actions';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { verifyCalendarToken } from '@/server/auth/calendar-token';
-import { buildIcsCalendar } from '@/lib/utils/ics';
+import { buildIcsResponse } from '@/lib/utils/ics';
 import { safeConsoleError } from '@/server/utils/logger';
 import { checkRateLimit } from '@/server/utils/ratelimit';
+import { resolveRequestOrigin } from '@/server/utils/request-utils';
 
 export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
     try {
-        const rateLimitResult = await checkRateLimit('activiteiten-ics-feed', 60, 60, 'Te veel verzoeken. Probeer het over een minuut opnieuw.');
-        if (!rateLimitResult.success) {
-            return new NextResponse('Too Many Requests', { status: 429 });
+        try {
+            const rateLimitResult = await checkRateLimit('activiteiten-ics-feed', 120, 60, 'Te veel verzoeken. Probeer het over een minuut opnieuw.');
+            if (!rateLimitResult.success) {
+                return new NextResponse('Too Many Requests', { status: 429 });
+            }
+        } catch (rlError) {
+            safeConsoleError('[route.ts][GET] Rate limit check failed open:', rlError);
         }
 
         const { searchParams } = new URL(request.url);
@@ -36,7 +41,7 @@ export async function GET(request: NextRequest) {
         }
 
         const activities = await getActivities(email);
-        const origin = request.nextUrl.origin;
+        const origin = resolveRequestOrigin(request);
 
         const events = activities.map(activity => {
             const isPersonalized = Boolean(email);
@@ -77,17 +82,12 @@ export async function GET(request: NextRequest) {
         });
 
         const calendarName = email ? 'Salve Mundi Mijn Activiteiten' : 'Salve Mundi Activiteiten';
-        const ics = buildIcsCalendar(events, calendarName);
 
-        const headers: Record<string, string> = {
-            'Content-Type': 'text/calendar; charset=utf-8',
-            'Cache-Control': email ? 'private, no-cache, no-store, must-revalidate' : 'public, max-age=300'
-        };
-        if (download) {
-            headers['Content-Disposition'] = 'attachment; filename="salve-mundi-activiteiten.ics"';
-        }
-
-        return new NextResponse(ics, { status: 200, headers });
+        return buildIcsResponse(events, calendarName, {
+            filename: 'salve-mundi-activiteiten.ics',
+            cacheControl: email ? 'private' : 'public',
+            download,
+        });
     } catch (error: unknown) {
         safeConsoleError('[route.ts][GET] Failed to build activities ICS feed:', error);
         return new NextResponse('Kon agenda niet ophalen', { status: 500 });

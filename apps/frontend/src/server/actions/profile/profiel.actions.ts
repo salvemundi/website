@@ -3,8 +3,8 @@
 import {
     type Transaction,
     type WhatsAppGroup,
-    type EventSignup,
-    eventSignupSchema,
+    type ProfileEventSignup,
+    profileEventSignupSchema,
     transactionSchema,
     whatsappGroupSchema
 } from '@salvemundi/validations/schema/profiel.zod';
@@ -35,7 +35,7 @@ const isValidRelation = (val: unknown): val is { id: unknown } => {
     return !!val && typeof val === 'object' && 'id' in val;
 };
 
-export async function getUserEventSignups(): Promise<EventSignup[]> {
+export async function getUserEventSignups(): Promise<ProfileEventSignup[]> {
     const session = await getEnrichedSession();
     const user = session?.user;
 
@@ -43,8 +43,21 @@ export async function getUserEventSignups(): Promise<EventSignup[]> {
     if (!email) return [];
 
     const registrations = await fetchUserEventSignupsDb(email);
-    const validRegistrations = registrations;
-    return safeParseArray(eventSignupSchema, validRegistrations, 'ProfielActions:EventSignups');
+    const { toLocalISOString } = await import('@/lib/utils/date-utils');
+    const formatted = registrations.map(r => ({
+        ...r,
+        created_at: toLocalISOString(r.created_at),
+        checked_in_at: toLocalISOString(r.checked_in_at),
+        event_id: r.event ? {
+            id: r.event.id,
+            name: r.event.name,
+            event_date: toLocalISOString(r.event.event_date),
+            description: r.event.description ?? null,
+            image: r.event.image ?? null,
+            contact: r.event.contact ?? null
+        } : null
+    }));
+    return safeParseArray(profileEventSignupSchema, formatted, 'ProfielActions:EventSignups');
 }
 
 export async function getUserPubCrawlSignups(): Promise<EnrichedPubCrawlSignup[]> {

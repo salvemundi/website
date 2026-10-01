@@ -1,14 +1,14 @@
-import AdminGuard from '@/components/ui/admin/AdminGuard';
+import BeheerGuard from '@/components/ui/beheer/BeheerGuard';
 import type { ReactNode } from 'react';
 
 export default function ImpersonateLayout({ children }: { children: ReactNode }) {
     return (
-        <AdminGuard 
+        <BeheerGuard 
             feature="impersonate" 
             title="Test Modus" 
             description="Deze systeemfunctie is exclusief gereserveerd voor de ICT-commissie."
         >
             {children}
-        </AdminGuard>
+        </BeheerGuard>
     );
 }

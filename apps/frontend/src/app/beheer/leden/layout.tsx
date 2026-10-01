@@ -1,14 +1,14 @@
-import AdminGuard from '@/components/ui/admin/AdminGuard';
+import BeheerGuard from '@/components/ui/beheer/BeheerGuard';
 import type { ReactNode } from 'react';
 
 export default function LedenLayout({ children }: { children: ReactNode }) {
     return (
-        <AdminGuard
+        <BeheerGuard
             feature="leden"
             title="Leden Beheer"
             description="Je hebt geen rechten om leden te beheren."
         >
             {children}
-        </AdminGuard>
+        </BeheerGuard>
     );
 }

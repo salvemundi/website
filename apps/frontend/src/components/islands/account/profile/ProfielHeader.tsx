@@ -45,35 +45,35 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
 
     return (
         <Tile className="h-fit">
-            <div className="flex flex-col gap-6 items-center text-center">
-                <div className="relative group shrink-0">
+            <div className="flex flex-col items-center gap-6 text-center">
+                <div className="group relative shrink-0">
                     <label
-                        className="relative block cursor-pointer group"
+                        className="group relative block cursor-pointer"
                         title="Profielfoto wijzigen"
                     >
-                        <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full overflow-hidden border-4 border-purple-100 shadow-lg bg-bg-card transition-transform group-hover:scale-105">
+                        <div className="relative size-28 overflow-hidden rounded-full border-4 border-purple-100 bg-bg-card shadow-lg transition-transform group-hover:scale-105 sm:size-32">
                             {user.avatar ? (
                                 <MediaAsset
                                     asset={getImageUrl(user.avatar, { width: 250, height: 250, fit: 'cover' }) || ''}
                                     alt="avatar"
                                     width={128}
                                     height={128}
-                                    className="h-full w-full object-cover"
+                                    className="size-full object-cover"
                                 />
                             ) : (
-                                <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-brand-primary to-brand-secondary flex items-center justify-center shrink-0">
+                                <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-brand-primary to-brand-secondary">
                                     <span className="text-4xl font-bold text-purple-300">
                                         {user.first_name?.[0] || '?'}
                                     </span>
                                 </div>
                             )}
 
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white p-2">
-                                <svg className="h-8 w-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 p-2 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                                <svg className="mb-1 size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
-                                <span className="text-[10px] font-black uppercase tracking-wider">Wijzigen</span>
+                                <span className="text-[10px] font-black tracking-wider uppercase">Wijzigen</span>
                             </div>
                         </div>
                         <input
@@ -91,31 +91,31 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                     </label>
                 </div>
 
-                <div className="min-w-0 w-full">
-                    <h2 className="text-xl sm:text-2xl font-extrabold text-purple-700 dark:text-white wrap-break-word">
+                <div className="w-full min-w-0">
+                    <h2 className="text-xl font-extrabold wrap-break-word text-purple-700 sm:text-2xl dark:text-white">
                         {displayName}
                     </h2>
 
                     <div className="mt-4 flex flex-wrap justify-center">
-                        <span className={`px-6 py-2 ${membershipStatus.color} ${membershipStatus.textColor} text-[11px] font-black uppercase tracking-wider rounded-full shadow-md transition-all text-center wrap-break-word max-w-full`}>
+                        <span className={`px-6 py-2 ${membershipStatus.color} ${membershipStatus.textColor} max-w-full rounded-full text-center text-[11px] font-black tracking-wider wrap-break-word uppercase shadow-md transition-all`}>
                             {membershipStatus.text || 'Gebruiker'}
                         </span>
                     </div>
 
                     {Array.isArray(user.committees) && user.committees.length > 0 && (
                         <div className="mt-6">
-                            <p className="text-[10px] text-licht-paars dark:text-geel font-black uppercase tracking-wider mb-3 text-center">
+                            <p className="mb-3 text-center text-[10px] font-black tracking-wider text-licht-paars uppercase dark:text-geel">
                                 Mijn Commissies
                             </p>
-                            <div className="font-semibold text-lg wrap-break-word">
+                            <div className="text-lg font-semibold wrap-break-word">
                                 {user.committees.map((committee) => (
                                     <span
                                         key={committee.id}
-                                        className="group relative inline-flex items-center gap-2 px-4 py-2 bg-licht-paars/10 dark:bg-white/5 border border-licht-paars/20 dark:border-white/10 rounded-full text-xs font-bold text-purple-700 dark:text-white shadow-sm max-w-full"
+                                        className="group relative inline-flex max-w-full items-center gap-2 rounded-full border border-licht-paars/20 bg-licht-paars/10 px-4 py-2 text-xs font-bold text-purple-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-white"
                                     >
                                         {committee.is_leader && !committee.name.toLowerCase().includes('bestuur') && (
-                                            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-linear-to-br from-yellow-400 to-yellow-600 border-2 border-bg-card shadow-md flex items-center justify-center shrink-0">
-                                                <Star className="h-2 w-2 text-white fill-current shrink-0" />
+                                            <span className="absolute -top-1 -right-1 flex size-4 shrink-0 items-center justify-center rounded-full border-2 border-bg-card bg-linear-to-br from-yellow-400 to-yellow-600 shadow-md">
+                                                <Star className="size-2 shrink-0 fill-current text-white" />
                                             </span>
                                         )}
                                         <span className="truncate">{committee.name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim()}</span>
@@ -126,12 +126,12 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                     )}
 
                     <div className="mt-6 flex flex-col gap-1.5">
-                        <div className="flex items-center justify-center h-6 pl-1">
-                            <p className="text-[10px] text-licht-paars dark:text-geel font-black uppercase tracking-wider">
+                        <div className="flex h-6 items-center justify-center pl-1">
+                            <p className="text-[10px] font-black tracking-wider text-licht-paars uppercase dark:text-geel">
                                 Lidmaatschap tot
                             </p>
                         </div>
-                        <div className="squircle bg-licht-paars/10 dark:bg-white/5 border border-licht-paars/20 dark:border-white/10 px-5 py-4 shadow-sm text-center flex justify-center items-center min-h-[56px]">
+                        <div className="squircle flex min-h-14 items-center justify-center border border-licht-paars/20 bg-licht-paars/10 px-5 py-4 text-center shadow-sm dark:border-white/10 dark:bg-white/5">
                             <p className="text-base font-bold text-purple-700 dark:text-white">
                                 {user.membership_expiry
                                     ? formatDate(user.membership_expiry, "d MMM yyyy")

@@ -5,7 +5,7 @@ import { getImageUrl } from '@/lib/utils/image-utils';
 
 interface MediaAssetProps {
     asset?: string | { id: string; type?: string | null } | null;
-    alt?: string;
+    alt?: string | null;
     className?: string;
     fill?: boolean;
     width?: number;
@@ -19,7 +19,7 @@ interface MediaAssetProps {
 
 export default function MediaAsset({
     asset,
-    alt = 'Media asset',
+    alt,
     className = '',
     fill = false,
     width,
@@ -44,17 +44,18 @@ export default function MediaAsset({
         (typeof id === 'string' && (id.includes('video') || id.match(/\.(mp4|webm|ogg|mov)$/i)));
 
     const shouldOptimize = !unoptimized && !isLocalPreview && !isApiAsset;
+    const finalAlt = alt || 'Media asset';
 
     if (isVideo) {
         return (
             <video
                 src={url}
-                className={`${className} ${fill ? 'absolute inset-0 w-full h-full' : ''}`}
+                className={`${className} ${fill ? 'absolute inset-0 size-full' : ''}`}
                 autoPlay
                 loop
                 muted
                 playsInline
-                aria-label={alt}
+                aria-label={finalAlt}
                 style={fill ? { objectFit } : undefined}
             />
         );
@@ -63,7 +64,7 @@ export default function MediaAsset({
     return (
         <Image
             src={url}
-            alt={alt}
+            alt={finalAlt}
             className={className}
             fill={fill}
             width={!fill ? (width || 400) : undefined}

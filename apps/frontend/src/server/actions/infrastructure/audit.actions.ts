@@ -46,7 +46,7 @@ interface QueueStatusData {
     uptime: number;
 }
 
-export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: unknown) {
+export async function logAuditAction(type: string, status: 'SUCCESS' | 'ERROR' | 'INFO', payload?: unknown) {
     try {
         const session = await getEnrichedSession();
         if (!session) {
@@ -62,7 +62,7 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
 
         const payloadStr = JSON.stringify(safePayload);
         if (payloadStr.length > 15000) {
-            logWarn('[audit.actions.ts][logAdminAction] Log payload too large, dropping.');
+            logWarn('[audit.actions.ts][logAuditAction] Log payload too large, dropping.');
             return;
         }
 
@@ -85,7 +85,7 @@ export async function logAdminAction(type: string, status: 'SUCCESS' | 'ERROR' |
             }
         });
     } catch (error) {
-        safeConsoleError('[audit.actions.ts][logAdminAction] Failed to log admin action:', error);
+        safeConsoleError('[audit.actions.ts][logAuditAction] Failed to log admin action:', error);
     }
 }
 
@@ -135,7 +135,6 @@ export async function approveSignupAction(id: string, type: string) {
                     errorMsg = responseData.message;
                 }
             } catch {
-                // fall back to default
             }
             return { success: false, error: errorMsg };
         }
@@ -156,7 +155,7 @@ export async function approveSignupAction(id: string, type: string) {
 
         if (type === 'membership_renewal') {
             if (tx?.user_id) {
-                const { renewMembershipAction } = await import('@/server/actions/admin/leden/admin-leden-membership.actions');
+                const { renewMembershipAction } = await import('@/server/actions/beheer/leden/beheer-leden-membership.actions');
                 await renewMembershipAction(tx.user_id, 12);
             }
         }
@@ -165,7 +164,7 @@ export async function approveSignupAction(id: string, type: string) {
             .set({ approval_status: 'approved' })
             .where(eq(schema.transactions.mollie_id, id));
 
-        await logAdminAction('admin_signup_approved', 'SUCCESS', {
+        await logAuditAction('admin_signup_approved', 'SUCCESS', {
             context: 'lidmaatschap',
             signup_id: id,
             type: type,
@@ -191,7 +190,7 @@ export async function rejectSignupAction(id: string, type: string) {
             .set({ approval_status: 'rejected' })
             .where(eq(schema.transactions.mollie_id, id));
 
-        await logAdminAction('admin_signup_rejected', 'SUCCESS', {
+        await logAuditAction('admin_signup_rejected', 'SUCCESS', {
             context: 'lidmaatschap',
             signup_id: id,
             type: type
@@ -251,7 +250,7 @@ export async function updateAuditSettingsAction(manualApproval: boolean) {
             });
         }
 
-        await logAdminAction('admin_settings_change', 'SUCCESS', {
+        await logAuditAction('admin_settings_change', 'SUCCESS', {
             context: 'systeem',
             setting: 'manual_approval',
             value: manualApproval
@@ -321,21 +320,31 @@ export async function getQueueStatusAction(): Promise<ActionResponse<QueueStatus
     const admin = await checkAuditAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
 
+    const mgmtUrl = process.env.AZURE_MANAGEMENT_SERVICE_URL;
+    if (!mgmtUrl) {
+        return { success: false, error: "Azure Management Service URL niet geconfigureerd." };
+    }
+
     try {
         const internalToken = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
-        const res = await fetch(`${process.env.AZURE_MANAGEMENT_SERVICE_URL}/api/monitoring/status`, {
+        const res = await fetch(`${mgmtUrl}/api/monitoring/status`, {
             headers: {
                 'Authorization': `Bearer ${internalToken}`
-            }
+            },
+            signal: AbortSignal.timeout(2000)
         });
 
-        if (!res.ok) throw new Error('Management service monitoring failed');
-        const data = (await res.json()) as QueueStatusData;
+        if (!res.ok) {
+            logWarn(`[audit.actions.ts][getQueueStatusAction] Management service monitoring status gaf HTTP ${res.status}`);
+            return { success: false, error: `Wachtrij status niet beschikbaar (HTTP ${res.status})` };
+        }
 
+        const data = (await res.json()) as QueueStatusData;
         return { success: true, data };
     } catch (error: unknown) {
-        safeConsoleError('[audit.actions.ts][getQueueStatusAction] Failed to fetch queue status:', error);
-        return { success: false, error: "Kon wachtrij status niet ophalen." };
+        const errMsg = error instanceof Error ? error.message : String(error);
+        logWarn(`[audit.actions.ts][getQueueStatusAction] Kon management service niet bereiken (VPN of container mogelijk niet actief): ${errMsg}`);
+        return { success: false, error: "Azure Management Service offline of niet bereikbaar." };
     }
 }
 

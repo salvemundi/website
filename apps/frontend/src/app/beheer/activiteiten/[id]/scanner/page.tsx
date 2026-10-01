@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import AdminUnauthorized from '@/components/ui/admin/AdminUnauthorized';
+import BeheerUnauthorized from '@/components/ui/beheer/BeheerUnauthorized';
 import { notFound } from 'next/navigation';
 import {
     getActivityByIdInternal,
     getActivitySignupsInternal
-} from '@/server/queries/activiteiten/admin-activiteiten.queries';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+} from '@/server/queries/activiteiten/beheer-activiteiten.queries';
+import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
 import AttendanceIsland from '@/components/islands/activiteiten/AttendanceIsland';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -28,7 +28,7 @@ export default async function ScannerPage({ params }: { params: Promise<{ id: st
     const id = resolvedParams.id;
 
     const session = await getEnrichedSession();
-    if (!session) return <AdminUnauthorized title="Activiteit Scanner" />;
+    if (!session) return <BeheerUnauthorized title="Activiteit Scanner" />;
 
     const user = session.user;
     const hasAccess = !!user.permissions?.includes('activiteiten');
@@ -67,7 +67,7 @@ export default async function ScannerPage({ params }: { params: Promise<{ id: st
 
     if (!hasAccess) {
         return (
-            <AdminUnauthorized
+            <BeheerUnauthorized
                 title="Activiteit Scanner"
                 description="Je hebt geen rechten om deze scanner te gebruiken."
             />
@@ -75,7 +75,7 @@ export default async function ScannerPage({ params }: { params: Promise<{ id: st
     }
 
     return (
-        <AdminPageShell
+        <BeheerPageShell
             title="Scanner"
             subtitle={`Scanner voor: "${eventData.name}"`}
             backHref={`/beheer/activiteiten/${id}/aanmeldingen`}
@@ -83,6 +83,6 @@ export default async function ScannerPage({ params }: { params: Promise<{ id: st
             <div className="pb-20">
                 <AttendanceIsland eventId={String(id)} eventName={eventData.name} initialSignups={initialSignups} />
             </div>
-        </AdminPageShell>
+        </BeheerPageShell>
     );
 }

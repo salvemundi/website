@@ -1,7 +1,10 @@
 'use client';
 
+import { useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
+import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
+import { isEventOnDay } from '@/shared/lib/utils/date';
+import { cn } from '@/lib/utils/cn';
 
 interface CalendarViewProps {
     currentDate: Date;
@@ -14,6 +17,8 @@ interface CalendarViewProps {
     onGoToDate?: (date: Date) => void;
 }
 
+const WEEK_DAYS = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'] as const;
+
 export default function CalendarView({
     currentDate,
     events,
@@ -24,137 +29,168 @@ export default function CalendarView({
     onNextMonth,
     onGoToDate
 }: CalendarViewProps) {
-    const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const { days, monthStart } = useMemo(() => {
+        const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
 
-    const getStartOfWeek = (d: Date) => {
-        const date = new Date(d);
-        const day = date.getDay();
-        const diff = date.getDate() - (day === 0 ? 6 : day - 1);
-        return new Date(date.setDate(diff));
-    };
+        const getStartOfWeek = (d: Date) => {
+            const date = new Date(d);
+            const day = date.getDay();
+            const diff = date.getDate() - (day === 0 ? 6 : day - 1);
+            return new Date(date.setDate(diff));
+        };
 
-    const getEndOfWeek = (d: Date) => {
-        const date = new Date(d);
-        const day = date.getDay();
-        const diff = date.getDate() + (day === 0 ? 0 : 7 - day);
-        return new Date(date.setDate(diff));
-    };
+        const getEndOfWeek = (d: Date) => {
+            const date = new Date(d);
+            const day = date.getDay();
+            const diff = date.getDate() + (day === 0 ? 0 : 7 - day);
+            return new Date(date.setDate(diff));
+        };
 
-    const startDate = getStartOfWeek(monthStart);
-    const endDate = getEndOfWeek(monthEnd);
+        const startDate = getStartOfWeek(start);
+        const endDate = getEndOfWeek(end);
 
-    const days: Date[] = [];
-    const day = new Date(startDate);
-    while (day <= endDate) {
-        days.push(new Date(day));
-        day.setDate(day.getDate() + 1);
-    }
+        const dayList: Date[] = [];
+        const current = new Date(startDate);
+        while (current <= endDate) {
+            dayList.push(new Date(current));
+            current.setDate(current.getDate() + 1);
+        }
 
-    const weekDays = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'];
+        return { days: dayList, monthStart: start };
+    }, [currentDate]);
 
-    const getEventsForDay = (day: Date) => {
-        return events.filter(event => {
-            const start = new Date(event.event_date);
-            const end = event.event_date_end ? new Date(event.event_date_end) : start;
-
-            const d = new Date(day.getFullYear(), day.getMonth(), day.getDate()).getTime();
-            const s = new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
-            const e = new Date(end.getFullYear(), end.getMonth(), end.getDate()).getTime();
-
-            return d >= s && d <= e;
-        });
-    };
+    const eventsByDayKey = useMemo(() => {
+        const map = new Map<string, Activiteit[]>();
+        for (const d of days) {
+            const key = d.toDateString();
+            const dayEvents = events.filter(e => isEventOnDay(e, d));
+            map.set(key, dayEvents);
+        }
+        return map;
+    }, [days, events]);
 
     return (
-        <div className="bg-(--bg-card) dark:border dark:border-white/10 rounded-3xl shadow-xl overflow-hidden">
-            <div className="p-6 flex items-center justify-between text-(--theme-purple) dark:text-(--text-main)">
-                <h2 className="text-2xl font-bold capitalize">
+        <section aria-label="Activiteitenkalender" className="overflow-hidden rounded-2xl bg-(--bg-card) shadow-xl sm:rounded-3xl dark:border dark:border-white/10">
+            <div className="flex items-center justify-between p-5 text-purple-700 sm:p-6 dark:text-purple-300">
+                <h2 className="text-xl font-black tracking-tight capitalize sm:text-2xl">
                     {currentDate.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}
                 </h2>
                 <div className="flex items-center gap-2">
                     <button
+                        type="button"
                         onClick={onPrevMonth}
-                        className="icon-button p-2 hover:bg-(--theme-purple)/10 rounded-full transition-colors"
+                        className="icon-button flex size-9 items-center justify-center rounded-full text-purple-700 transition-colors hover:bg-purple-500/10 dark:text-purple-300 dark:hover:bg-purple-400/10"
                         aria-label="Vorige maand"
                     >
-                        <ChevronLeft className="w-6 h-6" />
+                        <ChevronLeft className="size-5" />
                     </button>
                     <button
+                        type="button"
                         onClick={() => {
                             const today = new Date();
                             onSelectDay(today);
                             onGoToDate?.(today);
                         }}
-                        className="tab-button px-4 py-1.5 bg-(--theme-purple)/10 hover:bg-(--theme-purple)/20 rounded-full text-sm font-semibold transition-colors"
+                        className="tab-button rounded-full bg-purple-500/10 px-4 py-1.5 text-xs font-bold text-purple-700 transition-colors hover:bg-purple-500/20 dark:bg-purple-400/10 dark:text-purple-300 dark:hover:bg-purple-400/20"
                     >
                         Vandaag
                     </button>
                     <button
+                        type="button"
                         onClick={onNextMonth}
-                        className="icon-button p-2 hover:bg-(--theme-purple)/10 rounded-full transition-colors"
+                        className="icon-button flex size-9 items-center justify-center rounded-full text-purple-700 transition-colors hover:bg-purple-500/10 dark:text-purple-300 dark:hover:bg-purple-400/10"
                         aria-label="Volgende maand"
                     >
-                        <ChevronRight className="w-6 h-6" />
+                        <ChevronRight className="size-5" />
                     </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-7 bg-(--bg-soft)">
-                {weekDays.map(day => (
-                    <div key={day} className="py-3 text-center text-sm font-bold text-(--text-muted) uppercase tracking-wider">
+            <div className="grid grid-cols-7 border-y border-(--border-color)/30 bg-(--bg-soft)">
+                {WEEK_DAYS.map(day => (
+                    <div key={day} className="py-2.5 text-center text-[11px] font-black tracking-wider text-(--text-muted) uppercase">
                         {day}
                     </div>
                 ))}
             </div>
 
-            <div className="grid grid-cols-7 auto-rows-fr bg-(--border-color) gap-px">
+            <div className="grid auto-rows-fr grid-cols-7 gap-px bg-(--border-color)/40">
                 {days.map((day) => {
-                    const dayEvents = getEventsForDay(day);
+                    const dayKey = day.toDateString();
+                    const dayEvents = eventsByDayKey.get(dayKey) ?? [];
                     const isCurrentMonth = day.getMonth() === monthStart.getMonth();
-                    const isDayToday = day.toDateString() === new Date().toDateString();
-                    const isSelected = selectedDay && day.toDateString() === selectedDay.toDateString();
+                    const isDayToday = dayKey === new Date().toDateString();
+                    const isSelected = selectedDay ? dayKey === selectedDay.toDateString() : false;
+                    const maxVisibleEvents = 2;
+                    const overflowCount = dayEvents.length - maxVisibleEvents;
 
                     return (
                         <div
-                            key={day.toString()}
+                            key={dayKey}
                             onClick={() => onSelectDay(day)}
-                            className={`max-w-30 p-2 flex flex-col gap-1 transition-colors cursor-pointer
-                                ${!isCurrentMonth ? 'bg-(--bg-soft)/50 text-(--text-muted)' : 'bg-(--bg-card)'}
-                                ${isSelected ? 'ring-2 ring-inset ring-(--theme-purple) bg-(--theme-purple)/5' : ''}
-                                hover:ring-2 hover:ring-inset hover:ring-(--theme-purple)/30
-                            `}
+                            className={cn(
+                                "group relative flex min-h-28 cursor-pointer flex-col justify-between p-2 transition-colors",
+                                !isCurrentMonth ? "bg-(--bg-soft)/40 text-(--text-muted)/60" : "bg-(--bg-card) text-(--text-main)",
+                                isSelected && "bg-purple-500/5 ring-2 ring-purple-600 ring-inset dark:bg-purple-400/5 dark:ring-purple-400",
+                                !isSelected && "hover:bg-purple-500/4 dark:hover:bg-purple-400/4"
+                            )}
                         >
-                            <div className="flex justify-between items-start">
+                            <div className="flex items-center justify-between">
                                 <span
-                                    className={`text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full
-                                        ${isDayToday ? 'bg-(--theme-purple) text-white' : isSelected ? 'text-(--theme-purple)' : 'text-(--text-main)'}
-                                    `}
+                                    className={cn(
+                                        "flex size-7 items-center justify-center rounded-full text-xs transition-colors",
+                                        isDayToday
+                                            ? "bg-(--theme-purple) font-black text-white shadow-xs"
+                                            : isSelected
+                                                ? "font-black text-purple-700 dark:text-purple-300"
+                                                : isCurrentMonth
+                                                    ? "font-semibold text-(--text-main)"
+                                                    : "text-(--text-muted)/60"
+                                    )}
                                 >
                                     {day.getDate()}
                                 </span>
+                                {dayEvents.length > 0 && (
+                                    <span className="hidden text-[10px] font-bold text-(--text-muted) opacity-70 group-hover:opacity-100 sm:inline-block">
+                                        {dayEvents.length} {dayEvents.length === 1 ? 'act.' : 'act.'}
+                                    </span>
+                                )}
                             </div>
 
-                            <div className="flex flex-col gap-1 mt-1 overflow-y-auto max-h-25 custom-scrollbar">
-                                {dayEvents.map(event => (
+                            <div className="mt-1.5 flex flex-col gap-1">
+                                {dayEvents.slice(0, maxVisibleEvents).map((event) => (
                                     <button
                                         key={event.id}
+                                        type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onEventClick(event);
                                         }}
-                                        className="form-button w-full text-left text-[10px] p-1.5 rounded-lg bg-(--theme-purple)/10 hover:bg-(--theme-purple)/20 text-(--theme-purple) font-bold truncate transition-all hover:scale-[1.02] border border-transparent hover:border-(--theme-purple)/20"
+                                        className="tab-button group/item flex w-full items-center gap-1.5 rounded-md border border-purple-500/15 bg-purple-500/10 px-2 py-1 text-left text-[11px] font-bold text-purple-800 transition-colors duration-150 hover:border-purple-500/35 hover:bg-purple-500/20 dark:border-purple-400/20 dark:bg-purple-400/10 dark:text-purple-200 dark:hover:border-purple-400/40 dark:hover:bg-purple-400/20"
                                         title={`${event.event_time ? event.event_time.split(':').slice(0, 2).join(':') : '00:00'} - ${event.name}`}
                                     >
-                                        <span className="opacity-60 mr-1.5 font-black">{event.event_time ? event.event_time.split(':').slice(0, 2).join(':') : '00:00'}</span>
-                                        {event.name}
+                                        {event.event_time && (
+                                            <span className="shrink-0 text-[10px] font-black opacity-60">
+                                                {event.event_time.split(':').slice(0, 2).join(':')}
+                                            </span>
+                                        )}
+                                        <span className="truncate">
+                                            {event.name}
+                                        </span>
                                     </button>
                                 ))}
+
+                                {overflowCount > 0 && (
+                                    <div className="mt-0.5 text-center text-[10px] font-bold text-purple-700 dark:text-purple-300">
+                                        +{overflowCount} meer
+                                    </div>
+                                )}
                             </div>
                         </div>
                     );
                 })}
             </div>
-        </div>
+        </section>
     );
 }

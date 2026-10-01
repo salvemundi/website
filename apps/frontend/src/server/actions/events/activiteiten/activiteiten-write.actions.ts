@@ -5,11 +5,11 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { db, schema } from "@salvemundi/db";
 import { eq, sql, and, ne } from "drizzle-orm";
 import { activityAdminSchema } from "@salvemundi/validations";
-import { logAdminAction } from '@/server/actions/infrastructure/audit.actions';
+import { logAuditAction } from '@/server/actions/infrastructure/audit.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 import { uploadToDirectus } from '@/server/utils/media';
 import { deleteEventDb } from "@/server/internal/activiteiten/activiteiten-db.utils";
-import { enforceFeatureAccess } from "@/server/actions/admin/admin-utils.actions";
+import { enforceFeatureAccess } from "@/server/actions/beheer/beheer-utils.actions";
 import { canAccess } from "@/shared/lib/permissions";
 import { amsterdamToUTC } from '@/lib/utils/date-utils';
 
@@ -52,7 +52,7 @@ export async function deleteActivity(eventId: number) {
         const success = await deleteEventDb(eventId);
         if (!success) throw new Error("Deletion from database failed");
 
-        await logAdminAction('admin_activity_deleted', 'SUCCESS', { context: 'activiteit', id: eventId });
+        await logAuditAction('admin_activity_deleted', 'SUCCESS', { context: 'activiteit', id: eventId });
 
         revalidateTag('events', 'max');
         revalidatePath('/beheer/activiteiten');
@@ -137,7 +137,7 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
         const createdItems = await db.insert(schema.events).values(insertPayload).returning();
         const newItem = createdItems[0];
 
-        await logAdminAction('admin_activity_created', 'SUCCESS', { context: 'activiteit', context_name: data.name, id: newItem.id, data: insertPayload });
+        await logAuditAction('admin_activity_created', 'SUCCESS', { context: 'activiteit', context_name: data.name, id: newItem.id, data: insertPayload });
 
         revalidateTag('events', 'max');
         revalidatePath('/beheer/activiteiten');
@@ -148,7 +148,7 @@ export async function createActivityAction(prevState: unknown, formData: FormDat
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
         safeConsoleError('[activities-write.actions.ts][createActivityAction] ', `Drizzle createItem failed: ${typedError.message}`);
-        await logAdminAction('system_activity_create_failed', 'ERROR', {
+        await logAuditAction('system_activity_create_failed', 'ERROR', {
             context: 'activiteit',
             context_name: data.name,
             error: typedError.message,
@@ -247,7 +247,7 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
         try {
             await db.update(schema.events).set(updatePayload).where(eq(schema.events.id, eventId));
 
-            await logAdminAction('admin_activity_updated', 'SUCCESS', { context: 'activiteit', context_name: data.name, id: eventId, data: updatePayload });
+            await logAuditAction('admin_activity_updated', 'SUCCESS', { context: 'activiteit', context_name: data.name, id: eventId, data: updatePayload });
 
             revalidateTag('events', 'max');
             revalidateTag(`event_${eventId}`, 'max');
@@ -259,7 +259,7 @@ export async function updateActivityAction(eventId: number, prevState: unknown, 
         } catch (error) {
             const typedError = error instanceof Error ? error : new Error(String(error));
             safeConsoleError('[activities-write.actions.ts][updateActivityAction] ', `Drizzle updateItem failed: ${typedError.message}`);
-            await logAdminAction('system_activity_update_failed', 'ERROR', {
+            await logAuditAction('system_activity_update_failed', 'ERROR', {
                 context: 'activiteit',
                 id: eventId,
                 error: typedError.message

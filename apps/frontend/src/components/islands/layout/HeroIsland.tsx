@@ -52,14 +52,14 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
     return (
         <section
             id="home"
-            className="relative justify-self-center overflow-hidden w-full pt-fluid-xl pb-fluid-lg"
+            className="relative w-full justify-self-center overflow-hidden pt-fluid-xl pb-fluid-lg"
         >
-            <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
+            <div className="max-w-app mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="relative w-full px-0">
-                    <div className="grid gap-5 sm:gap-6 md:grid-cols-[3fr_2fr] md:gap-6 lg:gap-10 xl:gap-12 md:items-center">
-                        <div className="@container space-y-5 sm:space-y-6 md:space-y-8 lg:space-y-10 min-w-0">
+                    <div className="grid gap-5 sm:gap-6 md:grid-cols-[3fr_2fr] md:items-center md:gap-6 lg:gap-10 xl:gap-12">
+                        <div className="@container min-w-0 space-y-5 sm:space-y-6 md:space-y-8 lg:space-y-10">
                             <div className="space-y-3 sm:space-y-4 md:space-y-6">
-                                <h1 className="text-gradient-animated text-[clamp(1.75rem,8.2cqw,4.5rem)] font-black leading-tight pb-1">
+                                <h1 className="text-gradient-animated pb-1 text-[clamp(1.75rem,8.2cqw,4.5rem)] leading-tight font-black">
                                     <span className="block w-full">Studievereniging</span>
                                     <span className="block w-full">Salve Mundi</span>
                                 </h1>
@@ -69,38 +69,38 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
                             </div>
 
                             <div className="w-full max-w-full">
-                                <div className="flex flex-wrap gap-3 sm:gap-4 min-h-[116px] h-auto">
+                                <div className="flex h-auto min-h-29 flex-wrap gap-3 sm:gap-4">
                                     {showMembershipLink ? (
-                                        <Link href="/lidmaatschap" className="block w-full transition-transform hover:scale-[1.02] group/lid">
-                                            <div className="w-full max-w-full rounded-2xl sm:rounded-3xl bg-(--bg-card) dark:border dark:border-white/10 p-3 sm:p-4 md:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-3 sm:gap-4 h-full">
-                                                <div className="flex-1 min-w-0 overflow-hidden">
-                                                    <p className="text-[0.6rem] sm:text-xs font-semibold uppercase tracking-wide text-purple-300/60 dark:text-white/60">Word lid</p>
-                                                    <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg font-bold text-purple-300 dark:text-white truncate">Sluit je aan bij Salve Mundi</p>
-                                                    <p className="mt-0.5 sm:mt-1 text-[0.7rem] sm:text-xs md:text-sm text-(--text-muted) line-clamp-2">Ontdek alle voordelen van een lidmaatschap!</p>
+                                        <Link href="/lidmaatschap" className="group/lid hover:scale-1.02 block w-full transition-transform">
+                                            <div className="flex size-full max-w-full cursor-pointer items-center justify-between gap-3 rounded-2xl bg-(--bg-card) p-3 shadow-lg backdrop-blur sm:gap-4 sm:rounded-3xl sm:p-4 md:p-6 dark:border dark:border-white/10">
+                                                <div className="min-w-0 flex-1 overflow-hidden">
+                                                    <p className="text-[0.6rem] font-semibold tracking-wide text-purple-300/60 uppercase sm:text-xs dark:text-white/60">Word lid</p>
+                                                    <p className="mt-1 truncate text-sm font-bold text-purple-300 sm:mt-2 sm:text-base md:text-lg dark:text-white">Sluit je aan bij Salve Mundi</p>
+                                                    <p className="mt-0.5 line-clamp-2 text-[0.7rem] text-(--text-muted) sm:mt-1 sm:text-xs md:text-sm">Ontdek alle voordelen van een lidmaatschap!</p>
                                                 </div>
-                                                <div className="shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-purple-300/10 dark:bg-transparent text-purple-300 dark:text-white flex items-center justify-center shadow-md dark:shadow-none group-hover/lid:bg-brand-primary dark:group-hover/lid:bg-gradient-theme group-hover/lid:text-white">
-                                                    <ChevronRight className="h-5 w-5" />
+                                                <div className="dark:group-hover/lid:bg-gradient-theme flex size-10 shrink-0 items-center justify-center rounded-full bg-purple-300/10 text-purple-300 shadow-md group-hover/lid:bg-brand-primary group-hover/lid:text-white sm:size-12 dark:bg-transparent dark:text-white dark:shadow-none">
+                                                    <ChevronRight className="size-5" />
                                                 </div>
                                             </div>
                                         </Link>
                                     ) : nextEvent ? (
-                                        <Link href={getActivityUrl({ name: nextEvent.name || '', custom_url: nextEvent.custom_url })} className="block w-full transition-transform hover:scale-[1.02] group/event">
-                                            <div className="w-full rounded-2xl sm:rounded-3xl bg-(--bg-card) dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur cursor-pointer flex items-center justify-between gap-4 h-full">
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] text-purple-300/60 dark:text-white/60">Volgende activiteit</p>
-                                                    <p className="mt-2 text-base sm:text-lg font-bold text-purple-300 dark:text-white truncate">{nextEvent.name} • {formatDateRange(nextEvent.event_date, nextEvent.event_date_end)}</p>
-                                                    <p className="mt-1 text-xs sm:text-sm text-(--text-muted) line-clamp-2">{nextEvent.description ?? 'Kom gezellig langs!'}</p>
+                                        <Link href={getActivityUrl({ name: nextEvent.name || '', custom_url: nextEvent.custom_url })} className="group/event hover:scale-1.02 block w-full transition-transform">
+                                            <div className="flex size-full cursor-pointer items-center justify-between gap-4 rounded-2xl bg-(--bg-card) p-4 shadow-lg backdrop-blur sm:rounded-3xl sm:p-6 dark:border dark:border-white/10">
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-[0.65rem] font-semibold tracking-[0.2em] text-purple-300/60 uppercase sm:text-xs dark:text-white/60">Volgende activiteit</p>
+                                                    <p className="mt-2 truncate text-base font-bold text-purple-300 sm:text-lg dark:text-white">{nextEvent.name} • {formatDateRange(nextEvent.event_date, nextEvent.event_date_end)}</p>
+                                                    <p className="mt-1 line-clamp-2 text-xs text-(--text-muted) sm:text-sm">{nextEvent.description ?? 'Kom gezellig langs!'}</p>
                                                 </div>
-                                                <div className="shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-purple-300/10 dark:bg-transparent text-purple-300 dark:text-white flex items-center justify-center shadow-md dark:shadow-none group-hover/event:bg-brand-primary dark:group-hover/event:bg-gradient-theme group-hover/event:text-white">
-                                                    <ChevronRight className="h-5 w-5" />
+                                                <div className="dark:group-hover/event:bg-gradient-theme flex size-10 shrink-0 items-center justify-center rounded-full bg-purple-300/10 text-purple-300 shadow-md group-hover/event:bg-brand-primary group-hover/event:text-white sm:size-12 dark:bg-transparent dark:text-white dark:shadow-none">
+                                                    <ChevronRight className="size-5" />
                                                 </div>
                                             </div>
                                         </Link>
                                     ) : (
-                                        <div className="w-full rounded-2xl sm:rounded-3xl bg-(--bg-card) dark:border dark:border-white/10 p-4 sm:p-6 shadow-lg backdrop-blur h-full">
-                                            <p className="text-[0.65rem] sm:text-xs font-semibold uppercase tracking-[0.2em] text-purple-300/60 dark:text-white/60">Volgende activiteit</p>
-                                            <p className="mt-2 text-base sm:text-lg font-bold text-purple-300 dark:text-white">Binnenkort meer activiteiten</p>
-                                            <p className="mt-1 text-xs sm:text-sm text-(--text-muted) line-clamp-2">Check regelmatig onze agenda.</p>
+                                        <div className="size-full rounded-2xl bg-(--bg-card) p-4 shadow-lg backdrop-blur sm:rounded-3xl sm:p-6 dark:border dark:border-white/10">
+                                            <p className="text-[0.65rem] font-semibold tracking-[0.2em] text-purple-300/60 uppercase sm:text-xs dark:text-white/60">Volgende activiteit</p>
+                                            <p className="mt-2 text-base font-bold text-purple-300 sm:text-lg dark:text-white">Binnenkort meer activiteiten</p>
+                                            <p className="mt-1 line-clamp-2 text-xs text-(--text-muted) sm:text-sm">Check regelmatig onze agenda.</p>
                                         </div>
                                     )}
                                 </div>
@@ -108,8 +108,8 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
                         </div>
 
                         {/* ── Rechts: Swiper afbeeldingsgalerij ───────────────────── */}
-                        <div className="flex flex-wrap gap-3 sm:gap-4 min-w-0">
-                            <div className="relative w-full rounded-2xl sm:rounded-3xl bg-(--bg-card)/80 shadow-2xl backdrop-blur-xl overflow-hidden aspect-3/2">
+                        <div className="flex min-w-0 flex-wrap gap-3 sm:gap-4">
+                            <div className="relative aspect-3/2 w-full overflow-hidden rounded-2xl bg-(--bg-card)/80 shadow-2xl backdrop-blur-xl sm:rounded-3xl">
                                 <HeroCarousel slideUrls={slideUrls} />
                             </div>
                         </div>

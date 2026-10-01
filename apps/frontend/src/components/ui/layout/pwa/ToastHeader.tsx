@@ -10,7 +10,7 @@ export default function ToastHeader({ onDismiss }: { onDismiss: () => void }) {
                 width: '2.75rem',
                 height: '2.75rem',
                 borderRadius: '0.75rem',
-                background: 'linear-gradient(135deg, #a4539b, #75386a)',
+                background: 'linear-gradient(135deg, var(--theme-purple, #a4539b), var(--theme-purple-dark, #75386a))',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -19,7 +19,7 @@ export default function ToastHeader({ onDismiss }: { onDismiss: () => void }) {
                 <Smartphone size={20} color="white" />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem', color: '#fff', lineHeight: 1.3 }}>
+                <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-main, #fff)', lineHeight: 1.3 }}>
                     Installeer de app
                 </p>
                 <p style={{ margin: '0.1rem 0 0', fontSize: '0.775rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.4 }}>
@@ -45,13 +45,14 @@ export default function ToastHeader({ onDismiss }: { onDismiss: () => void }) {
                 }}
                 onMouseEnter={e => {
                     (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.16)';
-                    (e.currentTarget as HTMLButtonElement).style.color = '#fff';
+                    (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-main, #fff)';
                 }}
                 onMouseLeave={e => {
                     (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)';
                     (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.5)';
                 }}
-            >
+                type="button"
+                className="form-button">
                 <X size={14} />
             </button>
         </div>

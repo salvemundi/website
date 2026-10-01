@@ -1,14 +1,14 @@
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
-import { getCoboAdminSettings } from '@/server/actions/admin/cobo/admin-cobo.actions';
+import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
+import { getCoboBeheerSettings } from '@/server/actions/beheer/cobo/beheer-cobo.actions';
 import {
     getCoboEventsDb,
     getLatestActiveCoboDb,
     getActiveBoardMembersDb,
     getCoboGuestBoardsDb
-} from '@/server/queries/cobo/admin-cobo.queries';
-import CoboManagementIsland from '@/components/islands/admin/cobo/CoboManagementIsland';
-import CoboEventSwitcher from '@/components/islands/admin/cobo/CoboEventSwitcher';
-import CoboVisibilityToggle from '@/components/islands/admin/cobo/CoboVisibilityToggle';
+} from '@/server/queries/cobo/beheer-cobo.queries';
+import CoboManagementIsland from '@/components/islands/beheer/cobo/CoboManagementIsland';
+import CoboEventSwitcher from '@/components/islands/beheer/cobo/CoboEventSwitcher';
+import CoboVisibilityToggle from '@/components/islands/beheer/cobo/CoboVisibilityToggle';
 import { connection } from 'next/server';
 import { cookies } from 'next/headers';
 import type { Metadata } from 'next';
@@ -25,7 +25,7 @@ export default async function AdminCoboPage() {
 
     const [events, settings, cookieStore] = await Promise.all([
         getCoboEventsDb(),
-        getCoboAdminSettings().catch(() => ({
+        getCoboBeheerSettings().catch(() => ({
             show: true,
             disabled_message: null,
             canToggleVisibility: true
@@ -48,11 +48,11 @@ export default async function AdminCoboPage() {
     const pageTitle = activeEvent?.title ? `CoBo Beheer: ${activeEvent.title}` : 'CoBo Beheer';
 
     return (
-        <AdminPageShell
+        <BeheerPageShell
             title={pageTitle}
             backHref="/beheer"
             actions={
-                <div className="flex flex-wrap items-stretch sm:items-center gap-2 w-full md:w-auto">
+                <div className="flex w-full flex-wrap items-stretch gap-2 sm:items-center md:w-auto">
                     <CoboEventSwitcher
                         events={events}
                         activeEvent={activeEvent ?? null}
@@ -72,6 +72,6 @@ export default async function AdminCoboPage() {
                 initialTab={initialTab}
                 initialQueueSubtab={initialQueueSubtab}
             />
-        </AdminPageShell>
+        </BeheerPageShell>
     );
 }

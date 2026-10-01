@@ -1,17 +1,17 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import LedenDetailIsland, { type Member, type CommitteeMembership, type Signup } from '@/components/islands/admin/leden/LedenDetailIsland';
-import AdminPageShell from '@/components/ui/admin/AdminPageShell';
+import LedenDetailIsland, { type Member, type CommitteeMembership, type Signup } from '@/components/islands/beheer/leden/LedenDetailIsland';
+import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
 import {
-    type DirectusUser,
     type CommitteeMember,
     type EventSignup,
     type Committee as DirectusCommittee
 } from '@salvemundi/validations';
+import { type DirectusUser } from '@salvemundi/validations/schema/members.zod';
 import { safeConsoleError } from '@/server/utils/logger';
 import { db, schema } from "@salvemundi/db";
 import { eq, or, desc } from "drizzle-orm";
-import { type MemberTransaction } from '@/components/islands/admin/leden/MemberTransactionsTab';
+import { type MemberTransaction } from '@/components/islands/beheer/leden/MemberTransactionsTab';
 
 interface AzureUserGroupsResponse {
     success: boolean;
@@ -184,7 +184,7 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
     }
 
     return (
-        <AdminPageShell
+        <BeheerPageShell
             title="Lid Detail"
             backHref="/beheer/leden"
         >
@@ -201,6 +201,6 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
                 }))}
                 hasAccess={true}
             />
-        </AdminPageShell>
+        </BeheerPageShell>
     );
 }

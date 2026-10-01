@@ -1,0 +1,56 @@
+import { z } from 'zod';
+import {
+    insertWebshopDropWindowsSchema,
+    insertWebshopProductsSchema,
+    insertWebshopProductMediaSchema,
+    insertWebshopProductVariantsSchema,
+} from './db.zod.js';
+
+export const webshopDropWindowBeheerSchema = insertWebshopDropWindowsSchema.extend({
+    id: z.coerce.number().int().optional(),
+    name: z.string().min(1, 'Naam is verplicht'),
+    status: z.enum(['draft', 'open', 'closed']).default('draft'),
+    opens_at: z.preprocess((value) => (value === null || value === undefined || value === '') ? null : String(value as string), z.string().nullable().optional()),
+    closes_at: z.string().min(1, 'Sluitdatum is verplicht'),
+});
+export type WebshopDropWindowBeheer = z.infer<typeof webshopDropWindowBeheerSchema>;
+
+export const webshopProductBeheerSchema = insertWebshopProductsSchema.extend({
+    id: z.coerce.number().int().optional(),
+    drop_window_id: z.coerce.number().int().nullable().optional(),
+    type: z.enum(['clothing', 'item']),
+    name: z.string().min(1, 'Naam is verplicht'),
+    slug: z.string().min(1, 'Slug is verplicht').regex(/^[a-z0-9-]+$/, 'Slug mag alleen kleine letters, cijfers en streepjes bevatten'),
+    description: z.preprocess((value) => (value === null || value === undefined) ? value : (value === '' ? null : String(value as string)), z.string().nullable().optional()),
+    price: z.coerce.number().positive('Prijs moet groter dan 0 zijn'),
+    max_orders: z.preprocess((value) => (value === '' || value === null || value === undefined) ? null : value, z.coerce.number().int().positive('Limiet moet groter dan 0 zijn').nullable()).optional(),
+    stock_quantity: z.preprocess((value) => (value === '' || value === null || value === undefined) ? null : value, z.coerce.number().int().nonnegative('Voorraad kan niet negatief zijn').nullable()).optional(),
+    is_active: z.any().transform(value => !!value),
+    display_order: z.coerce.number().int().nullable().optional(),
+});
+export type WebshopProductBeheer = z.infer<typeof webshopProductBeheerSchema>;
+
+export const webshopProductVariantBeheerSchema = insertWebshopProductVariantsSchema.extend({
+    id: z.coerce.number().int().optional(),
+    product_id: z.coerce.number().int(),
+    size: z.string().nullable().optional(),
+    color: z.string().nullable().optional(),
+    sku: z.string().nullable().optional(),
+    is_active: z.any().transform(value => !!value),
+    display_order: z.coerce.number().int().nullable().optional(),
+});
+export type WebshopProductVariantBeheer = z.infer<typeof webshopProductVariantBeheerSchema>;
+
+export const webshopProductMediaBeheerSchema = insertWebshopProductMediaSchema.extend({
+    id: z.coerce.number().int().optional(),
+    product_id: z.coerce.number().int(),
+    asset: z.string().min(1, 'Media is verplicht'),
+    display_order: z.coerce.number().int().nullable().optional(),
+});
+export type WebshopProductMediaBeheer = z.infer<typeof webshopProductMediaBeheerSchema>;
+
+export const webshopPreorderStatusUpdateSchema = z.object({
+    id: z.coerce.number().int(),
+    status: z.enum(['awaiting_deposit', 'completed', 'cancelled']),
+});
+export type WebshopPreorderStatusUpdate = z.infer<typeof webshopPreorderStatusUpdateSchema>;

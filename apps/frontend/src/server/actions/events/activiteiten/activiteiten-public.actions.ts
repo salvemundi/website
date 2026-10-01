@@ -2,9 +2,7 @@
 
 import { z } from 'zod';
 
-import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
-import { eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
-import { type EventSignup } from '@salvemundi/validations/directus/schema';
+import { type Activiteit, type EventSignup, eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { type EnrichedUser } from '@/types/auth';
 import { revalidateTag } from 'next/cache';
@@ -13,7 +11,7 @@ import {
     getActivitiesInternal,
     getActivityByIdInternal,
     getActivityBySlugInternal
-} from "@/server/queries/activiteiten/admin-activiteiten.queries";
+} from "@/server/queries/activiteiten/beheer-activiteiten.queries";
 import {
     countActiveEventSignupsDb,
     createEventSignupDb,
@@ -36,7 +34,7 @@ export async function getActivities(email?: string): Promise<(Activiteit & { is_
 
     try {
         const userSignups = await fetchUserEventSignupsDb(email);
-        const signedUpEventIds = new Set(userSignups.map(s => Number(s.event_id.id)));
+        const signedUpEventIds = new Set(userSignups.map(s => Number(s.event_id)));
 
         const pubCrawlSignups = await fetchUserPubCrawlSignupsDb(email);
         const signedUpPubCrawlIds = new Set(pubCrawlSignups.map(s => Number(s.pub_crawl_event_id.id)));

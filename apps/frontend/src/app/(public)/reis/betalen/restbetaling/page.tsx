@@ -21,7 +21,7 @@ export default async function RestbetalingPage({ searchParams }: PageProps) {
 
     const res = await getTripSignupByToken(signupId, token);
 
-    if (!res.success || !res.data) {
+    if (!res.success) {
         return <TripAccessDenied error={res.error} />;
     }
 

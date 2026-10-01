@@ -5,8 +5,8 @@ import { type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zo
 import QRDisplay from '@/shared/ui/QRDisplay';
 import { generateQRCode } from '@/lib/utils/qr-service';
 import { Download, CheckCircle2 } from 'lucide-react';
-import AdminToast from '@/components/ui/admin/AdminToast';
-import { useAdminToast } from '@/hooks/use-admin-toast';
+import BeheerToast from '@/components/ui/beheer/BeheerToast';
+import { useAdminToast } from '@/hooks/use-beheer-toast';
 interface KroegentochtTicketsIslandProps {
     initialTickets?: PubCrawlTicket[];
     userEmail?: string;
@@ -28,22 +28,22 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
             canvas.width = width;
             canvas.height = height;
 
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = 'var(--bg-main, #ffffff)';
             ctx.fillRect(0, 0, width, height);
 
-            ctx.fillStyle = '#7B2CBF';
+            ctx.fillStyle = 'var(--theme-purple, #7B2CBF)';
             ctx.fillRect(0, 0, width, 120);
 
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = 'var(--bg-main, #ffffff)';
             ctx.font = 'bold 36px Arial';
             ctx.textAlign = 'center';
             ctx.fillText(`KROEGENTOCHT TICKET ${index + 1}`, width / 2, 75);
 
-            ctx.fillStyle = '#1e1e1e';
+            ctx.fillStyle = 'var(--text-main, #1e1e1e)';
             ctx.font = 'bold 48px Arial';
             ctx.fillText(`${ticket.name} ${ticket.initial}.`, width / 2, 220);
 
-            ctx.strokeStyle = '#eeeeee';
+            ctx.strokeStyle = 'var(--border-color, #eeeeee)';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(100, 280);
@@ -64,7 +64,7 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
                 qrImg.src = qrDataUrl;
             });
 
-            ctx.fillStyle = '#666666';
+            ctx.fillStyle = 'var(--text-muted, #666666)';
             ctx.font = '20px Arial';
             ctx.fillText('Laat deze code scannen bij de ingang', width / 2, 750);
 
@@ -81,40 +81,40 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
     if (tickets.length === 0) return null;
 
     return (
-        <section className="bg-(--bg-card) dark:border dark:border-white/10 rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-6 md:p-8 mb-8 overflow-hidden" >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <section className="mb-8 overflow-hidden rounded-2xl bg-(--bg-card) p-5 shadow-xl sm:rounded-3xl sm:p-6 md:p-8 dark:border dark:border-white/10" >
+            <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
-                    <h2 className="text-2xl font-black text-purple-700 dark:text-purple-300 flex items-center gap-2">
-                        <CheckCircle2 className="w-6 h-6 text-green-500" />
+                    <h2 className="flex items-center gap-2 text-2xl font-black text-purple-700 dark:text-purple-300">
+                        <CheckCircle2 className="size-6 text-green-500" />
                         Jouw Tickets
                     </h2>
-                    <p className="text-slate-500 text-sm mt-1">
+                    <p className="mt-1 text-sm text-slate-500">
                         {`Hieronder vind je de tickets voor ${userEmail || 'jouw account'}.`}
                     </p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {tickets.map((ticket, i) => (
                     <div
                         key={ticket.id}
-                        className="group relative bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10 p-6 transition-all hover:shadow-md hover:border-purple-500/30 dark:hover:border-purple-400/30"
+                        className="group relative rounded-2xl border border-slate-100 bg-slate-50 p-6 transition-all hover:border-purple-500/30 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:hover:border-purple-400/30"
                     >
                         <div className="flex flex-col items-center">
-                            <div className="bg-white p-2 rounded-xl shadow-sm">
+                            <div className="rounded-xl bg-white p-2 shadow-sm">
                                 <QRDisplay qrToken={ticket.qr_token} size={180} />
                             </div>
 
                             <div className="mt-6 w-full space-y-2">
-                                <div className="flex justify-between items-end border-b border-slate-200 dark:border-white/10 pb-2">
-                                    <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Deelnemer</span>
+                                <div className="flex items-end justify-between border-b border-slate-200 pb-2 dark:border-white/10">
+                                    <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">Deelnemer</span>
                                     <span className="text-sm font-black text-slate-800 dark:text-slate-100">
                                         {ticket.name} {ticket.initial}.
                                     </span>
                                 </div>
-                                <div className="flex justify-between items-end">
-                                    <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Status</span>
-                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${ticket.checked_in ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400'}`}>
+                                <div className="flex items-end justify-between">
+                                    <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">Status</span>
+                                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${ticket.checked_in ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400'}`}>
                                         {ticket.checked_in ? 'Ingecheckt' : 'Geldig'}
                                     </span>
                                 </div>
@@ -122,16 +122,16 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
 
                             <button
                                 onClick={() => { void downloadTicketAsImage(ticket, i); }}
-                                className="form-button mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-black text-purple-700 dark:text-purple-300 hover:bg-slate-50 dark:hover:bg-white/10 transition-all shadow-sm active:scale-[0.98]"
-                            >
-                                <Download className="w-4 h-4" />
+                                className="active:scale-0.98 mt-6 form-button flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-3 text-xs font-black text-purple-700 shadow-sm transition-all hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-purple-300 dark:hover:bg-white/10"
+                                type="button">
+                                <Download className="size-4" />
                                 Download Ticket
                             </button>
                         </div>
                     </div>
                 ))}
             </div>
-            <AdminToast toast={toast} onClose={hideToast} />
+            <BeheerToast toast={toast} onClose={hideToast} />
         </section>
     );
 }

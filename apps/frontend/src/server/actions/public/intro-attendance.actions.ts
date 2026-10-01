@@ -5,7 +5,6 @@ import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { hasPermission } from '@/shared/lib/permissions';
-import { AdminResource } from '@/shared/lib/permissions-config';
 import {
     type IntroGroupWithDetails,
     type IntroGroupMember,
@@ -17,7 +16,7 @@ import {
     introGroupAttendanceStatusEnum
 } from '@salvemundi/validations/schema/intro.zod';
 import {
-    getIntroGroupsForAdminInternal,
+    getIntroGroupsForBeheerInternal,
     getGroupsByIdsInternal,
     getUserLedGroupIdsInternal,
     getGroupAttendanceForDateInternal,
@@ -25,7 +24,7 @@ import {
     getIntroAttendanceVisibleInternal,
     getMemberNotesInternal,
     getMemberAttendanceLogInternal
-} from '@/server/queries/intro/admin-intro.queries';
+} from '@/server/queries/intro/beheer-intro.queries';
 import { safeConsoleError } from '@/server/utils/logger';
 
 export interface IntroAttendanceAccess {
@@ -37,7 +36,7 @@ export async function getIntroAttendanceAccess(): Promise<IntroAttendanceAccess>
     const session = await getEnrichedSession();
     if (!session) return { isCrew: false, ledGroupIds: [] };
 
-    const isCrew = hasPermission(session.user.committees, AdminResource.Intro);
+    const isCrew = hasPermission(session.user.committees, 'intro');
     const ledGroupIds = await getUserLedGroupIdsInternal(session.user.id);
 
     return { isCrew, ledGroupIds };
@@ -56,7 +55,7 @@ export async function getIntroAttendanceVisible(): Promise<boolean> {
 
 export async function getAttendanceGroupsForUser(): Promise<IntroGroupWithDetails[]> {
     const { isCrew, ledGroupIds } = await getIntroAttendanceAccess();
-    if (isCrew) return getIntroGroupsForAdminInternal();
+    if (isCrew) return getIntroGroupsForBeheerInternal();
     return getGroupsByIdsInternal(ledGroupIds);
 }
 

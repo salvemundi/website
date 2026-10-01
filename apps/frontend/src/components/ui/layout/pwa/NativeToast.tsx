@@ -27,7 +27,7 @@ export default function NativeToast({ onInstall, onDismiss, installing }: Native
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
                         background: installing
                             ? 'rgba(164,83,155,0.35)'
-                            : 'linear-gradient(135deg, #a4539b, #8c4682)',
+                            : 'linear-gradient(135deg, var(--theme-purple, #a4539b), var(--theme-purple-dark, #8c4682))',
                         color: 'white',
                         border: 'none',
                         borderRadius: '0.75rem',
@@ -39,7 +39,8 @@ export default function NativeToast({ onInstall, onDismiss, installing }: Native
                         transition: 'all 0.2s ease',
                         fontFamily: 'inherit'
                     }}
-                >
+                    type="button"
+                    className="form-button">
                     <Download size={15} />
                     {installing ? 'Bezig…' : 'Voeg toe aan beginscherm'}
                 </button>
