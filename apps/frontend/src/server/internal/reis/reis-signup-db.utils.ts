@@ -73,9 +73,9 @@ export async function fetchTripSignupActivitiesDb(tripId: number): Promise<TripS
     return rows.map((row) => row.sa as TripSignupActivity);
 }
 
-export async function fetchSelectedSignupActivitiesDb(signupId: number): Promise<TripSignupActivityRow[]> {
+export async function fetchSelectedSignupActivitiesDb(signupId: number): Promise<TripSignupActivity[]> {
     const rows = await db.select().from(schema.trip_signup_activities).where(eq(schema.trip_signup_activities.trip_signup_id, signupId));
-    return rows;
+    return rows as TripSignupActivity[];
 }
 
 export async function insertTripSignupDb(payload: Partial<TripSignup>): Promise<number | null> {

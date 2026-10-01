@@ -3,8 +3,7 @@
 import 'server-only';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { tripSignupSchema, type TripSignup } from '@salvemundi/validations/schema/trip.zod';
-import { tripActivitySchema, type TripActivity } from '@salvemundi/validations/schema/beheer-trip.zod';
+import { tripSignupSchema, type TripSignup, type TripSignupActivity } from '@salvemundi/validations/schema/trip.zod';
 import { requireBeheerFeature } from '@/server/auth/auth-utils';
 import {
     fetchAllTripSignupsDb,
@@ -185,16 +184,9 @@ export async function updateTripSignup(
     }
 }
 
-export async function getSignupActivities(signupId: number): Promise<TripActivity[]> {
+export async function getSignupActivities(signupId: number): Promise<TripSignupActivity[]> {
     await requireBeheerFeature('reis');
-    const activities = await fetchSelectedSignupActivitiesDb(signupId);
-    const parsed = z.array(tripActivitySchema).safeParse(activities);
-
-    if (!parsed.success) {
-        throw new Error('Gegevensvalidatie mislukt voor aanmeldingsactiviteiten');
-    }
-
-    return parsed.data;
+    return await fetchSelectedSignupActivitiesDb(signupId);
 }
 
 export async function updateSignupActivities(
@@ -205,8 +197,8 @@ export async function updateSignupActivities(
 
     try {
         const current = await getSignupActivities(signupId);
-        const currentIds = current.map(a => Number(a.id));
-        const toDelete = current.filter(a => !activityIds.includes(Number(a.id)));
+        const currentActivityIds = current.map(a => Number(a.trip_activity_id)).filter(Boolean);
+        const toDelete = current.filter(a => a.trip_activity_id && !activityIds.includes(Number(a.trip_activity_id)));
 
         for (const item of toDelete) {
             if (item.id) {
@@ -214,7 +206,7 @@ export async function updateSignupActivities(
             }
         }
 
-        const toAdd = activityIds.filter(id => !currentIds.includes(id));
+        const toAdd = activityIds.filter(id => !currentActivityIds.includes(id));
         for (const activityId of toAdd) {
             await db.insert(schema.trip_signup_activities).values({
                 trip_signup_id: signupId,
@@ -237,7 +229,6 @@ export async function updateSignupActivities(
     }
 }
 
-import type { TripSignupActivity } from '@salvemundi/validations/schema/trip.zod';
 export async function getTripSignupActivitiesAction(tripId: number): Promise<TripSignupActivity[]> {
     await requireBeheerFeature('reis');
     return await fetchTripSignupActivitiesDb(tripId);

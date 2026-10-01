@@ -82,13 +82,13 @@ export default function BorrelBarClaimCard({ initialStatus }: BorrelBarClaimCard
                                 rel="noopener noreferrer"
                                 className="squircle form-button flex items-center justify-center gap-2 bg-purple-600 px-4 py-2 text-xs font-bold text-white transition-all hover:bg-purple-700 active:scale-95 dark:bg-purple-500 dark:hover:bg-purple-600"
                             >
-                                <span>Bekijk Lidpas</span>
+                                <span>Bekijk Pas</span>
                                 <ExternalLink className="size-3.5" />
                             </a>
                         ) : (
                             <div className="flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                                 <CheckCircle2 className="size-4 shrink-0" />
-                                <span>Reeds geclaimd</span>
+                                <span>Al geclaimd</span>
                             </div>
                         )
                     ) : (

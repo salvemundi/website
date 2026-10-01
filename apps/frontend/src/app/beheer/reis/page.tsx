@@ -12,6 +12,7 @@ import { getTripSignups, getTripSignupActivitiesAction } from '@/server/actions/
 import { getTripActivities } from '@/server/queries/reis/beheer-reis.queries';
 import { groupActivitiesBySignup } from '@/server/internal/reis/reis-mapping';
 import { getFeatureFlagSettings } from '@/server/actions/beheer/beheer-utils.actions';
+import { safeConsoleError } from '@/server/utils/logger';
 
 interface AdminReisPageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -31,68 +32,76 @@ export async function generateMetadata({ searchParams }: AdminReisPageProps): Pr
 }
 
 async function loadReisAdminData(tripIdParam: string | undefined) {
-    try {
-        const [tripsRes, settingsRes, flagConfig] = await Promise.all([
-            getBeheerTrips(),
-            getReisSiteSettings(),
-            getFeatureFlagSettings('/reis')
-        ]);
-        const trips = tripsRes;
-        const reisSettings = settingsRes || { show: true };
-        const canToggleVisibility = flagConfig.canToggleVisibility;
+    const [tripsRes, settingsRes, flagConfig] = await Promise.all([
+        getBeheerTrips(),
+        getReisSiteSettings(),
+        getFeatureFlagSettings('/reis')
+    ]);
+    const trips = tripsRes;
+    const reisSettings = settingsRes || { show: true };
+    const canToggleVisibility = flagConfig.canToggleVisibility;
 
-        if (trips.length === 0) {
-            return { success: true as const, trips, noTrips: true as const };
-        }
-
-        const activeTripId = tripIdParam ? Number(tripIdParam) : trips[0].id;
-        const activeTrip = trips.find((t) => t.id === activeTripId);
-        if (!activeTrip) {
-            return { success: false as const, error: 'Reis niet gevonden' };
-        }
-
-        const [signups, allSignupSelections, allTripActivities] = await Promise.all([
-            getTripSignups(activeTrip.id),
-            getTripSignupActivitiesAction(activeTrip.id),
-            getTripActivities(activeTrip.id)
-        ]);
-
-        const activitiesMap = groupActivitiesBySignup(signups, allSignupSelections);
-
-        const stats = {
-            total: signups.filter((s) => s.status !== 'cancelled').length,
-            confirmed: signups.filter((s) => s.status === 'confirmed').length,
-            waitlist: signups.filter((s) => s.status === 'waitlist').length,
-            depositPaid: signups.filter((s) => s.deposit_paid).length,
-            fullPaid: signups.filter((s) => s.full_payment_paid).length,
-        };
-
-        return {
-            success: true as const,
-            trips,
-            reisSettings,
-            canToggleVisibility,
-            activeTrip,
-            activeTripId,
-            signups,
-            allTripActivities,
-            activitiesMap,
-            stats,
-            noTrips: false as const
-        };
-    } catch (error: unknown) {
-        return { success: false as const, error: (error instanceof Error) ? error.message : 'Fout bij het laden van gegevens' };
+    if (trips.length === 0) {
+        return { success: true as const, trips, noTrips: true as const };
     }
+
+    const activeTripId = tripIdParam ? Number(tripIdParam) : trips[0].id;
+    const activeTrip = trips.find((t) => t.id === activeTripId);
+    if (!activeTrip) {
+        return { success: false as const, error: 'Reis niet gevonden', notFound: true as const };
+    }
+
+    const [signups, allSignupSelections, allTripActivities] = await Promise.all([
+        getTripSignups(activeTrip.id),
+        getTripSignupActivitiesAction(activeTrip.id),
+        getTripActivities(activeTrip.id)
+    ]);
+
+    const activitiesMap = groupActivitiesBySignup(signups, allSignupSelections);
+
+    const stats = {
+        total: signups.filter((s) => s.status !== 'cancelled').length,
+        confirmed: signups.filter((s) => s.status === 'confirmed').length,
+        waitlist: signups.filter((s) => s.status === 'waitlist').length,
+        depositPaid: signups.filter((s) => s.deposit_paid).length,
+        fullPaid: signups.filter((s) => s.full_payment_paid).length,
+    };
+
+    return {
+        success: true as const,
+        trips,
+        reisSettings,
+        canToggleVisibility,
+        activeTrip,
+        activeTripId,
+        signups,
+        allTripActivities,
+        activitiesMap,
+        stats,
+        noTrips: false as const
+    };
 }
+
+type AdminReisData = Awaited<ReturnType<typeof loadReisAdminData>>;
 
 export default async function AdminReisPage({ searchParams }: AdminReisPageProps) {
     const resolvedSearchParams = await searchParams;
     const tripIdParam = typeof resolvedSearchParams.tripId === 'string' ? resolvedSearchParams.tripId : undefined;
 
-    const data = await loadReisAdminData(tripIdParam);
+    let data: AdminReisData;
+    try {
+        data = await loadReisAdminData(tripIdParam);
+    } catch (error: unknown) {
+        safeConsoleError('[beheer/reis/page.tsx][AdminReisPage] Error loading admin trip data:', error);
+        const message = error instanceof Error ? error.message : '';
+        if (message.toLowerCase().includes('toegang') || message.toLowerCase().includes('unauthorized')) {
+            return <BeheerUnauthorized title="Geen Toegang" />;
+        }
+        throw error;
+    }
 
     if (!data.success) {
-        return <BeheerUnauthorized title="Geen Toegang" description={data.error} />;
+        return <BeheerUnauthorized title="Reis niet gevonden" description={data.error} />;
     }
 
     if (data.noTrips) {
