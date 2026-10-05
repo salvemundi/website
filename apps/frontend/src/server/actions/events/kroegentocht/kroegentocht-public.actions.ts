@@ -4,7 +4,7 @@ import {
     type PubCrawlTicket,
     pubCrawlEventSchema,
     pubCrawlTicketSchema,
-    pubCrawlSignupSchema
+    pubCrawlSignupInputSchema
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { z } from 'zod';
 
@@ -132,7 +132,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
     const rateLimitResult = await checkRateLimit('kroegentocht-signup', 15, 600, 'Te veel aanmeldingen vanaf dit IP-adres. Probeer het over een kwartier opnieuw.');
     if (!rateLimitResult.success) return rateLimitResult;
 
-    const parsed = pubCrawlSignupSchema.safeParse(formData);
+    const parsed = pubCrawlSignupInputSchema.safeParse(formData);
     if (!parsed.success) {
         safeConsoleError('[kroegentocht-public.actions.ts][initiateKroegentochtPayment] Validation failed:', parsed.error.flatten());
         return { success: false, error: 'Ongeldige gegevens ingevuld.', errors: z.flattenError(parsed.error).fieldErrors };

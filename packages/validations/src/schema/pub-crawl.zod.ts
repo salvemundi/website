@@ -52,9 +52,12 @@ export const pubCrawlSignupSchema = selectPubCrawlSignupsSchema.extend({
     directus_relations: z.string().optional().nullable(),
     website: z.string().optional(),
     group_name: z.string().optional().nullable(),
-    created_at: z.string().optional().nullable(),
-    updated_at: z.string().optional().nullable(),
-    is_member: z.boolean().optional().nullable(),
+});
+
+export const pubCrawlSignupInputSchema = pubCrawlSignupSchema.partial({
+    created_at: true,
+    updated_at: true,
+    is_member: true,
 });
 
 export const pubCrawlTicketSchema = selectPubCrawlTicketsSchema.extend({
