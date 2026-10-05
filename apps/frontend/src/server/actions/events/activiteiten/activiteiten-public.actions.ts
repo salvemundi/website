@@ -128,7 +128,6 @@ export async function signupForActivity(data: EventSignupForm) {
     const lockToken = Math.random().toString(36).substring(2);
     let lockAcquired = false;
 
-    // Spin-lock with backoff so two concurrent signups can't both slip past the capacity check.
     for (let i = 0; i < 10; i++) {
         const result = await redis.set(lockKey, lockToken, 'PX', 10000, 'NX'); // 10s TTL
         if (result === 'OK') {

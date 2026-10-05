@@ -12,9 +12,11 @@ import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { unstable_cache as cacheTag } from 'next/cache';
 
 import { safeConsoleError } from '@/server/utils/logger';
+import { resolveActionOrigin } from '@/server/utils/request-utils';
 import { createPubCrawlSignupDb, deletePubCrawlSignupDb } from '@/server/internal/kroegentocht/kroegentocht-signup-db.utils';
 import { createPubCrawlTicketsDb, deletePubCrawlTicketsBySignupIdDb } from '@/server/internal/kroegentocht/kroegentocht-ticket-db.utils';
-import { fetchPubCrawlEventsDb } from '@/server/internal/kroegentocht/kroegentocht-event-db.utils';;
+import { fetchPubCrawlEventsDb } from '@/server/internal/kroegentocht/kroegentocht-event-db.utils';
+
 import { db, schema } from '@salvemundi/db';
 import { eq, and, desc, or } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
@@ -188,6 +190,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
 
 
 
+        const baseUrl = await resolveActionOrigin();
         const financeUrl = `${getFinanceServiceUrl()}/api/finance/create`;
         const paymentRes = await fetchWithTimeout(financeUrl, {
             method: 'POST',
@@ -200,8 +203,8 @@ export async function initiateKroegentochtPayment(formData: unknown) {
                 email: parsed.data.email,
                 firstName: parsed.data.name,
                 isContribution: false,
-                redirectUrl: `${process.env.PUBLIC_URL}/kroegentocht/bevestiging?id=${signupId}`,
-                webhookUrl: `${process.env.PUBLIC_URL}/api/finance/webhook/mollie`
+                redirectUrl: `${baseUrl}/kroegentocht/bevestiging?id=${signupId}`,
+                webhookUrl: `${baseUrl}/api/finance/webhook/mollie`
             })
         });
 
@@ -209,6 +212,8 @@ export async function initiateKroegentochtPayment(formData: unknown) {
         if (paymentRes.ok && paymentData && paymentData.checkoutUrl) {
             return { success: true, checkoutUrl: paymentData.checkoutUrl };
         }
+
+        safeConsoleError(`[kroegentocht.actions.ts][initiateKroegentochtPayment] Payment initiation failed. Status: ${paymentRes.status}, Response:`, paymentData);
 
         try {
             await deletePubCrawlTicketsBySignupIdDb(signupId);

@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 import { getKroegentochtEvent, getKroegentochtTickets } from '@/server/actions/events/kroegentocht/kroegentocht-public.actions';
 import { type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { Info, MapPin, Calendar, Clock, Users, Mail, ShieldAlert, ShieldCheck, Ticket } from 'lucide-react';
+import { Info, MapPin, Calendar, Clock, Users, Mail } from 'lucide-react';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { formatDate } from '@/shared/lib/utils/date';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
@@ -112,26 +112,20 @@ async function RegistrationSection() {
                 </section>
 
                 <section className="squircle sm:squircle-lg bg-bg-card p-6 shadow-lg sm:p-8 dark:border dark:border-white/10">
-                    <h2 className="mb-6 flex items-center gap-3 text-xl font-black text-theme-purple sm:text-2xl">
-                        <ShieldAlert className="size-7 text-theme-purple" />
+                    <h2 className="mb-6 text-xl font-black text-theme-purple sm:text-2xl">
                         Belangrijke Info
                     </h2>
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         {[
-                            { icon: <ShieldCheck className="size-5" />, title: 'Lidmaatschap', content: <>Je hoeft <strong>geen lid</strong> te zijn om deel te nemen.</> },
-                            { icon: <Mail className="size-5" />, title: 'Bevestiging', content: <>Je ontvangt een bevestigingsmail na inschrijving.</> },
-                            { icon: <Info className="size-5" />, title: 'Leeftijd', content: <>Minimumleeftijd voor deelname is 18 jaar.</> },
-                            { icon: <Ticket className="size-5" />, title: 'Tickets', content: <>Tickets zijn <strong>overdraagbaar</strong>.</> },
+                            { title: 'Lidmaatschap', content: <>Je hoeft <strong>geen lid</strong> te zijn om deel te nemen.</> },
+                            { title: 'Bevestiging', content: <>Je ontvangt een bevestigingsmail na inschrijving.</> },
+                            { title: 'Leeftijd', content: <>Minimumleeftijd voor deelname is 18 jaar.</> },
+                            { title: 'Tickets', content: <>Tickets zijn <strong>overdraagbaar</strong>.</> },
                         ].map((item, i) => (
-                            <div key={i} className="group flex gap-4">
-                                <div className="squircle flex size-10 shrink-0 items-center justify-center border border-theme-purple/10 bg-theme-purple/5 text-theme-purple">
-                                    {item.icon}
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-bold tracking-widest text-text-muted">{item.title}</p>
-                                    <div className="text-sm leading-relaxed font-medium text-text-main">
-                                        {item.content}
-                                    </div>
+                            <div key={i} className="space-y-1">
+                                <p className="text-[10px] font-bold tracking-widest text-text-muted">{item.title}</p>
+                                <div className="text-sm leading-relaxed font-medium text-text-main">
+                                    {item.content}
                                 </div>
                             </div>
                         ))}

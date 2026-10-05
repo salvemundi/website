@@ -1,4 +1,6 @@
 import type { NextRequest } from 'next/server';
+import { headers } from 'next/headers';
+
 
 /**
  * Resolves the public-facing origin for a Next.js route handler request,
@@ -28,4 +30,26 @@ export function resolveRequestOrigin(request: NextRequest): string {
     }
 
     return request.nextUrl.origin;
+}
+
+export async function resolveActionOrigin(): Promise<string> {
+    const headerList = await headers();
+    const forwardedHost = headerList.get('x-forwarded-host');
+    const forwardedProto = headerList.get('x-forwarded-proto') || 'https';
+    if (forwardedHost) {
+        return `${forwardedProto}://${forwardedHost.split(',')[0].trim()}`;
+    }
+
+    const host = headerList.get('host');
+    if (host) {
+        const isLocal = host.startsWith('localhost') || host.startsWith('127.0.0.1');
+        const proto = headerList.get('x-forwarded-proto') || (isLocal ? 'http' : 'https');
+        return `${proto}://${host}`;
+    }
+
+    if (process.env.PUBLIC_URL) {
+        return process.env.PUBLIC_URL.replace(/\/$/, '');
+    }
+
+    return 'https://salvemundi.nl';
 }
