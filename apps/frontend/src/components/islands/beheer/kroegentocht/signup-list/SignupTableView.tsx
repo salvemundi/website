@@ -74,7 +74,7 @@ export default function SignupTableView({
                                         <td className="min-w-75 px-6 py-3">
                                             <div className="flex flex-col gap-0.5">
                                                 <div className="flex items-center gap-2">
-                                                    <a href={`mailto:${signup.email}`} className="flex items-center gap-2 text-sm font-semibold text-(--text-main) transition-colors hover:text-(--theme-purple)" title={signup.email}>
+                                                    <a href={`mailto:${signup.email ?? ''}`} className="flex items-center gap-2 text-sm font-semibold text-(--text-main) transition-colors hover:text-(--theme-purple)" title={signup.email ?? ''}>
                                                         <Mail className="size-3.5 text-(--text-muted)" />
                                                         {signup.name} <span className="text-xs font-normal text-(--text-muted)">({signup.email})</span>
                                                     </a>

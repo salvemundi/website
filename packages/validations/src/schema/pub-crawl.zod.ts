@@ -43,7 +43,7 @@ export const pubCrawlParticipantSchema = z.object({
 export const pubCrawlSignupSchema = selectPubCrawlSignupsSchema.extend({
     id: z.union([z.string(), z.number()]).optional(),
     name: z.string().min(1, 'Naam is verplicht'),
-    email: z.string().email('Ongeldig e-mailadres'),
+    email: z.string().email('Ongeldig e-mailadres').optional().nullable().or(z.literal('')),
     association: z.string().min(1, 'Vereniging is verplicht'),
     amount_tickets: z.coerce.number().min(1).max(10),
     pub_crawl_event_id: z.union([z.string(), z.number()]),

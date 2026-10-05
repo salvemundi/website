@@ -157,7 +157,7 @@ export async function initiateKroegentochtPayment(formData: unknown) {
 
         const signupId = await createPubCrawlSignupDb({
             name: parsed.data.name,
-            email: parsed.data.email,
+            email: parsed.data.email ?? '',
             association: parsed.data.association,
             amount_tickets: parsed.data.amount_tickets,
             name_initials: parsed.data.name_initials,

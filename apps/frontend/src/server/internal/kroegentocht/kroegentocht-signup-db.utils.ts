@@ -26,14 +26,33 @@ export async function fetchPubCrawlSignupsDb(eventId: number): Promise<(PubCrawl
             }
         }
 
-        const parsedSignup = pubCrawlSignupSchema.parse({
+        const parsedSignup = pubCrawlSignupSchema.safeParse({
             ...raw,
             id: Number(raw.id),
             pub_crawl_event_id: Number(raw.pub_crawl_event_id)
         });
 
+        if (!parsedSignup.success) {
+            safeConsoleError('[signup-db.utils.ts][fetchPubCrawlSignupsDb] Parse failed for row id=' + String(raw.id), parsedSignup.error.flatten());
+        }
+
+        const signupData = parsedSignup.success ? parsedSignup.data : {
+            ...raw,
+            id: Number(raw.id),
+            name: raw.name || '',
+            email: raw.email ?? '',
+            association: raw.association || '',
+            amount_tickets: raw.amount_tickets || 1,
+            pub_crawl_event_id: Number(raw.pub_crawl_event_id),
+            name_initials: raw.name_initials || '',
+            payment_status: (['open', 'paid', 'failed', 'canceled', 'expired'] as const).includes(raw.payment_status as PubCrawlSignup['payment_status']) ? (raw.payment_status as PubCrawlSignup['payment_status']) : 'open',
+            directus_relations: raw.directus_relations ?? null,
+            website: undefined,
+            group_name: raw.group_name ?? null
+        };
+
         return {
-            ...parsedSignup,
+            ...signupData,
             participants
         };
     });

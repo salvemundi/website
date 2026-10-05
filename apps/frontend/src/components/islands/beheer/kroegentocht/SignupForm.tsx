@@ -29,7 +29,7 @@ export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps
     const [togglingId, setTogglingId] = useState<number | null>(null);
     const [formData, setFormData] = useState({
         name: signup.name,
-        email: signup.email,
+        email: signup.email ?? '',
         association: signup.association || '',
         payment_status: signup.payment_status as "paid" | "open" | "failed" | "canceled" | "expired",
         amount_tickets: signup.amount_tickets,
@@ -133,7 +133,7 @@ export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps
         type PaymentStatus = "paid" | "open" | "failed" | "canceled" | "expired";
         setFormData({
             name: signup.name,
-            email: signup.email,
+            email: signup.email ?? '',
             association: signup.association || '',
             payment_status: signup.payment_status as PaymentStatus,
             amount_tickets: signup.amount_tickets,

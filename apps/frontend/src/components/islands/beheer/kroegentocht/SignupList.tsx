@@ -261,7 +261,7 @@ export default function SignupList({
     const filteredSignups = signups.filter(s => {
         const matchesSearch =
             s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            s.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (s.email ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
             s.association.toLowerCase().includes(searchQuery.toLowerCase());
 
         const matchesStatus = s.payment_status === 'paid';
