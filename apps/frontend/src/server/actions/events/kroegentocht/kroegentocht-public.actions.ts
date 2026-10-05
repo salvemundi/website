@@ -134,7 +134,8 @@ export async function initiateKroegentochtPayment(formData: unknown) {
 
     const parsed = pubCrawlSignupSchema.safeParse(formData);
     if (!parsed.success) {
-        return { success: false, errors: z.flattenError(parsed.error).fieldErrors };
+        safeConsoleError('[kroegentocht-public.actions.ts][initiateKroegentochtPayment] Validation failed:', parsed.error.flatten());
+        return { success: false, error: 'Ongeldige gegevens ingevuld.', errors: z.flattenError(parsed.error).fieldErrors };
     }
 
     if (parsed.data.website) {

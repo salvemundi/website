@@ -52,6 +52,9 @@ export const pubCrawlSignupSchema = selectPubCrawlSignupsSchema.extend({
     directus_relations: z.string().optional().nullable(),
     website: z.string().optional(),
     group_name: z.string().optional().nullable(),
+    created_at: z.string().optional().nullable(),
+    updated_at: z.string().optional().nullable(),
+    is_member: z.boolean().optional().nullable(),
 });
 
 export const pubCrawlTicketSchema = selectPubCrawlTicketsSchema.extend({

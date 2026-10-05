@@ -134,8 +134,20 @@ export async function createPubCrawlSignupDb(data: {
     payment_status?: string;
     directus_relations?: string | null;
 }): Promise<number> {
+    let directusRelations = data.directus_relations ?? null;
+    if (directusRelations) {
+        const userExists = await db.select({ id: schema.directus_users.id })
+            .from(schema.directus_users)
+            .where(eq(schema.directus_users.id, directusRelations))
+            .limit(1);
+        if (userExists.length === 0) {
+            directusRelations = null;
+        }
+    }
+
     const result = await db.insert(schema.pub_crawl_signups).values({
         ...data,
+        directus_relations: directusRelations,
         name_initials: data.name_initials ?? null,
         created_at: new Date().toISOString()
     }).returning({ id: schema.pub_crawl_signups.id });
