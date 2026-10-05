@@ -15,8 +15,8 @@ interface GroupConfig {
     leaders?: unknown[];
 }
 
-export async function requireKroegAdmin() {
-    return requireBeheerFeature('kroegentocht');
+export async function requireKroegAdmin(): Promise<void> {
+    await requireBeheerFeature('kroegentocht');
 }
 
 export async function getPubCrawlEvents(): Promise<PubCrawlEvent[]> {
@@ -85,7 +85,7 @@ async function handleGroupCascadeUpdate(eventId: number, oldGroups: GroupConfig[
     }
 }
 
-export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
+export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>): Promise<{ success: boolean }> {
     await requireKroegAdmin();
     const { id, name, description, date, email, image, whatsapp_community_url } = data;
     const groups = data.groups as unknown;
@@ -154,7 +154,7 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>) {
     }
 }
 
-export async function uploadPubCrawlImage(formData: FormData) {
+export async function uploadPubCrawlImage(formData: FormData): Promise<{ data: { id: string } }> {
     await requireKroegAdmin();
     const file = formData.get('file') as File | null;
     if (!file) throw new Error('Geen bestand');
@@ -164,11 +164,14 @@ export async function uploadPubCrawlImage(formData: FormData) {
         safeConsoleError(`[kroegentocht-event.actions.ts][uploadPubCrawlImage] Failed to upload image:`, uploadResult.error);
         throw new Error('Afbeelding uploaden mislukt');
     }
+    if (!uploadResult.id) {
+        throw new Error('Afbeelding uploaden mislukt');
+    }
     
     return { data: { id: uploadResult.id } };
 }
 
-export async function updatePubCrawlEventGroups(eventId: number, groups: unknown[]) {
+export async function updatePubCrawlEventGroups(eventId: number, groups: unknown[]): Promise<{ success: boolean }> {
     await requireKroegAdmin();
     try {
         await db.update(schema.pub_crawl_events).set({ groups: groups }).where(eq(schema.pub_crawl_events.id, eventId));

@@ -18,21 +18,24 @@ export default async function DeelnemerPage({ params }: DeelnemerPageProps) {
     noStore();
 
     const { id } = await params;
-    
-    // Fetch signup data (including tickets)
     const signupId = parseInt(id);
     const signup = await getPubCrawlSignup(signupId).catch(() => null);
 
     if (!signup) notFound();
 
-    // Fetch event details to get the groups configuration
-    const event = await getPubCrawlEvent(Number(signup.pub_crawl_event_id.id)).catch(() => null);
-    const rawGroups = (event?.groups || []) as unknown[];
+    const eventId = typeof signup.pub_crawl_event_id === 'object'
+        ? Number(signup.pub_crawl_event_id.id)
+        : Number(signup.pub_crawl_event_id);
+    const event = await getPubCrawlEvent(eventId).catch(() => null);
+    const rawGroups: unknown = event?.groups;
     const eventGroups = Array.isArray(rawGroups)
         ? rawGroups.map((g: unknown): string => {
             if (typeof g === 'string') return g;
-            const obj = g && typeof g === 'object' ? (g as { name?: unknown }) : {};
-            return typeof obj.name === 'string' ? obj.name : '';
+            if (g && typeof g === 'object' && 'name' in g) {
+                const nameVal = (g as { name?: unknown }).name;
+                return typeof nameVal === 'string' ? nameVal : '';
+            }
+            return '';
         }).filter(Boolean)
         : [];
 

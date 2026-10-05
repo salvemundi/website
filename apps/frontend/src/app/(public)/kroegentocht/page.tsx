@@ -77,33 +77,33 @@ async function RegistrationSection() {
                         Activiteit Details
                     </h2>
 
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                        <div className="flex items-start gap-3">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-[170px_1fr]">
+                        <div className="flex items-start gap-2">
                             <Clock className="mt-1 size-5 shrink-0 text-theme-purple" />
                             <div>
                                 <p className="text-xs font-semibold text-slate-400">Datum</p>
                                 <p className="font-bold">{formattedDate}</p>
                             </div>
                         </div>
-                        <div className="flex items-start gap-3">
+                        <div className="flex min-w-0 items-start gap-2">
                             <MapPin className="mt-1 size-5 shrink-0 text-theme-purple" />
-                            <div>
+                            <div className="min-w-0">
                                 <p className="text-xs font-semibold text-slate-400">Locatie</p>
-                                <p className="font-bold">Eindhoven Centrum</p>
+                                <p className="font-bold">Stratumseind</p>
                             </div>
                         </div>
-                        <div className="flex items-start gap-3">
+                        <div className="flex items-start gap-2">
                             <Users className="mt-1 size-5 shrink-0 text-theme-purple" />
                             <div>
                                 <p className="text-xs font-semibold text-slate-400">Organisatie</p>
-                                <p className="font-bold">Salve Mundi</p>
+                                <p className="font-bold">Salve Mundi / FPSA</p>
                             </div>
                         </div>
-                        <div className="flex items-start gap-3">
+                        <div className="flex min-w-0 items-start gap-2">
                             <Mail className="mt-1 size-5 shrink-0 text-theme-purple" />
-                            <div>
+                            <div className="min-w-0 flex-1">
                                 <p className="text-xs font-semibold text-slate-400">Contact</p>
-                                <div className="font-bold break-all text-theme-purple">
+                                <div className="font-bold wrap-anywhere text-theme-purple">
                                     <ObfuscatedEmail email={event.email || 'ict@salvemundi.nl'} showIcon={false} />
                                 </div>
                             </div>

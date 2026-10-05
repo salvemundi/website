@@ -16,7 +16,7 @@ export default async function KroegentochtPage() {
         getKroegentochtSettings().catch(() => ({ show: true }))
     ]);
 
-    const initialEvent = (events.find(e => e.date && new Date(e.date) >= new Date()) || events[0]) as typeof events[0] | undefined;
+    const initialEvent = events.length > 0 ? (events.find(e => e.date && new Date(e.date) >= new Date()) || events[0]) : null;
     const initialSignups = initialEvent ? await getPubCrawlSignups(Number(initialEvent.id)).catch(() => []) : [];
 
     return (

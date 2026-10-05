@@ -1,6 +1,25 @@
 import { z } from 'zod';
 import { selectPubCrawlEventsSchema, selectPubCrawlSignupsSchema, selectPubCrawlTicketsSchema } from './db.zod.js';
 
+export const PUB_CRAWL_ASSOCIATIONS = [
+    'Salve Mundi',
+    'Proxy',
+    'Prick',
+    'Young Financials',
+    'Glow',
+    'Socialis',
+    'Topsy',
+    'Watoto',
+    'Bge',
+    'Fact',
+    'Fpsa',
+    'Averroes',
+    'Paramedisch',
+    'Planck',
+    'Pac',
+    'Anders'
+] as const;
+
 export const pubCrawlEventSchema = selectPubCrawlEventsSchema.extend({
     id: z.union([z.string(), z.number()]),
     name: z.string(),

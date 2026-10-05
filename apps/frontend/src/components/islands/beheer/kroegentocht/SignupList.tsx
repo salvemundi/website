@@ -7,13 +7,15 @@ import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zo
 import { safeConsoleError } from '@/server/utils/logger';
 import {
     savePubCrawlGroupsAssignment,
-    updatePubCrawlEventGroups
+    updatePubCrawlEventGroups,
+    createManualPubCrawlSignup
 } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
 
 import StatsToolbar from './signup-list/StatsToolbar';
 import SignupTableView from './signup-list/SignupTableView';
 import SignupGroupsView from './signup-list/SignupGroupsView';
 import DistributionPreviewModal from './signup-list/DistributionPreviewModal';
+import AddParticipantModal from './signup-list/AddParticipantModal';
 
 interface Participant {
     name: string;
@@ -81,6 +83,7 @@ export default function SignupList({
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState<'table' | 'groups'>('groups');
     const [isPending, startTransition] = useTransition();
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     const [enabledGroups, setEnabledGroups] = useState<string[]>(() => {
         const initialGroups = eventGroups.map((g: unknown): string => {
@@ -117,6 +120,20 @@ export default function SignupList({
     const paidSignups = signups.filter(s => s.payment_status === 'paid');
     const totalTicketsCount = paidSignups.reduce((sum, s) => sum + (s.amount_tickets || 0), 0);
     const totalAssociationsCount = [...new Set(paidSignups.map(s => s.association).filter(Boolean))].length;
+
+    const handleAddParticipant = async (data: {
+        name: string;
+        email: string;
+        association: string;
+        initial: string;
+        group_name: string | null;
+    }) => {
+        const res = await createManualPubCrawlSignup(Number(eventId), data);
+        if (res.success) {
+            onRefresh?.();
+            router.refresh();
+        }
+    };
 
     const handleOpenDistributionPreview = () => {
         if (groupNames.length === 0) {
@@ -319,6 +336,7 @@ export default function SignupList({
                 isPending={isPending}
                 onAutoDistribute={handleOpenDistributionPreview}
                 onExportCSV={exportToCSV}
+                onAddParticipant={() => setIsAddModalOpen(true)}
                 hasSignups={filteredSignups.length > 0}
             />
 
@@ -351,6 +369,13 @@ export default function SignupList({
                 previewData={previewData}
                 isPending={isPending}
                 onSave={handleSaveAutoDistribution}
+            />
+
+            <AddParticipantModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                groupNames={groupNames}
+                onAdd={handleAddParticipant}
             />
         </div>
     );

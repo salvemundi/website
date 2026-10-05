@@ -9,31 +9,13 @@ import { initiateKroegentochtPayment } from '@/server/actions/events/kroegentoch
 import {
     type PubCrawlEvent,
     pubCrawlSignupFormSchema,
-    type PubCrawlSignupForm
+    type PubCrawlSignupForm,
+    PUB_CRAWL_ASSOCIATIONS
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { Plus, Minus, Mail, Building, Ticket } from 'lucide-react';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
-
-const ASSOCIATIONS = [
-    'Salve Mundi',
-    'Proxy',
-    'Prick',
-    'Young Financials',
-    'Glow',
-    'Socialis',
-    'Topsy',
-    'Watoto',
-    'Bge',
-    'Fact',
-    'Fpsa',
-    'Averroes',
-    'Paramedisch',
-    'Planck',
-    'Pac',
-    'Anders'
-];
 
 interface KroegentochtFormIslandProps {
     event?: PubCrawlEvent;
@@ -136,7 +118,7 @@ export default function KroegentochtFormIsland({
                                 suppressHydrationWarning
                             >
                                 <option value="">Selecteer vereniging</option>
-                                {ASSOCIATIONS.map(a => (
+                                {PUB_CRAWL_ASSOCIATIONS.map((a: string) => (
                                     <option key={a} value={a}>
                                         {a}
                                     </option>

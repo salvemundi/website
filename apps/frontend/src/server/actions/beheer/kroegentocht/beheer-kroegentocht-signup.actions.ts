@@ -11,7 +11,7 @@ import { fetchPubCrawlSignupsDb, fetchPubCrawlSignupByIdDb, updatePubCrawlSignup
 import { requireKroegAdmin } from './beheer-kroegentocht-event.actions';
 import { safeConsoleError } from '@/server/utils/logger';
 
-export async function getPubCrawlSignups(eventId: number) {
+export async function getPubCrawlSignups(eventId: number): Promise<Awaited<ReturnType<typeof fetchPubCrawlSignupsDb>>> {
     noStore();
     await requireKroegAdmin();
     try {
@@ -24,7 +24,7 @@ export async function getPubCrawlSignups(eventId: number) {
     }
 }
 
-export async function getPubCrawlSignup(id: number) {
+export async function getPubCrawlSignup(id: number): Promise<Awaited<ReturnType<typeof fetchPubCrawlSignupByIdDb>>> {
     await requireKroegAdmin();
     try {
         return await fetchPubCrawlSignupByIdDb(id);
@@ -35,7 +35,7 @@ export async function getPubCrawlSignup(id: number) {
     }
 }
 
-export async function deletePubCrawlSignup(id: number, eventId: number) {
+export async function deletePubCrawlSignup(id: number, eventId: number): Promise<{ success: boolean }> {
     await requireKroegAdmin();
     try {
         await deletePubCrawlSignupDb(id);
@@ -49,7 +49,7 @@ export async function deletePubCrawlSignup(id: number, eventId: number) {
     }
 }
 
-export async function updatePubCrawlSignup(id: number, eventId: number, data: Partial<PubCrawlSignup>) {
+export async function updatePubCrawlSignup(id: number, eventId: number, data: Partial<PubCrawlSignup>): Promise<{ success: boolean }> {
     await requireKroegAdmin();
 
     const allowedFields = ['payment_status', 'association', 'name', 'email', 'group_name'];
@@ -73,7 +73,7 @@ export async function updatePubCrawlSignup(id: number, eventId: number, data: Pa
     }
 }
 
-export async function togglePubCrawlTicketCheckIn(ticketId: number, currentStatus: boolean, eventId: number) {
+export async function togglePubCrawlTicketCheckIn(ticketId: number, currentStatus: boolean, eventId: number): Promise<{ success: boolean; newStatus: boolean }> {
     await requireKroegAdmin();
     const newStatus = !currentStatus;
     const now = newStatus ? new Date().toISOString() : null;
@@ -93,7 +93,7 @@ export async function togglePubCrawlTicketCheckIn(ticketId: number, currentStatu
     }
 }
 
-export async function updatePubCrawlTickets(signupId: number, eventId: number, tickets: { id: number, name: string, initial: string }[]) {
+export async function updatePubCrawlTickets(signupId: number, eventId: number, tickets: { id: number, name: string, initial: string }[]): Promise<{ success: boolean }> {
     await requireKroegAdmin();
     try {
         const { updatePubCrawlTicketDb } = await import('@/server/internal/kroegentocht/kroegentocht-ticket-db.utils');
@@ -115,7 +115,7 @@ export async function updatePubCrawlTickets(signupId: number, eventId: number, t
     }
 }
 
-export async function deletePubCrawlTicket(ticketId: number, signupId: number, eventId: number) {
+export async function deletePubCrawlTicket(ticketId: number, signupId: number, eventId: number): Promise<{ success: boolean }> {
     await requireKroegAdmin();
     try {
         await db.delete(schema.pub_crawl_tickets).where(eq(schema.pub_crawl_tickets.id, BigInt(ticketId)));
@@ -143,7 +143,7 @@ export async function deletePubCrawlTicket(ticketId: number, signupId: number, e
     }
 }
 
-export async function distributePubCrawlSignups(eventId: number) {
+export async function distributePubCrawlSignups(eventId: number): Promise<{ success: boolean }> {
     await requireKroegAdmin();
     try {
         const { getPubCrawlEvent } = await import('./beheer-kroegentocht-event.actions');
@@ -198,7 +198,7 @@ export async function distributePubCrawlSignups(eventId: number) {
     }
 }
 
-export async function savePubCrawlGroupsAssignment(eventId: number, assignments: { signupId: number, groupName: string | null }[]) {
+export async function savePubCrawlGroupsAssignment(eventId: number, assignments: { signupId: number, groupName: string | null }[]): Promise<{ success: boolean }> {
     await requireKroegAdmin();
     try {
         const { updatePubCrawlSignupDb } = await import('@/server/internal/kroegentocht/kroegentocht-signup-db.utils');
@@ -211,6 +211,63 @@ export async function savePubCrawlGroupsAssignment(eventId: number, assignments:
         const typedError = error instanceof Error ? error : new Error(String(error));
         safeConsoleError('[kroegentocht-signup.actions.ts][savePubCrawlGroupsAssignment] ', `Error: ${typedError.message}`);
         throw typedError;
+    }
+}
+
+export async function createManualPubCrawlSignup(
+    eventId: number,
+    data: {
+        name: string;
+        email: string;
+        association?: string;
+        initial?: string;
+        group_name?: string | null;
+    }
+): Promise<{ success: boolean; signupId: number }> {
+    await requireKroegAdmin();
+
+    const trimmedName = data.name.trim();
+    const trimmedEmail = (data.email || '').trim();
+
+    if (!trimmedName) {
+        throw new Error('Naam is verplicht');
+    }
+
+    const rawInitial = data.initial?.trim();
+    const initial = rawInitial ? rawInitial.toUpperCase() : trimmedName.charAt(0).toUpperCase();
+    const nameInitials = JSON.stringify([{ name: trimmedName, initial }]);
+
+    try {
+        const { createPubCrawlSignupDb, updatePubCrawlSignupDb } = await import('@/server/internal/kroegentocht/kroegentocht-signup-db.utils');
+        const { createPubCrawlTicketsDb } = await import('@/server/internal/kroegentocht/kroegentocht-ticket-db.utils');
+
+        const signupId = await createPubCrawlSignupDb({
+            name: trimmedName,
+            email: trimmedEmail,
+            association: data.association?.trim() || '',
+            amount_tickets: 1,
+            name_initials: nameInitials,
+            pub_crawl_event_id: eventId,
+            payment_status: 'paid',
+            directus_relations: null
+        });
+
+        if (data.group_name) {
+            await updatePubCrawlSignupDb(signupId, { group_name: data.group_name });
+        }
+
+        await createPubCrawlTicketsDb(signupId, [{
+            name: trimmedName,
+            initial,
+            qr_token: crypto.randomUUID()
+        }]);
+
+        revalidateTag(`signups-${eventId}`, 'max');
+        return { success: true, signupId };
+    } catch (error: unknown) {
+        const typedError = error instanceof Error ? error : new Error(String(error));
+        safeConsoleError('[kroegentocht-signup.actions.ts][createManualPubCrawlSignup] ', typedError.message);
+        throw new Error('Handmatig toevoegen mislukt');
     }
 }
 
