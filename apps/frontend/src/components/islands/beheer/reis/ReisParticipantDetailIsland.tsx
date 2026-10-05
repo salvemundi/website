@@ -8,7 +8,6 @@ import {
     ArrowLeft,
     CheckCircle2,
     Shield,
-    Clock,
     User,
     CreditCard
 } from 'lucide-react';
@@ -153,7 +152,7 @@ export default function ReisParticipantDetailIsland({
                             void handleDelete();
                         }}
                         disabled={isPending}
-                        className="beheer-button flex items-center gap-2 rounded-xl border border-(--beheer-inactive)/10 bg-(--beheer-inactive)/5 px-6 py-3 text-base font-semibold text-(--beheer-inactive) shadow-sm transition-all hover:bg-(--beheer-inactive)/10 active:scale-95"
+                        className="beheer-button-secondary text-theme-error"
                     >
                         {isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
                         <span>Verwijderen</span>
@@ -161,7 +160,7 @@ export default function ReisParticipantDetailIsland({
                 }
             />
 
-            <div className="container mx-auto max-w-7xl px-4 py-8">
+            <div className="admin-container-padded">
                 <BeheerStatsBar stats={adminStats} />
 
                 <form action={formAction} className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -186,21 +185,18 @@ export default function ReisParticipantDetailIsland({
                             isUpdating={isUpdatingActivities}
                         />
 
-                        <div className="group/meta relative space-y-5 overflow-hidden rounded-3xl border border-(--beheer-border)/50 bg-(--beheer-card-bg)/50 p-8 shadow-sm backdrop-blur-sm">
-                            <div className="absolute -right-8 -bottom-8 opacity-5 transition-transform duration-700 group-hover:scale-110 group-hover:rotate-12">
-                                <Clock className="size-24 text-(--beheer-accent)" />
-                            </div>
-                            <div className="flex items-center justify-between text-base font-semibold text-(--beheer-text-muted) opacity-60">
+                        <div className="relative space-y-4 card-base p-6">
+                            <div className="stat-row-between">
                                 <span>Aangemeld op</span>
-                                <span className="font-semibold text-(--beheer-text)">
+                                <span className="font-semibold text-text-main">
                                     {initialSignup.created_at
                                         ? formatDateTime(new Date(initialSignup.created_at))
                                         : '-'}
                                 </span>
                             </div>
-                            <div className="flex items-center justify-between border-t border-(--beheer-border)/10 pt-4 text-base font-semibold text-(--beheer-text-muted) opacity-60">
+                            <div className="stat-row-between-bordered">
                                 <span>Deelnemer ID</span>
-                                <span className="font-semibold text-(--beheer-text)">#{initialSignup.id}</span>
+                                <span className="font-semibold text-text-main">#{initialSignup.id}</span>
                             </div>
                         </div>
 
@@ -208,9 +204,9 @@ export default function ReisParticipantDetailIsland({
                             <button
                                 type="submit"
                                 disabled={isSaving}
-                                className="group active:scale-0.98 beheer-button flex w-full items-center justify-center gap-4 rounded-2xl border border-white/10 bg-(--beheer-accent) py-5 text-base font-semibold text-white shadow-(--beheer-accent)/30 shadow-2xl transition-all hover:opacity-95 disabled:opacity-50"
+                                className="form-button w-full"
                             >
-                                {isSaving ? <Loader2 className="size-7 animate-spin" /> : <Save className="size-7 transition-transform group-hover:scale-110" />}
+                                {isSaving ? <Loader2 className="mx-auto size-5 animate-spin" /> : <Save className="size-5" />}
                                 <span>Gegevens Opslaan</span>
                             </button>
 
@@ -218,7 +214,7 @@ export default function ReisParticipantDetailIsland({
                                 <button
                                     type="button"
                                     onClick={() => router.push('/beheer/reis')}
-                                    className="beheer-button flex flex-1 items-center justify-center gap-3 rounded-2xl border border-(--beheer-border) bg-(--bg-main)/50 py-4 text-base font-semibold text-(--beheer-text-muted) transition-all hover:bg-(--beheer-card-bg) hover:text-(--beheer-text) active:scale-95"
+                                    className="btn-secondary flex-1"
                                 >
                                     <ArrowLeft className="size-4" />
                                     Annuleren
@@ -229,7 +225,8 @@ export default function ReisParticipantDetailIsland({
                                         void handleDelete();
                                     }}
                                     disabled={isPending}
-                                    className="icon-button rounded-2xl border border-(--beheer-inactive)/20 bg-(--beheer-inactive)/5 p-4 text-(--beheer-inactive) shadow-sm transition-all hover:bg-(--beheer-inactive)/10 active:scale-90"
+                                    className="icon-button p-3 text-theme-error hover:bg-theme-error/10"
+                                    aria-label="Deelnemer Verwijderen"
                                 >
                                     {isPending ? <Loader2 className="size-5 animate-spin" /> : <Trash className="size-5" />}
                                 </button>

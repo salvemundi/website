@@ -44,9 +44,9 @@ export default function BorrelBarClaimCard({ initialStatus }: BorrelBarClaimCard
                 </p>
             </div>
 
-            <div className="squircle flex min-h-17 flex-col gap-4 border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between dark:border-white/10 dark:bg-white/5">
+            <div className="flex min-h-17 flex-col gap-4 squircle border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between dark:border-white/10 dark:bg-white/5">
                 <div className="flex items-center gap-4">
-                    <div className="flex shrink-0 items-center justify-center text-purple-600 dark:text-purple-300">
+                    <div className="flex shrink-0 items-center justify-center text-theme-purple">
                         {logoUrl ? (
                             <div className="relative size-6 overflow-hidden rounded-md">
                                 <Image
@@ -62,10 +62,10 @@ export default function BorrelBarClaimCard({ initialStatus }: BorrelBarClaimCard
                         )}
                     </div>
                     <div className="flex flex-col">
-                        <p className="text-sm font-bold text-purple-700 dark:text-white">
+                        <p className="text-sm font-bold text-theme-purple">
                             BorrelBar pas claimen
                         </p>
-                        <p className="text-xs text-purple-600/70 dark:text-white/60">
+                        <p className="text-xs text-(--text-muted)">
                             {hasClaimed
                                 ? 'Je hebt jouw eenmalige registratie al geclaimd.'
                                 : 'Claim je eenmalige Wallet registratie (1x per lid).'}
@@ -80,7 +80,7 @@ export default function BorrelBarClaimCard({ initialStatus }: BorrelBarClaimCard
                                 href={passUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="squircle form-button flex items-center justify-center gap-2 bg-purple-600 px-4 py-2 text-xs font-bold text-white transition-all hover:bg-purple-700 active:scale-95 dark:bg-purple-500 dark:hover:bg-purple-600"
+                                className="beheer-button form-button"
                             >
                                 <span>Bekijk Pas</span>
                                 <ExternalLink className="size-3.5" />
@@ -95,7 +95,7 @@ export default function BorrelBarClaimCard({ initialStatus }: BorrelBarClaimCard
                         <button
                             onClick={handleClaim}
                             disabled={isPending}
-                            className="squircle form-button flex w-full items-center justify-center gap-2 bg-purple-600 px-5 py-2.5 text-xs font-extrabold text-white transition-all hover:bg-purple-700 active:scale-95 disabled:opacity-50 sm:w-auto dark:bg-purple-500 dark:hover:bg-purple-600"
+                            className="form-button"
                             type="button"
                         >
                             {isPending ? (

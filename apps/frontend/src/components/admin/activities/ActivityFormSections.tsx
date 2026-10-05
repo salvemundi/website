@@ -35,8 +35,6 @@ const toISODateString = (date: Date | null): string => {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 };
-
-
 export function GeneralInfoSection({
     initialData,
     formErrors
@@ -45,37 +43,37 @@ export function GeneralInfoSection({
     formErrors?: Record<string, string[] | undefined>
 }) {
     return (
-        <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
-            <div className="flex items-center gap-3 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
+        <div className="form-card">
+            <div className="form-card-header">
                 <Info className="size-4 text-(--beheer-accent)" />
                 <h2 className="text-base font-semibold text-(--beheer-text)">Beschrijving</h2>
             </div>
             <div className="space-y-6 p-6">
                 <div className="relative z-10">
-                    <label htmlFor="name" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Naam van de activiteit *</label>
+                    <label htmlFor="name" className="form-section-label">Naam van de activiteit *</label>
                     <input
                         type="text"
                         id="name"
                         name="name"
                         defaultValue={toInputSafe(initialData?.name)}
                         autoComplete="off"
-                        className={`beheer-input ${formErrors?.name ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                        className={`beheer-input ${formErrors?.name ? 'beheer-input-error' : ''}`}
                         placeholder="Bijv. Borrel: Back to School"
                     />
-                    {formErrors?.name && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.name[0]}</p>}
+                    {formErrors?.name && <p className="form-error-msg">{formErrors.name[0]}</p>}
                 </div>
                 <div className="grid grid-cols-1 gap-6">
                     <div>
-                        <label htmlFor="description" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Publieke beschrijving *</label>
+                        <label htmlFor="description" className="form-section-label">Publieke beschrijving *</label>
                         <textarea
                             id="description"
                             name="description"
                             rows={8}
                             defaultValue={toInputSafe(initialData?.description)}
-                            className={`beheer-input resize-y font-mono text-sm leading-relaxed ${formErrors?.description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                            className={`beheer-textarea ${formErrors?.description ? 'beheer-input-error' : ''}`}
                             placeholder="Plak hier je WhatsApp bericht. Gebruik **tekst** voor dikgedrukt."
                         />
-                        {formErrors?.description && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.description[0]}</p>}
+                        {formErrors?.description && <p className="form-error-msg">{formErrors.description[0]}</p>}
                     </div>
                     <div>
                         <label htmlFor="short_description" className="mb-2 flex items-end justify-between">
@@ -89,10 +87,10 @@ export function GeneralInfoSection({
                             name="short_description"
                             rows={4}
                             defaultValue={toInputSafe(initialData?.short_description)}
-                            className={`beheer-input resize-y font-mono text-sm leading-relaxed ${formErrors?.short_description ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                            className={`beheer-textarea ${formErrors?.short_description ? 'beheer-input-error' : ''}`}
                             placeholder="Bijv. een korte samenvatting of TL;DR voor op de overzichtskaart."
                         />
-                        {formErrors?.short_description && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.short_description[0]}</p>}
+                        {formErrors?.short_description && <p className="form-error-msg">{formErrors.short_description[0]}</p>}
                     </div>
                     <div>
                         <label htmlFor="description_logged_in" className="mb-2 flex items-end justify-between">
@@ -106,10 +104,10 @@ export function GeneralInfoSection({
                             name="description_logged_in"
                             rows={3}
                             defaultValue={toInputSafe(initialData?.description_logged_in)}
-                            className={`beheer-input resize-y font-mono text-sm leading-relaxed ${formErrors?.description_logged_in ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
+                            className={`beheer-textarea ${formErrors?.description_logged_in ? 'beheer-input-error' : ''}`}
                             placeholder="Bijv. verzamelplek, wat mee te nemen..."
                         />
-                        {formErrors?.description_logged_in && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.description_logged_in[0]}</p>}
+                        {formErrors?.description_logged_in && <p className="form-error-msg">{formErrors.description_logged_in[0]}</p>}
                     </div>
                 </div>
             </div>
@@ -187,26 +185,26 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
     };
 
     return (
-        <div className="flex h-full flex-col rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
-            <div className="flex items-center gap-3 rounded-t-(--beheer-radius) border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
+        <div className="form-card flex h-full flex-col">
+            <div className="form-card-header">
                 <CalendarIcon className="size-4 text-(--beheer-accent)" />
                 <h2 className="text-base font-semibold text-(--beheer-text)">Planning & locatie</h2>
             </div>
-            <div className="flex flex-1 flex-col space-y-6 p-6">
+            <div className="form-card-body">
                 <div className="space-y-6">
-                    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start">
+                    <div className="form-row-sm">
                         <div className="min-w-0 flex-1">
-                            <label htmlFor="event_date" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Startdatum *</label>
+                            <label htmlFor="event_date" className="form-section-label">Startdatum *</label>
                             <input type="hidden" name="event_date" value={startDate ? toISODateString(startDate) : ''} />
                             <AdminDatepicker
                                 value={startDate}
                                 onChange={handleStartDateChange}
-                                className={formErrors?.event_date ? 'border-red-500' : ''}
+                                className={formErrors?.event_date ? 'border-theme-error' : ''}
                             />
-                            {formErrors?.event_date && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.event_date[0]}</p>}
+                            {formErrors?.event_date && <p className="form-error-msg">{formErrors.event_date[0]}</p>}
                         </div>
                         <div className="w-full shrink-0 sm:w-36">
-                            <label htmlFor="event_time" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Starttijd</label>
+                            <label htmlFor="event_time" className="form-section-label">Starttijd</label>
                             <AdminTimepicker
                                 id="event_time"
                                 name="event_time"
@@ -222,20 +220,20 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                         </div>
                     </div>
 
-                    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start">
+                    <div className="form-row-sm">
                         <div className="min-w-0 flex-1">
-                            <label htmlFor="event_date_end" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Einddatum</label>
+                            <label htmlFor="event_date_end" className="form-section-label">Einddatum</label>
                             <input type="hidden" name="event_date_end" value={endDate ? toISODateString(endDate) : ''} />
                             <AdminDatepicker
                                 value={endDate}
                                 onChange={handleEndDateChange}
                                 minDate={startDate || undefined}
-                                className={formErrors?.event_date_end ? 'border-red-500' : ''}
+                                className={formErrors?.event_date_end ? 'border-theme-error' : ''}
                             />
-                            {formErrors?.event_date_end && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.event_date_end[0]}</p>}
+                            {formErrors?.event_date_end && <p className="form-error-msg">{formErrors.event_date_end[0]}</p>}
                         </div>
                         <div className="w-full shrink-0 sm:w-36">
-                            <label htmlFor="event_time_end" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Eindtijd</label>
+                            <label htmlFor="event_time_end" className="form-section-label">Eindtijd</label>
                             <AdminTimepicker
                                 id="event_time_end"
                                 name="event_time_end"
@@ -246,7 +244,7 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                         </div>
                     </div>
 
-                    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start">
+                    <div className="form-row-sm">
                         <div className="min-w-0 flex-1">
                             <div className="mb-2 flex items-center justify-between">
                                 <label htmlFor="registration_deadline_date" className="block text-base font-semibold text-(--beheer-text-muted)">Inschrijfdeadline</label>
@@ -254,7 +252,7 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                                     <button
                                         type="button"
                                         onClick={handleClearDeadline}
-                                        className="beheer-button flex cursor-pointer items-center gap-1 text-xs font-semibold text-red-500 transition-colors hover:text-red-400"
+                                        className="beheer-button text-theme-error hover:text-theme-error/80"
                                     >
                                         <X className="size-3.5" /> Wissen
                                     </button>
@@ -266,9 +264,9 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                                 value={deadlineDate}
                                 onChange={handleDeadlineDateChange}
                                 maxDate={startDate || undefined}
-                                className={formErrors?.registration_deadline ? 'border-red-500' : ''}
+                                className={formErrors?.registration_deadline ? 'border-theme-error' : ''}
                             />
-                            {formErrors?.registration_deadline && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.registration_deadline[0]}</p>}
+                            {formErrors?.registration_deadline && <p className="form-error-msg">{formErrors.registration_deadline[0]}</p>}
                         </div>
                         <div className="w-full shrink-0 sm:w-36">
                             <div className="mb-2 flex items-center justify-between">
@@ -287,15 +285,15 @@ export function PlanningLocationSection({ initialData, formErrors }: { initialDa
                     </div>
                 </div>
 
-                <div className="mt-auto border-t border-(--beheer-border)/50 pt-4">
-                    <label htmlFor="location" className="mb-2 flex items-center gap-2 text-base font-semibold text-(--beheer-text-muted)">
+                <div className="form-divider-top">
+                    <label htmlFor="location" className="form-section-label-icon">
                         <MapPin className="size-3" /> Locatie
                     </label>
                     <input type="text" id="location" name="location" defaultValue={toInputSafe(initialData?.location)} className="beheer-input" placeholder="Bijv. Fontys R10" />
                 </div>
 
                 <div className="pt-2">
-                    <label htmlFor="custom_url" className="mb-2 flex items-center gap-2 text-base font-semibold text-(--beheer-text-muted)">
+                    <label htmlFor="custom_url" className="form-section-label-icon">
                         <LinkIcon className="size-3" /> Custom redirect URL
                     </label>
                     <input type="text" id="custom_url" name="custom_url" defaultValue={toInputSafe(initialData?.custom_url)} className="beheer-input" placeholder="bijv. https://forms.gle/..." />
@@ -325,31 +323,31 @@ export function CapacityCostsSection({
     formErrors?: Record<string, string[] | undefined>
 }) {
     return (
-        <div className="flex h-full flex-col overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
-            <div className="flex items-center gap-3 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
+        <div className="form-card flex h-full flex-col">
+            <div className="form-card-header">
                 <Euro className="size-4 text-(--beheer-accent)" />
                 <h2 className="text-base font-semibold text-(--beheer-text)">Kosten & capaciteit</h2>
             </div>
-            <div className="flex flex-1 flex-col space-y-6 p-6">
+            <div className="form-card-body">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div>
-                        <label htmlFor="max_sign_ups" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Max. deelnemers</label>
-                        <input type="number" id="max_sign_ups" name="max_sign_ups" defaultValue={toInputSafe(initialData?.max_sign_ups)} min="0" className={`beheer-input ${formErrors?.max_sign_ups ? 'border-red-500 ring-4 ring-red-500/10' : ''}`} placeholder="Onbeperkt" />
-                        {formErrors?.max_sign_ups && <p className="mt-2 text-sm font-semibold text-red-500">{formErrors.max_sign_ups[0]}</p>}
+                        <label htmlFor="max_sign_ups" className="form-section-label">Max. deelnemers</label>
+                        <input type="number" id="max_sign_ups" name="max_sign_ups" defaultValue={toInputSafe(initialData?.max_sign_ups)} min="0" className={`beheer-input ${formErrors?.max_sign_ups ? 'beheer-input-error' : ''}`} placeholder="Onbeperkt" />
+                        {formErrors?.max_sign_ups && <p className="form-error-msg">{formErrors.max_sign_ups[0]}</p>}
                     </div>
                     <div>
-                        <label htmlFor="price_members" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Leden (€)</label>
+                        <label htmlFor="price_members" className="form-section-label">Leden (€)</label>
                         <input type="number" id="price_members" name="price_members" defaultValue={toInputSafe(initialData?.price_members)} min="0" step="0.01" className="beheer-input" placeholder="0.00" />
                     </div>
                     <div>
-                        <label htmlFor="price_non_members" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Niet-leden (€)</label>
+                        <label htmlFor="price_non_members" className="form-section-label">Niet-leden (€)</label>
                         <input type="number" id="price_non_members" name="price_non_members" defaultValue={toInputSafe(initialData?.price_non_members)} min="0" step="0.01" className="beheer-input" placeholder="0.00" />
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 pt-6 md:grid-cols-2">
+                <div className="form-grid-2col-pt6">
                     <div>
-                        <label htmlFor="committee_id" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Organiserende commissie</label>
+                        <label htmlFor="committee_id" className="form-section-label">Organiserende commissie</label>
                         <BeheerSelect
                             name="committee_id"
                             defaultValue={toInputSafe(initialData?.committee_id)}
@@ -362,7 +360,7 @@ export function CapacityCostsSection({
                         />
                     </div>
                     <div>
-                        <label htmlFor="contact" className="mb-2 block text-base font-semibold text-(--beheer-text-muted)">Contactpersoon (e-mail)</label>
+                        <label htmlFor="contact" className="form-section-label">Contactpersoon (e-mail)</label>
                         <input
                             type="email"
                             id="contact"
@@ -376,13 +374,13 @@ export function CapacityCostsSection({
                     </div>
                 </div>
 
-                <label className="group relative z-10 mt-auto flex cursor-pointer items-center gap-4 rounded-2xl border border-(--beheer-border)/50 bg-(--beheer-card-soft)/50 p-4">
+                <label className="form-option-checkbox-row">
                     <div className="relative flex items-center justify-center">
                         <input type="checkbox" id="only_members" checked={onlyMembers} onChange={(e) => onOnlyMembersChange(e.target.checked)} className="peer sr-only" />
-                        <div className="size-5 rounded border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
-                        <Check className="absolute size-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" />
+                        <div className="checkbox-box-outer"></div>
+                        <Check className="checkbox-check-icon" />
                     </div>
-                    <span className="text-base font-semibold text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">Alleen toegankelijk voor leden</span>
+                    <span className="radio-label-text">Alleen toegankelijk voor leden</span>
                 </label>
             </div>
         </div>
@@ -397,24 +395,24 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }) {
     return (
-        <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
-            <div className="flex items-center gap-3 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
+        <div className="form-card">
+            <div className="form-card-header">
                 <Upload className="size-4 text-(--beheer-accent)" />
                 <h2 className="text-base font-semibold text-(--beheer-text)">Banner</h2>
             </div>
             <div className="p-4">
                 {!imagePreview ? (
-                    <div onClick={onUploadClick} className="group flex min-h-40 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-(--beheer-border) bg-(--beheer-card-soft) transition-all hover:border-(--beheer-accent) hover:bg-(--beheer-accent)/5">
-                        <Upload className="mb-2 size-6 text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-accent)" />
-                        <span className="px-4 text-center text-sm font-semibold text-(--beheer-text-muted) group-hover:text-(--beheer-accent)">Upload banner</span>
+                    <div onClick={onUploadClick} className="form-dropzone-box">
+                        <Upload className="form-dropzone-icon hover:text-(--beheer-accent)" />
+                        <span className="form-dropzone-text hover:text-(--beheer-accent)">Upload banner</span>
                         <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={onFileChange} className="hidden" />
                     </div>
                 ) : (
-                    <div className="group relative flex h-40 items-center justify-center overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft)/50">
+                    <div className="form-preview-box">
                         <MediaAsset asset={imagePreview} alt="Preview" fill sizes="(max-width: 768px) 100vw, 800px" objectFit="contain" className="object-contain transition-transform duration-700" />
-                        <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                            <button type="button" onClick={onUploadClick} className="beheer-button cursor-pointer rounded-xl bg-white p-2.5 text-slate-900 shadow-xl transition hover:scale-110"><Upload className="size-4" /></button>
-                            <button type="button" onClick={onRemoveClick} className="beheer-button cursor-pointer rounded-xl bg-red-500 p-2.5 text-white shadow-xl transition hover:scale-110"><X className="size-4" /></button>
+                        <div className="form-preview-overlay">
+                            <button type="button" onClick={onUploadClick} className="btn-overlay-action"><Upload className="size-4" /></button>
+                            <button type="button" onClick={onRemoveClick} className="btn-overlay-delete"><X className="size-4" /></button>
                         </div>
                         <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={onFileChange} className="hidden" />
                     </div>
@@ -426,36 +424,36 @@ export function BannerSection({ imagePreview, onUploadClick, onRemoveClick, file
 
 export function StatusSection({ status, onStatusChange, initialData }: { status: string, onStatusChange: (val: string) => void, initialData?: Record<string, InitialValue> }) {
     return (
-        <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
-            <div className="flex items-center gap-3 rounded-t-(--beheer-radius) border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
+        <div className="form-card">
+            <div className="form-card-header">
                 <Eye className="size-4 text-(--beheer-accent)" />
                 <h2 className="text-base font-semibold text-(--beheer-text)">Status</h2>
             </div>
             <div className="space-y-4 p-6">
-                <label className="group relative z-10 flex cursor-pointer items-center gap-4">
+                <label className="radio-option-row">
                     <div className="relative flex items-center justify-center">
                         <input type="radio" value="published" checked={status === 'published'} onChange={() => onStatusChange('published')} className="peer sr-only" />
-                        <div className="size-5 rounded-full border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
-                        <div className="absolute size-1.5 rounded-full bg-white opacity-0 transition-opacity peer-checked:opacity-100"></div>
+                        <div className="radio-circle-outer"></div>
+                        <div className="radio-circle-dot"></div>
                     </div>
-                    <span className="text-base font-semibold text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">Gepubliceerd</span>
+                    <span className="radio-label-text">Gepubliceerd</span>
                 </label>
-                <label className="group relative z-10 flex cursor-pointer items-center gap-4">
+                <label className="radio-option-row">
                     <div className="relative flex items-center justify-center">
                         <input type="radio" value="draft" checked={status === 'draft'} onChange={() => onStatusChange('draft')} className="peer sr-only" />
-                        <div className="size-5 rounded-full border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
-                        <div className="absolute size-1.5 rounded-full bg-white opacity-0 transition-opacity peer-checked:opacity-100"></div>
+                        <div className="radio-circle-outer"></div>
+                        <div className="radio-circle-dot"></div>
                     </div>
-                    <span className="text-base font-semibold text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">Concept</span>
+                    <span className="radio-label-text">Concept</span>
                 </label>
-                <label className="group relative z-10 flex cursor-pointer items-start gap-4">
-                    <div className="relative mt-0.5 flex items-center justify-center">
+                <label className="radio-option-row-start">
+                    <div className="radio-circle-wrapper">
                         <input type="radio" value="scheduled" checked={status === 'scheduled'} onChange={() => onStatusChange('scheduled')} className="peer sr-only" />
-                        <div className="size-5 rounded-full border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
-                        <div className="absolute size-1.5 rounded-full bg-white opacity-0 transition-opacity peer-checked:opacity-100"></div>
+                        <div className="radio-circle-outer"></div>
+                        <div className="radio-circle-dot"></div>
                     </div>
                     <div className="flex-1">
-                        <span className="text-base font-semibold text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">Inplannen</span>
+                        <span className="radio-label-text">Inplannen</span>
                         {status === 'scheduled' && (
                             <div className="animate-in slide-in-from-top-2 mt-2 duration-300">
                                 <BeheerDatetimepicker

@@ -15,14 +15,14 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const getVariantClass = (variant: 'primary' | 'secondary' | 'outline' | 'ghost') => {
     switch (variant) {
         case 'secondary':
-            return 'bg-(--bg-main)/60 text-(--text-main) border border-(--border-color)/30 hover:bg-(--bg-main)';
+            return 'bg-bg-main/60 text-text-main border border-border-color/30 hover:bg-bg-main';
         case 'outline':
-            return 'border border-(--border-color) bg-transparent text-(--text-main) hover:bg-(--bg-main)/50';
+            return 'border border-border-color bg-transparent text-text-main hover:bg-bg-main/50';
         case 'ghost':
-            return 'bg-transparent text-(--text-main) hover:bg-black/5 dark:hover:bg-white/10';
+            return 'bg-transparent text-text-main hover:bg-theme-purple/10';
         case 'primary':
         default:
-            return 'bg-(--theme-purple) text-white shadow-md hover:scale-[1.02] active:scale-[0.98]';
+            return 'bg-theme-purple text-wit-paars shadow-md hover:scale-[1.02] active:scale-[0.98]';
     }
 };
 

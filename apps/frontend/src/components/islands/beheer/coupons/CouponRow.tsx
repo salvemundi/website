@@ -132,7 +132,7 @@ export default function CouponRow({
                                 onClick={() => onDelete(coupon.id)}
                                 disabled={isDeleting}
                                 title="Verwijderen"
-                                className="icon-button cursor-pointer rounded-xl p-3 text-(--beheer-text-muted) transition-all hover:bg-red-500/10 hover:text-red-500"
+                                className="icon-button p-3 text-(--beheer-text-muted) hover:bg-red-500/10 hover:text-red-500"
                                 type="button">
                                 {isDeleting ? <Loader2 className="size-5 animate-spin" /> : <Trash className="size-5" />}
                             </button>

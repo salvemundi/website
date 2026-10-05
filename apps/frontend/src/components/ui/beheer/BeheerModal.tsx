@@ -59,24 +59,24 @@ export default function BeheerModal({
 
     const modalContent = (
         <div
-            className="animate-in fade-in fixed inset-0 z-250 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md duration-300 sm:p-6"
+            className="modal-backdrop"
             onClick={onClose}
         >
             <div
                 role="dialog"
                 aria-modal="true"
                 aria-label={title}
-                className={`w-full bg-bg-card/95 backdrop-blur-xl ${maxWidthClasses.get(maxWidth) ?? 'max-w-2xl'} animate-in zoom-in-95 my-auto flex max-h-[min(90vh,820px)] flex-col overflow-hidden rounded-2xl border border-border-color/60 shadow-[0_40px_100px_rgba(0,0,0,0.5)] duration-300 sm:rounded-3xl`}
-                onClick={(e) => e.stopPropagation()}
+                className={`modal-content ${maxWidthClasses.get(maxWidth) ?? 'max-w-2xl'}`}
+                onClick={(event) => event.stopPropagation()}
             >
                 {/* Header */}
-                <div className="relative z-10 flex shrink-0 items-center justify-between border-b border-border-color px-6 py-5">
+                <div className="modal-header">
                     <div className="min-w-0 space-y-0.5 pr-4">
-                        <h2 className="truncate text-lg font-bold tracking-tight text-purple-700 sm:text-xl dark:text-purple-300">
+                        <h2 className="text-lg section-title sm:text-xl">
                             {title}
                         </h2>
                         {subtitle && (
-                            <p className="line-clamp-1 text-xs font-medium text-text-muted">
+                            <p className="line-clamp-1 text-xs font-medium text-(--text-muted)">
                                 {subtitle}
                             </p>
                         )}
@@ -85,14 +85,14 @@ export default function BeheerModal({
                         type="button"
                         onClick={onClose}
                         aria-label="Sluiten"
-                        className="icon-button flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-bg-soft text-text-muted transition-all hover:bg-bg-soft/80 hover:text-text-main active:scale-95"
+                        className="icon-button size-9 p-2"
                     >
                         <X className="size-4" />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="custom-scrollbar relative z-10 flex-1 overflow-y-auto p-6">
+                <div className="relative z-10 custom-scrollbar flex-1 overflow-y-auto p-6">
                     {children}
                 </div>
             </div>

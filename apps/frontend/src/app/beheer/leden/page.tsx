@@ -46,20 +46,20 @@ export default async function LedenBeheerPage() {
             backHref="/beheer"
             actions={
                 <div className="flex items-center gap-4">
-                    <div className="hidden items-center gap-4 rounded-2xl border border-(--beheer-border)/50 bg-(--beheer-card-soft) px-4 py-2 shadow-sm md:flex">
+                    <div className="beheer-stat-strip hidden md:flex">
                         <div className="flex flex-col items-center px-2">
-                            <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Totaal</span>
-                            <span className="text-sm leading-none font-bold text-(--beheer-text)">{totalCount}</span>
+                            <span className="stat-label-muted">Totaal</span>
+                            <span className="text-sm leading-none font-bold text-beheer-text">{totalCount}</span>
                         </div>
-                        <div className="h-6 w-px bg-(--beheer-border)/20" />
+                        <div className="v-divider-sm" />
                         <div className="flex flex-col items-center px-2">
-                            <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Actief</span>
-                            <span className="text-sm leading-none font-bold text-(--beheer-active)">{activeCount}</span>
+                            <span className="stat-label-muted">Actief</span>
+                            <span className="text-sm leading-none font-bold text-beheer-active">{activeCount}</span>
                         </div>
-                        <div className="h-6 w-px bg-(--beheer-border)/20" />
+                        <div className="v-divider-sm" />
                         <div className="flex flex-col items-center px-2">
-                            <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Verlopen</span>
-                            <span className="text-sm leading-none font-bold text-(--beheer-inactive)">{inactiveCount}</span>
+                            <span className="stat-label-muted">Verlopen</span>
+                            <span className="text-sm leading-none font-bold text-beheer-inactive">{inactiveCount}</span>
                         </div>
                     </div>
                 </div>

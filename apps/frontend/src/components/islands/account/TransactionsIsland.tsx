@@ -50,35 +50,35 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
                 <div className="-mx-6 overflow-x-auto sm:mx-0">
                     <table className="w-full border-separate border-spacing-0">
                         <thead>
-                            <tr className="border-b border-slate-200 dark:border-white/5">
-                                <th className="px-6 py-4 text-left text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Datum</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Product</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Type</th>
-                                <th className="px-6 py-4 text-right text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Bedrag</th>
+                            <tr className="border-b border-border-color/20">
+                                <th className="table-th">Datum</th>
+                                <th className="table-th">Product</th>
+                                <th className="table-th">Type</th>
+                                <th className="table-th text-right">Bedrag</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+                        <tbody className="divide-y divide-border-color/10">
                             {paidTransactions.map((transaction) => (
-                                <tr key={transaction.id} className="group transition-all hover:bg-slate-50 dark:hover:bg-white/5">
+                                <tr key={transaction.id} className="group transition-all hover:bg-theme-purple/5">
                                     <td className="p-6 whitespace-nowrap">
                                         <div className="flex items-center gap-2 text-sm font-bold text-(--text-main)">
-                                            <Clock className="size-4 text-purple-500 opacity-40" />
+                                            <Clock className="size-4 text-theme-purple opacity-40" />
                                             {formatDate(new Date(transaction.created_at || transaction.date_created || new Date()))}
                                         </div>
                                     </td>
-                                    <td className="p-6 transition-transform group-hover:translate-x-1">
-                                        <div className="text-sm leading-tight font-black text-purple-700 dark:text-white">
+                                    <td className="p-6">
+                                        <div className="text-sm leading-tight font-black text-theme-purple">
                                             {transaction.product_name || transaction.description || 'Betaling'}
                                         </div>
                                         {transaction.coupon_code && (
-                                            <div className="mt-1 flex items-center gap-1.5 text-[9px] font-black tracking-widest text-purple-500 uppercase opacity-70">
+                                            <div className="mt-1 flex items-center gap-1.5 text-[9px] font-black tracking-widest text-theme-purple uppercase opacity-70">
                                                 <Tag className="size-3" />
                                                 {transaction.coupon_code}
                                             </div>
                                         )}
                                     </td>
                                     <td className="p-6 whitespace-nowrap">
-                                        <span className="inline-flex rounded-full border border-purple-200 bg-purple-100 px-3 py-1 text-[9px] font-black tracking-widest text-purple-700 uppercase shadow-sm dark:border-purple-500/20 dark:bg-purple-500/10 dark:text-purple-300">
+                                        <span className="inline-flex rounded-full border border-theme-purple/20 bg-theme-purple/10 px-3 py-1 text-[9px] font-black tracking-widest text-theme-purple uppercase shadow-xs">
                                             {getInferredTransactionType(transaction)}
                                         </span>
                                     </td>

@@ -49,7 +49,7 @@ export default function GroupSelectDropdown({
             </button>
 
             {isOpen && (
-                <div className="animate-in fade-in slide-in-from-top-1 absolute right-0 z-50 mt-1 w-48 origin-top-right rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1 shadow-xl ring-1 ring-black/5 duration-100 focus:outline-none">
+                <div className="animate-in slide-in-from-top-1 absolute right-0 z-50 mt-1 w-48 origin-top-right fade-in rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1 shadow-xl ring-1 ring-black/5 duration-100 focus:outline-none">
                     <div className="max-h-[80vh] space-y-0.5 overflow-y-auto">
                         <button
                             type="button"

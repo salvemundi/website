@@ -49,7 +49,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
     return (
         <div className="space-y-6">
             <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
-                <div className="flex items-center gap-3 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-3 shadow-sm transition-all focus-within:border-(--beheer-accent) focus-within:ring-2 focus-within:ring-(--beheer-accent)/20">
+                <div className="search-bar">
                     <Search className="size-4 shrink-0 text-(--beheer-text-muted)" />
                     <input
                         type="text"
@@ -57,7 +57,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         suppressHydrationWarning
-                        className="beheer-input w-full border-none bg-transparent p-0 text-xs font-semibold text-(--beheer-text) placeholder:text-(--beheer-text-muted)/40 focus:outline-none"
+                        className="beheer-input p-0"
                     />
                 </div>
             </div>
@@ -144,7 +144,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                             {sticker.status !== 'published' && (
                                                 <button
                                                     onClick={() => onApprove(sticker.id)}
-                                                    className="icon-button rounded-lg bg-green-500/10 p-2 text-green-600 shadow-sm transition-all hover:bg-green-600 hover:text-white dark:text-green-400"
+                                                    className="icon-button bg-green-500/10 p-2 text-green-600 hover:bg-green-600 hover:text-white dark:text-green-400"
                                                     title="Publiceren"
                                                     type="button">
                                                     <CheckCircle className="size-4" />
@@ -152,7 +152,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                                             )}
                                             <button
                                                 onClick={() => onDelete(sticker.id)}
-                                                className="icon-button rounded-lg bg-red-500/10 p-2 text-red-600 shadow-sm transition-all hover:bg-red-500 hover:text-white dark:text-red-400"
+                                                className="icon-button bg-red-500/10 p-2 text-red-600 hover:bg-red-500 hover:text-white dark:text-red-400"
                                                 title="Verwijderen"
                                                 type="button">
                                                 <Trash className="size-4" />
@@ -188,7 +188,7 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
                             />
                         </div>
                         <button
-                            className="absolute -top-4 -right-4 icon-button rounded-full border border-(--beheer-border) bg-(--beheer-card-bg) p-2 text-(--beheer-text) shadow-lg transition-colors hover:text-(--beheer-accent)"
+                            className="absolute -top-4 -right-4 icon-button rounded-full border border-(--beheer-border) bg-(--beheer-card-bg) p-2 text-(--beheer-text) hover:text-(--beheer-accent)"
                             onClick={() => setSelectedImage(null)}
                             type="button">
                             <X className="size-5" />

@@ -56,7 +56,7 @@ export default function SignupTicketCard({
                         <button
                             type="button"
                             onClick={() => setEditingTicketId(null)}
-                            className="icon-button p-1 text-(--theme-purple) transition-all hover:text-(--text-main)"
+                            className="icon-button p-1 text-(--theme-purple) hover:text-(--text-main)"
                             title="Sluiten"
                         >
                             <X className="size-3" />
@@ -67,7 +67,7 @@ export default function SignupTicketCard({
                     type="button"
                     onClick={() => handleToggleCheckIn(Number(ticket.id), !!ticket.checked_in)}
                     disabled={!!togglingId}
-                    className="beheer-button transition-all active:scale-95 disabled:opacity-50"
+                    className="beheer-button"
                 >
                     {ticket.checked_in ? (
                         <span className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1 text-[9px] font-semibold text-green-500 ring-1 ring-green-500/20 transition-all hover:bg-green-500/20">
@@ -84,14 +84,14 @@ export default function SignupTicketCard({
             </div>
 
             {isEditing ? (
-                <div className="animate-in fade-in slide-in-from-top-1 flex gap-2 duration-200">
+                <div className="animate-in slide-in-from-top-1 flex fade-in gap-2 duration-200">
                     <div className="flex-1">
                         <label className="mb-1 block text-[9px] font-bold text-(--text-muted) uppercase">Naam</label>
                         <input
                             type="text"
                             value={ticket.name}
                             onChange={(e) => handleTicketChange(Number(ticket.id), 'name', e.target.value)}
-                            className="beheer-input w-full rounded-lg border border-(--border-color) bg-(--bg-card) px-3 py-2 text-xs font-semibold text-(--text-main) transition-all focus:border-(--theme-purple)"
+                            className="beheer-input"
                             autoFocus
                             autoComplete="off"
                         />
@@ -102,7 +102,7 @@ export default function SignupTicketCard({
                             type="text"
                             value={ticket.initial}
                             onChange={(e) => handleTicketChange(Number(ticket.id), 'initial', e.target.value)}
-                            className="beheer-input w-full rounded-lg border border-(--border-color) bg-(--bg-card) px-3 py-2 text-center text-xs font-semibold text-(--text-main) transition-all focus:border-(--theme-purple)"
+                            className="beheer-input text-center"
                             maxLength={1}
                             autoComplete="off"
                         />

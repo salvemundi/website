@@ -36,10 +36,10 @@ interface SignupGroupsViewProps {
 
 const GROUP_COLORS = [
     {
-        bg: 'bg-purple-500/5 dark:bg-purple-400/5',
-        border: 'border-purple-500/10 dark:border-purple-400/10 hover:border-purple-500/20',
-        text: 'text-purple-700 dark:text-purple-300',
-        badge: 'bg-purple-500/10 text-purple-700 dark:text-purple-300 ring-purple-500/20'
+        bg: 'bg-theme-purple/5',
+        border: 'border-theme-purple/10 hover:border-theme-purple/20',
+        text: 'text-theme-purple',
+        badge: 'bg-theme-purple/10 text-theme-purple ring-theme-purple/20'
     },
     {
         bg: 'bg-blue-500/5 dark:bg-blue-400/5',

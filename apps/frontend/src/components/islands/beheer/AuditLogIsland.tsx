@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-    Clock, Server, RefreshCw, Shield
+    Shield
 } from 'lucide-react';
 import {
     approveSignupAction,
@@ -283,30 +283,30 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
 
     return (
         <div className="w-full">
-            <div className="flex flex-col gap-8">
-                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                    <div className="flex w-fit gap-1 rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft) p-1">
+            <div className="page-stack-large">
+                <div className="page-header-row">
+                    <div className="tab-bar-container">
                         {[
-                            { id: 'pending', label: 'Wachtrij', icon: Clock },
-                            { id: 'admin_logs', label: 'Commissie', icon: Shield },
-                            { id: 'system_logs', label: 'Systeem', icon: Server },
-                            { id: 'queues', label: 'Wachtrijen', icon: RefreshCw },
+                            { id: 'pending', label: 'Wachtrij'},
+                            { id: 'admin_logs', label: 'Commissie'},
+                            { id: 'system_logs', label: 'Systeem'},
+                            { id: 'queues', label: 'Wachtrijen'},
                         ].map(tab => (
                             <button
                                 key={tab.id}
                                 onClick={() => handleTabChange(tab.id as typeof activeTab)}
-                                className={`tab-button flex items-center gap-2 rounded-xl px-4 py-2 text-[11px] font-semibold transition-all ${activeTab === tab.id ? 'bg-(--beheer-card-bg) text-(--beheer-accent) shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
+                                data-active={activeTab === tab.id}
+                                className="tab-button"
                                 type="button">
-                                <tab.icon className="size-3" /> {tab.label}
+                                {tab.label}
                             </button>
                         ))}
                     </div>
 
-                    {/* Compact Config Toggle */}
-                    <div className="flex items-center gap-4 rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft) px-4 py-2 shadow-sm">
-                        <div className="flex items-center gap-2">
-                            <Shield className={`size-3.5 ${manualApproval ? 'text-amber-500' : 'text-green-500'}`} />
-                            <span className="text-[11px] leading-tight font-semibold text-(--beheer-text)">
+                    <div className="beheer-info-banner">
+                        <div className="icon-label-row">
+                            <Shield data-status={manualApproval ? 'warning' : 'success'} className="status-icon" />
+                            <span className="beheer-info-text">
                                 {manualApproval
                                     ? "Handmatige goedkeuring is ACTIEF. Alle aanmeldingen moeten worden goedgekeurd."
                                     : "Automatische goedkeuring is ACTIEF. Aanmeldingen worden direct verwerkt."}
@@ -315,10 +315,11 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         <button
                             onClick={() => { void toggleManualApproval(); }}
                             aria-label="Toggle handmatige goedkeuring"
-                            className={`tab-button relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors duration-200 outline-none ${manualApproval ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                            data-variant={manualApproval ? 'warning' : 'success'}
+                            className="btn-toggle-switch"
                             type="button"
                         >
-                            <span className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-xs transition-transform duration-200 ease-in-out ${manualApproval ? 'translate-x-5' : 'translate-x-0'}`} />
+                            <span data-active={manualApproval} className="visibility-toggle-thumb" />
                         </button>
                     </div>
                 </div>
@@ -365,7 +366,7 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
                         actions={
                             <a
                                 href="/beheer/sync"
-                                className="flex items-center gap-2 rounded-lg bg-(--beheer-accent)/10 px-3 py-1.5 text-xs font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/20 active:scale-95"
+                                className="beheer-button text-(--beheer-accent)"
                             >
                                 Sync Beheren
                             </a>

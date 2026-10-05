@@ -65,7 +65,7 @@ function getStatusCardStyle(status: IntroGroupAttendanceStatus): string {
         case 'present': return 'bg-sky-500/10 border-sky-500/30';
         case 'went_home': return 'bg-amber-500/10 border-amber-500/30';
         case 'home': return 'bg-emerald-500/10 border-emerald-500/30';
-        case 'staying_out': return 'bg-purple-500/10 border-purple-500/30';
+        case 'staying_out': return 'bg-theme-purple/10 border-theme-purple/30';
         default: return 'bg-(--bg-card) border-(--border-color)';
     }
 }
@@ -85,7 +85,7 @@ function getStatusBadgeStyle(status: IntroGroupAttendanceStatus): string {
         case 'present': return 'bg-sky-500/15 text-sky-600 dark:text-sky-400';
         case 'went_home': return 'bg-amber-500/15 text-amber-600 dark:text-amber-400';
         case 'home': return 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400';
-        case 'staying_out': return 'bg-purple-500/15 text-purple-600 dark:text-purple-400';
+        case 'staying_out': return 'bg-theme-purple/15 text-theme-purple';
         default: return 'bg-(--bg-soft) text-(--text-muted)';
     }
 }
@@ -438,7 +438,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                     type="date"
                     value={selectedDate}
                     onChange={e => setSelectedDate(e.target.value)}
-                    className="form-input w-full rounded-xl border border-(--border-color) bg-(--bg-card) px-4 py-2.5 text-sm font-semibold text-(--text-main) outline-none focus:ring-2 focus:ring-theme-purple sm:ml-auto sm:w-auto"
+                    className="form-input sm:ml-auto sm:w-auto"
                 />
             </div>
 
@@ -461,7 +461,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                     {statusFilter && (
                         <button
                             onClick={() => setStatusFilter(null)}
-                            className="form-button flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold text-(--text-muted) transition-colors hover:text-(--text-main)"
+                            className="form-button rounded-full px-2 py-1 text-(--text-muted) hover:text-(--text-main)"
                             type="button">
                             <X className="size-3" />
                             Filter wissen
@@ -477,7 +477,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     placeholder="Zoek op naam..."
-                    className="form-input w-full border-none bg-transparent p-0 text-sm font-semibold text-(--text-main) outline-none placeholder:text-(--text-muted)/50"
+                    className="form-input p-0"
                 />
             </div>
 
@@ -490,19 +490,19 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                         onKeyDown={e => { if (e.key === 'Enter') void handleAddMember(); }}
                         placeholder="Naam van kiddo..."
                         autoFocus
-                        className="form-input flex-1 rounded-xl border border-(--border-color) bg-(--bg-card) px-4 py-3 text-sm font-semibold text-(--text-main) outline-none placeholder:text-(--text-muted)/50 focus:ring-2 focus:ring-theme-purple"
+                        className="form-input"
                     />
                     <button
                         onClick={() => { void handleAddMember(); }}
                         disabled={!newName.trim() || addingMember}
-                        className="form-button flex shrink-0 items-center justify-center gap-2 rounded-xl bg-theme-purple px-4 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+                        className="form-button shrink-0"
                         title="Toevoegen"
                         type="button">
                         {addingMember ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
                     </button>
                     <button
                         onClick={() => { setShowAddInput(false); setNewName(''); }}
-                        className="form-button flex shrink-0 items-center justify-center rounded-xl border border-(--border-color) bg-(--bg-card) p-3 text-(--text-muted) transition-colors hover:text-(--text-main)"
+                        className="form-button shrink-0 border border-(--border-color) bg-(--bg-card) p-3 text-(--text-muted) hover:text-(--text-main)"
                         title="Annuleren"
                         type="button">
                         <X className="size-4" />
@@ -511,7 +511,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
             ) : (
                 <button
                     onClick={() => setShowAddInput(true)}
-                    className="mb-6 form-button flex w-full items-center justify-center gap-2 rounded-xl bg-theme-purple px-4 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 sm:w-auto"
+                    className="mb-6 form-button w-full sm:w-auto"
                     type="button">
                     <Plus className="size-4" />
                     Kiddo toevoegen
@@ -555,7 +555,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                     <div className="flex min-w-0 items-center gap-1.5">
                                         <span className="truncate text-sm font-semibold text-(--text-main)">{member.name}</span>
                                         {status === 'home' && (
-                                            <span className="fade-in flex shrink-0 items-center gap-1 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                                            <span className="flex shrink-0 fade-in items-center gap-1 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
                                                 <Home className="size-2.5" />
                                                 Thuis
                                             </span>
@@ -563,7 +563,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                     </div>
                                     <button
                                         onClick={() => toggleDetails(member.id)}
-                                        className="form-button flex shrink-0 items-center gap-1 text-[11px] font-semibold text-(--text-muted) transition-colors hover:text-theme-purple"
+                                        className="form-button shrink-0 text-(--text-muted) hover:text-theme-purple"
                                         type="button">
                                         Details
                                         {notes.length > 0 && ` · ${notes.length}`}
@@ -587,7 +587,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                         <button
                                             onClick={() => { void handleSetStatus(member, 'home'); }}
                                             disabled={isPending}
-                                            className="fade-in form-button flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 py-1.5 text-[11px] font-semibold text-emerald-500 transition-all hover:bg-emerald-500/20 active:scale-90 disabled:opacity-50"
+                                            className="form-button fade-in border border-emerald-500/30 bg-emerald-500/10 px-2 text-emerald-500 hover:bg-emerald-500/20"
                                             type="button">
                                             <Home className="size-3" />
                                             Thuis
@@ -596,7 +596,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                 </div>
 
                                 {detailsExpanded && (
-                                    <div className="fade-in mt-2 space-y-3 border-t border-(--border-color) pt-2">
+                                    <div className="mt-2 fade-in space-y-3 border-t border-(--border-color) pt-2">
                                         {status !== 'not_reported' && statusAt && (
                                             <div className="flex items-center gap-2 text-xs text-(--text-muted)">
                                                 {isEditingTime ? (
@@ -605,18 +605,18 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                             type="time"
                                                             value={editingTimeValue}
                                                             onChange={e => setEditingTimeValue(e.target.value)}
-                                                            className="form-input rounded-lg border border-(--border-color) bg-(--bg-soft) px-2 py-1 text-xs font-semibold text-(--text-main) outline-none focus:ring-2 focus:ring-theme-purple"
+                                                            className="form-input"
                                                         />
                                                         <button
                                                             onClick={() => { void handleSaveTime(member); }}
                                                             disabled={isPending}
-                                                            className="form-button rounded-lg bg-theme-purple px-2.5 py-1 text-xs font-semibold text-white disabled:opacity-50"
+                                                            className="form-button px-2.5 py-1"
                                                             type="button">
                                                             Opslaan
                                                         </button>
                                                         <button
                                                             onClick={() => setEditingTimeMemberId(null)}
-                                                            className="form-button rounded-lg px-2.5 py-1 text-xs font-semibold text-(--text-muted) hover:text-(--text-main)"
+                                                            className="form-button px-2.5 py-1 text-(--text-muted) hover:text-(--text-main)"
                                                             type="button">
                                                             Annuleren
                                                         </button>
@@ -626,7 +626,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                         <span>{getStatusSinceLabel(status)} {formatTime(statusAt)}</span>
                                                         <button
                                                             onClick={() => startEditTime(member)}
-                                                            className="form-button rounded p-1 text-(--text-muted) transition-colors hover:text-theme-purple"
+                                                            className="form-button rounded p-1 text-(--text-muted) hover:text-theme-purple"
                                                             title="Tijd aanpassen"
                                                             type="button">
                                                             <Pencil className="size-3" />
@@ -659,7 +659,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                                     </span>
                                                                     <button
                                                                         onClick={() => { void handleDeleteNote(member.id, note.id); }}
-                                                                        className="form-button text-[11px] text-red-500 hover:underline"
+                                                                        className="form-button text-red-500 hover:underline"
                                                                         type="button">
                                                                         Verwijderen
                                                                     </button>
@@ -674,12 +674,12 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                                             onChange={e => setNewNoteByMember(prev => new Map(prev).set(member.id, e.target.value))}
                                                             onKeyDown={e => { if (e.key === 'Enter') void handleAddNote(member.id); }}
                                                             placeholder="Notitie toevoegen..."
-                                                            className="form-input flex-1 rounded-lg border border-(--border-color) bg-(--bg-soft) px-3 py-2 text-xs font-medium text-(--text-main) outline-none placeholder:text-(--text-muted)/50 focus:ring-2 focus:ring-theme-purple"
+                                                            className="form-input"
                                                         />
                                                         <button
                                                             onClick={() => { void handleAddNote(member.id); }}
                                                             disabled={!(newNoteByMember.get(member.id) || '').trim() || addingNoteId === member.id}
-                                                            className="form-button shrink-0 rounded-lg bg-theme-purple px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                                                            className="form-button shrink-0"
                                                             type="button">
                                                             {addingNoteId === member.id ? <Loader2 className="size-3.5 animate-spin" /> : 'Toevoegen'}
                                                         </button>
@@ -724,7 +724,7 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                                             <button
                                                 onClick={() => { void handleRemoveMember(member.id, member.name); }}
                                                 disabled={isPending}
-                                                className="form-button flex items-center gap-1.5 text-[11px] font-semibold text-red-500 transition-colors hover:text-red-600 disabled:opacity-50"
+                                                className="form-button text-red-500 hover:text-red-600"
                                                 type="button">
                                                 {isPending && !isEditingTime ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
                                                 Kiddo verwijderen

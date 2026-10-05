@@ -45,7 +45,7 @@ export default function VacancyDetailIsland({ vacancy }: VacancyDetailIslandProp
                         </div>
                         <a
                             href={`mailto:${vacancy.contact_email}`}
-                            className="hover:scale-1.02 form-button flex items-center gap-2 rounded-xl bg-(--theme-purple) px-5 py-3 font-bold text-white shadow-(--theme-purple)/20 shadow-lg transition-transform"
+                            className="beheer-button form-button transition-transform"
                         >
                             <Mail className="size-4" />
                             Solliciteer / Neem contact op

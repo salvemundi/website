@@ -38,11 +38,11 @@ export default async function CoboWachtlijstPage() {
                 description="Wachtlijst van besturen/gasten."
             >
                 <div className="mx-auto max-w-4xl px-fluid-md pt-fluid-lg pb-16">
-                    <div className="squircle-lg mx-auto max-w-xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
-                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10">
-                            <Wine className="size-8 text-purple-700 dark:text-purple-300" />
+                    <div className="mx-auto max-w-xl squircle-lg border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
+                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-theme-purple/20 bg-theme-purple/10">
+                            <Wine className="size-8 text-theme-purple" />
                         </div>
-                        <h2 className="text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
+                        <h2 className="text-xl font-black text-theme-purple sm:text-2xl">
                             CoBo Gesloten
                         </h2>
                         <p className="mt-2 text-sm leading-relaxed font-medium text-text-muted">
@@ -61,11 +61,11 @@ export default async function CoboWachtlijstPage() {
                 description="Wachtlijst van besturen/gasten."
             >
                 <div className="mx-auto max-w-4xl px-fluid-md pt-fluid-lg pb-16">
-                    <div className="squircle-lg mx-auto max-w-xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
-                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10">
-                            <Calendar className="size-8 text-purple-700 dark:text-purple-300" />
+                    <div className="mx-auto max-w-xl squircle-lg border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
+                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-theme-purple/20 bg-theme-purple/10">
+                            <Calendar className="size-8 text-theme-purple" />
                         </div>
-                        <h2 className="text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
+                        <h2 className="text-xl font-black text-theme-purple sm:text-2xl">
                             Geen actieve CoBo gevonden
                         </h2>
                         <p className="mt-2 text-sm leading-relaxed font-medium text-text-muted">

@@ -346,7 +346,7 @@ export default function IntroPlanningTab({ planning, onSave, onDelete, saving, d
                         </h3>
                         <button
                             onClick={() => setEditingPlanning(null)}
-                            className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)"
+                            className="icon-button p-2 text-(--beheer-text-muted) hover:text-(--beheer-text)"
                             type="button">
                             <X className="size-5" />
                         </button>

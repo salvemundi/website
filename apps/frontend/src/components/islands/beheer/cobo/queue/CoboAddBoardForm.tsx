@@ -18,8 +18,8 @@ export default function CoboAddBoardForm({ onAddBoard, isPending = false }: Prop
     const [activityCustom, setActivityCustom] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
         if (!boardName.trim() || isSubmitting) return;
 
         setIsSubmitting(true);
@@ -40,17 +40,17 @@ export default function CoboAddBoardForm({ onAddBoard, isPending = false }: Prop
     };
 
     return (
-        <div className="rounded-2xl border border-border-color bg-bg-card p-5 shadow-xs sm:p-6">
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-text-main">
-                <div className="flex size-7 items-center justify-center rounded-lg bg-purple-500/10 text-purple-700 dark:text-purple-300">
+        <div className="card-base">
+            <h3 className="mb-4 section-title-sm">
+                <div className="icon-box-sm">
                     <Plus className="size-4" />
                 </div>
-                <span>Gasten Toevoegen</span>
+                <span>Recipiënt Toevoegen</span>
             </h3>
 
             <form
-                onSubmit={(e) => {
-                    void handleSubmit(e);
+                onSubmit={(event) => {
+                    void handleSubmit(event);
                 }}
                 className="space-y-4"
             >
@@ -58,62 +58,50 @@ export default function CoboAddBoardForm({ onAddBoard, isPending = false }: Prop
                     <input
                         type="text"
                         value={boardName}
-                        onChange={(e) => setBoardName(e.target.value)}
-                        placeholder="Naam gasten / vereniging (bijv. sv Innovum)"
+                        onChange={(event) => setBoardName(event.target.value)}
+                        placeholder="Naam recipiënt"
                         required
-                        className="beheer-input flex-1 rounded-xl border border-border-color bg-bg-soft px-4 py-3 text-sm font-medium text-text-main focus:border-theme-purple focus:outline-none"
+                        className="beheer-input"
                     />
 
-                    <div className="flex items-center gap-2">
+                    <div className="tab-bar-responsive">
                         <button
                             type="button"
                             onClick={() => setActivityType('shotjes')}
-                            className={`beheer-button flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3.5 py-2.5 text-xs font-semibold transition-colors sm:flex-none ${
-                                activityType === 'shotjes'
-                                    ? 'border-amber-500 bg-amber-500/15 text-amber-700 shadow-xs dark:text-amber-300'
-                                    : 'border-border-color bg-bg-soft text-text-muted hover:border-amber-500/40'
-                            }`}
+                            className={`tab-button ${activityType === 'shotjes' ? 'tab-button-active' : 'tab-button-inactive'}`}
                         >
-                            <Flame className="size-3.5 text-amber-500" />
-                            <span>Shotjes</span>
+                            <Flame className="size-3.5 shrink-0" />
+                            <span className="truncate">Shotjes</span>
                         </button>
 
                         <button
                             type="button"
                             onClick={() => setActivityType('watervallen')}
-                            className={`beheer-button flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3.5 py-2.5 text-xs font-semibold transition-colors sm:flex-none ${
-                                activityType === 'watervallen'
-                                    ? 'border-blue-500 bg-blue-500/15 text-blue-700 shadow-xs dark:text-blue-300'
-                                    : 'border-border-color bg-bg-soft text-text-muted hover:border-blue-500/40'
-                            }`}
+                            className={`tab-button ${activityType === 'watervallen' ? 'tab-button-active' : 'tab-button-inactive'}`}
                         >
-                            <Waves className="size-3.5 text-blue-500" />
-                            <span>Watervallen</span>
+                            <Waves className="size-3.5 shrink-0" />
+                            <span className="truncate">Watervallen</span>
                         </button>
 
                         <button
                             type="button"
                             onClick={() => setActivityType('anders')}
-                            className={`beheer-button flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3.5 py-2.5 text-xs font-semibold transition-colors sm:flex-none ${
-                                activityType === 'anders'
-                                    ? 'border-purple-500 bg-purple-500/15 text-purple-700 shadow-xs dark:text-purple-300'
-                                    : 'border-border-color bg-bg-soft text-text-muted hover:border-purple-500/40'
-                            }`}
+                            className={`tab-button ${activityType === 'anders' ? 'tab-button-active' : 'tab-button-inactive'}`}
                         >
-                            <Edit3 className="size-3.5 text-purple-500" />
-                            <span>Anders</span>
+                            <Edit3 className="size-3.5 shrink-0" />
+                            <span className="truncate">Anders</span>
                         </button>
                     </div>
                 </div>
 
                 {activityType === 'anders' && (
-                    <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="animate-in slide-in-from-top-2 fade-in duration-200">
                         <input
                             type="text"
                             value={activityCustom}
-                            onChange={(e) => setActivityCustom(e.target.value)}
-                            placeholder="Toelichting bij activiteit (bijv. Radje draaien, Brasopdracht, etc.)"
-                            className="beheer-input w-full rounded-xl border border-border-color bg-bg-soft px-4 py-2.5 text-xs font-medium text-text-main focus:border-theme-purple focus:outline-none"
+                            onChange={(event) => setActivityCustom(event.target.value)}
+                            placeholder="Radjedraaien, Blikjeblaffen, etc."
+                            className="beheer-input"
                         />
                     </div>
                 )}
@@ -122,7 +110,7 @@ export default function CoboAddBoardForm({ onAddBoard, isPending = false }: Prop
                     <button
                         type="submit"
                         disabled={isSubmitting || isPending}
-                        className="beheer-button flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-purple-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-purple-700 disabled:opacity-50 sm:w-auto"
+                        className="form-button min-h-11 w-full sm:w-auto"
                     >
                         {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
                         <span>Aan Wachtrij Toevoegen</span>

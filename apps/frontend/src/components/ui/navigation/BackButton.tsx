@@ -25,7 +25,7 @@ export default function BackButton({
     icon: Icon = ChevronLeft
 }: BackButtonProps) {
     const commonClasses = cn(
-        "btn-back squircle inline-flex items-center gap-2 border border-(--border-color) bg-(--bg-card) p-3 text-(--text-muted) no-underline shadow-sm transition-all hover:text-(--theme-purple) active:scale-95",
+        "btn-back inline-flex items-center gap-2 squircle border border-border-color bg-bg-card p-3 text-text-muted no-underline shadow-xs transition-all hover:text-theme-purple active:scale-95",
         className
     );
 

@@ -61,7 +61,7 @@ export default function CouponForm({
                         name="coupon_code"
                         required
                         placeholder="BV. KORTING2025"
-                        className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-mono font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10"
+                        className="beheer-input font-mono"
                         onChange={e => e.target.value = e.target.value.toUpperCase()}
                     />
                 </div>
@@ -93,7 +93,7 @@ export default function CouponForm({
                             max={discountType === 'percentage' ? 100 : undefined}
                             step="0.01"
                             placeholder={discountType === 'fixed' ? '12.34' : '20'}
-                            className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10"
+                            className="beheer-input"
                         />
                         <div className="absolute top-1/2 right-5 -translate-y-1/2 text-xs font-bold text-(--beheer-text-muted) opacity-40">
                             {discountType === 'fixed' ? 'EUR' : '%'}
@@ -104,7 +104,7 @@ export default function CouponForm({
                 {/* Usage Limit */}
                 <div className="space-y-3">
                     <label className="text-xs font-semibold text-(--beheer-text-muted)">Gebruikslimiet</label>
-                    <input type="number" name="usage_limit" min="1" placeholder="Onbeperkt" className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10" />
+                    <input type="number" name="usage_limit" min="1" placeholder="Onbeperkt" className="beheer-input" />
                 </div>
 
                 {/* Valid From */}
@@ -143,14 +143,14 @@ export default function CouponForm({
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="beheer-button cursor-pointer rounded-xl border border-(--beheer-border) px-8 py-4 text-sm font-semibold text-(--beheer-text) transition-all hover:bg-(--beheer-card-soft)"
+                    className="beheer-button-secondary"
                 >
                     Annuleren
                 </button>
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="beheer-button flex cursor-pointer items-center justify-center gap-3 rounded-xl bg-(--beheer-accent) px-10 py-4 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+                    className="beheer-button"
                 >
                     {isPending ? <Loader2 className="size-5 animate-spin" /> : <Save className="size-5" />}
                     <span>{isPending ? 'Bezig...' : 'Coupon Aanmaken'}</span>

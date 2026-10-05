@@ -34,8 +34,8 @@ export const MobileOverlays = ({
                 onClick={closeMobileOverlays}
                 aria-label="Sluit overlay"
             />
-            <div className="bg-bg-main absolute inset-x-0 bottom-0 max-h-[78dvh] overflow-y-auto rounded-t-4xl border-t border-white/10 shadow-[0_-20px_60px_rgba(0,0,0,0.35)]">
-                <div className="bg-bg-main/95 sticky top-0 z-10 flex items-center justify-between border-b border-border-color/10 p-4 backdrop-blur-md">
+            <div className="absolute inset-x-0 bottom-0 max-h-[78dvh] overflow-y-auto rounded-t-4xl border-t border-white/10 bg-bg-main shadow-[0_-20px_60px_rgba(0,0,0,0.35)]">
+                <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border-color/10 bg-bg-main/95 p-4 backdrop-blur-md">
                     <div>
                         <p className="text-[10px] font-black tracking-[0.3em] text-text-muted uppercase">
                             Salve Mundi
@@ -47,7 +47,7 @@ export const MobileOverlays = ({
                     <button
                         type="button"
                         onClick={closeMobileOverlays}
-                        className="form-button inline-flex size-10 items-center justify-center rounded-full bg-bg-card text-text-main shadow-sm"
+                        className="form-button size-10 rounded-full bg-bg-card text-text-main"
                         aria-label="Sluit paneel"
                     >
                         <X className="size-4" />

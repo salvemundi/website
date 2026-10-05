@@ -11,7 +11,7 @@ import { PhotoUploader } from '../PhotoUploader';
 interface AddStickerModalProps {
     show: boolean;
     onClose: () => void;
-    onSubmit: (e: React.SyntheticEvent) => void;
+    onSubmit: (event: React.SyntheticEvent) => void;
     isPending: boolean;
     formData: {
         location_name: string;
@@ -27,7 +27,7 @@ interface AddStickerModalProps {
         country: string;
         image: File | null;
     }>>;
-    handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleImageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onRemoveImage?: () => void;
     imagePreview: string | null;
     selectedLocation: { lat: number; lng: number } | null;
@@ -179,19 +179,24 @@ export default function AddStickerModal({
     };
 
     return (
-        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 p-2 backdrop-blur-xl sm:p-4">
-            <div className="flex max-h-[95vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-(--bg-card) shadow-2xl">
-                <div className="flex shrink-0 items-center justify-between bg-linear-to-r from-(--theme-purple) to-(--theme-purple-dark) p-4 text-white sm:p-6">
+        <div className="fixed inset-0 isolate z-9999 flex items-center justify-center p-4 sm:p-6">
+            <div
+                className="modal-backdrop"
+                onClick={onClose}
+            />
+
+            <div className="modal-content relative z-10 flex max-h-[95vh] w-full max-w-xl flex-col">
+                <div className="modal-header">
                     <div>
-                        <h2 className="text-xl font-black tracking-tighter uppercase italic sm:text-2xl">Nieuwe Sticker <span className="text-white/70">Plakken</span></h2>
-                        <p className="mt-1 text-[10px] font-black tracking-widest uppercase opacity-80">{selectedLocation ? 'Locatie geselecteerd op kaart' : 'Selecteer of zoek locatie'}</p>
+                        <h2 className="text-lg font-bold text-text-main">Nieuwe Sticker Plakken</h2>
+                        <p className="mt-0.5 text-xs text-text-muted">{selectedLocation ? 'Locatie geselecteerd op kaart' : 'Selecteer of zoek locatie'}</p>
                     </div>
                     <IconButton onClick={onClose} aria-label="Sluiten">
-                        <X className="size-6" />
+                        <X className="size-5" />
                     </IconButton>
                 </div>
 
-                <form onSubmit={onSubmit} autoComplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" className="space-y-6 overflow-y-auto p-4 sm:p-8">
+                <form onSubmit={onSubmit} autoComplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" className="custom-scrollbar space-y-6 overflow-y-auto p-6">
                     <div className="space-y-4">
                         <LocationPicker
                             selectedLocation={selectedLocation}
@@ -209,24 +214,24 @@ export default function AddStickerModal({
                         />
 
                         <div>
-                            <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Naam van de Locatie</label>
+                            <label className="mb-2 ml-1 block text-xs font-semibold tracking-wide text-text-muted uppercase">Naam van de Locatie</label>
                             <input
                                 required
                                 type="text"
                                 placeholder="Bijv. Eiffeltoren, Fontys R10..."
                                 value={formData.location_name}
-                                onChange={(e) => {
+                                onChange={(event) => {
                                     setIsAutoFilledName(false);
-                                    setFormData((prev) => ({ ...prev, location_name: e.target.value }));
+                                    setFormData((prev) => ({ ...prev, location_name: event.target.value }));
                                 }}
                                 suppressHydrationWarning
-                                className="form-input w-full rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 px-4 py-3 text-sm transition-all outline-none focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
+                                className="form-input"
                             />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Stad</label>
+                                <label className="mb-2 ml-1 block text-xs font-semibold tracking-wide text-text-muted uppercase">Stad</label>
                                 <input
                                     readOnly
                                     tabIndex={-1}
@@ -234,11 +239,11 @@ export default function AddStickerModal({
                                     placeholder="Kies via zoeken of huidige locatie"
                                     value={formData.city}
                                     suppressHydrationWarning
-                                    className="form-input w-full cursor-not-allowed rounded-xl border border-(--border-color)/20 bg-(--bg-main)/30 px-4 py-3 text-sm text-(--text-muted) outline-none"
+                                    className="form-input cursor-not-allowed opacity-70"
                                 />
                             </div>
                             <div>
-                                <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Land</label>
+                                <label className="mb-2 ml-1 block text-xs font-semibold tracking-wide text-text-muted uppercase">Land</label>
                                 <input
                                     readOnly
                                     tabIndex={-1}
@@ -246,24 +251,24 @@ export default function AddStickerModal({
                                     placeholder="Kies via zoeken of huidige locatie"
                                     value={formData.country}
                                     suppressHydrationWarning
-                                    className="form-input w-full cursor-not-allowed rounded-xl border border-(--border-color)/20 bg-(--bg-main)/30 px-4 py-3 text-sm text-(--text-muted) outline-none"
+                                    className="form-input cursor-not-allowed opacity-70"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Beschrijving</label>
+                            <label className="mb-2 ml-1 block text-xs font-semibold tracking-wide text-text-muted uppercase">Beschrijving</label>
                             <textarea
                                 rows={3}
                                 placeholder="Wat een mooie plek voor een Salve sticker!"
                                 value={formData.description}
-                                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                                className="form-input w-full resize-none rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 px-4 py-3 text-sm transition-all outline-none focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
+                                onChange={(event) => setFormData((prev) => ({ ...prev, description: event.target.value }))}
+                                className="form-input resize-none"
                             />
                         </div>
 
                         <div>
-                            <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Foto Bewijs</label>
+                            <label className="mb-2 ml-1 block text-xs font-semibold tracking-wide text-text-muted uppercase">Foto Bewijs</label>
                             <PhotoUploader
                                 imagePreview={imagePreview}
                                 onImageChange={handleImageChange}
@@ -276,7 +281,7 @@ export default function AddStickerModal({
                         type="submit"
                         size="lg"
                         disabled={isPending || !selectedLocation || !formData.city || !formData.country}
-                        className="flex w-full items-center justify-center gap-3 rounded-2xl bg-linear-to-r from-(--theme-purple) to-orange-500 font-black tracking-[0.2em] text-white uppercase shadow-xl hover:shadow-2xl active:scale-95"
+                        className="form-button w-full"
                     >
                         {isPending ? <Loader2 className="size-5 animate-spin" /> : <Plus className="size-5" />}
                         Sticker Registreren

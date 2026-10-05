@@ -13,7 +13,7 @@ interface DocumentenLijstProps {
 export default function DocumentenLijst({ documenten }: DocumentenLijstProps) {
     if (documenten.length === 0) {
         return (
-            <p className="text-sm text-(--text-muted)">
+            <p className="text-sm text-text-muted">
                 Geen documenten beschikbaar
             </p>
         );
@@ -31,7 +31,7 @@ export default function DocumentenLijst({ documenten }: DocumentenLijstProps) {
                         href={fileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group block w-fit text-(--text-muted) transition-colors hover:text-(--text-main)"
+                        className="group block w-fit text-text-muted transition-colors hover:text-text-main"
                         title={doc.description !== null ? doc.description : undefined}
                     >
                         {/* Kleine pijl-animatie op hover */}

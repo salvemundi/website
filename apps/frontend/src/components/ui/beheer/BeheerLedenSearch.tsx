@@ -91,7 +91,7 @@ export default function BeheerLedenSearch({
                     placeholder={placeholder}
                     disabled={disabled}
                     autoFocus={autoFocus}
-                    className="beheer-input py-4 pr-12 pl-11! text-xs font-semibold placeholder:text-text-muted placeholder:opacity-40 focus:ring-4 focus:ring-theme-purple/10"
+                    className="beheer-input pr-12 pl-11!"
                     autoComplete="off"
                 />
 
@@ -103,7 +103,7 @@ export default function BeheerLedenSearch({
                         <button
                             type="button"
                             onClick={() => { setQuery(''); setResults([]); }}
-                            className="form-button rounded-lg p-1 text-text-muted transition-all hover:bg-bg-soft hover:text-text-main"
+                            className="form-button p-1 text-text-muted hover:bg-bg-soft hover:text-text-main"
                         >
                             <X className="size-3.5" />
                         </button>
@@ -112,11 +112,11 @@ export default function BeheerLedenSearch({
             </div>
 
             {isOpen && (query.length >= 2) && (
-                <div className="animate-in fade-in slide-in-from-top-4 absolute z-100 mt-3 w-full overflow-hidden rounded-3xl border border-border-color bg-bg-card shadow-2xl backdrop-blur-xl duration-300">
+                <div className="animate-in slide-in-from-top-4 absolute z-100 mt-3 w-full fade-in overflow-hidden rounded-3xl border border-border-color bg-bg-card shadow-2xl backdrop-blur-xl duration-300">
                     <div className="absolute inset-x-0 -top-px h-px bg-linear-to-r from-transparent via-theme-purple/30 to-transparent" />
 
                     {results.length > 0 ? (
-                        <div className="custom-scrollbar max-h-72 overflow-y-auto p-2">
+                        <div className="max-h-72 custom-scrollbar overflow-y-auto p-2">
                             <div className="mb-1 px-3 py-2">
                                 <span className="text-[9px] font-bold text-text-muted opacity-50">Resultaten</span>
                             </div>
@@ -125,7 +125,7 @@ export default function BeheerLedenSearch({
                                     key={user.id}
                                     type="button"
                                     onClick={() => handleSelect(user)}
-                                    className="group form-button flex w-full items-center justify-between rounded-2xl border border-transparent p-3.5 text-left transition-all hover:border-theme-purple/10 hover:bg-theme-purple/10"
+                                    className="group form-button w-full justify-between border border-transparent p-3.5 text-left hover:border-theme-purple/10 hover:bg-theme-purple/10"
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-bg-soft text-xs font-semibold text-text-muted shadow-inner ring-1 ring-border-color/50 transition-all group-hover:bg-theme-purple group-hover:text-white">

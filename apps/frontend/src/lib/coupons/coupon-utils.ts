@@ -16,7 +16,7 @@ export function getComputedCouponStatus(coupon: Coupon): {
             return {
                 type: 'expired',
                 label: 'Verlopen',
-                color: 'bg-(--beheer-inactive)/20 text-(--beheer-inactive)',
+                color: 'bg-beheer-inactive/20 text-beheer-inactive',
                 description: 'Coupon is verlopen'
             };
         }
@@ -27,7 +27,7 @@ export function getComputedCouponStatus(coupon: Coupon): {
         return {
             type: 'maxed',
             label: 'Limiet bereikt',
-            color: 'bg-orange-500/20 text-orange-500',
+            color: 'bg-geel/20 text-geel',
             description: 'Gebruikslimiet bereikt'
         };
     }
@@ -37,7 +37,7 @@ export function getComputedCouponStatus(coupon: Coupon): {
         return {
             type: 'inactive',
             label: 'Inactief',
-            color: 'bg-slate-500/20 text-slate-500',
+            color: 'bg-beheer-text-muted/20 text-beheer-text-muted',
             description: 'Coupon is handmatig uitgeschakeld'
         };
     }
@@ -50,7 +50,7 @@ export function getComputedCouponStatus(coupon: Coupon): {
             return {
                 type: 'pending',
                 label: 'Nog niet actief',
-                color: 'bg-amber-500/20 text-amber-500',
+                color: 'bg-geel/20 text-geel',
                 description: 'Coupon is nog niet actief'
             };
         }
@@ -59,7 +59,7 @@ export function getComputedCouponStatus(coupon: Coupon): {
     return {
         type: 'active',
         label: 'Actief',
-        color: 'bg-(--beheer-active)/20 text-(--beheer-active)',
+        color: 'bg-beheer-active/20 text-beheer-active',
         description: 'Coupon is actief'
     };
 }

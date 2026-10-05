@@ -23,7 +23,7 @@ export default function StickerStats({ stickers }: StickerStatsProps) {
 
     return (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <StatCard label="Totaal" value={totalStickers} icon={MapIcon} color="text-purple-500" />
+            <StatCard label="Totaal" value={totalStickers} icon={MapIcon} color="text-theme-purple" />
             <StatCard label="Landen" value={countriesCount} icon={Globe} color="text-blue-500" />
             <StatCard label="Steden" value={citiesCount} icon={Award} color="text-green-500" />
             <StatCard

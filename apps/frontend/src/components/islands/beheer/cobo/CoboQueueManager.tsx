@@ -250,15 +250,11 @@ export default function CoboQueueManager({
                 onNext={handleNext}
             />
 
-            <div className="flex items-center gap-2 overflow-x-auto border-b border-border-color pb-3">
+            <div className="tab-strip-scrollable">
                 <button
                     type="button"
                     onClick={() => handleSubTabChange('queue')}
-                    className={`tab-button flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-colors sm:min-h-9 sm:text-sm ${
-                        activeTab === 'queue'
-                            ? 'bg-purple-600 text-white shadow-xs'
-                            : 'border border-border-color bg-bg-card text-text-muted hover:bg-bg-soft hover:text-text-main'
-                    }`}
+                    className={activeTab === 'queue' ? 'tab-button-active' : 'tab-button-inactive'}
                 >
                     <Users className="size-4" />
                     <span>Wachtrij ({waitingBoards.length})</span>
@@ -267,11 +263,7 @@ export default function CoboQueueManager({
                 <button
                     type="button"
                     onClick={() => handleSubTabChange('completed')}
-                    className={`tab-button flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-colors sm:min-h-9 sm:text-sm ${
-                        activeTab === 'completed'
-                            ? 'bg-purple-600 text-white shadow-xs'
-                            : 'border border-border-color bg-bg-card text-text-muted hover:bg-bg-soft hover:text-text-main'
-                    }`}
+                    className={activeTab === 'completed' ? 'tab-button-active' : 'tab-button-inactive'}
                 >
                     <CheckCircle2 className="size-4" />
                     <span>Geweest ({completedBoards.length})</span>
@@ -280,11 +272,7 @@ export default function CoboQueueManager({
                 <button
                     type="button"
                     onClick={() => handleSubTabChange('late')}
-                    className={`tab-button flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-colors sm:min-h-9 sm:text-sm ${
-                        activeTab === 'late'
-                            ? 'bg-amber-600 text-white shadow-xs'
-                            : 'border border-border-color bg-bg-card text-text-muted hover:bg-bg-soft hover:text-text-main'
-                    }`}
+                    className={activeTab === 'late' ? 'tab-button-amber-active' : 'tab-button-inactive'}
                 >
                     <Clock className="size-4" />
                     <span>Niet op tijd ({lateBoards.length})</span>

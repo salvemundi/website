@@ -78,7 +78,7 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
                         >
                             <div className="space-y-4">
                                 <div className="flex flex-col items-center text-center">
-                                    <div className="squircle relative mb-4 size-32 overflow-hidden shadow-md ring-4 ring-bg-soft">
+                                    <div className="relative mb-4 size-32 overflow-hidden squircle shadow-md ring-4 ring-bg-soft">
                                         {member.user?.avatar ? (
                                             <Image
                                                 src={getImageUrl(member.user.avatar)}

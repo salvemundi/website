@@ -147,12 +147,12 @@ function ActivityCard({
             className={[
                 'squircle-lg p-5 sm:p-6 border shadow-lg',
                 accent === 'live'
-                    ? 'bg-linear-to-br from-purple-600 to-purple-800 border-purple-500/40 text-white'
+                    ? 'bg-theme-purple border-theme-purple/40 text-wit-paars'
                     : 'bg-bg-card border-border-color dark:border-white/10'
             ].join(' ')}
         >
             <div className="flex items-center gap-2">
-                <span className={`flex items-center gap-1.5 text-[11px] font-black tracking-wider uppercase ${accent === 'live' ? 'text-white/80' : 'text-purple-500'}`}>
+                <span className={`flex items-center gap-1.5 text-[11px] font-black tracking-wider uppercase ${accent === 'live' ? 'text-white/80' : 'text-theme-purple'}`}>
                     {accent === 'live' && <span className="relative flex size-2"><span className="absolute inline-flex size-full animate-ping rounded-full bg-white/70" /><span className="relative inline-flex size-2 rounded-full bg-white" /></span>}
                     {label}
                 </span>
@@ -332,8 +332,8 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
             {showTomorrowOverview && tomorrowItems.length > 0 && (
                 <div className="squircle-lg border border-border-color bg-bg-card p-5 shadow-lg sm:p-8 dark:border-white/10">
                     <div className="mb-6 flex items-center gap-3">
-                        <div className="squircle flex size-10 shrink-0 items-center justify-center bg-purple-600">
-                            <Sunrise className="size-5 text-white" />
+                        <div className="flex size-10 shrink-0 items-center justify-center squircle bg-theme-purple">
+                            <Sunrise className="size-5 text-wit-paars" />
                         </div>
                         <div>
                             <h2 className="text-xl leading-tight font-black text-theme-purple sm:text-2xl">Planning voor morgen</h2>
@@ -349,11 +349,11 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                     key={item.id}
                                     className={`squircle border px-3.5 py-3 ${
                                         isCurrentOrNext
-                                            ? 'border-purple-500/30 bg-purple-500/10'
-                                            : 'bg-bg-main/60 border-border-color dark:border-white/10'
+                                            ? 'border-theme-purple/30 bg-theme-purple/10'
+                                            : 'border-border-color bg-bg-main/60 dark:border-white/10'
                                     }`}
                                 >
-                                    <span className={`inline-flex items-center gap-1.5 text-xs font-black tracking-wide uppercase ${isCurrentOrNext ? 'text-purple-500' : 'text-text-muted'}`}>
+                                    <span className={`inline-flex items-center gap-1.5 text-xs font-black tracking-wide uppercase ${isCurrentOrNext ? 'text-theme-purple' : 'text-text-muted'}`}>
                                         <Clock className="size-3.5 shrink-0" />
                                         {formatTimeRange(item)}
                                     </span>
@@ -379,7 +379,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                             <button
                                 type="button"
                                 onClick={openFullPlanning}
-                                className="btn-open-timeline squircle hover:scale-1.02 inline-flex items-center justify-center gap-1.5 bg-purple-600 px-3 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:shadow-lg sm:gap-2 sm:px-4 sm:text-sm"
+                                className="btn-open-timeline hover:scale-1.02 inline-flex items-center justify-center gap-1.5 squircle bg-theme-purple px-3 py-2.5 text-xs font-semibold text-wit-paars shadow-md transition-all hover:shadow-lg sm:gap-2 sm:px-4 sm:text-sm"
                             >
                                 <CalendarDays className="size-4 shrink-0" />
                                 <span className="whitespace-nowrap">Bekijk tijdlijn</span>
@@ -398,7 +398,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                     <button
                         type="button"
                         onClick={() => setLightboxOpen(true)}
-                        className="btn-open-lightbox group sm:squircle relative -mx-9 block cursor-zoom-in overflow-hidden border-0 border-border-color sm:mx-0 sm:border dark:border-white/10"
+                        className="btn-open-lightbox group relative -mx-9 block cursor-zoom-in overflow-hidden border-0 border-border-color sm:mx-0 sm:squircle sm:border dark:border-white/10"
                     >
                         <Image
                             src={planningImageUrl}
@@ -409,15 +409,15 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                             className="h-auto w-full"
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30">
-                            <span className="squircle inline-flex items-center gap-2 bg-black/60 px-4 py-2.5 text-sm font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
+                            <span className="inline-flex items-center gap-2 squircle bg-black/60 px-4 py-2.5 text-sm font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
                                 <ZoomIn className="size-4" />
                                 Bekijk fullscreen
                             </span>
                         </div>
                     </button>
                 ) : (
-                    <div className="squircle bg-bg-main/50 border border-dashed border-border-color p-10 text-center">
-                        <ImageOff className="mx-auto mb-4 size-8 text-purple-500" />
+                    <div className="squircle border border-dashed border-border-color bg-bg-main/50 p-10 text-center">
+                        <ImageOff className="mx-auto mb-4 size-8 text-theme-purple" />
                         <p className="text-lg font-bold text-text-main opacity-60">De planning wordt binnenkort bekendgemaakt</p>
                     </div>
                 )}
@@ -429,7 +429,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                     onClick={() => setFullPlanningOpen(false)}
                 >
                     <div
-                        className="sm:squircle-lg relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-3xl bg-bg-card shadow-2xl sm:max-h-[85vh] sm:max-w-2xl lg:max-w-5xl xl:max-w-6xl"
+                        className="relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-3xl bg-bg-card shadow-2xl sm:max-h-[85vh] sm:max-w-2xl sm:squircle-lg lg:max-w-5xl xl:max-w-6xl"
                         onClick={e => e.stopPropagation()}
                     >
                         <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border-color px-5 py-4 sm:px-6 dark:border-white/10">
@@ -438,7 +438,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                 type="button"
                                 onClick={() => setFullPlanningOpen(false)}
                                 aria-label="Sluiten"
-                                className="btn-close-timeline squircle bg-bg-main shrink-0 p-2.5 text-text-main transition-colors hover:bg-border-color/40"
+                                className="btn-close-timeline shrink-0 squircle bg-bg-main p-2.5 text-text-main transition-colors hover:bg-border-color/40"
                             >
                                 <X className="size-5" />
                             </button>
@@ -454,15 +454,15 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                             key={date}
                                             type="button"
                                             onClick={() => setSelectedDay(date)}
-                                            className={`tab-button squircle shrink-0 px-3.5 py-2 text-xs font-bold whitespace-nowrap capitalize transition-all sm:text-sm ${
+                                            className={`tab-button shrink-0 squircle px-3.5 py-2 text-xs font-bold whitespace-nowrap capitalize transition-all sm:text-sm ${
                                                 isSelected
-                                                    ? 'bg-purple-600 text-white shadow-md'
-                                                    : 'bg-bg-main border border-border-color text-text-muted hover:text-text-main dark:border-white/10'
+                                                    ? 'bg-theme-purple text-wit-paars shadow-md'
+                                                    : 'border border-border-color bg-bg-main text-text-muted hover:text-text-main dark:border-white/10'
                                             }`}
                                         >
                                             {formatDate(date, 'EEE d MMM')}
                                             {isToday && (
-                                                <span className={`ml-1.5 inline-block size-1.5 rounded-full align-middle ${isSelected ? 'bg-white' : 'bg-purple-500'}`} />
+                                                <span className={`ml-1.5 inline-block size-1.5 rounded-full align-middle ${isSelected ? 'bg-wit-paars' : 'bg-theme-purple'}`} />
                                             )}
                                         </button>
                                     );
@@ -487,15 +487,15 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                                     type="button"
                                                     onClick={() => hasDescription && toggleExpanded(item.id)}
                                                     aria-expanded={hasDescription ? isExpanded : undefined}
-                                                    className={`btn-timeline-item squircle w-full border px-3.5 py-3 text-left transition-colors ${
+                                                    className={`btn-timeline-item w-full squircle border px-3.5 py-3 text-left transition-colors ${
                                                         isCurrentOrNext
-                                                            ? 'border-purple-500/30 bg-purple-500/10'
-                                                            : 'bg-bg-main/60 border-border-color dark:border-white/10'
-                                                    } ${hasDescription ? 'hover:bg-bg-main active:bg-bg-main cursor-pointer' : 'cursor-default'}`}
+                                                            ? 'border-theme-purple/30 bg-theme-purple/10'
+                                                            : 'border-border-color bg-bg-main/60 dark:border-white/10'
+                                                    } ${hasDescription ? 'cursor-pointer hover:bg-bg-main active:bg-bg-main' : 'cursor-default'}`}
                                                 >
                                                     <div className="flex items-start justify-between gap-2">
                                                         <div className="min-w-0">
-                                                            <span className={`inline-flex items-center gap-1.5 text-xs font-black tracking-wide uppercase ${isCurrentOrNext ? 'text-purple-500' : 'text-text-muted'}`}>
+                                                            <span className={`inline-flex items-center gap-1.5 text-xs font-black tracking-wide uppercase ${isCurrentOrNext ? 'text-theme-purple' : 'text-text-muted'}`}>
                                                                 <Clock className="size-3.5 shrink-0" />
                                                                 {formatTimeRange(item)}
                                                             </span>
@@ -538,10 +538,10 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                                     key={date}
                                                     className="min-w-36 flex-1 border-l border-border-color px-2 py-2.5 text-center dark:border-white/10"
                                                 >
-                                                    <p className={`text-[11px] font-black tracking-wide uppercase ${isToday ? 'text-purple-500' : 'text-text-muted'}`}>
+                                                    <p className={`text-[11px] font-black tracking-wide uppercase ${isToday ? 'text-theme-purple' : 'text-text-muted'}`}>
                                                         {formatDate(date, 'EEE')}
                                                     </p>
-                                                    <p className={`text-sm font-black capitalize ${isToday ? 'text-purple-500' : 'text-text-main'}`}>
+                                                    <p className={`text-sm font-black capitalize ${isToday ? 'text-theme-purple' : 'text-text-main'}`}>
                                                         {formatDate(date, 'd MMM')}
                                                     </p>
                                                 </div>
@@ -586,11 +586,11 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                                                 type="button"
                                                                 onClick={() => setSelectedGridItemId(prev => (prev === item.id ? null : item.id))}
                                                                 className={`btn-grid-item absolute cursor-pointer overflow-hidden rounded-lg border border-l-4 py-1 pr-1.5 pl-2 text-left shadow-sm transition-shadow hover:shadow-md hover:brightness-110 ${
-                                                                    isSelected ? 'z-10 ring-2 ring-purple-400' : ''
+                                                                    isSelected ? 'z-10 ring-2 ring-theme-purple' : ''
                                                                 } ${
                                                                     isCurrentOrNext
-                                                                        ? 'border-purple-500 border-l-purple-200 bg-purple-600 text-white shadow-md'
-                                                                        : 'border-border-color border-l-purple-500 bg-bg-card text-text-main dark:border-white/10'
+                                                                        ? 'border-theme-purple border-l-theme-purple bg-theme-purple text-wit-paars shadow-md'
+                                                                        : 'border-border-color border-l-theme-purple bg-bg-card text-text-main dark:border-white/10'
                                                                 }`}
                                                                 style={{
                                                                     // 2px inset on top/bottom leaves a visible gap between
@@ -602,7 +602,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                                                 }}
                                                                 title={`${formatTimeRange(item)} — ${item.title}`}
                                                             >
-                                                                <p className={`text-[10px] leading-tight font-black ${isCurrentOrNext ? 'text-white/80' : 'text-purple-500'}`}>
+                                                                <p className={`text-[10px] leading-tight font-black ${isCurrentOrNext ? 'text-white/80' : 'text-theme-purple'}`}>
                                                                     {item.time_start.slice(0, 5)}
                                                                 </p>
                                                                 <p className="line-clamp-2 text-[11px] leading-snug font-bold">{item.title}</p>
@@ -622,7 +622,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                         {selectedGridItem && (
                             <div className="hidden shrink-0 items-start gap-3 border-t border-border-color bg-bg-card px-5 py-4 sm:flex sm:px-6 dark:border-white/10">
                                 <div className="min-w-0 flex-1">
-                                    <span className="inline-flex items-center gap-1.5 text-xs font-black tracking-wide text-purple-500 uppercase">
+                                    <span className="inline-flex items-center gap-1.5 text-xs font-black tracking-wide text-theme-purple uppercase">
                                         <Clock className="size-3.5 shrink-0" />
                                         {formatTimeRange(selectedGridItem)}
                                     </span>
@@ -638,7 +638,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                                     type="button"
                                     onClick={() => setSelectedGridItemId(null)}
                                     aria-label="Sluiten"
-                                    className="btn-close-grid-item squircle bg-bg-main shrink-0 p-2 text-text-main transition-colors hover:bg-border-color/40"
+                                    className="btn-close-grid-item shrink-0 squircle bg-bg-main p-2 text-text-main transition-colors hover:bg-border-color/40"
                                 >
                                     <X className="size-4" />
                                 </button>
@@ -657,7 +657,7 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
                         type="button"
                         onClick={() => setLightboxOpen(false)}
                         aria-label="Sluiten"
-                        className="btn-close-lightbox squircle absolute top-4 right-4 bg-white/10 p-2.5 text-white transition-colors hover:bg-white/20 sm:top-6 sm:right-6"
+                        className="btn-close-lightbox absolute top-4 right-4 squircle bg-white/10 p-2.5 text-white transition-colors hover:bg-white/20 sm:top-6 sm:right-6"
                     >
                         <X className="size-6" />
                     </button>

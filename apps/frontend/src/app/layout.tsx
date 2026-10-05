@@ -82,7 +82,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <body className={`${poppins.variable} flex min-h-screen flex-col font-sans antialiased`}>
                 <ImpersonationWrapper impersonation={impersonation} />
                 <HeaderWrapper initialSession={session} isAuthorized={isAuthorized} />
-                <main className="flex grow flex-col pt-header-total">
+                <main className="pt-header-total flex grow flex-col">
                     {children}
                     <FooterWrapper initialSession={session} className="mt-auto w-full" />
                 </main>

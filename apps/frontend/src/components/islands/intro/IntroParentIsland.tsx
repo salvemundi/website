@@ -66,12 +66,12 @@ export const IntroParentIsland = ({ initialPhone, className = '', isOpen = true 
 
     if (!isOpen) {
         return (
-            <div className={`dark:bg-gradient-theme squircle-xl flex min-h-75 flex-col items-center justify-center border border-border-color bg-bg-card p-10 text-center shadow-xl ${className}`}>
-                <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-purple-100 dark:bg-white/20">
+            <div className={`dark:bg-gradient-theme flex min-h-75 flex-col items-center justify-center squircle-xl border border-border-color bg-bg-card p-10 text-center shadow-xl ${className}`}>
+                <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-theme-purple/10">
 
-                    <Lock className="size-10 text-brand-primary dark:text-white" />
+                    <Lock className="size-10 text-theme-purple" />
                 </div>
-                <h3 className="mb-4 text-3xl font-black tracking-tight text-text-main dark:text-white">Inschrijvingen Gesloten</h3>
+                <h3 className="mb-4 text-3xl font-black tracking-tight text-text-main">Inschrijvingen Gesloten</h3>
                 <p className="max-w-sm font-medium text-text-muted dark:text-white/80">
                     De inschrijvingen voor Intro Ouders zijn momenteel gesloten.
                 </p>
@@ -124,7 +124,7 @@ export const IntroParentIsland = ({ initialPhone, className = '', isOpen = true 
                             {...register('motivation')}
                             id="field-motivation"
                             required
-                            className="form-input w-full flex-1 resize-none"
+                            className="form-input resize-none"
                             placeholder="Vertel ons waarom jij een goede Intro Ouder zou zijn..."
                             autoComplete="off"
                             suppressHydrationWarning

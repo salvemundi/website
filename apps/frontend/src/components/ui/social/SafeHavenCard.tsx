@@ -17,10 +17,10 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
 
     return (
         <div
-            className="squircle-lg bg-bg-main/30 flex h-full flex-col border border-border-color p-5 shadow-sm transition-all duration-300 hover:border-purple-300 hover:shadow-md sm:p-6 dark:hover:border-white/20"
+            className="flex h-full flex-col squircle-lg border border-border-color bg-bg-main/30 p-5 shadow-xs transition-all duration-300 hover:border-theme-purple/40 hover:shadow-md sm:p-6"
         >
             <div className="flex items-center gap-4">
-                <div className="squircle bg-bg-main relative size-16 shrink-0 overflow-hidden shadow-md sm:size-20">
+                <div className="relative size-16 shrink-0 overflow-hidden squircle bg-bg-main shadow-md sm:size-20">
                     {imageUrl ? (
                         <Image
                             src={imageUrl}
@@ -52,7 +52,7 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                     <h3 className="truncate text-lg font-bold text-theme-purple sm:text-xl">
                         {safeHaven?.contact_name || ''}
                     </h3>
-                    <p className="text-sm font-semibold text-purple-500">
+                    <p className="text-sm font-semibold text-theme-purple opacity-80">
                         Safe Haven
                     </p>
                 </div>
@@ -63,11 +63,11 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                     <>
                         <ObfuscatedEmail
                             email={safeHaven.email || ''}
-                            className="flex w-full items-center gap-3 rounded-xl border border-border-color bg-bg-card p-3 text-sm font-medium text-text-main shadow-sm transition-colors hover:border-purple-300"
+                            className="flex w-full items-center gap-3 rounded-xl border border-border-color bg-bg-card p-3 text-sm font-medium text-text-main shadow-xs transition-colors hover:border-theme-purple/40"
                         />
                         {safeHaven.phone_number && (
-                            <div className="flex items-center gap-3 rounded-xl border border-border-color bg-bg-card p-3 text-sm font-medium text-text-main shadow-sm">
-                                <Phone className="size-4 text-purple-400" />
+                            <div className="flex items-center gap-3 rounded-xl border border-border-color bg-bg-card p-3 text-sm font-medium text-text-main shadow-xs">
+                                <Phone className="size-4 text-theme-purple" />
                                 <span>{safeHaven.phone_number}</span>
                             </div>
                         )}

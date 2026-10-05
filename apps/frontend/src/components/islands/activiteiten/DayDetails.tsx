@@ -49,27 +49,27 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
 
     const modalContent = (
         <div
-            className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs duration-200"
+            className="modal-backdrop"
             onClick={onClose}
         >
             <div
                 role="dialog"
                 aria-modal="true"
                 aria-label={`Activiteiten op ${formattedDate}`}
-                className="animate-in zoom-in-95 relative flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border-color/60 bg-(--bg-card) shadow-2xl duration-200 sm:rounded-3xl dark:border-white/10"
-                onClick={(e) => e.stopPropagation()}
+                className="modal-content max-w-lg"
+                onClick={(event) => event.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-border-color/30 p-5 sm:p-6">
+                <div className="modal-header">
                     <div className="flex items-center gap-3">
-                        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/5 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
+                        <div className="icon-box">
                             <CalendarIcon className="size-5" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-bold tracking-widest text-(--text-muted) uppercase">
+                            <p className="text-caption-muted">
                                 {dayEvents.length} {dayEvents.length === 1 ? 'activiteit' : 'activiteiten'}
                             </p>
-                            <h3 className="text-base font-black text-purple-700 capitalize sm:text-lg dark:text-purple-300">
+                            <h3 className="modal-title-lg">
                                 {formattedDate}
                             </h3>
                         </div>
@@ -77,7 +77,7 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
                     <button
                         type="button"
                         onClick={onClose}
-                        className="icon-button flex size-9 items-center justify-center rounded-full text-(--text-muted) transition-colors hover:bg-(--bg-soft) hover:text-(--text-main)"
+                        className="icon-button size-9 p-2"
                         aria-label="Sluiten"
                     >
                         <X className="size-5" />
@@ -85,10 +85,10 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
                 </div>
 
                 {/* Content */}
-                <div className="custom-scrollbar flex-1 overflow-y-auto p-5 sm:p-6">
+                <div className="modal-body-scroll">
                     {dayEvents.length === 0 ? (
                         <div className="py-10 text-center">
-                            <p className="text-sm font-semibold text-(--text-muted)">
+                            <p className="text-sm font-semibold text-text-muted">
                                 Geen activiteiten gepland op deze dag
                             </p>
                         </div>
@@ -102,18 +102,18 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
                                         onClose();
                                         onEventClick(event);
                                     }}
-                                    className="tab-button group flex w-full flex-col gap-2 rounded-xl border border-border-color/30 bg-(--bg-soft) p-4 text-left transition-colors hover:border-purple-500/30 hover:bg-purple-500/10 dark:hover:border-purple-400/30 dark:hover:bg-purple-400/10"
+                                    className="group btn-day-event"
                                 >
                                     <div className="flex items-start justify-between gap-3">
-                                        <h4 className="font-bold text-(--text-main) transition-colors group-hover:text-purple-700 dark:group-hover:text-purple-300">
+                                        <h4 className="font-bold text-text-main transition-colors group-hover:text-theme-purple">
                                             {event.name}
                                         </h4>
-                                        <ArrowRight className="size-4 shrink-0 text-(--text-muted) transition-transform group-hover:translate-x-1 group-hover:text-purple-700 dark:group-hover:text-purple-300" />
+                                        <ArrowRight className="icon-arrow-slide" />
                                     </div>
 
-                                    <div className="flex flex-wrap items-center gap-4 text-xs text-(--text-muted)">
+                                    <div className="meta-row-muted">
                                         <div className="flex items-center gap-1.5">
-                                            <Clock className="size-3.5 shrink-0 text-purple-600 dark:text-purple-400" />
+                                            <Clock className="size-3.5 shrink-0 text-theme-purple" />
                                             <span>
                                                 {event.event_time 
                                                     ? event.event_time.split(':').slice(0, 2).join(':')
@@ -123,8 +123,8 @@ export default function DayDetails({ selectedDay, activities, onClose, onEventCl
                                         </div>
                                         {event.location && (
                                             <div className="flex items-center gap-1.5">
-                                                <MapPin className="size-3.5 shrink-0 text-purple-600 dark:text-purple-400" />
-                                                <span className="max-w-55 truncate">{event.location}</span>
+                                                <MapPin className="size-3.5 shrink-0 text-theme-purple" />
+                                                <span className="max-w-xs truncate">{event.location}</span>
                                             </div>
                                         )}
                                     </div>

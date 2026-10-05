@@ -54,7 +54,7 @@ export default function CoboWaitingList({
 
     if (boards.length === 0) {
         return (
-            <div className="rounded-2xl border border-dashed border-border-color bg-bg-card py-12 text-center">
+            <div className="card-empty-dashed">
                 <ListOrdered className="mx-auto mb-3 size-10 text-text-muted/40" />
                 <p className="text-sm font-medium text-text-muted">De wachtrij is momenteel leeg.</p>
                 <p className="mt-1 text-xs text-text-muted/70">Voeg hierboven een bestuur toe aan de rij.</p>

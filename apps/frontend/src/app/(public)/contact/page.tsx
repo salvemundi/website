@@ -43,7 +43,7 @@ async function ContactContent() {
 
                     <section
                         aria-labelledby="social-media-header"
-                        className="squircle-lg bg-bg-card p-fluid-md shadow-lg dark:border dark:border-white/10"
+                        className="pt-4"
                     >
                         <h2
                             id="social-media-header"
@@ -57,36 +57,36 @@ async function ContactContent() {
                                 href="https://www.instagram.com/sv.salvemundi/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="squircle hover:bg-bg-main flex items-center gap-3 bg-bg-soft px-6 py-3 font-semibold text-text-main transition-colors"
+                                className="flex items-center gap-3 squircle border border-border-color/40 bg-bg-card px-6 py-3 font-semibold text-text-main transition-all hover:border-theme-purple hover:text-theme-purple"
                             >
-                                <SiInstagram className="size-5" aria-hidden="true" />
+                                <SiInstagram className="size-5 text-theme-purple" aria-hidden="true" />
                                 Instagram
                             </a>
                             <a
                                 href="https://www.facebook.com/sv.salvemundi/?locale=nl_NL"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="squircle hover:bg-bg-main flex items-center gap-3 bg-bg-soft px-6 py-3 font-semibold text-text-main transition-colors"
+                                className="flex items-center gap-3 squircle border border-border-color/40 bg-bg-card px-6 py-3 font-semibold text-text-main transition-all hover:border-theme-purple hover:text-theme-purple"
                             >
-                                <SiFacebook className="size-5" aria-hidden="true" />
+                                <SiFacebook className="size-5 text-theme-purple" aria-hidden="true" />
                                 Facebook
                             </a>
                             <a
                                 href="https://nl.linkedin.com/company/salve-mundi"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="squircle hover:bg-bg-main flex items-center gap-3 bg-bg-soft px-6 py-3 font-semibold text-text-main transition-colors"
+                                className="flex items-center gap-3 squircle border border-border-color/40 bg-bg-card px-6 py-3 font-semibold text-text-main transition-all hover:border-theme-purple hover:text-theme-purple"
                             >
-                                <FaLinkedin className="size-5" aria-hidden="true" />
+                                <FaLinkedin className="size-5 text-theme-purple" aria-hidden="true" />
                                 LinkedIn
                             </a>
                             <a
                                 href="https://www.tiktok.com/@salve.mundi"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="squircle hover:bg-bg-main flex items-center gap-3 bg-bg-soft px-6 py-3 font-semibold text-text-main transition-colors"
+                                className="flex items-center gap-3 squircle border border-border-color/40 bg-bg-card px-6 py-3 font-semibold text-text-main transition-all hover:border-theme-purple hover:text-theme-purple"
                             >
-                                <SiTiktok className="size-5" aria-hidden="true" />
+                                <SiTiktok className="size-5 text-theme-purple" aria-hidden="true" />
                                 TikTok
                             </a>
                         </div>

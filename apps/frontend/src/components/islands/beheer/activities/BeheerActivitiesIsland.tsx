@@ -92,26 +92,26 @@ export default function AdminActivitiesIsland({
                 backHref="/beheer"
                 actions={
                     <div className="flex flex-wrap items-center gap-4">
-                        <div className="flex items-center gap-4 rounded-2xl border border-border-color/50 bg-bg-soft px-4 py-2 shadow-sm">
-                            <div className="flex flex-col items-center px-2">
-                                <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Aankomend</span>
+                        <div className="beheer-stat-strip">
+                            <div className="stat-col-hidden">
+                                <span className="stat-label-muted">Aankomend</span>
                                 <span className="text-sm leading-none font-bold text-text-main">{stats.upcoming}</span>
                             </div>
-                            <div className="h-6 w-px bg-border-color/20" />
-                            <div className="flex flex-col items-center px-2">
-                                <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Totale activiteiten</span>
+                            <div className="v-divider-sm" />
+                            <div className="stat-col-hidden">
+                                <span className="stat-label-muted">Totale activiteiten</span>
                                 <span className="text-sm leading-none font-bold text-text-main">{stats.total}</span>
                             </div>
-                            <div className="h-6 w-px bg-border-color/20" />
-                            <div className="flex flex-col items-center px-2">
-                                <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Aanmeldingen</span>
+                            <div className="v-divider-sm" />
+                            <div className="stat-col-hidden">
+                                <span className="stat-label-muted">Aanmeldingen</span>
                                 <span className="text-sm leading-none font-bold text-text-main">{stats.signups}</span>
                             </div>
                         </div>
 
                         <Link
                             href="/beheer/activiteiten/nieuw"
-                            className="squircle flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-theme-purple px-4 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
+                            className="beheer-button-secondary squircle whitespace-nowrap"
                         >
                             <Plus className="size-4" />
                             Nieuwe Activiteit
@@ -120,7 +120,7 @@ export default function AdminActivitiesIsland({
                 }
             />
 
-            <div className="admin-container flex flex-col py-4 md:py-8">
+            <div className="admin-container-padded">
                 <ActivityFilters
                     searchQuery={searchQuery}
                     onSearchChange={setSearchQuery}

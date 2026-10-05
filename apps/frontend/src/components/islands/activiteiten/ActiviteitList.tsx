@@ -19,8 +19,8 @@ export default function ActiviteitList({ events, onEventClick, variant = 'list',
 
     if (events.length === 0) {
         return (
-            <div className="rounded-3xl bg-(--bg-card) py-12 text-center shadow-sm">
-                <p className="text-(--text-muted)">Geen activiteiten gevonden.</p>
+            <div className="card-empty-dashed">
+                <p className="text-text-muted">Geen activiteiten gevonden.</p>
             </div>
         );
     }

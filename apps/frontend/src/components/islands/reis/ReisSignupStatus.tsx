@@ -63,7 +63,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                         nextTrip?.allow_deposit_payments ? (
                             <Link
                                 href={`/reis/betalen/aanbetaling?id=${userSignup.id}`}
-                                className="group inline-flex items-center gap-2 rounded-lg bg-theme-purple px-6 py-2 text-white transition hover:bg-theme-purple-dark"
+                                className="group beheer-button transition"
                             >
                                 <CreditCard className="size-5 transition-transform group-hover:scale-110" />
                                 Ga naar aanbetaling
@@ -78,7 +78,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                             {nextTrip?.allow_final_payments ? (
                                 <Link
                                     href={`/reis/betalen/restbetaling?id=${userSignup.id}`}
-                                    className="group inline-flex items-center gap-2 rounded-lg bg-theme-purple px-6 py-2 text-white transition hover:bg-theme-purple-dark"
+                                    className="group beheer-button transition"
                                 >
                                     <CreditCard className="size-5 transition-transform group-hover:scale-110" />
                                     Afronden & Betalen
@@ -87,7 +87,7 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
                                 <>
                                     <Link
                                         href={`/reis/betalen/restbetaling?id=${userSignup.id}`}
-                                        className="group inline-flex items-center gap-2 rounded-lg bg-theme-purple px-6 py-2 text-white transition hover:bg-theme-purple-dark"
+                                        className="group beheer-button transition"
                                     >
                                         <Utensils className="size-5 transition-transform group-hover:scale-110" />
                                         Activiteiten beheren

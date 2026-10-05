@@ -22,7 +22,7 @@ export default async function TripConfirmationPage({ searchParams }: PageProps) 
         return (
             <PublicPageShell title="Bevestiging" hideHeader={true}>
                 <div className="flex min-h-[70vh] items-center justify-center p-6">
-                    <div className="squircle-lg w-full max-w-md border border-border-color bg-bg-card p-12 text-center shadow-xl">
+                    <div className="w-full max-w-md squircle-lg border border-border-color bg-bg-card p-12 text-center shadow-xl">
                         <XCircle className="mx-auto mb-6 size-16 text-red-500" />
                         <h1 className="mb-4 text-2xl font-black text-theme-purple">Ongeldige Status</h1>
                         <p className="mb-8 leading-relaxed text-text-muted">We kunnen de status van je betaling niet verifiëren zonder een geldige transactie- of token-ID.</p>
@@ -42,7 +42,7 @@ export default async function TripConfirmationPage({ searchParams }: PageProps) 
         <PublicPageShell title="Betaling Status" hideHeader={true}>
             <div className="container mx-auto flex min-h-[80vh] max-w-2xl items-center justify-center px-4 py-32">
                 {isPaid ? (
-                    <div className="squircle-lg flex flex-col items-center justify-center border border-border-color bg-bg-card p-12 text-center shadow-2xl backdrop-blur-xl">
+                    <div className="flex flex-col items-center justify-center squircle-lg border border-border-color bg-bg-card p-12 text-center shadow-2xl backdrop-blur-xl">
                         <div className="relative mb-8">
                             <div className="absolute inset-0 rounded-full bg-green-500/20 blur-3xl" />
                             <CheckCircle2 className="relative z-10 mx-auto size-20 text-green-500" />

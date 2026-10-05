@@ -115,7 +115,7 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
         <div className="w-full">
             <div className="flex flex-col gap-8">
                 <div className="flex justify-center">
-                    <div className="flex rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft) p-1 shadow-sm">
+                    <div className="filter-button-strip w-auto">
                         <TypeTab active={emailType === 'custom'} onClick={() => setEmailType('custom')}>Eigen bericht</TypeTab>
                         <TypeTab active={emailType === 'deposit_request'} onClick={() => setEmailType('deposit_request')}>Aanbetaling</TypeTab>
                         <TypeTab active={emailType === 'final_request'} onClick={() => setEmailType('final_request')}>Restbetaling</TypeTab>

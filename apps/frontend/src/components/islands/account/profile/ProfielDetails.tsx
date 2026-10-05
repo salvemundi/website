@@ -59,7 +59,7 @@ export default function ProfielDetails({
             onClick={() => {
                 void handleLogout();
             }}
-            className="group form-button flex items-center gap-2 rounded-xl border border-red-500/10 bg-red-500/5 px-4 py-2 text-xs font-bold text-red-500 transition-all hover:bg-red-500/10 active:scale-95"
+            className="group form-button border border-red-500/10 bg-red-500/5 text-red-500 hover:bg-red-500/10"
             type="button">
             <LogOut className="size-3.5 transition-transform group-hover:-translate-x-0.5" />
             <span>Uitloggen</span>
@@ -80,11 +80,11 @@ export default function ProfielDetails({
                             E-mailadres
                         </p>
                     </div>
-                    <div className="squircle flex min-h-17 items-center gap-4 border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
-                        <div className="flex shrink-0 items-center justify-center text-purple-600 dark:text-purple-300">
+                    <div className="flex min-h-17 items-center gap-4 squircle border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
+                        <div className="flex shrink-0 items-center justify-center text-theme-purple">
                             <Mail className="size-5" />
                         </div>
-                        <p className="min-w-0 flex-1 text-xs leading-tight font-bold wrap-break-word text-purple-700 sm:text-sm dark:text-white">
+                        <p className="min-w-0 flex-1 text-xs leading-tight font-bold wrap-break-word text-theme-purple sm:text-sm">
                             {formatForBreak(user.email) || 'Geen email'}
                         </p>
                     </div>
@@ -97,11 +97,11 @@ export default function ProfielDetails({
                                 Fontys e-mail
                             </p>
                         </div>
-                        <div className="squircle flex min-h-17 items-center gap-4 border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
-                            <div className="flex shrink-0 items-center justify-center text-purple-600 dark:text-purple-300">
+                        <div className="flex min-h-17 items-center gap-4 squircle border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
+                            <div className="flex shrink-0 items-center justify-center text-theme-purple">
                                 <Mail className="size-5" />
                             </div>
-                            <p className="min-w-0 flex-1 text-xs leading-tight font-bold wrap-break-word text-purple-700 sm:text-sm dark:text-white">
+                            <p className="min-w-0 flex-1 text-xs leading-tight font-bold wrap-break-word text-theme-purple sm:text-sm">
                                 {formatForBreak(user.fontys_email)}
                             </p>
                         </div>
@@ -116,14 +116,14 @@ export default function ProfielDetails({
                         {!isEditingPhoneNumber && (
                             <button
                                 onClick={() => setIsEditingPhoneNumber(true)}
-                                className="icon-button rounded-md p-1 text-text-muted transition-colors hover:text-purple-500"
+                                className="icon-button rounded-md p-1 text-text-muted hover:text-theme-purple"
                                 type="button">
                                 <Pen className="size-3.5" />
                             </button>
                         )}
                     </div>
-                    <div className="squircle flex min-h-17 items-center gap-4 border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
-                        <div className="flex shrink-0 items-center justify-center text-purple-600 dark:text-purple-300">
+                    <div className="flex min-h-17 items-center gap-4 squircle border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
+                        <div className="flex shrink-0 items-center justify-center text-theme-purple">
                             <Phone className="size-5" />
                         </div>
                         {isEditingPhoneNumber ? (
@@ -139,13 +139,13 @@ export default function ProfielDetails({
                                         {...registerPhone("phone_number")}
                                         className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white text-sm font-medium dark:border-white/20 dark:bg-black/40"
                                     />
-                                    <button type="submit" disabled={isPending} className="absolute top-1/2 right-0 form-button flex size-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-lg bg-purple-500 p-0 text-white transition-colors hover:bg-purple-600 disabled:opacity-50">
+                                    <button type="submit" disabled={isPending} className="absolute top-1/2 right-0 form-button size-10 -translate-y-1/2 p-0">
                                         {isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                                     </button>
                                 </div>
                             </form>
                         ) : (
-                            <p className="text-sm font-bold text-purple-700 dark:text-white">
+                            <p className="text-sm font-bold text-theme-purple">
                                 {formatPhoneNumber(user.phone_number) || "Niet ingesteld"}
                             </p>
                         )}
@@ -158,11 +158,11 @@ export default function ProfielDetails({
                             Geboortedatum
                         </p>
                     </div>
-                    <div className="squircle flex min-h-17 items-center gap-4 border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
-                        <div className="flex shrink-0 items-center justify-center text-purple-600 dark:text-purple-300">
+                    <div className="flex min-h-17 items-center gap-4 squircle border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
+                        <div className="flex shrink-0 items-center justify-center text-theme-purple">
                             <Calendar className="size-5" />
                         </div>
-                        <p className="text-sm font-bold text-purple-700 dark:text-white">
+                        <p className="text-sm font-bold text-theme-purple">
                             {formatDate(user.date_of_birth, "d MMMM yyyy")}
                         </p>
                     </div>

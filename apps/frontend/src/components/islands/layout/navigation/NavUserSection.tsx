@@ -33,7 +33,7 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
             {showAdmin && (
                 <Link
                     href={ROUTES.ADMIN}
-                    className="squircle flex h-9 shrink-0 items-center gap-2 bg-purple-500 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                    className="beheer-button beheer-button h-9 shrink-0"
                 >
                     <Shield className="size-4 shrink-0" />
                     <span className="hidden @[1200px]:inline">Beheer</span>
@@ -43,13 +43,13 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
             {isAuthenticated ? (
                 <Link
                     href={ROUTES.ACCOUNT}
-                    className="squircle flex h-9 shrink-0 items-center gap-2 px-3 py-1.5 text-sm font-medium text-(--text-main) shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                    className="btn-secondary h-9 shrink-0 px-3.5"
                 >
-                    <div className="relative flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-purple-50 dark:bg-white/10">
+                    <div className="relative flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-theme-purple/10">
                         {user.avatar ? (
                             <Image src={getImageUrl(user.avatar)} alt={user.name || 'Profiel'} fill className="object-cover" priority unoptimized />
                         ) : (
-                            <User className="size-3.5 text-purple-600" />
+                            <User className="size-3 text-theme-purple" />
                         )}
                     </div>
                     <span className="hidden @[1200px]:inline">Mijn profiel</span>
@@ -62,7 +62,7 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                             callbackURL: searchParams.get('callbackURL') || ROUTES.MEMBERSHIP
                         });
                     }}
-                    className="squircle form-button flex h-9 shrink-0 cursor-pointer items-center justify-center gap-2 bg-purple-50 px-4 py-1.5 text-sm font-semibold text-purple-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                    className="form-button h-9 shrink-0"
                     type="button">
                     Inloggen
                 </button>

@@ -16,80 +16,59 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
+    /* ── Officiële Salve Mundi Brandguide Kleuren ────────────────────────────── */
+    --color-donker-paars: #5A3761; /* Primair Donker Paars */
+    --color-wit-paars: #F0F1F9;    /* Primair Wit Paars */
+    --color-licht-paars: #936695;  /* Secundair Licht Paars */
+    --color-donker-blauw: #132A40;  /* Accent Donker Blauw */
+    --color-geel: #F8CF45;          /* Accent Geel */
+
+    --text-2xs: 0.625rem;
+    --text-2xs--line-height: 0.875rem;
+
+    --color-brand-primary: var(--color-donker-paars);
+    --color-brand-secondary: var(--color-licht-paars);
+
+    /* ── Semantische Kleur Tokens (Dark / Light ondersteuning) ──────────────── */
     --color-text-main: var(--text-main);
     --color-text-muted: var(--text-muted);
+    --color-text-subtle: var(--text-subtle);
+    --color-text-light: var(--text-light);
+    --color-bg-main: var(--bg-main);
     --color-bg-soft: var(--bg-soft);
     --color-bg-card: var(--bg-card);
-
-    --color-paars: #5A3761;
-    --color-wit-paars: #F0F1F9;
-    --color-licht-paars: #936695;
-    --color-donker-blauw: #132A40;
-    --color-geel: #F8CF45;
+    --color-border-color: var(--border-color);
 
     --color-theme-purple: var(--theme-purple);
-    --color-theme-purple-light: var(--theme-purple-light);
-    --color-theme-purple-dark: var(--theme-purple-dark);
-    --color-theme-purple-darker: var(--theme-purple-darker);
-    --color-theme-purple-lighter: var(--theme-purple-lighter);
     --color-theme-text: var(--text-main);
     --color-theme-bg: var(--bg-main);
-
-    --max-w-app: 80rem;
-    --header-padding: clamp(1rem, 5vw, 2.5rem);
-    --beheer-container-px: clamp(1.25rem, 5vw, 2rem);
-
-    --color-purple-50: #f6f3f7;
-    --color-purple-100: #ebdceb;
-    --color-purple-200: #d6b8d6;
-    --color-purple-300: #bd8fbe;
-    --color-purple-400: #a46fa5;
-    --color-purple-500: #936695;
-    --color-purple-600: #805481;
-    --color-purple-700: #6d446e;
-    --color-purple-800: #5A3761;
-    --color-purple-900: #46254c;
-
-    --color-purple-500-rgb: 147, 102, 149;
-    --color-purple-400-rgb: 164, 111, 165;
-
-    --color-white: #ffffff;
-    --color-white-soft: #F0F1F9;
-    --color-white-mute: #ebdceb;
-
-    --color-brand-primary: #5A3761;
-    --color-brand-secondary: #936695;
-
-    --bg-main: #F0F1F9;
-    --bg-soft: var(--color-white);
-    --bg-card: var(--color-white);
-
-    --text-main: #5A3761;
-    --text-subtle: #6d446e;
-    --text-muted: #805481;
-    --text-light: #936695;
-
-    --border-color: #d6b8d6;
-    --color-border-color: var(--border-color);
 
     --color-beheer-active: var(--beheer-active);
     --color-beheer-inactive: var(--beheer-inactive);
     --color-beheer-accent: var(--beheer-accent);
+    --color-beheer-card-bg: var(--beheer-card-bg);
+    --color-beheer-card-soft: var(--beheer-card-soft);
+    --color-beheer-border: var(--beheer-border);
+    --color-beheer-text: var(--beheer-text);
+    --color-beheer-text-muted: var(--beheer-text-muted);
+
+    --color-theme-success: #16a34a;
+    --color-theme-warning: var(--color-geel);
+    --color-theme-error: #dc2626;
+    --color-theme-info: var(--color-donker-blauw);
+
+    --radius-beheer: var(--beheer-radius);
+
 
     --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.1), 0 1px 2px rgba(16, 24, 40, 0.06);
     --shadow-card-elevated: 0 8px 20px rgba(6, 4, 10, 0.45);
     --shadow-glow: 0 0 15px rgba(90, 55, 97, 0.3);
 
     --gradient-start: #F0F1F9;
-    --gradient-end: #ebdceb;
+    --gradient-end: #F0F1F9;
 
-    --bg-gradient-start: #ffffff;
+    --bg-gradient-start: #F0F1F9;
     --bg-gradient-end: #F0F1F9;
-
-    --theme-success: #16a34a;
-    --theme-warning: #F8CF45;
-    --theme-error: #dc2626;
-    --theme-info: #132A40;
 
     --radius-xl: 0.75rem;
     --radius-2xl: 1rem;
@@ -116,33 +95,508 @@
     --spacing-fluid-xl: clamp(2rem, 1.5rem + 2.5vw, 4rem);
 }
 
+@utility custom-scrollbar {
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: var(--beheer-border);
+        border-radius: 10px;
+        border: 1px solid transparent;
+        background-clip: content-box;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: var(--beheer-accent);
+        background-clip: border-box;
+    }
+}
+
+@utility flex-center {
+    @apply flex items-center justify-center;
+}
+
+@utility flex-between {
+    @apply flex items-center justify-between;
+}
+
+@utility flex-col-center {
+    @apply flex flex-col items-center justify-center;
+}
+
+
+@utility reis-card-badge-open {
+    @apply absolute top-4 left-4 z-10 rounded-xl px-3 py-1.5 text-2xs font-black tracking-widest uppercase italic shadow-lg backdrop-blur-md bg-beheer-active text-wit-paars shadow-beheer-active/20;
+}
+
+@utility reis-card-badge-closed {
+    @apply absolute top-4 left-4 z-10 rounded-xl px-3 py-1.5 text-2xs font-black tracking-widest uppercase italic shadow-lg backdrop-blur-md bg-beheer-inactive text-wit-paars shadow-beheer-inactive/20;
+}
+
+@utility reis-card-badge-bus {
+    @apply absolute top-4 right-4 z-10 rounded-xl bg-theme-info px-3 py-1.5 text-2xs font-black tracking-widest text-wit-paars uppercase italic shadow-lg shadow-theme-info/20 backdrop-blur-md;
+}
+
+@utility reis-card-media {
+    @apply relative flex h-48 items-center justify-center overflow-hidden bg-beheer-border/5;
+}
+
+@utility reis-filters-box {
+    @apply rounded-3xl border border-beheer-border bg-beheer-card-bg shadow-sm;
+}
+
+@utility reis-filters-row {
+    @apply flex flex-col items-stretch gap-3 p-3 lg:flex-row lg:items-center;
+}
+
+@utility reis-filters-controls {
+    @apply flex flex-col flex-wrap items-center gap-2 sm:flex-row;
+}
+
+@utility search-icon-left {
+    @apply absolute top-1/2 left-4 size-4 -translate-y-1/2 text-beheer-text-muted opacity-50 transition-all;
+}
+
+@utility reis-filter-actions {
+    @apply flex w-full flex-wrap items-center justify-center gap-1.5 sm:w-auto;
+}
+
+@utility mail-summary-banner {
+    @apply relative overflow-hidden rounded-3xl border border-beheer-accent/20 bg-beheer-accent/5 p-8 shadow-xs;
+}
+
+@utility mail-summary-watermark {
+    @apply absolute -right-4 -bottom-4 opacity-5 transition-transform duration-700;
+}
+
+@utility mail-summary-content {
+    @apply relative z-10;
+}
+
+@utility mail-editor-card {
+    @apply relative overflow-hidden rounded-3xl border border-beheer-border bg-beheer-card-bg shadow-xl;
+}
+
+@utility mail-editor-glow {
+    @apply absolute -top-24 -right-24 size-48 rounded-full bg-beheer-accent/5 blur-3xl transition-colors duration-700;
+}
+
+@utility mail-editor-header {
+    @apply relative z-10 border-b border-beheer-border/30 bg-beheer-card-soft/30 p-8;
+}
+
+@utility mail-editor-icon {
+    @apply flex size-12 items-center justify-center rounded-2xl bg-beheer-accent text-wit-paars shadow-beheer-accent/20 shadow-xl;
+}
+
+@utility mail-editor-notice {
+    @apply flex items-start gap-6 rounded-3xl border border-beheer-accent/10 bg-beheer-accent/5 p-8;
+}
+
+@utility mail-field-label {
+    @apply ml-1 text-2xs font-semibold tracking-widest text-beheer-text-muted uppercase opacity-70;
+}
+
+@utility mail-helper-text {
+    @apply flex items-center gap-2 text-2xs font-semibold tracking-widest text-beheer-text-muted uppercase italic opacity-50;
+}
+
+@utility mail-recipient-card {
+    @apply flex flex-col rounded-2xl border border-beheer-border/20 bg-bg-main/30 p-3 text-2xs shadow-inner transition-all hover:border-beheer-accent/30;
+}
+
+@utility table-row-title {
+    @apply line-clamp-2 flex min-h-11 items-center text-lg leading-tight font-semibold text-beheer-text transition-colors;
+}
+
+@utility table-row-actions-box {
+    @apply flex shrink-0 items-center rounded-xl border border-beheer-border/20 bg-bg-main/50 p-1 shadow-inner;
+}
+
+@utility table-row-footer {
+    @apply mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-beheer-border/10 pt-3;
+}
+
+@utility badge-pill-driver {
+    @apply flex items-center gap-1 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 text-2xs font-semibold text-theme-success;
+}
+
+@utility badge-pill-luggage {
+    @apply flex items-center gap-1 rounded-md border border-blue-500/20 bg-blue-500/10 px-1.5 py-0.5 text-2xs font-semibold text-blue-400;
+}
+
+@utility status-dropdown-trigger {
+    @apply beheer-button inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-2xs font-semibold shadow-xs transition-all duration-200;
+}
+
+@utility status-dropdown-menu {
+    @apply absolute bottom-full left-0 z-50 mb-1.5 w-44 space-y-0.5 overflow-hidden rounded-xl border border-beheer-border bg-beheer-card-bg p-1 shadow-xl duration-150;
+}
+
+@utility status-dropdown-item {
+    @apply beheer-button flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-2xs font-semibold transition-all;
+}
+
+@utility empty-table-card {
+    @apply rounded-3xl border border-beheer-border/40 bg-beheer-card-bg/50 p-20 text-center;
+}
+
 @utility form-button {
-    @apply py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all cursor-pointer border-none bg-(--theme-purple) text-white shadow-md hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply h-10 px-4 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer border-none bg-theme-purple text-wit-paars shadow-md hover:opacity-95 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+@utility btn-secondary {
+    @apply h-10 px-4 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer border border-theme-purple/20 bg-theme-purple/10 text-theme-purple shadow-xs hover:bg-theme-purple/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+@utility btn-cancel {
+    @apply flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border-color bg-transparent px-6 text-sm font-semibold text-text-main transition-all cursor-pointer hover:border-theme-purple/30 hover:bg-bg-main/60 active:scale-[0.98];
+}
+
+@utility btn-delete {
+    @apply flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-6 text-sm font-semibold text-red-500 transition-all hover:bg-red-500 hover:text-wit-paars active:scale-95 disabled:opacity-50;
 }
 
 @utility icon-button {
-    @apply inline-flex items-center justify-center transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex h-10 w-10 items-center justify-center transition-all cursor-pointer text-theme-purple hover:bg-theme-purple/10 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
 @utility form-input {
-    @apply w-full bg-(--bg-main)/50 border border-(--border-color)/30 rounded-xl px-4 py-3 text-base sm:text-sm focus:ring-4 focus:ring-(--theme-purple)/10 focus:border-(--theme-purple) transition-all outline-none disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-neutral-500/10;
+    @apply h-10 w-full min-w-0 flex-1 bg-bg-main/50 border border-border-color/30 rounded-xl px-4 text-xs sm:text-sm text-text-main focus:ring-4 focus:ring-theme-purple/20 focus:border-theme-purple transition-all outline-hidden disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-neutral-500/10;
 }
 
 @utility beheer-button {
-    display: inline-flex;
-    width: auto;
-    @apply py-2.5 px-5 rounded-xl font-semibold items-center justify-center gap-2 transition-all cursor-pointer bg-(--beheer-accent) text-white shadow-md hover:opacity-95 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply h-10 px-4 rounded-xl text-xs sm:text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all cursor-pointer bg-theme-purple text-wit-paars shadow-md hover:opacity-95 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+@utility beheer-button-secondary {
+    @apply h-10 px-4 rounded-xl text-xs sm:text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all cursor-pointer border border-border-color bg-bg-card text-text-muted hover:bg-bg-soft hover:text-text-main hover:border-theme-purple/30 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+@utility tab-button {
+    @apply flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-xs font-semibold transition-colors cursor-pointer text-beheer-text-muted hover:text-beheer-text;
+
+    &[data-active="true"] {
+        @apply bg-beheer-card-bg text-beheer-accent shadow-md;
+    }
+}
+
+@utility tab-button-active {
+    @apply flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-xs font-semibold transition-colors cursor-pointer bg-theme-purple text-wit-paars shadow-xs;
+}
+
+@utility tab-button-inactive {
+    @apply flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-xs font-semibold transition-colors cursor-pointer border border-border-color bg-bg-card text-text-muted hover:bg-bg-soft hover:text-text-main;
+}
+
+@utility modal-tab {
+    @apply flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-xs font-semibold transition-colors cursor-pointer text-beheer-text-muted hover:text-beheer-text flex-1;
+}
+
+@utility modal-tab-active {
+    @apply flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-xs font-semibold transition-colors cursor-pointer flex-1 bg-theme-purple text-wit-paars shadow-md;
+}
+
+@utility modal-tab-inactive {
+    @apply flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-xs font-semibold transition-colors cursor-pointer flex-1 text-text-muted hover:text-text-main;
 }
 
 @utility beheer-input {
-    @apply form-input;
+    @apply h-10 w-full min-w-0 flex-1 bg-bg-main/50 border border-border-color/30 rounded-xl px-4 text-xs sm:text-sm text-text-main focus:ring-4 focus:ring-theme-purple/20 focus:border-theme-purple transition-all outline-hidden disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-neutral-500/10;
 }
+
+@utility form-select {
+    @apply h-10 w-full min-w-0 flex-1 bg-bg-main/50 border border-border-color/30 rounded-xl px-4 text-xs sm:text-sm text-text-main focus:ring-4 focus:ring-theme-purple/20 focus:border-theme-purple transition-all outline-hidden disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-neutral-500/10 cursor-pointer pr-10;
+}
+
+@utility beheer-select {
+    @apply h-10 w-full min-w-0 flex-1 bg-bg-main/50 border border-border-color/30 rounded-xl px-4 text-xs sm:text-sm text-text-main focus:ring-4 focus:ring-theme-purple/20 focus:border-theme-purple transition-all outline-hidden disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-neutral-500/10 cursor-pointer pr-10;
+}
+
+@utility search-bar {
+    @apply flex h-10 items-center gap-3 rounded-xl border border-border-color bg-bg-card px-4 shadow-xs transition-all focus-within:border-theme-purple focus-within:ring-4 focus-within:ring-theme-purple/10;
+}
+
+@utility visibility-toggle-container {
+    @apply flex h-10 items-center gap-3 rounded-xl border border-border-color bg-bg-card px-4 shadow-xs transition-all focus-within:border-theme-purple focus-within:ring-4 focus-within:ring-theme-purple/10;
+
+    &[data-disabled="true"] {
+        @apply pointer-events-none opacity-50;
+    }
+}
+
+@utility btn-toggle-switch {
+    @apply relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors duration-200 outline-hidden disabled:cursor-not-allowed disabled:opacity-50 bg-beheer-inactive;
+
+    &[data-active="true"] {
+        @apply bg-beheer-active;
+    }
+
+    &[data-variant="warning"] {
+        @apply bg-geel;
+    }
+
+    &[data-variant="success"] {
+        @apply bg-theme-success;
+    }
+}
+
+@utility status-icon {
+    @apply size-3.5 text-text-muted;
+
+    &[data-status="warning"] {
+        @apply text-geel;
+    }
+
+    &[data-status="success"] {
+        @apply text-theme-success;
+    }
+
+    &[data-status="error"] {
+        @apply text-theme-error;
+    }
+
+    &[data-status="info"] {
+        @apply text-donker-blauw;
+    }
+}
+
+@utility status-text {
+    @apply flex items-center gap-1 text-xs text-text-muted;
+
+    &[data-status="warning"] {
+        @apply text-geel;
+    }
+
+    &[data-status="success"] {
+        @apply text-theme-success;
+    }
+
+    &[data-status="error"] {
+        @apply text-theme-error;
+    }
+}
+
+@utility visibility-toggle-thumb {
+    @apply pointer-events-none inline-block size-5 rounded-full bg-white shadow-xs transition-transform duration-200 ease-in-out translate-x-0;
+
+    &[data-active="true"] {
+        @apply translate-x-5;
+    }
+}
+
+@utility beheer-info-banner {
+    @apply flex items-center justify-between gap-4 rounded-2xl border border-beheer-border bg-beheer-card-soft px-4 py-2 shadow-xs;
+}
+
+@utility beheer-info-text {
+    @apply text-xs leading-tight font-semibold text-beheer-text;
+}
+
+@utility badge-primary {
+    @apply inline-block rounded-md border border-theme-purple/20 bg-theme-purple/10 px-2.5 py-0.5 text-xs font-semibold tracking-wider text-theme-purple uppercase;
+}
+
+@utility form-label-icon {
+    @apply mb-1 flex items-center gap-1.5 text-xs font-bold tracking-wider text-text-muted uppercase;
+}
+
+@utility form-label-muted {
+    @apply px-1 text-xs font-semibold tracking-tight text-beheer-text-muted;
+}
+
+@utility beheer-row-card {
+    @apply flex items-center justify-between rounded-xl border border-border-color/40 bg-bg-soft p-3;
+}
+
+@utility beheer-section-row {
+    @apply flex flex-col justify-between gap-4 border-t border-beheer-border/50 pt-6 sm:flex-row sm:items-end;
+}
+
+@utility form-col-field {
+    @apply max-w-sm flex-1;
+}
+
+@utility col-grow-min {
+    @apply min-w-0 flex-1;
+}
+
+@utility beheer-card {
+    @apply space-y-6 rounded-3xl border border-beheer-border bg-beheer-card-bg p-6 shadow-xs;
+}
+
+@utility beheer-header {
+    @apply flex items-center justify-between gap-4 mb-4;
+}
+
+@utility beheer-action-col {
+    @apply flex flex-col items-start gap-2 sm:items-end;
+}
+
+@utility beheer-card-interactive {
+    @apply beheer-card relative overflow-hidden transition-all hover:border-beheer-accent/30 hover:shadow-md cursor-pointer;
+}
+
+@utility beheer-status-row {
+    @apply flex flex-wrap items-center gap-4 text-xs text-beheer-text-muted;
+}
+
+@utility page-stack-large {
+    @apply flex flex-col gap-8;
+}
+
+@utility page-header-row {
+    @apply flex flex-col justify-between gap-4 md:flex-row md:items-center;
+}
+
+@utility tab-bar-container {
+    @apply flex w-fit gap-1 rounded-2xl border border-beheer-border bg-beheer-card-soft p-1;
+}
+
+@utility icon-label-row {
+    @apply flex items-center gap-2;
+}
+
+@utility grid-cards-3 {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3;
+}
+
+@utility icon-box-accent {
+    @apply flex size-10 shrink-0 items-center justify-center rounded-full bg-beheer-accent/10 text-beheer-accent;
+}
+
+@utility loader-spinner {
+    @apply mx-auto size-4 animate-spin text-white;
+}
+
+@utility loader-spinner-sm {
+    @apply mx-auto size-3.5 animate-spin text-white;
+}
+
+@utility dropzone-dashed {
+    @apply flex min-h-40 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border-color bg-bg-card transition-all hover:border-theme-purple hover:bg-theme-purple/5;
+}
+
+@utility btn-action-accent {
+    @apply inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-theme-purple/20 bg-theme-purple/10 px-4 text-xs sm:text-sm font-semibold text-theme-purple transition-all hover:bg-theme-purple/20 active:scale-95;
+}
+
+@utility dropdown-menu {
+    @apply absolute right-0 z-50 mt-2 w-56 rounded-2xl border border-border-color bg-bg-card p-1.5 shadow-2xl transition-all focus:outline-none;
+}
+
+@utility card-base {
+    @apply bg-bg-card border border-border-color rounded-2xl p-5 sm:p-6 shadow-xs text-text-main;
+}
+
+@utility card-interactive {
+    @apply card-base transition-all duration-200 hover:border-theme-purple/30 hover:shadow-md cursor-pointer active:scale-[0.99];
+}
+
+@utility card-compact {
+    @apply bg-bg-card border border-border-color rounded-2xl p-4 sm:p-5 shadow-xs text-text-main transition-all duration-200;
+}
+
+@utility icon-box {
+    @apply h-10 w-10 rounded-xl bg-theme-purple/10 text-theme-purple border border-theme-purple/20 flex items-center justify-center shrink-0;
+}
+
+@utility bg-brand-gradient {
+    @apply bg-linear-to-r from-donker-paars to-donker-paars text-white;
+}
+
+@utility bg-card-gradient {
+    @apply bg-linear-to-b from-bg-card to-bg-soft;
+}
+
+@utility section-title {
+    @apply text-theme-purple font-bold tracking-tight;
+}
+
+@utility modal-backdrop {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-all;
+}
+
+@utility modal-content {
+    @apply relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-3xl border border-border-color bg-bg-card text-text-main shadow-2xl transition-all;
+}
+
+@utility modal-header {
+    @apply flex shrink-0 items-center justify-between border-b border-border-color/20 p-6;
+}
+
+@utility modal-footer {
+    @apply flex shrink-0 items-center justify-between gap-4 border-t border-border-color/20 p-6 rounded-b-3xl bg-bg-card;
+}
+
+@utility view-field-row {
+    @apply flex items-center justify-between gap-4 border-b border-theme-purple/10 py-2.5 last:border-none text-xs;
+}
+
+@utility form-error-msg {
+    @apply mt-1.5 text-xs font-semibold text-theme-error;
+}
+
+@utility badge-status {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all border;
+}
+
+@utility badge-success {
+    @apply border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400;
+}
+
+@utility badge-danger {
+    @apply border border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400;
+}
+
+@utility btn-deposit-sent {
+    @apply border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400;
+}
+
+@utility btn-deposit-pending {
+    @apply border border-theme-purple/20 bg-theme-purple text-wit-paars shadow-md hover:opacity-90;
+}
+
+@utility cobo-pill-active {
+    @apply flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-theme-purple bg-theme-purple text-wit-paars px-2.5 py-2 text-xs font-semibold shadow-xs transition-colors sm:px-3.5 sm:py-2.5;
+}
+
+@utility cobo-pill-inactive {
+    @apply flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-border-color bg-bg-card text-text-muted hover:bg-bg-soft hover:text-text-main px-2.5 py-2 text-xs font-semibold transition-colors sm:px-3.5 sm:py-2.5;
+}
+
+@utility table-th {
+    @apply px-6 py-4 text-left text-[10px] font-black tracking-widest text-theme-purple uppercase opacity-60;
+}
+
+@utility beheer-th {
+    @apply px-6 py-4 text-xs font-semibold text-beheer-text-muted text-left;
+}
+
+@utility beheer-container {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: var(--max-w-app, 1440px);
+    padding-inline: var(--beheer-container-px, clamp(1.25rem, 3.5vw, 3rem));
+}
+
 @utility admin-container {
     margin-left: auto;
     margin-right: auto;
     width: 100%;
-    max-width: var(--max-w-app);
-    padding-inline: var(--beheer-container-px);
+    max-width: var(--max-w-app, 1440px);
+    padding-inline: var(--beheer-container-px, clamp(1.25rem, 3.5vw, 3rem));
+}
+
+@utility max-w-app {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: var(--max-w-app, 1440px);
+    padding-inline: clamp(1rem, 3.5vw, 2.5rem);
 }
 
 @utility pt-safe {
@@ -173,8 +627,1589 @@
     margin-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-@utility pt-header-total {
-    padding-top: calc(var(--header-total-height, 80px) + env(safe-area-inset-top, 0px));
+@utility form-card {
+    @apply relative mb-8 space-y-6 rounded-3xl border border-beheer-border bg-beheer-card-bg p-6 shadow-sm overflow-hidden;
 }
+
+@utility form-card-header {
+    @apply flex items-center justify-between gap-3 border-b border-beheer-border bg-beheer-card-soft/50 px-6 py-4;
+}
+
+@utility form-card-title {
+    @apply flex items-center gap-3 text-lg font-bold text-text-main;
+}
+
+@utility form-grid-2col {
+    @apply grid grid-cols-1 gap-6 lg:grid-cols-12;
+}
+
+@utility form-grid-col-7 {
+    @apply space-y-6 lg:col-span-7;
+}
+
+@utility form-grid-col-5 {
+    @apply grid grid-cols-2 gap-6 lg:col-span-5;
+}
+
+@utility form-col-full {
+    @apply col-span-2;
+}
+
+@utility form-row-actions {
+    @apply flex items-center justify-end gap-4 border-t border-theme-purple/10 pt-4;
+}
+
+@utility form-section-box {
+    @apply space-y-6 rounded-2xl border border-theme-purple/20 bg-theme-purple/10 p-6;
+}
+
+@utility form-section-header {
+    @apply flex flex-col justify-between gap-4 sm:flex-row sm:items-center;
+}
+
+@utility form-radio-group {
+    @apply flex flex-wrap gap-8 rounded-xl border border-theme-purple/10 bg-bg-card p-4;
+}
+
+@utility form-radio-label {
+    @apply flex cursor-pointer items-center gap-3 select-none;
+}
+
+@utility form-radio-indicator {
+    @apply flex size-5 items-center justify-center rounded-lg border-2 border-theme-purple/30 transition-all peer-checked:border-theme-purple peer-checked:bg-theme-purple;
+}
+
+@utility form-radio-indicator-round {
+    @apply flex size-5 items-center justify-center rounded-full border-2 border-theme-purple/30 transition-all peer-checked:border-theme-purple peer-checked:bg-theme-purple;
+}
+
+@utility form-radio-dot {
+    @apply size-2 rounded-sm bg-wit-paars opacity-0 transition-opacity peer-checked:opacity-100;
+}
+
+@utility form-radio-dot-round {
+    @apply size-2 rounded-full bg-wit-paars opacity-0 transition-opacity peer-checked:opacity-100;
+}
+
+@utility form-checkbox-card {
+    @apply flex cursor-pointer items-center gap-4 rounded-2xl border border-theme-purple/20 bg-theme-purple/10 px-6 py-4 transition-all select-none;
+}
+
+@utility form-toggle-track {
+    @apply h-6 w-11 rounded-full border border-theme-purple/20 bg-theme-purple/10 backdrop-blur-md transition-all peer-checked:bg-theme-purple;
+}
+
+@utility form-toggle-thumb {
+    @apply absolute top-1 left-1 size-4 transform rounded-full bg-wit-paars shadow-md transition-all peer-checked:left-6 peer-active:scale-90;
+}
+
+@utility form-options-list {
+    @apply space-y-4;
+}
+
+@utility form-option-row {
+    @apply flex items-center gap-4;
+}
+
+@utility form-option-empty {
+    @apply rounded-xl border border-dashed border-theme-purple/20 py-8 text-center text-xs font-medium text-text-muted;
+}
+
+@utility form-dropzone-box {
+    @apply flex min-h-32 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-theme-purple/20 bg-theme-purple/10 py-4 transition-all hover:border-theme-purple/40;
+}
+
+@utility form-dropzone-icon {
+    @apply mb-1.5 size-5 text-text-muted;
+}
+
+@utility form-dropzone-text {
+    @apply px-4 text-center text-xs font-semibold text-text-muted;
+}
+
+@utility form-preview-box {
+    @apply relative flex h-32 items-center justify-center overflow-hidden rounded-2xl border border-theme-purple/20 bg-bg-card;
+}
+
+@utility form-preview-overlay {
+    @apply absolute inset-0 flex items-center justify-center gap-3 bg-black/40 opacity-0 transition-opacity;
+}
+
+@utility input-icon-left {
+    @apply absolute top-1/2 left-4 size-4 -translate-y-1/2 text-text-muted;
+}
+
+@utility section-title-sm {
+    @apply flex items-center gap-3 text-sm font-bold text-text-main;
+}
+
+@utility radio-label-text {
+    @apply text-xs font-semibold text-text-muted transition-colors hover:text-text-main;
+}
+
+@utility btn-overlay-action {
+    @apply icon-button bg-wit-paars text-donker-paars;
+}
+
+@utility btn-overlay-delete {
+    @apply icon-button bg-theme-error text-wit-paars;
+}
+
+@utility btn-icon-delete {
+    @apply icon-button p-3 text-theme-error hover:bg-theme-error/10;
+}
+
+@utility alert-banner-danger {
+    @apply flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-xs font-semibold text-theme-error;
+}
+
+@utility icon-box-sm {
+    @apply flex size-7 items-center justify-center rounded-lg bg-theme-purple/10 text-theme-purple;
+}
+
+@utility tab-bar-responsive {
+    @apply grid grid-cols-3 gap-2 sm:flex sm:items-center;
+}
+
+@utility modal-wrapper {
+    @apply fixed inset-0 isolate z-9999 flex items-center justify-center p-4 sm:p-6;
+}
+
+@utility modal-body-scroll {
+    @apply flex-1 space-y-6 overflow-y-auto p-6;
+}
+
+@utility beheer-row-card-box {
+    @apply space-y-3 rounded-xl border border-theme-purple/20 bg-theme-purple/10 p-4;
+}
+
+@utility beheer-row-card-header {
+    @apply flex items-center justify-between border-b border-theme-purple/20 pb-2;
+}
+
+@utility scrollable-list-box {
+    @apply max-h-48 space-y-1.5 overflow-y-auto pr-1;
+}
+
+@utility beheer-card-mini {
+    @apply flex items-center justify-between rounded-lg border border-theme-purple/20 bg-bg-card p-2 text-xs;
+}
+
+@utility badge-warning-text {
+    @apply text-xs font-semibold text-geel;
+}
+
+@utility modal-footer-row {
+    @apply modal-footer flex-col gap-4 sm:flex-row sm:items-center sm:justify-between;
+}
+
+@utility badge-pill-success {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold tracking-wider text-theme-success;
+}
+
+@utility badge-pill-muted {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-beheer-border bg-beheer-card-soft px-2.5 py-1 text-xs font-semibold tracking-wider text-beheer-text-muted;
+}
+
+@utility badge-pill-accent {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-beheer-accent/20 bg-beheer-accent/10 px-2.5 py-1 text-xs font-semibold tracking-wider text-beheer-accent;
+}
+
+@utility badge-pill-warning {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold tracking-wider text-geel;
+}
+
+@utility badge-tag {
+    @apply flex items-center gap-1 rounded-full bg-bg-soft px-2.5 py-1 text-xs font-bold text-theme-purple;
+}
+
+@utility empty-state-box {
+    @apply rounded-3xl border border-dashed border-beheer-border bg-beheer-card-bg py-32 text-center;
+}
+
+@utility empty-state-icon {
+    @apply mx-auto mb-4 size-16 text-beheer-text-muted opacity-20;
+}
+
+@utility beheer-stat-strip {
+    @apply flex items-center gap-4 rounded-2xl border border-beheer-border/50 bg-beheer-card-soft px-4 py-2 shadow-xs;
+}
+
+@utility sticker-filter-card {
+    @apply pointer-events-auto rounded-2xl border border-beheer-border/20 bg-beheer-card-bg/90 p-4 shadow-2xl backdrop-blur-md;
+}
+
+@utility sticker-action-box {
+    @apply pointer-events-auto rounded-2xl border border-beheer-border/20 bg-beheer-card-bg/90 p-4 shadow-2xl backdrop-blur-md;
+}
+
+@utility sticker-login-prompt {
+    @apply pointer-events-auto flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/90 p-4 text-wit-paars shadow-2xl backdrop-blur-md;
+}
+
+@utility sticker-login-prompt-compact {
+    @apply pointer-events-auto w-full rounded-2xl border border-amber-500/20 bg-amber-500/90 px-4 py-2.5 text-wit-paars shadow-2xl backdrop-blur-md;
+}
+
+@utility map-mobile-toggle-btn {
+    @apply form-button min-w-0 flex-1 border border-beheer-border bg-beheer-card-bg/95 font-black tracking-widest text-beheer-text uppercase shadow-2xl backdrop-blur-md;
+}
+
+@utility stat-card-box {
+    @apply flex items-center justify-between rounded-2xl border border-beheer-border/20 bg-beheer-card-bg p-4 shadow-xl;
+}
+
+@utility stat-card-label {
+    @apply text-2xs font-black tracking-widest text-beheer-text-muted uppercase;
+}
+
+@utility stat-card-value {
+    @apply text-2xl font-black tracking-tighter text-beheer-text uppercase;
+}
+
+@utility map-loader-box {
+    @apply flex h-150 w-full animate-pulse items-center justify-center rounded-2xl border border-theme-purple/10 bg-theme-purple/5;
+}
+
+@utility map-loader-text {
+    @apply text-sm font-semibold tracking-wide text-beheer-text-muted uppercase;
+}
+
+@utility beheer-accent-banner {
+    @apply mb-8 rounded-3xl border border-beheer-accent/20 bg-beheer-accent/5 p-8 shadow-xs;
+}
+
+@utility key-badge-mono {
+    @apply flex w-fit items-center gap-2 rounded-xl border border-beheer-border bg-beheer-card-soft p-2.5 font-mono text-xs text-beheer-text-muted;
+}
+
+@utility beheer-info-box {
+    @apply rounded-3xl border border-beheer-border bg-beheer-card-soft p-8;
+}
+
+@utility v-divider-sm {
+    @apply hidden h-6 w-px bg-beheer-border/20 sm:block;
+}
+
+@utility stat-col-hidden {
+    @apply hidden flex-col items-center px-2 sm:flex;
+}
+
+@utility bg-watermark-icon {
+    @apply absolute -right-10 -bottom-10 transition-opacity opacity-5;
+}
+
+@utility status-callout-error {
+    @apply rounded-2xl border border-red-500/10 bg-red-500/5 p-4;
+}
+
+@utility icon-box-active {
+    @apply icon-box border-emerald-500/20 bg-emerald-500/10 text-theme-success;
+}
+
+@utility icon-box-error {
+    @apply icon-box border-red-500/20 bg-red-500/10 text-theme-error;
+}
+
+@utility status-indicator-row {
+    @apply flex items-center justify-between border-t border-beheer-border/50 pt-6;
+}
+
+@utility beheer-input-error {
+    @apply border-theme-error ring-4 ring-theme-error/10;
+}
+
+@utility radio-option-row {
+    @apply relative z-10 flex cursor-pointer items-center gap-4;
+}
+
+@utility radio-option-row-start {
+    @apply radio-option-row items-start;
+}
+
+@utility radio-circle-outer {
+    @apply size-5 rounded-full border-2 border-beheer-border transition-all peer-checked:border-beheer-accent peer-checked:bg-beheer-accent;
+}
+
+@utility radio-circle-dot {
+    @apply absolute size-1.5 rounded-full bg-wit-paars opacity-0 transition-opacity peer-checked:opacity-100;
+}
+
+@utility checkbox-box-outer {
+    @apply size-5 rounded border-2 border-beheer-border transition-all peer-checked:border-beheer-accent peer-checked:bg-beheer-accent;
+}
+
+@utility checkbox-check-icon {
+    @apply absolute size-3 text-wit-paars opacity-0 transition-opacity peer-checked:opacity-100;
+}
+
+@utility form-row-sm {
+    @apply flex flex-col items-stretch gap-3 sm:flex-row sm:items-start;
+}
+
+@utility container-beheer {
+    @apply container mx-auto max-w-7xl px-4;
+}
+
+@utility beheer-grid-12 {
+    @apply grid grid-cols-1 items-start gap-6 lg:grid-cols-12;
+}
+
+@utility form-section-label {
+    @apply block mb-2 text-base font-semibold text-beheer-text-muted;
+}
+
+@utility form-section-label-icon {
+    @apply mb-2 flex items-center gap-2 text-base font-semibold text-beheer-text-muted;
+}
+
+@utility beheer-textarea {
+    @apply beheer-input resize-y font-mono text-sm leading-relaxed;
+}
+
+@utility form-divider-top {
+    @apply mt-auto border-t border-beheer-border/50 pt-4;
+}
+
+@utility form-option-checkbox-row {
+    @apply radio-option-row mt-auto rounded-2xl border border-beheer-border/50 bg-beheer-card-soft/50 p-4;
+}
+
+@utility form-card-body {
+    @apply flex flex-1 flex-col space-y-6 p-6;
+}
+
+@utility form-grid-2col-pt6 {
+    @apply grid grid-cols-1 gap-4 pt-6 md:grid-cols-2;
+}
+
+@utility activity-card {
+    @apply beheer-card relative flex flex-col overflow-hidden shadow-lg transition-all hover:shadow-2xl md:flex-row;
+}
+
+@utility activity-card-media {
+    @apply relative hidden min-h-40 w-full shrink-0 border-r border-beheer-border bg-beheer-card-soft/50 md:block md:min-h-full md:w-48 lg:w-56;
+}
+
+@utility activity-card-body {
+    @apply flex min-w-0 flex-1 flex-col justify-center px-6 py-4 sm:px-8 sm:py-5;
+}
+
+@utility activity-card-pill {
+    @apply flex items-center gap-3 rounded-2xl border border-beheer-border bg-beheer-card-soft/50 px-5 py-2.5;
+}
+
+@utility activity-card-actions {
+    @apply flex flex-col items-stretch justify-center gap-2 border-t border-beheer-border bg-beheer-card-soft/20 p-4 md:w-64 md:gap-3 md:border-t-0 md:border-l md:p-6;
+}
+
+@utility btn-card-action {
+    @apply h-10 px-4 rounded-xl text-xs sm:text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-1 bg-beheer-accent/10 text-beheer-accent hover:bg-beheer-accent hover:text-wit-paars;
+}
+
+@utility btn-card-success {
+    @apply h-10 px-4 rounded-xl text-xs sm:text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-1 bg-theme-success/10 text-theme-success hover:bg-theme-success hover:text-wit-paars;
+}
+
+@utility activity-filters-wrapper {
+    @apply mb-10 grid grid-cols-1 items-stretch gap-4 lg:grid-cols-12;
+}
+
+@utility activity-filters-grid {
+    @apply grid grid-cols-1 gap-3 sm:grid-cols-3 lg:col-span-7;
+}
+
+@utility filter-select-box {
+    @apply flex min-w-0 items-center justify-between gap-2 rounded-3xl border border-beheer-border bg-beheer-card-bg px-4 py-2.5 shadow-xs transition-colors hover:border-beheer-accent/30;
+}
+
+@utility filter-button-strip {
+    @apply flex w-full items-center gap-1 rounded-3xl border border-beheer-border bg-beheer-card-soft p-1 shadow-xs;
+}
+
+@utility radio-circle-wrapper {
+    @apply relative mt-0.5 flex items-center justify-center;
+}
+
+@utility activity-card-header {
+    @apply mb-2 flex flex-wrap items-center gap-3;
+}
+
+@utility activity-card-meta {
+    @apply mb-4 flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-beheer-text-muted;
+}
+
+@utility activity-card-desc {
+    @apply mb-4 line-clamp-2 text-sm font-medium leading-relaxed text-beheer-text-muted;
+}
+
+@utility activity-card-stats-icon {
+    @apply rounded-full bg-beheer-accent/10 p-2 text-beheer-accent transition-transform;
+}
+
+@utility activity-card-price-text {
+    @apply flex items-center gap-2 font-semibold text-beheer-text;
+}
+
+@utility btn-card-action-lg {
+    @apply h-10 rounded-xl text-xs font-semibold inline-flex items-center justify-center transition-all cursor-pointer shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-1 bg-beheer-accent/10 text-beheer-accent hover:bg-beheer-accent hover:text-wit-paars md:gap-4 md:px-6 md:py-5 md:text-sm;
+}
+
+@utility btn-card-success-lg {
+    @apply h-10 rounded-xl text-xs font-semibold inline-flex items-center justify-center transition-all cursor-pointer shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-1 bg-theme-success/10 text-theme-success hover:bg-theme-success hover:text-wit-paars md:gap-4 md:px-6 md:py-5 md:text-sm;
+}
+
+@utility btn-card-edit-lg {
+    @apply h-10 px-4 rounded-xl text-xs sm:text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all cursor-pointer border border-border-color bg-bg-card text-text-muted hover:bg-bg-soft hover:text-text-main hover:border-theme-purple/30 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed flex-1 md:gap-4 md:px-6 md:py-5;
+}
+
+@utility filter-label {
+    @apply text-2xs font-semibold whitespace-nowrap text-beheer-text-muted opacity-75;
+}
+
+@utility filter-select-input {
+    @apply h-10 w-full bg-bg-main/50 border border-border-color/30 rounded-xl text-text-main focus:ring-4 focus:ring-theme-purple/20 focus:border-theme-purple transition-all outline-hidden disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-neutral-500/10 min-w-0 cursor-pointer p-0 text-right text-2xs font-bold sm:text-left;
+}
+
+@utility filter-tab-button {
+    @apply flex h-10 items-center justify-center gap-2 transition-colors flex-1 cursor-pointer rounded-2xl px-3 py-2 text-center text-2xs font-bold whitespace-nowrap;
+}
+
+@utility filter-tab-active {
+    @apply bg-beheer-accent text-wit-paars shadow-xs;
+}
+
+@utility filter-tab-inactive {
+    @apply text-beheer-text-muted hover:bg-white/50 hover:text-beheer-text dark:hover:bg-white/5;
+}
+
+@utility alert-banner-error {
+    @apply mb-6 flex items-start gap-4 rounded-2xl border border-theme-error/20 bg-theme-error/10 p-4 text-xs font-medium text-theme-error;
+}
+
+@utility alert-banner-success {
+    @apply mb-6 flex items-center gap-4 rounded-2xl border border-theme-success/20 bg-theme-success/10 p-4 text-xs font-medium text-theme-success;
+}
+
+@utility member-selected-card {
+    @apply relative overflow-hidden rounded-2xl border border-beheer-border bg-linear-to-br from-beheer-card-soft to-transparent p-5 transition-all;
+}
+
+@utility member-selected-check-wrapper {
+    @apply absolute top-0 right-0 p-2 opacity-0 transition-opacity group-hover:opacity-100;
+}
+
+@utility member-avatar-badge {
+    @apply flex size-14 items-center justify-center rounded-2xl bg-beheer-accent text-lg font-semibold text-wit-paars shadow-lg ring-4 ring-beheer-accent/5;
+}
+
+@utility btn-delete-badge {
+    @apply icon-button size-10 border border-theme-error/20 bg-theme-error/10 text-theme-error hover:bg-theme-error hover:text-wit-paars;
+}
+
+@utility btn-scanner-mobile {
+    @apply flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-theme-purple px-6 py-2.5 text-xs font-semibold text-wit-paars shadow-lg shadow-theme-purple/20 transition-all active:scale-95 md:hidden;
+}
+
+@utility empty-state-icon-bg {
+    @apply mb-6 inline-flex size-20 items-center justify-center rounded-full bg-beheer-card-soft;
+}
+
+@utility stat-label-muted {
+    @apply mb-1 text-2xs font-semibold leading-none text-text-muted;
+}
+
+@utility stat-val-main {
+    @apply text-sm font-bold leading-none tabular-nums text-text-main;
+}
+
+@utility stat-val-success {
+    @apply text-sm font-bold leading-none tabular-nums text-beheer-active;
+}
+
+@utility stat-val-warning {
+    @apply text-sm font-bold leading-none tabular-nums text-geel;
+}
+
+@utility stat-val-error {
+    @apply text-sm font-bold leading-none tabular-nums text-beheer-inactive;
+}
+
+@utility stat-val-info {
+    @apply text-sm font-bold leading-none tabular-nums text-donker-blauw dark:text-licht-paars;
+}
+
+@utility stat-val-purple {
+    @apply text-sm font-bold leading-none tabular-nums text-theme-purple;
+}
+
+@utility admin-container-padded {
+    @apply admin-container flex flex-col py-4 md:py-8;
+}
+
+@utility form-label-uppercase {
+    @apply flex items-center gap-2 text-xs font-bold tracking-wider text-text-muted uppercase;
+}
+
+@utility tab-bar-wrapper {
+    @apply tab-bar-responsive rounded-2xl border border-theme-purple/10 bg-theme-purple/5 p-1.5;
+}
+
+@utility modal-body-custom-scroll {
+    @apply overflow-y-auto px-6 pt-2 pb-6;
+}
+
+@utility guest-form-label {
+    @apply mb-2.5 ml-1 block text-2xs font-semibold tracking-widest text-beheer-text-muted transition-colors group-focus-within:text-beheer-accent;
+}
+
+@utility member-search-label {
+    @apply mb-2 ml-1 block text-2xs font-semibold tracking-widest text-beheer-text-muted;
+}
+
+@utility member-email-text {
+    @apply mt-1 text-2xs font-bold tracking-widest text-beheer-text-muted;
+}
+
+@utility section-header-responsive {
+    @apply flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center;
+}
+
+@utility table-card-container {
+    @apply overflow-hidden rounded-3xl bg-beheer-card-bg shadow-xs ring-1 ring-beheer-border;
+}
+
+@utility empty-state-title {
+    @apply mb-2 text-xl font-semibold tracking-tighter text-beheer-text;
+}
+
+@utility empty-state-desc {
+    @apply mx-auto max-w-xs text-2xs font-semibold tracking-widest text-beheer-text-muted;
+}
+
+@utility card-header-flex {
+    @apply flex items-center justify-between border-b border-beheer-border/50 bg-beheer-card-soft/30 p-6;
+}
+
+@utility badge-env-pill {
+    @apply inline-block w-fit rounded border px-1.5 py-0.5 text-2xs font-bold capitalize;
+}
+
+@utility log-details-box {
+    @apply max-w-70 text-xs font-medium tracking-tight break-all text-beheer-text-muted;
+}
+
+@utility log-subhead-success {
+    @apply text-2xs font-bold tracking-widest uppercase text-theme-success;
+}
+
+@utility log-subhead-warning {
+    @apply text-2xs font-bold tracking-widest uppercase text-geel;
+}
+
+@utility alert-icon-box-amber {
+    @apply mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl border border-amber-500/20 bg-amber-500/10 text-geel;
+}
+
+@utility action-strip-responsive {
+    @apply order-2 flex flex-wrap items-center gap-1.5 sm:order-1;
+}
+
+@utility icon-button-active {
+    @apply icon-button border border-beheer-active/20 bg-beheer-active/10 text-beheer-active hover:bg-beheer-active hover:text-wit-paars;
+}
+
+@utility icon-button-inactive {
+    @apply icon-button border border-beheer-inactive/20 bg-beheer-inactive/10 text-beheer-inactive hover:bg-beheer-inactive hover:text-wit-paars;
+}
+
+@utility icon-button-disabled {
+    @apply icon-button opacity-50 border-beheer-border bg-beheer-card-soft text-beheer-text-muted cursor-not-allowed;
+}
+
+@utility card-header-stack {
+    @apply flex flex-col items-start justify-between gap-4 border-b border-beheer-border/50 p-6 md:flex-row md:items-center;
+}
+
+@utility badge-env-prod {
+    @apply badge-env-pill border-theme-error/20 bg-theme-error/10 text-theme-error;
+}
+
+@utility badge-env-acc {
+    @apply badge-env-pill border-amber-500/20 bg-amber-500/10 text-geel;
+}
+
+@utility badge-env-dev {
+    @apply badge-env-pill border-blue-500/20 bg-blue-500/10 text-blue-400;
+}
+
+@utility table-header-row {
+    @apply border-b border-beheer-border/50 bg-beheer-card-soft/50 text-xs font-semibold tracking-tight text-beheer-text-muted;
+}
+
+@utility table-th-beheer {
+    @apply p-4 text-xs font-semibold tracking-tight text-beheer-text-muted;
+}
+
+@utility table-row-interactive {
+    @apply border-b border-beheer-border/10 transition-colors hover:bg-beheer-accent/5;
+}
+
+@utility table-td-muted {
+    @apply p-4 text-xs font-medium tracking-tight whitespace-nowrap text-beheer-text-muted;
+}
+
+@utility spinner-accent-lg {
+    @apply mx-auto mb-4 size-8 animate-spin text-beheer-accent;
+}
+
+@utility empty-state-subtitle {
+    @apply mx-auto mt-2 max-w-md text-xs font-medium text-beheer-text-muted;
+}
+
+@utility card-subtitle-muted {
+    @apply mt-1 text-xs font-medium text-beheer-text-muted opacity-50;
+}
+
+@utility icon-watermark-lg {
+    @apply mx-auto mb-4 size-10 text-beheer-active opacity-20;
+}
+
+@utility tab-button-pill {
+    @apply tab-button rounded-lg border px-3 py-1 text-2xs font-semibold transition-all;
+}
+
+@utility log-type-title {
+    @apply text-xs font-semibold tracking-tight text-beheer-text capitalize;
+}
+
+@utility badge-group-wrap {
+    @apply mt-1 flex flex-wrap gap-1.5 text-2xs;
+}
+
+@utility log-subcard-box {
+    @apply overflow-hidden rounded-xl border border-beheer-border bg-beheer-card-soft/30;
+}
+
+@utility flex-row-scroll-sm {
+    @apply flex items-center gap-2 overflow-x-auto pb-1;
+}
+
+@utility filter-toolbar-row {
+    @apply mt-2 flex flex-wrap items-center gap-4;
+}
+
+@utility table-cell-title-hover {
+    @apply truncate font-semibold tracking-tight text-beheer-text transition-colors group-hover:text-beheer-accent;
+}
+
+@utility btn-pill-accent {
+    @apply beheer-button rounded bg-beheer-accent/10 px-2 py-0.5 text-beheer-accent hover:bg-beheer-accent/20;
+}
+
+@utility container-stack-centered {
+    @apply mx-auto flex max-w-4xl flex-col gap-3;
+}
+
+@utility log-json-pre {
+    @apply max-h-87.5 overflow-x-auto rounded-xl border border-beheer-border/80 bg-beheer-card-bg p-4 font-mono text-xs leading-relaxed break-all whitespace-pre-wrap text-beheer-text shadow-inner md:whitespace-pre;
+}
+
+@utility empty-table-td {
+    @apply p-20 text-center text-sm font-medium italic text-beheer-text-muted;
+}
+
+@utility badge-status-pill {
+    @apply inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold tracking-tight;
+}
+
+@utility badge-status-success {
+    @apply border-beheer-active/20 bg-beheer-active/10 text-beheer-active;
+}
+
+@utility badge-status-info {
+    @apply border-beheer-accent/20 bg-beheer-accent/10 text-beheer-accent;
+}
+
+@utility badge-status-warning {
+    @apply border-amber-500/20 bg-amber-500/10 text-amber-500;
+}
+
+@utility badge-status-error {
+    @apply border-beheer-inactive/20 bg-beheer-inactive/10 text-beheer-inactive;
+}
+
+@utility log-meta-seen {
+    @apply flex items-center gap-1 text-2xs text-beheer-text-muted;
+}
+
+@utility card-footer-centered {
+    @apply flex justify-center border-t border-beheer-border/50 p-4;
+}
+
+@utility container-centered-hero {
+    @apply mx-auto max-w-xl space-y-6 py-16 text-center;
+}
+
+@utility card-header-responsive {
+    @apply flex flex-col items-start justify-between gap-4 rounded-2xl border border-border-color bg-bg-card p-4 sm:p-5 md:flex-row md:items-center;
+}
+
+@utility tab-strip-responsive {
+    @apply flex w-full items-center gap-1.5 rounded-xl border border-border-color/60 bg-bg-soft p-1 md:w-auto;
+}
+
+@utility tab-button-responsive {
+    @apply tab-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-colors md:flex-none;
+}
+
+@utility card-empty-state-container {
+    @apply rounded-2xl border border-border-color bg-bg-card p-8 text-center shadow-sm;
+}
+
+@utility icon-purple-centered-lg {
+    @apply mx-auto mb-3 size-12 text-theme-purple opacity-60;
+}
+
+@utility card-preference-box {
+    @apply flex flex-col justify-between rounded-2xl border border-border-color bg-bg-card p-6 shadow-sm transition-all hover:border-theme-purple/30;
+}
+
+@utility card-header-bordered {
+    @apply flex items-center gap-4 border-b border-border-color/60 pb-4;
+}
+
+@utility avatar-squircle-lg {
+    @apply squircle relative flex size-14 shrink-0 items-center justify-center overflow-hidden border border-theme-purple/20 bg-theme-purple/10;
+}
+
+@utility card-footer-right {
+    @apply mt-4 flex justify-end border-t border-border-color/60 pt-4;
+}
+
+@utility tab-strip-scrollable {
+    @apply flex items-center gap-2 overflow-x-auto border-b border-border-color pb-3;
+}
+
+@utility tab-button-amber-active {
+    @apply tab-button flex min-h-11 cursor-pointer items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-xs font-semibold text-wit-paars shadow-xs transition-colors sm:min-h-9 sm:text-sm;
+}
+
+@utility badge-cobo-shotjes {
+    @apply inline-flex items-center rounded-lg border border-amber-500/20 bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300;
+}
+
+@utility badge-cobo-watervallen {
+    @apply inline-flex items-center rounded-lg border border-blue-500/20 bg-blue-500/10 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-300;
+}
+
+@utility badge-cobo-custom {
+    @apply inline-flex items-center rounded-lg border border-theme-purple/20 bg-theme-purple/10 px-2.5 py-0.5 text-xs font-semibold text-theme-purple;
+}
+
+@utility card-empty-dashed {
+    @apply rounded-2xl border border-dashed border-border-color bg-bg-card py-12 text-center;
+}
+
+@utility card-row-archived-base {
+    @apply flex flex-col items-start justify-between gap-3 rounded-xl border bg-bg-card p-4 transition-colors sm:flex-row sm:items-center;
+}
+
+@utility card-row-completed {
+    @apply border-border-color opacity-85 hover:opacity-100;
+}
+
+@utility card-row-late {
+    @apply border-amber-500/30 bg-amber-500/5;
+}
+
+@utility card-title-archived {
+    @apply truncate text-sm font-semibold text-text-main sm:text-base;
+}
+
+@utility action-strip-end {
+    @apply flex w-full items-center justify-end gap-2 sm:w-auto;
+}
+
+@utility btn-icon-delete-soft {
+    @apply icon-button min-h-11 min-w-11 p-2 text-text-muted hover:bg-rose-500/10 hover:text-rose-500 sm:min-h-9 sm:min-w-9;
+}
+
+@utility card-inactive-board {
+    @apply space-y-3 rounded-2xl border border-border-color bg-bg-card p-6 text-center;
+}
+
+@utility card-active-board {
+    @apply space-y-4 rounded-2xl border border-border-color bg-bg-card p-6 text-center shadow-xs;
+}
+
+@utility title-active-board {
+    @apply wrap-break-word text-2xl font-bold tracking-tight text-text-main sm:text-3xl;
+}
+
+@utility badge-group-centered {
+    @apply flex flex-wrap items-center justify-center gap-2;
+}
+
+@utility action-grid-centered {
+    @apply mx-auto grid w-full max-w-xl grid-cols-2 items-center justify-center gap-2.5 pt-1 sm:flex sm:flex-wrap;
+}
+
+@utility btn-emerald-action {
+    @apply beheer-button min-h-11 bg-emerald-600 hover:bg-emerald-700 sm:flex-1;
+}
+
+@utility btn-amber-secondary {
+    @apply beheer-button-secondary min-h-11 text-text-muted sm:flex-1 dark:hover:text-amber-400;
+}
+
+@utility card-row-queue-item {
+    @apply flex flex-col items-start justify-between gap-3 rounded-xl border bg-bg-card p-3.5 transition-all sm:flex-row sm:items-center sm:p-4;
+}
+
+@utility drag-handle-button {
+    @apply -ml-1 shrink-0 cursor-grab rounded-md p-1 text-text-muted transition-colors hover:text-theme-purple active:cursor-grabbing;
+}
+
+@utility btn-pill-purple {
+    @apply beheer-button-secondary min-h-11 px-2.5 py-1 text-theme-purple sm:min-h-8;
+}
+
+@utility button-group-border {
+    @apply flex min-h-11 items-center rounded-lg border border-border-color/60 bg-bg-soft p-0.5 sm:min-h-8;
+}
+
+@utility btn-icon-move {
+    @apply icon-button min-h-10 min-w-10 p-1 text-text-muted hover:text-theme-purple disabled:opacity-20 sm:min-h-7 sm:min-w-7;
+}
+
+@utility btn-icon-amber {
+    @apply icon-button min-h-11 min-w-11 p-1.5 text-text-muted hover:bg-amber-500/10 hover:text-amber-500 sm:min-h-8 sm:min-w-8;
+}
+
+@utility btn-icon-rose {
+    @apply icon-button min-h-11 min-w-11 p-1.5 text-text-muted hover:bg-rose-500/10 hover:text-rose-500 sm:min-h-8 sm:min-w-8;
+}
+
+/* Standardized Theme Colors: 1 (Main/Primary), 2 (Success), 3 (Warning), 4 (Info), 5 (Purple), 6 (Error) */
+@utility stat-val-1 {
+    @apply stat-val-main;
+}
+@utility stat-val-2 {
+    @apply stat-val-success;
+}
+@utility stat-val-3 {
+    @apply stat-val-warning;
+}
+@utility stat-val-4 {
+    @apply stat-val-info;
+}
+@utility stat-val-5 {
+    @apply stat-val-purple;
+}
+@utility stat-val-6 {
+    @apply stat-val-error;
+}
+
+@utility badge-theme-1 {
+    @apply inline-block rounded-md border border-beheer-accent/20 bg-beheer-accent/10 px-2.5 py-0.5 text-xs font-semibold text-beheer-accent;
+}
+@utility badge-theme-2 {
+    @apply inline-block rounded-md border border-beheer-active/20 bg-beheer-active/10 px-2.5 py-0.5 text-xs font-semibold text-beheer-active;
+}
+@utility badge-theme-3 {
+    @apply inline-block rounded-md border border-geel/20 bg-geel/10 px-2.5 py-0.5 text-xs font-semibold text-geel;
+}
+@utility badge-theme-4 {
+    @apply inline-block rounded-md border border-donker-blauw/20 bg-donker-blauw/10 px-2.5 py-0.5 text-xs font-semibold text-donker-blauw dark:text-licht-paars;
+}
+@utility badge-theme-5 {
+    @apply inline-block rounded-md border border-theme-purple/20 bg-theme-purple/10 px-2.5 py-0.5 text-xs font-semibold text-theme-purple;
+}
+@utility badge-theme-6 {
+    @apply inline-block rounded-md border border-beheer-inactive/20 bg-beheer-inactive/10 px-2.5 py-0.5 text-xs font-semibold text-beheer-inactive;
+}
+
+@utility btn-theme-1 {
+    @apply form-button bg-beheer-accent text-white hover:opacity-90;
+}
+@utility btn-theme-2 {
+    @apply form-button bg-beheer-active text-white hover:opacity-90;
+}
+@utility btn-theme-3 {
+    @apply form-button bg-geel text-black hover:opacity-90;
+}
+@utility btn-theme-4 {
+    @apply form-button bg-donker-blauw text-white hover:opacity-90 dark:bg-licht-paars dark:text-black;
+}
+@utility btn-theme-5 {
+    @apply form-button bg-theme-purple text-wit-paars hover:opacity-90;
+}
+@utility btn-theme-6 {
+    @apply form-button bg-beheer-inactive text-white hover:opacity-90;
+}
+
+/* Mail & Signup Utilities */
+@utility recipient-list {
+    @apply custom-scrollbar space-y-2 overflow-y-auto pr-1;
+    max-height: 15.625rem;
+}
+
+@utility recipient-card {
+    @apply flex flex-col rounded-2xl border border-beheer-border/20 bg-bg-main/30 p-3 text-xs shadow-inner transition-all hover:border-beheer-accent/30;
+}
+
+@utility status-badge-mini {
+    @apply rounded px-1.5 py-0.5 text-2xs font-bold uppercase;
+}
+
+@utility status-badge-mini-confirmed {
+    @apply status-badge-mini border border-beheer-active/20 bg-beheer-active/10 text-beheer-active;
+}
+
+@utility status-badge-mini-cancelled {
+    @apply status-badge-mini border border-beheer-inactive/20 bg-beheer-inactive/10 text-beheer-inactive;
+}
+
+@utility status-badge-mini-waitlist {
+    @apply status-badge-mini border border-geel/20 bg-geel/10 text-geel;
+}
+
+@utility status-badge-mini-registered {
+    @apply status-badge-mini border border-beheer-accent/20 bg-beheer-accent/10 text-beheer-accent;
+}
+
+@utility signup-section-card {
+    @apply space-y-3 rounded-2xl border border-beheer-border/10 bg-bg-main/30 p-4 shadow-inner;
+}
+
+@utility signup-driver-badge {
+    @apply flex items-center justify-between rounded-xl border px-3 py-2 text-2xs font-semibold;
+}
+
+@utility signup-driver-badge-available {
+    @apply signup-driver-badge border-theme-success/20 bg-theme-success/10 text-theme-success;
+}
+
+@utility signup-driver-badge-unavailable {
+    @apply signup-driver-badge border-theme-error/20 bg-theme-error/10 text-theme-error;
+}
+
+@utility signup-status-pill {
+    @apply flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1;
+}
+
+@utility signup-note-error {
+    @apply rounded-xl border border-theme-error/10 bg-theme-error/5 p-3;
+}
+
+@utility signup-note-accent {
+    @apply rounded-xl border border-beheer-accent/10 bg-beheer-accent/5 p-3;
+}
+
+@utility admin-action-header-row {
+    @apply flex flex-col items-start gap-4 md:flex-row md:items-center;
+}
+
+@utility admin-action-button-group {
+    @apply flex w-full flex-wrap items-stretch gap-2 sm:items-center md:w-auto;
+}
+
+@utility no-trips-card {
+    @apply rounded-3xl border border-beheer-border bg-beheer-card-bg p-12 shadow-xl;
+}
+
+@utility no-trips-icon-wrapper {
+    @apply mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl border border-theme-purple/20 bg-theme-purple/10 text-theme-purple;
+}
+
+@utility mail-editor-card {
+    @apply relative overflow-hidden rounded-3xl border border-beheer-border bg-beheer-card-bg shadow-xl;
+}
+
+@utility mail-editor-header {
+    @apply relative z-10 border-b border-beheer-border/30 bg-beheer-card-soft/30 p-8;
+}
+
+@utility mail-editor-icon-box {
+    @apply flex size-12 items-center justify-center rounded-2xl bg-beheer-accent text-wit-paars shadow-beheer-accent/20 shadow-xl;
+}
+
+@utility mail-editor-alert-card {
+    @apply flex items-start gap-6 rounded-3xl border border-beheer-accent/10 bg-beheer-accent/5 p-8;
+}
+
+@utility mail-editor-alert-icon {
+    @apply rounded-2xl bg-beheer-accent/10 p-4 text-beheer-accent shadow-xs;
+}
+
+@utility mail-editor-footer {
+    @apply flex flex-col items-center justify-between gap-6 border-t border-beheer-border/30 pt-8 sm:flex-row;
+}
+
+@utility btn-mail-send {
+    @apply form-button w-full tracking-widest uppercase sm:w-auto;
+}
+
+@utility mail-editor-glow {
+    @apply absolute -top-24 -right-24 size-48 rounded-full bg-beheer-accent/5 blur-3xl transition-colors duration-700;
+}
+
+@utility form-label-caption {
+    @apply ml-1 text-2xs font-semibold tracking-widest text-beheer-text-muted uppercase opacity-70;
+}
+
+@utility mail-editor-grid {
+    @apply grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-2;
+}
+
+@utility mail-editor-warning-label {
+    @apply flex items-center gap-2 text-2xs font-semibold tracking-widest text-beheer-text-muted uppercase italic opacity-50;
+}
+
+@utility recipient-summary-card {
+    @apply relative overflow-hidden rounded-3xl border border-beheer-accent/20 bg-beheer-accent/5 p-8 shadow-xs;
+}
+
+@utility recipient-summary-bg-icon {
+    @apply absolute -right-4 -bottom-4 opacity-5 transition-transform duration-700;
+}
+
+@utility recipient-summary-header {
+    @apply mb-1 flex items-center gap-3 text-beheer-accent;
+}
+
+@utility recipient-summary-label {
+    @apply text-2xs font-semibold tracking-widest text-beheer-text-muted uppercase opacity-70;
+}
+
+@utility recipient-empty-text {
+    @apply py-4 text-center text-2xs text-beheer-text-muted italic opacity-50;
+}
+
+@utility signup-view-grid {
+    @apply grid grid-cols-1 gap-6 p-2 md:grid-cols-2;
+}
+
+@utility signup-section-header {
+    @apply mb-3 flex items-center gap-2 opacity-50;
+}
+
+@utility signup-status-card {
+    @apply space-y-4 rounded-2xl border border-beheer-border/10 bg-bg-main/30 p-4 shadow-inner;
+}
+
+@utility status-notice-card {
+    @apply flex h-full flex-col items-center justify-center space-y-4 rounded-3xl border border-dashed border-border-color/60 bg-bg-soft/50 p-8 text-center sm:p-12 dark:bg-bg-soft/20;
+}
+
+@utility status-notice-icon-purple {
+    @apply flex size-12 items-center justify-center rounded-full border border-theme-purple/10 bg-theme-purple/5 text-theme-purple/60;
+}
+
+@utility status-notice-icon-muted {
+    @apply flex size-12 items-center justify-center rounded-full border border-text-muted/10 bg-text-muted/5 text-text-muted/60;
+}
+
+@utility status-notice-title {
+    @apply text-lg font-bold tracking-tight text-text-main sm:text-xl;
+}
+
+@utility status-notice-text {
+    @apply mx-auto mt-2 max-w-70 text-xs font-medium leading-relaxed text-text-muted sm:text-sm;
+}
+
+@utility btn-form-submit-gradient {
+    @apply form-button relative w-full bg-linear-to-br from-theme-purple via-purple-600 to-theme-purple font-black shadow-theme-purple/20 duration-500 enabled:hover:-translate-y-1 enabled:hover:shadow-2xl enabled:hover:shadow-theme-purple/40 enabled:active:scale-95 disabled:opacity-70;
+}
+
+@utility signup-user-card {
+    @apply flex items-center gap-4 rounded-2xl border border-border-color/80 bg-bg-soft/80 p-4 shadow-xs;
+}
+
+@utility signup-user-avatar {
+    @apply flex size-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-theme-purple to-purple-600 text-base font-black text-wit-paars shadow-md shadow-theme-purple/20;
+}
+
+@utility badge-logged-in {
+    @apply inline-flex items-center gap-1 rounded-full bg-theme-purple/10 px-2 py-0.5 text-2xs font-black tracking-wider text-theme-purple uppercase;
+}
+
+@utility form-input-soft {
+    @apply h-14 rounded-2xl border-none bg-bg-soft px-6 font-bold text-text-main transition-all focus:ring-2 focus:ring-theme-purple/20;
+}
+
+@utility status-signup-container {
+    @apply flex h-full flex-col justify-center space-y-8 rounded-4xl border bg-bg-card p-8 shadow-2xl transition-all duration-500;
+}
+
+@utility status-signup-icon-wrapper {
+    @apply mx-auto flex size-20 items-center justify-center rounded-full shadow-inner;
+}
+
+@utility status-signup-pill {
+    @apply inline-block rounded-xl border border-border-color/20 bg-bg-soft px-4 py-2.5 text-2xs font-semibold tracking-widest text-text-muted;
+}
+
+@utility status-signup-hint {
+    @apply mx-auto max-w-xs text-xs font-bold text-text-muted opacity-70;
+}
+
+@utility status-signup-qr-card {
+    @apply relative flex flex-col items-center rounded-4xl border border-border-color/60 bg-bg-soft p-8 transition-all duration-700 hover:bg-bg-card;
+}
+
+@utility status-signup-qr-box {
+    @apply rounded-3xl bg-wit-paars p-3 shadow-xl ring-1 ring-black/5;
+}
+
+@utility status-signup-qr-caption {
+    @apply mt-6 flex items-center gap-2 text-2xs font-semibold tracking-widest text-text-muted opacity-60;
+}
+
+@utility status-signup-pending-card {
+    @apply flex flex-col items-center justify-center space-y-4 rounded-4xl border border-dashed border-border-color bg-bg-soft/50 p-8 opacity-60;
+}
+
+@utility status-signup-pending-box {
+    @apply flex size-48 items-center justify-center rounded-3xl border border-border-color/30 bg-bg-soft;
+}
+
+@utility alert-error-box {
+    @apply flex items-start gap-3 rounded-2xl border border-theme-error/20 bg-theme-error/10 p-4;
+}
+
+@utility alert-error-icon {
+    @apply mt-0.5 size-5 shrink-0 text-theme-error;
+}
+
+@utility alert-error-text {
+    @apply text-xs font-bold italic text-theme-error;
+}
+
+@utility card-members-notice {
+    @apply rounded-2xl border border-border-color bg-bg-card p-6 text-center shadow-card;
+}
+
+@utility btn-members-cta {
+    @apply mt-4 inline-block rounded-xl bg-theme-purple px-6 py-3 text-sm font-bold tracking-widest text-wit-paars uppercase transition-opacity hover:opacity-90;
+}
+
+@utility badge-committee-pill {
+    @apply mb-4 inline-block rounded-full border border-wit-paars/10 bg-theme-purple px-4 py-1.5 text-2xs font-black tracking-widest text-wit-paars uppercase shadow-xl;
+}
+
+@utility detail-info-card {
+    @apply flex flex-col justify-center squircle border border-border-color bg-bg-card p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30;
+}
+
+@utility detail-info-label {
+    @apply text-2xs font-black tracking-widest text-text-muted uppercase;
+}
+
+@utility attendance-stat-card {
+    @apply squircle border border-border-color bg-bg-card p-4 shadow-sm sm:p-6;
+}
+
+@utility attendance-search-box {
+    @apply flex h-10 items-center gap-3 rounded-xl bg-bg-soft px-4 transition-all focus-within:ring-2 focus-within:ring-theme-purple/20 sm:h-12;
+}
+
+@utility attendance-scan-btn {
+    @apply form-button h-10 w-full squircle shadow-theme-purple/20 hover:scale-105 sm:h-12 sm:w-auto sm:justify-start sm:px-6 sm:text-base;
+}
+
+@utility badge-status-checked-in {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-theme-success/10 px-3 py-1 text-xs font-bold text-theme-success ring-1 ring-theme-success/20 ring-inset sm:text-sm;
+}
+
+@utility badge-status-unchecked {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-bg-soft px-3 py-1 text-xs font-bold text-text-muted ring-1 ring-border-color ring-inset sm:text-sm;
+}
+
+@utility btn-calendar-export {
+    @apply tab-button relative inline-flex min-h-10.5 items-center justify-center gap-2.5 rounded-xl border border-border-color/30 bg-bg-card px-4 py-2.5 text-2xs font-black tracking-widest text-theme-purple uppercase shadow-xs transition-all hover:border-theme-purple/30 hover:bg-theme-purple/5 active:scale-95 sm:px-6 sm:py-3;
+}
+
+@utility btn-calendar-export-icon {
+    @apply flex size-5 shrink-0 items-center justify-center rounded-full bg-theme-purple/10 text-theme-purple transition-colors;
+}
+
+@utility modal-calendar-backdrop {
+    @apply fixed inset-0 z-50 flex items-end justify-center bg-bg-main/80 p-0 backdrop-blur-xs duration-200 sm:items-center sm:p-4;
+}
+
+@utility btn-modal-close {
+    @apply icon-button size-8 shrink-0 rounded-full bg-bg-main text-text-muted hover:bg-border-color/40 hover:text-text-main;
+}
+
+@utility code-feed-url {
+    @apply flex-1 truncate rounded-xl border border-border-color/30 bg-bg-card px-2.5 py-1.5 font-mono text-2xs text-text-muted;
+}
+
+@utility calendar-mobile-tip {
+    @apply flex flex-wrap items-center justify-between gap-2 border-t border-border-color/20 pt-2 text-2xs text-text-muted;
+}
+
+@utility calendar-card-container {
+    @apply overflow-hidden rounded-2xl bg-bg-card shadow-xl sm:rounded-3xl dark:border dark:border-border-color;
+}
+
+@utility calendar-header-bar {
+    @apply flex items-center justify-between p-5 text-theme-purple sm:p-6;
+}
+
+@utility calendar-header-title {
+    @apply text-xl font-black tracking-tight capitalize sm:text-2xl;
+}
+
+@utility btn-calendar-nav {
+    @apply icon-button size-9 rounded-full text-theme-purple hover:bg-theme-purple/10;
+}
+
+@utility btn-calendar-today {
+    @apply tab-button rounded-full bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20;
+}
+
+@utility calendar-weekdays-bar {
+    @apply grid grid-cols-7 border-y border-border-color/30 bg-bg-soft;
+}
+
+@utility calendar-weekday-label {
+    @apply py-2.5 text-center text-2xs font-black tracking-wider text-text-muted uppercase;
+}
+
+@utility calendar-grid-wrapper {
+    @apply grid auto-rows-fr grid-cols-7 gap-px bg-border-color/40;
+}
+
+@utility calendar-day-cell {
+    @apply relative flex min-h-28 cursor-pointer flex-col justify-between p-2 transition-colors;
+}
+
+@utility calendar-day-badge {
+    @apply flex size-7 items-center justify-center rounded-full text-xs transition-colors;
+}
+
+@utility modal-calendar-dialog {
+    @apply flex max-h-[90vh] flex-col space-y-5 overflow-y-auto overscroll-contain rounded-t-3xl p-5 sm:max-h-[85vh] sm:rounded-3xl sm:p-7;
+}
+
+@utility modal-calendar-container {
+    @apply w-full border border-border-color/40 bg-bg-card shadow-2xl sm:max-w-lg dark:border-border-color;
+}
+
+@utility modal-calendar-header {
+    @apply flex items-start justify-between gap-4 border-b border-border-color/20 pb-4;
+}
+
+@utility modal-calendar-icon-box {
+    @apply flex size-8 shrink-0 items-center justify-center rounded-xl border border-theme-purple/20 bg-theme-purple/10 text-theme-purple;
+}
+
+@utility modal-calendar-instructions {
+    @apply space-y-3 rounded-2xl border border-theme-purple/30 bg-theme-purple/5 p-4 duration-200 dark:bg-theme-purple/10;
+}
+
+@utility calendar-event-chip {
+    @apply tab-button w-full rounded-md border border-theme-purple/20 bg-theme-purple/10 px-2 py-1 text-left text-theme-purple duration-150 hover:border-theme-purple/40 hover:bg-theme-purple/20;
+}
+
+@utility switcher-tab-bar {
+    @apply flex w-full rounded-xl border border-border-color/30 bg-bg-card p-1 shadow-xs sm:w-auto sm:rounded-2xl;
+}
+
+@utility switcher-tab-item {
+    @apply tab-button flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold transition-all sm:min-h-0 sm:flex-initial sm:rounded-xl sm:py-2;
+}
+
+@utility switcher-tab-item-active {
+    @apply bg-theme-purple text-wit-paars shadow-xs;
+}
+
+@utility switcher-tab-item-inactive {
+    @apply text-theme-purple hover:bg-theme-purple/5;
+}
+
+@utility switcher-header-row {
+    @apply mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-center sm:justify-between sm:gap-4;
+}
+
+@utility provider-action-group {
+    @apply flex flex-wrap items-center gap-2.5 sm:flex-nowrap sm:gap-3;
+}
+
+@utility past-toggle-label-box {
+    @apply relative whitespace-nowrap;
+}
+
+@utility past-toggle-icon-box {
+    @apply flex size-5 shrink-0 items-center justify-center rounded-full transition-colors;
+}
+
+@utility btn-past-toggle {
+    @apply tab-button relative inline-flex min-h-11 w-full items-center justify-center gap-3 rounded-xl border px-4 py-2.5 text-2xs font-black tracking-widest uppercase transition-all active:scale-95 sm:min-h-0 sm:w-auto sm:rounded-2xl sm:px-5 sm:py-3;
+}
+
+@utility btn-past-toggle-active {
+    @apply border-theme-purple bg-theme-purple text-wit-paars shadow-md;
+}
+
+@utility btn-past-toggle-inactive {
+    @apply border-border-color/30 bg-bg-card text-theme-purple shadow-xs hover:border-theme-purple/30 hover:bg-theme-purple/5;
+}
+
+@utility text-caption-muted {
+    @apply text-2xs font-bold tracking-widest text-text-muted uppercase;
+}
+
+@utility modal-title-lg {
+    @apply text-base font-black tracking-tight text-text-main capitalize sm:text-lg;
+}
+
+@utility modal-body-scroll {
+    @apply custom-scrollbar flex-1 overflow-y-auto p-5 sm:p-6;
+}
+
+@utility btn-day-event {
+    @apply flex h-10 items-center justify-center gap-2 cursor-pointer transition-colors w-full flex-col rounded-2xl border border-border-color/30 bg-bg-soft p-4 text-left hover:border-theme-purple/30 hover:bg-theme-purple/10;
+}
+
+@utility icon-arrow-slide {
+    @apply size-4 shrink-0 text-text-muted transition-transform;
+}
+
+@utility meta-row-muted {
+    @apply flex flex-wrap items-center gap-4 text-xs text-text-muted;
+}
+
+@utility btn-cta-clock {
+    @apply h-10 px-4 rounded-xl text-xs sm:text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden bg-theme-purple text-wit-paars;
+}
+
+@utility status-card-payment {
+    @apply flex flex-col items-center justify-center rounded-3xl border border-border-color/30 bg-bg-card/60 p-8 text-center shadow-2xl backdrop-blur-xl sm:p-12;
+}
+
+@utility status-payment-glow-pending {
+    @apply absolute inset-0 rounded-full bg-geel/20 blur-3xl;
+}
+
+@utility status-payment-glow-success {
+    @apply absolute inset-0 rounded-full bg-theme-success/20 blur-3xl;
+}
+
+@utility status-payment-glow-error {
+    @apply absolute inset-0 rounded-full bg-theme-error/20 blur-3xl;
+}
+
+@utility flip-digit-wrapper {
+    @apply relative h-16 w-8 overflow-hidden sm:h-28 sm:w-14 lg:h-32 lg:w-16;
+}
+
+@utility flip-digit-item {
+    @apply absolute inset-0 flex items-center justify-center text-4xl leading-none font-black text-text-main sm:text-5xl md:text-6xl;
+}
+
+@utility flip-label-caption {
+    @apply text-2xs font-bold text-theme-purple opacity-70 sm:text-xs;
+}
+
+@utility clock-header-box {
+    @apply mb-8 text-center;
+}
+
+@utility clock-subtitle {
+    @apply text-sm font-semibold text-theme-purple opacity-80 sm:text-base;
+}
+
+@utility clock-digits-row {
+    @apply flex flex-wrap items-center justify-center gap-0.5 sm:gap-3;
+}
+
+@utility clock-separator {
+    @apply hidden pb-6 text-xl font-black text-theme-purple/20 sm:block sm:text-3xl lg:text-4xl;
+}
+
+@utility ticket-stat-box {
+    @apply flex items-center gap-3 squircle border border-border-color bg-bg-card px-6 py-3;
+}
+
+@utility ticket-empty-state {
+    @apply squircle-xl border border-dashed border-border-color bg-bg-card py-32 text-center;
+}
+
+@utility ticket-grid-card {
+    @apply relative cursor-pointer squircle-lg border border-border-color bg-bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-theme-purple/50 hover:shadow-2xl hover:shadow-theme-purple/5;
+}
+
+@utility ticket-modal-backdrop {
+    @apply fixed inset-0 isolate z-50 flex items-center justify-center p-4 bg-bg-main/80 backdrop-blur-xl duration-300;
+}
+
+@utility ticket-modal-card {
+    @apply relative z-10 w-full max-w-lg overflow-hidden squircle-xl border border-border-color/30 bg-bg-card shadow-2xl duration-300 ease-out;
+}
+
+@utility ticket-qr-box {
+    @apply squircle-lg bg-wit-paars p-6 shadow-2xl ring-1 ring-black/5;
+}
+
+@utility ticket-header-row {
+    @apply flex flex-col items-center justify-between gap-6 md:flex-row;
+}
+
+@utility ticket-search-bar {
+    @apply flex h-14 items-center gap-3 rounded-xl border border-border-color bg-bg-card px-4 shadow-xs transition-all focus-within:border-theme-purple focus-within:ring-4 focus-within:ring-theme-purple/10 h-14 w-full squircle md:w-96;
+}
+
+@utility ticket-search-icon {
+    @apply size-5 shrink-0 text-text-muted transition-colors;
+}
+
+@utility ticket-search-input {
+    @apply h-10 w-full min-w-0 flex-1 bg-bg-main/50 border border-border-color/30 rounded-xl text-text-main focus:ring-4 focus:ring-theme-purple/20 focus:border-theme-purple transition-all outline-hidden disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-neutral-500/10 p-0 font-black tracking-widest uppercase;
+}
+
+@utility text-caption-muted-bold {
+    @apply text-2xs font-black tracking-widest text-text-muted uppercase;
+}
+
+@utility text-caption-purple-bold {
+    @apply text-2xs font-black tracking-widest text-theme-purple uppercase;
+}
+
+@utility ticket-empty-icon {
+    @apply mx-auto mb-4 size-16 text-text-muted opacity-20;
+}
+
+@utility ticket-empty-title {
+    @apply text-xl font-black tracking-tight text-text-main uppercase italic;
+}
+
+@utility ticket-grid-layout {
+    @apply grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3;
+}
+
+@utility ticket-card-icon-box {
+    @apply squircle bg-theme-purple/5 p-3 text-theme-purple transition-all duration-500;
+}
+
+@utility ticket-card-title {
+    @apply mb-4 line-clamp-1 text-xl font-black tracking-tighter text-text-main uppercase italic;
+}
+
+@utility btn-modal-close-ticket {
+    @apply absolute top-6 right-6 z-20 size-10 items-center justify-center cursor-pointer transition-all rounded-full bg-bg-soft p-2 hover:bg-border-color/40;
+}
+
+@utility icon-close-muted {
+    @apply size-5 text-text-muted transition-colors;
+}
+
+@utility ticket-modal-title {
+    @apply text-3xl font-black tracking-tighter text-text-main uppercase italic;
+}
+
+@utility ticket-participant-name {
+    @apply text-lg font-black tracking-tight text-text-main uppercase italic;
+}
+
+@utility ticket-hint-caption {
+    @apply text-xs font-bold tracking-widest text-text-muted uppercase italic opacity-60;
+}
+
+@utility card-list-container {
+    @apply relative z-0 flex w-full cursor-pointer flex-col overflow-hidden rounded-3xl border border-transparent bg-bg-card p-0 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md md:flex-row dark:border-border-color;
+}
+
+@utility card-ticket-item {
+    @apply relative w-full max-w-95 min-w-75 space-y-6 overflow-hidden rounded-3xl border border-border-color bg-bg-card p-8 shadow-xl sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)];
+}
+
+@utility clock-title-lg {
+    @apply text-[clamp(1.5rem,6cqw,3rem)] font-black tracking-tight text-theme-purple;
+}
+
+@utility btn-cta-inner {
+    @apply relative z-10 flex items-center gap-2;
+}
+
+@utility btn-cta-overlay {
+    @apply absolute inset-0 translate-y-full bg-wit-paars/10 transition-transform duration-300;
+}
+
+@utility icon-spinner-status {
+    @apply relative z-10 size-20 animate-spin text-geel;
+}
+
+@utility status-message-text {
+    @apply mx-auto max-w-sm text-base font-semibold leading-relaxed text-text-muted;
+}
+
+@utility status-counter-caption {
+    @apply mt-6 text-sm font-bold text-text-muted opacity-70;
+}
+
+@utility status-title-main {
+    @apply text-3xl font-black tracking-tight text-text-main sm:text-4xl;
+}
+
+@utility btn-status-success {
+    @apply form-button mx-auto shadow-xl shadow-theme-success/10 hover:opacity-90;
+}
+
+@utility status-actions-row {
+    @apply flex flex-col gap-3 sm:flex-row sm:justify-center;
+}
+
+@utility banner-content-wrapper {
+    @apply relative z-10 flex items-start gap-6;
+}
+
+@utility system-status-timestamp {
+    @apply mt-2 text-xs font-semibold text-beheer-text-muted opacity-30;
+}
+
+@utility form-label-horizontal {
+    @apply w-28 shrink-0 cursor-pointer text-xs font-medium text-text-muted transition-colors;
+}
+
+@utility form-input-borderless {
+    @apply h-8 w-full border-none bg-transparent p-0 text-xs font-semibold text-text-main outline-hidden placeholder:text-text-muted/40 focus:ring-0;
+}
+
+@utility form-row-horizontal {
+    @apply flex items-center gap-3 py-0.5;
+}
+
+@utility form-label-sm {
+    @apply block px-1 text-xs font-medium text-text-muted;
+}
+
+@utility form-label-checkbox {
+    @apply flex cursor-pointer items-center gap-4 select-none;
+}
+
+@utility toggle-switch-track {
+    @apply h-5 w-9 rounded-full border border-theme-purple/20 bg-theme-purple/10 backdrop-blur-md transition-all peer-checked:bg-theme-purple;
+}
+
+@utility toggle-switch-thumb {
+    @apply absolute top-1 left-1 size-3 transform rounded-full bg-wit-paars shadow-md transition-all peer-checked:left-5 peer-active:scale-90;
+}
+
+@utility toggle-switch-label {
+    @apply text-xs font-medium text-text-muted transition-colors;
+}
+
+@utility form-row-vertical {
+    @apply flex flex-col gap-1 py-1;
+}
+
+@utility form-label-vertical {
+    @apply cursor-pointer text-xs font-medium text-text-muted transition-colors;
+}
+
 
 @import "./styles/autofill.css";

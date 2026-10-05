@@ -23,7 +23,7 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
         <div className="@container space-y-12">
             <header className="grid w-full grid-cols-1 items-center px-[5%] pt-4 @[900px]:grid-cols-[45%_10%_45%] @[900px]:items-start">
                 <div className="order-2 flex w-full min-w-0 flex-col items-center text-center @[900px]:order-1 @[900px]:items-start @[900px]:pt-8 @[900px]:text-left">
-                    <h1 className="leading-1.1 mb-4 text-2xl font-black tracking-tight text-purple-700 @[1000px]:text-4xl @[1200px]:text-5xl dark:text-purple-300">
+                    <h1 className="leading-1.1 mb-4 text-2xl font-black tracking-tight text-theme-purple @[1000px]:text-4xl @[1200px]:text-5xl">
                         {cleanedName}
                     </h1>
 
@@ -35,7 +35,7 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
                         {committee.email && (
                             <a
                                 href={`mailto:${committee.email}`}
-                                className="inline-flex items-center justify-center gap-3 rounded-2xl bg-purple-600 px-8 py-3 text-lg font-black text-white shadow-xl shadow-purple-600/20 transition-all hover:bg-purple-500 active:scale-95"
+                                className="beheer-button form-button text-lg"
                             >
                                 <Mail className="size-5" />
                                 Interesse? Mail ons!
@@ -81,11 +81,11 @@ export const CommitteeDetail = ({ committee }: CommitteeDetailProps) => {
 
             <section className="border-t border-(--border-color)/20 pt-12">
                 <div className="mb-16 flex flex-col items-center">
-                    <h2 className="flex items-center gap-4 text-center text-3xl font-black text-purple-700 sm:text-4xl dark:text-purple-300">
-                        <Users className="size-10 shrink-0 text-purple-500 dark:text-purple-400" />
+                    <h2 className="flex items-center gap-4 text-center text-3xl font-black text-theme-purple sm:text-4xl">
+                        <Users className="size-10 shrink-0 text-theme-purple" />
                         {isBestuur ? 'Het Bestuur' : 'De Commissie'}
                     </h2>
-                    <div className="mt-6 h-1.5 w-24 rounded-full bg-linear-to-r from-transparent via-purple-500 to-transparent" />
+                    <div className="mt-6 h-1.5 w-24 rounded-full bg-linear-to-r from-transparent via-theme-purple to-transparent" />
                 </div>
 
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(min(220px,100%),1fr))] gap-10 sm:gap-12">

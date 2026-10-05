@@ -104,13 +104,13 @@ export default function SyncMonitorIsland() {
                                 <div className="mt-4">
                                     <button
                                         onClick={() => setShowStack(!showStack)}
-                                        className="beheer-button flex items-center gap-1 text-[11px] font-semibold text-(--theme-error) transition-colors hover:underline"
+                                        className="beheer-button text-(--theme-error) hover:underline"
                                         type="button">
                                         {showStack ? 'Verberg details' : 'Bekijk technische details (Stack Trace)'}
                                     </button>
 
                                     {showStack && (
-                                        <div className="custom-scrollbar mt-3 overflow-x-auto rounded-xl border border-(--beheer-border) bg-black/5 p-4 dark:bg-white/5">
+                                        <div className="mt-3 custom-scrollbar overflow-x-auto rounded-xl border border-(--beheer-border) bg-black/5 p-4 dark:bg-white/5">
                                             <pre className="font-mono text-[10px] leading-relaxed text-(--beheer-text-muted)">
                                                 {status.fatalError.stack}
                                             </pre>

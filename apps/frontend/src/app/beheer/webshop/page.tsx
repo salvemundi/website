@@ -52,7 +52,7 @@ export default async function AdminWebshopPage() {
                      <div className="flex items-center gap-2">
                          <Link
                              href="/beheer/webshop/bestellingen"
-                             className="flex items-center justify-center gap-2 rounded-xl border border-border-color bg-bg-card px-4 py-2 text-xs font-semibold text-text-main shadow-sm transition-all hover:border-theme-purple hover:bg-theme-purple/5"
+                             className="beheer-button-secondary text-text-main"
                          >
                              <ClipboardList className="size-3.5" />
                              <span>Bestellingen</span>
@@ -60,7 +60,7 @@ export default async function AdminWebshopPage() {
                          {isBoardOrIct && (
                              <Link
                                  href="/beheer/webshop/afhalen"
-                                 className="flex items-center justify-center gap-2 rounded-xl border border-border-color bg-bg-card px-4 py-2 text-xs font-semibold text-text-main shadow-sm transition-all hover:border-theme-purple hover:bg-theme-purple/5"
+                                 className="beheer-button-secondary text-text-main"
                              >
                                  <ClipboardCheck className="size-3.5" />
                                  <span>Afhaallijst</span>

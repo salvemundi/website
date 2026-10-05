@@ -31,7 +31,7 @@ export function KroegentochtWhatsAppPopup({ signupId, token }: KroegentochtWhats
             <div className="relative mx-4 w-full max-w-md rounded-3xl border border-white/15 bg-white/10 p-8 text-white shadow-2xl backdrop-blur-2xl">
                 <button
                     onClick={() => setIsOpen(false)}
-                    className="absolute top-4 right-4 icon-button text-white/60 transition-colors hover:text-white"
+                    className="absolute top-4 right-4 icon-button text-white/60 hover:text-white"
                     aria-label="Sluiten"
                     type="button">
                     <X className="size-5" />

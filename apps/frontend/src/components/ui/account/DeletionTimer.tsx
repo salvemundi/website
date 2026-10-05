@@ -48,14 +48,14 @@ export default function DeletionTimer({ expiryDateStr }: DeletionTimerProps) {
     if (!timeLeft || (timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0)) return null;
 
     return (
-        <div className="animate-in fade-in zoom-in mb-6 rounded-2xl border border-purple-100 bg-purple-50 p-4 text-center duration-500 dark:border-purple-800/20 dark:bg-purple-900/10">
-            <p className="mb-2 text-xs font-bold tracking-wider text-theme-purple uppercase dark:text-purple-400">
+        <div className="animate-in zoom-in mb-6 fade-in rounded-2xl border border-theme-purple/20 bg-theme-purple/5 p-4 text-center duration-500">
+            <p className="mb-2 text-xs font-bold tracking-wider text-theme-purple uppercase">
                 ⚠️ Account Verwijdering (AVG)
             </p>
-            <p className="text-theme-text-muted mb-3 text-sm dark:text-white/60">
+            <p className="mb-3 text-sm text-(--text-muted)">
                 Je lidmaatschap is verlopen. Als je niet verlengt, worden je gegevens permanent verwijderd over:
             </p>
-            <div className="font-mono text-2xl font-bold text-theme-purple dark:text-purple-400">
+            <div className="font-mono text-2xl font-bold text-theme-purple">
                 {timeLeft.days}d {timeLeft.hours}u {timeLeft.minutes}m
             </div>
         </div>

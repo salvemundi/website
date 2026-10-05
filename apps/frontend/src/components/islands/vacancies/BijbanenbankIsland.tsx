@@ -131,7 +131,7 @@ export default function BijbanenbankIsland({ vacancies, isLoggedIn }: Bijbanenba
                     </div>
                     <Link
                         href="/?needLogin=true&callbackURL=/bijbanenbank"
-                        className="form-button shrink-0 rounded-xl bg-(--theme-purple) px-4 py-2 text-sm font-bold whitespace-nowrap text-white"
+                        className="beheer-button form-button shrink-0 whitespace-nowrap"
                     >
                         Inloggen
                     </Link>
@@ -160,7 +160,7 @@ export default function BijbanenbankIsland({ vacancies, isLoggedIn }: Bijbanenba
             {isLoggedIn && (
                 <>
                     <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-(--border-color) bg-(--bg-card) px-4 py-2.5 shadow-sm transition-colors focus-within:border-(--theme-purple) sm:max-w-md">
+                        <div className="search-bar min-w-0 flex-1 transition-colors sm:max-w-md">
                             <Search className="size-4 shrink-0 text-(--text-muted)" />
                             <input
                                 type="text"
@@ -175,7 +175,7 @@ export default function BijbanenbankIsland({ vacancies, isLoggedIn }: Bijbanenba
                             type="button"
                             onClick={() => setShowFilters((prev) => !prev)}
                             aria-expanded={showFilters}
-                            className="form-button flex items-center gap-2 rounded-2xl border border-(--border-color) bg-(--bg-card) px-4 py-2.5 text-sm font-bold text-(--text-main) shadow-sm md:hidden"
+                            className="form-button border border-(--border-color) bg-(--bg-card) text-(--text-main) md:hidden"
                         >
                             <SlidersHorizontal className="size-4" />
                             Filters
@@ -206,29 +206,29 @@ export default function BijbanenbankIsland({ vacancies, isLoggedIn }: Bijbanenba
 
                     <div className={`${showFilters ? 'flex' : 'hidden'} flex-col gap-4 md:flex`}>
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-                            <select className="form-input text-sm" value={company} onChange={(e) => setCompany(e.target.value)}>
+                            <select className="form-input" value={company} onChange={(e) => setCompany(e.target.value)}>
                                 <option value={ALL_VALUE}>Alle bedrijven</option>
                                 {companies.map((c) => <option key={c} value={c}>{c}</option>)}
                             </select>
-                            <select className="form-input text-sm" value={location} onChange={(e) => setLocation(e.target.value)}>
+                            <select className="form-input" value={location} onChange={(e) => setLocation(e.target.value)}>
                                 <option value={ALL_VALUE}>Alle locaties</option>
                                 {locations.map((l) => <option key={l} value={l}>{l}</option>)}
                             </select>
-                            <select className="form-input text-sm" value={employmentType} onChange={(e) => setEmploymentType(e.target.value)}>
+                            <select className="form-input" value={employmentType} onChange={(e) => setEmploymentType(e.target.value)}>
                                 <option value={ALL_VALUE}>Alle dienstverbanden</option>
                                 {employmentTypes.map((t) => <option key={t} value={t}>{t}</option>)}
                             </select>
-                            <select className="form-input text-sm" value={workingHours} onChange={(e) => setWorkingHours(e.target.value)}>
+                            <select className="form-input" value={workingHours} onChange={(e) => setWorkingHours(e.target.value)}>
                                 <option value={ALL_VALUE}>Alle werktijden</option>
                                 {workingHoursOptions.map((w) => <option key={w} value={w}>{w}</option>)}
                             </select>
                             {showDirectionFilter && (
-                                <select className="form-input text-sm" value={direction} onChange={(e) => setDirection(e.target.value)}>
+                                <select className="form-input" value={direction} onChange={(e) => setDirection(e.target.value)}>
                                     <option value={ALL_VALUE}>Alle ICT-richtingen</option>
                                     {directions.map((d) => <option key={d} value={d}>{d}</option>)}
                                 </select>
                             )}
-                            <select className="form-input text-sm" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
+                            <select className="form-input" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
                                 {SORT_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
                             </select>
                         </div>
@@ -248,7 +248,7 @@ export default function BijbanenbankIsland({ vacancies, isLoggedIn }: Bijbanenba
                                 <button
                                     type="button"
                                     onClick={clearFilters}
-                                    className="form-button flex items-center gap-1.5 text-xs font-bold text-(--text-muted) transition-colors hover:text-(--theme-purple)"
+                                    className="form-button text-(--text-muted) hover:text-(--theme-purple)"
                                 >
                                     <X className="size-3.5" />
                                     Filters wissen

@@ -64,7 +64,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
+                        className="beheer-input"
                         required
                         autoComplete="off"
                     />
@@ -78,7 +78,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
+                        className="beheer-input"
                         required
                         autoComplete="off"
                     />
@@ -94,7 +94,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                         type="text"
                         value={formData.association}
                         onChange={(e) => setFormData({ ...formData, association: e.target.value })}
-                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
+                        className="beheer-input"
                         autoComplete="off"
                     />
                 </div>
@@ -107,7 +107,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                         <button
                             type="button"
                             onClick={() => setIsPaymentOpen(!isPaymentOpen)}
-                            className="beheer-button flex w-full items-center justify-between rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 text-left font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/30 focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
+                            className="beheer-button-secondary w-full justify-between p-4"
                         >
                             <span className="flex items-center gap-2">
                                 <span className={`size-2.5 rounded-full ${selectedPayment.color}`} />
@@ -117,7 +117,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                         </button>
                         
                         {isPaymentOpen && (
-                            <div className="animate-in fade-in slide-in-from-top-1 absolute inset-x-0 z-50 mt-2 rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1.5 shadow-xl ring-1 ring-black/5 duration-100">
+                            <div className="animate-in slide-in-from-top-1 absolute inset-x-0 z-50 mt-2 fade-in rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1.5 shadow-xl ring-1 ring-black/5 duration-100">
                                 <div className="space-y-0.5">
                                     {PAYMENT_STATUS_OPTIONS.map((opt) => (
                                         <button
@@ -155,7 +155,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                         <button
                             type="button"
                             onClick={() => setIsGroupOpen(!isGroupOpen)}
-                            className="beheer-button flex w-full items-center justify-between rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 text-left font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/30 focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
+                            className="beheer-button-secondary w-full justify-between p-4"
                         >
                             <span className="truncate">
                                 {formData.group_name || 'Geen groep (nog niet ingedeeld)'}
@@ -164,7 +164,7 @@ export default function SignupPersonalDetails({ formData, setFormData, eventGrou
                         </button>
                         
                         {isGroupOpen && (
-                            <div className="animate-in fade-in slide-in-from-top-1 absolute inset-x-0 z-50 mt-2 rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1.5 shadow-xl ring-1 ring-black/5 duration-100">
+                            <div className="animate-in slide-in-from-top-1 absolute inset-x-0 z-50 mt-2 fade-in rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1.5 shadow-xl ring-1 ring-black/5 duration-100">
                                 <div className="max-h-60 space-y-0.5 overflow-y-auto">
                                     <button
                                         type="button"

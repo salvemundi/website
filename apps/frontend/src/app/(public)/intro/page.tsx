@@ -23,18 +23,18 @@ const IntroInfoStudent = () => (
         </p>
 
         <div className="space-y-4">
-            <h3 className="text-sm font-bold text-purple-500 dark:text-purple-400">Waarom je dit niet wilt missen</h3>
+            <h3 className="text-sm font-bold text-theme-purple">Waarom je dit niet wilt missen</h3>
             <ul className="grid gap-3">
                 <li className="flex gap-3 font-medium text-text-muted">
-                    <span className="font-black text-purple-500 dark:text-purple-400">01</span>
+                    <span className="font-black text-theme-purple">01</span>
                     <span><strong>Legendarische Feesten:</strong> Ontdek het Eindhovense nachtleven met mensen die dezelfde passie delen.</span>
                 </li>
                 <li className="flex gap-3 font-medium text-text-muted">
-                    <span className="font-black text-purple-500 dark:text-purple-400">02</span>
+                    <span className="font-black text-theme-purple">02</span>
                     <span><strong>Connecties:</strong> Leer de ouderejaars kennen; zij weten precies hoe je die lastige vakken straks haalt.</span>
                 </li>
                 <li className="flex gap-3 font-medium text-text-muted">
-                    <span className="font-black text-purple-500 dark:text-purple-400">03</span>
+                    <span className="font-black text-theme-purple">03</span>
                     <span><strong>Gezelligheid boven alles:</strong> Geen ontgroening, maar een warm welkom bij dè studievereniging van Fontys ICT.</span>
                 </li>
             </ul>
@@ -62,18 +62,18 @@ const IntroInfoParent = () => (
         </p>
 
         <div className="space-y-4">
-            <h3 className="text-sm font-bold text-purple-500 dark:text-purple-400">Wat doet een Intro Ouder?</h3>
+            <h3 className="text-sm font-bold text-theme-purple">Wat doet een Intro Ouder?</h3>
             <ul className="grid gap-3">
                 <li className="flex gap-3 font-medium text-text-muted">
-                    <span className="font-black text-purple-500 dark:text-purple-400">★</span>
+                    <span className="font-black text-theme-purple">★</span>
                     <span><strong>Begeleiden:</strong> Help kleine groepjes nieuwe leden tijdens activiteiten and zorg voor een veilige sfeer.</span>
                 </li>
                 <li className="flex gap-3 font-medium text-text-muted">
-                    <span className="font-black text-purple-500 dark:text-purple-400">★</span>
+                    <span className="font-black text-theme-purple">★</span>
                     <span><strong>Mentorschap:</strong> Geef tips over studie, rooster en het vinden van de weg in Eindhoven.</span>
                 </li>
                 <li className="flex gap-3 font-medium text-text-muted">
-                    <span className="font-black text-purple-500 dark:text-purple-400">★</span>
+                    <span className="font-black text-theme-purple">★</span>
                     <span><strong>Gezelligheid:</strong> Organiseer leuke momenten binnen je groep – simpele spellen en samen eten doen wonderen.</span>
                 </li>
             </ul>
@@ -105,10 +105,10 @@ export default async function IntroPage() {
                 <div className="mx-auto mb-8 w-full max-w-7xl">
                     <Link
                         href="/qr-code"
-                        className="group squircle-lg hover:scale-1.01 flex items-center justify-between gap-4 bg-purple-600 px-6 py-5 text-white shadow-lg transition-all hover:shadow-xl sm:px-8 sm:py-6"
+                        className="group beheer-button justify-between squircle-lg sm:px-8 sm:py-6"
                     >
                         <div className="flex items-center gap-4">
-                            <div className="squircle flex size-11 shrink-0 items-center justify-center bg-white/15 sm:size-12">
+                            <div className="flex size-11 shrink-0 items-center justify-center squircle bg-white/15 sm:size-12">
                                 <CalendarClock className="size-5 sm:size-6" />
                             </div>
                             <div>
@@ -122,7 +122,7 @@ export default async function IntroPage() {
 
                 <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-6 lg:flex-row lg:items-stretch lg:gap-10">
                     <div className="flex flex-1 flex-col space-y-6">
-                        <div className="squircle-xl flex flex-1 flex-col bg-bg-card p-fluid-md shadow-xl sm:p-10 dark:border dark:border-white/10">
+                        <div className="flex flex-1 flex-col squircle-xl bg-bg-card p-fluid-md shadow-xl sm:p-10 dark:border dark:border-white/10">
                             {user ? <IntroInfoParent /> : <IntroInfoStudent />}
                         </div>
                         {!user && <IntroLightboxIsland />}
@@ -131,8 +131,8 @@ export default async function IntroPage() {
                     <div className="flex w-full flex-1 flex-col">
                         {user ? (
                             isAlreadyParent ? (
-                                <div className="dark:bg-gradient-theme squircle-xl flex min-h-75 flex-1 flex-col items-center justify-center border border-border-color bg-bg-card p-10 text-center shadow-xl">
-                                    <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-purple-100 dark:bg-white/20">
+                                <div className="dark:bg-gradient-theme flex min-h-75 flex-1 flex-col items-center justify-center squircle-xl border border-border-color bg-bg-card p-10 text-center shadow-xl">
+                                    <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-theme-purple/10 dark:bg-white/20">
                                         <CheckCircle2 className="size-10 text-brand-primary dark:text-white" />
                                     </div>
                                     <h3 className="mb-4 text-3xl font-black tracking-tight text-text-main dark:text-white">Aangemeld!</h3>

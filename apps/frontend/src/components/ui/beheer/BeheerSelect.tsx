@@ -146,9 +146,9 @@ export default function BeheerSelect<T extends string | number = string | number
                         width: `${coords.width}px`,
                         zIndex: 999999
                     }}
-                    className="animate-in fade-in zoom-in-95 overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) shadow-(--shadow-card-elevated) duration-150 ease-out"
+                    className="animate-in zoom-in-95 fade-in overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) shadow-(--shadow-card-elevated) duration-150 ease-out"
                 >
-                    <div className="custom-scrollbar max-h-60 space-y-0.5 overflow-y-auto p-1">
+                    <div className="max-h-60 custom-scrollbar space-y-0.5 overflow-y-auto p-1">
                         {options.length === 0 ? (
                             <div className="px-3 py-2 text-center text-xs font-semibold text-(--beheer-text-muted) italic">
                                 Geen opties beschikbaar

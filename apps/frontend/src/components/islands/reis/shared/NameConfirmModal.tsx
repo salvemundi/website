@@ -26,8 +26,8 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
     }, [isOpen]);
 
     useEffect(() => {
-        const handleEsc = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && isOpen) {
+        const handleEsc = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && isOpen) {
                 onCancel();
             }
         };
@@ -39,49 +39,45 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
 
     return createPortal(
         <div className="fixed inset-0 isolate z-9999 flex items-center justify-center p-4 sm:p-6">
+            <div className="modal-backdrop" onClick={onCancel} />
             <div
-                className="animate-in fade-in absolute inset-0 bg-slate-950/60 backdrop-blur-xl duration-300"
-                onClick={onCancel}
-            />
-
-            <div
-                className="animate-in fade-in zoom-in-95 slide-in-from-bottom-4 relative z-10 flex w-full max-w-xl flex-col overflow-hidden rounded-[2.5rem] border border-(--border-color) bg-(--bg-card) shadow-(--shadow-card-elevated) ring-1 ring-white/10 duration-300 ease-out dark:border-white/10"
+                className="modal-content z-10 max-w-lg"
+                onClick={(event) => event.stopPropagation()}
             >
-                <div className="pointer-events-none absolute -top-24 -right-24 size-48 rounded-full bg-theme-purple/20 blur-[80px]" />
-                <div className="pointer-events-none absolute -bottom-24 -left-24 size-48 rounded-full bg-theme-purple/10 blur-[80px]" />
-
-                <div className="relative flex items-center justify-between px-8 pt-8 pb-4">
+                <div className="modal-header">
                     <div className="flex items-center gap-3">
-                        <div className="rounded-2xl bg-theme-purple/10 p-2.5 text-theme-purple">
-                            <AlertCircle className="size-5" />
+                        <div className="icon-box">
+                            <AlertCircle className="size-4" />
                         </div>
-                        <h2 className="text-[10px] font-bold tracking-[0.2em] text-(--text-main)">
+                        <h2 className="text-sm font-bold text-(--text-main)">
                             Naam Bevestigen
                         </h2>
                     </div>
                     <button
                         onClick={onCancel}
-                        className="icon-button rounded-full p-2.5 text-(--text-muted) transition-all hover:text-(--text-main) active:scale-90"
-                        type="button">
+                        className="icon-button"
+                        type="button"
+                        aria-label="Sluiten"
+                    >
                         <X className="size-5" />
                     </button>
                 </div>
 
-                <div className="px-10 py-6 text-center">
-                    <h3 className="mb-4 text-3xl font-bold tracking-tight text-(--text-main)">
+                <div className="p-6 text-center">
+                    <h3 className="mb-4 text-2xl font-bold tracking-tight text-(--text-main)">
                         Klopt je voornaam?
                     </h3>
 
-                    <div className="mb-8 rounded-3xl border border-theme-purple/10 bg-theme-purple/5 p-6">
-                        <p className="mb-2 text-sm font-medium tracking-wide text-(--text-muted) opacity-70">
+                    <div className="mb-6 rounded-2xl border border-theme-purple/20 bg-theme-purple/10 p-4">
+                        <p className="mb-1 text-xs font-semibold text-(--text-muted) uppercase">
                             Ingevulde voornaam:
                         </p>
-                        <p className="text-2xl font-bold tracking-tight text-theme-purple">
+                        <p className="text-2xl font-bold text-theme-purple">
                             {name}
                         </p>
                     </div>
 
-                    <p className="mb-8 text-base leading-relaxed text-(--text-muted)">
+                    <p className="mb-6 text-sm text-(--text-muted)">
                         Komt dit <span className="font-bold text-(--text-main) italic">exact</span> overeen met de naam op je paspoort of ID-kaart?
                         <br />
                         <span className="mt-2 inline-block text-xs opacity-80">
@@ -89,24 +85,24 @@ export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConf
                         </span>
                     </p>
 
-                    <div className="mb-2 flex flex-col gap-3">
+                    <div className="flex flex-col gap-3">
                         <button
                             onClick={onConfirm}
-                            className="form-button flex w-full items-center justify-center gap-3 rounded-2xl bg-theme-purple py-4 text-sm font-bold tracking-wider text-white shadow-lg shadow-theme-purple/20 transition-all hover:bg-theme-purple-dark"
-                            type="button">
+                            className="form-button w-full"
+                            type="button"
+                        >
                             <CheckCircle2 className="size-5" />
                             Ja, dit klopt exact
                         </button>
                         <button
                             onClick={onCancel}
-                            className="tab-button w-full rounded-2xl border border-(--border-color) bg-(--bg-card) py-4 text-sm font-bold text-(--text-main) transition-all hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
-                            type="button">
+                            className="btn-secondary w-full"
+                            type="button"
+                        >
                             Nee, aanpassen
                         </button>
                     </div>
                 </div>
-
-                <div className="h-1.5 w-full bg-linear-to-r from-transparent via-theme-purple/30 to-transparent opacity-50" />
             </div>
         </div>,
         document.body

@@ -41,7 +41,7 @@ export default function BeheerWebshopDropWindowForm({ dropWindow, onSave, onCanc
                     required
                     defaultValue={dropWindow?.name || ''}
                     placeholder="Bijv. Voorjaarsdrop 2026"
-                    className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10"
+                    className="beheer-input"
                 />
             </div>
 
@@ -72,7 +72,7 @@ export default function BeheerWebshopDropWindowForm({ dropWindow, onSave, onCanc
                         type="datetime-local"
                         name="opens_at"
                         defaultValue={toLocalInputValue(dropWindow?.opens_at || null)}
-                        className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10"
+                        className="beheer-input"
                     />
                 </div>
                 <div className="space-y-3">
@@ -82,16 +82,16 @@ export default function BeheerWebshopDropWindowForm({ dropWindow, onSave, onCanc
                         name="closes_at"
                         required
                         defaultValue={toLocalInputValue(dropWindow?.closes_at || null)}
-                        className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10"
+                        className="beheer-input"
                     />
                 </div>
             </div>
 
             <div className="flex flex-col justify-end gap-4 border-t border-(--beheer-border) pt-6 sm:flex-row">
-                <button type="button" onClick={onCancel} className="beheer-button cursor-pointer rounded-xl border border-(--beheer-border) px-8 py-4 text-sm font-semibold text-(--beheer-text) transition-all hover:bg-(--beheer-card-soft)">
+                <button type="button" onClick={onCancel} className="beheer-button-secondary">
                     Annuleren
                 </button>
-                <button type="submit" disabled={isPending} className="beheer-button flex cursor-pointer items-center justify-center gap-3 rounded-xl bg-(--beheer-accent) px-10 py-4 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95 disabled:opacity-50">
+                <button type="submit" disabled={isPending} className="beheer-button">
                     {isPending ? <Loader2 className="size-5 animate-spin" /> : <Save className="size-5" />}
                     <span>{isPending ? 'Bezig...' : dropWindow ? 'Opslaan' : 'Drop Aanmaken'}</span>
                 </button>

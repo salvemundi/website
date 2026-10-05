@@ -127,7 +127,6 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
     return (
         <>
             <div className="admin-container space-y-12 py-4 md:py-8">
-                {/* Drop windows */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between border-l-4 border-(--beheer-accent) py-1 pl-4">
                         <h2 className="flex items-center gap-3 text-sm font-semibold text-(--beheer-text)">
@@ -138,7 +137,7 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
                         </h2>
                         <button
                             onClick={() => setDropWindowModal({ open: true, editing: null })}
-                            className="beheer-button flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:opacity-95 active:scale-95"
+                            className="beheer-button"
                             type="button">
                             <Plus className="size-4" />
                             <span>Nieuwe drop</span>
@@ -156,10 +155,10 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
                                 <table className="w-full text-left">
                                     <thead className="border-b border-(--beheer-border) bg-(--beheer-card-soft)">
                                         <tr>
-                                            <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Naam</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Status</th>
-                                            <th className="hidden px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) sm:table-cell">Sluit op</th>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-(--beheer-text-muted)">Acties</th>
+                                            <th className="beheer-th">Naam</th>
+                                            <th className="beheer-th">Status</th>
+                                            <th className="hidden beheer-th sm:table-cell">Sluit op</th>
+                                            <th className="beheer-th text-right">Acties</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-(--beheer-border)">
@@ -178,7 +177,7 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
                                                     <div className="flex items-center justify-end gap-2">
                                                         <button
                                                             onClick={() => setDropWindowModal({ open: true, editing: dw })}
-                                                            className="icon-button cursor-pointer rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
+                                                            className="icon-button p-2 text-(--beheer-text-muted) hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
                                                             aria-label="Bewerken"
                                                             type="button">
                                                             <Edit2 className="size-4" />
@@ -186,7 +185,7 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
                                                         <button
                                                             onClick={() => handleDeleteDropWindow(dw.id)}
                                                             disabled={deletingId === dw.id}
-                                                            className="icon-button cursor-pointer rounded-lg p-2 text-red-500 transition-all hover:bg-red-500/10 disabled:opacity-50"
+                                                            className="icon-button p-2 text-red-500 hover:bg-red-500/10"
                                                             aria-label="Verwijderen"
                                                             type="button">
                                                             <Trash2 className="size-4" />
@@ -202,7 +201,6 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
                     </div>
                 </div>
 
-                {/* Products */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between border-l-4 border-(--beheer-accent) py-1 pl-4">
                         <h2 className="flex items-center gap-3 text-sm font-semibold text-(--beheer-text)">
@@ -213,7 +211,7 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
                         </h2>
                         <button
                             onClick={() => setProductModal({ open: true, editing: null })}
-                            className="beheer-button flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:opacity-95 active:scale-95"
+                            className="beheer-button"
                             type="button">
                             <Plus className="size-4" />
                             <span>Nieuw product</span>
@@ -231,13 +229,13 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
                                 <table className="w-full text-left">
                                     <thead className="border-b border-(--beheer-border) bg-(--beheer-card-soft)">
                                         <tr>
-                                            <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Naam</th>
-                                            <th className="hidden px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) sm:table-cell">Type</th>
-                                            <th className="hidden px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) lg:table-cell">Drop</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Prijs</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Voorraad</th>
-                                            <th className="px-6 py-4 text-center text-xs font-semibold text-(--beheer-text-muted)">Actief</th>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-(--beheer-text-muted)">Acties</th>
+                                            <th className="beheer-th">Naam</th>
+                                            <th className="hidden beheer-th sm:table-cell">Type</th>
+                                            <th className="hidden beheer-th lg:table-cell">Drop</th>
+                                            <th className="beheer-th">Prijs</th>
+                                            <th className="beheer-th">Voorraad</th>
+                                            <th className="beheer-th text-center">Actief</th>
+                                            <th className="beheer-th text-right">Acties</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-(--beheer-border)">
@@ -254,7 +252,7 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
                                                     <button
                                                         onClick={() => handleToggleActive(product)}
                                                         disabled={togglingId === product.id}
-                                                        className="icon-button cursor-pointer text-(--beheer-text-muted) transition-all hover:text-(--beheer-accent) disabled:opacity-50"
+                                                        className="icon-button text-(--beheer-text-muted) hover:text-(--beheer-accent)"
                                                         type="button">
                                                         {product.is_active ? <ToggleRight className="mx-auto size-6 text-emerald-500" /> : <ToggleLeft className="mx-auto size-6" />}
                                                     </button>
@@ -263,7 +261,7 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
                                                     <div className="flex items-center justify-end gap-2">
                                                         <button
                                                             onClick={() => setProductModal({ open: true, editing: product })}
-                                                            className="icon-button cursor-pointer rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
+                                                            className="icon-button p-2 text-(--beheer-text-muted) hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
                                                             aria-label="Bewerken"
                                                             type="button">
                                                             <Edit2 className="size-4" />
@@ -271,7 +269,7 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
                                                         <button
                                                             onClick={() => handleDeleteProduct(product.id)}
                                                             disabled={deletingId === product.id}
-                                                            className="icon-button cursor-pointer rounded-lg p-2 text-red-500 transition-all hover:bg-red-500/10 disabled:opacity-50"
+                                                            className="icon-button p-2 text-red-500 hover:bg-red-500/10"
                                                             aria-label="Verwijderen"
                                                             type="button">
                                                             <Trash2 className="size-4" />

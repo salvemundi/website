@@ -23,8 +23,8 @@ export default function GlobalError({
     return (
         <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
             <div className="relative mb-8">
-                <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto size-40 rounded-full bg-purple-500/10 blur-3xl" />
-                <div className="squircle-lg relative border border-(--border-color)/20 bg-(--bg-card) p-6 text-purple-500 shadow-2xl">
+                <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto size-40 rounded-full bg-theme-purple/10 blur-3xl" />
+                <div className="relative squircle-lg border border-(--border-color)/20 bg-(--bg-card) p-6 text-theme-purple shadow-2xl">
                     <AlertTriangle className="size-16" />
                 </div>
             </div>
@@ -41,7 +41,7 @@ export default function GlobalError({
                 <button
                     type="button"
                     onClick={() => reset()}
-                    className="squircle form-button flex items-center gap-2 bg-purple-500 px-8 py-3.5 font-bold text-white shadow-lg shadow-purple-500/20 transition-all hover:-translate-y-0.5 hover:shadow-purple-500/40"
+                    className="form-button py-3.5"
                 >
                     <RefreshCcw className="size-4" />
                     Opnieuw Proberen

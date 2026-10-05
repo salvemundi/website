@@ -88,15 +88,15 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                                         </div>
                                     </div>
                                     <div className="w-full min-w-0 px-1 text-center">
-                                        <div className="truncate text-xs font-semibold text-(--text-main)">
+                                        <div className="truncate text-xs font-semibold text-text-main">
                                             {user.name}
                                         </div>
-                                        <div className={`text-[9px] font-bold md:text-[10px] ${isGold ? 'text-yellow-600' : isSilver ? 'text-slate-500' : 'text-orange-600'}`}>
+                                        <div className={`text-2xs font-bold ${isGold ? 'text-yellow-600' : isSilver ? 'text-slate-500' : 'text-orange-600'}`}>
                                             {user.count} stickers
                                         </div>
                                     </div>
                                     <div className={`
-                                        mt-2 flex w-full items-center justify-center rounded-t-lg text-xs font-bold text-white
+                                        mt-2 flex w-full items-center justify-center rounded-t-lg text-xs font-bold text-wit-paars
                                         ${isGold ? 'h-16 bg-linear-to-t from-yellow-500 to-yellow-400 md:h-20' :
                                             isSilver ? 'h-12 bg-linear-to-t from-slate-400 to-slate-300 md:h-16' :
                                                 'h-8 bg-linear-to-t from-orange-500 to-orange-400 md:h-12'}
@@ -109,18 +109,18 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
                     </div>
 
                     {/* Scrollable List */}
-                    <div className="custom-scrollbar -mr-2 flex-1 overflow-y-auto pr-2">
+                    <div className="-mr-2 custom-scrollbar flex-1 overflow-y-auto pr-2">
                         <div className="space-y-1">
                             {rest.map((c, idx) => {
                                 const isMe = Boolean(currentUser && String(c.id) === String(currentUser.id));
                                 return (
-                                    <div key={c.id} className={`group flex items-center justify-between rounded-xl p-2.5 transition-all duration-200 ${isMe ? 'border border-orange-500/20 bg-orange-500/10' : 'hover:bg-bg-main/50 border border-transparent'}`}>
+                                    <div key={c.id} className={`group flex items-center justify-between rounded-xl p-2.5 transition-all duration-200 ${isMe ? 'border border-orange-500/20 bg-orange-500/10' : 'border border-transparent hover:bg-bg-main/50'}`}>
                                         <div className="flex min-w-0 items-center gap-3">
                                             <div className="min-w-0">
                                                 <div className="truncate text-xs font-medium text-text-main transition-colors group-hover:text-theme-purple sm:text-sm">
                                                     {c.name}
                                                 </div>
-                                                <div className="mt-0.5 text-[10px] font-normal text-text-muted">
+                                                <div className="mt-0.5 text-2xs font-normal text-text-muted">
                                                     {c.count} sticker{c.count !== 1 ? 's' : ''}
                                                 </div>
                                             </div>

@@ -81,7 +81,7 @@ export default function CoboPublicQueueIsland({
             );
         }
         return (
-            <span className={`inline-flex items-center ${sizeClasses} border border-purple-500/20 bg-purple-500/10 text-purple-700 dark:text-purple-300`}>
+            <span className={`inline-flex items-center ${sizeClasses} border border-theme-purple/20 bg-theme-purple/10 text-theme-purple`}>
                 <span>{custom || 'Activiteit'}</span>
             </span>
         );
@@ -93,7 +93,7 @@ export default function CoboPublicQueueIsland({
         <div className="space-y-6">
             {!hasAnyActive && (
                 <div className="space-y-3 rounded-2xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:rounded-3xl sm:p-12">
-                    <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-purple-500/20 bg-purple-500/10 text-purple-700 dark:text-purple-300">
+                    <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-theme-purple/20 bg-theme-purple/10 text-theme-purple">
                         <UserCheck className="size-7" />
                     </div>
                     <h3 className="text-lg font-black text-text-main sm:text-xl">
@@ -106,9 +106,9 @@ export default function CoboPublicQueueIsland({
             )}
 
             {currentBoard && (
-                <div className="space-y-3 rounded-2xl border-2 border-purple-500/30 bg-bg-card p-6 text-center shadow-xl sm:rounded-3xl sm:p-8">
+                <div className="space-y-3 rounded-2xl border-2 border-theme-purple/30 bg-bg-card p-6 text-center shadow-xl sm:rounded-3xl sm:p-8">
                     <div className="flex flex-wrap items-center justify-center gap-2.5">
-                        <span className="inline-flex items-center rounded-full border border-purple-500/20 bg-purple-500/10 px-3.5 py-1 text-sm font-bold tracking-wider text-purple-700 uppercase dark:text-purple-300">
+                        <span className="inline-flex items-center rounded-full border border-theme-purple/20 bg-theme-purple/10 px-3.5 py-1 text-sm font-bold tracking-wider text-theme-purple uppercase">
                             Nu aan de beurt
                         </span>
                         {renderActivityBadge(currentBoard.activity_type, currentBoard.activity_custom, true)}
@@ -126,7 +126,7 @@ export default function CoboPublicQueueIsland({
                 <div className="space-y-4 rounded-2xl border border-border-color bg-bg-card p-6 shadow-lg sm:rounded-3xl sm:p-8">
                     <div className="flex items-center justify-between border-b border-border-color/60 pb-3">
                         <h3 className="flex items-center gap-2 text-sm font-black tracking-wider text-text-muted uppercase">
-                            <Clock className="size-4 text-purple-600 dark:text-purple-300" />
+                            <Clock className="size-4 text-theme-purple" />
                             {limit && allActiveQueue.length > limit
                                 ? `Eerstvolgende (${displayedQueue.length} van ${allActiveQueue.length})`
                                 : `Wachtend (${allActiveQueue.length})`}
@@ -149,7 +149,7 @@ export default function CoboPublicQueueIsland({
                                             className={`flex size-8 shrink-0 items-center justify-center rounded-xl text-xs font-black ${
                                                 isLate
                                                     ? 'border border-rose-500/30 bg-rose-500/15 text-rose-600 dark:text-rose-400'
-                                                    : 'border border-purple-500/15 bg-purple-500/10 text-purple-700 dark:text-purple-300'
+                                                    : 'border border-theme-purple/20 bg-theme-purple/10 text-theme-purple'
                                             }`}
                                         >
                                             #{index + 1}
@@ -182,7 +182,7 @@ export default function CoboPublicQueueIsland({
                         <div className="border-t border-border-color/40 pt-4">
                             <Link
                                 href="/cobo/wachtlijst"
-                                className="beheer-button flex w-full items-center justify-center gap-2 rounded-xl border border-purple-500/20 bg-purple-500/10 px-4 py-3 text-sm font-bold text-purple-700 shadow-xs transition-all hover:bg-purple-500/15 dark:text-purple-300"
+                                className="btn-secondary w-full"
                             >
                                 <span>
                                     Bekijk nog {remainingCount} {remainingCount === 1 ? 'ander wachtend bestuur' : 'andere wachtende besturen'}

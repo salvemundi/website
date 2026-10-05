@@ -116,9 +116,9 @@ export default function ActiviteitBewerkenIsland({
     return (
         <div className="pb-20">
             <BeheerToolbar title="Activiteit bewerken" subtitle={`Wijzig "${event.name}"`} backHref="/beheer/activiteiten" />
-            <div className="container mx-auto max-w-7xl px-4 py-8">
+            <div className="container-beheer py-8">
                 <form action={formAction} className="space-y-6">
-                    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+                    <div className="beheer-grid-12">
                         <div className="lg:col-span-8">
                             <GeneralInfoSection initialData={initialData} formErrors={state.fieldErrors} />
                         </div>
@@ -141,29 +141,29 @@ export default function ActiviteitBewerkenIsland({
                                 <button
                                     type="submit"
                                     disabled={optimisticSaving}
-                                    className="group active:scale-0.98 form-button flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--theme-purple) px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:opacity-90 disabled:opacity-50"
+                                    className="form-button w-full text-base"
                                 >
-                                    {optimisticSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4 transition-transform group-hover:scale-110" />}
+                                    {optimisticSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                                     <span>{optimisticSaving ? 'Opslaan...' : 'Wijzigingen opslaan'}</span>
                                 </button>
 
                                 <button
                                     type="button"
                                     onClick={() => router.back()}
-                                    className="btn-cancel active:scale-0.98 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-(--border-color) bg-transparent px-6 py-3.5 text-base font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/30 hover:bg-(--bg-main)/60 dark:hover:bg-white/5"
+                                    className="btn-cancel"
                                 >
-                                    <X className="size-4 text-(--text-muted)" />
+                                    <X className="size-4 text-text-muted" />
                                     <span>Annuleren</span>
                                 </button>
 
-                                <div className="border-t border-(--border-color)/30 pt-4">
+                                <div className="border-t border-border-color/30 pt-4">
                                     <button
                                         type="button"
                                         onClick={() => { void handleDelete(); }}
                                         disabled={isDeleting || optimisticSaving}
-                                        className="btn-delete group flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-6 py-3.5 text-base font-semibold text-red-500 transition-all hover:bg-red-500 hover:text-white active:scale-95 disabled:opacity-50"
+                                        className="btn-delete"
                                     >
-                                        {isDeleting ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4 transition-transform group-hover:scale-110" />}
+                                        {isDeleting ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
                                         <span>Activiteit verwijderen</span>
                                     </button>
                                 </div>
@@ -190,27 +190,27 @@ export default function ActiviteitBewerkenIsland({
                         <button
                             type="submit"
                             disabled={optimisticSaving}
-                            className="group active:scale-0.98 form-button flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--theme-purple) px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:opacity-90 disabled:opacity-50"
+                            className="form-button w-full text-base"
                         >
-                            {optimisticSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4 transition-transform group-hover:scale-110" />}
+                            {optimisticSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                             <span>{optimisticSaving ? 'Opslaan...' : 'Wijzigingen opslaan'}</span>
                         </button>
 
                         <button
                             type="button"
                             onClick={() => router.back()}
-                            className="btn-cancel active:scale-0.98 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-(--border-color) bg-transparent px-6 py-3.5 text-base font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/30 hover:bg-(--bg-main)/60 dark:hover:bg-white/5"
+                            className="btn-cancel"
                         >
-                            <X className="size-4 text-(--text-muted)" />
+                            <X className="size-4 text-text-muted" />
                             <span>Annuleren</span>
                         </button>
 
-                        <div className="border-t border-(--border-color)/30 pt-2">
+                        <div className="border-t border-border-color/30 pt-2">
                             <button
                                 type="button"
                                 onClick={() => { void handleDelete(); }}
                                 disabled={isDeleting || optimisticSaving}
-                                className="btn-delete group flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-6 py-3.5 text-base font-semibold text-red-500 transition-all hover:bg-red-500 hover:text-white active:scale-95 disabled:opacity-50"
+                                className="btn-delete"
                             >
                                 {isDeleting ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4 transition-transform group-hover:scale-110" />}
                                 <span>Activiteit verwijderen</span>

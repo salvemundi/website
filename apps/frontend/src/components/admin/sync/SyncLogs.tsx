@@ -229,7 +229,7 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
                         <button
                             disabled={currentPage === 1}
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            className="beheer-button rounded-lg border border-(--beheer-border) px-3.5 py-1.5 text-[11px] font-bold text-(--beheer-text) transition-all hover:border-(--beheer-accent) disabled:opacity-40"
+                            className="beheer-button-secondary px-3.5 disabled:opacity-40"
                             type="button">
                             Vorige
                         </button>
@@ -239,7 +239,7 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
                         <button
                             disabled={currentPage === totalPages}
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                            className="beheer-button rounded-lg border border-(--beheer-border) px-3.5 py-1.5 text-[11px] font-bold text-(--beheer-text) transition-all hover:border-(--beheer-accent) disabled:opacity-40"
+                            className="beheer-button-secondary px-3.5 disabled:opacity-40"
                             type="button">
                             Volgende
                         </button>

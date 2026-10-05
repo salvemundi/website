@@ -276,7 +276,7 @@ export default function ReisPaymentFlowIsland({
                             <div className="order-2 w-full sm:order-1 sm:w-auto">
                                 <button
                                     onClick={step === 1 ? () => router.push('/reis') : () => setStep(step - 1)}
-                                    className="tab-button flex w-full items-center justify-center gap-2 rounded-xl border border-(--border-color) bg-(--bg-card) px-6 py-3 text-sm font-semibold text-(--text-main) transition-all hover:bg-black/5 sm:w-auto dark:hover:bg-white/5"
+                                    className="tab-button w-full border border-(--border-color) bg-(--bg-card) text-(--text-main) hover:bg-black/5 sm:w-auto dark:hover:bg-white/5"
                                     type="button">
                                     <ChevronLeft className="size-4 text-(--text-muted)" /> 
                                     {step === 1 ? 'Annuleren' : 'Vorige'}

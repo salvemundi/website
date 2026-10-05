@@ -112,7 +112,7 @@ export default function MemberProfileTab({
                         {hasAccess && !isEditing && (
                             <button
                                 onClick={() => setIsEditing(true)}
-                                className="icon-button cursor-pointer rounded-xl p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
+                                className="icon-button p-2 text-(--beheer-text-muted) hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
                                 type="button">
                                 <Edit className="size-4" />
                             </button>
@@ -120,22 +120,22 @@ export default function MemberProfileTab({
                     </div>
 
                     {isEditing ? (
-                        <div className="space-y-5">
+                        <div className="space-y-4">
                             {editFields.map(field => (
-                                <div key={field.key} className="space-y-2">
-                                    <label className="text-xs font-semibold text-(--beheer-text-muted)">{field.label}</label>
+                                <div key={field.key} className="space-y-1.5">
+                                    <label className="text-xs font-medium text-(--text-muted)">{field.label}</label>
                                     {field.key === 'phone_number' ? (
                                         <PhoneInput
                                             value={(editData.phone_number) || ''}
-                                            onChange={e => setEditData(prev => ({ ...prev, phone_number: e.target.value }))}
-                                            className="w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-4 py-3 text-sm font-semibold transition-all outline-none focus:ring-2 focus:ring-(--beheer-accent)"
+                                            onChange={event => setEditData(prev => ({ ...prev, phone_number: event.target.value }))}
+                                            className="form-input"
                                         />
                                     ) : (
                                         <input
                                             type={field.type}
                                             value={(editData[field.key] as string) || ''}
-                                            onChange={e => setEditData(prev => ({ ...prev, [field.key]: e.target.value }))}
-                                            className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-4 py-3 text-sm font-semibold transition-all outline-none focus:ring-2 focus:ring-(--beheer-accent)"
+                                            onChange={event => setEditData(prev => ({ ...prev, [field.key]: event.target.value }))}
+                                            className="form-input"
                                         />
                                     )}
                                 </div>
@@ -144,20 +144,20 @@ export default function MemberProfileTab({
                                 <button
                                     onClick={() => { void handleSave(); }}
                                     disabled={saving}
-                                    className="beheer-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) px-4 py-3 text-xs font-semibold text-white shadow-(--shadow-glow) transition-all hover:opacity-90 disabled:opacity-50"
+                                    className="form-button flex-1"
                                     type="button">
-                                    {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />} Opslaan
+                                    {saving ? <Loader2 className="mx-auto size-4 animate-spin" /> : <Save className="size-4" />} Opslaan
                                 </button>
                                 <button
                                     onClick={() => setIsEditing(false)}
-                                    className="beheer-button flex-1 cursor-pointer rounded-xl border border-transparent px-4 py-3 text-xs font-semibold text-(--beheer-text-muted) transition-all hover:border-(--beheer-border) hover:bg-(--beheer-card-soft)"
+                                    className="btn-secondary"
                                     type="button">
-                                    X
+                                    Annuleren
                                 </button>
                             </div>
                         </div>
                     ) : (
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                             <InfoRow icon={Calendar} label="Geboortedatum" value={formatDate(member.date_of_birth)} />
                             <InfoRow icon={Phone} label="Telefoonnummer" value={member.phone_number || 'Geen'} />
                             <InfoRow icon={Clock} label="Verloopdatum" value={formatDate(member.membership_expiry)} />
@@ -169,14 +169,14 @@ export default function MemberProfileTab({
             </div>
 
             <div className="space-y-6 lg:col-span-2">
-                <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-sm">
-                    <div className="mb-8 flex items-center gap-4">
-                        <div className="flex size-12 items-center justify-center rounded-2xl bg-orange-500/10 text-orange-500 shadow-sm">
-                            <Award className="size-6" />
+                <div className="card-base p-6">
+                    <div className="mb-6 flex items-center gap-4">
+                        <div className="icon-box">
+                            <Award className="size-5" />
                         </div>
                         <div>
-                            <h3 className="text-xl leading-tight font-semibold text-(--beheer-text)">Commissies</h3>
-                            <p className="mt-1 text-xs font-semibold text-(--beheer-text-muted) opacity-60">Actieve rollen binnen Salve Mundi</p>
+                            <h3 className="text-lg font-bold text-(--text-main)">Commissies</h3>
+                            <p className="text-xs text-(--text-muted)">Actieve rollen binnen Salve Mundi</p>
                         </div>
                     </div>
 
@@ -191,14 +191,14 @@ export default function MemberProfileTab({
                     )}
                 </div>
 
-                <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-sm">
-                    <div className="mb-8 flex items-center gap-4">
-                        <div className="flex size-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500 shadow-sm">
-                            <Layers className="size-6" />
+                <div className="card-base p-6">
+                    <div className="mb-6 flex items-center gap-4">
+                        <div className="icon-box">
+                            <Layers className="size-5" />
                         </div>
                         <div>
-                            <h3 className="text-xl leading-tight font-semibold text-(--beheer-text)">Teams & Groepen</h3>
-                            <p className="mt-1 text-xs font-semibold text-(--beheer-text-muted) opacity-60">Systeemgroepen en secundaire teams</p>
+                            <h3 className="text-lg font-bold text-(--text-main)">Teams & Groepen</h3>
+                            <p className="text-xs text-(--text-muted)">Systeemgroepen en secundaire teams</p>
                         </div>
                     </div>
 

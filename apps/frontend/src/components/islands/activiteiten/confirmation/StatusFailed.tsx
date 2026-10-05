@@ -16,15 +16,15 @@ export default function StatusFailed({ signupData, isMembership, isTrip }: Statu
     const isExpired = signupData?.errorType === 'expired';
 
     return (
-        <div className="animate-in zoom-in-95 space-y-8 py-20 text-center duration-500">
-            <div className="mx-auto flex size-24 items-center justify-center rounded-full bg-red-500/10 ring-1 ring-red-500/20">
-                <XCircle className="size-12 text-red-500" />
+        <div className="space-y-8 py-20 text-center duration-500">
+            <div className="mx-auto flex size-24 items-center justify-center rounded-full bg-theme-error/10 ring-1 ring-theme-error/20">
+                <XCircle className="size-12 text-theme-error" />
             </div>
             <div className="space-y-2">
-                <h2 className="text-4xl font-semibold tracking-tighter text-(--text-main) italic">
-                    Betaling <span className="text-red-500">{isCanceled ? 'gecanceld' : isExpired ? 'verlopen' : 'mislukt'}</span>
+                <h2 className="text-4xl font-semibold tracking-tighter text-text-main italic">
+                    Betaling <span className="text-theme-error">{isCanceled ? 'gecanceld' : isExpired ? 'verlopen' : 'mislukt'}</span>
                 </h2>
-                <p className="mx-auto max-w-md text-lg font-medium text-(--text-muted)">
+                <p className="mx-auto max-w-md text-lg font-medium text-text-muted">
                     {isCanceled
                         ? 'Je hebt de betaling afgebroken. Geen zorgen, je gegevens zijn nog niet verwerkt.'
                         : isExpired
@@ -41,13 +41,13 @@ export default function StatusFailed({ signupData, isMembership, isTrip }: Statu
                     }
                     text="Opnieuw proberen"
                     icon={RefreshCw}
-                    className="h-14 rounded-2xl bg-(--theme-purple) px-10 text-white shadow-(--theme-purple)/20 shadow-xl"
+                    className="form-button h-14 rounded-2xl bg-theme-purple px-10 text-wit-paars shadow-xl shadow-theme-purple/20"
                 />
                 <BackButton
                     href="/"
                     text="Terug naar home"
                     icon={Home}
-                    className="h-14 rounded-2xl border border-(--border-color) bg-(--bg-card) px-10 text-(--text-main)"
+                    className="form-button h-14 rounded-2xl border border-border-color bg-bg-card px-10 text-text-main"
                 />
             </div>
         </div>

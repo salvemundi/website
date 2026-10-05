@@ -46,8 +46,7 @@ export function MobileNav({ user, isAuthenticated, navItems, canAccessAdmin }: O
         <>
             <button
                 type="button"
-                className="relative z-210 icon-button inline-flex items-center justify-center rounded-full p-2 text-(--text-main) shadow-sm transition-transform duration-200 hover:scale-110 hover:bg-purple-100 active:scale-95 lg:hidden dark:hover:bg-white/10"
-                style={{ backgroundColor: 'color-mix(in srgb, var(--bg-card) 80%, transparent)' }}
+                className="relative z-210 icon-button lg:hidden"
                 onClick={() => setMenuOpen(!menuOpen)}
                 aria-label={menuOpen ? "Sluit menu" : "Open menu"}
                 aria-expanded={menuOpen}

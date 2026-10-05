@@ -143,7 +143,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
+                                        className="beheer-input"
                                         placeholder="Bijv. Kroegentocht Stratumseind"
                                         required
                                     />
@@ -171,7 +171,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                             type="email"
                                             value={formData.email}
                                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                            className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
+                                            className="beheer-input"
                                             placeholder="Bijv. feest@salvemundi.nl"
                                         />
                                     </div>
@@ -185,7 +185,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                         type="url"
                                         value={formData.whatsapp_community_url}
                                         onChange={(e) => setFormData({ ...formData, whatsapp_community_url: e.target.value })}
-                                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
+                                        className="beheer-input"
                                         placeholder="Bijv. https://chat.whatsapp.com/..."
                                     />
                                 </div>
@@ -208,7 +208,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                 <button
                                                     type="button"
                                                     onClick={() => setFormData(prev => ({ ...prev, image: null }))}
-                                                    className="icon-button rounded-full bg-red-500 p-3 text-white shadow-xl transition-transform hover:scale-110"
+                                                    className="icon-button rounded-full bg-red-500 p-3 transition-transform hover:scale-110"
                                                 >
                                                     <X className="size-5" />
                                                 </button>
@@ -246,7 +246,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                             <textarea
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                className="min-h-40 beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
+                                className="beheer-input min-h-40"
                                 placeholder="Korte omschrijving voor de deelnemers..."
                             />
                         </div>
@@ -262,7 +262,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
                                 {formData.groups.map((group, index) => (
-                                    <div key={index} className="flex flex-col gap-2 rounded-xl border border-(--border-color)/50 bg-(--bg-main)/50 p-3 transition-all focus-within:border-(--theme-purple)/50">
+                                    <div key={index} className="search-bar flex-col gap-2 p-3">
                                         <div className="flex items-center gap-2">
                                             <input
                                                 type="text"
@@ -275,7 +275,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                         )
                                                     });
                                                 }}
-                                                className="beheer-input flex-1 border-0 bg-transparent px-2 py-1 text-xs font-semibold text-(--text-main) focus:ring-0 focus:outline-none"
+                                                className="beheer-input"
                                                 placeholder={`Groep ${index + 1}`}
                                                 required
                                             />
@@ -285,7 +285,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                     const updated = formData.groups.filter((_, i) => i !== index);
                                                     setFormData({ ...formData, groups: updated });
                                                 }}
-                                                className="icon-button cursor-pointer p-1 text-(--text-muted) transition-colors hover:text-red-500"
+                                                className="icon-button p-1 text-(--text-muted) hover:text-red-500"
                                                 title="Verwijder groep"
                                             >
                                                 <X className="size-3.5" />
@@ -310,7 +310,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                                         })
                                                                     });
                                                                 }}
-                                                                className="ml-1 icon-button cursor-pointer font-bold text-red-500 hover:text-red-700"
+                                                                className="ml-1 icon-button text-red-500 hover:text-red-700"
                                                                 title="Verwijder leider"
                                                             >
                                                                 &times;
@@ -331,7 +331,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                             groups: [...formData.groups, { name: `Groep ${formData.groups.length + 1}`, leaders: [] }]
                                         });
                                     }}
-                                    className="beheer-button flex h-fit cursor-pointer items-center justify-center gap-2 self-center rounded-xl border-2 border-dashed border-(--border-color)/50 bg-(--bg-main)/30 p-3 text-xs font-semibold text-(--text-muted) transition-all hover:border-(--theme-purple)/50 hover:bg-(--theme-purple)/5 hover:text-(--theme-purple)"
+                                    className="beheer-button-secondary h-fit self-center p-3"
                                 >
                                     <Plus className="size-4" />
                                     Groep toevoegen
@@ -353,7 +353,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                     <button
                         type="submit"
                         disabled={isPending}
-                        className="beheer-button flex w-full items-center justify-center gap-3 rounded-xl bg-(--theme-purple) px-12 py-5 text-sm font-semibold text-white shadow-(--shadow-glow) transition-all hover:opacity-95 active:scale-95 disabled:opacity-50 sm:w-auto"
+                        className="beheer-button w-full px-12 py-5 shadow-(--shadow-glow) sm:w-auto"
                     >
                         {isPending ? (
                             <Loader2 className="size-5 animate-spin" />

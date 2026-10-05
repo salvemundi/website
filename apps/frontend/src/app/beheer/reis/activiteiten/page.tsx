@@ -46,7 +46,7 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
         return (
             <BeheerPageShell title="Reis Activiteiten" backHref="/beheer/reis">
                 <div className="mx-auto py-20 text-center">
-                    <p className="text-base font-bold text-(--beheer-text-muted)">
+                    <p className="text-base font-bold text-beheer-text-muted">
                         Geen reizen gevonden.
                     </p>
                 </div>

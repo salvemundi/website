@@ -50,7 +50,7 @@ function ChipListInput({ label, placeholder, values, onChange }: { label: string
                 {values.map(value => (
                     <span key={value} className="flex items-center gap-1.5 rounded-lg bg-(--beheer-accent)/10 py-1.5 pr-2 pl-3 text-xs font-semibold text-(--beheer-accent)">
                         {value}
-                        <button type="button" onClick={() => removeChip(value)} aria-label={`Verwijder ${value}`} className="beheer-button cursor-pointer transition-colors hover:text-red-500">
+                        <button type="button" onClick={() => removeChip(value)} aria-label={`Verwijder ${value}`} className="beheer-button hover:text-red-500">
                             <Trash2 className="size-3" />
                         </button>
                     </span>
@@ -67,7 +67,7 @@ function ChipListInput({ label, placeholder, values, onChange }: { label: string
                         }
                     }}
                     onBlur={addChip}
-                    className="beheer-input min-w-32 flex-1 rounded-lg border border-(--beheer-border) bg-(--beheer-card-soft) px-3 py-1.5 text-sm text-(--beheer-text)"
+                    className="beheer-input min-w-32"
                 />
             </div>
         </div>
@@ -156,7 +156,7 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
                         value={name}
                         onChange={(e) => handleNameChange(e.target.value)}
                         placeholder="Bijv. Salve Mundi Hoodie"
-                        className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10"
+                        className="beheer-input"
                     />
                 </div>
 
@@ -168,7 +168,7 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
                         required
                         onChange={(e) => { setSlugTouched(true); setSlug(slugify(e.target.value)); }}
                         placeholder="salve-mundi-hoodie"
-                        className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-mono font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10"
+                        className="beheer-input font-mono"
                     />
                 </div>
 
@@ -189,7 +189,7 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
                     <select
                         name="drop_window_id"
                         defaultValue={product?.drop_window_id ?? ''}
-                        className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10"
+                        className="beheer-input"
                     >
                         <option value="">Geen drop (los item, direct te koop)</option>
                         {dropWindows.map((dw) => (
@@ -200,23 +200,23 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
 
                 <div className="space-y-3">
                     <label className="text-xs font-semibold text-(--beheer-text-muted)">Prijs (€) *</label>
-                    <input type="number" name="price" required min="0.01" step="0.01" defaultValue={product?.price ? Number(product.price).toFixed(2) : ''} className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10" />
+                    <input type="number" name="price" required min="0.01" step="0.01" defaultValue={product?.price ? Number(product.price).toFixed(2) : ''} className="beheer-input" />
                 </div>
 
                 <div className="space-y-3">
                     <label className="text-xs font-semibold text-(--beheer-text-muted)">Limiet bestellingen (optioneel)</label>
-                    <input type="number" name="max_orders" min="1" step="1" placeholder="Geen limiet" defaultValue={product?.max_orders ?? ''} className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10" />
+                    <input type="number" name="max_orders" min="1" step="1" placeholder="Geen limiet" defaultValue={product?.max_orders ?? ''} className="beheer-input" />
                 </div>
 
                 <div className="space-y-3">
                     <label className="text-xs font-semibold text-(--beheer-text-muted)">Voorraad (optioneel)</label>
-                    <input type="number" name="stock_quantity" min="0" step="1" placeholder="Onbeperkt" defaultValue={product?.stock_quantity ?? ''} className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10" />
+                    <input type="number" name="stock_quantity" min="0" step="1" placeholder="Onbeperkt" defaultValue={product?.stock_quantity ?? ''} className="beheer-input" />
                 </div>
             </div>
 
             <div className="space-y-3">
                 <label className="text-xs font-semibold text-(--beheer-text-muted)">Beschrijving</label>
-                <textarea name="description" rows={6} defaultValue={product?.description || ''} className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-mono text-sm text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10" />
+                <textarea name="description" rows={6} defaultValue={product?.description || ''} className="beheer-input font-mono" />
             </div>
 
             <div className="flex items-center gap-4 p-2">
@@ -235,7 +235,7 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
                             <button
                                 type="button"
                                 onClick={() => setMedia(prev => prev.filter((_, i) => i !== index))}
-                                className="absolute inset-0 beheer-button flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
+                                className="absolute inset-0 beheer-button bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
                                 aria-label="Verwijder media"
                             >
                                 <Trash2 className="size-5 text-white" />
@@ -269,10 +269,10 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
             )}
 
             <div className="flex flex-col justify-end gap-4 border-t border-(--beheer-border) pt-6 sm:flex-row">
-                <button type="button" onClick={onCancel} className="beheer-button cursor-pointer rounded-xl border border-(--beheer-border) px-8 py-4 text-sm font-semibold text-(--beheer-text) transition-all hover:bg-(--beheer-card-soft)">
+                <button type="button" onClick={onCancel} className="beheer-button-secondary">
                     Annuleren
                 </button>
-                <button type="submit" disabled={isPending} className="beheer-button flex cursor-pointer items-center justify-center gap-3 rounded-xl bg-(--beheer-accent) px-10 py-4 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95 disabled:opacity-50">
+                <button type="submit" disabled={isPending} className="beheer-button">
                     {isPending ? <Loader2 className="size-5 animate-spin" /> : <Save className="size-5" />}
                     <span>{isPending ? 'Bezig...' : product ? 'Opslaan' : 'Product Aanmaken'}</span>
                 </button>

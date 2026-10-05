@@ -16,19 +16,15 @@ export default function BeheerUnauthorized({
 }: AdminUnauthorizedProps) {
     return (
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 pt-20 text-center select-none">
-            {/* Header with Icon Box matching GlobalError */}
             <div className="relative mb-8">
-                {/* Decorative background glow */}
-                <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto size-40 rounded-full bg-purple-500/10 blur-3xl" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto size-40 rounded-full bg-theme-purple/10 blur-3xl" />
 
-                {/* Icon Container */}
-                <div className="relative inline-block rounded-3xl border border-border-color/20 bg-bg-card p-6 text-purple-500 shadow-2xl">
+                <div className="relative inline-block rounded-3xl border border-border-color/20 bg-bg-card p-6 text-theme-purple shadow-2xl">
                     <ShieldAlert className="size-16" />
                 </div>
 
-                {/* Faded 403 text behind the icon */}
                 <div className="absolute top-1/2 left-1/2 -z-10 -translate-1/2 select-none">
-                    <span className="text-9xl font-bold tracking-normal text-purple-500/5">403</span>
+                    <span className="text-9xl font-bold tracking-normal text-theme-purple/5">403</span>
                 </div>
             </div>
 
@@ -43,7 +39,7 @@ export default function BeheerUnauthorized({
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Link
                     href="/"
-                    className="flex items-center gap-2 rounded-full bg-purple-500 px-8 py-3.5 text-base font-bold tracking-widest text-white shadow-lg shadow-purple-500/20 transition-all hover:-translate-y-0.5 hover:shadow-purple-500/40"
+                    className="beheer-button form-button"
                 >
                     <Home className="size-4" />
                     Terug naar Home
@@ -52,7 +48,7 @@ export default function BeheerUnauthorized({
                 {backHref ? (
                     <Link
                         href={backHref}
-                        className="flex items-center gap-2 rounded-full border border-border-color/20 bg-bg-card px-8 py-3.5 text-base font-bold tracking-widest text-text-main transition-all hover:bg-black/5 dark:hover:bg-white/5"
+                        className="btn-secondary rounded-full py-3.5 text-base"
                     >
                         <ArrowLeft className="size-4" />
                         Vorige Pagina
@@ -60,7 +56,7 @@ export default function BeheerUnauthorized({
                 ) : (
                     <button
                         onClick={() => window.history.back()}
-                        className="form-button flex items-center gap-2 rounded-full border border-border-color/20 bg-bg-card px-8 py-3.5 text-base font-bold tracking-widest text-text-main transition-all hover:bg-black/5 dark:hover:bg-white/5"
+                        className="btn-secondary rounded-full py-3.5 text-base"
                         type="button">
                         <ArrowLeft className="size-4" />
                         Vorige Pagina

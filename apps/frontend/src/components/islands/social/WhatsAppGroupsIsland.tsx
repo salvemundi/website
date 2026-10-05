@@ -21,7 +21,7 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
             {/* Info Banner */}
             <div className="mb-8 rounded-2xl bg-bg-card p-6 shadow-md">
                 <div className="flex items-start gap-4">
-                    <div className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/5 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
+                    <div className="icon-box size-12">
                         <Info className="size-6" />
                     </div>
                     <div>
@@ -48,7 +48,7 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
                     {groups.map((group) => (
                         <div key={group.id} className="relative flex h-full flex-col justify-between overflow-hidden rounded-3xl bg-bg-card p-6 shadow-lg transition-all hover:shadow-xl">
                             <div className="mb-4 flex items-start gap-4">
-                                <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-500 dark:bg-transparent dark:text-purple-300">
+                                <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-theme-purple/10 text-theme-purple">
                                     <MessageCircle className="size-8" />
                                 </div>
                                 <div className="mt-1 flex-1">
@@ -63,16 +63,16 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
                                 </div>
                             </div>
 
-                            <div className="mt-auto flex items-center justify-between border-t border-purple-100 pt-4 dark:border-white/10">
+                            <div className="mt-auto flex items-center justify-between border-t border-border-color/20 pt-4">
                                 <div className="flex items-center gap-2 text-sm">
-                                    <span className="flex items-center gap-1 rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-500 dark:border dark:border-purple-500/20 dark:bg-purple-500/10 dark:text-purple-300">
+                                    <span className="btn-secondary rounded-full py-1">
                                         <ShieldAlert className="size-3" />
                                         Alleen Leden
                                     </span>
                                 </div>
                                 <button
                                     onClick={() => handleJoinGroup(group.invite_link)}
-                                    className="form-button flex items-center gap-2 rounded-full bg-purple-500 px-6 py-2 font-semibold text-white shadow-md transition-transform hover:-translate-y-0.5"
+                                    className="form-button rounded-full"
                                     type="button">
                                     <span>Word Lid</span>
                                     <ArrowRight className="size-4" />
@@ -88,26 +88,26 @@ export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ grou
                 <h3 className="mb-4 text-lg font-semibold text-text-main">Groepsregels</h3>
                 <ul className="space-y-3 text-sm text-text-muted">
                     <li className="flex items-center gap-2">
-                        <div className="size-1.5 rounded-full bg-purple-500" />
+                        <div className="size-1.5 rounded-full bg-theme-purple" />
                         <span>Wees respectvol naar alle leden</span>
                     </li>
                     <li className="flex items-center gap-2">
-                        <div className="size-1.5 rounded-full bg-purple-500" />
+                        <div className="size-1.5 rounded-full bg-theme-purple" />
                         <span>Houd gesprekken relevant voor het groepsonderwerp</span>
                     </li>
                     <li className="flex items-center gap-2">
-                        <div className="size-1.5 rounded-full bg-purple-500" />
+                        <div className="size-1.5 rounded-full bg-theme-purple" />
                         <span>Geen spam of promotionele inhoud</span>
                     </li>
                     <li className="flex items-center gap-2">
-                        <div className="size-1.5 rounded-full bg-purple-500" />
+                        <div className="size-1.5 rounded-full bg-theme-purple" />
                         <span>
                             Volg de{' '}
                             <Link
                                 href={gedragscodeUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 font-semibold text-purple-500 hover:underline"
+                                className="inline-flex items-center gap-1 font-semibold text-theme-purple hover:underline"
                             >
                                 gedragscode van Salve Mundi <ExternalLink className="size-3" />
                             </Link>

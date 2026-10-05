@@ -28,7 +28,7 @@ export default function BeheerToast({ toast, onClose }: AdminToastProps) {
 
     const content = (
         <div
-            className="animate-in fade-in zoom-in-90 slide-in-from-bottom-6 sm:slide-in-from-bottom-12 pointer-events-auto fixed inset-x-4 z-100000 ml-auto max-w-md duration-300 ease-out sm:right-8 sm:left-auto md:right-10"
+            className="animate-in zoom-in-90 slide-in-from-bottom-6 sm:slide-in-from-bottom-12 pointer-events-auto fixed inset-x-4 z-100000 ml-auto max-w-md fade-in duration-300 ease-out sm:right-8 sm:left-auto md:right-10"
             style={{
                 bottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))'
             }}
@@ -73,7 +73,7 @@ export default function BeheerToast({ toast, onClose }: AdminToastProps) {
                 {onClose && (
                     <button
                         onClick={onClose}
-                        className="form-button shrink-0 cursor-pointer rounded-lg p-1.5 text-text-muted transition-colors hover:bg-white/5 sm:rounded-xl sm:p-2"
+                        className="form-button shrink-0 p-1.5 text-text-muted hover:bg-white/5 sm:rounded-xl sm:p-2"
                         aria-label="Sluiten"
                         type="button">
                         <XCircle className="size-4 opacity-40 hover:opacity-100" />

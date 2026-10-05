@@ -15,7 +15,7 @@ export default function SignupFormActions({ isPending, onReset, onDelete }: Sign
                 <button
                     type="button"
                     onClick={onReset}
-                    className="beheer-button flex flex-1 items-center justify-center gap-2 rounded-xl border border-(--border-color) bg-(--bg-card) px-8 py-4 text-xs font-semibold text-(--text-light) shadow-sm transition-all hover:text-(--theme-purple) active:scale-95 md:flex-none"
+                    className="beheer-button-secondary flex-1 md:flex-none"
                 >
                     <RefreshCw className="size-4" />
                     Reset
@@ -24,7 +24,7 @@ export default function SignupFormActions({ isPending, onReset, onDelete }: Sign
                 <button
                     type="button"
                     onClick={onDelete}
-                    className="beheer-button flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-8 py-4 text-xs font-semibold text-red-500 shadow-sm transition-all hover:bg-red-500 hover:text-white active:scale-95 md:flex-none"
+                    className="beheer-button-secondary flex-1 text-red-500 md:flex-none"
                 >
                     <Trash className="size-4" />
                     Verwijder Aanmelding
@@ -34,7 +34,7 @@ export default function SignupFormActions({ isPending, onReset, onDelete }: Sign
             <button
                 type="submit"
                 disabled={isPending}
-                className="beheer-button flex w-full items-center justify-center gap-3 rounded-xl bg-(--theme-purple) px-12 py-5 text-sm font-semibold text-white shadow-(--shadow-glow) transition-all hover:opacity-95 active:scale-95 disabled:opacity-50 md:w-auto"
+                className="beheer-button w-full px-12 py-5 shadow-(--shadow-glow) md:w-auto"
             >
                 {isPending ? (
                     <Loader2 className="size-5 animate-spin" />

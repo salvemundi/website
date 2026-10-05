@@ -20,12 +20,12 @@ interface QueuesTabProps {
 export default function QueuesTab({ queueData, isLoading = false, error, onRefresh }: QueuesTabProps) {
     if (isLoading && !queueData) {
         return (
-            <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-12 text-center shadow-xl">
-                <Loader2 className="mx-auto mb-4 size-8 animate-spin text-(--beheer-accent)" />
+            <div className="empty-state-box">
+                <Loader2 className="spinner-accent-lg" />
                 <h3 className="text-base font-bold tracking-tight text-(--beheer-text)">
                     Wachtrijstatus ophalen...
                 </h3>
-                <p className="mx-auto mt-2 max-w-md text-xs font-medium text-(--beheer-text-muted)">
+                <p className="empty-state-subtitle">
                     De actuele gegevens worden opgehaald van de Azure Management Service.
                 </p>
             </div>
@@ -34,14 +34,14 @@ export default function QueuesTab({ queueData, isLoading = false, error, onRefre
 
     if (!queueData) {
         return (
-            <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-8 text-center shadow-xl">
-                <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-500">
+            <div className="empty-state-box">
+                <div className="alert-icon-box-amber">
                     <AlertCircle className="size-6" />
                 </div>
                 <h3 className="text-base font-bold tracking-tight text-(--beheer-text)">
                     Wachtrijmonitoring niet beschikbaar
                 </h3>
-                <p className="mx-auto mt-2 max-w-md text-xs font-medium text-(--beheer-text-muted)">
+                <p className="empty-state-subtitle">
                     {error || "De Azure Management Service is momenteel offline of niet bereikbaar vanaf deze omgeving. Zorg dat de service draait of verbind met de VPN als je lokaal ontwikkelt."}
                 </p>
                 {onRefresh && (
@@ -50,7 +50,7 @@ export default function QueuesTab({ queueData, isLoading = false, error, onRefre
                             type="button"
                             onClick={onRefresh}
                             disabled={isLoading}
-                            className="form-button inline-flex items-center gap-2 rounded-xl bg-(--beheer-accent) px-4 py-2 text-xs font-semibold text-white shadow-sm hover:opacity-90 disabled:opacity-50"
+                            className="form-button"
                         >
                             <RefreshCw className={`size-3.5 ${isLoading ? 'animate-spin' : ''}`} />
                             Opnieuw proberen
@@ -69,7 +69,7 @@ export default function QueuesTab({ queueData, isLoading = false, error, onRefre
                         type="button"
                         onClick={onRefresh}
                         disabled={isLoading}
-                        className="beheer-button inline-flex items-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-3 py-1.5 text-xs font-semibold text-(--beheer-text) hover:bg-(--beheer-card-bg) disabled:opacity-50"
+                        className="beheer-button-secondary"
                     >
                         <RefreshCw className={`size-3.5 ${isLoading ? 'animate-spin' : ''}`} />
                         Vernieuwen
@@ -80,18 +80,18 @@ export default function QueuesTab({ queueData, isLoading = false, error, onRefre
                 {(['new_users', 'sync_existing'] as const).map(qKey => {
                     const q = qKey === 'new_users' ? queueData.new_users : queueData.sync_existing;
                     return (
-                        <div key={qKey} className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
-                            <div className="flex items-center justify-between border-b border-(--beheer-border)/50 bg-(--beheer-card-soft)/30 p-6">
+                        <div key={qKey} className="form-card">
+                            <div className="card-header-flex">
                                 <div>
                                     <h3 className="text-base font-semibold tracking-tight text-(--beheer-text)">
                                         {qKey === 'new_users' ? 'Nieuwe Leden Wachtrij' : 'Sync Wachtrij'}
                                     </h3>
-                                    <p className="mt-1 text-xs font-medium text-(--beheer-text-muted) opacity-50">
+                                    <p className="card-subtitle-muted">
                                         Redis: {qKey === 'new_users' ? 'v7:queue:provision:new_user' : 'v7:queue:provision:sync_existing'}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <span className="rounded-full bg-(--beheer-accent)/10 px-3 py-1 text-sm font-semibold text-(--beheer-accent)">
+                                    <span className="badge-pill-accent">
                                         {q?.count || 0}
                                     </span>
                                 </div>
@@ -99,13 +99,13 @@ export default function QueuesTab({ queueData, isLoading = false, error, onRefre
                             <div className="p-0">
                                 {!q?.samples || q.samples.length === 0 ? (
                                     <div className="p-12 text-center">
-                                        <CheckCircle className="mx-auto mb-4 size-10 text-(--beheer-active) opacity-20" />
+                                        <CheckCircle className="icon-watermark-lg" />
                                         <p className="text-xs font-medium text-(--beheer-text-muted)">Geen actieve taken</p>
                                     </div>
                                 ) : (
                                     <table className="w-full text-left text-xs">
                                         <thead>
-                                            <tr className="border-b border-(--beheer-border)/50 bg-(--beheer-card-soft)/50 font-semibold tracking-tight text-(--beheer-text-muted)">
+                                            <tr className="table-header-row">
                                                 <th className="p-3">Target</th>
                                                 <th className="p-3 text-center">Retries</th>
                                                 <th className="p-3 text-right">Status</th>
@@ -121,7 +121,7 @@ export default function QueuesTab({ queueData, isLoading = false, error, onRefre
                                                         {task.retries} / {task.maxRetries}
                                                     </td>
                                                     <td className="p-3 text-right">
-                                                        <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-500">
+                                                        <span className="badge-pill-warning">
                                                             Wachtend
                                                         </span>
                                                     </td>

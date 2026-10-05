@@ -14,12 +14,12 @@ export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
 const getVariantClass = (variant: 'default' | 'ghost' | 'purple') => {
     switch (variant) {
         case 'ghost':
-            return 'bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-(--text-main)';
+            return 'bg-transparent hover:bg-theme-purple/10 text-text-main';
         case 'purple':
-            return 'bg-(--theme-purple)/90 hover:bg-(--theme-purple) text-white';
+            return 'bg-theme-purple/90 hover:bg-theme-purple text-wit-paars';
         case 'default':
         default:
-            return 'hover:bg-white/20 text-white';
+            return 'hover:bg-theme-purple/20 text-theme-purple';
     }
 };
 

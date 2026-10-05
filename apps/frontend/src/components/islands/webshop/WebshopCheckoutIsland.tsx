@@ -188,7 +188,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                                     type="button"
                                                     aria-pressed={isSelected}
                                                     onClick={() => handleSelectSize(size)}
-                                                    className={`tab-button hover:scale-1.02 active:scale-0.98 flex cursor-pointer items-center gap-1.5 rounded-full border-2 px-4 py-2 text-sm font-bold transition-all ${
+                                                    className={`hover:scale-1.02 active:scale-0.98 tab-button flex cursor-pointer items-center gap-1.5 rounded-full border-2 px-4 py-2 text-sm font-bold transition-all ${
                                                         isSelected
                                                             ? 'scale-105 border-(--theme-purple) bg-(--theme-purple) text-white shadow-md'
                                                             : 'border-(--border-color) bg-transparent text-(--text-muted) hover:border-(--theme-purple) hover:text-(--theme-purple)'
@@ -214,7 +214,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                                     type="button"
                                                     aria-pressed={isSelected}
                                                     onClick={() => handleSelectColor(color)}
-                                                    className={`tab-button hover:scale-1.02 active:scale-0.98 flex cursor-pointer items-center gap-1.5 rounded-full border-2 px-4 py-2 text-sm font-bold transition-all ${
+                                                    className={`hover:scale-1.02 active:scale-0.98 tab-button flex cursor-pointer items-center gap-1.5 rounded-full border-2 px-4 py-2 text-sm font-bold transition-all ${
                                                         isSelected
                                                             ? 'scale-105 border-(--theme-purple) bg-(--theme-purple) text-white shadow-md'
                                                             : 'border-(--border-color) bg-transparent text-(--text-muted) hover:border-(--theme-purple) hover:text-(--theme-purple)'
@@ -236,7 +236,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                             <button
                                 type="button"
                                 onClick={() => setValue('lines.0.quantity', Math.max(1, quantity - 1), { shouldValidate: true })}
-                                className="form-button rounded-full bg-(--bg-soft) p-2 text-(--theme-purple) transition-all hover:scale-105 disabled:opacity-30"
+                                className="form-button rounded-full bg-(--bg-soft) p-2 text-(--theme-purple) hover:scale-105 disabled:opacity-30"
                                 disabled={quantity <= 1}
                                 aria-label="Verminder aantal"
                             >
@@ -246,7 +246,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                             <button
                                 type="button"
                                 onClick={() => setValue('lines.0.quantity', Math.min(maxQuantity, quantity + 1), { shouldValidate: true })}
-                                className="form-button rounded-full bg-(--bg-soft) p-2 text-(--theme-purple) transition-all hover:scale-105 disabled:opacity-30"
+                                className="form-button rounded-full bg-(--bg-soft) p-2 text-(--theme-purple) hover:scale-105 disabled:opacity-30"
                                 disabled={quantity >= maxQuantity}
                                 aria-label="Verhoog aantal"
                             >
@@ -319,7 +319,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                 <button
                     type="button"
                     onClick={() => setStep(Math.max(1, step - 1))}
-                    className="form-button flex w-full items-center justify-center gap-2 rounded-xl px-8 py-3 text-sm font-bold text-(--text-muted) transition-all hover:text-(--text-main) sm:w-auto"
+                    className="form-button w-full text-(--text-muted) hover:text-(--text-main) sm:w-auto"
                 >
                     <ChevronLeft className="size-4" />
                     Vorige

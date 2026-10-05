@@ -94,7 +94,7 @@ export default function AddLeaderForm({
                         placeholder="Vul naam in..."
                         value={leaderName}
                         onChange={(e) => setLeaderName(e.target.value)}
-                        className="beheer-input w-full rounded-lg border border-(--border-color)/30 bg-(--bg-card) px-2.5 py-1.5 text-xs font-semibold text-(--text-main) focus:border-(--theme-purple) focus:ring-2 focus:ring-(--theme-purple)/10 focus:outline-none"
+                        className="beheer-input"
                     />
                 </div>
             )}
@@ -103,7 +103,7 @@ export default function AddLeaderForm({
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="beheer-button cursor-pointer rounded-lg border border-(--border-color)/30 bg-(--bg-card) px-2.5 py-1.5 text-[10px] font-bold text-(--text-muted) transition-all hover:bg-(--bg-main)"
+                    className="beheer-button-secondary px-2.5"
                 >
                     Annuleren
                 </button>
@@ -111,7 +111,7 @@ export default function AddLeaderForm({
                     type="button"
                     onClick={handleAdd}
                     disabled={leaderType === 'signup' ? !leaderSignupId : !leaderName.trim()}
-                    className="beheer-button cursor-pointer rounded-lg bg-(--theme-purple) px-3 py-1.5 text-[10px] font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"
+                    className="beheer-button"
                 >
                     Toevoegen
                 </button>

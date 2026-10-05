@@ -33,14 +33,14 @@ export function TagInput({ value, onChange, placeholder, id }: TagInputProps) {
     };
 
     return (
-        <div className="flex min-h-12 form-input flex-wrap items-center gap-2 py-2">
+        <div className="flex form-input min-h-12 flex-wrap items-center gap-2">
             {value.map((tag) => (
-                <span key={tag} className="flex items-center gap-1 rounded-full bg-(--bg-soft) px-2.5 py-1 text-xs font-bold text-(--theme-purple)">
+                <span key={tag} className="badge-tag">
                     {tag}
                     <button
                         type="button"
                         onClick={() => onChange(value.filter((t) => t !== tag))}
-                        className="form-button icon-button hover:text-(--theme-error)"
+                        className="icon-button flex size-4 items-center justify-center p-0 hover:text-theme-error"
                         aria-label={`Verwijder ${tag}`}
                     >
                         <X className="size-3" />

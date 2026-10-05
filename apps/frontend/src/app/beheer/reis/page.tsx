@@ -126,32 +126,32 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
 
     return (
         <BeheerPageShell
-            title={activeTrip.name ?? 'Reis'}
+            title={activeTrip.name ?? 'Reis naam onbekend'}
             backHref="/beheer"
             actions={
                 <>
-                    <div className="flex flex-col items-start gap-4 md:flex-row md:items-center">
-                        <div className="hidden items-center gap-4 rounded-2xl border border-(--beheer-border) bg-(--beheer-card-bg) px-5 py-2.5 shadow-sm xl:flex">
-                            <StatItem label="Aanmeldingen" value={stats.total} color="text-(--beheer-text)" />
+                    <div className="admin-action-header-row">
+                        <div className="beheer-stat-strip hidden xl:flex">
+                            <StatItem label="Aanmeldingen" value={stats.total} color="stat-val-main" />
                             <Divider />
-                            <StatItem label="Bevestigd" value={stats.confirmed} color="text-emerald-600 dark:text-emerald-400" />
+                            <StatItem label="Bevestigd" value={stats.confirmed} color="stat-val-success" />
                             <Divider />
-                            <StatItem label="Wachtlijst" value={stats.waitlist} color="text-amber-600 dark:text-amber-400" />
+                            <StatItem label="Wachtlijst" value={stats.waitlist} color="stat-val-warning" />
                             <Divider />
-                            <StatItem label="Aanbetaling" value={stats.depositPaid} color="text-blue-600 dark:text-blue-400" />
+                            <StatItem label="Aanbetaling" value={stats.depositPaid} color="stat-val-info" />
                             <Divider />
-                            <StatItem label="Restbetaling" value={stats.fullPaid} color="text-purple-600 dark:text-purple-400" />
+                            <StatItem label="Restbetaling" value={stats.fullPaid} color="stat-val-purple" />
                         </div>
-                        <div className="flex w-full flex-wrap items-stretch gap-2 sm:items-center md:w-auto">
+                        <div className="admin-action-button-group">
                             <BeheerReisSwitcher
                                 trips={trips}
                                 activeTripId={activeTripId as number}
                             />
                             <Link
                                 href="/beheer/reis/instellingen"
-                                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-xs font-semibold text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 hover:bg-(--beheer-accent)/5 sm:flex-none"
+                                className="beheer-button-secondary flex-1 text-beheer-text sm:flex-none"
                             >
-                                <Settings2 className="size-3.5 text-(--beheer-accent)" />
+                                <Settings2 className="size-3.5 text-beheer-accent" />
                                 <span className="hidden sm:inline">Instellingen</span>
                             </Link>
                             <ReisVisibilityToggle initialVisible={reisSettings.show} canToggle={canToggleVisibility} />
@@ -175,28 +175,28 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
 function StatItem({ label, value, color }: { label: string; value: number; color: string }) {
     return (
         <div className="flex flex-col items-center px-1">
-            <span className="mb-1 text-[10px] font-bold tracking-wider text-(--beheer-text-muted) uppercase">{label}</span>
-            <span className={`text-sm font-semibold tabular-nums ${color}`}>{value}</span>
+            <span className="stat-label-muted">{label}</span>
+            <span className={color}>{value}</span>
         </div>
     );
 }
 
 function Divider() {
-    return <div className="h-7 w-px bg-(--beheer-border)/40" />;
+    return <div className="v-divider-sm" />;
 }
 
 function NoTripsView() {
     return (
         <div className="mx-auto max-w-2xl py-20 text-center">
-            <div className="rounded-3xl border border-(--beheer-border) bg-(--beheer-card-bg) p-12 shadow-xl">
-                <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl border border-purple-500/10 bg-purple-500/5 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
-                    <Plane className="size-10 rotate-45 text-purple-500 dark:text-purple-400" />
+            <div className="no-trips-card">
+                <div className="no-trips-icon-wrapper">
+                    <Plane className="size-10 rotate-45 text-theme-purple" />
                 </div>
-                <h2 className="mb-2 text-2xl font-bold text-purple-700 dark:text-purple-300">Geen reizen gevonden</h2>
-                <p className="mb-8 text-sm font-medium text-(--beheer-text-muted)">Er zijn momenteel geen actieve of geplande reizen in het systeem.</p>
+                <h2 className="mb-2 text-2xl font-bold text-theme-purple">Geen reizen gevonden</h2>
+                <p className="mb-8 text-sm font-medium text-beheer-text-muted">Er zijn momenteel geen actieve of geplande reizen in het systeem.</p>
                 <Link
                     href="/beheer/reis/instellingen"
-                    className="beheer-button inline-flex items-center gap-2 rounded-xl border border-white/10 bg-(--beheer-accent) px-8 py-3 text-xs font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
+                    className="beheer-button-secondary beheer-button"
                 >
                     <LayoutDashboard className="size-4" />
                     <span>Nieuwe reis aanmaken</span>

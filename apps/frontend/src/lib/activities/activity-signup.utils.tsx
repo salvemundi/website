@@ -33,14 +33,14 @@ export function getSignupPhone(signup: Signup): string {
 export function MemberBadge({ signup }: { signup: Signup }) {
     if (signup.is_member || signup.directus_relations) {
         return (
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[9px] font-semibold tracking-wider text-emerald-500">
+            <div className="badge-pill-success">
                 <CheckCircle className="size-3" />
                 <span>Lid</span>
             </div>
         );
     }
     return (
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-(--beheer-border) bg-(--beheer-card-soft) px-2.5 py-1 text-[9px] font-semibold tracking-wider text-(--beheer-text-muted)">
+        <div className="badge-pill-muted">
             <User className="size-3 opacity-50" />
             <span>Gast</span>
         </div>
@@ -56,7 +56,7 @@ const formatAmount = (amount: number) =>
 export function PaymentBadge({ status, amount }: { status: string; amount?: number | null }) {
     if (status === 'paid') {
         return (
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 px-2.5 py-1 text-[9px] font-semibold tracking-wider text-(--beheer-accent)">
+            <div className="badge-pill-accent">
                 <CheckCircle2 className="size-3" />
                 <span>{typeof amount === 'number' ? formatAmount(amount) : 'Betaald'}</span>
             </div>
@@ -64,7 +64,7 @@ export function PaymentBadge({ status, amount }: { status: string; amount?: numb
     }
     if (status === 'open') {
         return (
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-[9px] font-semibold tracking-wider text-amber-600">
+            <div className="badge-pill-warning">
                 <CreditCard className="size-3" />
                 <span>{typeof amount === 'number' ? `Open · ${formatAmount(amount)}` : 'Open'}</span>
             </div>

@@ -84,7 +84,7 @@ const pijlers: Pijler[] = [
 export function WhySalveMundiSection() {
     return (
         <section className="py-fluid-lg">
-            <div className="max-w-app mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-app px-4 sm:px-6 lg:px-8">
                 {/* Sectie-header */}
                 <div className="mb-6 text-center sm:mb-10">
                     <h2 className="text-gradient text-3xl font-black sm:text-4xl md:text-5xl">
@@ -97,19 +97,19 @@ export function WhySalveMundiSection() {
                     {pijlers.map((pijler) => (
                         <div
                             key={pijler.name}
-                            className="group squircle-lg relative bg-(--bg-card) p-8 shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl dark:border dark:border-white/10"
+                            className="group relative squircle-lg border border-border-color bg-bg-card p-8 shadow-xs transition-all hover:-translate-y-1 hover:shadow-md"
                         >
                             {/* Flex container for Icon + Title */}
                             <div className="mb-4 flex items-center gap-3.5">
-                                <div className="group-hover:bg-gradient-theme inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-purple-300/10 text-purple-300 transition-all duration-300 group-hover:text-(--text-main) dark:bg-transparent">
+                                <div className="group-hover:bg-gradient-theme icon-box size-10 shrink-0 rounded-xl transition-all duration-300 group-hover:text-wit-paars">
                                     {pijler.icon}
                                 </div>
-                                <h3 className="text-xl font-bold text-(--text-main)">
+                                <h3 className="text-xl font-bold text-text-main">
                                     {pijler.name}
                                 </h3>
                             </div>
 
-                            <p className="leading-relaxed text-(--text-muted)">
+                            <p className="leading-relaxed text-text-muted">
                                 {pijler.description}
                             </p>
                         </div>

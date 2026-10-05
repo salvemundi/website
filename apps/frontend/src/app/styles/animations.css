@@ -47,14 +47,14 @@
     100% { transform: translateY(100%); opacity: 0; }
 }
 
+@utility fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
 /* ── Utilities ─────────────────────────────────────────────────────────────── */
 @layer utilities {
     .animate-slide-up {
         animation: slide-up 0.2s ease-out;
-    }
-
-    .fade-in {
-        animation: fadeIn 0.4s ease-out forwards;
     }
 
     .stagger-item {

@@ -235,7 +235,7 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                         <button
                                             type="button"
                                             onClick={() => { handleImageChange(null); setRemoveExistingImage(true); }}
-                                            className="icon-button rounded-lg bg-(--bg-soft) p-2 text-(--text-muted) hover:text-(--theme-error)"
+                                            className="icon-button bg-(--bg-soft) p-2 text-(--text-muted) hover:text-(--theme-error)"
                                             aria-label="Verwijder afbeelding"
                                         >
                                             <X className="size-4" />
@@ -265,7 +265,7 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                                         <button
                                             type="button"
                                             onClick={() => { setDocumentFile(null); setRemoveExistingDocument(true); }}
-                                            className="icon-button rounded-lg bg-(--bg-soft) p-2 text-(--text-muted) hover:text-(--theme-error)"
+                                            className="icon-button bg-(--bg-soft) p-2 text-(--text-muted) hover:text-(--theme-error)"
                                             aria-label="Verwijder document"
                                         >
                                             <X className="size-4" />
@@ -306,7 +306,7 @@ export default function VacancyAdminFormIsland({ vacancyId, initialData }: Vacan
                         <button
                             type="submit"
                             disabled={isPending}
-                            className="enabled:active:scale-0.98 form-button w-full rounded-xl bg-theme-purple py-4 font-black text-white shadow-lg shadow-purple-500/20 transition-all enabled:hover:bg-purple-600 disabled:opacity-50 sm:rounded-2xl"
+                            className="enabled:active:scale-0.98 form-button w-full font-black shadow-theme-purple/20 enabled:hover:opacity-90 sm:rounded-2xl"
                         >
                             {isPending ? 'Opslaan...' : isEditing ? 'Wijzigingen opslaan' : 'Vacature aanmaken'}
                         </button>

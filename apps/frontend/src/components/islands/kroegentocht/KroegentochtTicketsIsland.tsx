@@ -17,7 +17,6 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
     const [tickets] = useState<PubCrawlTicket[]>(initialTickets);
 
     const downloadTicketAsImage = async (ticket: PubCrawlTicket, index: number) => {
-        // ... (remaining download logic same as before)
         try {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -84,7 +83,7 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
         <section className="mb-8 overflow-hidden rounded-2xl bg-(--bg-card) p-5 shadow-xl sm:rounded-3xl sm:p-6 md:p-8 dark:border dark:border-white/10" >
             <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
-                    <h2 className="flex items-center gap-2 text-2xl font-black text-purple-700 dark:text-purple-300">
+                    <h2 className="flex items-center gap-2 text-2xl font-black text-theme-purple">
                         <CheckCircle2 className="size-6 text-green-500" />
                         Jouw Tickets
                     </h2>
@@ -98,7 +97,7 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
                 {tickets.map((ticket, i) => (
                     <div
                         key={ticket.id}
-                        className="group relative rounded-2xl border border-slate-100 bg-slate-50 p-6 transition-all hover:border-purple-500/30 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:hover:border-purple-400/30"
+                        className="group relative rounded-2xl border border-slate-100 bg-slate-50 p-6 transition-all hover:border-theme-purple/30 hover:shadow-md dark:border-white/10 dark:bg-white/5"
                     >
                         <div className="flex flex-col items-center">
                             <div className="rounded-xl bg-white p-2 shadow-sm">
@@ -122,7 +121,7 @@ export default function KroegentochtTicketsIsland({ initialTickets = [], userEma
 
                             <button
                                 onClick={() => { void downloadTicketAsImage(ticket, i); }}
-                                className="active:scale-0.98 mt-6 form-button flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-3 text-xs font-black text-purple-700 shadow-sm transition-all hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-purple-300 dark:hover:bg-white/10"
+                                className="mt-6 btn-secondary w-full font-black"
                                 type="button">
                                 <Download className="size-4" />
                                 Download Ticket

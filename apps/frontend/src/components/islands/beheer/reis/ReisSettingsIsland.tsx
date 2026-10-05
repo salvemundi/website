@@ -114,7 +114,7 @@ export default function ReisSettingsIsland({ initialTrips, initialSettings }: Re
                         />
                         <button
                             onClick={handleAdd}
-                            className="group beheer-button flex items-center gap-2 rounded-xl border border-white/10 bg-(--beheer-accent) px-6 py-2.5 text-[10px] font-semibold tracking-widest text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
+                            className="group beheer-button"
                             type="button">
                             <Plus className="size-4 transition-transform group-hover:rotate-90" />
                             <span>Nieuwe Reis</span>
@@ -123,7 +123,7 @@ export default function ReisSettingsIsland({ initialTrips, initialSettings }: Re
                 }
             />
 
-            <div className="container mx-auto max-w-7xl px-4 py-8">
+            <div className="admin-container-padded">
                 {(isAdding || editingTrip) && (
                     <ReisForm
                         editingTrip={editingTrip}
@@ -134,7 +134,7 @@ export default function ReisSettingsIsland({ initialTrips, initialSettings }: Re
                 )}
 
                 {!isAdding && !editingTrip && (
-                    <div className="mb-20 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="mb-20 ticket-grid-layout">
                         {trips.map((trip) => (
                             <ReisCard
                                 key={trip.id}
@@ -148,8 +148,8 @@ export default function ReisSettingsIsland({ initialTrips, initialSettings }: Re
                         ))}
                         {trips.length === 0 && (
                             <div className="col-span-full py-20 text-center">
-                                <Info className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-20" />
-                                <p className="font-semibold text-(--beheer-text-muted) italic">Nog geen reizen gepland...</p>
+                                <Info className="ticket-empty-icon" />
+                                <p className="font-semibold text-beheer-text-muted italic">Nog geen reizen gepland...</p>
                             </div>
                         )}
                     </div>

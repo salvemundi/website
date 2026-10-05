@@ -279,7 +279,7 @@ export default function VacancySubmissionFormIsland() {
                                 className="hidden"
                             />
                             {documentFile && (
-                                <button type="button" onClick={() => setDocumentFile(null)} className="icon-button rounded-lg bg-(--bg-soft) p-2 text-(--text-muted) hover:text-(--theme-error)" aria-label="Verwijder document">
+                                <button type="button" onClick={() => setDocumentFile(null)} className="icon-button bg-(--bg-soft) p-2 text-(--text-muted) hover:text-(--theme-error)" aria-label="Verwijder document">
                                     <X className="size-4" />
                                 </button>
                             )}
@@ -308,7 +308,7 @@ export default function VacancySubmissionFormIsland() {
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="enabled:active:scale-0.98 form-button flex w-full items-center justify-center gap-2 rounded-xl bg-theme-purple py-4 text-lg font-black text-white shadow-lg shadow-purple-500/20 transition-all enabled:hover:bg-purple-600 disabled:opacity-50 sm:rounded-2xl"
+                    className="enabled:active:scale-0.98 form-button w-full text-lg font-black shadow-theme-purple/20 enabled:hover:opacity-90 sm:rounded-2xl"
                 >
                     {isPending ? (
                         <>

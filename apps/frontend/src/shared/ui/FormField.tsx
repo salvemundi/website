@@ -94,7 +94,7 @@ export const FormField: React.FC<FormFieldProps> = ({
                 {childrenWithId}
 
                 {error && (
-                    <p role="alert" className="text-theme-error bg-theme-error/10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold">
+                    <p role="alert" className="flex items-center gap-1.5 rounded-lg bg-theme-error/10 px-2.5 py-1.5 text-xs font-bold text-theme-error">
                         <AlertCircle className="size-3.5 shrink-0" />
                         {error}
                     </p>

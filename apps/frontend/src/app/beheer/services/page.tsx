@@ -25,25 +25,25 @@ export default async function ServicesStatusPage() {
             title="Systeem & Automatisering"
             backHref="/beheer"
             actions={
-                <div className="flex items-center gap-4 rounded-2xl border border-border-color/50 bg-bg-soft px-4 py-2 shadow-sm">
+                <div className="beheer-stat-strip">
                     <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Systemen</span>
+                        <span className="stat-label-muted">Systemen</span>
                         <span className="text-sm leading-none font-bold text-text-main">{initialStatuses.length}</span>
                     </div>
-                    <div className="h-6 w-px bg-border-color/20" />
+                    <div className="v-divider-sm" />
                     <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Automatisering</span>
+                        <span className="stat-label-muted">Automatisering</span>
                         <span className="text-sm leading-none font-bold text-text-main">{automationCount}</span>
                     </div>
-                    <div className="h-6 w-px bg-border-color/20" />
+                    <div className="v-divider-sm" />
                     <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Mail Flows</span>
+                        <span className="stat-label-muted">Mail Flows</span>
                         <span className="text-sm leading-none font-bold text-text-main">{mailCount}</span>
                     </div>
-                    <div className="h-6 w-px bg-border-color/20" />
+                    <div className="v-divider-sm" />
                     <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Gezondheid</span>
-                        <span className={`text-sm leading-none font-bold ${issuesCount === 0 ? 'text-emerald-500' : 'text-amber-500'}`}>
+                        <span className="stat-label-muted">Gezondheid</span>
+                        <span className={`text-sm leading-none font-bold ${issuesCount === 0 ? 'text-beheer-active' : 'text-geel'}`}>
                             {issuesCount === 0 ? '100%' : 'Check'}
                         </span>
                     </div>

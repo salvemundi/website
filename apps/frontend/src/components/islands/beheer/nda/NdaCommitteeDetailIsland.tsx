@@ -272,7 +272,7 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
                                                             const val = e.target.value;
                                                             setHistoricalDates((prev) => new Map(prev).set(member.userId, val));
                                                         }}
-                                                        className="beheer-input py-1.5 text-xs"
+                                                        className="beheer-input"
                                                     />
                                                     <button
                                                         type="button"

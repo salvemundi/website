@@ -58,7 +58,7 @@ export function ThemeToggle() {
         return (
             <button
                 type="button"
-                className="icon-button inline-flex size-9 items-center justify-center rounded-full bg-(--bg-card)/80 p-2 text-transparent shadow-sm"
+                className="icon-button size-9 rounded-full bg-(--bg-card)/80 p-2 text-transparent"
                 aria-hidden="true"
             >
                 <Sun className="size-5" />
@@ -71,7 +71,7 @@ export function ThemeToggle() {
             type="button"
             onClick={toggle}
             aria-label={isDark ? 'Schakel naar lichte modus' : 'Schakel naar donkere modus'}
-            className="icon-button inline-flex size-9 items-center justify-center rounded-full bg-(--bg-card)/80 p-2 text-(--text-main) shadow-sm transition-transform duration-200 hover:scale-110 hover:bg-purple-100 active:scale-95 dark:hover:bg-white/10"
+            className="icon-button size-9 rounded-full bg-(--bg-card)/80 p-2 text-(--text-main) transition-transform duration-200 hover:scale-110 hover:bg-theme-purple/10"
         >
             {isDark ? (
                 <Sun className="size-5" aria-hidden />

@@ -121,13 +121,13 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
 
                 <div className="@md:col-span-1">
                     <FormField id="allergies" label="Allergieën & Medisch" error={errors.allergies?.message}>
-                        <textarea {...register('allergies')} placeholder="Bijv. Notenallergie, medicijngebruik..." className="min-h-20 form-input" autoComplete="off" />
+                        <textarea {...register('allergies')} placeholder="Bijv. Notenallergie, medicijngebruik..." className="form-input min-h-20" autoComplete="off" />
                     </FormField>
                 </div>
 
                 <div className="@md:col-span-1">
                     <FormField id="special_notes" label="Speciale Opmerkingen" error={errors.special_notes?.message}>
-                        <textarea {...register('special_notes')} placeholder="Overige zaken..." className="min-h-20 form-input" autoComplete="off" />
+                        <textarea {...register('special_notes')} placeholder="Overige zaken..." className="form-input min-h-20" autoComplete="off" />
                     </FormField>
                 </div>
 
@@ -135,7 +135,7 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
                     {trip.is_bus_trip && (
                         <div className="flex items-center justify-between gap-6 rounded-2xl border border-(--border-color) bg-(--bg-card) p-4 dark:border-white/10">
                             <div className="flex items-center gap-3">
-                                <div className="flex size-10 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/10 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/10 dark:text-purple-300">
+                                <div className="icon-box">
                                     <Bus className="size-5" />
                                 </div>
                                 <div>
@@ -160,7 +160,7 @@ export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps
                     {!trip.is_bus_trip && (
                         <div className="flex items-center justify-between gap-6 rounded-2xl border border-(--border-color) bg-(--bg-card) p-4 dark:border-white/10">
                             <div className="flex items-center gap-3">
-                                <div className="flex size-10 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/10 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/10 dark:text-purple-300">
+                                <div className="icon-box">
                                     <Briefcase className="size-5" />
                                 </div>
                                 <div>

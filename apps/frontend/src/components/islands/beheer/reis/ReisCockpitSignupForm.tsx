@@ -31,9 +31,9 @@ export default function CockpitSignupForm({
         <div className="space-y-4">
             {(section === 'all' || section === 'personal' || section === 'personal_basic') && (
                 <div className="space-y-3">
-                    <div className="mb-2 flex items-center gap-2 opacity-50">
-                        <FileText className="size-3 text-(--beheer-accent)" />
-                        <h3 className="text-[11px] font-semibold text-(--beheer-text)">Informatie</h3>
+                    <div className="section-header-compact">
+                        <FileText className="size-3 text-beheer-accent" />
+                        <h3 className="text-2xs font-semibold text-beheer-text">Informatie</h3>
                     </div>
                     <div className="grid grid-cols-1 gap-y-1">
                         <HorizontalInput label="Voornaam" name="first_name" defaultValue={initialData?.first_name || signup.first_name} required />
@@ -48,9 +48,9 @@ export default function CockpitSignupForm({
             {(section === 'all' || section === 'personal' || section === 'personal_extended') && (
                 <div className="space-y-3">
                     {section === 'personal_extended' && (
-                        <div className="mb-2 flex items-center gap-2 opacity-50">
-                            <FileText className="size-3 text-(--beheer-accent)" />
-                            <h3 className="text-[11px] font-semibold text-(--beheer-text)">Documenten & Extra</h3>
+                        <div className="section-header-compact">
+                            <FileText className="size-3 text-beheer-accent" />
+                            <h3 className="text-2xs font-semibold text-beheer-text">Documenten & Extra</h3>
                         </div>
                     )}
                     <div className="grid grid-cols-1 gap-y-1">
@@ -69,7 +69,7 @@ export default function CockpitSignupForm({
                             <HorizontalTextarea label="Allergieën" name="allergies" defaultValue={initialData?.allergies || signup.allergies || ''} />
                             <HorizontalTextarea label="Bijzonderheden" name="special_notes" defaultValue={initialData?.special_notes || signup.special_notes || ''} />
                         </div>
-                        <div className="mt-2 flex items-center gap-6 px-1">
+                        <div className="form-checkbox-row-compact">
                             {!isBusTrip && <HorizontalCheckbox label="Extra Koffer" name="extra_luggage" defaultChecked={initialData ? parseBoolean(initialData.extra_luggage) : parseBoolean(signup.extra_luggage)} />}
                             {isBusTrip && <HorizontalCheckbox label="Chauffeur" name="willing_to_drive" defaultChecked={initialData ? parseBoolean(initialData.willing_to_drive) : parseBoolean(signup.willing_to_drive)} />}
                         </div>
@@ -79,9 +79,9 @@ export default function CockpitSignupForm({
 
             {(section === 'all' || section === 'admin') && (
                 <div className="space-y-3">
-                    <div className="mb-2 flex items-center gap-2 opacity-50">
-                        <CreditCard className="size-3 text-(--beheer-accent)" />
-                        <h3 className="text-[11px] font-semibold text-(--beheer-text)">Beheer</h3>
+                    <div className="section-header-compact">
+                        <CreditCard className="size-3 text-beheer-accent" />
+                        <h3 className="text-2xs font-semibold text-beheer-text">Beheer</h3>
                     </div>
                     <div className="grid grid-cols-1 gap-y-1">
                         <HorizontalSelect label="Status" name="status" defaultValue={initialData?.status || signup.status}>
@@ -94,14 +94,14 @@ export default function CockpitSignupForm({
                             <option value="participant">Regulier</option>
                             <option value="crew">Crew</option>
                         </HorizontalSelect>
-                        <div className="flex flex-col gap-2 px-1 pt-3">
+                        <div className="form-payment-col-compact">
                             <div className="flex items-center justify-between">
                                 <HorizontalCheckbox label="Aanbetaling" name="deposit_paid" defaultChecked={initialData ? parseBoolean(initialData.deposit_paid) : parseBoolean(signup.deposit_paid)} />
-                                {signup.deposit_paid_at && <span className="text-[8px] font-semibold text-(--beheer-text-muted) opacity-50">{formatShortDate(new Date(signup.deposit_paid_at))}</span>}
+                                {signup.deposit_paid_at && <span className="text-2xs font-semibold text-beheer-text-muted opacity-50">{formatShortDate(new Date(signup.deposit_paid_at))}</span>}
                             </div>
                             <div className="flex items-center justify-between">
                                 <HorizontalCheckbox label="Restbetaling" name="full_payment_paid" defaultChecked={initialData ? parseBoolean(initialData.full_payment_paid) : parseBoolean(signup.full_payment_paid)} />
-                                {signup.full_payment_paid_at && <span className="text-[8px] font-semibold text-(--beheer-text-muted) opacity-50">{formatShortDate(new Date(signup.full_payment_paid_at))}</span>}
+                                {signup.full_payment_paid_at && <span className="text-2xs font-semibold text-beheer-text-muted opacity-50">{formatShortDate(new Date(signup.full_payment_paid_at))}</span>}
                             </div>
                         </div>
                     </div>

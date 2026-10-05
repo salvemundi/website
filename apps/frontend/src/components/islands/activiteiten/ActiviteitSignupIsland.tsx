@@ -144,16 +144,16 @@ export default function ActiviteitSignupIsland({
 
     if (isMembersOnly && !isMember) {
         return (
-            <div className="rounded-2xl border border-(--border-color) bg-(--bg-card) p-6 text-center shadow-card">
-                <h3 className="text-lg font-semibold text-(--text-main)">
+            <div className="card-members-notice">
+                <h3 className="text-lg font-semibold text-text-main">
                     Exclusief voor leden
                 </h3>
-                <p className="mt-2 text-sm text-(--text-muted)">
+                <p className="mt-2 text-sm text-text-muted">
                     Deze activiteit is speciaal voor onze leden. Log in om je in te schrijven. Heb je nog geen account? Word dan lid en doe gezellig mee!
                 </p>
                 <a
                     href="/lidmaatschap"
-                    className="mt-4 inline-block rounded-xl bg-(--theme-purple) px-6 py-3 text-sm font-bold tracking-widest text-white uppercase transition-opacity hover:opacity-90"
+                    className="btn-members-cta"
                 >
                     Word lid van Salve Mundi
                 </a>

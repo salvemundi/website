@@ -5,7 +5,7 @@
     }
 
     .scrollbar-thin::-webkit-scrollbar-thumb {
-        background-color: var(--color-purple-300);
+        background-color: var(--theme-purple);
         border-radius: 4px;
     }
 
@@ -55,11 +55,11 @@
     }
 
     .bg-gradient-theme-page-alt {
-        background: linear-gradient(135deg, #f4e9f3, #e4cbe2);
+        background: var(--bg-card);
     }
 
     .dark .bg-gradient-theme-page-alt {
-        background: linear-gradient(135deg, #a16ca1, #c47bbb);
+        background: var(--bg-card);
     }
 
     .form-label {
@@ -95,13 +95,13 @@
     .form-title {
         font-size: var(--font-size-3xl);
         font-weight: 900;
-        color: var(--color-purple-700);
+        color: var(--theme-purple);
         letter-spacing: -0.025em;
         line-height: 1.2;
     }
 
     .dark .form-title {
-        color: var(--color-purple-300);
+        color: var(--theme-purple);
     }
 
     .bg-admin-card {
@@ -178,7 +178,7 @@
         width: 1.25rem;
         height: 1.25rem;
         border-radius: 9999px;
-        background-color: #ffffff;
+        background-color: var(--color-wit-paars);
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         transition: transform 0.2s ease-in-out;
         transform: translateX(0);
@@ -190,21 +190,21 @@
     }
 }
 
-.squircle {
+@utility squircle {
     border-radius: 1.5rem;
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
     }
 }
 
-.squircle-lg {
+@utility squircle-lg {
     border-radius: 2.2rem;
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
     }
 }
 
-.squircle-xl {
+@utility squircle-xl {
     border-radius: 3rem;
     @supports (corner-shape: squircle) {
         corner-shape: squircle;
@@ -220,13 +220,13 @@ select {
 }
 
 select option {
-    background-color: #ffffff;
-    color: #5A3761;
+    background-color: var(--color-wit-paars);
+    color: var(--color-donker-paars);
 }
 
 .dark select option {
-    background-color: #2d1933;
-    color: #F0F1F9;
+    background-color: var(--bg-card);
+    color: var(--color-wit-paars);
 }
 
 .beheer-select {

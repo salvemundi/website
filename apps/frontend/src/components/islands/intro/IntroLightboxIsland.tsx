@@ -46,7 +46,7 @@ export const IntroLightboxIsland = () => {
                     return (
                         <div
                             key={idx}
-                            className="relative flex h-32 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-purple-100 bg-purple-50 transition-opacity hover:opacity-80 dark:border-white/10 dark:bg-white/5"
+                            className="relative flex h-32 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-border-color/30 bg-bg-card transition-opacity hover:opacity-80"
                             onClick={() => openLightbox(img.src)}
                         >
                             {isFailed ? (
@@ -68,7 +68,7 @@ export const IntroLightboxIsland = () => {
 
             {lightboxOpen && lightboxSrc && (
                 <div
-                    className="bg-background/80 animate-in fade-in fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm duration-300 sm:p-6"
+                    className="bg-background/80 animate-in fixed inset-0 z-50 flex fade-in items-center justify-center p-4 backdrop-blur-sm duration-300 sm:p-6"
                     onClick={(e) => {
                         if (e.target === e.currentTarget) {
                             closeLightbox();
@@ -77,7 +77,7 @@ export const IntroLightboxIsland = () => {
                 >
                     <button
                         onClick={closeLightbox}
-                        className="bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground border-border absolute top-4 right-4 z-50 icon-button rounded-full border p-2 backdrop-blur-sm transition-colors"
+                        className="bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground border-border absolute top-4 right-4 z-50 icon-button rounded-full border p-2 backdrop-blur-sm"
                         aria-label="Sluiten"
                         type="button">
                         ×

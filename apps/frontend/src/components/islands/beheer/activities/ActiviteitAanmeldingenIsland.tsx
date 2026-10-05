@@ -140,11 +140,11 @@ export default function ActiviteitAanmeldingenIsland({
     return (
         <div className="w-full">
             <div className="flex flex-col gap-8">
-                <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
-                    <div className="order-2 flex flex-wrap items-center gap-1.5 sm:order-1">
+                <div className="section-header-responsive">
+                    <div className="action-strip-responsive">
                         <Link
                             href={`/beheer/activiteiten/${event.id}/scanner`}
-                            className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--theme-purple) px-6 py-2.5 text-xs font-semibold text-white shadow-(--theme-purple)/20 shadow-lg transition-all active:scale-95 md:hidden"
+                            className="btn-scanner-mobile"
                         >
                             <QrCode className="size-3.5" />
                             Scanner
@@ -152,7 +152,7 @@ export default function ActiviteitAanmeldingenIsland({
                         <button
                             onClick={() => exportSignupsToCSV(filteredSignups, event.name)}
                             disabled={filteredSignups.length === 0}
-                            className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-6 py-2.5 text-xs font-semibold text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 active:scale-95 disabled:opacity-50"
+                            className="beheer-button-secondary"
                             type="button">
                             <Download className="size-3.5" />
                             Exporteer
@@ -160,7 +160,7 @@ export default function ActiviteitAanmeldingenIsland({
                         {canAccessEdit && (
                             <button
                                 onClick={() => setIsManualModalOpen(true)}
-                                className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--beheer-accent) px-6 py-2.5 text-xs font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
+                                className="beheer-button-secondary"
                                 type="button">
                                 <UserPlus className="size-3.5" />
                                 Handmatig
@@ -170,7 +170,7 @@ export default function ActiviteitAanmeldingenIsland({
                             <button
                                 onClick={() => setIsMailModalOpen(true)}
                                 disabled={optimisticSignups.length === 0}
-                                className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-6 py-2.5 text-xs font-semibold text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 active:scale-95 disabled:opacity-50"
+                                className="beheer-button-secondary"
                                 type="button">
                                 <Mail className="size-3.5" />
                                 Mail
@@ -178,41 +178,41 @@ export default function ActiviteitAanmeldingenIsland({
                         )}
                     </div>
 
-                    <div className="order-1 flex w-full flex-col items-stretch gap-3 sm:order-2 sm:w-auto sm:flex-row sm:items-center">
-                        <div className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 shadow-sm transition-colors hover:border-(--beheer-accent)/30">
-                            <label className="text-[11px] font-semibold whitespace-nowrap text-(--beheer-text-muted) opacity-75">Betaling:</label>
+                    <div className="order-1 form-row-sm sm:order-2 sm:w-auto">
+                        <div className="filter-select-box">
+                            <label className="filter-label">Betaling:</label>
                             <select
                                 value={paymentFilter}
                                 onChange={(e) => setPaymentFilter(e.target.value as 'all' | 'paid' | 'open')}
-                                className="beheer-select min-w-0 cursor-pointer border-none bg-transparent p-0 text-[11px] font-bold text-(--beheer-text) outline-none focus:ring-0"
+                                className="beheer-select filter-select-input"
                             >
-                                <option value="all" className="bg-(--beheer-card-bg)">Alle</option>
-                                <option value="paid" className="bg-(--beheer-card-bg)">Betaald</option>
-                                <option value="open" className="bg-(--beheer-card-bg)">Open</option>
+                                <option value="all" className="bg-beheer-card-bg">Alle</option>
+                                <option value="paid" className="bg-beheer-card-bg">Betaald</option>
+                                <option value="open" className="bg-beheer-card-bg">Open</option>
                             </select>
                         </div>
 
-                        <div className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 shadow-sm transition-colors hover:border-(--beheer-accent)/30">
-                            <label className="text-[11px] font-semibold whitespace-nowrap text-(--beheer-text-muted) opacity-75">Lidmaatschap:</label>
+                        <div className="filter-select-box">
+                            <label className="filter-label">Lidmaatschap:</label>
                             <select
                                 value={membershipFilter}
                                 onChange={(e) => setMembershipFilter(e.target.value as 'all' | 'member' | 'guest')}
-                                className="beheer-select min-w-0 cursor-pointer border-none bg-transparent p-0 text-[11px] font-bold text-(--beheer-text) outline-none focus:ring-0"
+                                className="beheer-select filter-select-input"
                             >
-                                <option value="all" className="bg-(--beheer-card-bg)">Alle</option>
-                                <option value="member" className="bg-(--beheer-card-bg)">Lid</option>
-                                <option value="guest" className="bg-(--beheer-card-bg)">Gast</option>
+                                <option value="all" className="bg-beheer-card-bg">Alle</option>
+                                <option value="member" className="bg-beheer-card-bg">Lid</option>
+                                <option value="guest" className="bg-beheer-card-bg">Gast</option>
                             </select>
                         </div>
 
-                        <div className="group relative w-full sm:w-70">
-                            <Search className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-(--beheer-text-muted) opacity-40 transition-all group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100" />
+                        <div className="search-bar sm:w-70">
+                            <Search className="size-4 shrink-0 text-beheer-text-muted" />
                             <input
                                 type="text"
                                 placeholder="Zoek deelnemers..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="beheer-input w-full py-2 pr-4 pl-11!"
+                                className="beheer-input p-0"
                             />
                         </div>
                     </div>
@@ -233,14 +233,14 @@ export default function ActiviteitAanmeldingenIsland({
                     signups={optimisticSignups}
                 />
 
-                <div className="overflow-hidden rounded-(--beheer-radius) bg-(--beheer-card-bg) shadow-sm ring-1 ring-(--beheer-border)">
+                <div className="table-card-container">
                     {filteredSignups.length === 0 ? (
                         <div className="p-20 text-center">
-                            <div className="mb-6 inline-flex size-20 items-center justify-center rounded-full bg-(--beheer-card-soft)">
-                                <Search className="size-10 text-(--beheer-text-muted) opacity-20" />
+                            <div className="empty-state-icon-bg">
+                                <Search className="size-10 text-beheer-text-muted opacity-20" />
                             </div>
-                            <h3 className="mb-2 text-xl font-semibold tracking-tighter text-(--beheer-text)">Geen resultaten</h3>
-                            <p className="mx-auto max-w-xs text-[10px] font-semibold tracking-widest text-(--beheer-text-muted)">
+                            <h3 className="empty-state-title">Geen resultaten</h3>
+                            <p className="empty-state-desc">
                                {searchQuery ? "We konden niemand vinden die voldoet aan je zoekopdracht." : "Er zijn nog geen aanmeldingen voor deze activiteit."}
                             </p>
                         </div>

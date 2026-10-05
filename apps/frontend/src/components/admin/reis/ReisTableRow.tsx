@@ -32,39 +32,38 @@ export default function ReisTableRow({
     onDelete,
     isBusTrip = false
 }: ReisTableRowProps) {
-
     return (
         <div
             onClick={() => onSelect(signup)}
             className={`
-                squircle-lg group relative flex cursor-pointer flex-col rounded-4xl border border-(--beheer-border)/60 bg-(--beheer-card-bg) transition-all duration-300
-                ${isSelected ? 'border-(--beheer-accent) shadow-2xl ring-2 ring-(--beheer-accent)/20' : 'shadow-sm hover:border-(--beheer-accent)/20 hover:shadow-lg'}
+                squircle-lg group relative flex cursor-pointer flex-col border border-beheer-border/60 bg-beheer-card-bg transition-all duration-300
+                ${isSelected ? 'border-beheer-accent shadow-2xl ring-2 ring-beheer-accent/20' : 'shadow-sm hover:border-beheer-accent/20 hover:shadow-lg'}
             `}
         >
             <div className="flex h-full flex-col p-4">
                 <div className="mb-3 flex items-start justify-between">
                     <div className="min-w-0 pr-2">
-                        <div className="mb-0.5 text-xs font-semibold text-(--beheer-accent) opacity-70">
+                        <div className="mb-0.5 text-xs font-semibold text-beheer-accent opacity-70">
                             {signup.role === 'crew' ? 'Crew' : 'Deelnemer'}
                         </div>
-                        <div className="line-clamp-2 flex min-h-[2.8rem] items-center text-lg leading-tight font-semibold text-(--beheer-text) transition-colors group-hover:text-(--beheer-accent)">
+                        <div className="table-row-title">
                             {signup.first_name} {signup.last_name}
                         </div>
                     </div>
 
-                    <div className="flex shrink-0 items-center rounded-xl border border-(--beheer-border)/20 bg-(--bg-main)/50 p-1 shadow-inner">
+                    <div className="table-row-actions-box">
                         <button
                             onClick={(e) => { e.stopPropagation(); onSelect(signup, true); }}
-                            className="icon-button rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-white/5 hover:text-(--beheer-accent)"
+                            className="icon-button p-2 text-beheer-text-muted hover:bg-white/5 hover:text-beheer-accent"
                             title="Bewerken"
                             type="button">
                             <Edit className="size-4" />
                         </button>
-                        <div className="mx-0.5 h-4 w-px bg-(--beheer-border)/20" />
+                        <div className="mx-0.5 h-4 w-px bg-beheer-border/20" />
                         <button
                             onClick={(e) => { e.stopPropagation(); onDelete(signup.id); }}
                             disabled={isDeleteLoading}
-                            className="icon-button rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-red-400/5 hover:text-red-400 disabled:opacity-50"
+                            className="icon-button p-2 text-beheer-text-muted hover:bg-theme-error/5 hover:text-theme-error"
                             title="Verwijderen"
                             type="button">
                             {isDeleteLoading ? (
@@ -77,11 +76,11 @@ export default function ReisTableRow({
                 </div>
 
                 <div className="mb-4 space-y-1.5 px-1">
-                    <div className="truncate text-[11px] font-medium text-(--beheer-text-muted) opacity-80">
+                    <div className="truncate text-2xs font-medium text-beheer-text-muted opacity-80">
                         {signup.email}
                     </div>
                     <div className="flex items-center justify-between">
-                        <div className="text-[10px] font-semibold text-(--beheer-text-muted) tabular-nums opacity-60">
+                        <div className="text-2xs font-semibold text-beheer-text-muted tabular-nums opacity-60">
                             {signup.date_of_birth
                                 ? new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(signup.date_of_birth))
                                 : '-'}
@@ -89,13 +88,13 @@ export default function ReisTableRow({
 
                         <div className="flex items-center gap-2">
                             {isBusTrip && signup.willing_to_drive && (
-                                <div className="flex items-center gap-1 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-500" title="Chauffeur">
+                                <div className="badge-pill-driver" title="Chauffeur">
                                     <Bus className="size-2.5" />
                                     <span>Chauffeur</span>
                                 </div>
                             )}
                             {!isBusTrip && signup.extra_luggage && (
-                                <div className="flex items-center gap-1 rounded-md border border-blue-500/20 bg-blue-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-blue-500" title="Extra Koffer">
+                                <div className="badge-pill-luggage" title="Extra Koffer">
                                     <Briefcase className="size-2.5" />
                                     <span>+1 Koffer</span>
                                 </div>
@@ -104,11 +103,11 @@ export default function ReisTableRow({
                     </div>
                 </div>
 
-                <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-(--beheer-border)/10 pt-3">
+                <div className="table-row-footer">
                     <div className="shrink-0">
                         {isStatusLoading ? (
                             <div className="flex items-center justify-center px-3 py-1">
-                                <Loader2 className="size-4 animate-spin text-(--beheer-accent)" />
+                                <Loader2 className="size-4 animate-spin text-beheer-accent" />
                             </div>
                         ) : (
                             <StatusDropdown
@@ -119,7 +118,7 @@ export default function ReisTableRow({
                     </div>
 
                     <div className="ml-auto flex shrink-0 items-center justify-end">
-                        <span className={`rounded-lg border px-2.5 py-1 text-[10px] font-semibold whitespace-nowrap shadow-xs ${paymentStatus.color}`}>
+                        <span className={`rounded-lg border px-2.5 py-1 text-2xs font-semibold whitespace-nowrap shadow-xs ${paymentStatus.color}`}>
                             {paymentStatus.label}
                         </span>
                     </div>
@@ -183,11 +182,7 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
             <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
-                className={`beheer-button 
-                    inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-semibold shadow-2xs transition-all duration-200
-                    ${current.pillColor}
-                    ${isOpen ? 'ring-2 ring-(--beheer-accent)/40' : ''}
-                `}
+                className={`status-dropdown-trigger ${current.pillColor} ${isOpen ? 'ring-2 ring-beheer-accent/40' : ''}`}
             >
                 <current.icon className={`size-3 shrink-0 ${current.iconColor}`} />
                 <span>{current.label}</span>
@@ -195,9 +190,7 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
             </button>
 
             {isOpen && (
-                <div
-                    className="animate-in fade-in zoom-in-95 absolute bottom-full left-0 z-50 mb-1.5 w-44 space-y-0.5 overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) p-1 shadow-xl duration-150"
-                >
+                <div className="status-dropdown-menu">
                     {statuses.map((s) => {
                         const isSelected = currentStatus === s.value;
                         return (
@@ -209,19 +202,16 @@ function StatusDropdown({ currentStatus, onChange }: { currentStatus: string, on
                                     onChange(s.value);
                                     setIsOpen(false);
                                 }}
-                                className={`beheer-button 
-                                    flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-[11px] font-semibold transition-all
-                                    ${isSelected
-                                        ? 'bg-(--beheer-card-soft) font-bold text-(--beheer-text) ring-1 ring-(--beheer-border)'
-                                        : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) hover:text-(--beheer-text)'}
-                                `}
+                                className={`status-dropdown-item ${isSelected
+                                    ? 'bg-beheer-card-soft font-bold text-beheer-text ring-1 ring-beheer-border'
+                                    : 'text-beheer-text-muted hover:bg-beheer-card-soft hover:text-beheer-text'}`}
                             >
                                 <div className="flex items-center gap-2">
                                     <s.icon className={`size-3.5 ${s.iconColor}`} />
                                     <span>{s.label}</span>
                                 </div>
                                 {isSelected && (
-                                    <span className="size-1.5 rounded-full bg-(--beheer-accent)" />
+                                    <span className="size-1.5 rounded-full bg-beheer-accent" />
                                 )}
                             </button>
                         );

@@ -79,10 +79,10 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
         <header
             ref={headerRef}
             className={cn(
-            "fixed z-100 flex w-full flex-col justify-center transition-all duration-300",
+                "fixed z-100 flex w-full flex-col justify-center transition-all duration-300",
                 (mounted && isScrolled)
-                    ? "bg-white/95 shadow-md backdrop-blur-md dark:bg-black/95"
-                    : "bg-white/50 backdrop-blur-sm dark:bg-black/50"
+                    ? "bg-(--bg-card)/95 shadow-md backdrop-blur-md"
+                    : "bg-(--bg-card)/80 backdrop-blur-sm"
             )}
             style={{
                 top: 'var(--impersonation-banner-height, 0px)',

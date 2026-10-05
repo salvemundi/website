@@ -31,25 +31,25 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
     return (
         <div className="space-y-6">
             <div>
-                <span className="mb-3 inline-block rounded-full bg-(--bg-soft) px-3 py-1 text-[10px] font-bold tracking-wider text-(--theme-purple) uppercase">
+                <span className="mb-3 inline-block rounded-full bg-bg-soft px-3 py-1 text-2xs font-bold tracking-wider text-theme-purple uppercase">
                     {product.type === 'clothing' ? 'Kleding' : 'Item'}
                 </span>
-                <h1 className="text-3xl font-bold text-(--theme-purple)/90">{product.name}</h1>
+                <h1 className="text-3xl font-bold text-theme-purple/90">{product.name}</h1>
             </div>
 
             {product.description && (
-                <SafeMarkdown content={product.description} className="text-(--text-muted)" />
+                <SafeMarkdown content={product.description} className="text-text-muted" />
             )}
 
-            <div className="space-y-1 rounded-2xl border border-(--border-color) p-4">
+            <div className="space-y-1 rounded-2xl border border-border-color p-4">
                 <div className="flex items-center justify-between">
-                    <span className="text-sm text-(--text-muted)">Prijs</span>
-                    <span className="text-xl font-bold text-(--theme-purple)/90">€{price}</span>
+                    <span className="text-sm text-text-muted">Prijs</span>
+                    <span className="text-xl font-bold text-theme-purple/90">€{price}</span>
                 </div>
             </div>
 
-            <div className="space-y-1 rounded-2xl bg-(--bg-soft) p-4 text-sm text-(--text-muted)">
-                <p className="font-bold text-(--theme-purple)/80">{hasDrop ? 'Dit is een preorder drop' : 'Volledige betaling'}</p>
+            <div className="space-y-1 rounded-2xl bg-bg-soft p-4 text-sm text-text-muted">
+                <p className="font-bold text-theme-purple/80">{hasDrop ? 'Dit is een preorder drop' : 'Volledige betaling'}</p>
                 <p>Je betaalt nu de volledige prijs. Er is geen bezorging &mdash; je haalt je bestelling op tijdens een afgesproken afhaalmoment.</p>
                 {closesAt && (
                     <p>{isDropOpen ? `Bestellen kan tot ${formatDate(closesAt, 'd MMMM yyyy HH:mm')}.` : `Deze drop is gesloten sinds ${formatDate(closesAt, 'd MMMM yyyy HH:mm')}.`}</p>
@@ -57,12 +57,12 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
             </div>
 
             {isSoldOut ? (
-                <button type="button" disabled className="form-button flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-full bg-(--theme-purple)/10 py-3 font-bold text-(--theme-purple)/40">
+                <button type="button" disabled className="form-button w-full cursor-not-allowed rounded-full bg-theme-purple/10 text-theme-purple/40">
                     <Lock className="size-4" />
                     Uitverkocht
                 </button>
             ) : !isDropOpen ? (
-                <button type="button" disabled className="form-button flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-full bg-(--theme-purple)/10 py-3 font-bold text-(--theme-purple)/40">
+                <button type="button" disabled className="form-button w-full cursor-not-allowed rounded-full bg-theme-purple/10 text-theme-purple/40">
                     <Lock className="size-4" />
                     Drop gesloten
                 </button>
@@ -70,20 +70,20 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
                 <button
                     type="button"
                     onClick={handleLogin}
-                    className="hover:scale-1.02 form-button flex w-full items-center justify-center gap-2 rounded-full bg-(--theme-purple) py-3 font-bold text-white shadow-(--theme-purple)/20 shadow-lg transition-all"
+                    className="form-button w-full rounded-full"
                 >
                     <LogIn className="size-4" />
                     Log in om te bestellen
                 </button>
             ) : !isMember ? (
-                <div className="flex w-full items-center justify-center gap-2 rounded-full bg-(--theme-warning)/10 px-4 py-3 text-center font-bold text-(--theme-warning)">
+                <div className="flex w-full items-center justify-center gap-2 rounded-full bg-geel/10 px-4 py-3 text-center font-bold text-geel">
                     <ShieldAlert className="size-4 shrink-0" />
                     Bestellen is alleen voor leden van Salve Mundi.
                 </div>
             ) : (
                 <Link
                     href={`/merch/bestellen?product=${product.slug}`}
-                    className="hover:scale-1.02 flex w-full items-center justify-center gap-2 rounded-full bg-(--theme-purple) py-3 font-bold text-white no-underline shadow-(--theme-purple)/20 shadow-lg transition-all"
+                    className="form-button w-full rounded-full no-underline shadow-lg"
                 >
                     Bestel nu
                 </Link>

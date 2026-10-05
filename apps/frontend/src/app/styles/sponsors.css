@@ -76,12 +76,12 @@ html.dark .sponsor-item {
 }
 
 .sponsor-dark-bg {
-    background: var(--bg-card-dark, #0f172a) !important;
+    background: var(--bg-card) !important;
     box-shadow: none !important;
 }
 
 .sponsor-light-bg {
-    background: var(--color-white) !important;
+    background: var(--bg-card) !important;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
     padding: 1.25rem 2.5rem;
     display: flex;

@@ -74,8 +74,8 @@ export default function SignupFormContent({
             <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6" autoComplete="off">
                 {isLoggedIn ? (
                     <div className="space-y-4">
-                        <div className="flex items-center gap-4 rounded-2xl border border-border-color/80 bg-bg-soft/80 p-4 shadow-xs">
-                            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-theme-purple to-purple-600 text-base font-black text-white shadow-md shadow-theme-purple/20">
+                        <div className="signup-user-card">
+                            <div className="signup-user-avatar">
                                 {initials}
                             </div>
                             <div className="min-w-0 flex-1">
@@ -83,13 +83,13 @@ export default function SignupFormContent({
                                     <p className="truncate text-sm font-bold text-text-main">
                                         {displayName}
                                     </p>
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-theme-purple/10 px-2 py-0.5 text-[10px] font-black tracking-wider text-theme-purple uppercase">
+                                    <span className="badge-logged-in">
                                         <CheckCircle2 className="size-3" /> Ingelogd
                                     </span>
                                 </div>
-                                <p className="mt-0.5 truncate text-xs font-medium text-text-muted">{user?.email || initialData.email}</p>
+                                <p className="mt-0.5 truncate text-xs text-text-muted">{user?.email || initialData.email}</p>
                                 {initialData.phoneNumber ? (
-                                    <p className="mt-0.5 font-mono text-[11px] text-text-muted/80">{initialData.phoneNumber}</p>
+                                    <p className="mt-0.5 font-mono text-xs text-text-muted/80">{initialData.phoneNumber}</p>
                                 ) : null}
                             </div>
                         </div>
@@ -111,7 +111,7 @@ export default function SignupFormContent({
                                 {...register('name')}
                                 id="field-name"
                                 placeholder="Naam Achternaam"
-                                className="h-14 rounded-2xl border-none bg-bg-soft px-6 font-bold text-text-main transition-all focus:ring-2 focus:ring-theme-purple/20"
+                                className="form-input-soft"
                             />
                         </FormField>
 
@@ -126,7 +126,7 @@ export default function SignupFormContent({
                                 id="field-email"
                                 type="email"
                                 placeholder="voorbeeld@mail.com"
-                                className="h-14 rounded-2xl border-none bg-bg-soft px-6 font-bold text-text-main transition-all focus:ring-2 focus:ring-theme-purple/20"
+                                className="form-input-soft"
                             />
                         </FormField>
 
@@ -145,7 +145,7 @@ export default function SignupFormContent({
                                         id="field-phoneNumber"
                                         autoComplete="tel"
                                         error={!!errors.phoneNumber}
-                                        className="h-14 rounded-2xl border-none bg-bg-soft px-6 font-bold text-text-main transition-all focus:ring-2 focus:ring-theme-purple/20"
+                                        className="form-input-soft"
                                     />
                                 )}
                             />
@@ -154,9 +154,9 @@ export default function SignupFormContent({
                 )}
 
                 {serverError && (
-                    <div className="flex items-start gap-3 rounded-2xl border border-red-100 bg-red-50 p-4">
-                        <AlertCircle className="mt-0.5 size-5 shrink-0 text-red-500" />
-                        <p className="text-xs font-bold text-red-700 italic">{serverError}</p>
+                    <div className="alert-error-box">
+                        <AlertCircle className="alert-error-icon" />
+                        <p className="alert-error-text">{serverError}</p>
                     </div>
                 )}
 
@@ -164,7 +164,7 @@ export default function SignupFormContent({
                     <button
                         type="submit"
                         disabled={isPending}
-                        className="group relative form-button w-full rounded-2xl bg-linear-to-br from-theme-purple via-purple-600 to-theme-purple bg-size-[200%_auto] py-4 font-black text-white shadow-xl shadow-theme-purple/20 transition-all duration-500 enabled:hover:-translate-y-1 enabled:hover:bg-position-[right_center] enabled:hover:shadow-2xl enabled:hover:shadow-theme-purple/40 enabled:active:scale-95 disabled:opacity-70"
+                        className="btn-form-submit-gradient"
                     >
                         <div className="flex items-center justify-center gap-3">
                             {isPending ? (

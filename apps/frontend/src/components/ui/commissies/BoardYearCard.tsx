@@ -41,10 +41,10 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
 
                 <div className="flex-1 space-y-6">
                     <div>
-                        <div className="mb-3 inline-block rounded-full border border-purple-500/20 bg-purple-500/10 px-3.5 py-1 text-xs font-bold text-purple-700 dark:text-purple-300">
+                        <div className="mb-3 inline-block rounded-full border border-theme-purple/20 bg-theme-purple/10 px-3.5 py-1 text-xs font-bold text-theme-purple">
                             {board.year}
                         </div>
-                        <h2 className="text-2xl font-black tracking-tight text-purple-700 sm:text-3xl dark:text-purple-300">
+                        <h2 className="text-2xl font-black tracking-tight text-theme-purple sm:text-3xl">
                             {board.naam}
                         </h2>
                     </div>
@@ -56,7 +56,7 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
 
                             return (
                                 <div key={idx} className="flex items-center gap-3 rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 p-3 sm:rounded-2xl">
-                                    <div className="relative size-10 shrink-0 overflow-hidden rounded-full ring-2 ring-purple-500/10">
+                                    <div className="relative size-10 shrink-0 overflow-hidden rounded-full ring-2 ring-theme-purple/20">
                                         {member.user_id?.avatar ? (
                                             <Image
                                                 src={getImageUrl(member.user_id.avatar)}
@@ -65,14 +65,14 @@ export const BoardYearCard = ({ board }: BoardYearCardProps) => {
                                                 className="object-cover"
                                             />
                                         ) : (
-                                            <div className="flex size-full items-center justify-center bg-purple-500/5 text-purple-600 dark:text-purple-400">
+                                            <div className="flex size-full items-center justify-center bg-theme-purple/10 text-theme-purple">
                                                 {isLeader ? <Medal className="size-4" /> : <User className="size-4" />}
                                             </div>
                                         )}
                                     </div>
                                     <div className="min-w-0">
                                         <p className="truncate text-sm font-bold text-(--text-main)">{name}</p>
-                                        <p className="text-[10px] font-bold text-purple-700 opacity-80 dark:text-purple-300">
+                                        <p className="text-[10px] font-bold text-theme-purple opacity-80">
                                             {member.functie || 'Bestuurslid'}
                                         </p>
                                     </div>

@@ -96,13 +96,13 @@ export default function CommitteeDetail({
                             href={`/commissies/${slugify(selected.name)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-6 py-3 text-xs font-semibold text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent) hover:bg-(--beheer-accent) hover:text-white active:scale-95 md:flex-none"
+                            className="btn-secondary flex-1 md:flex-none"
                         >
                             <ExternalLink className="size-4" /> Website
                         </a>
                         <button
                             onClick={onToggleEditing}
-                            className={`beheer-button flex flex-1 items-center justify-center gap-2 rounded-xl border px-6 py-3 text-xs font-semibold shadow-sm transition-all active:scale-95 md:flex-none ${editingDetail ? 'border-(--beheer-accent) bg-(--beheer-accent) text-white' : 'border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) hover:bg-white dark:hover:bg-white/5'}`}
+                            className={`beheer-button flex-1 md:flex-none ${editingDetail ? 'bg-theme-purple text-wit-paars' : 'btn-secondary'}`}
                             type="button">
                             <Settings className={`size-4 ${editingDetail ? 'animate-spin' : ''}`} /> {editingDetail ? 'Annuleren' : 'Details'}
                         </button>
@@ -119,7 +119,7 @@ export default function CommitteeDetail({
                                     onChange={e => onShortDescChange(e.target.value)}
                                     rows={2}
                                     autoComplete="off"
-                                    className="beheer-input w-full resize-none rounded-xl border-none bg-(--beheer-card-soft) px-6 py-4 text-sm leading-relaxed font-medium text-(--beheer-text) transition-all placeholder:text-(--beheer-text-muted) focus:ring-(--beheer-accent)/10"
+                                    className="beheer-input resize-none leading-relaxed"
                                     placeholder="Korte pakkende tekst over de commissie..."
                                 />
                             </div>
@@ -130,7 +130,7 @@ export default function CommitteeDetail({
                                     onChange={e => onDescChange(e.target.value)}
                                     rows={12}
                                     autoComplete="off"
-                                    className="beheer-input w-full rounded-xl border-none bg-(--beheer-card-soft) px-6 py-4 font-mono text-sm leading-relaxed text-(--beheer-text) transition-all placeholder:text-(--beheer-text-muted) focus:ring-(--beheer-accent)/10"
+                                    className="beheer-input font-mono leading-relaxed"
                                     placeholder="### Onze missie..."
                                 />
                             </div>
@@ -138,7 +138,7 @@ export default function CommitteeDetail({
                         <button
                             onClick={onSaveDetail}
                             disabled={savingDetail}
-                            className="active:scale-0.98 beheer-button flex w-full items-center justify-center gap-3 rounded-2xl bg-(--beheer-accent) py-5 text-sm font-semibold text-white shadow-(--beheer-accent)/20 shadow-xl transition-all hover:opacity-90 disabled:opacity-50"
+                            className="beheer-button w-full py-5 shadow-(--beheer-accent)/20"
                             type="button">
                             {savingDetail ? <Loader2 className="size-5 animate-spin" /> : <Save className="size-5" />}
                             Wijzigingen Opslaan
@@ -230,7 +230,7 @@ export default function CommitteeDetail({
                                             <button
                                                 onClick={() => onRemoveMember(member)}
                                                 disabled={!!actionLoading}
-                                                className="icon-button rounded-xl bg-(--beheer-card-soft) p-3 text-(--beheer-text-muted) shadow-sm transition-all hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/20 dark:hover:text-red-400"
+                                                className="icon-button bg-(--beheer-card-soft) p-3 text-(--beheer-text-muted) hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/20 dark:hover:text-red-400"
                                                 title="Verwijderen uit Azure groep"
                                                 type="button">
                                                 {actionLoading === `remove-${member.entraId}` ? <Loader2 className="size-4 animate-spin" /> : <UserMinus className="size-4" />}

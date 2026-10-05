@@ -135,7 +135,7 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
                                 <Phone className="size-4" />
                             </a>
                         )}
-                        <a href={`mailto:${vacancy.contact_email}`} onClick={(e) => e.stopPropagation()} className="icon-button rounded-full bg-(--theme-purple) p-2 text-white shadow-(--theme-purple)/20 shadow-lg hover:scale-105" title="E-mailen">
+                        <a href={`mailto:${vacancy.contact_email}`} onClick={(e) => e.stopPropagation()} className="icon-button rounded-full p-2 shadow-(--theme-purple)/20 hover:scale-105" title="E-mailen">
                             <Mail className="size-4" />
                         </a>
                     </div>

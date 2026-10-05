@@ -21,19 +21,19 @@ export default function StatusPaidActivity({
     const redirectUrl = signupData?.event_id?.custom_url || signupData?.custom_url;
 
     return (
-        <div className="animate-in zoom-in-95 space-y-12 duration-500">
+        <div className="space-y-12 duration-500">
             <div className="space-y-4 text-center">
-                <div className="mx-auto flex size-24 items-center justify-center rounded-full bg-green-500/10 ring-1 ring-green-500/20">
-                    <CheckCircle2 className="size-12 text-green-500" />
+                <div className="mx-auto flex size-24 items-center justify-center rounded-full bg-theme-success/10 ring-1 ring-theme-success/20">
+                    <CheckCircle2 className="size-12 text-theme-success" />
                 </div>
-                <h1 className="text-4xl leading-none font-semibold tracking-tighter text-(--text-main) italic md:text-6xl">
-                    Aanmelding <span className="text-green-500">geslaagd!</span>
+                <h1 className="text-4xl font-semibold tracking-tighter text-text-main italic md:text-6xl leading-none">
+                    Aanmelding <span className="text-theme-success">geslaagd!</span>
                 </h1>
-                <p className="mx-auto max-w-md text-lg font-medium text-(--text-muted)">
+                <p className="mx-auto max-w-md text-lg font-medium text-text-muted">
                     Bedankt! Je ticket{amount > 1 ? 's' : ''} {amount > 1 ? 'zijn' : 'is'} nu beschikbaar.
                 </p>
                 {redirectUrl && (
-                    <p className="mt-2 text-base font-semibold text-(--theme-purple)">
+                    <p className="mt-2 text-base font-semibold text-theme-purple">
                         Je wordt zo automatisch doorgestuurd...
                     </p>
                 )}
@@ -44,11 +44,11 @@ export default function StatusPaidActivity({
                     <div
                         key={i}
                         id={`ticket-card-${i}`}
-                        className="relative w-full max-w-95 min-w-75 space-y-6 overflow-hidden rounded-[3rem] border border-(--border-color) bg-(--bg-card) p-8 shadow-xl sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
+                        className="card-ticket-item"
                     >
                         <div className="flex flex-col items-center gap-4">
-                            <p className="text-base font-semibold text-(--theme-purple)">Ticket {i + 1} / {amount}</p>
-                            <div className="rounded-3xl bg-white p-4 shadow-lg ring-1 ring-black/5">
+                            <p className="text-base font-semibold text-theme-purple">Ticket {i + 1} / {amount}</p>
+                            <div className="rounded-3xl bg-wit-paars p-4 shadow-lg ring-1 ring-black/5">
                                 <QRDisplay qrToken={
                                     (() => {
                                         const tickets = signupData?.tickets || [];
@@ -58,8 +58,8 @@ export default function StatusPaidActivity({
                                 } size={180} />
                             </div>
                             <div className="text-center">
-                                <h3 className="text-base font-semibold tracking-tight text-(--text-main)">{eventName}</h3>
-                                <p className="text-sm font-bold text-(--text-muted) opacity-60">
+                                <h3 className="text-base font-semibold tracking-tight text-text-main">{eventName}</h3>
+                                <p className="text-sm font-bold text-text-muted opacity-60">
                                     #{signupData?.id}{amount > 1 ? `-${i + 1}` : ''}
                                 </p>
                             </div>
@@ -67,7 +67,7 @@ export default function StatusPaidActivity({
 
                         <button
                             onClick={() => downloadTicket(`ticket-card-${i}`, eventName)}
-                            className="absolute top-4 right-4 icon-button rounded-full border border-(--border-color) bg-(--bg-soft) p-3 text-(--text-muted) shadow-lg backdrop-blur-md transition-all hover:scale-110 hover:bg-(--theme-purple) hover:text-white"
+                            className="icon-button absolute top-4 right-4 rounded-full border border-border-color bg-bg-soft p-3 text-text-muted backdrop-blur-md hover:scale-110 hover:bg-theme-purple hover:text-wit-paars"
                             title="Download Ticket"
                             type="button">
                             <Save className="size-5" />
@@ -80,14 +80,14 @@ export default function StatusPaidActivity({
                 <BackButton
                     href="/activiteiten"
                     text="Terug naar overzicht"
-                    className="h-14 rounded-2xl bg-(--theme-purple) px-10 text-white shadow-(--theme-purple)/20 shadow-xl"
+                    className="form-button h-14 rounded-2xl bg-theme-purple px-10 text-wit-paars shadow-xl shadow-theme-purple/20"
                 />
                 {isLoggedIn && (
                     <BackButton
                         href="/profiel/tickets"
                         text="Alle tickets"
                         icon={QrCode}
-                        className="h-14 rounded-2xl border border-(--border-color) bg-(--bg-card) px-10 text-(--text-main)"
+                        className="form-button h-14 rounded-2xl border border-border-color bg-bg-card px-10 text-text-main"
                     />
                 )}
             </div>

@@ -39,20 +39,20 @@ export default async function AuditLoggingPage() {
             title="Audit & Logboek"
             backHref="/beheer"
             actions={
-                <div className="flex items-center gap-4 rounded-2xl border border-(--beheer-border)/50 bg-(--beheer-card-soft) px-4 py-2 shadow-sm">
+                <div className="beheer-stat-strip">
                     <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Wachtrij</span>
-                        <span className="text-sm leading-none font-bold text-(--beheer-text)">{initialData.signups.length}</span>
+                        <span className="stat-label-muted">Wachtrij</span>
+                        <span className="text-sm leading-none font-bold text-beheer-text">{initialData.signups.length}</span>
                     </div>
-                    <div className="h-6 w-px bg-(--beheer-border)/20" />
+                    <div className="v-divider-sm" />
                     <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Commissie</span>
-                        <span className="text-sm leading-none font-bold text-(--beheer-text)">{initialData.adminLogsTotal}</span>
+                        <span className="stat-label-muted">Commissie</span>
+                        <span className="text-sm leading-none font-bold text-beheer-text">{initialData.adminLogsTotal}</span>
                     </div>
-                    <div className="h-6 w-px bg-(--beheer-border)/20" />
+                    <div className="v-divider-sm" />
                     <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Systeem</span>
-                        <span className="text-sm leading-none font-bold text-(--beheer-text)">{initialData.systemLogsTotal}</span>
+                        <span className="stat-label-muted">Systeem</span>
+                        <span className="text-sm leading-none font-bold text-beheer-text">{initialData.systemLogsTotal}</span>
                     </div>
                 </div>
             }

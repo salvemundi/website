@@ -18,9 +18,9 @@ export default function MembershipError({
     return (
         <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 py-20 text-center">
             <div className="relative mb-8 pt-10">
-                <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto size-40 rounded-full bg-purple-500/10 blur-3xl" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto size-40 rounded-full bg-theme-purple/10 blur-3xl" />
 
-                <div className="squircle-lg relative inline-block border border-(--border-color)/20 bg-(--bg-card) p-6 text-purple-500 shadow-2xl">
+                <div className="relative inline-block squircle-lg border border-(--border-color)/20 bg-(--bg-card) p-6 text-theme-purple shadow-2xl">
                     <AlertTriangle className="size-16" />
                 </div>
             </div>
@@ -37,7 +37,7 @@ export default function MembershipError({
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <button
                     onClick={() => reset()}
-                    className="squircle form-button flex items-center gap-2 bg-purple-500 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-purple-500/20 transition-all hover:-translate-y-0.5 hover:shadow-purple-500/40"
+                    className="form-button py-3.5"
                     type="button">
                     <RefreshCcw className="size-4" />
                     Opnieuw Proberen

@@ -122,12 +122,12 @@ export default function ActivitiesProviderIsland({
 
     return (
         <div className="relative flex w-full flex-col">
-            <div className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="switcher-header-row">
                 {/* View Mode Switcher */}
                 <div 
                     role="tablist" 
                     aria-label="Weergavemodus" 
-                    className="flex w-full rounded-xl border border-border-color/30 bg-bg-card p-1 shadow-xs sm:w-auto sm:rounded-2xl"
+                    className="switcher-tab-bar"
                 >
                     <button
                         type="button"
@@ -135,10 +135,10 @@ export default function ActivitiesProviderIsland({
                         aria-selected={viewMode === 'list'}
                         onClick={() => setViewMode('list')}
                         className={cn(
-                            "tab-button flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold transition-all sm:min-h-0 sm:flex-initial sm:rounded-xl sm:py-2",
+                            "tab-button switcher-tab-item",
                             viewMode === 'list'
-                                ? "bg-(--theme-purple) text-white shadow-sm"
-                                : "text-(--theme-purple) hover:bg-(--theme-purple)/5"
+                                ? "switcher-tab-item-active"
+                                : "switcher-tab-item-inactive"
                         )}
                     >
                         <List className="size-4 shrink-0" />
@@ -150,10 +150,10 @@ export default function ActivitiesProviderIsland({
                         aria-selected={viewMode === 'grid'}
                         onClick={() => setViewMode('grid')}
                         className={cn(
-                            "tab-button flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold transition-all sm:min-h-0 sm:flex-initial sm:rounded-xl sm:py-2",
+                            "tab-button switcher-tab-item",
                             viewMode === 'grid'
-                                ? "bg-(--theme-purple) text-white shadow-sm"
-                                : "text-(--theme-purple) hover:bg-(--theme-purple)/5"
+                                ? "switcher-tab-item-active"
+                                : "switcher-tab-item-inactive"
                         )}
                     >
                         <LayoutGrid className="size-4 shrink-0" />
@@ -165,10 +165,10 @@ export default function ActivitiesProviderIsland({
                         aria-selected={viewMode === 'calendar'}
                         onClick={() => setViewMode('calendar')}
                         className={cn(
-                            "tab-button hidden items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all sm:rounded-xl lg:flex",
+                            "tab-button switcher-tab-item hidden lg:flex",
                             viewMode === 'calendar'
-                                ? "bg-(--theme-purple) text-white shadow-sm"
-                                : "text-(--theme-purple) hover:bg-(--theme-purple)/5"
+                                ? "switcher-tab-item-active"
+                                : "switcher-tab-item-inactive"
                         )}
                     >
                         <CalendarIcon className="size-4 shrink-0" />
@@ -177,34 +177,34 @@ export default function ActivitiesProviderIsland({
                 </div>
 
                 {/* Actions: Agenda koppelen & Afgelopen activiteiten */}
-                <div className="flex flex-wrap items-center gap-2.5 sm:flex-nowrap sm:gap-3">
+                <div className="provider-action-group">
                     <CalendarExportButton 
                         calendarToken={calendarToken} 
                         isLoggedIn={isLoggedIn}
-                        buttonClassName="tab-button w-full sm:w-auto group relative inline-flex items-center justify-center gap-2.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border transition-all active:scale-95 text-[11px] sm:text-[10px] font-black uppercase tracking-widest min-h-[44px] sm:min-h-0 bg-bg-card text-(--theme-purple) border-border-color/30 hover:border-(--theme-purple)/30 hover:bg-(--theme-purple)/5 shadow-xs"
+                        buttonClassName="btn-calendar-export w-full sm:w-auto"
                     />
 
                     <button
                         type="button"
                         onClick={toggleShowPastActivities}
                         className={cn(
-                            "tab-button group relative inline-flex min-h-11 w-full items-center justify-center gap-3 rounded-xl border px-4 py-2.5 text-[11px] font-black tracking-widest uppercase transition-all active:scale-95 sm:min-h-0 sm:w-auto sm:rounded-2xl sm:px-5 sm:py-3 sm:text-[10px]",
+                            "group btn-past-toggle",
                             showPastActivities
-                                ? "border-(--theme-purple) bg-(--theme-purple) text-white shadow-md"
-                                : "border-border-color/30 bg-bg-card text-(--theme-purple) shadow-xs hover:border-(--theme-purple)/30 hover:bg-(--theme-purple)/5"
+                                ? "btn-past-toggle-active"
+                                : "btn-past-toggle-inactive"
                         )}
                     >
-                        <span className="relative whitespace-nowrap" aria-live="polite">
+                        <span className="past-toggle-label-box" aria-live="polite">
                             <span className="pointer-events-none invisible select-none" aria-hidden="true">Verberg afgelopen</span>
                             <span className="absolute inset-0 flex items-center justify-center">
                                 {showPastActivities ? 'Verberg afgelopen' : 'Toon afgelopen'}
                             </span>
                         </span>
                         <span className={cn(
-                            "flex size-5 shrink-0 items-center justify-center rounded-full transition-colors",
+                            "past-toggle-icon-box",
                             showPastActivities
-                                ? "bg-white/20 text-white"
-                                : "bg-(--theme-purple)/10 text-(--theme-purple) group-hover:bg-(--theme-purple) group-hover:text-white"
+                                ? "bg-wit-paars/20 text-wit-paars"
+                                : "bg-theme-purple/10 text-theme-purple group-hover:bg-theme-purple group-hover:text-wit-paars"
                         )}>
                             {showPastActivities ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
                         </span>

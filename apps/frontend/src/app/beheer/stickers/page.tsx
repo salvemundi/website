@@ -18,20 +18,20 @@ export default async function StickersAdminPage() {
             title="Sticker Beheer"
             backHref="/beheer"
             actions={
-                <div className="flex items-center gap-4 rounded-2xl border border-border-color/50 bg-bg-soft px-4 py-2 shadow-sm">
+                <div className="beheer-stat-strip">
                     <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Stickers</span>
+                        <span className="stat-label-muted">Stickers</span>
                         <span className="text-sm leading-none font-bold text-text-main">{stickers.length}</span>
                     </div>
-                    <div className="h-6 w-px bg-border-color/20" />
+                    <div className="v-divider-sm" />
                     <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Gepubliceerd</span>
-                        <span className="text-sm leading-none font-bold text-emerald-500">{publishedCount}</span>
+                        <span className="stat-label-muted">Gepubliceerd</span>
+                        <span className="text-sm leading-none font-bold text-beheer-active">{publishedCount}</span>
                     </div>
-                    <div className="h-6 w-px bg-border-color/20" />
+                    <div className="v-divider-sm" />
                     <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Afwachting</span>
-                        <span className={`text-sm leading-none font-bold ${draftCount > 0 ? 'text-amber-500' : 'text-text-main'}`}>{draftCount}</span>
+                        <span className="stat-label-muted">Afwachting</span>
+                        <span className={`text-sm leading-none font-bold ${draftCount > 0 ? 'text-geel' : 'text-text-main'}`}>{draftCount}</span>
                     </div>
                 </div>
             }

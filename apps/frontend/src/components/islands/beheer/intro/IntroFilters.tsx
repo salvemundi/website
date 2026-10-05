@@ -44,7 +44,7 @@ export default function IntroFilters({
                     {(activeTab === 'signups' || activeTab === 'parents') && (
                         <button
                             onClick={onExport}
-                            className="beheer-button flex items-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-sm font-semibold text-(--beheer-text) shadow-sm transition-colors hover:bg-(--beheer-card-soft) active:scale-95"
+                            className="beheer-button-secondary"
                             type="button">
                             <Download className="size-4 text-(--beheer-text-muted)" />
                             <span className="hidden sm:inline">Exporteer CSV</span>
@@ -60,7 +60,7 @@ export default function IntroFilters({
                     <select
                         value={activeTab}
                         onChange={(e) => onTabChange(e.target.value as TabType)}
-                        className="beheer-input w-full appearance-none border-none bg-transparent p-0 text-sm font-semibold text-(--beheer-text) outline-none"
+                        className="beheer-input appearance-none p-0"
                     >
                         {tabs.map(tab => (
                             <option key={tab.id} value={tab.id}>{tab.label} ({tab.count})</option>

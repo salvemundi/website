@@ -82,7 +82,7 @@ export default function SyncControlIsland() {
                                 <button
                                     onClick={() => { void handleStopSync(); }}
                                     disabled={isStopping || status.abortRequested}
-                                    className="hover:scale-1.01 beheer-button flex w-full items-center justify-center gap-2 rounded-xl bg-(--beheer-inactive) py-3.5 text-xs font-semibold text-white shadow-md transition-all active:scale-95 disabled:opacity-50"
+                                    className="hover:scale-1.01 beheer-button w-full bg-(--beheer-inactive) py-3.5"
                                     type="button">
                                     <X className={`size-4 ${isStopping ? 'animate-spin' : ''}`} />
                                     {status.abortRequested ? 'Afbreken aangevraagd...' : 'Synchronisatie Stoppen'}
@@ -91,7 +91,7 @@ export default function SyncControlIsland() {
                                     <button
                                         onClick={() => { void handleResetSync(); }}
                                         disabled={isResetting}
-                                        className="beheer-button flex w-full items-center justify-center gap-2 py-2 text-[11px] font-semibold text-(--beheer-inactive) hover:underline disabled:opacity-50"
+                                        className="beheer-button w-full text-(--beheer-inactive) hover:underline"
                                         type="button">
                                         <RefreshCw className={`size-3 ${isResetting ? 'animate-spin' : ''}`} />
                                         Forceer Reset (Emergency)
@@ -102,7 +102,7 @@ export default function SyncControlIsland() {
                             <button
                                 onClick={() => { void handleFullSync(); }}
                                 disabled={isStartingSync || !!status?.error}
-                                className="hover:scale-1.01 beheer-button flex w-full items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) py-3.5 text-xs font-semibold text-white shadow-md transition-all active:scale-95 disabled:opacity-50"
+                                className="hover:scale-1.01 beheer-button w-full py-3.5"
                                 type="button">
                                 <RefreshCw className={`size-4 ${isStartingSync ? 'animate-spin' : ''}`} />
                                 Start Volledige Synchronisatie
@@ -133,12 +133,12 @@ export default function SyncControlIsland() {
                         disabled={isBusy}
                         onChange={(e) => setUserId(e.target.value)}
                         placeholder="Entra ID (UUID)..."
-                        className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-3.5 text-xs font-semibold text-(--beheer-text) transition-all placeholder:text-(--beheer-text-muted)/30 focus:border-(--beheer-accent) focus:outline-none"
+                        className="beheer-input"
                     />
                     <button
                         type="submit"
                         disabled={isUserSyncLoading || !userId.trim() || !!status?.error}
-                        className="beheer-button flex w-full items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) py-3.5 text-xs font-semibold text-(--beheer-text) transition-all hover:border-(--beheer-accent) hover:text-(--beheer-accent) active:scale-95 disabled:opacity-50"
+                        className="beheer-button w-full"
                     >
                         <RefreshCw className={`size-4 ${isUserSyncLoading ? 'animate-spin' : ''}`} />
                         Sync Gebruiker

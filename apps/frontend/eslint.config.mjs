@@ -121,6 +121,30 @@ const eslintConfig = [
                 {
                     "selector": "JSXOpeningElement[name.name='textarea']:not(:has(JSXAttribute[name.name='className'] Literal[value=/form-input|beheer-input/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-input|beheer-input/]))",
                     "message": "Rauwe <textarea> gevonden zonder 'form-input' of 'beheer-input' klasse."
+                },
+                {
+                    "selector": "JSXAttribute[name.name='className'] Literal[value=/\\\[[0-9]+px\\\]/]",
+                    "message": "Arbitraire inline pixel-waarden (zoals text-[11px] of p-[12px]) zijn strikt verboden in JSX. Gebruik gecentraliseerde utility klassen in globals.css."
+                },
+                {
+                    "selector": "JSXAttribute[name.name='className'] TemplateElement[value.raw=/\\\[[0-9]+px\\\]/]",
+                    "message": "Arbitraire inline pixel-waarden (zoals text-[11px] of p-[12px]) zijn strikt verboden in JSX. Gebruik gecentraliseerde utility klassen in globals.css."
+                },
+                {
+                    "selector": "JSXAttribute[name.name='className'] Literal[value=/(bg|text|border|ring|fill|stroke)-(white|black|[a-z]+-[0-9]+)/]",
+                    "message": "Inline kleurnamen (zoals text-white, bg-black, bg-red-500) zijn strikt verboden in JSX. Gebruik gecentraliseerde utility klassen in globals.css."
+                },
+                {
+                    "selector": "JSXAttribute[name.name='className'] TemplateElement[value.raw=/(bg|text|border|ring|fill|stroke)-(white|black|[a-z]+-[0-9]+)/]",
+                    "message": "Inline kleurnamen (zoals text-white, bg-black, bg-red-500) zijn strikt verboden in JSX. Gebruik gecentraliseerde utility klassen in globals.css."
+                },
+                {
+                    "selector": "JSXAttribute[name.name='className'] Literal[value=/^(\\S+\\s+){4,}\\S+/]",
+                    "message": "Te veel inline classes in JSX (5 of meer). Extraheer deze inline styling naar een schone gecentraliseerde @utility klasse in globals.css."
+                },
+                {
+                    "selector": "JSXAttribute[name.name='className'] TemplateElement[value.raw=/^(\\S+\\s+){4,}\\S+/]",
+                    "message": "Te veel inline classes in JSX (5 of meer). Extraheer deze inline styling naar een schone gecentraliseerde @utility klasse in globals.css."
                 }
             ],
 

@@ -91,7 +91,7 @@ export default function StatsToolbar({
                         <button
                             onClick={onAutoDistribute}
                             disabled={isPending || !hasSignups}
-                            className="beheer-button flex cursor-pointer items-center gap-2 rounded-xl bg-(--theme-purple) px-5 py-2.5 text-xs font-semibold text-white shadow-(--theme-purple)/10 shadow-lg transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+                            className="beheer-button shadow-(--theme-purple)/10"
                             type="button">
                             <Sparkles className="size-4 animate-pulse" />
                             Automatisch verdelen
@@ -101,7 +101,7 @@ export default function StatsToolbar({
                     <button
                         onClick={onExportCSV}
                         disabled={!hasSignups}
-                        className="beheer-button flex cursor-pointer items-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-xs font-semibold text-white shadow-lg shadow-green-600/10 transition-all hover:bg-green-700 active:scale-95 disabled:opacity-50"
+                        className="beheer-button bg-green-600 shadow-green-600/10 hover:bg-green-700"
                         type="button">
                         <Download className="size-4" />
                         Exporteer CSV
@@ -110,7 +110,7 @@ export default function StatsToolbar({
             </div>
 
             <div className="flex flex-col gap-4 md:flex-row">
-                <div className="flex flex-1 items-center gap-3 rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-4 py-3 transition-all focus-within:border-(--theme-purple) focus-within:ring-4 focus-within:ring-(--theme-purple)/10">
+                <div className="search-bar flex-1">
                     <Search className="size-5 shrink-0 text-(--text-muted) transition-colors group-focus-within:text-(--theme-purple)" />
                     <input
                         type="text"
@@ -119,7 +119,7 @@ export default function StatsToolbar({
                         onChange={(e) => setSearchQuery(e.target.value)}
                         autoComplete="off"
                         spellCheck={false}
-                        className="beheer-input w-full border-none bg-transparent p-0 text-sm font-medium text-(--text-main) outline-none"
+                        className="beheer-input p-0"
                     />
                 </div>
 
@@ -128,7 +128,7 @@ export default function StatsToolbar({
                     <button
                         type="button"
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className="beheer-button flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-4 py-3 text-xs font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/40 focus:outline-none"
+                        className="beheer-button-secondary w-full justify-between focus:outline-none"
                     >
                         <div className="flex items-center gap-2 truncate">
                             <Users className="size-4 shrink-0 text-(--text-muted)" />
@@ -148,7 +148,7 @@ export default function StatsToolbar({
                     </button>
 
                     {isDropdownOpen && (
-                        <div className="animate-in fade-in slide-in-from-top-1 absolute inset-x-0 z-50 mt-1 origin-top rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1 shadow-2xl ring-1 ring-black/5 duration-100 focus:outline-none">
+                        <div className="animate-in slide-in-from-top-1 absolute inset-x-0 z-50 mt-1 origin-top fade-in rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1 shadow-2xl ring-1 ring-black/5 duration-100 focus:outline-none">
                             <div className="max-h-[80vh] space-y-0.5 overflow-y-auto">
                                 <button
                                     type="button"
@@ -160,7 +160,7 @@ export default function StatsToolbar({
                                             setEnabledGroups(allOptions);
                                         }
                                     }}
-                                    className="beheer-button flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-(--text-main) transition-colors hover:bg-(--bg-main)"
+                                    className="beheer-button w-full justify-between text-left text-(--text-main) hover:bg-(--bg-main)"
                                 >
                                     <span>Alle groepen</span>
                                     <input
@@ -179,7 +179,7 @@ export default function StatsToolbar({
                                             setEnabledGroups([...enabledGroups, 'unassigned']);
                                         }
                                     }}
-                                    className="beheer-button flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-(--text-main) transition-colors hover:bg-(--bg-main)"
+                                    className="beheer-button w-full justify-between text-left text-(--text-main) hover:bg-(--bg-main)"
                                 >
                                     <span>Niet ingedeeld</span>
                                     <input
@@ -200,7 +200,7 @@ export default function StatsToolbar({
                                                 setEnabledGroups([...enabledGroups, name]);
                                             }
                                         }}
-                                        className="beheer-button flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-(--text-main) transition-colors hover:bg-(--bg-main)"
+                                        className="beheer-button w-full justify-between text-left text-(--text-main) hover:bg-(--bg-main)"
                                     >
                                         <span className="truncate">{name}</span>
                                         <input

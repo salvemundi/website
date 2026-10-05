@@ -17,15 +17,15 @@ export default async function CommissiesPage() {
 
     return (
         <PublicPageShell>
-            <div className="max-w-app mx-auto px-4 py-8 sm:py-12 lg:py-16">
+            <div className="mx-auto max-w-app px-4 py-8 sm:py-12 lg:py-16">
                 <div className="mb-12 flex flex-col items-center text-center">
-                    <h1 className="mb-4 text-4xl font-black tracking-tight text-purple-700 dark:text-purple-300">
+                    <h1 className="mb-4 text-4xl font-black tracking-tight text-theme-purple">
                         Onze Commissies
                     </h1>
                     <p className="max-w-2xl text-lg leading-relaxed font-medium text-(--text-muted)">
                         Ontdek onze commissies die SV Salve Mundi draaiende houden.
                     </p>
-                    <div className="mt-6 h-1 w-24 rounded-full bg-linear-to-r from-transparent via-purple-500 to-transparent" />
+                    <div className="mt-6 h-1 w-24 rounded-full bg-linear-to-r from-transparent via-(--theme-purple) to-transparent" />
                 </div>
                 <CommitteesList initialCommittees={committees} />
             </div>

@@ -123,7 +123,7 @@ export default function ActivitySignupTable({
                                     {canAccessEdit && (
                                         <button
                                             onClick={() => onDelete(signup.id, email)}
-                                            className="icon-button inline-flex size-10 cursor-pointer items-center justify-center rounded-xl text-(--beheer-text-muted) opacity-30 transition-all hover:bg-red-500/10 hover:text-red-500 hover:opacity-100"
+                                            className="icon-button size-10 text-(--beheer-text-muted) opacity-30 hover:bg-red-500/10 hover:text-red-500 hover:opacity-100"
                                             title="Verwijder aanmelding"
                                             type="button">
                                             {isRowDeleting ? (

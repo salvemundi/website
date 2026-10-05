@@ -69,13 +69,13 @@ export const IntroStudentIsland = ({ className = '', isOpen = true }: IntroStude
 
     if (!isOpen) {
         return (
-            <div className={`dark:bg-gradient-theme squircle-xl flex min-h-75 flex-col items-center justify-center border border-border-color bg-bg-card p-10 text-center shadow-xl ${className}`}>
-                <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-purple-100 dark:bg-white/20">
+            <div className={`dark:bg-gradient-theme flex min-h-75 flex-col items-center justify-center squircle-xl border border-border-color bg-bg-card p-10 text-center shadow-xl ${className}`}>
+                <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-theme-purple/10">
 
-                    <Lock className="size-10 text-brand-primary dark:text-white" />
+                    <Lock className="size-10 text-theme-purple" />
                 </div>
-                <h3 className="mb-4 text-3xl font-black tracking-tight text-text-main dark:text-white">Inschrijvingen Gesloten</h3>
-                <p className="max-w-sm font-medium text-text-muted dark:text-white/80">
+                <h3 className="mb-4 text-3xl font-black tracking-tight text-text-main">Inschrijvingen Gesloten</h3>
+                <p className="max-w-sm font-medium text-text-muted">
                     De inschrijvingen voor de introductie zijn momenteel gesloten.
                 </p>
             </div>
@@ -85,11 +85,11 @@ export const IntroStudentIsland = ({ className = '', isOpen = true }: IntroStude
     if (submitted) {
         return (
             <div className="dark:bg-gradient-theme squircle-lg border border-border-color bg-bg-card p-6 text-center shadow-lg lg:p-8">
-                <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-purple-100 lg:size-20 dark:bg-white/20">
-                    <CheckCircle2 className="size-8 text-brand-primary lg:size-10 dark:text-white" />
+                <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-theme-purple/10 lg:size-20">
+                    <CheckCircle2 className="size-8 text-theme-purple lg:size-10" />
                 </div>
-                <h2 className="mb-4 text-2xl font-bold text-text-main lg:text-3xl dark:text-white">Bedankt!</h2>
-                <p className="text-base text-text-muted lg:text-lg dark:text-white/80">We hebben je inschrijving ontvangen.</p>
+                <h2 className="mb-4 text-2xl font-bold text-text-main lg:text-3xl">Bedankt!</h2>
+                <p className="text-base text-text-muted lg:text-lg">We hebben je inschrijving ontvangen.</p>
             </div>
         );
     }
@@ -184,7 +184,7 @@ export const IntroStudentIsland = ({ className = '', isOpen = true }: IntroStude
                     />
                 </FormField>
 
-                {error && <p className="text-xs text-red-500 lg:text-sm dark:text-red-400">{error}</p>}
+                {error && <p className="form-error-msg">{error}</p>}
                 <button
                     type="submit"
                     disabled={isSubmitting}

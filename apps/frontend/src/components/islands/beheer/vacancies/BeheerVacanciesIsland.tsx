@@ -118,14 +118,14 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                         <button
                             type="button"
                             onClick={() => { void handleCopySubmissionLink(); }}
-                            className="squircle form-button flex items-center justify-center gap-1.5 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-xs font-semibold whitespace-nowrap text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 active:scale-95"
+                            className="form-button squircle border border-(--beheer-border) bg-(--beheer-card-bg) whitespace-nowrap text-(--beheer-text) hover:border-(--beheer-accent)/50"
                         >
                             <Link2 className="size-4" />
                             Aanmeldlink kopiëren
                         </button>
                         <Link
                             href="/beheer/bijbanenbank/nieuw"
-                            className="squircle flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-theme-purple px-4 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
+                            className="beheer-button-secondary squircle whitespace-nowrap"
                         >
                             <Plus className="size-4" />
                             Nieuwe Vacature
@@ -183,7 +183,7 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                                             type="button"
                                             disabled={isPending}
                                             onClick={() => handleDelete(vacancy.id, vacancy.title)}
-                                            className="icon-button rounded-lg bg-(--beheer-card-soft) p-2 text-(--beheer-text-muted) transition-colors hover:text-(--theme-error) disabled:opacity-50"
+                                            className="icon-button bg-(--beheer-card-soft) p-2 text-(--beheer-text-muted) hover:text-(--theme-error)"
                                             title="Verwijderen"
                                         >
                                             <Trash2 className="size-4" />
@@ -289,7 +289,7 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
                         value={rejectReason}
                         onChange={(e) => setRejectReason(e.target.value)}
                         rows={4}
-                        className="form-input w-full"
+                        className="form-input"
                         placeholder="Bijv. Deze vacature sluit niet aan bij onze doelgroep."
                     />
                     <div className="flex justify-end gap-2">

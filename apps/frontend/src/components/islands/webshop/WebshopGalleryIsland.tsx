@@ -99,7 +99,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                     role="dialog"
                     aria-modal="true"
                     aria-label={`${productName} - vergrote weergave`}
-                    className="bg-background/90 animate-in fade-in fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm duration-200 sm:p-6"
+                    className="bg-background/90 animate-in fixed inset-0 z-50 flex fade-in items-center justify-center p-4 backdrop-blur-sm duration-200 sm:p-6"
                     onClick={(e) => {
                         if (e.target === e.currentTarget) setLightboxOpen(false);
                     }}
@@ -107,7 +107,7 @@ export default function WebshopGalleryIsland({ media, productName }: WebshopGall
                     <button
                         ref={closeButtonRef}
                         onClick={() => setLightboxOpen(false)}
-                        className="bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground border-border absolute top-4 right-4 z-50 form-button rounded-full border p-2 backdrop-blur-sm transition-colors"
+                        className="bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground border-border absolute top-4 right-4 z-50 form-button rounded-full border p-2 backdrop-blur-sm"
                         aria-label="Sluiten"
                         type="button">
                         ×

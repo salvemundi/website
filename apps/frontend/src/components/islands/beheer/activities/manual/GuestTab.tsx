@@ -24,37 +24,37 @@ export default function GuestTab({
         <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
                 <div className="group">
-                    <label className="mb-2.5 ml-1 block text-[10px]  font-semibold tracking-widest text-(--beheer-text-muted) transition-colors group-focus-within:text-(--beheer-accent)">Naam Gast *</label>
+                    <label className="guest-form-label">Naam Gast *</label>
                     <input
                         suppressHydrationWarning
                         type="text"
                         required
                         value={name}
                         onChange={(e) => onNameChange(e.target.value)}
-                        className="h-14 beheer-input text-[10px] font-semibold  tracking-[0.2em]"
+                        className="beheer-input h-14 text-2xs tracking-widest"
                         placeholder="VOLLEDIGE NAAM"
                         autoComplete="off"
                     />
                 </div>
                 <div className="group">
-                    <label className="mb-2.5 ml-1 block text-[10px]  font-semibold tracking-widest text-(--beheer-text-muted) transition-colors group-focus-within:text-(--beheer-accent)">E-mailadres *</label>
+                    <label className="guest-form-label">E-mailadres *</label>
                     <input
                         suppressHydrationWarning
                         type="email"
                         required
                         value={email}
                         onChange={(e) => onEmailChange(e.target.value)}
-                        className="h-14 beheer-input text-[10px] font-semibold  tracking-[0.2em]"
+                        className="beheer-input h-14 text-2xs tracking-widest"
                         placeholder="EMAIL@VOORBEELD.NL"
                         autoComplete="off"
                     />
                 </div>
                 <div className="group">
-                    <label className="mb-2.5 ml-1 block text-[10px]  font-semibold tracking-widest text-(--beheer-text-muted) transition-colors group-focus-within:text-(--beheer-accent)">Telefoonnummer</label>
+                    <label className="guest-form-label">Telefoonnummer</label>
                     <PhoneInput
                         value={phone}
                         onChange={(e) => onPhoneChange(e.target.value)}
-                        className="h-14 beheer-input text-[10px] font-semibold tracking-[0.2em]"
+                        className="beheer-input h-14 text-2xs tracking-widest"
                         placeholder="OPTIONEEL"
                     />
                 </div>

@@ -407,7 +407,7 @@ export default function StickerMapIsland({
                         <button
                             type="button"
                             onClick={openMobileFilters}
-                            className="form-button inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-bg-card/95 px-3 py-2.5 text-[10px] font-black tracking-[0.18em] whitespace-nowrap text-text-main uppercase shadow-2xl backdrop-blur-md"
+                            className="map-mobile-toggle-btn"
                         >
                             <Filter className="size-4 shrink-0 text-theme-purple" />
                             Filters
@@ -415,7 +415,7 @@ export default function StickerMapIsland({
                         <button
                             type="button"
                             onClick={openMobileStats}
-                            className="form-button inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-bg-card/95 px-3 py-2.5 text-[10px] font-black tracking-[0.18em] whitespace-nowrap text-text-main uppercase shadow-2xl backdrop-blur-md"
+                            className="map-mobile-toggle-btn"
                         >
                             <BarChart3 className="size-4 shrink-0 text-theme-purple" />
                             Stats

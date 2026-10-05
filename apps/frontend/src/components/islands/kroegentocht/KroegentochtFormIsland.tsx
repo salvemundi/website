@@ -170,7 +170,7 @@ export default function KroegentochtFormIsland({
                                         remove(fields.length - 1);
                                     }
                                 }}
-                                className="icon-button rounded-lg p-2 transition-colors hover:bg-white disabled:opacity-30 dark:hover:bg-white/10"
+                                className="icon-button p-2 hover:bg-white disabled:opacity-30 dark:hover:bg-white/10"
                                 disabled={amount <= 1}
                             >
                                 <Minus className="size-4" />
@@ -184,7 +184,7 @@ export default function KroegentochtFormIsland({
                                         append({ name: '', initial: '' });
                                     }
                                 }}
-                                className="icon-button rounded-lg p-2 transition-colors hover:bg-white disabled:opacity-30 dark:hover:bg-white/10"
+                                className="icon-button p-2 hover:bg-white disabled:opacity-30 dark:hover:bg-white/10"
                                 disabled={amount >= 10}
                             >
                                 <Plus className="size-4" />
@@ -192,7 +192,7 @@ export default function KroegentochtFormIsland({
                         </div>
                     </div>
 
-                    <div className="custom-scrollbar max-h-100 space-y-4 overflow-y-auto pr-2">
+                    <div className="max-h-100 custom-scrollbar space-y-4 overflow-y-auto pr-2">
                         {fields.map((field, index) => (
                             <div key={field.id} className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
                                 <div className="mb-3 flex items-center gap-2">
@@ -235,7 +235,7 @@ export default function KroegentochtFormIsland({
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="enabled:active:scale-0.98 form-button flex w-full items-center justify-center gap-2 rounded-xl bg-theme-purple py-4 text-lg font-black text-white shadow-lg shadow-purple-500/20 transition-all enabled:hover:bg-purple-600 disabled:opacity-50 sm:rounded-2xl"
+                    className="enabled:active:scale-0.98 form-button w-full text-lg font-black shadow-theme-purple/20 enabled:hover:opacity-90 sm:rounded-2xl"
                 >
                     {isPending ? (
                         <>

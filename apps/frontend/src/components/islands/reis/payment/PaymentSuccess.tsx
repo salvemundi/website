@@ -22,7 +22,7 @@ export function PaymentSuccess({ trip }: PaymentSuccessProps) {
 
              <a 
                 href="/reis" 
-                className="inline-flex items-center gap-3 rounded-2xl bg-theme-purple px-10 py-5 text-sm font-bold tracking-widest text-white shadow-xl shadow-theme-purple/5 transition-all hover:bg-theme-purple-dark"
+                className="beheer-button tracking-widest"
             >
                 <Home className="size-5" />
                 Terug naar Dashboard

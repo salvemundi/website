@@ -20,7 +20,7 @@ interface CommitteeMembership {
 export function InfoRow({ icon: Icon, label, value }: { icon: LucideIcon, label: string, value: string }) {
     return (
         <div className="group flex items-center gap-4">
-            <div className="squircle flex size-10 shrink-0 items-center justify-center border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-accent)">
+            <div className="flex size-10 shrink-0 items-center justify-center squircle border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-accent)">
                 <Icon className="size-5" />
             </div>
             <div className="min-w-0 flex-1">
@@ -33,7 +33,7 @@ export function InfoRow({ icon: Icon, label, value }: { icon: LucideIcon, label:
 
 export function CommitteeCard({ membership, cleanName }: { membership: CommitteeMembership, cleanName: (n: string) => string }) {
     return (
-        <div className="squircle-lg group flex flex-col gap-3 border border-(--beheer-border) bg-(--beheer-card-bg) p-5 shadow-sm transition-all hover:border-(--beheer-accent)/30">
+        <div className="group flex flex-col gap-3 squircle-lg border border-(--beheer-border) bg-(--beheer-card-bg) p-5 shadow-sm transition-all hover:border-(--beheer-accent)/30">
             <div className="flex items-center gap-4">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--beheer-accent)/10 text-(--beheer-accent) transition-transform group-hover:scale-110">
                     <Shield className="size-5" />
@@ -54,8 +54,8 @@ export function CommitteeCard({ membership, cleanName }: { membership: Committee
 
 export function GroupCard({ membership, cleanName }: { membership: CommitteeMembership, cleanName: (n: string) => string }) {
     return (
-        <div className="squircle group flex items-center gap-4 border border-(--beheer-border) bg-(--beheer-card-bg) p-4 shadow-sm transition-all hover:border-(--beheer-accent)/30">
-            <div className="squircle flex size-10 shrink-0 items-center justify-center border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text-muted) shadow-sm transition-all group-hover:bg-(--beheer-accent) group-hover:text-white">
+        <div className="group flex items-center gap-4 squircle border border-(--beheer-border) bg-(--beheer-card-bg) p-4 shadow-sm transition-all hover:border-(--beheer-accent)/30">
+            <div className="flex size-10 shrink-0 items-center justify-center squircle border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text-muted) shadow-sm transition-all group-hover:bg-(--beheer-accent) group-hover:text-white">
                 <Hash className="size-5" />
             </div>
             <p className="truncate text-sm font-semibold text-(--beheer-text)">{cleanName(membership.committee_id.name)}</p>

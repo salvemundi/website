@@ -52,7 +52,7 @@ export function PaymentSummary({ pricing, paymentType, hideHeader = false }: Pay
                     )}
                 </div>
 
-                <div className="rounded-3xl bg-linear-to-br from-theme-purple to-theme-purple-dark p-8 text-white shadow-xl shadow-theme-purple/10">
+                <div className="to-theme-purple-dark rounded-3xl bg-linear-to-br from-theme-purple p-8 text-white shadow-xl shadow-theme-purple/10">
                     <div className="flex items-end justify-between">
                         <div>
                             <p className="mb-1 text-[10px] font-bold tracking-[0.2em] opacity-80">

@@ -31,7 +31,7 @@ export default async function StickersPage() {
             <div className="h-[calc(100vh-var(--header-total-height))] min-h-150 w-full p-4 md:p-8">
                 <div className="flex h-full flex-col items-stretch gap-8 lg:flex-row">
                     <div className={`order-1 min-w-0 flex-1 lg:h-full ${isLoggedIn ? 'h-[42vh]' : 'h-[80vh]'}`}>
-                        <div className="squircle-lg h-full overflow-hidden">
+                        <div className="h-full overflow-hidden squircle-lg">
                             <StickerMapBridge
                                 initialStickers={stickers}
                                 user={activeUser}

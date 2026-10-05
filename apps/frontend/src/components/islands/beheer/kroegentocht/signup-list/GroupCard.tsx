@@ -154,7 +154,7 @@ export default function GroupCard({
                                     <button
                                         type="button"
                                         onClick={() => onRemoveLeader?.(groupName, leader)}
-                                        className="icon-button cursor-pointer rounded p-1 text-amber-600 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500"
+                                        className="icon-button rounded p-1 text-amber-600 opacity-0 group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500"
                                         title="Verwijder groepsleider"
                                     >
                                         <X className="size-3.5" />
@@ -203,7 +203,7 @@ export default function GroupCard({
                             {regularParticipants.length > limit && (
                                 <button
                                     onClick={() => setIsExpanded(!isExpanded)}
-                                    className="col-span-full mt-2 beheer-button flex w-full items-center justify-center gap-1.5 rounded-lg border border-(--border-color)/40 bg-(--bg-main)/30 py-1.5 text-[10px] font-bold text-(--text-muted) transition-all hover:bg-(--bg-main)/60 hover:text-(--text-main)"
+                                    className="col-span-full mt-2 beheer-button-secondary w-full"
                                     type="button">
                                     {isExpanded ? (
                                         <>
@@ -237,7 +237,7 @@ export default function GroupCard({
                         <button
                             type="button"
                             onClick={() => setShowAddLeaderForm(true)}
-                            className="beheer-button flex w-full cursor-pointer items-center justify-center gap-1 rounded-xl border border-(--border-color)/30 bg-(--bg-main)/30 py-1.5 text-[10px] font-bold text-(--text-muted) transition-all hover:border-(--theme-purple)/40 hover:bg-(--bg-main)/60 hover:text-(--theme-purple)"
+                            className="beheer-button-secondary w-full"
                         >
                             <Plus className="size-3" /> Leider toevoegen
                         </button>

@@ -22,20 +22,19 @@ export default async function BoardHistoryPage() {
                 <BackButton href="/commissies/bestuur" title="Terug naar Huidig Bestuur" text="Huidig Bestuur" />
             </div>
 
-            <main className="max-w-app mx-auto px-fluid-md pt-fluid-md pb-fluid-lg">
-                {/* Header Section */}
+            <main className="mx-auto max-w-app px-fluid-md pt-fluid-md pb-fluid-lg">
                 <div className="mb-12 flex flex-col items-center text-center sm:mb-16">
-                    <div className="mb-6 rounded-3xl border border-purple-500/10 bg-purple-500/5 p-4 text-purple-700 shadow-sm dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
-                        <History className="size-10" />
+                    <div className="mb-6 flex size-16 items-center justify-center rounded-2xl border border-theme-purple/20 bg-theme-purple/10 text-theme-purple shadow-sm">
+                        <History className="size-8" />
                     </div>
-                    <h1 className="mb-4 text-3xl font-black tracking-tight text-purple-700 sm:text-4xl dark:text-purple-300">
+                    <h1 className="mb-4 text-3xl font-black tracking-tight text-theme-purple sm:text-4xl">
                         Onze Geschiedenis
                     </h1>
                     <p className="max-w-2xl text-base leading-relaxed font-medium text-(--text-muted) sm:text-lg">
                         Sinds de oprichting van Salve Mundi hebben vele gedreven studenten zich ingezet om de vereniging te laten groeien.
                         Hieronder vind je het overzicht van alle besturen die de basis hebben gelegd voor wat we vandaag zijn.
                     </p>
-                    <div className="mt-10 h-1 w-24 rounded-full bg-linear-to-r from-transparent via-purple-500 to-transparent" />
+                    <div className="mt-10 h-1 w-24 rounded-full bg-linear-to-r from-transparent via-theme-purple to-transparent" />
                 </div>
 
                 <BoardHistoryTimeline boards={boards} />

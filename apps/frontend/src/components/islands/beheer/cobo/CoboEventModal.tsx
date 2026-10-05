@@ -44,8 +44,8 @@ export default function CoboEventModal({
         }
     }, [eventToEdit, isOpen]);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
         const trimmedTitle = title.trim();
         if (!trimmedTitle) {
             showToast('Vul een titel/jaar in voor de CoBo', 'error');
@@ -102,9 +102,9 @@ export default function CoboEventModal({
                 <div className="space-y-2">
                     <label
                         htmlFor="cobo-title"
-                        className="flex items-center gap-2 text-xs font-bold tracking-wider text-text-muted uppercase"
+                        className="form-label-uppercase"
                     >
-                        <Sparkles className="size-4 shrink-0 text-purple-500 dark:text-purple-400" />
+                        <Sparkles className="size-4 shrink-0 text-theme-purple" />
                         <span>Titel / Bestuursjaar *</span>
                     </label>
                     <input
@@ -112,10 +112,10 @@ export default function CoboEventModal({
                         name="title"
                         type="text"
                         value={title}
-                        onChange={(e) => setTitle(e.target.value)}
+                        onChange={(event) => setTitle(event.target.value)}
                         placeholder="Bijv. CoBo 2026 of CoBo Bestuur VIII"
                         required
-                        className="min-h-11 beheer-input w-full rounded-xl border border-border-color bg-bg-soft px-4 py-2.5 text-sm font-medium text-text-main transition-all focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
+                        className="form-input"
                     />
                 </div>
 
@@ -123,9 +123,9 @@ export default function CoboEventModal({
                     <div className="space-y-2">
                         <label
                             htmlFor="cobo-date"
-                            className="flex items-center gap-2 text-xs font-bold tracking-wider text-text-muted uppercase"
+                            className="form-label-uppercase"
                         >
-                            <Calendar className="size-4 shrink-0 text-purple-500 dark:text-purple-400" />
+                            <Calendar className="size-4 shrink-0 text-theme-purple" />
                             <span>Datum &amp; Aanvangstijd</span>
                         </label>
                         <input
@@ -133,17 +133,17 @@ export default function CoboEventModal({
                             name="date"
                             type="datetime-local"
                             value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            className="min-h-11 beheer-input w-full rounded-xl border border-border-color bg-bg-soft px-4 py-2.5 text-sm font-medium text-text-main transition-all focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
+                            onChange={(event) => setDate(event.target.value)}
+                            className="form-input"
                         />
                     </div>
 
                     <div className="space-y-2">
                         <label
                             htmlFor="cobo-location"
-                            className="flex items-center gap-2 text-xs font-bold tracking-wider text-text-muted uppercase"
+                            className="form-label-uppercase"
                         >
-                            <MapPin className="size-4 shrink-0 text-purple-500 dark:text-purple-400" />
+                            <MapPin className="size-4 shrink-0 text-theme-purple" />
                             <span>Locatie</span>
                         </label>
                         <input
@@ -151,9 +151,9 @@ export default function CoboEventModal({
                             name="location"
                             type="text"
                             value={location}
-                            onChange={(e) => setLocation(e.target.value)}
+                            onChange={(event) => setLocation(event.target.value)}
                             placeholder="Bijv. Borrelbar Eindhoven"
-                            className="min-h-11 beheer-input w-full rounded-xl border border-border-color bg-bg-soft px-4 py-2.5 text-sm font-medium text-text-main transition-all focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
+                            className="form-input"
                         />
                     </div>
                 </div>
@@ -161,35 +161,35 @@ export default function CoboEventModal({
                 <div className="space-y-2">
                     <label
                         htmlFor="cobo-description"
-                        className="flex items-center gap-2 text-xs font-bold tracking-wider text-text-muted uppercase"
+                        className="form-label-uppercase"
                     >
-                        <FileText className="size-4 shrink-0 text-purple-500 dark:text-purple-400" />
+                        <FileText className="size-4 shrink-0 text-theme-purple" />
                         <span>Algemene Informatie / Uitnodigingstekst</span>
                     </label>
                     <textarea
                         id="cobo-description"
                         name="description"
                         value={description}
-                        onChange={(e) => setDescription(e.target.value)}
+                        onChange={(event) => setDescription(event.target.value)}
                         rows={4}
                         placeholder="Toelichting of welkomstboodschap voor de bezoekende besturen..."
-                        className="min-h-24 beheer-input w-full resize-y rounded-xl border border-border-color bg-bg-soft px-4 py-3 text-sm font-medium text-text-main transition-all focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
+                        className="form-input resize-y"
                     />
                 </div>
 
-                <div className="flex items-center justify-end gap-3 border-t border-border-color/60 pt-4">
+                <div className="modal-footer">
                     <button
                         type="button"
                         onClick={onClose}
                         disabled={isPending}
-                        className="beheer-button min-h-11 cursor-pointer rounded-xl border border-border-color px-5 py-2.5 text-sm font-semibold text-text-muted transition-colors hover:bg-bg-soft hover:text-text-main disabled:opacity-50"
+                        className="btn-secondary"
                     >
                         Annuleren
                     </button>
                     <button
                         type="submit"
                         disabled={isPending}
-                        className="beheer-button flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl bg-purple-600 px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-purple-700 hover:shadow-lg disabled:opacity-50"
+                        className="form-button"
                     >
                         {isPending && <Loader2 className="size-4 animate-spin" />}
                         <span>{eventToEdit ? 'Wijzigingen Opslaan' : 'CoBo Aanmaken'}</span>

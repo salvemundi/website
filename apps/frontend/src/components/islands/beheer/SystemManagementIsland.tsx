@@ -93,9 +93,9 @@ export default function SystemManagementIsland({
     };
 
     const getStatusColor = (status: string) => {
-        if (status === 'online') return 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20';
-        if (status === 'degraded') return 'text-amber-500 bg-amber-500/10 border-amber-500/20';
-        return 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+        if (status === 'online') return 'badge-success';
+        if (status === 'degraded') return 'badge-status border-amber-500/30 bg-amber-500/10 text-geel';
+        return 'badge-danger';
     };
 
     const getStatusIcon = (status: string) => {
@@ -107,15 +107,15 @@ export default function SystemManagementIsland({
     return (
         <div className="w-full">
             <div className="flex flex-col gap-8">
-                <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
-                    <div className="flex w-full gap-1 rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft) p-1.5 sm:w-auto">
+                <div className="page-header-row">
+                    <div className="tab-bar-container sm:w-auto">
                         <button
                             onClick={() => setActiveTab('status')}
                             className={cn(
-                                "tab-button flex flex-1 items-center justify-center gap-2.5 rounded-xl px-6 py-2.5 text-[10px] font-semibold transition-all sm:flex-none",
+                                "flex-1 px-6 py-2.5 sm:flex-none",
                                 activeTab === 'status'
-                                    ? "border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-accent) shadow-sm"
-                                    : "text-(--beheer-text-muted) hover:bg-(--beheer-card-bg)/40 hover:text-(--beheer-text)"
+                                    ? "tab-button-active"
+                                    : "tab-button-inactive"
                             )}
                             type="button">
                             <Activity className="size-3.5" />
@@ -124,10 +124,10 @@ export default function SystemManagementIsland({
                         <button
                             onClick={() => setActiveTab('automation')}
                             className={cn(
-                                "tab-button flex flex-1 items-center justify-center gap-2.5 rounded-xl px-6 py-2.5 text-[10px] font-semibold transition-all sm:flex-none",
+                                "flex-1 px-6 py-2.5 sm:flex-none",
                                 activeTab === 'automation'
-                                    ? "border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-accent) shadow-sm"
-                                    : "text-(--beheer-text-muted) hover:bg-(--beheer-card-bg)/40 hover:text-(--beheer-text)"
+                                    ? "tab-button-active"
+                                    : "tab-button-inactive"
                             )}
                             type="button">
                             <Settings2 className="size-3.5" />
@@ -138,7 +138,7 @@ export default function SystemManagementIsland({
                     <button
                         onClick={() => { void fetchStatus(); }}
                         disabled={isRefreshing}
-                        className="beheer-button flex items-center justify-center gap-2 rounded-2xl border border-(--beheer-border) bg-(--beheer-card-bg) px-8 py-3 text-[10px] font-semibold text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 active:scale-95 disabled:opacity-50"
+                        className="beheer-button-secondary"
                         type="button">
                         <RefreshCw className={cn("size-3.5", isRefreshing && "animate-spin")} />
                         Update Status
@@ -146,24 +146,24 @@ export default function SystemManagementIsland({
                 </div>
 
                 {activeTab === 'status' ? (
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
+                    <div className="form-grid-2col">
                         {statuses.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center rounded-[2.5rem] border border-dashed border-(--beheer-border) bg-(--beheer-card-bg) py-20 md:col-span-2">
-                                <AlertCircle className="mb-4 size-12 text-(--beheer-text-muted) opacity-20" />
+                            <div className="empty-state-box py-20 md:col-span-2">
+                                <AlertCircle className="empty-state-icon" />
                                 <p className="text-sm font-semibold text-(--beheer-text-muted)">Geen status data beschikbaar</p>
                             </div>
                         ) : (
                             statuses.map((service) => (
                                 <div
                                     key={service.name}
-                                    className="group relative overflow-hidden rounded-[2.5rem] border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-sm transition-all hover:shadow-md"
+                                    className="beheer-card-interactive"
                                 >
                                     <div className="mb-6 flex items-start justify-between">
-                                        <div className="rounded-2xl bg-(--beheer-card-soft) p-4 text-(--beheer-accent) transition-transform group-hover:scale-110">
+                                        <div className="icon-box">
                                             {service.name.toLowerCase().includes('database') ? <Database className="size-6" /> : <Zap className="size-6" />}
                                         </div>
                                         <div className={cn(
-                                            "flex items-center gap-2 rounded-full border px-4 py-2 text-[10px] font-semibold",
+                                            "badge-status",
                                             getStatusColor(service.status)
                                         )}>
                                             {getStatusIcon(service.status)}
@@ -174,26 +174,26 @@ export default function SystemManagementIsland({
                                     <div className="space-y-4">
                                         <div>
                                             <h3 className="text-lg font-semibold text-(--beheer-text)">{service.name}</h3>
-                                            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
-                                                <div className="flex items-center gap-2 text-[10px] font-semibold text-(--beheer-text-muted)">
+                                            <div className="mt-3 flex flex-wrap gap-4">
+                                                <div className="flex gap-2 form-label-muted">
                                                     <Clock className="size-3.5 text-(--beheer-accent)" />
                                                     Latency: {service.latency ? `${service.latency}ms` : 'N/A'}
                                                 </div>
                                                 
                                                 {service.status !== 'online' && service.outageStart && (
-                                                    <div className="flex items-center gap-2 text-[10px] font-semibold text-rose-500">
+                                                    <div className="flex gap-2 form-label-muted text-theme-error">
                                                         Offline sinds: {formatDateTime(new Date(service.outageStart))}
                                                     </div>
                                                 )}
                                                 
                                                 {service.status === 'online' && service.lastOffline && (
-                                                    <div className="flex items-center gap-2 text-[10px] font-semibold text-(--beheer-text-muted)">
+                                                    <div className="flex gap-2 form-label-muted">
                                                         Laatst offline: {formatDateTime(new Date(service.lastOffline))}
                                                     </div>
                                                 )}
                                                 
                                                 {service.status === 'online' && !service.lastOffline && (
-                                                    <div className="flex items-center gap-2 text-[10px] font-semibold text-emerald-500/85">
+                                                    <div className="flex gap-2 form-label-muted text-theme-success">
                                                         Geen downtime geregistreerd
                                                     </div>
                                                 )}
@@ -201,27 +201,22 @@ export default function SystemManagementIsland({
                                         </div>
 
                                         {service.error && (
-                                            <div className={cn(
-                                                "rounded-2xl border p-4",
-                                                service.status === 'online'
-                                                    ? "border-(--beheer-border)/40 bg-(--beheer-card-soft)"
-                                                    : "border-rose-500/10 bg-rose-500/5"
-                                            )}>
+                                            <div className={service.status === 'online' ? "beheer-info-box p-4" : "status-callout-error"}>
                                                 <p className={cn(
-                                                    "text-[10px] font-semibold",
-                                                    service.status === 'online' ? "text-(--beheer-text-muted)" : "text-rose-500"
+                                                    "text-xs font-semibold",
+                                                    service.status === 'online' ? "text-(--beheer-text-muted)" : "text-theme-error"
                                                 )}>
                                                     {service.status === 'online' ? 'Laatste Foutmelding' : 'Foutmelding Detail'}
                                                 </p>
                                                 <p className={cn(
                                                     "mt-1 text-xs font-semibold",
-                                                    service.status === 'online' ? "text-(--beheer-text)/70" : "text-rose-400/80"
+                                                    service.status === 'online' ? "text-(--beheer-text)/70" : "text-theme-error"
                                                 )}>{service.error}</p>
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="opacity-0.03 group-hover:opacity-0.07 absolute -right-10 -bottom-10 transition-opacity">
+                                    <div className="bg-watermark-icon">
                                         <Activity className="size-48" />
                                     </div>
                                 </div>
@@ -229,20 +224,15 @@ export default function SystemManagementIsland({
                         )}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
+                    <div className="form-grid-2col">
                         {automationSettings.map((setting) => (
                             <div
                                 key={setting.id}
-                                className="group flex flex-col justify-between rounded-[2.5rem] border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-sm transition-all hover:shadow-md"
+                                className="beheer-card-interactive flex flex-col justify-between"
                             >
                                 <div>
                                     <div className="mb-6 flex items-center gap-4">
-                                        <div className={cn(
-                                            "rounded-2xl p-4 transition-all group-hover:scale-110",
-                                            setting.isActive
-                                                ? "bg-emerald-500/10 text-emerald-500"
-                                                : "bg-rose-500/10 text-rose-500"
-                                        )}>
+                                        <div className={setting.isActive ? "icon-box-active" : "icon-box-error"}>
                                             {setting.id === 'mail_expiry_check' ? <CalendarClock className="size-6" /> :
                                                 setting.id === 'auto_sync_nightly' ? <RefreshCcw className="size-6" /> :
                                                     <BellRing className="size-6" />}
@@ -251,20 +241,20 @@ export default function SystemManagementIsland({
                                             {setting.name}
                                         </h3>
                                     </div>
-                                    <p className="mb-8 text-xs leading-relaxed font-medium text-(--beheer-text-muted) opacity-80">
+                                    <p className="card-subtext-muted mb-8 opacity-80">
                                         {setting.description}
                                     </p>
                                 </div>
 
-                                <div className="flex items-center justify-between border-t border-(--beheer-border)/50 pt-6">
+                                <div className="status-indicator-row">
                                     <div className="flex items-center gap-3">
                                         <div className={cn(
                                             "size-2 rounded-full",
-                                            setting.isActive ? "bg-emerald-500" : "bg-rose-500"
+                                            setting.isActive ? "bg-theme-success" : "bg-theme-error"
                                         )} />
                                         <span className={cn(
-                                            "text-[10px] font-semibold",
-                                            setting.isActive ? "text-emerald-500" : "text-rose-500"
+                                            "text-xs font-semibold",
+                                            setting.isActive ? "text-theme-success" : "text-theme-error"
                                         )}>
                                             {setting.isActive ? 'Actief' : 'Gepauzeerd'}
                                         </span>
@@ -281,32 +271,32 @@ export default function SystemManagementIsland({
                             </div>
                         ))}
 
-                        <div className="relative overflow-hidden rounded-[2.5rem] border border-(--beheer-accent)/20 bg-(--beheer-accent)/5 p-8 md:col-span-2">
-                            <div className="relative z-10 flex items-start gap-6">
-                                <div className="rounded-2xl bg-(--beheer-accent)/10 p-3 text-(--beheer-accent)">
+                        <div className="relative beheer-accent-banner overflow-hidden md:col-span-2">
+                            <div className="banner-content-wrapper">
+                                <div className="icon-box">
                                     <ShieldCheck className="size-8" />
                                 </div>
                                 <div>
-                                    <h4 className="mb-3 text-sm font-semibold text-(--beheer-accent)">Systeem Veiligheids Protocol</h4>
-                                    <p className="max-w-3xl text-xs leading-relaxed font-medium text-(--beheer-text-muted) opacity-90">
+                                    <h4 className="mb-3 section-title-sm text-beheer-accent">Systeem Veiligheids Protocol</h4>
+                                    <p className="card-subtext-muted max-w-3xl opacity-90">
                                         Deze toggles beheren kritieke achtergrondprocessen. Wijzigingen treden onmiddellijk in werking.
                                         De <strong>Nachtelijke Sync</strong> draait dagelijks om 03:00 en zorgt dat alle Azure-rechten in de cockpit up-to-date zijn.
                                         Schakel processen alleen uit bij onderhoud of debugging om data-inconsistentie te voorkomen.
                                     </p>
                                 </div>
                             </div>
-                            <Activity className="opacity-0.05 absolute -right-8 -bottom-8 size-40 text-(--beheer-accent)" />
+                            <Activity className="bg-watermark-icon size-40 text-beheer-accent" />
                         </div>
                     </div>
                 )}
             </div>
 
             {lastUpdated && (
-                <div className="mt-12 flex flex-col items-center gap-2">
-                    <p className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-40">
+                <div className="mt-12 flex flex-col items-center">
+                    <p className="text-xs font-semibold text-beheer-text-muted opacity-40">
                         System Monitoring Active
                     </p>
-                    <p className="text-[9px] font-semibold text-(--beheer-text-muted) opacity-30">
+                    <p className="system-status-timestamp">
                         {`Last Sync: ${formatDateTime(lastUpdated)}`}
                     </p>
                 </div>

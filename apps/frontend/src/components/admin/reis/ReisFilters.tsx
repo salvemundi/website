@@ -41,20 +41,20 @@ export default function ReisFilters({
     tripId
 }: ReisFiltersProps) {
     return (
-        <div className="rounded-3xl border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm">
-            <div className="flex flex-col items-stretch gap-3 p-3 lg:flex-row lg:items-center">
+        <div className="reis-filters-box">
+            <div className="reis-filters-row">
                 <div className="group relative flex-1">
-                    <Search className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-(--beheer-text-muted) opacity-50 transition-all group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100" />
+                    <Search className="search-icon-left" />
                     <input
                         type="text"
                         placeholder="Zoek deelnemers..."
                         value={searchQuery}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        className="beheer-input w-full py-2 pr-4 pl-11!"
+                        className="beheer-input pr-4 pl-11!"
                     />
                 </div>
 
-                <div className="flex flex-col flex-wrap items-center gap-2 sm:flex-row">
+                <div className="reis-filters-controls">
                     <div className="w-full sm:w-44">
                         <BeheerSelect
                             value={statusFilter}
@@ -73,24 +73,24 @@ export default function ReisFilters({
                         />
                     </div>
 
-                    <div className="flex w-full flex-wrap items-center justify-center gap-1.5 sm:w-auto">
+                    <div className="reis-filter-actions">
                         <Link
                             href={`/beheer/reis/activiteiten?tripId=${tripId}`}
-                            className="flex items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-xs font-semibold whitespace-nowrap text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 hover:bg-(--beheer-accent)/5"
+                            className="beheer-button-secondary whitespace-nowrap text-beheer-text"
                         >
-                            <Compass className="size-3.5 text-(--beheer-accent)" />
+                            <Compass className="size-3.5 text-beheer-accent" />
                             Activiteiten
                         </Link>
                         <Link
                             href="/beheer/reis/mail"
-                            className="flex items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-xs font-semibold whitespace-nowrap text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 hover:bg-(--beheer-accent)/5"
+                            className="beheer-button-secondary whitespace-nowrap text-beheer-text"
                         >
-                            <Mail className="size-3.5 text-(--beheer-accent)" />
+                            <Mail className="size-3.5 text-beheer-accent" />
                             Mailen
                         </Link>
                         <button
                             onClick={onDownloadCSV}
-                            className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-emerald-700 px-5 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-sm transition-all hover:bg-emerald-800"
+                            className="beheer-button-secondary whitespace-nowrap"
                             type="button"
                         >
                             <Download className="size-3.5" />

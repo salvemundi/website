@@ -30,16 +30,14 @@ function slugify(text: string): string {
 }
 
 const HEADING_CLS =
-    'text-sm font-bold uppercase tracking-[0.3em] mb-4 text-center md:text-left ' +
-    'text-purple-700 dark:text-white';
+    'text-sm font-bold uppercase tracking-[0.2em] mb-4 text-center md:text-left ' +
+    'text-theme-purple';
 
 const LINK_CLS =
-    'inline-flex items-center gap-1 rounded-full px-2 py-1 transition ' +
-    'text-purple-800 dark:text-(--text-light) ' +
-    'hover:bg-purple-500/10 dark:hover:bg-white/10 ' +
-    'hover:text-purple-700 dark:hover:text-white';
+    'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-sm transition-colors ' +
+    'text-(--text-muted) hover:text-(--text-main) hover:bg-theme-purple/10';
 
-const MUTED_CLS = 'text-purple-800 dark:text-(--text-light)';
+const MUTED_CLS = 'text-(--text-muted)';
 
 const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRoutes = [], committees, initialSession }) => {
     const isAuthenticated = !!initialSession?.user;
@@ -76,8 +74,8 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
 
     return (
         <footer className="dark:bg-gradient-theme relative overflow-hidden border-t border-border-color/20 bg-bg-card">
-            <div className="absolute top-10 -left-10 size-64 rounded-full bg-purple-200/10 blur-3xl" />
-            <div className="absolute -right-10 bottom-10 size-64 rounded-full bg-purple-100/10 blur-3xl" />
+            <div className="absolute top-10 -left-10 size-64 rounded-full bg-theme-purple/10 blur-3xl" />
+            <div className="absolute -right-10 bottom-10 size-64 rounded-full bg-theme-purple/10 blur-3xl" />
 
             <div className="relative mx-auto max-w-7xl px-4 pt-6 pb-safe-4 sm:px-6 lg:px-8 lg:pt-8">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
@@ -109,7 +107,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                         <ul className="mx-auto grid w-full max-w-fit grid-cols-2 gap-x-8 gap-y-2 text-sm md:mx-0 md:max-w-none md:grid-cols-1">
                             {pageLinks.map((link) => (
                                 <li key={link.href}>
-                                    <ActiveLink href={link.href} className={LINK_CLS} activeClassName="bg-purple-500/10 text-purple-700">
+                                    <ActiveLink href={link.href} className={LINK_CLS} activeClassName="bg-theme-purple/10 text-theme-purple">
                                         {link.label}
                                     </ActiveLink>
                                 </li>
@@ -127,7 +125,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                     const slug = slugify(cleaned);
                                     return (
                                         <div key={committee.id}>
-                                            <ActiveLink href={`${ROUTES.COMMITTEES}/${slug}`} className={LINK_CLS} activeClassName="bg-purple-500/10 text-purple-700">
+                                            <ActiveLink href={`${ROUTES.COMMITTEES}/${slug}`} className={LINK_CLS} activeClassName="bg-theme-purple/10 text-theme-purple">
                                                 {cleaned}
                                             </ActiveLink>
                                         </div>
@@ -141,7 +139,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                     const slug = slugify(cleaned);
                                     return (
                                         <div key={committee.id}>
-                                            <ActiveLink href={`${ROUTES.COMMITTEES}/${slug}`} className={LINK_CLS} activeClassName="bg-purple-500/10 text-purple-700">
+                                            <ActiveLink href={`${ROUTES.COMMITTEES}/${slug}`} className={LINK_CLS} activeClassName="bg-theme-purple/10 text-theme-purple">
                                                 {cleaned}
                                             </ActiveLink>
                                         </div>
@@ -151,7 +149,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                         </div>
 
                         <div className="mt-6 text-center lg:text-center">
-                            <ActiveLink href={ROUTES.COMMITTEES} className={`${LINK_CLS} font-bold text-purple-500`} activeClassName="bg-purple-500/10 text-purple-700">
+                            <ActiveLink href={ROUTES.COMMITTEES} className={`${LINK_CLS} font-bold text-theme-purple`} activeClassName="bg-theme-purple/10 text-theme-purple">
                                 Alle commissies bekijken
                             </ActiveLink>
                         </div>
@@ -190,10 +188,8 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 <Link
                                     href={ROUTES.SAFE_HAVENS}
                                     className={
-                                        'inline-flex items-center gap-1 squircle px-2 py-1 font-semibold transition ' +
-                                        'bg-purple-500/20 text-purple-700 ' +
-                                        'dark:bg-white/15 dark:text-white ' +
-                                        'hover:bg-purple-500/30 dark:hover:bg-white/25'
+                                        'inline-flex items-center gap-1 squircle px-2.5 py-1 font-semibold transition ' +
+                                        'bg-theme-purple/10 text-theme-purple hover:bg-theme-purple/20'
                                     }
                                 >
                                     Safe Havens
@@ -207,12 +203,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 href="https://www.instagram.com/sv.salvemundi/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={
-                                    'inline-flex h-10 w-10 items-center justify-center rounded-full transition ' +
-                                    'bg-purple-500/15 dark:bg-white/10 ' +
-                                    'text-purple-700 dark:text-white ' +
-                                    'hover:bg-purple-500/25 dark:hover:bg-white/20'
-                                }
+                                className="icon-button p-2.5"
                                 aria-label="Instagram"
                             >
                                 <SiInstagram className="size-5" />
@@ -221,12 +212,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 href="https://www.facebook.com/sv.salvemundi/?locale=nl_NL"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={
-                                    'inline-flex h-10 w-10 items-center justify-center rounded-full transition ' +
-                                    'bg-purple-500/15 dark:bg-white/10 ' +
-                                    'text-purple-700 dark:text-white ' +
-                                    'hover:bg-purple-500/25 dark:hover:bg-white/20'
-                                }
+                                className="icon-button p-2.5"
                                 aria-label="Facebook"
                             >
                                 <SiFacebook className="size-5" />
@@ -235,12 +221,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 href="https://nl.linkedin.com/company/salve-mundi"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={
-                                    'inline-flex h-10 w-10 items-center justify-center rounded-full transition ' +
-                                    'bg-purple-500/15 dark:bg-white/10 ' +
-                                    'text-purple-700 dark:text-white ' +
-                                    'hover:bg-purple-500/25 dark:hover:bg-white/20'
-                                }
+                                className="icon-button p-2.5"
                                 aria-label="LinkedIn"
                             >
                                 <FaLinkedin className="size-5" />
@@ -249,12 +230,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
                                 href="https://www.tiktok.com/@salve.mundi"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={
-                                    'inline-flex h-10 w-10 items-center justify-center rounded-full transition ' +
-                                    'bg-purple-500/15 dark:bg-white/10 ' +
-                                    'text-purple-700 dark:text-white ' +
-                                    'hover:bg-purple-500/25 dark:hover:bg-white/20'
-                                }
+                                className="icon-button p-2.5"
                                 aria-label="TikTok"
                             >
                                 <SiTiktok className="size-5" />

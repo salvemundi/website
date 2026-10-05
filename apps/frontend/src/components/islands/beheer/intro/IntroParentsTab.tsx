@@ -69,7 +69,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, deletingI
                         placeholder="Zoek op naam, email of telefoon..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="beheer-input w-full border-none bg-transparent p-0 text-sm font-semibold text-(--beheer-text) outline-none placeholder:text-(--beheer-text-muted)/40"
+                        className="beheer-input p-0"
                     />
                 </div>
             </div>
@@ -155,22 +155,22 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, deletingI
                                                                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                                                         <div className="flex flex-col gap-2">
                                                                             <span className="text-[9px] opacity-50">Voornaam</span>
-                                                                            <input type="text" value={editData.first_name || ''} onChange={e => setEditData({ ...editData, first_name: e.target.value })} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
+                                                                            <input type="text" value={editData.first_name || ''} onChange={e => setEditData({ ...editData, first_name: e.target.value })} className="beheer-input" />
                                                                         </div>
                                                                         <div className="flex flex-col gap-2">
                                                                             <span className="text-[9px] opacity-50">Achternaam</span>
-                                                                            <input type="text" value={editData.last_name || ''} onChange={e => setEditData({ ...editData, last_name: e.target.value })} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
+                                                                            <input type="text" value={editData.last_name || ''} onChange={e => setEditData({ ...editData, last_name: e.target.value })} className="beheer-input" />
                                                                         </div>
                                                                         <div className="flex flex-col gap-2">
                                                                             <span className="text-[9px] opacity-50">Email</span>
-                                                                            <input type="email" value={editData.email || ''} onChange={e => setEditData({ ...editData, email: e.target.value })} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
+                                                                            <input type="email" value={editData.email || ''} onChange={e => setEditData({ ...editData, email: e.target.value })} className="beheer-input" />
                                                                         </div>
                                                                         <div className="flex flex-col gap-2">
                                                                             <span className="text-[9px] opacity-50">Telefoon</span>
                                                                             <PhoneInput
                                                                                 value={editData.phone_number || ''}
                                                                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setEditData({ ...editData, phone_number: e.target.value })}
-                                                                                className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)"
+                                                                                className="beheer-input"
                                                                             />
                                                                         </div>
                                                                         <div className="flex flex-col gap-2 sm:col-span-2">
@@ -178,7 +178,7 @@ export default function IntroParentsTab({ parents, onDelete, onUpdate, deletingI
                                                                             <textarea
                                                                                 value={editData.motivation || ''}
                                                                                 onChange={e => setEditData({ ...editData, motivation: e.target.value })}
-                                                                                className="min-h-25 beheer-input resize-none rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)"
+                                                                                className="beheer-input min-h-25 resize-none"
                                                                             />
                                                                         </div>
                                                                     </div>

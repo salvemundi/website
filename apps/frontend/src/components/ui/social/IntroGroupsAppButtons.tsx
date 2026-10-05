@@ -22,7 +22,7 @@ export default function IntroGroupsAppButtons({ groups }: IntroGroupsAppButtonsP
                     href={group.invite_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group squircle hover:scale-1.01 flex items-start justify-between gap-3 bg-purple-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl"
+                    className="group beheer-button items-start justify-between squircle text-wit-paars"
                 >
                     <span className="flex min-w-0 items-start gap-3">
                         <MessageCircle className="mt-0.5 size-5 shrink-0" />

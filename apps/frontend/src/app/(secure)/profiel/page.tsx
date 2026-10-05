@@ -37,10 +37,10 @@ export default async function ProfielPage() {
                 {pendingNdaCount > 0 && (
                     <Link
                         href="/profiel/nda"
-                        className="group squircle-lg hover:scale-1.01 mb-8 flex items-center justify-between gap-4 bg-amber-600 px-6 py-5 text-white shadow-lg transition-all hover:shadow-xl sm:px-8 sm:py-6"
+                        className="group hover:scale-1.01 mb-8 flex items-center justify-between gap-4 squircle-lg bg-amber-600 px-6 py-5 text-white shadow-lg transition-all hover:shadow-xl sm:px-8 sm:py-6"
                     >
                         <div className="flex items-center gap-4">
-                            <div className="squircle flex size-11 shrink-0 items-center justify-center bg-white/15 sm:size-12">
+                            <div className="flex size-11 shrink-0 items-center justify-center squircle bg-white/15 sm:size-12">
                                 <FileSignature className="size-5 sm:size-6" />
                             </div>
                             <div>
@@ -56,10 +56,10 @@ export default async function ProfielPage() {
                 {showIntroAttendanceBanner && (
                     <Link
                         href="/profiel/intro-attendance"
-                        className="group squircle-lg hover:scale-1.01 mb-8 flex items-center justify-between gap-4 bg-purple-600 px-6 py-5 text-white shadow-lg transition-all hover:shadow-xl sm:px-8 sm:py-6"
+                        className="group mb-8 beheer-button justify-between squircle-lg sm:px-8 sm:py-6"
                     >
                         <div className="flex items-center gap-4">
-                            <div className="squircle flex size-11 shrink-0 items-center justify-center bg-white/15 sm:size-12">
+                            <div className="flex size-11 shrink-0 items-center justify-center squircle bg-white/15 sm:size-12">
                                 <ClipboardCheck className="size-5 sm:size-6" />
                             </div>
                             <div>

@@ -27,8 +27,8 @@ export function ObfuscatedEmail({ email, showIcon = true, className = "" }: Obfu
 
     const [user, domain] = email.split('@');
 
-    const handleMailClick = (e: React.MouseEvent) => {
-        e.preventDefault();
+    const handleMailClick = (event: React.MouseEvent) => {
+        event.preventDefault();
         window.location.href = `mailto:${user}@${domain}`;
     };
 
@@ -36,7 +36,7 @@ export function ObfuscatedEmail({ email, showIcon = true, className = "" }: Obfu
         <a
             href={isMounted ? `mailto:${user}@${domain}` : undefined}
             onClick={handleMailClick}
-            className={`inline-flex cursor-pointer items-center gap-2 transition-colors hover:text-purple-500 ${className}`}
+            className={`inline-flex cursor-pointer items-center gap-2 transition-colors hover:text-theme-purple ${className}`}
             title="Klik om te e-mailen"
         >
             {showIcon && <Mail className="size-4 shrink-0 opacity-70" />}

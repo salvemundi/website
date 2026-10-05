@@ -16,18 +16,18 @@ export function Tile({
     title, icon, children, className = "", actions
 }: TileProps) {
     return (
-        <section className={`squircle-xl relative overflow-hidden border border-transparent bg-(--bg-card) shadow-lg dark:border-white/10 ${className}`}>
+        <section className={`relative overflow-hidden squircle-xl border border-transparent bg-(--bg-card) shadow-lg dark:border-white/10 ${className}`}>
             <div className="relative p-6 sm:p-8">
                 {(title || actions) && (
                     <header className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex min-w-0 items-center gap-3">
                             {icon && (
-                                <div className="flex shrink-0 items-center justify-center text-purple-700 dark:text-purple-300">
+                                <div className="flex shrink-0 items-center justify-center text-theme-purple">
                                     {icon}
                                 </div>
                             )}
                             {title && (
-                                <h2 className="min-w-0 text-xl font-bold wrap-break-word whitespace-normal text-purple-700 sm:text-2xl dark:text-white">
+                                <h2 className="min-w-0 text-xl font-bold wrap-break-word whitespace-normal text-theme-purple sm:text-2xl">
                                     {title}
                                 </h2>
                             )}
@@ -54,17 +54,17 @@ interface QuickLinkProps {
 export function QuickLink({
     label, subtitle, icon, onClick, href, locked, external
 }: QuickLinkProps) {
-    const common = "group flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-300 border border-licht-paars/20 dark:border-white/10 hover:border-purple-300 shadow-sm w-full hover:-translate-y-0.5";
+    const common = "group flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-300 border border-licht-paars/20 dark:border-white/10 hover:border-purple-300 shadow-sm w-full";
 
     const inner = (
         <>
-            <div className="flex shrink-0 items-center justify-center text-purple-700 transition-transform group-hover:scale-110 dark:text-purple-300">
+            <div className="flex shrink-0 items-center justify-center text-theme-purple">
                 {icon}
             </div>
-            <span className="flex flex-1 items-center justify-between text-sm font-bold text-purple-700 dark:text-white">
+            <span className="flex flex-1 items-center justify-between text-sm font-bold text-theme-purple">
                 <div className="flex flex-col items-start gap-0.5">
                     <span>{label}</span>
-                    {subtitle && <span className="text-[10px] leading-none font-medium text-purple-500 opacity-80 dark:text-purple-400">{subtitle}</span>}
+                    {subtitle && <span className="text-[10px] leading-none font-medium text-theme-purple opacity-80">{subtitle}</span>}
                 </div>
                 <div className="flex items-center gap-2">
                     {locked && <Lock className="size-3 opacity-50" />}

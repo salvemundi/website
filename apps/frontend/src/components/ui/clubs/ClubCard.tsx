@@ -22,8 +22,8 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
     const needsExpand = !!description && (description.length > 160 || description.includes('\n'));
 
     return (
-        <div className="group squircle-lg flex h-full flex-col overflow-hidden bg-bg-card shadow-lg transition hover:-translate-y-1 hover:shadow-2xl dark:border dark:border-white/10">
-            <div className="relative h-61 w-full overflow-hidden bg-linear-to-br from-purple-500/20 to-purple-900/40">
+        <div className="group flex h-full flex-col overflow-hidden squircle-lg bg-bg-card shadow-lg transition hover:-translate-y-1 hover:shadow-2xl dark:border dark:border-white/10">
+            <div className="relative h-61 w-full overflow-hidden bg-linear-to-br from-theme-purple/20 to-theme-purple/40">
                 {!hasImage ? (
                     <>
                         <Image
@@ -71,7 +71,7 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                                 <p className="hidden whitespace-pre-line group-open:block">
                                     {description}
                                 </p>
-                                <span className="mt-2 inline-block text-xs font-bold text-purple-500 group-open:hidden">
+                                <span className="mt-2 inline-block text-xs font-bold text-theme-purple group-open:hidden">
                                     Lees meer
                                 </span>
                             </summary>

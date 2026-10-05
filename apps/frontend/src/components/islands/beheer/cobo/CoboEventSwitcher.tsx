@@ -62,7 +62,7 @@ export default function CoboEventSwitcher({
                         type="button"
                         onClick={handleEdit}
                         title="CoBo Instellingen & Tekst bewerken"
-                        className="beheer-button flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-border-color bg-bg-card px-3 py-2 text-xs font-semibold text-text-main shadow-sm transition-all hover:border-theme-purple hover:bg-theme-purple/5"
+                        className="beheer-button-secondary text-text-main"
                     >
                         <Settings2 className="size-3.5" />
                         <span className="hidden sm:inline">Bewerken</span>
@@ -73,7 +73,7 @@ export default function CoboEventSwitcher({
                     type="button"
                     onClick={handleNew}
                     title="Nieuwe CoBo editie aanmaken"
-                    className="beheer-button flex cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-purple-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-purple-700"
+                    className="beheer-button"
                 >
                     <Plus className="size-3.5" />
                     <span>Nieuw</span>

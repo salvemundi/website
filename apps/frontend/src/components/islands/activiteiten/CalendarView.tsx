@@ -71,16 +71,16 @@ export default function CalendarView({
     }, [days, events]);
 
     return (
-        <section aria-label="Activiteitenkalender" className="overflow-hidden rounded-2xl bg-(--bg-card) shadow-xl sm:rounded-3xl dark:border dark:border-white/10">
-            <div className="flex items-center justify-between p-5 text-purple-700 sm:p-6 dark:text-purple-300">
-                <h2 className="text-xl font-black tracking-tight capitalize sm:text-2xl">
+        <section aria-label="Activiteitenkalender" className="calendar-card-container">
+            <div className="calendar-header-bar">
+                <h2 className="calendar-header-title">
                     {currentDate.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}
                 </h2>
                 <div className="flex items-center gap-2">
                     <button
                         type="button"
                         onClick={onPrevMonth}
-                        className="icon-button flex size-9 items-center justify-center rounded-full text-purple-700 transition-colors hover:bg-purple-500/10 dark:text-purple-300 dark:hover:bg-purple-400/10"
+                        className="btn-calendar-nav"
                         aria-label="Vorige maand"
                     >
                         <ChevronLeft className="size-5" />
@@ -92,14 +92,14 @@ export default function CalendarView({
                             onSelectDay(today);
                             onGoToDate?.(today);
                         }}
-                        className="tab-button rounded-full bg-purple-500/10 px-4 py-1.5 text-xs font-bold text-purple-700 transition-colors hover:bg-purple-500/20 dark:bg-purple-400/10 dark:text-purple-300 dark:hover:bg-purple-400/20"
+                        className="btn-calendar-today"
                     >
                         Vandaag
                     </button>
                     <button
                         type="button"
                         onClick={onNextMonth}
-                        className="icon-button flex size-9 items-center justify-center rounded-full text-purple-700 transition-colors hover:bg-purple-500/10 dark:text-purple-300 dark:hover:bg-purple-400/10"
+                        className="btn-calendar-nav"
                         aria-label="Volgende maand"
                     >
                         <ChevronRight className="size-5" />
@@ -107,15 +107,15 @@ export default function CalendarView({
                 </div>
             </div>
 
-            <div className="grid grid-cols-7 border-y border-(--border-color)/30 bg-(--bg-soft)">
+            <div className="calendar-weekdays-bar">
                 {WEEK_DAYS.map(day => (
-                    <div key={day} className="py-2.5 text-center text-[11px] font-black tracking-wider text-(--text-muted) uppercase">
+                    <div key={day} className="calendar-weekday-label">
                         {day}
                     </div>
                 ))}
             </div>
 
-            <div className="grid auto-rows-fr grid-cols-7 gap-px bg-(--border-color)/40">
+            <div className="calendar-grid-wrapper">
                 {days.map((day) => {
                     const dayKey = day.toDateString();
                     const dayEvents = eventsByDayKey.get(dayKey) ?? [];
@@ -130,30 +130,30 @@ export default function CalendarView({
                             key={dayKey}
                             onClick={() => onSelectDay(day)}
                             className={cn(
-                                "group relative flex min-h-28 cursor-pointer flex-col justify-between p-2 transition-colors",
-                                !isCurrentMonth ? "bg-(--bg-soft)/40 text-(--text-muted)/60" : "bg-(--bg-card) text-(--text-main)",
-                                isSelected && "bg-purple-500/5 ring-2 ring-purple-600 ring-inset dark:bg-purple-400/5 dark:ring-purple-400",
-                                !isSelected && "hover:bg-purple-500/4 dark:hover:bg-purple-400/4"
+                                "group calendar-day-cell",
+                                !isCurrentMonth ? "bg-bg-soft/40 text-text-muted/60" : "bg-bg-card text-text-main",
+                                isSelected && "bg-theme-purple/5 ring-2 ring-theme-purple ring-inset",
+                                !isSelected && "hover:bg-theme-purple/5"
                             )}
                         >
                             <div className="flex items-center justify-between">
                                 <span
                                     className={cn(
-                                        "flex size-7 items-center justify-center rounded-full text-xs transition-colors",
+                                        "calendar-day-badge",
                                         isDayToday
-                                            ? "bg-(--theme-purple) font-black text-white shadow-xs"
+                                            ? "bg-theme-purple font-black text-wit-paars shadow-xs"
                                             : isSelected
-                                                ? "font-black text-purple-700 dark:text-purple-300"
+                                                ? "font-black text-theme-purple"
                                                 : isCurrentMonth
-                                                    ? "font-semibold text-(--text-main)"
-                                                    : "text-(--text-muted)/60"
+                                                    ? "font-semibold text-text-main"
+                                                    : "text-text-muted/60"
                                     )}
                                 >
                                     {day.getDate()}
                                 </span>
                                 {dayEvents.length > 0 && (
-                                    <span className="hidden text-[10px] font-bold text-(--text-muted) opacity-70 group-hover:opacity-100 sm:inline-block">
-                                        {dayEvents.length} {dayEvents.length === 1 ? 'act.' : 'act.'}
+                                    <span className="hidden text-2xs font-bold text-text-muted opacity-70 group-hover:opacity-100 sm:inline-block">
+                                        {dayEvents.length} act.
                                     </span>
                                 )}
                             </div>
@@ -167,11 +167,11 @@ export default function CalendarView({
                                             e.stopPropagation();
                                             onEventClick(event);
                                         }}
-                                        className="tab-button group/item flex w-full items-center gap-1.5 rounded-md border border-purple-500/15 bg-purple-500/10 px-2 py-1 text-left text-[11px] font-bold text-purple-800 transition-colors duration-150 hover:border-purple-500/35 hover:bg-purple-500/20 dark:border-purple-400/20 dark:bg-purple-400/10 dark:text-purple-200 dark:hover:border-purple-400/40 dark:hover:bg-purple-400/20"
+                                        className="calendar-event-chip"
                                         title={`${event.event_time ? event.event_time.split(':').slice(0, 2).join(':') : '00:00'} - ${event.name}`}
                                     >
                                         {event.event_time && (
-                                            <span className="shrink-0 text-[10px] font-black opacity-60">
+                                            <span className="shrink-0 text-2xs font-black opacity-60">
                                                 {event.event_time.split(':').slice(0, 2).join(':')}
                                             </span>
                                         )}
@@ -182,7 +182,7 @@ export default function CalendarView({
                                 ))}
 
                                 {overflowCount > 0 && (
-                                    <div className="mt-0.5 text-center text-[10px] font-bold text-purple-700 dark:text-purple-300">
+                                    <div className="mt-0.5 text-center text-2xs font-bold text-theme-purple">
                                         +{overflowCount} meer
                                     </div>
                                 )}

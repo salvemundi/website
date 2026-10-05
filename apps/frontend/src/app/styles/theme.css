@@ -1,49 +1,40 @@
 /* ==========================================================================
-   THEME.CSS — Dark Mode Overrides & Semantic Token Aliases
-   Only values that differ from the @theme light-mode defaults appear here.
+   THEME.CSS — Dark Mode Overrides
    ========================================================================== */
 
-/* ── Dark Mode ─────────────────────────────────────────────────────────────── */
-.dark {
-    color-scheme: dark;
-    --bg-main: #201024; /* Very dark brand purple based on #5A3761 */
-    --bg-soft: #2d1933; /* Dark brand purple */
-    --bg-card: #392040; /* Lighter dark brand purple for cards */
-
-    --text-main: #F0F1F9; /* Wit Paars */
-    --text-subtle: #ffffff;
-    --text-muted: #ebdceb;
-    --text-light: #936695; /* Licht Paars */
-
-    --border-color: #5A3761; /* Donker Paars border */
-
-    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-    --shadow-card-elevated: 0 8px 20px rgba(6, 4, 10, 0.45);
-
-    --gradient-start: #5A3761; /* Donker Paars */
-    --gradient-end: #936695;   /* Licht Paars */
-
-    --bg-gradient-start: #2d1933;
-    --bg-gradient-end: #1a0b1d;
-
-    --theme-success: #4ade80;
-    --theme-warning: #F8CF45;
-    --theme-error: #f87171;
-    --theme-info: #132A40;
-}
-
+/* ── Light Mode Defaults ─────────────────────────────────────────────────── */
 :root {
     color-scheme: light;
-    --theme-purple: var(--color-purple-700);
-    --theme-purple-light: var(--color-purple-500);
-    --theme-purple-dark: var(--color-purple-800);
-    --theme-purple-darker: var(--color-purple-900);
-    --theme-purple-lighter: var(--color-purple-100);
-    --theme-white: var(--color-white);
+    --bg-main: var(--color-wit-paars);
+    --bg-soft: var(--color-wit-paars);
+    --bg-card: var(--color-wit-paars);
+
+    --text-main: var(--color-donker-paars);
+    --text-subtle: var(--color-donker-paars);
+    --text-muted: var(--color-donker-paars);
+    --text-light: var(--color-licht-paars);
+
+    --border-color: var(--color-licht-paars);
+
+    --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.1), 0 1px 2px rgba(16, 24, 40, 0.06);
+    --shadow-card-elevated: 0 8px 20px rgba(6, 4, 10, 0.45);
+
+    --gradient-start: var(--color-wit-paars);
+    --gradient-end: var(--color-wit-paars);
+
+    --bg-gradient-start: var(--color-wit-paars);
+    --bg-gradient-end: var(--color-wit-paars);
+
+    --theme-purple: var(--color-donker-paars);
+
+    --theme-success: #16a34a;       /* Static Groen */
+    --theme-warning: var(--color-geel);
+    --theme-error: #dc2626;         /* Static Rood */
+    --theme-info: var(--color-donker-blauw);
 
     /* ── Beheer Page Tokens ────────────────────────────────────────── */
-    --beheer-active: #22c55e;        /* Green-500 */
-    --beheer-inactive: #ef4444;      /* Red-500 */
+    --beheer-active: var(--theme-success);
+    --beheer-inactive: var(--theme-error);
     --beheer-accent: var(--theme-purple);
     --beheer-card-bg: var(--bg-card);
     --beheer-card-soft: var(--bg-main);
@@ -51,17 +42,45 @@
     --beheer-text: var(--text-main);
     --beheer-text-muted: var(--text-muted);
     
-    /* Beheer Page Tokens */
     --beheer-btn-px: 1.5rem;
     --beheer-btn-py: 0.75rem;
     --beheer-radius: 1.5rem;
+    --max-w-app: 1440px;
+    --beheer-container-px: clamp(1.25rem, 3.5vw, 3rem);
 }
 
+/* ── Dark Mode Overrides ──────────────────────────────────────────────────── */
 .dark {
-    --theme-purple: var(--color-purple-300);
-    --beheer-active: #4ade80;        /* Green-400 */
-    --beheer-inactive: #f87171;      /* Red-400 */
+    color-scheme: dark;
+    --bg-main: var(--color-donker-paars);
+    --bg-soft: var(--color-donker-blauw);
+    --bg-card: var(--color-donker-blauw);
+
+    --text-main: var(--color-wit-paars);
+    --text-subtle: var(--color-wit-paars);
+    --text-muted: var(--color-licht-paars);
+    --text-light: var(--color-licht-paars);
+
+    --border-color: var(--color-licht-paars);
+
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-card-elevated: 0 8px 20px rgba(0, 0, 0, 0.6);
+
+    --gradient-start: var(--color-donker-paars);
+    --gradient-end: var(--color-donker-blauw);
+
+    --bg-gradient-start: var(--color-donker-paars);
+    --bg-gradient-end: var(--color-donker-blauw);
+
+    --theme-purple: var(--color-licht-paars);
+    --theme-success: #16a34a;       /* Static Groen */
+    --theme-warning: var(--color-geel);
+    --theme-error: #dc2626;         /* Static Rood */
+    --theme-info: var(--color-donker-blauw);
+
+    --beheer-active: var(--theme-success);
+    --beheer-inactive: var(--theme-error);
     --beheer-card-bg: var(--bg-card);
-    --beheer-card-soft: rgba(255, 255, 255, 0.06);
-    --beheer-border: rgba(255, 255, 255, 0.06);
+    --beheer-card-soft: var(--bg-soft);
+    --beheer-border: var(--border-color);
 }

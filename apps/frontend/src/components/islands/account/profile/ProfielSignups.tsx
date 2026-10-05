@@ -32,19 +32,19 @@ export default function ProfielSignups({
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setShowPastEvents((previousValue) => !previousValue)}
-                        className="tab-button inline-flex items-center justify-center rounded-xl border border-purple-100 bg-purple-50 px-4 py-2 text-[10px] font-black text-purple-700 uppercase transition hover:bg-purple-100 disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                        className="tab-button border border-theme-purple/20 bg-theme-purple/10 font-black text-theme-purple uppercase transition hover:bg-theme-purple/20"
                         type="button">
                         {showPastEvents ? "Verberg oude" : "Toon oude"}
                     </button>
                     <Link
                         href="/profiel/tickets"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple-100 bg-purple-50 px-4 py-2 text-[10px] font-black text-purple-700 uppercase transition hover:bg-purple-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                        className="btn-secondary"
                     >
                         Tickets <ChevronRight className="size-3" />
                     </Link>
                     <Link
                         href="/activiteiten"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-purple-500 px-4 py-2 text-[10px] font-black text-white uppercase shadow-lg transition hover:bg-purple-600"
+                        className="beheer-button form-button"
                     >
                         Kalender <ChevronRight className="size-3" />
                     </Link>
@@ -82,18 +82,18 @@ export default function ProfielSignups({
                             <Link
                                 key={`${signup._type}-${signup.id}`}
                                 href={detailHref}
-                                className={`group squircle-lg flex h-full items-center justify-between gap-4 border p-5 text-left shadow-sm transition-all ${isPast
+                                className={`group flex h-full items-center justify-between gap-4 squircle-lg border p-5 text-left shadow-sm transition-all ${isPast
                                     ? "border-licht-paars/10 bg-licht-paars/5 opacity-60 grayscale dark:border-white/5 dark:bg-white/5"
-                                    : "border-licht-paars/20 bg-licht-paars/10 hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:bg-white/5"
+                                    : "border-licht-paars/20 bg-licht-paars/10 hover:shadow-lg dark:border-white/10 dark:bg-white/5"
                                     }`}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-purple-100 text-purple-500 shadow-sm dark:bg-transparent dark:text-purple-300 dark:shadow-none">
+                                    <div className="icon-box size-16 rounded-2xl">
                                         {icon}
                                     </div>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <h3 className="line-clamp-1 text-lg font-bold text-purple-700 dark:text-white">
+                                            <h3 className="line-clamp-1 text-lg font-bold text-theme-purple">
                                                 {eventData.name}
                                             </h3>
                                         </div>
@@ -103,14 +103,14 @@ export default function ProfielSignups({
                                         </p>
                                     </div>
                                 </div>
-                                <ChevronRight className="size-6 shrink-0 text-purple-200 transition-transform group-hover:translate-x-1" />
+                                <ChevronRight className="size-6 shrink-0 text-theme-purple opacity-40 transition-transform group-hover:translate-x-1 group-hover:opacity-100" />
                             </Link>
                         );
                     })}
                 </div>
             ) : (
                 <div className="squircle-lg border-2 border-dashed border-licht-paars/20 bg-licht-paars/5 p-12 text-center shadow-inner dark:border-white/10 dark:bg-white/5">
-                    <p className="mb-2 text-lg font-bold text-purple-700 dark:text-white">
+                    <p className="mb-2 text-lg font-bold text-theme-purple">
                         Je bent nog niet aangemeld voor activiteiten.
                     </p>
                     <p className="mb-6 text-sm text-(--text-muted)">
@@ -118,7 +118,7 @@ export default function ProfielSignups({
                     </p>
                     <Link
                         href="/activiteiten"
-                        className="squircle inline-flex items-center gap-2 bg-purple-500 px-8 py-3 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+                        className="beheer-button form-button"
                     >
                         Ontdek activiteiten
                     </Link>

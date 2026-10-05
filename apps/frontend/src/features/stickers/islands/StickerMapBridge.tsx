@@ -10,8 +10,8 @@ const StickerMapIsland = dynamic(
     {
         ssr: false,
         loading: () => (
-            <div className="flex h-150 w-full animate-pulse items-center justify-center rounded-2xl border border-purple-500/10 bg-purple-950/5">
-                <span className="text-sm font-semibold tracking-wide text-(--text-muted) uppercase">Kaart aan het laden...</span>
+            <div className="map-loader-box">
+                <span className="map-loader-text">Kaart aan het laden...</span>
             </div>
         )
     }

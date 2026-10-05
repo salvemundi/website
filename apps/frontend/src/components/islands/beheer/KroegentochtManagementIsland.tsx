@@ -159,7 +159,7 @@ export default function KroegentochtManagementIsland({
                         {selectedEvent && (
                             <Link
                                 href={`/beheer/kroegentocht/bewerk/${selectedEvent.id}`}
-                                className="flex items-center justify-center gap-2 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 text-sm font-semibold text-(--beheer-text-muted) shadow-sm transition-all hover:border-(--beheer-accent)/30 hover:text-(--beheer-accent) active:scale-90"
+                                className="beheer-button-secondary"
                                 title="Event Details"
                             >
                                 <Settings className="size-4" />
@@ -170,7 +170,7 @@ export default function KroegentochtManagementIsland({
                         <button
                             onClick={handleRefresh}
                             disabled={isPending}
-                            className="icon-button rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-2.5 text-(--beheer-text-muted) transition-all hover:border-(--beheer-accent)/30 hover:text-(--beheer-accent) active:scale-90 disabled:opacity-50"
+                            className="icon-button"
                             title="Vernieuwen"
                             type="button">
                             <RefreshCw className={`size-4 ${isPending ? 'animate-spin' : ''}`} />
@@ -184,7 +184,7 @@ export default function KroegentochtManagementIsland({
 
                         <Link
                             href="/beheer/kroegentocht/nieuw"
-                            className="flex items-center justify-center gap-2 rounded-(--beheer-radius) bg-(--beheer-accent) px-6 py-2.5 text-base font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
+                            className="beheer-button"
                         >
                             <Plus className="size-4" />
                             Nieuw Event
@@ -197,7 +197,7 @@ export default function KroegentochtManagementIsland({
                 <div className="flex flex-col">
 
                     {error && (
-                        <div className="mb-8 flex items-center gap-3 rounded-(--beheer-radius) border border-red-500/50 bg-red-500/10 p-4 text-base font-semibold text-red-500">
+                        <div className="mb-8 alert-banner-danger p-4">
                             <AlertCircle className="size-5" />
                             {error}
                             <button
@@ -227,8 +227,8 @@ export default function KroegentochtManagementIsland({
                             </div>
                         </div>
                     ) : (
-                        <div className="rounded-2xl border-2 border-dashed border-(--border-color)/30 bg-(--bg-card)/40 py-20 text-center">
-                            <AlertCircle className="mx-auto mb-4 size-16 text-(--text-muted) opacity-20" />
+                        <div className="empty-state-box">
+                            <AlertCircle className="empty-state-icon" />
                             <h2 className="text-xl font-semibold tracking-tight text-(--text-main)">Geen Event Geselecteerd</h2>
                             <p className="mt-2 text-base text-(--text-subtle)">Kies een event hierboven om de data te bekijken.</p>
                         </div>

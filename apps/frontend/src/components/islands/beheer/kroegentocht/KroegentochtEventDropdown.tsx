@@ -48,7 +48,7 @@ export default function KroegentochtEventDropdown({
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="group beheer-button flex min-w-50 items-center gap-3 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 text-(--beheer-text) transition-all hover:border-(--beheer-accent)/50 active:scale-95"
+                className="group beheer-button-secondary min-w-50"
                 type="button">
                 <div className="rounded-lg bg-(--beheer-accent)/10 p-1.5 text-(--beheer-accent)">
                     <Beer className="size-4" />
@@ -64,9 +64,9 @@ export default function KroegentochtEventDropdown({
 
             {isOpen && (
                 <div
-                    className="animate-in fade-in zoom-in-95 absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-(--shadow-card-elevated) duration-200 ease-out"
+                    className="animate-in zoom-in-95 absolute right-0 z-50 mt-2 w-72 fade-in overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-(--shadow-card-elevated) duration-200 ease-out"
                 >
-                    <div className="custom-scrollbar max-h-75 space-y-1 overflow-y-auto p-2">
+                    <div className="max-h-75 custom-scrollbar space-y-1 overflow-y-auto p-2">
                         {sortedEvents.map((event) => {
                             const eventDate = event.date ? new Date(event.date) : new Date(0);
                             const isUpcoming = event.date ? eventDate >= today : false;

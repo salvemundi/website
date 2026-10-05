@@ -51,7 +51,7 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                         className="group relative block cursor-pointer"
                         title="Profielfoto wijzigen"
                     >
-                        <div className="relative size-28 overflow-hidden rounded-full border-4 border-purple-100 bg-bg-card shadow-lg transition-transform group-hover:scale-105 sm:size-32">
+                        <div className="relative size-28 overflow-hidden rounded-full border-4 border-theme-purple/20 bg-bg-card shadow-lg transition-transform group-hover:scale-105 sm:size-32">
                             {user.avatar ? (
                                 <MediaAsset
                                     asset={getImageUrl(user.avatar, { width: 250, height: 250, fit: 'cover' }) || ''}
@@ -62,7 +62,7 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                                 />
                             ) : (
                                 <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-brand-primary to-brand-secondary">
-                                    <span className="text-4xl font-bold text-purple-300">
+                                    <span className="text-4xl font-bold text-white">
                                         {user.first_name?.[0] || '?'}
                                     </span>
                                 </div>
@@ -92,7 +92,7 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                 </div>
 
                 <div className="w-full min-w-0">
-                    <h2 className="text-xl font-extrabold wrap-break-word text-purple-700 sm:text-2xl dark:text-white">
+                    <h2 className="text-xl font-extrabold wrap-break-word text-theme-purple sm:text-2xl">
                         {displayName}
                     </h2>
 
@@ -111,7 +111,7 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                                 {user.committees.map((committee) => (
                                     <span
                                         key={committee.id}
-                                        className="group relative inline-flex max-w-full items-center gap-2 rounded-full border border-licht-paars/20 bg-licht-paars/10 px-4 py-2 text-xs font-bold text-purple-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-white"
+                                        className="group relative inline-flex max-w-full items-center gap-2 rounded-full border border-licht-paars/20 bg-licht-paars/10 px-4 py-2 text-xs font-bold text-theme-purple shadow-sm dark:border-white/10 dark:bg-white/5"
                                     >
                                         {committee.is_leader && !committee.name.toLowerCase().includes('bestuur') && (
                                             <span className="absolute -top-1 -right-1 flex size-4 shrink-0 items-center justify-center rounded-full border-2 border-bg-card bg-linear-to-br from-yellow-400 to-yellow-600 shadow-md">
@@ -131,8 +131,8 @@ export default function ProfielHeader({ user, membershipStatus }: ProfielHeaderP
                                 Lidmaatschap tot
                             </p>
                         </div>
-                        <div className="squircle flex min-h-14 items-center justify-center border border-licht-paars/20 bg-licht-paars/10 px-5 py-4 text-center shadow-sm dark:border-white/10 dark:bg-white/5">
-                            <p className="text-base font-bold text-purple-700 dark:text-white">
+                        <div className="flex min-h-14 items-center justify-center squircle border border-licht-paars/20 bg-licht-paars/10 px-5 py-4 text-center shadow-sm dark:border-white/10 dark:bg-white/5">
+                            <p className="text-base font-bold text-theme-purple">
                                 {user.membership_expiry
                                     ? formatDate(user.membership_expiry, "d MMM yyyy")
                                     : "Niet van toepassing"}

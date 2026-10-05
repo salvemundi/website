@@ -28,7 +28,7 @@ export function StandardFormCard({
     return (
         <section className={`group @container relative overflow-hidden rounded-4xl bg-bg-card p-6 shadow-2xl sm:p-8 md:p-10 dark:border dark:border-white/10 ${className}`}>
             {/* Subtle decorative background element */}
-            <div className="absolute -top-24 -right-24 size-48 rounded-full bg-purple-500/5 blur-3xl transition-colors duration-700 group-hover:bg-purple-500/10" />
+            <div className="absolute -top-24 -right-24 size-48 rounded-full bg-theme-purple/5 blur-3xl transition-colors duration-700 group-hover:bg-theme-purple/10" />
 
             <div className="relative z-10 flex h-full flex-1 flex-col">
                 <header className="mb-8 flex shrink-0 flex-col items-start justify-between gap-4 @md:mb-10 @md:flex-row">
@@ -39,7 +39,7 @@ export function StandardFormCard({
                             </p>
                         )}
                         <h2 className="form-title flex items-start gap-3 wrap-break-word">
-                            {icon && <span className="mt-1 shrink-0 text-purple-500">{icon}</span>}
+                            {icon && <span className="mt-1 shrink-0 text-theme-purple">{icon}</span>}
                             <span className="flex-1">{title}</span>
                         </h2>
                         {description && (
@@ -58,7 +58,7 @@ export function StandardFormCard({
 
                         {price !== undefined && (
                             <div className="text-right">
-                                <span className="text-3xl font-black text-purple-700 dark:text-purple-300">
+                                <span className="text-3xl font-black text-theme-purple">
                                     €{price.toFixed(2).replace('.', ',')}
                                 </span>
                             </div>

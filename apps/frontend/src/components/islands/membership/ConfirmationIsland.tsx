@@ -54,7 +54,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
                         <div className="mx-auto mb-6 flex size-24 items-center justify-center rounded-full bg-green-500/20 shadow-glow shadow-green-500/20 dark:bg-green-500/30 dark:shadow-green-500/40">
                             <CheckCircle className="size-14 text-green-500 dark:text-green-400" />
                         </div>
-                        <h1 className="mb-4 text-4xl font-semibold tracking-tight text-theme-purple dark:text-purple-400">GESLAAGD!</h1>
+                        <h1 className="mb-4 text-4xl font-semibold tracking-tight text-theme-purple">GESLAAGD!</h1>
                         <p className="mx-auto mb-8 max-w-lg text-lg leading-relaxed opacity-80 dark:text-white/80">
                             {type === 'renewal'
                                 ? 'Welkom terug! Je lidmaatschap is succesvol verlengd. Je hebt weer volledige toegang tot alle activiteiten.'
@@ -66,15 +66,15 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
                 return (
                     <>
                         <div className="mx-auto mb-6 flex size-24 items-center justify-center rounded-full bg-red-500/20 dark:bg-red-500/30">
-                            <XCircle className="text-theme-error size-14 dark:text-red-400" />
+                            <XCircle className="size-14 text-theme-error dark:text-red-400" />
                         </div>
-                        <h1 className="text-theme-error mb-4 text-3xl font-bold dark:text-red-400">Betaling Mislukt</h1>
+                        <h1 className="mb-4 text-3xl font-bold text-theme-error dark:text-red-400">Betaling Mislukt</h1>
                         <p className="mx-auto mb-8 max-w-lg text-lg opacity-80 dark:text-white/80">
                             Helaas is de betaling niet gelukt. Je kunt het opnieuw proberen om je lidmaatschap te activeren.
                         </p>
                         <button
                             onClick={() => router.push('/lidmaatschap')}
-                            className="form-button rounded-2xl bg-theme-purple px-8 py-4 font-bold text-white shadow-lg transition-transform hover:scale-105 dark:bg-purple-500"
+                            className="form-button transition-transform hover:scale-105"
                             type="button">
                             Opnieuw proberen
                         </button>
@@ -105,7 +105,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
                 {status === 'paid' && (
                     <button
                         onClick={() => router.push('/profiel')}
-                        className="form-button flex items-center justify-center gap-2 rounded-2xl bg-theme-purple px-8 py-4 font-bold text-white shadow-glow transition-all hover:scale-105"
+                        className="form-button shadow-glow hover:scale-105"
                         type="button">
                         <User className="size-5" />
                         Naar mijn account
@@ -113,7 +113,7 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
                 )}
                 <button
                     onClick={() => router.push('/')}
-                    className="form-button flex items-center justify-center gap-2 rounded-2xl border border-purple-100 bg-purple-50 px-8 py-4 font-bold text-theme-purple transition-all hover:bg-purple-100 dark:border-white/10 dark:bg-white/5 dark:text-purple-400 dark:hover:bg-white/10"
+                    className="btn-secondary form-button hover:scale-105"
                     type="button">
                     <Home className="size-5" />
                     Terug naar Home

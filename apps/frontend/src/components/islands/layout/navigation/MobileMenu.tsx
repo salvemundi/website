@@ -114,7 +114,7 @@ export default function MobileMenu({
                         <Link
                             href={ROUTES.ADMIN}
                             onClick={onClose}
-                            className="flex items-center gap-2 rounded-2xl bg-purple-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition-all active:scale-95"
+                            className="beheer-button beheer-button w-full justify-start"
                         >
                             <Shield className="size-5" />
                             <span>Beheer</span>
@@ -128,7 +128,7 @@ export default function MobileMenu({
                             className="flex items-center justify-between rounded-2xl border border-(--border-color)/10 bg-(--bg-card) px-4 py-3 text-sm font-semibold text-(--text-main) shadow-sm transition-all active:scale-95"
                         >
                             <span className="flex items-center gap-3">
-                                <IconMap.User className="size-5 text-purple-500" />
+                                <IconMap.User className="size-5 text-theme-purple" />
                                 <span>Mijn Profiel</span>
                             </span>
                             <span aria-hidden className="text-(--text-muted)">›</span>
@@ -152,12 +152,12 @@ export default function MobileMenu({
                                     className={cn(
                                         'active:scale-0.98 flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold shadow-sm transition-all',
                                         active
-                                            ? 'bg-purple-50 text-purple-500'
+                                            ? 'bg-theme-purple/10 text-theme-purple'
                                             : 'bg-[color-mix(in_srgb,var(--bg-card)_70%,transparent)] text-(--text-main)'
                                     )}
                                 >
                                     <span className="flex items-center gap-3 whitespace-nowrap">
-                                        <Icon className="size-5 text-purple-500" aria-hidden="true" />
+                                        <Icon className="size-5 text-theme-purple" aria-hidden="true" />
                                         <span>{link.name}</span>
                                     </span>
                                     <span aria-hidden="true" className="text-(--text-muted)">›</span>
@@ -171,11 +171,7 @@ export default function MobileMenu({
                     <Link
                         href={ROUTES.MEMBERSHIP}
                         onClick={onClose}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 transition-all active:scale-95"
-                        style={{
-                            background: 'linear-gradient(135deg, var(--color-purple-500), var(--color-purple-700))',
-                            color: 'white'
-                        }}
+                        className="beheer-button form-button"
                     >
                         <Sparkles className="size-4" />
                         Word lid
@@ -183,13 +179,13 @@ export default function MobileMenu({
                 )}
 
                 {/* Onderste acties: uitlogknop / inlogknop */}
-                <div className="mt-auto border-t border-(--border-color)/10 pt-6">
+                <div className="mt-auto border-t border-theme-purple/10 pt-6">
                     {mounted && (
                         isAuthenticated ? (
                             <button
                                 type="button"
                                 onClick={onLogout}
-                                className="form-button flex w-full items-center justify-center gap-2 rounded-2xl bg-red-500/5 px-4 py-3 text-sm font-semibold text-red-500 transition-all hover:bg-red-500/10 active:scale-95"
+                                className="form-button w-full bg-red-500/10 text-red-500 hover:bg-red-500/20"
                             >
                                 <LogOut className="size-5" />
                                 <span>Uitloggen</span>
@@ -208,11 +204,7 @@ export default function MobileMenu({
                                         }
                                     })();
                                 }}
-                                className="form-button flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 transition-all active:scale-95"
-                                style={{
-                                    backgroundColor: 'var(--color-purple-500)',
-                                    color: 'white'
-                                }}
+                                className="form-button w-full"
                             >
                                 Inloggen
                             </button>

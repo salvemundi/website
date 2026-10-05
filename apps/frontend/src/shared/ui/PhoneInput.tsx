@@ -177,7 +177,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
         <div className="relative w-full">
             <div
                 className={`flex w-full items-center rounded-2xl bg-bg-soft transition-colors ${
-                    isError ? 'ring-theme-error ring-2' : 'focus-within:ring-2 focus-within:ring-theme-purple/20'
+                    isError ? 'ring-2 ring-theme-error' : 'focus-within:ring-2 focus-within:ring-theme-purple/20'
                 } ${className}`}
             >
                 <button
@@ -185,7 +185,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
                     type="button"
                     disabled={disabled}
                     onClick={toggleOpen}
-                    className="form-button flex h-14 shrink-0 cursor-pointer items-center gap-2 rounded-l-2xl border-r border-border-color/40 bg-bg-soft px-3.5 text-sm font-bold text-text-main transition-colors select-none hover:bg-black/5 focus:outline-none dark:hover:bg-white/5"
+                    className="form-button h-14 shrink-0 rounded-l-2xl border-r border-border-color/40 bg-bg-soft px-3.5 text-text-main select-none hover:bg-black/5 focus:outline-none dark:hover:bg-white/5"
                     aria-label={`Selecteer land, huidig: ${countryDisplayName} (${selectedCountry.dialCode})`}
                     aria-expanded={isOpen}
                 >
@@ -221,7 +221,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
                         width: `${coords.width}px`,
                         zIndex: 999999
                     }}
-                    className="animate-in fade-in zoom-in-95 overflow-hidden rounded-2xl border border-border-color bg-bg-card shadow-2xl shadow-theme-purple/15 duration-150 ease-out"
+                    className="animate-in zoom-in-95 fade-in overflow-hidden rounded-2xl border border-border-color bg-bg-card shadow-2xl shadow-theme-purple/15 duration-150 ease-out"
                 >
                     <div className="border-b border-border-color/60 bg-bg-soft/50 p-3">
                         <div className="relative flex items-center">
@@ -237,7 +237,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, InputProps>(({
                         </div>
                     </div>
 
-                    <div className="custom-scrollbar max-h-64 space-y-0.5 overflow-y-auto p-1.5">
+                    <div className="max-h-64 custom-scrollbar space-y-0.5 overflow-y-auto p-1.5">
                         {filteredCountries.length > 0 ? (
                             filteredCountries.map((c) => {
                                 const isSelected = c.code === selectedCountry.code;

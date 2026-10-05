@@ -83,7 +83,7 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                         <h3 className="text-xs font-semibold text-(--beheer-text-muted)">Nieuw Groepje</h3>
                         <button
                             onClick={() => setCreating(false)}
-                            className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)"
+                            className="icon-button p-2 text-(--beheer-text-muted) hover:text-(--beheer-text)"
                             type="button">
                             <X className="size-5" />
                         </button>
@@ -165,11 +165,11 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                                     <div className="flex flex-col gap-2">
                                                         <span className="text-[9px] opacity-50">Naam</span>
-                                                        <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
+                                                        <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="beheer-input" />
                                                     </div>
                                                     <div className="flex flex-col gap-2">
                                                         <span className="text-[9px] opacity-50">Notities</span>
-                                                        <input type="text" value={editNotes} onChange={e => setEditNotes(e.target.value)} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
+                                                        <input type="text" value={editNotes} onChange={e => setEditNotes(e.target.value)} className="beheer-input" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -178,7 +178,7 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                                 <p className="text-xs font-semibold text-(--beheer-accent)">Toegewezen ouders</p>
                                                 <Link
                                                     href={`/profiel/intro-attendance?group=${group.id}`}
-                                                    className="beheer-button flex items-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-xs font-semibold text-(--beheer-text) transition-colors hover:bg-(--beheer-card-soft)"
+                                                    className="beheer-button-secondary beheer-button"
                                                 >
                                                     <ClipboardCheck className="size-3.5" />
                                                     Bekijk aanwezigheid
@@ -195,7 +195,7 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                                     <span className="text-xs font-semibold text-(--beheer-text)">{leader.first_name} {leader.last_name}</span>
                                                     <button
                                                         onClick={() => { void onRemoveLeader(group.id, leader.user_id); }}
-                                                        className="icon-button rounded-full p-1 text-(--beheer-text-muted) transition-colors hover:bg-red-500/10 hover:text-red-500"
+                                                        className="icon-button rounded-full p-1 text-(--beheer-text-muted) hover:bg-red-500/10 hover:text-red-500"
                                                         title="Verwijderen"
                                                         type="button">
                                                         <X className="size-3" />
@@ -207,7 +207,7 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                         {pickerGroupId === group.id ? (
                                             <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                                                 <select
-                                                    className="beheer-input w-full rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent) sm:w-auto"
+                                                    className="beheer-input sm:w-auto"
                                                     defaultValue=""
                                                     onChange={(e) => {
                                                         if (e.target.value) {

@@ -46,20 +46,19 @@ export default function BeheerReisSignupModalIsland({
     if (!isOpen || !selectedSignup) return null;
 
     return createPortal(
-        <div className="custom-scrollbar animate-in fade-in fixed inset-0 isolate z-100000 flex items-start justify-center overflow-y-auto p-4 duration-300 sm:p-6">
+        <div className="modal-backdrop">
             <div
-                className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl"
+                className="modal-backdrop"
                 onClick={onClose}
             />
 
             <div
-                className="animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 relative z-10 my-auto flex max-h-[90vh] w-full flex-col rounded-[2.5rem] border border-(--beheer-border) bg-(--beheer-card-bg) shadow-(--shadow-card-elevated) ring-1 ring-white/10 duration-300 ease-out"
+                className="modal-content"
                 style={{ maxWidth: isEditing ? '1200px' : '700px' }}
             >
-                <div className="relative flex shrink-0 items-center justify-between border-b border-(--beheer-border) bg-(--beheer-card-soft)/80 px-8 py-6">
-                    <div className="absolute inset-x-0 -bottom-px h-px bg-linear-to-r from-transparent via-(--beheer-accent)/30 to-transparent" />
-                    <h2 className="flex items-center gap-3 text-[10px] font-semibold text-(--beheer-text)">
-                        <div className="rounded-2xl bg-(--beheer-accent) p-2.5 text-white shadow-(--shadow-glow)">
+                <div className="flex-between border-b bg-beheer-card-soft p-6">
+                    <h2 className="flex items-center gap-3 text-beheer-text">
+                        <div className="icon-box">
                             {isEditing ? <Pen className="size-4" /> : <Users className="size-4" />}
                         </div>
                         {isEditing ? 'Deelnemer Bewerken' : 'Deelnemer Details'}
@@ -69,21 +68,21 @@ export default function BeheerReisSignupModalIsland({
                             onClick={onDelete}
                             disabled={isPending}
                             title="Verwijder Deelnemer"
-                            className="icon-button rounded-full border border-transparent p-2.5 text-red-500/60 transition-all hover:border-red-500/20 hover:bg-red-500/5 hover:text-red-500 focus:outline-none active:scale-90"
+                            className="icon-button beheer-button-secondary text-theme-error"
                             type="button">
                             {isPending ? <Loader2 className="size-5 animate-spin" /> : <Trash className="size-5" />}
                         </button>
-                        <div className="mx-1 h-6 w-px bg-(--beheer-border)/20" />
+                        <div className="h-6 w-px bg-beheer-border/20" />
                         <button
                             onClick={onToggleEdit}
                             title={isEditing ? "Terug naar weergave" : "Bewerken"}
-                            className={`icon-button rounded-full border p-2.5 transition-all focus:outline-none active:scale-90 ${isEditing ? 'border-(--beheer-accent) bg-(--beheer-accent) text-white shadow-glow' : 'border-transparent text-(--beheer-text-muted) hover:border-(--beheer-border) hover:text-(--beheer-accent)'}`}
+                            className="icon-button beheer-button-secondary"
                             type="button">
                             <Pen className="size-5" />
                         </button>
                         <button
                             onClick={onClose}
-                            className="icon-button rounded-full border border-transparent p-2.5 text-(--beheer-text-muted) transition-all hover:border-(--beheer-border) hover:bg-(--beheer-card-bg) hover:text-(--beheer-text) focus:outline-none active:scale-90"
+                            className="icon-button beheer-button-secondary"
                             type="button">
                             <X className="size-5" />
                         </button>
@@ -92,10 +91,10 @@ export default function BeheerReisSignupModalIsland({
 
                 {isEditing ? (
                     <div className="custom-scrollbar flex-1 overflow-y-auto p-6">
-                        <form ref={formRef} action={onSave} className="flex h-full flex-col">
+                        <form ref={formRef} action={onSave} className="flex flex-col">
                             <input type="hidden" name="id" value={selectedSignup.id} />
 
-                            <div className="grid grid-cols-1 items-start gap-8 md:grid-cols-2 xl:grid-cols-3 xl:gap-12">
+                            <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
                                 <div className="space-y-4">
                                     <ReisSignupForm
                                         signup={selectedSignup}
@@ -125,10 +124,10 @@ export default function BeheerReisSignupModalIsland({
                                         cockpit={true}
                                     />
 
-                                    <div className="border-t border-(--beheer-border)/10 pt-4">
-                                        <div className="mb-3 flex items-center gap-2 opacity-50">
-                                            <Ticket className="size-3 text-(--beheer-accent)" />
-                                            <h3 className="text-[10px] font-semibold text-(--beheer-text)">Activiteiten</h3>
+                                    <div className="border-t border-beheer-border/10 pt-4">
+                                        <div className="mb-3 flex items-center gap-2">
+                                            <Ticket className="size-3 text-beheer-accent" />
+                                            <h3 className="text-xs font-semibold text-beheer-text">Activiteiten</h3>
                                         </div>
                                         <ReisSignupActivities
                                             allActivities={allTripActivities}
@@ -150,11 +149,11 @@ export default function BeheerReisSignupModalIsland({
                     </div>
                 )}
 
-                <div className="flex shrink-0 items-center justify-between gap-4 rounded-b-[2.5rem] border-t border-(--beheer-border)/10 bg-(--beheer-card-soft)/90 px-8 py-5 backdrop-blur-md">
+                <div className="modal-footer">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="beheer-button px-6 py-2.5 text-[10px] font-semibold text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)"
+                        className="beheer-button-secondary"
                     >
                         {isEditing ? 'Annuleren' : 'Sluiten'}
                     </button>
@@ -165,7 +164,7 @@ export default function BeheerReisSignupModalIsland({
                                 if (formRef.current) formRef.current.requestSubmit();
                             }}
                             disabled={isPending}
-                            className="hover:scale-1.02 beheer-button flex items-center gap-3 rounded-2xl bg-(--beheer-accent) px-10 py-3 text-[10px] font-semibold text-white shadow-(--beheer-accent)/20 shadow-lg transition-all active:scale-95"
+                            className="beheer-button"
                             type="button">
                             {isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                             <span>Gegevens Opslaan</span>
@@ -176,7 +175,7 @@ export default function BeheerReisSignupModalIsland({
                                 type="button"
                                 onClick={() => onResendEmail(selectedSignup.id, 'deposit')}
                                 disabled={selectedSignup.deposit_paid || (sendingEmailTo?.signupId === selectedSignup.id && sendingEmailTo.type === 'deposit')}
-                                className={`beheer-button rounded-xl border px-5 py-2.5 text-[9px] font-semibold transition-all ${selectedSignup.deposit_email_sent ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500' : 'hover:scale-1.02 border-white/10 bg-(--beheer-accent) text-white shadow-(--beheer-accent)/20 shadow-lg'} disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-30 disabled:grayscale`}
+                                className="form-button"
                             >
                                 Aanbetaling Mail
                             </button>
@@ -184,7 +183,7 @@ export default function BeheerReisSignupModalIsland({
                                 type="button"
                                 onClick={() => onResendEmail(selectedSignup.id, 'final')}
                                 disabled={selectedSignup.full_payment_paid || !trip.allow_final_payments || (sendingEmailTo?.signupId === selectedSignup.id && sendingEmailTo.type === 'final')}
-                                className={`beheer-button rounded-xl border px-5 py-2.5 text-[9px] font-semibold transition-all ${selectedSignup.final_email_sent ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500' : 'hover:scale-1.02 border-white/10 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-30 disabled:grayscale'}`}
+                                className="form-button"
                             >
                                 Restbetaling Mail
                             </button>

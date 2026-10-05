@@ -104,7 +104,7 @@ export default async function ReisPage() {
         return (
             <PublicPageShell>
                 <h1 className="sr-only">Reis</h1>
-                <div className="max-w-app mx-auto px-4 pt-8 pb-16 sm:px-6 sm:pt-12 sm:pb-24 lg:px-8 lg:pt-16 lg:pb-32">
+                <div className="mx-auto max-w-app px-4 pt-8 pb-16 sm:px-6 sm:pt-12 sm:pb-24 lg:px-8 lg:pt-16 lg:pb-32">
                     <div className="flex flex-col items-start gap-8 lg:flex-row">
                         {/* Left Column: Announcement & Goed om te weten */}
                         <div className="flex w-full flex-col gap-8 lg:w-1/2">
@@ -165,7 +165,7 @@ export default async function ReisPage() {
                             {displayTrip && (
                                 <div className="relative overflow-hidden rounded-3xl bg-bg-card shadow-2xl dark:border dark:border-white/10">
                                     {displayTripImage && (
-                                        <div className="relative h-75 w-full overflow-hidden bg-purple-950/5 sm:h-105 dark:bg-black/20">
+                                        <div className="relative h-75 w-full overflow-hidden bg-theme-purple/5 sm:h-105 dark:bg-black/20">
                                             <MediaAsset
                                                 asset={displayTripImage}
                                                 alt={displayTripName ?? 'Reis'}
@@ -203,7 +203,7 @@ export default async function ReisPage() {
     return (
         <PublicPageShell>
             <h1 className="sr-only">Reis</h1>
-            <div className="max-w-app mx-auto px-4 pt-8 pb-16 sm:px-6 sm:pt-12 sm:pb-24 lg:px-8 lg:pt-16 lg:pb-32">
+            <div className="mx-auto max-w-app px-4 pt-8 pb-16 sm:px-6 sm:pt-12 sm:pb-24 lg:px-8 lg:pt-16 lg:pb-32">
                 <div className="flex flex-col items-start gap-8 lg:flex-row">
                     <ReisFormIsland
                         nextTrip={nextTrip}

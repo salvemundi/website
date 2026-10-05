@@ -23,7 +23,7 @@ export default async function BestuurPage() {
             <div className="container  max-w-7xl px-4 pt-8 pb-4">
                 <BackButton href="/commissies" title="Terug naar overzicht" />
             </div>
-            <main className="max-w-app mx-auto px-4 pb-24 sm:px-6 lg:px-8">
+            <main className="mx-auto max-w-app px-4 pb-24 sm:px-6 lg:px-8">
                 <CommitteeDetail committee={committee} />
             </main>
         </PublicPageShell>

@@ -38,7 +38,7 @@ export default async function MembershipPage() {
             title={isGuest ? "Word Lid!" : "Mijn Lidmaatschap"}
             backgroundImage="" // Default gradient
         >
-            <div className="max-w-app mx-auto">
+            <div className="mx-auto max-w-app">
                 <div className={isGuest ? "flex flex-col gap-6 px-6 pt-8 pb-16 sm:flex-row sm:pt-10 sm:pb-24 md:pt-12 md:pb-32" : "px-6 pt-8 pb-16 sm:pt-10 sm:pb-24 md:pt-12 md:pb-32"}>
                     <StandardFormCard
                         title={isGuest ? 'Inschrijven' : (user.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
@@ -53,7 +53,7 @@ export default async function MembershipPage() {
 
                     {isGuest && (
                         <aside className="flex w-full flex-col gap-6 sm:w-1/2">
-                            <div className="squircle-xl w-full bg-bg-card p-8 text-center shadow-lg dark:border dark:border-white/10">
+                            <div className="w-full squircle-xl bg-bg-card p-8 text-center shadow-lg dark:border dark:border-white/10">
                                 <h2 className="mb-4 text-3xl font-black tracking-tight text-theme-purple">
                                     Waarom Lid Worden?
                                 </h2>

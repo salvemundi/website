@@ -24,9 +24,9 @@ export default function WebshopProductCard({ product }: WebshopProductCardProps)
             href={`/merch/${product.slug}`}
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
-            className="group relative z-0 w-full overflow-hidden rounded-[1.75rem] bg-(--bg-card) no-underline shadow-sm transition-all hover:-translate-y-1 hover:shadow-md dark:border dark:border-white/10"
+            className="group relative z-0 w-full overflow-hidden rounded-3xl border border-border-color bg-bg-card no-underline shadow-xs transition-all hover:-translate-y-1 hover:shadow-md"
         >
-            <div className="relative aspect-square w-full overflow-hidden bg-(--bg-soft)">
+            <div className="relative aspect-square w-full overflow-hidden bg-bg-soft">
                 {showVideo ? (
                     <MediaAsset
                         asset={{ id: video.asset, type: video.asset_type }}
@@ -44,29 +44,29 @@ export default function WebshopProductCard({ product }: WebshopProductCardProps)
                     />
                 ) : (
                     <div className="flex size-full items-center justify-center">
-                        <ShoppingBag className="size-12 text-(--theme-purple)/20" />
+                        <ShoppingBag className="size-12 text-theme-purple/20" />
                     </div>
                 )}
-                <span className="absolute top-4 right-4 z-10 rounded-full bg-(--theme-purple) px-3 py-1 text-[10px] font-bold tracking-wider text-white uppercase shadow-lg backdrop-blur-md">
+                <span className="absolute top-4 right-4 z-10 rounded-full bg-theme-purple px-3 py-1 text-2xs font-bold tracking-wider text-wit-paars uppercase shadow-lg backdrop-blur-md">
                     {product.type === 'clothing' ? 'Kleding' : 'Item'}
                 </span>
                 {isSoldOut && (
-                    <span className="absolute top-4 left-4 z-10 rounded-full bg-black/70 px-3 py-1 text-[10px] font-bold tracking-wider text-white uppercase shadow-lg backdrop-blur-md">
+                    <span className="absolute top-4 left-4 z-10 rounded-full bg-beheer-inactive px-3 py-1 text-2xs font-bold tracking-wider text-wit-paars uppercase shadow-lg backdrop-blur-md">
                         Uitverkocht
                     </span>
                 )}
             </div>
 
             <div className="space-y-2 p-5">
-                <h3 className="line-clamp-2 text-lg leading-tight font-bold wrap-break-word text-(--theme-purple)/90 transition-colors group-hover:text-(--theme-purple)">
+                <h3 className="line-clamp-2 text-lg leading-tight font-bold wrap-break-word text-theme-purple/90 transition-colors group-hover:text-theme-purple">
                     {product.name}
                 </h3>
-                <div className="flex items-center justify-between border-t border-(--border-color) pt-2">
+                <div className="flex items-center justify-between border-t border-border-color pt-2">
                     <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-(--theme-purple)/50 uppercase">Prijs</span>
-                        <span className="text-lg font-bold text-(--theme-purple)/80">€{price}</span>
+                        <span className="text-2xs font-bold text-theme-purple/50 uppercase">Prijs</span>
+                        <span className="text-lg font-bold text-theme-purple/80">€{price}</span>
                     </div>
-                    <span className="text-xs font-bold tracking-wider text-(--theme-purple) uppercase">Bekijk &rarr;</span>
+                    <span className="text-xs font-bold tracking-wider text-theme-purple uppercase">Bekijk &rarr;</span>
                 </div>
             </div>
         </Link>

@@ -41,13 +41,13 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                         priority
                         className="object-cover"
                     />
-                    <div className="from-bg-main via-bg-main/40 absolute inset-0 bg-linear-to-t to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-bg-main via-bg-main/40 to-transparent" />
                     <div className="absolute inset-x-0 bottom-0 mx-auto max-w-7xl px-4 pb-12">
                         <div className="max-w-3xl space-y-4">
-                            <span className="mb-4 inline-block rounded-full border border-white/10 bg-theme-purple px-4 py-1.5 text-[11px] font-black tracking-widest text-white uppercase shadow-xl">
+                            <span className="badge-committee-pill">
                                 {activity.committee_name || 'Algemene Activiteit'}
                             </span>
-                            <h1 className="text-4xl leading-tight font-black tracking-tight text-text-main drop-shadow-sm md:text-7xl">
+                            <h1 className="text-4xl font-black tracking-tight text-text-main md:text-7xl">
                                 {activity.name}
                             </h1>
                         </div>
@@ -55,10 +55,10 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                 </div>
             ) : (
                 <div className="mx-auto max-w-7xl px-4 pt-20 pb-10">
-                    <span className="mb-4 inline-block rounded-full border border-white/10 bg-theme-purple px-4 py-1.5 text-[11px] font-black tracking-widest text-white uppercase shadow-xl">
+                    <span className="badge-committee-pill">
                         {activity?.committee_name || 'Algemene Activiteit'}
                     </span>
-                    <h1 className="text-4xl leading-tight font-black tracking-tight text-text-main md:text-7xl">
+                    <h1 className="text-4xl font-black tracking-tight text-text-main md:text-7xl">
                         {activity?.name}
                     </h1>
                 </div>
@@ -69,10 +69,10 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                     <div className="order-1 flex flex-col gap-6 lg:order-1">
                         {children}
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div className="squircle flex flex-col justify-center border border-border-color bg-bg-card p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30">
+                            <div className="detail-info-card">
                                 <div className="mb-1.5 flex items-center gap-2">
                                     <CalendarClock className="size-4 text-theme-purple" />
-                                    <p className="text-[10px] font-black tracking-[0.2em] text-text-muted uppercase">Datum & Tijd</p>
+                                    <p className="detail-info-label">Datum & Tijd</p>
                                 </div>
                                 <p className="text-base leading-snug font-bold text-text-main">
                                     {displayDate}
@@ -85,10 +85,10 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                             </div>
 
                             {activity?.location && (
-                                <div className="squircle flex flex-col justify-center border border-border-color bg-bg-card p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30">
+                                <div className="detail-info-card">
                                     <div className="mb-1.5 flex items-center gap-2">
                                         <MapPin className="size-4 text-theme-purple" />
-                                        <p className="text-[10px] font-black tracking-[0.2em] text-text-muted uppercase">Locatie</p>
+                                        <p className="detail-info-label">Locatie</p>
                                     </div>
                                     <p className="text-base leading-snug font-bold wrap-break-word text-text-main">
                                         {activity.location}
@@ -96,20 +96,20 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                 </div>
                             )}
 
-                            <div className="squircle flex flex-col justify-center border border-border-color bg-bg-card p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30">
+                            <div className="detail-info-card">
                                 <div className="mb-1.5 flex items-center gap-2">
                                     <User className="size-4 text-theme-purple" />
-                                    <p className="text-[10px] font-black tracking-[0.2em] text-text-muted uppercase">Organisatie</p>
+                                    <p className="detail-info-label">Organisatie</p>
                                 </div>
                                 <p className="text-base leading-snug font-bold wrap-break-word text-text-main">
                                     {activity?.committee_name || 'Bestuur'}
                                 </p>
                             </div>
 
-                            <div className="squircle flex flex-col justify-center border border-border-color bg-bg-card p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30">
+                            <div className="detail-info-card">
                                 <div className="mb-1.5 flex items-center gap-2">
                                     <Mail className="size-4 text-theme-purple" />
-                                    <p className="text-[10px] font-black tracking-[0.2em] text-text-muted uppercase">Contact</p>
+                                    <p className="detail-info-label">Contact</p>
                                 </div>
                                 <div className="text-sm leading-snug font-bold text-theme-purple">
                                     <ObfuscatedEmail email={committeeEmail || 'bestuur@salvemundi.nl'} showIcon={false} />
@@ -119,7 +119,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                     </div>
 
                     <div className="order-2 h-full lg:order-2">
-                        <div className="squircle-lg h-full border border-border-color bg-bg-card p-8 shadow-xl shadow-theme-purple/5">
+                        <div className="h-full squircle-lg border border-border-color bg-bg-card p-8 shadow-xl shadow-theme-purple/5">
                             <div className="mb-8 flex items-center gap-3">
                                 <div className="h-8 w-2 rounded-full bg-theme-purple shadow-[0_0_15px_var(--theme-purple)]" />
                                 <h2 className="text-2xl font-black tracking-widest text-theme-purple uppercase">
@@ -133,7 +133,7 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                                         <hr className="my-8 border-border-color/50" />
                                         <div className="mb-6 flex items-center gap-3">
                                             <div className="h-6 w-1.5 rounded-full bg-text-muted shadow-[0_0_10px_var(--color-text-muted)]" />
-                                            <h3 className="text-xl font-black tracking-widest text-text-muted/90 uppercase">
+                                            <h3 className="text-xl font-black tracking-widest text-text-muted uppercase">
                                                 Extra Informatie (alleen ingelogd)
                                             </h3>
                                         </div>

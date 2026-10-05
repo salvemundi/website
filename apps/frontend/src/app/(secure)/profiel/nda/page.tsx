@@ -21,13 +21,13 @@ export default async function MyNdasPage() {
     return (
         <div>
             <header className="bg-(--bg-soft) py-12">
-                <div className="max-w-app mx-auto space-y-4 px-4">
+                <div className="mx-auto max-w-app space-y-4 px-4">
                     <BackButton href="/profiel" text="Terug naar profiel" />
                     <h1 className="text-4xl font-extrabold text-(--text-main)">Mijn NDA&apos;s</h1>
                 </div>
             </header>
 
-            <div className="max-w-app mx-auto space-y-4 px-4 py-8 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-app space-y-4 px-4 py-8 sm:px-6 lg:px-8">
                 {ndas.length === 0 && (
                     <p className="text-(--text-muted)">Je hebt nog geen NDA-uitnodigingen.</p>
                 )}
@@ -43,7 +43,7 @@ export default async function MyNdasPage() {
                             </div>
                         </div>
                         {nda.status === 'pending' && (
-                            <Link href={`/profiel/nda/${nda.id}`} className="form-button rounded-xl bg-(--theme-purple) px-4 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90">
+                            <Link href={`/profiel/nda/${nda.id}`} className="beheer-button form-button transition-opacity">
                                 Ondertekenen
                             </Link>
                         )}

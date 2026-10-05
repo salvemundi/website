@@ -85,7 +85,7 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                                 <td className="px-6 py-4">
                                                     <button
                                                         onClick={() => setExpandedId(expandedId === preorder.id ? null : preorder.id)}
-                                                        className="beheer-button flex w-fit cursor-pointer items-center gap-2 text-sm font-semibold text-(--beheer-text) transition-colors hover:text-(--beheer-accent)"
+                                                        className="beheer-button w-fit text-(--beheer-text) hover:text-(--beheer-accent)"
                                                         type="button">
                                                         {expandedId === preorder.id ? <ChevronUp className="size-4 shrink-0 text-(--beheer-accent)" /> : <ChevronDown className="size-4 shrink-0 text-(--beheer-text-muted)" />}
                                                         <span>{preorder.first_name} {preorder.last_name}</span>
@@ -101,7 +101,7 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                                         value={preorder.status || ''}
                                                         disabled={isPending && updatingId === preorder.id}
                                                         onChange={(e) => handleStatusChange(preorder.id, e.target.value)}
-                                                        className="beheer-select cursor-pointer rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-3 py-1.5 text-xs font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) disabled:opacity-50"
+                                                        className="beheer-select cursor-pointer"
                                                     >
                                                         {STATUS_OPTIONS.map(opt => (
                                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -114,7 +114,7 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                                             <button
                                                                 onClick={() => handleCopyLink(preorder.id)}
                                                                 title="Kopieer betaallink"
-                                                                className="icon-button cursor-pointer rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
+                                                                className="icon-button p-2 text-(--beheer-text-muted) hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
                                                                 type="button">
                                                                 <Copy className="size-4" />
                                                             </button>

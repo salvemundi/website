@@ -80,30 +80,30 @@ export default function MailFilters({
                     <FilterField label="Status" value={filterStatus} onChange={setFilterStatus} options={statusOptions} />
                     <FilterField label="Rol" value={filterRole} onChange={setFilterRole} options={roleOptions} />
                     <FilterField label="Betaling" value={filterPayment} onChange={setFilterPayment} options={paymentOptions} />
-                    <div className="flex items-center gap-3 rounded-2xl border border-(--beheer-border)/50 bg-(--bg-main)/50 px-4 py-3 shadow-inner transition-all focus-within:border-(--beheer-accent) focus-within:ring-2 focus-within:ring-(--beheer-accent) hover:bg-(--bg-main)">
-                        <Search className="size-4 shrink-0 text-(--beheer-text-muted) opacity-50" />
+                    <div className="search-bar hover:bg-bg-main">
+                        <Search className="size-4 shrink-0 text-beheer-text-muted opacity-50" />
                         <input 
                             type="text" 
                             placeholder="Zoek deelnemer..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="beheer-input w-full border-none bg-transparent p-0 text-xs font-semibold text-(--beheer-text) outline-none placeholder:text-(--beheer-text-muted)/50"
+                            className="beheer-input p-0"
                         />
                     </div>
                 </div>
             </Card>
 
             {/* Summary */}
-            <div className="group/summary relative overflow-hidden rounded-3xl border border-(--beheer-accent)/20 bg-(--beheer-accent)/5 p-8 shadow-sm">
-                <div className="absolute -right-4 -bottom-4 opacity-5 transition-transform duration-700 group-hover:scale-110 group-hover:rotate-12">
-                    <Users className="size-24 text-(--beheer-accent)" />
+            <div className="group/summary recipient-summary-card">
+                <div className="recipient-summary-bg-icon">
+                    <Users className="size-24 text-beheer-accent" />
                 </div>
                 <div className="relative z-10">
-                    <div className="mb-1 flex items-center gap-3 text-(--beheer-accent)">
+                    <div className="recipient-summary-header">
                         <Users className="size-5" />
                         <span className="text-3xl font-bold tracking-tight">{filteredCount}</span>
                     </div>
-                    <p className="text-[10px] font-semibold tracking-widest text-(--beheer-text-muted) uppercase opacity-70">
+                    <p className="recipient-summary-label">
                         Ontvangers geselecteerd
                     </p>
                 </div>
@@ -111,32 +111,32 @@ export default function MailFilters({
 
             {/* Geselecteerde Ontvangers */}
             <Card title="Geselecteerde Ontvangers" icon={<Users className="size-4" />}>
-                <div className="custom-scrollbar max-h-62.5 space-y-2 overflow-y-auto pr-1">
+                <div className="recipient-list">
                     {filteredRecipients.length === 0 ? (
-                        <p className="py-4 text-center text-[10px] text-(--beheer-text-muted) italic opacity-50">
+                        <p className="recipient-empty-text">
                             Geen ontvangers geselecteerd
                         </p>
                     ) : (
                         filteredRecipients.map(recipient => (
                             <div 
                                 key={recipient.id} 
-                                className="flex flex-col rounded-2xl border border-(--beheer-border)/20 bg-(--bg-main)/30 p-3 text-[11px] shadow-inner transition-all hover:border-(--beheer-accent)/30"
+                                className="recipient-card"
                             >
                                 <div className="flex items-center justify-between gap-2">
-                                    <span className="truncate font-bold text-(--beheer-text)">{recipient.first_name} {recipient.last_name}</span>
-                                    <span className={`rounded px-1.5 py-0.5 text-[8px] font-bold uppercase ${
-                                        recipient.status === 'confirmed' ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-500' :
-                                        recipient.status === 'cancelled' ? 'border border-red-500/20 bg-red-500/10 text-red-500' :
-                                        recipient.status === 'waitlist' ? 'border border-yellow-500/20 bg-yellow-500/10 text-yellow-500' :
-                                        'border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 text-(--beheer-accent)'
-                                    }`}>
+                                    <span className="truncate font-bold text-beheer-text">{recipient.first_name} {recipient.last_name}</span>
+                                    <span className={
+                                        recipient.status === 'confirmed' ? 'status-badge-mini-confirmed' :
+                                        recipient.status === 'cancelled' ? 'status-badge-mini-cancelled' :
+                                        recipient.status === 'waitlist' ? 'status-badge-mini-waitlist' :
+                                        'status-badge-mini-registered'
+                                    }>
                                         {recipient.status === 'confirmed' ? 'Bevestigd' :
                                          recipient.status === 'cancelled' ? 'Geannuleerd' :
                                          recipient.status === 'waitlist' ? 'Wachtlijst' :
                                          'Geregistreerd'}
                                     </span>
                                 </div>
-                                <span className="mt-0.5 truncate text-[10px] text-(--beheer-text-muted)">{recipient.email}</span>
+                                <span className="mt-0.5 truncate text-2xs text-beheer-text-muted">{recipient.email}</span>
                             </div>
                         ))
                     )}

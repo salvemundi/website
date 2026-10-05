@@ -34,7 +34,7 @@ const FlipDigit: React.FC<{ digit: number }> = ({ digit }) => {
     }, [digit, current]);
 
     return (
-        <div className="relative h-16 w-8 overflow-hidden sm:h-28 sm:w-14 lg:h-32 lg:w-16"
+        <div className="flip-digit-wrapper"
             style={{
                 maskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)',
                 WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)'
@@ -43,7 +43,7 @@ const FlipDigit: React.FC<{ digit: number }> = ({ digit }) => {
             {previous !== null && (
                 <div
                     key={`prev-${previous}`}
-                    className="digit-out absolute inset-0 flex items-center justify-center text-4xl leading-none font-black text-(--text-main) sm:text-5xl md:text-6xl"
+                    className="digit-out flip-digit-item"
                     onAnimationEnd={() => setPrevious(null)}
                 >
                     {previous}
@@ -52,7 +52,7 @@ const FlipDigit: React.FC<{ digit: number }> = ({ digit }) => {
 
             <div
                 key={`curr-${current}`}
-                className="digit-in absolute inset-0 flex items-center justify-center text-4xl leading-none font-black text-(--text-main) sm:text-5xl md:text-6xl"
+                className="digit-in flip-digit-item"
             >
                 {current}
             </div>
@@ -70,7 +70,7 @@ const FlipBlock: React.FC<{ value: number; label: string }> = ({ value, label })
                     <FlipDigit key={index} digit={digit} />
                 ))}
             </div>
-            <span className="text-[10px] font-bold text-purple-600 opacity-70 sm:text-xs dark:text-purple-400">
+            <span className="flip-label-caption">
                 {label}
             </span>
         </div>
@@ -146,23 +146,23 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
             <style>{flipStyles}</style>
 
             {title && (
-                <div className="mb-8 text-center">
-                    <h2 className="mb-2 text-[clamp(1.5rem,6cqw,3rem)] font-black tracking-tight text-purple-800 dark:text-purple-200">
+                <div className="clock-header-box">
+                    <h2 className="mb-2 clock-title-lg">
                         {title}
                     </h2>
-                    <p className="text-sm font-semibold text-purple-600 opacity-80 sm:text-base dark:text-purple-400">
+                    <p className="clock-subtitle">
                         Begint over
                     </p>
                 </div>
             )}
 
-            <div className="flex flex-wrap items-center justify-center gap-0.5 sm:gap-3">
+            <div className="clock-digits-row">
                 <FlipBlock value={timeLeft.days} label={timeLeft.days === 1 ? 'Dag' : 'Dagen'} />
-                <span className="hidden pb-6 text-xl font-black text-(--theme-purple)/20 min-[340px]:block sm:text-3xl lg:text-4xl">-</span>
+                <span className="clock-separator">-</span>
                 <FlipBlock value={timeLeft.hours} label="Uur" />
-                <span className="hidden pb-6 text-xl font-black text-(--theme-purple)/20 min-[340px]:block sm:text-3xl lg:text-4xl">-</span>
+                <span className="clock-separator">-</span>
                 <FlipBlock value={timeLeft.minutes} label="Min" />
-                <span className="hidden pb-6 text-xl font-black text-(--theme-purple)/20 min-[340px]:block sm:text-3xl lg:text-4xl">-</span>
+                <span className="clock-separator">-</span>
                 <FlipBlock value={timeLeft.seconds} label="Sec" />
             </div>
 
@@ -170,16 +170,16 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
                 <div className="mt-8">
                     <a
                         href={href}
-                        className="group relative inline-flex items-center gap-2 overflow-hidden rounded-2xl bg-purple-600 px-8 py-4 font-bold text-white shadow-xl transition-all hover:-translate-y-1 hover:bg-purple-700 hover:shadow-2xl"
+                        className="group btn-cta-clock"
                     >
-                        <span className="relative z-10 flex items-center gap-2">
+                        <span className="btn-cta-inner">
                             Bekijk Activiteit
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1">
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                                 <polyline points="12 5 19 12 12 19"></polyline>
                             </svg>
                         </span>
-                        <div className="absolute inset-0 translate-y-full bg-white/10 transition-transform duration-300 group-hover:translate-y-0" />
+                        <div className="btn-cta-overlay" />
                     </a>
                 </div>
             )}

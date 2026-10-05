@@ -52,7 +52,7 @@ async function RegistrationSection() {
             </div>
 
             <div className="flex w-full flex-col gap-6 lg:w-1/2">
-                <section className="squircle sm:squircle-lg bg-bg-card p-6 shadow-lg sm:p-8 dark:border dark:border-white/10">
+                <section className="squircle bg-bg-card p-6 shadow-lg sm:squircle-lg sm:p-8 dark:border dark:border-white/10">
                     <h2 className="mb-6 flex items-center gap-3 text-xl font-black text-theme-purple sm:text-2xl">
                         <Info className="size-7 text-theme-purple" />
                         Over de Kroegentocht
@@ -71,7 +71,7 @@ async function RegistrationSection() {
                     </div>
                 </section>
 
-                <section className="squircle sm:squircle-lg bg-bg-card p-6 shadow-lg sm:p-8 dark:border dark:border-white/10">
+                <section className="squircle bg-bg-card p-6 shadow-lg sm:squircle-lg sm:p-8 dark:border dark:border-white/10">
                     <h2 className="mb-6 flex items-center gap-3 text-xl font-black text-theme-purple sm:text-2xl">
                         <Calendar className="size-7 text-theme-purple" />
                         Activiteit Details
@@ -111,7 +111,7 @@ async function RegistrationSection() {
                     </div>
                 </section>
 
-                <section className="squircle sm:squircle-lg bg-bg-card p-6 shadow-lg sm:p-8 dark:border dark:border-white/10">
+                <section className="squircle bg-bg-card p-6 shadow-lg sm:squircle-lg sm:p-8 dark:border dark:border-white/10">
                     <h2 className="mb-6 flex items-center gap-3 text-xl font-black text-theme-purple sm:text-2xl">
                         <ShieldAlert className="size-7 text-theme-purple" />
                         Belangrijke Info
@@ -124,7 +124,7 @@ async function RegistrationSection() {
                             { icon: <Ticket className="size-5" />, title: 'Tickets', content: <>Tickets zijn <strong>overdraagbaar</strong>.</> },
                         ].map((item, i) => (
                             <div key={i} className="group flex gap-4">
-                                <div className="squircle flex size-10 shrink-0 items-center justify-center border border-theme-purple/10 bg-theme-purple/5 text-theme-purple">
+                                <div className="flex size-10 shrink-0 items-center justify-center squircle border border-theme-purple/10 bg-theme-purple/5 text-theme-purple">
                                     {item.icon}
                                 </div>
                                 <div className="space-y-1">

@@ -41,30 +41,30 @@ export default function ProfielGaming({
                     {!isEditingMinecraft && (
                         <button
                             onClick={() => setIsEditingMinecraft(true)}
-                            className="icon-button rounded-md p-1 text-text-muted transition-colors hover:text-purple-500"
+                            className="icon-button rounded-md p-1 text-text-muted hover:text-theme-purple"
                             type="button">
                             <Pen className="size-3.5" />
                         </button>
                     )}
                 </div>
-                <div className="squircle flex min-h-17 items-center gap-3 border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
-                    <Gamepad2 className="size-5 text-purple-300 dark:text-licht-paars" />
+                <div className="flex min-h-17 items-center gap-3 squircle border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
+                    <Gamepad2 className="size-5 text-theme-purple" />
                     {isEditingMinecraft ? (
                         <form onSubmit={(e) => { void handleSubmitMinecraft(onSaveMinecraft)(e); }} className="flex w-full flex-col gap-2" autoComplete="off">                            <div className="flex w-full items-center gap-2">
                             <input
                                 {...registerMinecraft("minecraft_username")}
                                 type="text"
-                                className="form-input flex-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium outline-none focus:border-transparent focus:ring-2 focus:ring-purple-500 dark:border-white/20 dark:bg-black/40"
+                                className="form-input"
                                 placeholder="Username"
                                 autoComplete="off"
                             />
-                            <button type="submit" disabled={isPending} className="form-button flex w-fit shrink-0 cursor-pointer items-center justify-center rounded-lg bg-purple-500 px-3 py-1.5 text-white transition-colors hover:bg-purple-600 disabled:opacity-50">
+                            <button type="submit" disabled={isPending} className="form-button">
                                 {isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
                             </button>
                         </div>
                         </form>
                     ) : (
-                        <p className="min-w-0 flex-1 text-sm font-bold wrap-break-word text-purple-700 dark:text-white">
+                        <p className="min-w-0 flex-1 text-sm font-bold wrap-break-word text-theme-purple">
                             {formatForBreak(user.minecraft_username) || "Niet ingesteld"}
                         </p>
                     )}

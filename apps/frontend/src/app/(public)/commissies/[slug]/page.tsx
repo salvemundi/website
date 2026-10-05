@@ -35,7 +35,7 @@ export default async function CommitteePage(props: { params: Promise<{ slug: str
             <div className="container max-w-7xl px-fluid-md pt-fluid-md pb-4">
                 <BackButton href="/commissies" title="Terug naar overzicht" />
             </div>
-            <main className="max-w-app mx-auto px-fluid-md pb-fluid-lg">
+            <main className="mx-auto max-w-app px-fluid-md pb-fluid-lg">
                 <CommitteeDetail committee={committee} />
             </main>
         </PublicPageShell>

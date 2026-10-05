@@ -63,9 +63,9 @@ export function ActionCard({
                 href,
                 ...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})
             } : {})}
-            className={`relative flex w-full items-center gap-4 overflow-hidden rounded-3xl border border-border-color bg-bg-card p-4 shadow-sm
+            className={`relative flex w-full items-center gap-4 overflow-hidden card-compact
                 ${disabled ? 'cursor-not-allowed opacity-50 shadow-none' : ''} 
-                ${!disabled && href ? 'group active:scale-0.98 cursor-pointer transition-all hover:border-theme-purple/40 hover:bg-theme-purple/2 hover:shadow-md' : ''}
+                ${!disabled && href ? 'group cursor-pointer hover:border-theme-purple/40 hover:shadow-md' : ''}
                 ${pulse ? `ring-1 ${getPulseClasses(colorClass)}` : ''}`}
         >
             {icon && (

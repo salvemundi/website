@@ -46,7 +46,7 @@ export default function ImpersonationBanner({ targetName, adminName, committees 
                     <button
                         onClick={handleStop}
                         disabled={isPending}
-                        className="form-button flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3 py-1 text-base font-bold text-orange-700 transition-all hover:scale-105 hover:bg-orange-50 active:scale-95 disabled:opacity-50"
+                        className="form-button shrink-0 rounded-full bg-white py-1 text-base text-orange-700 hover:scale-105 hover:bg-orange-50"
                         type="button">
                         {isPending ? 'Bezig...' : (
                             <>

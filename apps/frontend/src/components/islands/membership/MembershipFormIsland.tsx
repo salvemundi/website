@@ -148,7 +148,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                 </FormField>
             </div>
 
-            <div className="mt-6 border-t border-purple-100 pt-6 dark:border-white/10">
+            <div className="mt-6 border-t border-theme-purple/20 pt-6">
                 <label htmlFor="coupon_code" className="form-label mb-2">Heb je een coupon code?</label>
                 <div className="flex gap-2">
                     <input
@@ -164,7 +164,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                         type="button"
                         onClick={() => { void handleCouponCheck(); }}
                         disabled={!couponValue || isPending}
-                        className="form-button w-auto shrink-0 bg-theme-purple! px-6 py-2 text-white! shadow-md enabled:active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="form-button w-auto shrink-0 bg-theme-purple! text-white! enabled:active:scale-95"
                     >
                         {isPending ? '...' : 'Check'}
                     </button>
@@ -175,7 +175,7 @@ export default function MembershipFormIsland({ baseAmount }: MembershipFormIslan
                     </p>
                 )}
 
-                <div className="mt-8 flex items-center justify-between rounded-3xl border border-purple-100 bg-purple-50/50 p-5 text-xl font-bold text-theme-purple shadow-inner dark:border-purple-800/30 dark:bg-purple-900/20 dark:text-white">
+                <div className="mt-8 flex items-center justify-between rounded-3xl border border-theme-purple/20 bg-theme-purple/5 p-5 text-xl font-bold text-theme-purple shadow-inner">
                     <span className="opacity-80">Totaal:</span>
                     <span className="text-2xl font-black">
                         €{total.toFixed(2).replace('.', ',')}

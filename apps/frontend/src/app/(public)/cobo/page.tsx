@@ -40,11 +40,11 @@ export default async function CoboPage() {
                 description="Vier de constitutie van het nieuwe bestuur samen met Salve Mundi en zusterverenigingen."
             >
                 <div className="mx-auto max-w-7xl px-fluid-md pt-fluid-lg pb-16 sm:pb-24 lg:pb-32">
-                    <div className="squircle-lg mx-auto max-w-2xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
-                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10">
-                            <Wine className="size-8 text-purple-700 dark:text-purple-300" />
+                    <div className="mx-auto max-w-2xl squircle-lg border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
+                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-theme-purple/20 bg-theme-purple/10">
+                            <Wine className="size-8 text-theme-purple" />
                         </div>
-                        <h2 className="text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
+                        <h2 className="text-xl font-black text-theme-purple sm:text-2xl">
                             CoBo Gesloten
                         </h2>
                         <p className="mt-2 text-sm leading-relaxed font-medium text-text-muted">
@@ -63,11 +63,11 @@ export default async function CoboPage() {
                 description="Vier de constitutie van het nieuwe bestuur samen met Salve Mundi en zusterverenigingen."
             >
                 <div className="mx-auto max-w-7xl px-fluid-md pt-fluid-lg pb-16 sm:pb-24 lg:pb-32">
-                    <div className="squircle-lg mx-auto max-w-2xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
-                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10">
-                            <Calendar className="size-8 text-purple-700 dark:text-purple-300" />
+                    <div className="mx-auto max-w-2xl squircle-lg border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
+                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-theme-purple/20 bg-theme-purple/10">
+                            <Calendar className="size-8 text-theme-purple" />
                         </div>
-                        <h2 className="text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
+                        <h2 className="text-xl font-black text-theme-purple sm:text-2xl">
                             Geen actieve CoBo gevonden
                         </h2>
                         <p className="mt-2 text-sm leading-relaxed font-medium text-text-muted">
@@ -103,13 +103,13 @@ export default async function CoboPage() {
 
                     <aside className="space-y-6 lg:col-span-5">
                         <section className="space-y-5 rounded-2xl border border-border-color bg-bg-card p-6 shadow-lg sm:rounded-3xl sm:p-8">
-                            <h2 className="flex items-center gap-3 text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
+                            <h2 className="flex items-center gap-3 text-xl font-black text-theme-purple sm:text-2xl">
                                 Evenement Details
                             </h2>
 
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3.5">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/5 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-theme-purple/20 bg-theme-purple/10 text-theme-purple">
                                         <Clock className="size-5" />
                                     </div>
                                     <div className="space-y-0.5">
@@ -121,7 +121,7 @@ export default async function CoboPage() {
                                 </div>
 
                                 <div className="flex items-center gap-3.5">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/5 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-theme-purple/20 bg-theme-purple/10 text-theme-purple">
                                         <MapPin className="size-5" />
                                     </div>
                                     <div className="space-y-0.5">
@@ -132,7 +132,7 @@ export default async function CoboPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3.5">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/5 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-theme-purple/20 bg-theme-purple/10 text-theme-purple">
                                         <Mail className="size-5" />
                                     </div>
                                     <div className="space-y-0.5">
@@ -145,8 +145,8 @@ export default async function CoboPage() {
 
                         {/* CoBo Etiquette & Regels */}
                         <section className="space-y-4 rounded-2xl border border-border-color bg-bg-card p-6 shadow-lg sm:rounded-3xl sm:p-8">
-                            <h2 className="flex items-center gap-3 text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
-                                <ScrollText className="size-6 text-purple-600 dark:text-purple-300" />
+                            <h2 className="flex items-center gap-3 text-xl font-black text-theme-purple sm:text-2xl">
+                                <ScrollText className="size-6 text-theme-purple" />
                                 CoBo Etiquette
                             </h2>
                             <div className="space-y-3 text-sm leading-relaxed font-medium text-slate-600 dark:text-slate-400">

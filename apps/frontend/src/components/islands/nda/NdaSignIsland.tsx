@@ -77,7 +77,7 @@ export default function NdaSignIsland({ signatureId, committeeName, documentFile
 
     return (
         <div className="space-y-6">
-            <div className="rounded-3xl border border-purple-100 bg-(--bg-card) p-6 shadow-sm">
+            <div className="rounded-3xl border border-theme-purple/20 bg-(--bg-card) p-6 shadow-sm">
                 <h2 className="mb-2 font-bold text-(--text-main)">NDA — {committeeName}</h2>
                 <p className="mb-4 text-sm text-(--text-muted)">Dit document is al ondertekend door de secretaris namens SV Salve Mundi.</p>
                 <a
@@ -90,7 +90,7 @@ export default function NdaSignIsland({ signatureId, committeeName, documentFile
                 </a>
             </div>
 
-            <div className="space-y-4 rounded-3xl border border-purple-100 bg-(--bg-card) p-6 shadow-sm">
+            <div className="space-y-4 rounded-3xl border border-theme-purple/20 bg-(--bg-card) p-6 shadow-sm">
                 <h3 className="font-bold text-(--text-main)">Locatie</h3>
                 <div className="flex flex-col gap-3 sm:flex-row">
                     <input
@@ -98,13 +98,13 @@ export default function NdaSignIsland({ signatureId, committeeName, documentFile
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
                         placeholder="Stad waar je nu bent"
-                        className="form-input flex-1 rounded-xl border border-purple-100 px-4 py-2.5 text-sm"
+                        className="form-input"
                     />
                     <button
                         type="button"
                         onClick={handleUseLocation}
                         disabled={locating}
-                        className="form-button inline-flex items-center justify-center gap-2 rounded-xl bg-(--bg-soft) px-4 py-2.5 text-sm font-bold text-(--theme-purple) transition-colors hover:bg-(--theme-purple)/10 disabled:opacity-50"
+                        className="form-button bg-(--bg-soft) text-(--theme-purple) hover:bg-(--theme-purple)/10"
                     >
                         {locating ? <Loader2 className="size-4 animate-spin" /> : <MapPin className="size-4" />}
                         Locatie ophalen
@@ -113,7 +113,7 @@ export default function NdaSignIsland({ signatureId, committeeName, documentFile
                 {locationError && <p className="text-xs font-semibold text-red-500">{locationError}</p>}
             </div>
 
-            <div className="space-y-4 rounded-3xl border border-purple-100 bg-(--bg-card) p-6 shadow-sm">
+            <div className="space-y-4 rounded-3xl border border-theme-purple/20 bg-(--bg-card) p-6 shadow-sm">
                 <h3 className="font-bold text-(--text-main)">Jouw handtekening</h3>
                 <SignaturePad ref={signaturePadRef} />
             </div>
@@ -124,7 +124,7 @@ export default function NdaSignIsland({ signatureId, committeeName, documentFile
                 type="button"
                 onClick={() => { void handleSubmit(); }}
                 disabled={submitting}
-                className="form-button inline-flex items-center justify-center gap-2 rounded-xl bg-(--theme-purple) px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="form-button transition-opacity"
             >
                 {submitting ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
                 Ondertekenen
