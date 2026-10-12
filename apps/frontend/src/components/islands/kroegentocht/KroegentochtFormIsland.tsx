@@ -41,7 +41,6 @@ export default function KroegentochtFormIsland({
         defaultValues: {
             email: initialUser?.email || '',
             association: initialUser?.association || '',
-            customAssociation: '',
             amount_tickets: 1,
             participants: [{
                 name: '',
@@ -58,21 +57,17 @@ export default function KroegentochtFormIsland({
     });
 
     const amount = watch('amount_tickets');
-    const association = watch('association');
-
-
 
     const onSubmit = async (data: PubCrawlSignupForm) => {
         if (data.website) return;
 
         startTransition(async () => {
-            const finalAssociation = data.association === 'Anders' ? data.customAssociation : data.association;
             const participants = data.participants;
 
             const formData = {
                 ...data,
                 name: `${participants[0].name} ${participants[0].initial}`.trim(),
-                association: finalAssociation || '',
+                association: data.association || '',
                 name_initials: JSON.stringify(participants),
                 pub_crawl_event_id: Number(event.id)
             };
@@ -107,7 +102,7 @@ export default function KroegentochtFormIsland({
                     </div>
                 </FormField>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4">
                     <FormField id="field-association" label="Vereniging" required error={errors.association?.message}>
                         <div className="relative">
                             <Building className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
@@ -126,16 +121,6 @@ export default function KroegentochtFormIsland({
                             </select>
                         </div>
                     </FormField>
-
-                    {association === 'Anders' && (
-                        <FormField id="field-customAssociation" label="Naam vereniging" required error={errors.customAssociation?.message}>
-                            <Input
-                                {...register('customAssociation')}
-                                id="field-customAssociation"
-                                placeholder="Naam van je vereniging"
-                            />
-                        </FormField>
-                    )}
                 </div>
 
                 <div className="mt-8 border-t border-slate-100 pt-6 dark:border-white/5">
