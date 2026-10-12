@@ -12,6 +12,7 @@ import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { getSignupName, getSignupEmail, getSignupPhone } from '@/lib/activities/activity-signup.utils';
 import { exportSignupsToCSV } from '@/lib/activities/activity-export';
 import ActivitySignupTable from '@/components/admin/activities/ActivitySignupTable';
+import BeheerSelect from '@/components/ui/beheer/BeheerSelect';
 
 export interface Signup {
     id: number;
@@ -40,6 +41,18 @@ export interface AdminEvent {
     committee_id?: number | string | null;
     max_sign_ups?: number | null;
 }
+
+const PAYMENT_OPTIONS = [
+    { value: 'all', label: 'Alle' },
+    { value: 'paid', label: 'Betaald' },
+    { value: 'open', label: 'Open' }
+] as const;
+
+const MEMBERSHIP_OPTIONS = [
+    { value: 'all', label: 'Alle' },
+    { value: 'member', label: 'Lid' },
+    { value: 'guest', label: 'Gast' }
+] as const;
 
 export default function ActiviteitAanmeldingenIsland({
     event,
@@ -181,28 +194,20 @@ export default function ActiviteitAanmeldingenIsland({
                     <div className="order-1 flex w-full flex-col items-stretch gap-3 sm:order-2 sm:w-auto sm:flex-row sm:items-center">
                         <div className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 shadow-sm transition-colors hover:border-(--beheer-accent)/30">
                             <label className="text-[11px] font-semibold whitespace-nowrap text-(--beheer-text-muted) opacity-75">Betaling:</label>
-                            <select
+                            <BeheerSelect
                                 value={paymentFilter}
-                                onChange={(e) => setPaymentFilter(e.target.value as 'all' | 'paid' | 'open')}
-                                className="beheer-select min-w-0 cursor-pointer border-none bg-transparent p-0 text-[11px] font-bold text-(--beheer-text) outline-none focus:ring-0"
-                            >
-                                <option value="all" className="bg-(--beheer-card-bg)">Alle</option>
-                                <option value="paid" className="bg-(--beheer-card-bg)">Betaald</option>
-                                <option value="open" className="bg-(--beheer-card-bg)">Open</option>
-                            </select>
+                                onChange={(val) => setPaymentFilter(val as 'all' | 'paid' | 'open')}
+                                options={PAYMENT_OPTIONS}
+                            />
                         </div>
 
                         <div className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 shadow-sm transition-colors hover:border-(--beheer-accent)/30">
                             <label className="text-[11px] font-semibold whitespace-nowrap text-(--beheer-text-muted) opacity-75">Lidmaatschap:</label>
-                            <select
+                            <BeheerSelect
                                 value={membershipFilter}
-                                onChange={(e) => setMembershipFilter(e.target.value as 'all' | 'member' | 'guest')}
-                                className="beheer-select min-w-0 cursor-pointer border-none bg-transparent p-0 text-[11px] font-bold text-(--beheer-text) outline-none focus:ring-0"
-                            >
-                                <option value="all" className="bg-(--beheer-card-bg)">Alle</option>
-                                <option value="member" className="bg-(--beheer-card-bg)">Lid</option>
-                                <option value="guest" className="bg-(--beheer-card-bg)">Gast</option>
-                            </select>
+                                onChange={(val) => setMembershipFilter(val as 'all' | 'member' | 'guest')}
+                                options={MEMBERSHIP_OPTIONS}
+                            />
                         </div>
 
                         <div className="group relative w-full sm:w-70">
