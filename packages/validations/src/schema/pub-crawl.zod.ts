@@ -30,7 +30,7 @@ export const pubCrawlEventSchema = selectPubCrawlEventsSchema.extend({
     price: z.coerce.number().optional().default(1),
     max_tickets_per_person: z.coerce.number().optional().default(10),
     whatsapp_community_url: z.url().nullable().optional(),
-    groups: z.string().nullable().optional(),
+    groups: z.any().nullable().optional(),
 });
 
 export const pubCrawlParticipantSchema = z.object({
@@ -41,7 +41,7 @@ export const pubCrawlParticipantSchema = z.object({
 export const pubCrawlSignupSchema = selectPubCrawlSignupsSchema.extend({
     id: z.union([z.string(), z.number()]).optional(),
     name: z.string().min(1, 'Naam is verplicht'),
-    email: z.email().nullable().optional().or(z.literal('')),
+    email: z.email('Ongeldig e-mailadres').optional().nullable().or(z.literal('')),
     association: z.string().min(1, 'Vereniging is verplicht'),
     amount_tickets: z.coerce.number().min(1).max(10),
     pub_crawl_event_id: z.union([z.string(), z.number()]),
@@ -90,7 +90,7 @@ export const enrichedPubCrawlSignupSchema = pubCrawlSignupSchema.extend({
         date: z.string().optional().nullable(),
         description: z.string().optional().nullable(),
         image: z.string().optional().nullable(),
-        whatsapp_community_url: z.string().url().nullable().optional(),
+        whatsapp_community_url: z.url().nullable().optional(),
     }),
     tickets: z.array(pubCrawlTicketSchema).optional().nullable(),
     amount_tickets: z.number(),
