@@ -10,9 +10,9 @@ function isSafeRelativePath(value: string): boolean {
 }
 
 /**
- * Bepaalt waar de gebruiker na het inloggen naartoe gestuurd wordt.
- * Een expliciete callbackURL (bijv. uit ?callbackURL=) gaat voor, anders de huidige pagina.
- * Op de homepage of bij een onveilige waarde wordt de fallback gebruikt.
+ * Determines where the user is sent after logging in.
+ * An explicit callbackURL (e.g. from ?callbackURL=) takes precedence, otherwise the current page.
+ * Falls back on the homepage or when the value is unsafe.
  */
 export function getLoginCallbackURL(explicit?: string | null, fallback: string = ROUTES.MEMBERSHIP): string {
     if (explicit) {
