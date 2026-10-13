@@ -6,7 +6,12 @@ const LOGIN_PARAMS = ['needLogin', 'callbackURL'];
  * Only allow same-site relative paths to prevent open redirects.
  */
 function isSafeRelativePath(value: string): boolean {
-    return value.startsWith('/') && !value.startsWith('//') && !value.startsWith('/\\');
+    try {
+        const base = new URL('https://same-site.invalid');
+        return value.startsWith('/') && new URL(value, base).origin === base.origin;
+    } catch {
+        return false;
+    }
 }
 
 /**
