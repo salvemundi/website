@@ -203,7 +203,7 @@ export default function MobileMenu({
                                         try {
                                             await authClient.signIn.social({
                                                 provider: 'microsoft',
-                                                callbackURL: getLoginCallbackURL(null, ROUTES.ACCOUNT)
+                                                callbackURL: getLoginCallbackURL(new URLSearchParams(window.location.search).get('callbackURL'), ROUTES.ACCOUNT)
                                             });
                                         } catch {
                                         }
