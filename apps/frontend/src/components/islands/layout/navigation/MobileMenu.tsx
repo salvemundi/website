@@ -11,6 +11,7 @@ import {
     Shield, Sparkles, LogOut
 } from 'lucide-react';
 import { ROUTES } from '@/lib/config/routes';
+import { getLoginCallbackURL } from '@/lib/utils/login-redirect';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { BRAND_CONFIG } from '@/lib/config/brand';
 import { authClient } from '@/lib/auth';
@@ -202,7 +203,7 @@ export default function MobileMenu({
                                         try {
                                             await authClient.signIn.social({
                                                 provider: 'microsoft',
-                                                callbackURL: '/profiel'
+                                                callbackURL: getLoginCallbackURL(null, ROUTES.ACCOUNT)
                                             });
                                         } catch {
                                         }
