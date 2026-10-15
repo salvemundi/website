@@ -8,6 +8,7 @@ import { User, Shield } from 'lucide-react';
 import { authClient } from '@/lib/auth';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { ROUTES } from '@/lib/config/routes';
+import { getLoginCallbackURL } from '@/lib/utils/login-redirect';
 
 import { type ExtendedSession } from '@/types/auth';
 
@@ -59,7 +60,7 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                     onClick={() => {
                         void authClient.signIn.social({
                             provider: 'microsoft',
-                            callbackURL: searchParams.get('callbackURL') || ROUTES.MEMBERSHIP
+                            callbackURL: getLoginCallbackURL(searchParams.get('callbackURL'), ROUTES.MEMBERSHIP)
                         });
                     }}
                     className="squircle form-button flex h-9 shrink-0 cursor-pointer items-center justify-center gap-2 bg-purple-50 px-4 py-1.5 text-sm font-semibold text-purple-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
