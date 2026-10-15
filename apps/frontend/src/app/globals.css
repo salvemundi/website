@@ -134,6 +134,24 @@
     @apply py-2.5 px-5 rounded-xl font-semibold items-center justify-center gap-2 transition-all cursor-pointer bg-(--beheer-accent) text-white shadow-md hover:opacity-95 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
+@utility beheer-select-trigger {
+    @apply flex w-full items-center justify-between rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 text-left font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/30 focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10 focus:outline-none cursor-pointer;
+}
+
+@utility beheer-select-menu {
+    @apply absolute inset-x-0 z-50 mt-2 space-y-0.5 rounded-xl border border-(--border-color)/30 bg-(--bg-card) p-1.5 shadow-xl;
+}
+
+@utility beheer-select-option {
+    @apply flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all border-none shadow-none text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) hover:text-(--beheer-text);
+    background-color: transparent !important;
+}
+
+@utility beheer-select-option-active {
+    background-color: color-mix(in srgb, var(--beheer-accent) 10%, transparent) !important;
+    color: var(--beheer-accent) !important;
+}
+
 @utility beheer-input {
     @apply form-input;
 }

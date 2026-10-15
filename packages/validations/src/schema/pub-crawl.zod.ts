@@ -10,29 +10,27 @@ export const PUB_CRAWL_ASSOCIATIONS = [
     'Socialis',
     'Topsy',
     'Watoto',
-    'Bge',
-    'Fact',
-    'Fpsa',
+    'BGE',
+    'FPSA',
     'Averroes',
+    'Infermera',
     'Paramedisch',
-    'Planck',
-    'Pac',
-    'Anders'
+    'Planck'
 ] as const;
 
 export const pubCrawlEventSchema = selectPubCrawlEventsSchema.extend({
     id: z.union([z.string(), z.number()]),
     name: z.string(),
     description: z.string().nullable().optional(),
-    email: z.string().email().nullable().optional(),
+    email: z.email().nullable().optional(),
     image: z.string().nullable().optional(),
     date: z.coerce.string().nullable().optional(),
     show: z.boolean().nullable().optional().default(true),
     disabled_message: z.string().nullable().optional(),
     price: z.coerce.number().optional().default(1),
     max_tickets_per_person: z.coerce.number().optional().default(10),
-    whatsapp_community_url: z.string().url().nullable().optional(),
-    groups: z.any().optional().nullable(),
+    whatsapp_community_url: z.url().nullable().optional(),
+    groups: z.any().nullable().optional(),
 });
 
 export const pubCrawlParticipantSchema = z.object({
@@ -43,7 +41,7 @@ export const pubCrawlParticipantSchema = z.object({
 export const pubCrawlSignupSchema = selectPubCrawlSignupsSchema.extend({
     id: z.union([z.string(), z.number()]).optional(),
     name: z.string().min(1, 'Naam is verplicht'),
-    email: z.string().email('Ongeldig e-mailadres').optional().nullable().or(z.literal('')),
+    email: z.email('Ongeldig e-mailadres').optional().nullable().or(z.literal('')),
     association: z.string().min(1, 'Vereniging is verplicht'),
     amount_tickets: z.coerce.number().min(1).max(10),
     pub_crawl_event_id: z.union([z.string(), z.number()]),
@@ -71,21 +69,12 @@ export const pubCrawlTicketSchema = selectPubCrawlTicketsSchema.extend({
 });
 
 export const pubCrawlSignupFormSchema = z.object({
-    email: z.string().email('Ongeldig e-mailadres'),
+    email: z.email('Ongeldig e-mailadres'),
     association: z.string().min(1, 'Vereniging is verplicht'),
-    customAssociation: z.string().optional(),
     amount_tickets: z.number().min(1, 'Minimaal 1 ticket').max(10, 'Maximaal 10 tickets'),
     participants: z.array(pubCrawlParticipantSchema).min(1),
-    website: z.string().optional(), // Honeypot
+    website: z.string().optional(),
     pub_crawl_event_id: z.union([z.string(), z.number()]),
-}).refine((data) => {
-    if (data.association === 'Anders' && (!data.customAssociation || data.customAssociation.trim() === '')) {
-        return false;
-    }
-    return true;
-}, {
-    message: 'Naam van de vereniging is verplicht',
-    path: ['customAssociation'],
 });
 
 export type PubCrawlEvent = z.infer<typeof pubCrawlEventSchema>;
@@ -101,7 +90,7 @@ export const enrichedPubCrawlSignupSchema = pubCrawlSignupSchema.extend({
         date: z.string().optional().nullable(),
         description: z.string().optional().nullable(),
         image: z.string().optional().nullable(),
-        whatsapp_community_url: z.string().url().nullable().optional(),
+        whatsapp_community_url: z.url().nullable().optional(),
     }),
     tickets: z.array(pubCrawlTicketSchema).optional().nullable(),
     amount_tickets: z.number(),

@@ -27,7 +27,6 @@ export default function AddParticipantModal({
     const [initial, setInitial] = useState('');
     const [email, setEmail] = useState('');
     const [association, setAssociation] = useState('');
-    const [customAssociation, setCustomAssociation] = useState('');
     const [groupName, setGroupName] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -43,23 +42,19 @@ export default function AddParticipantModal({
             return;
         }
 
-        const finalAssociation = association === 'Anders' ? customAssociation : association;
-
         setIsSubmitting(true);
         try {
             await onAdd({
                 name: name.trim(),
                 email: email.trim(),
-                association: finalAssociation.trim(),
+                association: association.trim(),
                 initial: initial.trim(),
                 group_name: groupName || null
             });
-            // Reset form
             setName('');
             setInitial('');
             setEmail('');
             setAssociation('');
-            setCustomAssociation('');
             setGroupName('');
             onClose();
         } catch (error: unknown) {
@@ -157,18 +152,6 @@ export default function AddParticipantModal({
                                     </option>
                                 ))}
                             </select>
-
-                            {association === 'Anders' && (
-                                <div className="animate-in fade-in slide-in-from-top-1 mt-2 duration-150">
-                                    <input
-                                        type="text"
-                                        placeholder="Vul vereniging in..."
-                                        value={customAssociation}
-                                        onChange={(e) => setCustomAssociation(e.target.value)}
-                                        className="beheer-input w-full"
-                                    />
-                                </div>
-                            )}
                         </div>
 
                         {groupNames.length > 0 && (

@@ -4,6 +4,7 @@ import React from 'react';
 import { type CoboGuestBoard } from '@salvemundi/validations';
 import { GripVertical, ArrowUpToLine, MoveUp, MoveDown, Play, Clock, Trash2 } from 'lucide-react';
 import CoboActivityBadge from './CoboActivityBadge';
+import BeheerSelect from '@/components/ui/beheer/BeheerSelect';
 
 interface Props {
     board: CoboGuestBoard;
@@ -34,6 +35,11 @@ export default function CoboQueueItem({
     onStatusChange,
     onDelete
 }: Props) {
+    const positionOptions = Array.from({ length: totalCount }, (_, pIdx) => ({
+        value: (pIdx + 1).toString(),
+        label: `#${pIdx + 1}`
+    }));
+
     return (
         <div
             draggable
@@ -58,20 +64,14 @@ export default function CoboQueueItem({
                 </div>
 
                 <div className="relative shrink-0" title="Klik om direct naar positie te springen">
-                    <select
-                        value={index + 1}
-                        onChange={(e) => {
-                            const targetPos = parseInt(e.target.value, 10) - 1;
+                    <BeheerSelect
+                        value={(index + 1).toString()}
+                        onChange={(val) => {
+                            const targetPos = parseInt(val, 10) - 1;
                             onReorder(index, targetPos);
                         }}
-                        className="beheer-select h-8! w-auto! min-w-11! cursor-pointer rounded-lg border border-purple-500/20 bg-purple-500/10 bg-none! px-2! py-0! text-center text-xs font-bold text-purple-700 transition-colors hover:bg-purple-500/20 focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-purple-300"
-                    >
-                        {Array.from({ length: totalCount }, (_, pIdx) => (
-                            <option key={pIdx} value={pIdx + 1} className="bg-bg-card font-semibold text-text-main">
-                                #{pIdx + 1}
-                            </option>
-                        ))}
-                    </select>
+                        options={positionOptions}
+                    />
                 </div>
 
                 <div className="min-w-0 flex-1">

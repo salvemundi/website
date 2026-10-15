@@ -111,8 +111,8 @@ const eslintConfig = [
                     "message": "Zichtbare rauwe <input> gevonden zonder 'form-input' of 'beheer-input' klasse."
                 },
                 {
-                    "selector": "JSXOpeningElement[name.name='button']:not(:has(JSXAttribute[name.name='className'] Literal[value=/form-button|beheer-button|icon-button|tab-button|btn-/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-button|beheer-button|icon-button|tab-button|btn-/]))",
-                    "message": "Rauwe <button> gevonden zonder 'form-button', 'beheer-button', 'icon-button', 'tab-button' of 'btn-*' klasse."
+                    "selector": "JSXOpeningElement[name.name='button']:not(:has(JSXAttribute[name.name='className'] Literal[value=/form-button|beheer-button|icon-button|tab-button|btn-|beheer-select/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-button|beheer-button|icon-button|tab-button|btn-|beheer-select/]))",
+                    "message": "Rauwe <button> gevonden zonder 'form-button', 'beheer-button', 'icon-button', 'tab-button', 'btn-*' of 'beheer-select-*' klasse."
                 },
                 {
                     "selector": "JSXOpeningElement[name.name='select']:not(:has(JSXAttribute[name.name='className'] Literal[value=/form-input|beheer-input|beheer-select/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-input|beheer-input|beheer-select/]))",
