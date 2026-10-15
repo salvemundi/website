@@ -3,13 +3,13 @@
 import React, { useTransition } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { initiateKroegentochtPayment } from '@/server/actions/events/kroegentocht/kroegentocht-public.actions';
 import {
     type PubCrawlEvent,
     pubCrawlSignupFormSchema,
-    type PubCrawlSignupForm,
     PUB_CRAWL_ASSOCIATIONS
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { Plus, Minus, Mail, Building, Ticket } from 'lucide-react';
@@ -21,6 +21,12 @@ interface KroegentochtFormIslandProps {
     event?: PubCrawlEvent;
     initialUser?: { email?: string; association?: string } | null;
 }
+
+const formSchema = pubCrawlSignupFormSchema.extend({
+    customAssociation: z.string().optional()
+});
+
+type PubCrawlSignupFormValues = z.infer<typeof formSchema>;
 
 export default function KroegentochtFormIsland({
     event = {} as PubCrawlEvent,
@@ -36,8 +42,8 @@ export default function KroegentochtFormIsland({
         watch,
         setValue,
         formState: { errors }
-    } = useForm<PubCrawlSignupForm>({
-        resolver: zodResolver(pubCrawlSignupFormSchema),
+    } = useForm<PubCrawlSignupFormValues>({
+        resolver: zodResolver(formSchema),
         defaultValues: {
             email: initialUser?.email || '',
             association: initialUser?.association || '',
@@ -60,17 +66,17 @@ export default function KroegentochtFormIsland({
     const amount = watch('amount_tickets');
     const association = watch('association');
 
-
-
-    const onSubmit = async (data: PubCrawlSignupForm) => {
+    const onSubmit = async (data: PubCrawlSignupFormValues) => {
         if (data.website) return;
 
         startTransition(async () => {
             const finalAssociation = data.association === 'Anders' ? data.customAssociation : data.association;
             const participants = data.participants;
 
+            const { customAssociation: _, ...baseData } = data;
+
             const formData = {
-                ...data,
+                ...baseData,
                 name: `${participants[0].name} ${participants[0].initial}`.trim(),
                 association: finalAssociation || '',
                 name_initials: JSON.stringify(participants),
@@ -229,7 +235,6 @@ export default function KroegentochtFormIsland({
                     )}
                 </button>
 
-                {/* Honeypot at bottom to avoid breaking browser autofill sections */}
                 <div className="pointer-events-none absolute top-0 left-0 -z-10 size-0 overflow-hidden opacity-0" aria-hidden="true">
                     <label htmlFor="website">Website</label>
                     <input {...register('website')} id="website" tabIndex={-1} autoComplete="off" className="hidden" suppressHydrationWarning />

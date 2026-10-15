@@ -135,7 +135,6 @@ export default function StatsToolbar({
                     />
                 </div>
 
-                {/* Group Filter Dropdown */}
                 <div className="relative w-full md:w-64" ref={dropdownRef}>
                     <button
                         type="button"

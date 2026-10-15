@@ -10,7 +10,6 @@ import {
     updatePubCrawlEventGroups,
     createManualPubCrawlSignup
 } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
-
 import StatsToolbar from './signup-list/StatsToolbar';
 import SignupTableView from './signup-list/SignupTableView';
 import SignupGroupsView from './signup-list/SignupGroupsView';
@@ -277,48 +276,92 @@ export default function SignupList({
     });
 
     const exportToCSV = () => {
-        const rows: Record<string, string | number>[] = [];
-        filteredSignups.forEach((signup) => {
-            const registrationDate = signup.created_at ? new Date(signup.created_at).toLocaleString('nl-NL', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }) : '-';
+        try {
+            const participantsPerGroup = new Map<string, string[]>();
+            participantsPerGroup.set('Niet ingedeeld', []);
 
-            const participants = getParticipants(signup);
-            const groupName = signup.group_name || 'Niet ingedeeld';
+            groupConfigs.forEach((g) => {
+                participantsPerGroup.set(g.name, []);
+            });
 
-            if (participants.length > 0) {
-                participants.forEach((p) => {
-                    rows.push({
-                        'Naam': `${p.name} ${p.initial}.`.trim(),
-                        'Vereniging': signup.association || '-',
-                        'Inschrijfdatum': registrationDate,
-                        'Groep': groupName
-                    });
-                });
-            } else {
-                rows.push({
-                    'Naam': signup.name,
-                    'Vereniging': signup.association || '-',
-                    'Inschrijfdatum': registrationDate,
-                    'Groep': groupName
-                });
-                for (let i = 1; i < signup.amount_tickets; i++) {
-                    rows.push({
-                        'Naam': `Deelnemer ${i + 1} (${signup.name})`,
-                        'Vereniging': signup.association || '-',
-                        'Inschrijfdatum': registrationDate,
-                        'Groep': groupName
-                    });
+            filteredSignups.forEach((signup) => {
+                const groupName = signup.group_name || 'Niet ingedeeld';
+                const participants = getParticipants(signup);
+                const names: string[] = [];
+
+                if (participants.length > 0) {
+                    participants.forEach((p) => names.push(`${p.name} ${p.initial}.`.trim()));
+                } else {
+                    names.push(signup.name);
+                    for (let i = 1; i < signup.amount_tickets; i++) {
+                        names.push(`Deelnemer ${i + 1} (${signup.name})`);
+                    }
                 }
-            }
-        });
 
-        const filename = `kroegentocht-${eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${getFilenameTimestamp()}.csv`;
-        downloadCSV(rows, filename);
+                const currentList = participantsPerGroup.get(groupName);
+                if (currentList) {
+                    currentList.push(...names);
+                } else {
+                    participantsPerGroup.set(groupName, names);
+                }
+            });
+
+            // 1. Groepsleiders opsplitsen in losse rijen onder elkaar
+            const leaderCounts = groupConfigs.map((g) => g.leaders?.length ?? 0);
+            const maxLeaders = Math.max(1, ...leaderCounts);
+
+            const leaderRows = Array.from({ length: maxLeaders }, (_, leaderIndex) => {
+                const entries: [string, string][] = [
+                    ['Groepnummer:', leaderIndex === 0 ? 'groepsleiders:' : '']
+                ];
+
+                groupConfigs.forEach((g, index) => {
+                    const colKey = `${index + 1} - ${g.name}`;
+                    const leaderName = g.leaders?.at(leaderIndex)?.name ?? '';
+                    entries.push([colKey, leaderName]);
+                });
+
+                entries.push(['Niet ingedeeld', '']);
+                return Object.fromEntries(entries);
+            });
+
+            // 2. Deelnemers opbouwen
+            const activeColumns = [...groupConfigs.map((g) => g.name), 'Niet ingedeeld'];
+            const maxRows = Math.max(
+                0,
+                ...activeColumns.map((col) => participantsPerGroup.get(col)?.length ?? 0)
+            );
+
+            const participantRows = Array.from({ length: maxRows }, (_, rowIndex) => {
+                const entries: [string, string][] = [
+                    ['Groepnummer:', '']
+                ];
+
+                groupConfigs.forEach((g, index) => {
+                    const colKey = `${index + 1} - ${g.name}`;
+                    const list = participantsPerGroup.get(g.name);
+                    entries.push([colKey, list?.at(rowIndex) ?? '']);
+                });
+
+                const unassignedList = participantsPerGroup.get('Niet ingedeeld');
+                entries.push(['Niet ingedeeld', unassignedList?.at(rowIndex) ?? '']);
+
+                return Object.fromEntries(entries);
+            });
+
+            const csvData = [
+                ...leaderRows,
+                { 'Groepnummer:': '' },
+                ...participantRows
+            ];
+
+            const safeName = eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+            const filename = `kroegentocht-${safeName}-${getFilenameTimestamp()}.csv`;
+
+            downloadCSV(csvData, filename);
+        } catch (error) {
+            safeConsoleError('[SignupList.tsx][exportToCSV]', error);
+        }
     };
 
     return (

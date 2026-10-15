@@ -53,7 +53,6 @@ export default function IntroFilters({
                 </div>
             </div>
 
-            {/* Compact dropdown for narrow screens, where a full tab row doesn't fit */}
             <div className="lg:hidden">
                 <div className="relative flex items-center gap-3 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-3 shadow-sm">
                     {activeTabInfo && <activeTabInfo.icon className="size-4 shrink-0 text-(--beheer-accent)" />}
@@ -69,7 +68,6 @@ export default function IntroFilters({
                 </div>
             </div>
 
-            {/* Full tab row, only shown once there's enough width for all labels */}
             <div className="hidden overflow-x-auto rounded-xl border border-(--beheer-border)/50 bg-(--beheer-card-soft) p-1 lg:flex">
                 {tabs.map((tab) => (
                     <button
