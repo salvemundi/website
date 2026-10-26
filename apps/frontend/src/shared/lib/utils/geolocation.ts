@@ -26,7 +26,7 @@ export async function searchLocations(query: string): Promise<LocationSearchResu
     try {
         const response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&accept-language=nl&q=${encodeURIComponent(query)}`,
-            { headers: { 'User-Agent': 'SalveMundi-Website' } }
+            { signal: AbortSignal.timeout(5000) }
         );
 
         if (!response.ok) return [];
@@ -57,7 +57,7 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
     try {
         const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=nl`,
-            { headers: { 'User-Agent': 'SalveMundi-Website' } }
+            { signal: AbortSignal.timeout(5000) }
         );
 
         if (response.ok) {
