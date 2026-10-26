@@ -22,9 +22,7 @@ interface KroegentochtFormIslandProps {
     initialUser?: { email?: string; association?: string } | null;
 }
 
-const formSchema = pubCrawlSignupFormSchema.extend({
-    customAssociation: z.string().optional()
-});
+const formSchema = pubCrawlSignupFormSchema;
 
 type PubCrawlSignupFormValues = z.infer<typeof formSchema>;
 
