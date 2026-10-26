@@ -300,7 +300,7 @@ export default function SignupList({
 
                 const leaders = groupConfigs.find(g => g.name === groupName)?.leaders || [];
                 const regularNames = names.filter(name => !leaders.some(leader =>
-                    leader.signupId != null && leader.signupId === Number(signup.id) &&
+                    leader.signupId !== null && leader.signupId !== undefined && leader.signupId === Number(signup.id) &&
                     leader.name.trim().toLocaleLowerCase('nl') === name.trim().toLocaleLowerCase('nl')
                 ));
                 const currentList = participantsPerGroup.get(groupName);
