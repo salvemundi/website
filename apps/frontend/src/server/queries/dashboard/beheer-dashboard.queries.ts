@@ -62,14 +62,18 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
             db.select({ count: count() }).from(Stickers).where(
                 gte(Stickers.date_created, lastWeekStr)
             ),
-            db.select({ count: count() }).from(pub_crawl_signups)
+            db.select({ count: sql<number>`coalesce(sum(${pub_crawl_signups.amount_tickets}), 0)`.mapWith(Number) }).from(pub_crawl_signups)
                 .where(
                     and(
                         eq(pub_crawl_signups.payment_status, 'paid'),
                         eq(pub_crawl_signups.pub_crawl_event_id, 
                             db.select({ id: pub_crawl_events.id }).from(pub_crawl_events)
-                                .where(gte(pub_crawl_events.date, now.toISOString()))
-                                .orderBy(pub_crawl_events.date)
+                                .orderBy(
+                                    sql`case when ${pub_crawl_events.date} >= ${now.toISOString()} then 0 else 1 end`,
+                                    sql`case when ${pub_crawl_events.date} >= ${now.toISOString()} then ${pub_crawl_events.date} end asc`,
+                                    sql`${pub_crawl_events.date} desc nulls last`,
+                                    pub_crawl_events.id
+                                )
                                 .limit(1)
                         )
                     )

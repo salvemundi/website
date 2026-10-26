@@ -23,6 +23,7 @@ import KroegentochtEventDropdown from '@/components/islands/beheer/kroegentocht/
 import SignupList from '@/components/islands/beheer/kroegentocht/SignupList';
 import { type PubCrawlEvent, type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { safeConsoleError } from '@/server/utils/logger';
+import { selectPubCrawlEvent } from '@/lib/utils/pub-crawl-event';
 
 interface ExtendedSignup extends PubCrawlSignup {
     participants?: { name: string; initial: string }[];
@@ -44,7 +45,7 @@ export default function KroegentochtManagementIsland({
     const { toast, showToast, hideToast } = useAdminToast();
     const events = initialEvents;
     const [selectedEvent, setSelectedEvent] = useState<PubCrawlEvent | null>(
-        initialEvents.find(e => e.date && new Date(e.date) >= new Date()) || initialEvents[0] || null
+        selectPubCrawlEvent(initialEvents)
     );
     const [signups, setSignups] = useState<ExtendedSignup[]>(initialSignups);
 

@@ -298,11 +298,16 @@ export default function SignupList({
                     }
                 }
 
+                const leaders = groupConfigs.find(g => g.name === groupName)?.leaders || [];
+                const regularNames = names.filter(name => !leaders.some(leader =>
+                    leader.signupId != null && leader.signupId === Number(signup.id) &&
+                    leader.name.trim().toLocaleLowerCase('nl') === name.trim().toLocaleLowerCase('nl')
+                ));
                 const currentList = participantsPerGroup.get(groupName);
                 if (currentList) {
-                    currentList.push(...names);
+                    currentList.push(...regularNames);
                 } else {
-                    participantsPerGroup.set(groupName, names);
+                    participantsPerGroup.set(groupName, regularNames);
                 }
             });
 
@@ -352,7 +357,12 @@ export default function SignupList({
             const csvData = [
                 ...leaderRows,
                 { 'Groepnummer:': '' },
-                ...participantRows
+                ...participantRows,
+                { 'Groepnummer:': '' },
+                ...leaderRows.map((row, index) => ({
+                    ...row,
+                    'Groepnummer:': index === 0 ? 'Kroegentochtleiders:' : ''
+                }))
             ];
 
             const safeName = eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
