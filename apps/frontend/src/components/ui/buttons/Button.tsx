@@ -39,7 +39,7 @@ const getSizeClass = (size: 'sm' | 'md' | 'lg') => {
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant = 'primary', size = 'md', fullWidth = false, children, ...props }, ref) => {
+    ({ className, variant = 'primary', size = 'md', fullWidth = false, type = 'button', children, ...props }, ref) => {
         const baseStyles = 'form-button inline-flex items-center justify-center font-bold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed outline-none select-none touch-manipulation';
 
         return (
@@ -47,7 +47,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 ref={ref}
                 className={cn(baseStyles, getVariantClass(variant), getSizeClass(size), fullWidth ? 'w-full' : 'w-auto shrink-0', className)}
                 {...props}
-                type="button">
+                type={type}>
                 {children}
             </button>
         );
