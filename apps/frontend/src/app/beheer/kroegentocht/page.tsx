@@ -2,6 +2,7 @@ import { unstable_noStore as noStore } from 'next/cache';
 import { getPubCrawlEvents, getKroegentochtSettings, getPubCrawlSignups } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
 import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
 import KroegentochtManagementIsland from '@/components/islands/beheer/KroegentochtManagementIsland';
+import { selectPubCrawlEvent } from '@/lib/utils/pub-crawl-event';
 
 export const metadata = {
     title: 'Kroegentocht Beheer | Salve Mundi',
@@ -16,7 +17,7 @@ export default async function KroegentochtPage() {
         getKroegentochtSettings().catch(() => ({ show: true }))
     ]);
 
-    const initialEvent = events.length > 0 ? (events.find(e => e.date && new Date(e.date) >= new Date()) || events[0]) : null;
+    const initialEvent = selectPubCrawlEvent(events);
     const initialSignups = initialEvent ? await getPubCrawlSignups(Number(initialEvent.id)).catch(() => []) : [];
 
     return (
