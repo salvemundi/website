@@ -120,7 +120,6 @@ async function RegistrationSection() {
                             { title: 'Lidmaatschap', content: <>Je hoeft <strong>geen lid</strong> te zijn om deel te nemen.</> },
                             { title: 'Bevestiging', content: <>Je ontvangt een bevestigingsmail na inschrijving.</> },
                             { title: 'Leeftijd', content: <>Minimumleeftijd voor deelname is 18 jaar.</> },
-                            { title: 'Tickets', content: <>Tickets zijn <strong>overdraagbaar</strong>.</> },
                         ].map((item, i) => (
                             <div key={i} className="space-y-1">
                                 <p className="text-[10px] font-bold tracking-widest text-text-muted">{item.title}</p>
