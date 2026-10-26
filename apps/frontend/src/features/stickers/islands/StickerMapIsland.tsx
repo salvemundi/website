@@ -108,55 +108,10 @@ export default function StickerMapIsland({
             return;
         }
 
-        setIsLocating(true);
-
-        if (!(navigator as Partial<Navigator>).geolocation) {
-            showToast("Je browser ondersteunt geen geolocatie. We openen de handmatige kaartomgeving.", 'error');
-            setSelectedLocation(null);
-            setShowAddModal(true);
-            setIsLocating(false);
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                void (async () => {
-                    const { latitude, longitude } = position.coords;
-                    setSelectedLocation({ lat: latitude, lng: longitude });
-
-                    const { city: reverseCity, country: reverseCountry } = await reverseGeocode(latitude, longitude);
-
-                    setFormData({
-                        location_name: reverseCity,
-                        description: '',
-                        city: reverseCity,
-                        country: reverseCountry,
-                        image: null
-                    });
-                    setImagePreview(null);
-                    setShowAddModal(true);
-                    setIsLocating(false);
-                })();
-            },
-            (error) => {
-                let msg = "Kon je locatie niet bepalen. We openen de handmatige kaartomgeving.";
-                if (error.code === 1) msg = "Locatie toegang geweigerd. We openen de handmatige kaartomgeving.";
-                showToast(msg, 'error');
-
-                setFormData({
-                    location_name: '',
-                    description: '',
-                    city: '',
-                    country: '',
-                    image: null
-                });
-                setImagePreview(null);
-                setSelectedLocation(null);
-                setShowAddModal(true);
-                setIsLocating(false);
-            },
-            { enableHighAccuracy: true, timeout: 10000 }
-        );
+        setFormData({ location_name: '', description: '', city: '', country: '', image: null });
+        setImagePreview(null);
+        setSelectedLocation(null);
+        setShowAddModal(true);
     }, [user, showToast]);
 
     const searchParams = useSearchParams();

@@ -38,7 +38,7 @@ export default function StickerActionPanel({ user, isLocating, onPlaceSticker, c
                 <span className="text-center whitespace-normal">Plaats sticker</span>
             </button>
             <p className={`mt-2 text-center text-[9px] font-bold tracking-tighter text-(--text-muted) uppercase italic ${compact ? 'leading-tight' : ''}`}>
-                Plak een sticker op je huidige GPS locatie
+                Kies je huidige locatie of zoek een adres
             </p>
         </div>
     );

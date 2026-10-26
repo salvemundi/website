@@ -2,6 +2,7 @@
 
 import { X, Loader2, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { searchLocations, reverseGeocode, type LocationSearchResult } from '@/shared/lib/utils/geolocation';
 import { IconButton } from '@/components/ui/buttons/IconButton';
 import { Button } from '@/components/ui/buttons/Button';
@@ -178,7 +179,7 @@ export default function AddStickerModal({
         }
     };
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 p-2 backdrop-blur-xl sm:p-4">
             <div className="flex max-h-[95vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-(--bg-card) shadow-2xl">
                 <div className="flex shrink-0 items-center justify-between bg-linear-to-r from-(--theme-purple) to-(--theme-purple-dark) p-4 text-white sm:p-6">
@@ -228,28 +229,32 @@ export default function AddStickerModal({
                             <div>
                                 <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Stad</label>
                                 <input
-                                    readOnly
-                                    tabIndex={-1}
                                     type="text"
-                                    placeholder="Kies via zoeken of huidige locatie"
+                                    placeholder="Vul de stad in"
                                     value={formData.city}
+                                    onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
                                     suppressHydrationWarning
-                                    className="form-input w-full cursor-not-allowed rounded-xl border border-(--border-color)/20 bg-(--bg-main)/30 px-4 py-3 text-sm text-(--text-muted) outline-none"
+                                    className="form-input w-full rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 px-4 py-3 text-sm outline-none"
                                 />
                             </div>
                             <div>
                                 <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Land</label>
                                 <input
-                                    readOnly
-                                    tabIndex={-1}
                                     type="text"
-                                    placeholder="Kies via zoeken of huidige locatie"
+                                    placeholder="Vul het land in"
                                     value={formData.country}
+                                    onChange={(e) => setFormData((prev) => ({ ...prev, country: e.target.value }))}
                                     suppressHydrationWarning
-                                    className="form-input w-full cursor-not-allowed rounded-xl border border-(--border-color)/20 bg-(--bg-main)/30 px-4 py-3 text-sm text-(--text-muted) outline-none"
+                                    className="form-input w-full rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 px-4 py-3 text-sm outline-none"
                                 />
                             </div>
                         </div>
+
+                        {selectedLocation && (!formData.city || !formData.country) && (
+                            <p className="text-sm text-(--text-muted)">
+                                Stad en land konden niet automatisch worden bepaald. Vul ze hierboven in.
+                            </p>
+                        )}
 
                         <div>
                             <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Beschrijving</label>
@@ -275,7 +280,7 @@ export default function AddStickerModal({
                     <Button
                         type="submit"
                         size="lg"
-                        disabled={isPending || !selectedLocation || !formData.city || !formData.country}
+                        disabled={isPending || !selectedLocation || !formData.city.trim() || !formData.country.trim()}
                         className="flex w-full items-center justify-center gap-3 rounded-2xl bg-linear-to-r from-(--theme-purple) to-orange-500 font-black tracking-[0.2em] text-white uppercase shadow-xl hover:shadow-2xl active:scale-95"
                     >
                         {isPending ? <Loader2 className="size-5 animate-spin" /> : <Plus className="size-5" />}
@@ -283,6 +288,7 @@ export default function AddStickerModal({
                     </Button>
                 </form>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
