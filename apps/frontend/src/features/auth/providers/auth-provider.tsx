@@ -1,6 +1,7 @@
 'use client';
 
 import { authClient } from '@/lib/auth';
+import { getLoginCallbackURL } from '@/lib/utils/login-redirect';
 
 /**
  * Enhanced useAuth hook that leverages Better Auth session.
@@ -22,8 +23,9 @@ export function useAuth() {
  */
 export function useAuthActions() {
     return {
-        login: () => authClient.signIn.social({ 
-            provider: 'microsoft'
+        login: (callbackURL?: string) => authClient.signIn.social({ 
+            provider: 'microsoft',
+            callbackURL: getLoginCallbackURL(callbackURL)
         }),
         logout: () => authClient.signOut() };
 }
