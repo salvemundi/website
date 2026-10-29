@@ -3,21 +3,23 @@ import { ROUTES } from '@/lib/config/routes';
 const LOGIN_PARAMS = ['needLogin', 'callbackURL'];
 
 /**
- * Only allow same-site relative paths to prevent open redirects.
+ * Mirrors Better Auth's relative callbackURL check (better-auth/src/auth/trusted-origins.ts).
+ * Anything that does not match is rejected server-side with INVALID_CALLBACK_URL,
+ * which would make the login button silently do nothing.
+ */
+const BETTER_AUTH_RELATIVE_PATH = /^\/(?!\/|\\|%2f|%5c)[\w\-.+/@]*(?:\?[\w\-.+/=&%@]*)?$/;
+
+/**
+ * Only allow same-site relative paths that Better Auth accepts (also prevents open redirects).
  */
 function isSafeRelativePath(value: string): boolean {
-    try {
-        const base = new URL('https://same-site.invalid');
-        return value.startsWith('/') && new URL(value, base).origin === base.origin;
-    } catch {
-        return false;
-    }
+    return BETTER_AUTH_RELATIVE_PATH.test(value);
 }
 
 /**
  * Determines where the user is sent after logging in.
  * An explicit callbackURL (e.g. from ?callbackURL=) takes precedence, otherwise the current page.
- * Falls back on the homepage or when the value is unsafe.
+ * Falls back on the homepage or when the value would be rejected by Better Auth.
  */
 export function getLoginCallbackURL(explicit?: string | null, fallback: string = ROUTES.MEMBERSHIP): string {
     if (explicit) {
@@ -32,6 +34,9 @@ export function getLoginCallbackURL(explicit?: string | null, fallback: string =
     const params = new URLSearchParams(search);
     LOGIN_PARAMS.forEach(param => params.delete(param));
     const query = params.toString();
+    const callbackURL = query ? `${pathname}?${query}` : pathname;
 
-    return query ? `${pathname}?${query}` : pathname;
+    if (isSafeRelativePath(callbackURL)) return callbackURL;
+    // Query may contain characters Better Auth rejects; the page itself is still worth returning to.
+    return isSafeRelativePath(pathname) ? pathname : fallback;
 }
