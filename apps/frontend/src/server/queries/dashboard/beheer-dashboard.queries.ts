@@ -128,22 +128,39 @@ export async function getDashboardStatsInternal(): Promise<DashboardStats> {
 export async function getRecentActivitiesInternal(): Promise<RecentActivity[]> {
     try {
         const { db, schema } = await import('@/lib/database/db');
-        const { desc, sql } = await import('drizzle-orm');
+        const { asc, desc, gte, lt, sql } = await import('drizzle-orm');
         const { events, event_signups } = schema;
 
         // "events"."id" is spelled out instead of interpolating events.id: with a
         // single-table select Drizzle renders that interpolation as a bare "id",
         // which inside this correlated subquery resolves to event_signups' own id
         // column instead of the outer event, silently zeroing every count.
-        const rows = await db.select({
+        const limit = 4;
+        const select = {
             id: events.id,
             name: events.name,
             event_date: events.event_date,
             signups: sql<number>`(SELECT COUNT(*) FROM ${event_signups} es WHERE es.event_id = "events"."id" AND es.payment_status = 'paid')`.mapWith(Number)
-        })
-        .from(events)
-        .orderBy(desc(events.event_date))
-        .limit(4);
+        };
+        const today = sql`CURRENT_DATE`;
+
+        // Upcoming activities first, soonest -> furthest away (same order as the public page).
+        const upcoming = await db.select(select)
+            .from(events)
+            .where(gte(events.event_date, today))
+            .orderBy(asc(events.event_date))
+            .limit(limit);
+
+        // Fill any remaining slots with the most recent past activities.
+        const past = upcoming.length < limit
+            ? await db.select(select)
+                .from(events)
+                .where(lt(events.event_date, today))
+                .orderBy(desc(events.event_date))
+                .limit(limit - upcoming.length)
+            : [];
+
+        const rows = [...upcoming, ...past];
 
         const mapped = rows.map(r => ({
             id: Number(r.id),

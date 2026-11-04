@@ -63,7 +63,18 @@ export default function AdminActivitiesIsland({
             result = result.filter(e => e.name.toLowerCase().includes(query) || e.location?.toLowerCase().includes(query));
         }
         if (selectedCommittee !== 'all') result = result.filter(e => String(e.committee_id) === selectedCommittee);
-        return result;
+
+        // Same order as the public activities page: upcoming first (soonest -> furthest away),
+        // then past activities (most recent first).
+        const getTime = (e: BeheerActivity) => (e.event_time && e.event_date.length <= 10)
+            ? new Date(`${e.event_date}T${e.event_time}`).getTime()
+            : new Date(e.event_date).getTime();
+        return [...result].sort((a, b) => {
+            const aPast = eventIsPast(a);
+            const bPast = eventIsPast(b);
+            if (aPast !== bPast) return aPast ? 1 : -1;
+            return aPast ? getTime(b) - getTime(a) : getTime(a) - getTime(b);
+        });
     }, [events, filter, searchQuery, selectedCommittee]);
 
     const displayedEvents = useMemo(() => {

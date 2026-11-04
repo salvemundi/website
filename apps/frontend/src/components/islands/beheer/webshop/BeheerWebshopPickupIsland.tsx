@@ -74,6 +74,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                     <p key={line.id}>
                                                         {line.product_name_snapshot}
                                                         {line.variant_label_snapshot && ` (${line.variant_label_snapshot})`}
+                                                        {line.custom_name && ` — naam: "${line.custom_name}"`}
                                                         {' '}&times; {line.quantity}
                                                     </p>
                                                 ))}

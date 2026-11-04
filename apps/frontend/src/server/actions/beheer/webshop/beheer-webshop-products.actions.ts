@@ -128,7 +128,9 @@ export async function saveProduct(formData: FormData) {
         max_orders: formData.get('max_orders') || null,
         stock_quantity: formData.get('stock_quantity') || null,
         is_active: formData.get('is_active') === 'on' || formData.get('is_active') === 'true',
-        display_order: formData.get('display_order') ? Number(formData.get('display_order')) : 0
+        display_order: formData.get('display_order') ? Number(formData.get('display_order')) : 0,
+        custom_name_enabled: formData.get('custom_name_enabled') === 'on' || formData.get('custom_name_enabled') === 'true',
+        custom_name_max_length: formData.get('custom_name_max_length') || null
     };
 
     const validated = webshopProductBeheerSchema.safeParse(rawData);
@@ -156,7 +158,8 @@ export async function saveProduct(formData: FormData) {
             price: data.price.toFixed(2),
             // No deposit concept anymore — the DB column is still notNull, so it's kept equal
             // to the price rather than exposed as a separate admin field.
-            deposit_amount: data.price.toFixed(2)
+            deposit_amount: data.price.toFixed(2),
+            custom_name_max_length: data.custom_name_enabled ? (data.custom_name_max_length ?? null) : null
         };
 
         let productId: number;

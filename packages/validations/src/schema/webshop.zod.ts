@@ -53,6 +53,7 @@ export const webshopPreorderLineFormSchema = z.object({
     product_id: z.number().min(1, 'Product is verplicht'),
     variant_id: z.number().min(1).nullable().optional(),
     quantity: z.number().min(1, 'Aantal moet minimaal 1 zijn').max(10, 'Maximaal 10 stuks per regel'),
+    custom_name: z.string().max(255).optional().nullable(),
 });
 export type WebshopPreorderLineForm = z.infer<typeof webshopPreorderLineFormSchema>;
 
