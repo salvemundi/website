@@ -357,12 +357,7 @@ export default function SignupList({
             const csvData = [
                 ...leaderRows,
                 { 'Groepnummer:': '' },
-                ...participantRows,
-                { 'Groepnummer:': '' },
-                ...leaderRows.map((row, index) => ({
-                    ...row,
-                    'Groepnummer:': index === 0 ? 'Kroegentochtleiders:' : ''
-                }))
+...participantRows
             ];
 
             const safeName = eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
