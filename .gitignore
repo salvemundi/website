@@ -58,3 +58,5 @@ playwright-report/
 scripts/
 .antigravity/
 .agents/
+
+.DS_Store
