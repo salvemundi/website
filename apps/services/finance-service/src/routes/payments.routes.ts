@@ -20,6 +20,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
         Body: {
             amount: number;
             description: string;
+            productName?: string;
             registrationId: string | number;
             registrationType: string;
             email: string;
@@ -38,6 +39,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
         const {
             amount,
             description,
+            productName,
             registrationId,
             registrationType,
             email,
@@ -123,7 +125,7 @@ export default async function paymentsRoutes(fastify: FastifyInstance) {
                 transaction_id: molliePaymentId,
                 amount: amount,
                 payment_status: 'open',
-                product_name: description,
+                product_name: productName || description,
                 product_type: productType,
                 user_id: userId || null,
                 email: email || null,

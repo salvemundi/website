@@ -131,6 +131,7 @@ export default function AdminWebshopPreordersIsland({ initialPreorders }: Props)
                                                                     <span className="font-medium text-(--beheer-text)">
                                                                         {line.product_name_snapshot}
                                                                         {line.variant_label_snapshot && ` (${line.variant_label_snapshot})`}
+                                                                        {line.custom_name && ` — naam: "${line.custom_name}"`}
                                                                         {' '}&times; {line.quantity}
                                                                     </span>
                                                                     <span className="font-mono text-(--beheer-text-muted)">€{(Number(line.unit_price) * line.quantity).toFixed(2)}</span>

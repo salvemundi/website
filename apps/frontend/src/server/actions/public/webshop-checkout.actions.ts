@@ -58,7 +58,8 @@ async function buildFinancePaymentRequest(preorderId: number) {
             headers: getInternalHeaders(),
             body: JSON.stringify({
                 amount,
-                description: `Bestelling webshop #${preorderId}`,
+                description: 'Salve Mundi Webshop',
+                productName: `Bestelling webshop #${preorderId}`,
                 registrationId: preorderId,
                 registrationType: 'webshop_preorder',
                 email: preorder.email,
@@ -132,6 +133,14 @@ export async function submitPreorderAndInitiatePayment(formData: WebshopPreorder
             variantLabel = [variant.size, variant.color].filter(Boolean).join(' / ') || null;
         }
 
+        let customName: string | null = null;
+        if (product.custom_name_enabled) {
+            customName = (line.custom_name ?? '').trim();
+            if (!customName) return { success: false, error: 'Vul de gewenste naam/tekst in.' };
+            const max = product.custom_name_max_length ?? 255;
+            if (customName.length > max) return { success: false, error: `De naam mag maximaal ${max} tekens bevatten.` };
+        }
+
         const unitPrice = Number(product.price);
         const subtotal = unitPrice * line.quantity;
 
@@ -159,6 +168,7 @@ export async function submitPreorderAndInitiatePayment(formData: WebshopPreorder
                 unit_price: unitPrice.toFixed(2),
                 product_name_snapshot: product.name,
                 variant_label_snapshot: variantLabel,
+                custom_name: customName,
             });
         } catch (error) {
             if (error instanceof InsufficientStockError) {

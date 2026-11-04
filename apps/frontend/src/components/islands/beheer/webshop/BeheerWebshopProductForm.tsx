@@ -78,6 +78,7 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
     const [name, setName] = useState(product?.name || '');
     const [slug, setSlug] = useState(product?.slug || '');
     const [slugTouched, setSlugTouched] = useState(!!product);
+    const [customNameEnabled, setCustomNameEnabled] = useState(!!product?.custom_name_enabled);
     const [type, setType] = useState<'item' | 'clothing'>(product?.type === 'clothing' ? 'clothing' : 'item');
 
     const [sizes, setSizes] = useState<string[]>(
@@ -124,6 +125,7 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
         if (product) fd.set('id', String(product.id));
         fd.set('type', type);
         fd.set('slug', slug);
+        fd.set('custom_name_enabled', customNameEnabled ? 'true' : 'false');
 
         // Every size is available in every color — generate the full combo list instead of
         // making the admin type each size/color pair by hand.
@@ -224,6 +226,19 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
                     <input type="checkbox" id="is_active" name="is_active" defaultChecked={product?.is_active ?? true} className="size-6 rounded-lg accent-(--beheer-accent)" />
                 </div>
                 <label htmlFor="is_active" className="cursor-pointer text-xs font-semibold text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)">Direct actief stellen (zichtbaar in catalogus)</label>
+            </div>
+
+            <div className="space-y-4 border-t border-(--beheer-border) pt-6">
+                <div className="flex items-center gap-4 p-2">
+                    <input type="checkbox" id="custom_name_enabled" checked={customNameEnabled} onChange={(e) => setCustomNameEnabled(e.target.checked)} className="size-6 rounded-lg accent-(--beheer-accent)" />
+                    <label htmlFor="custom_name_enabled" className="cursor-pointer text-xs font-semibold text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)">Klant mag een eigen naam/tekst invullen (bijv. bedrukking)</label>
+                </div>
+                {customNameEnabled && (
+                    <div className="space-y-3">
+                        <label className="text-xs font-semibold text-(--beheer-text-muted)">Maximaal aantal tekens *</label>
+                        <input type="number" name="custom_name_max_length" required min="1" max="255" step="1" placeholder="Bijv. 20" defaultValue={product?.custom_name_max_length ?? ''} className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10 md:w-1/2" />
+                    </div>
+                )}
             </div>
 
             <div className="space-y-3 border-t border-(--beheer-border) pt-6">

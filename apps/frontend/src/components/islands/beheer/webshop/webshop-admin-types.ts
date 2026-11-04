@@ -31,6 +31,8 @@ export interface AdminProduct {
     price: string | null;
     max_orders?: number | null;
     stock_quantity?: number | null;
+    custom_name_enabled?: boolean | null;
+    custom_name_max_length?: number | null;
     is_active: boolean | null;
     display_order: number | null;
     variants: AdminVariant[];
@@ -43,6 +45,7 @@ export interface AdminPreorderLine {
     unit_price: string | null;
     product_name_snapshot: string | null;
     variant_label_snapshot: string | null;
+    custom_name?: string | null;
 }
 
 export interface AdminPreorder {

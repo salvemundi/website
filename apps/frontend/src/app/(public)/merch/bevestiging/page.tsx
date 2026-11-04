@@ -105,6 +105,9 @@ export default async function WebshopBevestigingPage({ searchParams }: PageProps
                                     {line.variant_label_snapshot && (
                                         <p className="text-sm text-(--text-muted)">{line.variant_label_snapshot} &middot; {line.quantity}x</p>
                                     )}
+                                    {line.custom_name && (
+                                        <p className="text-sm text-(--text-muted)">Naam: {line.custom_name}</p>
+                                    )}
                                 </div>
                                 <span className="font-bold text-(--theme-purple)/80">€{(Number(line.unit_price) * line.quantity).toFixed(2)}</span>
                             </div>
