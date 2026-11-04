@@ -73,6 +73,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -82,7 +83,7 @@ jobs:
         with:
           context: .
           file: apps/frontend/Dockerfile
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ghcr.io/salvemundi/v7-app:${{ needs.prepare.outputs.tag }}
           cache-from: type=gha,scope=${{ github.workflow }}-frontend
           cache-to: type=gha,mode=max,scope=${{ github.workflow }}-frontend
@@ -112,6 +113,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -121,7 +123,7 @@ jobs:
         with:
           context: .
           file: ${{ matrix.file }}
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ghcr.io/salvemundi/${{ matrix.image }}:${{ needs.prepare.outputs.tag }}
           cache-from: type=gha,scope=${{ github.workflow }}-${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.service }}

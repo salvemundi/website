@@ -14,7 +14,7 @@ interface AdminSelectProps<T extends string | number = string | number> {
     value?: T;
     defaultValue?: T;
     onChange?: (value: T) => void;
-    options: AdminSelectOption<T>[];
+    options: Readonly<AdminSelectOption<T>[]>;
     className?: string;
     placeholder?: string;
     disabled?: boolean;
@@ -161,11 +161,10 @@ export default function BeheerSelect<T extends string | number = string | number
                                         key={option.value}
                                         type="button"
                                         onClick={() => handleSelect(option.value)}
-                                        className={`tab-button flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors ${
-                                            isSelected
-                                                ? 'bg-(--beheer-accent) font-bold text-white'
-                                                : 'bg-transparent text-(--beheer-text) hover:bg-(--beheer-card-soft) hover:text-(--beheer-accent)'
-                                        }`}
+                                        className={`tab-button flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors ${isSelected
+                                            ? 'bg-(--beheer-accent)/10 font-bold text-(--beheer-accent)'
+                                            : 'bg-transparent text-(--beheer-text) hover:bg-(--beheer-card-soft) hover:text-(--beheer-accent)'
+                                            }`}
                                     >
                                         <span>{option.label}</span>
                                     </button>

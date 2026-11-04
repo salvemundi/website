@@ -357,7 +357,7 @@ export default function SignupList({
             const csvData = [
                 ...leaderRows,
                 { 'Groepnummer:': '' },
-...participantRows
+                ...participantRows
             ];
 
             const safeName = eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
