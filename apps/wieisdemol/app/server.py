@@ -356,7 +356,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def client_ip(self):
         if TRUST_PROXY:
-            fwd = self.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+            # De rechtse waarde is door onze eigen proxy toegevoegd; de linkse kan de client zelf opgeven.
+            fwd = self.headers.get("X-Forwarded-For", "").split(",")[-1].strip()
             if fwd:
                 return fwd
         return self.client_address[0]

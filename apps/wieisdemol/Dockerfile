@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED=1 \
     TRUST_PROXY=1
 
 WORKDIR /srv
-COPY app ./app
+COPY apps/wieisdemol/app ./app
 
 # Draait niet als root; /data is het enige schrijfbare pad (mount hier een volume).
 RUN useradd --uid 568 --no-create-home --shell /usr/sbin/nologin molproef \
