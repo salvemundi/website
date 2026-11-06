@@ -1,6 +1,7 @@
 import 'server-only';
 import { db, schema } from '@salvemundi/db';
 import { eq, desc, inArray, and, or, isNull, gte, sql } from 'drizzle-orm';
+import { safeConsoleError } from '@/server/utils/logger';
 
 type PreorderRow = typeof schema.webshop_preorders.$inferSelect;
 type PreorderLineRow = typeof schema.webshop_preorder_lines.$inferSelect;
@@ -71,6 +72,33 @@ export async function restoreStockForLinesDb(lines: Pick<PreorderLineRow, 'produ
     });
 }
 
+const LINE_COLUMNS_WITHOUT_CUSTOM_FIELDS = {
+    id: schema.webshop_preorder_lines.id,
+    preorder_id: schema.webshop_preorder_lines.preorder_id,
+    product_id: schema.webshop_preorder_lines.product_id,
+    variant_id: schema.webshop_preorder_lines.variant_id,
+    quantity: schema.webshop_preorder_lines.quantity,
+    unit_price: schema.webshop_preorder_lines.unit_price,
+    product_name_snapshot: schema.webshop_preorder_lines.product_name_snapshot,
+    variant_label_snapshot: schema.webshop_preorder_lines.variant_label_snapshot,
+};
+
+// Fetches the lines of the given preorders. `custom_field_values` was added later
+// (packages/db/drizzle/webshop_custom_fields.sql); when that migration has not been applied
+// to the database yet, `select *` throws and takes every order page down with it. Fall back to
+// the columns that always exist so orders stay readable (custom field answers are then empty).
+async function fetchLinesForPreordersDb(preorderIds: number[]): Promise<PreorderLineRow[]> {
+    if (preorderIds.length === 0) return [];
+    const where = inArray(schema.webshop_preorder_lines.preorder_id, preorderIds);
+    try {
+        return await db.select().from(schema.webshop_preorder_lines).where(where);
+    } catch (error) {
+        safeConsoleError('[webshop-preorder-db.utils.ts][fetchLinesForPreordersDb] custom_field_values niet beschikbaar, fallback zonder die kolom (migratie webshop_custom_fields.sql toegepast?)', error);
+        const rows = await db.select(LINE_COLUMNS_WITHOUT_CUSTOM_FIELDS).from(schema.webshop_preorder_lines).where(where);
+        return rows.map(row => ({ ...row, custom_field_values: null }));
+    }
+}
+
 export async function fetchPreorderByIdDb(id: number): Promise<PreorderRow | null> {
     const rows = await db.select().from(schema.webshop_preorders).where(eq(schema.webshop_preorders.id, id)).limit(1);
     return rows[0] ?? null;
@@ -80,7 +108,7 @@ export async function fetchPreorderWithLinesDb(id: number): Promise<PreorderWith
     const preorder = await fetchPreorderByIdDb(id);
     if (!preorder) return null;
 
-    const lines = await db.select().from(schema.webshop_preorder_lines).where(eq(schema.webshop_preorder_lines.preorder_id, id));
+    const lines = await fetchLinesForPreordersDb([id]);
     return { ...preorder, lines };
 }
 
@@ -88,7 +116,7 @@ export async function fetchUserPreordersDb(userId: string): Promise<PreorderWith
     const preorders = await db.select().from(schema.webshop_preorders).where(eq(schema.webshop_preorders.user_id, userId)).orderBy(desc(schema.webshop_preorders.created_at));
     if (preorders.length === 0) return [];
 
-    const lines = await db.select().from(schema.webshop_preorder_lines).where(inArray(schema.webshop_preorder_lines.preorder_id, preorders.map(p => p.id)));
+    const lines = await fetchLinesForPreordersDb(preorders.map(p => p.id));
     return preorders.map(p => ({ ...p, lines: lines.filter(l => l.preorder_id === p.id) }));
 }
 
@@ -96,7 +124,7 @@ export async function fetchAllPreordersDb(): Promise<PreorderWithLines[]> {
     const preorders = await db.select().from(schema.webshop_preorders).orderBy(desc(schema.webshop_preorders.created_at));
     if (preorders.length === 0) return [];
 
-    const lines = await db.select().from(schema.webshop_preorder_lines).where(inArray(schema.webshop_preorder_lines.preorder_id, preorders.map(p => p.id)));
+    const lines = await fetchLinesForPreordersDb(preorders.map(p => p.id));
     return preorders.map(p => ({ ...p, lines: lines.filter(l => l.preorder_id === p.id) }));
 }
 
