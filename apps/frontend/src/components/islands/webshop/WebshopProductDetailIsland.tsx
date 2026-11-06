@@ -50,7 +50,7 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
 
             <div className="space-y-1 rounded-2xl bg-(--bg-soft) p-4 text-sm text-(--text-muted)">
                 <p className="font-bold text-(--theme-purple)/80">{hasDrop ? 'Dit is een preorder drop' : 'Volledige betaling'}</p>
-                <p>Je betaalt nu de volledige prijs. Er is geen bezorging &mdash; je haalt je bestelling op tijdens een afgesproken afhaalmoment.</p>
+                <p>Je betaalt nu de volledige prijs. Er is geen bezorging, je haalt je bestelling op tijdens een afgesproken afhaalmoment.</p>
                 {closesAt && (
                     <p>{isDropOpen ? `Bestellen kan tot ${formatDate(closesAt, 'd MMMM yyyy HH:mm')}.` : `Deze drop is gesloten sinds ${formatDate(closesAt, 'd MMMM yyyy HH:mm')}.`}</p>
                 )}
