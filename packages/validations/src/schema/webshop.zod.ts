@@ -18,8 +18,21 @@ export type WebshopDropWindowStatus = z.infer<typeof webshopDropWindowStatusSche
 export const webshopPreorderStatusSchema = z.enum(['awaiting_deposit', 'completed', 'cancelled']);
 export type WebshopPreorderStatus = z.infer<typeof webshopPreorderStatusSchema>;
 
+// Admin-defined extra input a customer fills in per order (e.g. "Naam op shirt", max 20 chars).
+export const webshopCustomFieldDefSchema = z.object({
+    label: z.string().trim().min(1, 'Elk veld heeft een naam nodig').max(100),
+    max_length: z.coerce.number().int().min(1, 'Max tekens moet minimaal 1 zijn').max(500, 'Max tekens is 500'),
+});
+export type WebshopCustomFieldDef = z.infer<typeof webshopCustomFieldDefSchema>;
+
+export const webshopCustomFieldsSchema = z.array(webshopCustomFieldDefSchema).max(10, 'Maximaal 10 velden per product');
+
+export const webshopCustomFieldValuesSchema = z.array(z.object({ label: z.string(), value: z.string() }));
+export type WebshopCustomFieldValue = z.infer<typeof webshopCustomFieldValuesSchema>[number];
+
 export const webshopProductSchema = selectWebshopProductsSchema.extend({
     type: webshopProductTypeSchema,
+    custom_fields: webshopCustomFieldsSchema.nullable().catch(null),
 });
 export type WebshopProduct = z.infer<typeof webshopProductSchema>;
 
@@ -53,7 +66,8 @@ export const webshopPreorderLineFormSchema = z.object({
     product_id: z.number().min(1, 'Product is verplicht'),
     variant_id: z.number().min(1).nullable().optional(),
     quantity: z.number().min(1, 'Aantal moet minimaal 1 zijn').max(10, 'Maximaal 10 stuks per regel'),
-    custom_name: z.string().max(255).optional().nullable(),
+    // Answers in the same order as the product's custom_fields; length limits are enforced server-side.
+    custom_field_answers: z.array(z.string()).optional(),
 });
 export type WebshopPreorderLineForm = z.infer<typeof webshopPreorderLineFormSchema>;
 
@@ -77,5 +91,7 @@ export const webshopPreorderSchema = selectWebshopPreordersSchema.extend({
 });
 export type WebshopPreorder = z.infer<typeof webshopPreorderSchema>;
 
-export const webshopPreorderLineSchema = selectWebshopPreorderLinesSchema;
+export const webshopPreorderLineSchema = selectWebshopPreorderLinesSchema.extend({
+    custom_field_values: webshopCustomFieldValuesSchema.nullable().catch(null),
+});
 export type WebshopPreorderLine = z.infer<typeof webshopPreorderLineSchema>;

@@ -133,12 +133,14 @@ export async function submitPreorderAndInitiatePayment(formData: WebshopPreorder
             variantLabel = [variant.size, variant.color].filter(Boolean).join(' / ') || null;
         }
 
-        let customName: string | null = null;
-        if (product.custom_name_enabled) {
-            customName = (line.custom_name ?? '').trim();
-            if (!customName) return { success: false, error: 'Vul de gewenste naam/tekst in.' };
-            const max = product.custom_name_max_length ?? 255;
-            if (customName.length > max) return { success: false, error: `De naam mag maximaal ${max} tekens bevatten.` };
+        const customFieldDefs = product.custom_fields ?? [];
+        const answers = line.custom_field_answers ?? [];
+        const customFieldValues: { label: string; value: string }[] = [];
+        for (const [index, def] of customFieldDefs.entries()) {
+            const value = (answers[index] ?? '').trim();
+            if (!value) return { success: false, error: `Vul "${def.label}" in.` };
+            if (value.length > def.max_length) return { success: false, error: `"${def.label}" mag maximaal ${def.max_length} tekens bevatten.` };
+            customFieldValues.push({ label: def.label, value });
         }
 
         const unitPrice = Number(product.price);
@@ -168,7 +170,7 @@ export async function submitPreorderAndInitiatePayment(formData: WebshopPreorder
                 unit_price: unitPrice.toFixed(2),
                 product_name_snapshot: product.name,
                 variant_label_snapshot: variantLabel,
-                custom_name: customName,
+                custom_field_values: customFieldValues.length > 0 ? customFieldValues : null,
             });
         } catch (error) {
             if (error instanceof InsufficientStockError) {

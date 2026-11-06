@@ -5,6 +5,7 @@ import {
     insertWebshopProductMediaSchema,
     insertWebshopProductVariantsSchema,
 } from './db.zod.js';
+import { webshopCustomFieldsSchema } from './webshop.zod.js';
 
 export const webshopDropWindowBeheerSchema = insertWebshopDropWindowsSchema.extend({
     id: z.coerce.number().int().optional(),
@@ -27,11 +28,7 @@ export const webshopProductBeheerSchema = insertWebshopProductsSchema.extend({
     stock_quantity: z.preprocess((value) => (value === '' || value === null || value === undefined) ? null : value, z.coerce.number().int().nonnegative('Voorraad kan niet negatief zijn').nullable()).optional(),
     is_active: z.any().transform(value => !!value),
     display_order: z.coerce.number().int().nullable().optional(),
-    custom_name_enabled: z.boolean().default(false),
-    custom_name_max_length: z.preprocess((value) => (value === '' || value === null || value === undefined) ? null : value, z.coerce.number().int().min(1, 'Maximum moet minimaal 1 teken zijn').max(255, 'Maximum is 255 tekens').nullable()).optional(),
-}).refine(d => !d.custom_name_enabled || (d.custom_name_max_length !== null && d.custom_name_max_length !== undefined), {
-    message: 'Geef een maximaal aantal tekens op voor het naamveld.',
-    path: ['custom_name_max_length'],
+    custom_fields: webshopCustomFieldsSchema.nullable().optional(),
 });
 export type WebshopProductBeheer = z.infer<typeof webshopProductBeheerSchema>;
 

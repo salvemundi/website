@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertCircle, Loader2, Save, Trash2, Upload } from 'lucide-react';
+import { AlertCircle, ChevronLeft, ChevronRight, Loader2, Plus, Save, Trash2, Upload } from 'lucide-react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { uploadWebshopMedia } from '@/server/actions/beheer/webshop/beheer-webshop-products.actions';
 import { safeConsoleError } from '@/server/utils/logger';
-import { type AdminDropWindow, type AdminProduct } from './webshop-admin-types';
+import { parseCustomFieldDefs, type AdminDropWindow, type AdminProduct } from './webshop-admin-types';
 
 interface Props {
     product?: AdminProduct | null;
@@ -78,7 +78,6 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
     const [name, setName] = useState(product?.name || '');
     const [slug, setSlug] = useState(product?.slug || '');
     const [slugTouched, setSlugTouched] = useState(!!product);
-    const [customNameEnabled, setCustomNameEnabled] = useState(!!product?.custom_name_enabled);
     const [type, setType] = useState<'item' | 'clothing'>(product?.type === 'clothing' ? 'clothing' : 'item');
 
     const [sizes, setSizes] = useState<string[]>(
@@ -87,6 +86,13 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
     const [colors, setColors] = useState<string[]>(
         () => Array.from(new Set((product?.variants || []).map(v => v.color).filter((v): v is string => !!v)))
     );
+
+    const [customFields, setCustomFields] = useState<{ label: string; max_length: number }[]>(
+        () => parseCustomFieldDefs(product?.custom_fields)
+    );
+
+    const updateCustomField = (index: number, patch: Partial<{ label: string; max_length: number }>) =>
+        setCustomFields(prev => prev.map((f, i) => i === index ? { ...f, ...patch } : f));
 
     const [media, setMedia] = useState<MediaDraft[]>(
         product?.media.map(m => ({ asset: m.asset })) || []
@@ -97,6 +103,16 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
     const handleNameChange = (value: string) => {
         setName(value);
         if (!slugTouched) setSlug(slugify(value));
+    };
+
+    const moveMedia = (from: number, to: number) => {
+        if (to < 0 || to >= media.length) return;
+        setMedia(prev => {
+            const next = [...prev];
+            const [item] = next.splice(from, 1);
+            next.splice(to, 0, item);
+            return next;
+        });
     };
 
     const handleUpload = async (file: File) => {
@@ -125,7 +141,6 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
         if (product) fd.set('id', String(product.id));
         fd.set('type', type);
         fd.set('slug', slug);
-        fd.set('custom_name_enabled', customNameEnabled ? 'true' : 'false');
 
         // Every size is available in every color — generate the full combo list instead of
         // making the admin type each size/color pair by hand.
@@ -136,6 +151,7 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
             : [];
         fd.set('variants_json', JSON.stringify(variants));
         fd.set('media_json', JSON.stringify(media));
+        fd.set('custom_fields_json', JSON.stringify(customFields));
         onSave(fd);
     };
 
@@ -228,33 +244,25 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
                 <label htmlFor="is_active" className="cursor-pointer text-xs font-semibold text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)">Direct actief stellen (zichtbaar in catalogus)</label>
             </div>
 
-            <div className="space-y-4 border-t border-(--beheer-border) pt-6">
-                <div className="flex items-center gap-4 p-2">
-                    <input type="checkbox" id="custom_name_enabled" checked={customNameEnabled} onChange={(e) => setCustomNameEnabled(e.target.checked)} className="size-6 rounded-lg accent-(--beheer-accent)" />
-                    <label htmlFor="custom_name_enabled" className="cursor-pointer text-xs font-semibold text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)">Klant mag een eigen naam/tekst invullen (bijv. bedrukking)</label>
-                </div>
-                {customNameEnabled && (
-                    <div className="space-y-3">
-                        <label className="text-xs font-semibold text-(--beheer-text-muted)">Maximaal aantal tekens *</label>
-                        <input type="number" name="custom_name_max_length" required min="1" max="255" step="1" placeholder="Bijv. 20" defaultValue={product?.custom_name_max_length ?? ''} className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-4 font-semibold text-(--beheer-text) transition-all outline-none focus:border-(--beheer-accent) focus:ring-4 focus:ring-(--beheer-accent)/10 md:w-1/2" />
-                    </div>
-                )}
-            </div>
-
             <div className="space-y-3 border-t border-(--beheer-border) pt-6">
                 <label className="text-xs font-semibold text-(--beheer-text-muted)">Foto&apos;s / video</label>
+                <p className="text-xs text-(--beheer-text-muted)">Beweeg over een afbeelding en gebruik de pijltjes om de volgorde te wijzigen. De eerste is de cover.</p>
                 <div className="flex flex-wrap gap-3">
                     {media.map((item, index) => (
                         <div key={`${item.asset}-${index}`} className="group relative size-20 overflow-hidden rounded-xl border border-(--beheer-border)">
                             <MediaAsset asset={item.asset} alt={`${name || 'Product'} afbeelding ${index + 1}`} fill sizes="80px" className="object-cover" />
-                            <button
-                                type="button"
-                                onClick={() => setMedia(prev => prev.filter((_, i) => i !== index))}
-                                className="absolute inset-0 beheer-button flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
-                                aria-label="Verwijder media"
-                            >
-                                <Trash2 className="size-5 text-white" />
-                            </button>
+                            <div className="absolute inset-0 flex items-center justify-between bg-black/50 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                                <button type="button" onClick={() => moveMedia(index, index - 1)} disabled={index === 0} className="beheer-button flex h-full cursor-pointer items-center px-0.5 text-white disabled:opacity-20" aria-label="Verplaats naar links">
+                                    <ChevronLeft className="size-5" />
+                                </button>
+                                <button type="button" onClick={() => setMedia(prev => prev.filter((_, i) => i !== index))} className="beheer-button cursor-pointer text-white" aria-label="Verwijder media">
+                                    <Trash2 className="size-5" />
+                                </button>
+                                <button type="button" onClick={() => moveMedia(index, index + 1)} disabled={index === media.length - 1} className="beheer-button flex h-full cursor-pointer items-center px-0.5 text-white disabled:opacity-20" aria-label="Verplaats naar rechts">
+                                    <ChevronRight className="size-5" />
+                                </button>
+                            </div>
+                            {index === 0 && <span className="absolute top-1 left-1 rounded bg-(--beheer-accent) px-1.5 py-0.5 text-[10px] font-bold text-white">Cover</span>}
                         </div>
                     ))}
                     <label className={`flex size-20 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-(--beheer-border) transition-colors hover:border-(--beheer-accent) ${uploading ? 'pointer-events-none opacity-50' : ''}`}>
@@ -272,6 +280,59 @@ export default function BeheerWebshopProductForm({ product, dropWindows, onSave,
                     </label>
                 </div>
                 {uploadError && <p className="text-xs font-semibold text-red-500">{uploadError}</p>}
+            </div>
+
+            <div className="space-y-4 border-t border-(--beheer-border) pt-6">
+                <div className="flex items-center justify-between gap-4">
+                    <div>
+                        <label className="text-xs font-semibold text-(--beheer-text-muted)">Extra invulvelden (optioneel)</label>
+                        <p className="mt-1 text-xs text-(--beheer-text-muted)">Velden die de klant bij het bestellen moet invullen, bijv. &quot;Naam op shirt&quot;. Je bepaalt zelf hoeveel velden, hun naam en het maximaal aantal tekens (max. 10 velden).</p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setCustomFields(prev => [...prev, { label: '', max_length: 50 }])}
+                        disabled={customFields.length >= 10}
+                        className="beheer-button flex shrink-0 cursor-pointer items-center gap-2 rounded-xl border border-(--beheer-border) px-4 py-2 text-xs font-semibold text-(--beheer-text) transition-all hover:bg-(--beheer-card-soft) disabled:opacity-40"
+                    >
+                        <Plus className="size-4" /> Veld toevoegen
+                    </button>
+                </div>
+                {customFields.map((field, index) => (
+                    <div key={index} className="grid grid-cols-[1fr_auto_auto] items-end gap-3">
+                        <div className="space-y-2">
+                            <span className="text-xs font-semibold text-(--beheer-text-muted)">Naam van veld {index + 1}</span>
+                            <input
+                                type="text"
+                                value={field.label}
+                                maxLength={100}
+                                required
+                                onChange={(e) => updateCustomField(index, { label: e.target.value })}
+                                placeholder="Bijv. Naam op shirt"
+                                className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-4 py-3 text-sm font-semibold text-(--beheer-text) outline-none focus:border-(--beheer-accent)"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <span className="text-xs font-semibold text-(--beheer-text-muted)">Max. tekens</span>
+                            <input
+                                type="number"
+                                value={field.max_length}
+                                min={1}
+                                max={500}
+                                required
+                                onChange={(e) => updateCustomField(index, { max_length: Number(e.target.value) })}
+                                className="beheer-input w-28 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-4 py-3 text-sm font-semibold text-(--beheer-text) outline-none focus:border-(--beheer-accent)"
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setCustomFields(prev => prev.filter((_, i) => i !== index))}
+                            aria-label={`Verwijder veld ${index + 1}`}
+                            className="beheer-button cursor-pointer rounded-xl p-3 text-(--beheer-text-muted) transition-colors hover:text-red-500"
+                        >
+                            <Trash2 className="size-4" />
+                        </button>
+                    </div>
+                ))}
             </div>
 
             {type === 'clothing' && (

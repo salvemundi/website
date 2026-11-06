@@ -44,6 +44,9 @@ export async function getBorrelBarClaimStatus(): Promise<BorrelBarClaimStatus> {
         }
 
         const userId = session?.user.id;
+        if (session?.user.membership_status !== 'active') {
+            return { hasClaimed: false, claimedAt: null, isActive: false, logoImageId, passUrl: null };
+        }
         if (!userId) {
             return { hasClaimed: false, claimedAt: null, isActive: true, logoImageId, passUrl: null };
         }
@@ -78,6 +81,10 @@ export async function claimBorrelBarLink(): Promise<BorrelBarClaimResult> {
         }
 
         const userId = user.id;
+
+        if (user.membership_status !== 'active') {
+            return { success: false, error: 'Je hebt een actief lidmaatschap nodig om de borrelbar pas te claimen.' };
+        }
 
         if (!settings.is_active) {
             return { success: false, error: 'Deze actie is momenteel niet actief.' };

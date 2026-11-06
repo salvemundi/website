@@ -27,15 +27,14 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
 
     const checkoutSchema = useMemo(() => {
         return webshopPreorderFormSchema.superRefine((data, ctx) => {
-            if (product.custom_name_enabled) {
-                const value = (data.lines[0]?.custom_name ?? '').trim();
-                const max = product.custom_name_max_length ?? 255;
+            (product.custom_fields ?? []).forEach((def, index) => {
+                const value = (data.lines[0]?.custom_field_answers?.[index] ?? '').trim();
                 if (!value) {
-                    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Vul een naam in.', path: ['lines', 0, 'custom_name'] });
-                } else if (value.length > max) {
-                    ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Maximaal ${max} tekens.`, path: ['lines', 0, 'custom_name'] });
+                    ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${def.label} is verplicht.`, path: ['lines', 0, 'custom_field_answers', index] });
+                } else if (value.length > def.max_length) {
+                    ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Maximaal ${def.max_length} tekens.`, path: ['lines', 0, 'custom_field_answers', index] });
                 }
-            }
+            });
             if (product.type === 'clothing' && !data.lines[0]?.variant_id) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
@@ -44,11 +43,13 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                 });
             }
         });
-    }, [product.type, product.custom_name_enabled, product.custom_name_max_length]);
+    }, [product.type, product.custom_fields]);
 
     const activeVariants = useMemo(() => product.variants.filter(v => v.is_active), [product.variants]);
     const availableSizes = useMemo(() => Array.from(new Set(activeVariants.map(v => v.size).filter((v): v is string => !!v))), [activeVariants]);
     const availableColors = useMemo(() => Array.from(new Set(activeVariants.map(v => v.color).filter((v): v is string => !!v))), [activeVariants]);
+
+    const customFieldDefs = product.custom_fields ?? [];
 
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
@@ -58,7 +59,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
         resolver: zodResolver(checkoutSchema),
         defaultValues: {
             drop_window_id: product.drop_window?.id || 0,
-            lines: [{ product_id: product.id, variant_id: null, quantity: 1, custom_name: '' }],
+            lines: [{ product_id: product.id, variant_id: null, quantity: 1, custom_field_answers: customFieldDefs.map(() => '') }],
             first_name: initialUser?.first_name || '',
             last_name: initialUser?.last_name || '',
             email: initialUser?.email || '',
@@ -240,15 +241,16 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                         </>
                     )}
 
-                    {product.custom_name_enabled && (
-                        <FormField label={`Naam / tekst (max ${product.custom_name_max_length ?? 255} tekens)`} required error={errors.lines?.[0]?.custom_name?.message}>
-                            <Input
-                                type="text"
-                                maxLength={product.custom_name_max_length ?? 255}
-                                {...register('lines.0.custom_name')}
-                            />
+                    {customFieldDefs.map((def, index) => (
+                        <FormField
+                            key={index}
+                            label={`${def.label} (max. ${def.max_length} tekens)`}
+                            required
+                            error={errors.lines?.[0]?.custom_field_answers?.[index]?.message}
+                        >
+                            <Input {...register(`lines.0.custom_field_answers.${index}`)} maxLength={def.max_length} placeholder={def.label} />
                         </FormField>
-                    )}
+                    ))}
 
                     <FormField label="Aantal" required>
                         <div className="flex items-center gap-3">
@@ -324,6 +326,12 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                         <span className="text-(--text-muted)">{product.name} &times; {quantity}</span>
                         <span className="font-bold text-(--theme-purple)/90">€{subtotal.toFixed(2)}</span>
                     </div>
+                    {customFieldDefs.map((def, index) => (
+                        <div key={index} className="flex items-center justify-between text-sm text-(--text-muted)">
+                            <span>{def.label}</span>
+                            <span className="font-semibold">{line.custom_field_answers?.[index]}</span>
+                        </div>
+                    ))}
                     <div className="flex items-center justify-between text-(--text-muted)">
                         <span>Te betalen</span>
                         <span className="font-bold text-(--theme-purple)">€{subtotal.toFixed(2)}</span>

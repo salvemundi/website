@@ -7,7 +7,7 @@ import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { toggleOrderPickedUp } from '@/server/actions/beheer/webshop/beheer-webshop-preorders.actions';
 import { formatDate } from '@/shared/lib/utils/date';
-import { type AdminPickupOrder } from './webshop-admin-types';
+import { formatCustomFieldValues, type AdminPickupOrder } from './webshop-admin-types';
 
 interface Props {
     initialPreorders: AdminPickupOrder[];
@@ -74,7 +74,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                                     <p key={line.id}>
                                                         {line.product_name_snapshot}
                                                         {line.variant_label_snapshot && ` (${line.variant_label_snapshot})`}
-                                                        {line.custom_name && ` — naam: "${line.custom_name}"`}
+                                                        {formatCustomFieldValues(line.custom_field_values)}
                                                         {' '}&times; {line.quantity}
                                                     </p>
                                                 ))}

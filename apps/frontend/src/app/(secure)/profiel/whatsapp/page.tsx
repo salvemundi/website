@@ -17,6 +17,10 @@ export default async function WhatsAppGroepenPage() {
         redirect('/');
     }
 
+    if (session.user.membership_status !== 'active') {
+        redirect('/lidmaatschap');
+    }
+
     const groups = await getWhatsAppGroups();
     const gedragscodeUrl = '/gedragscode';
 

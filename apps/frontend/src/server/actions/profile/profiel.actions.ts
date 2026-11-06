@@ -103,6 +103,7 @@ export async function getUserTransactions(): Promise<Transaction[]> {
 export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
     const session = await getEnrichedSession();
     if (!session?.user) return [];
+    if (session.user.membership_status !== 'active') return [];
 
     const rows = await db.select({
         id: schema.whatsapp_groups.id,

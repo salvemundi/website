@@ -1,3 +1,5 @@
+import { webshopCustomFieldsSchema, webshopCustomFieldValuesSchema } from '@salvemundi/validations/schema/webshop.zod';
+
 export interface AdminDropWindow {
     id: number;
     name: string | null;
@@ -31,8 +33,7 @@ export interface AdminProduct {
     price: string | null;
     max_orders?: number | null;
     stock_quantity?: number | null;
-    custom_name_enabled?: boolean | null;
-    custom_name_max_length?: number | null;
+    custom_fields?: unknown;
     is_active: boolean | null;
     display_order: number | null;
     variants: AdminVariant[];
@@ -45,7 +46,7 @@ export interface AdminPreorderLine {
     unit_price: string | null;
     product_name_snapshot: string | null;
     variant_label_snapshot: string | null;
-    custom_name?: string | null;
+    custom_field_values?: unknown;
 }
 
 export interface AdminPreorder {
@@ -74,4 +75,15 @@ export interface AdminPickupOrder {
     picked_up?: boolean | null;
     picked_up_at?: string | null;
     lines: AdminPreorderLine[];
+}
+
+// jsonb columns come back as `unknown`; parse them defensively before rendering.
+export function parseCustomFieldDefs(value: unknown): { label: string; max_length: number }[] {
+    const parsed = webshopCustomFieldsSchema.safeParse(value);
+    return parsed.success ? parsed.data : [];
+}
+
+export function formatCustomFieldValues(value: unknown): string {
+    const parsed = webshopCustomFieldValuesSchema.safeParse(value);
+    return parsed.success ? parsed.data.map(f => ` · ${f.label}: ${f.value}`).join('') : '';
 }
