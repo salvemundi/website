@@ -10,6 +10,7 @@ import mimetypes
 import os
 import re
 import secrets
+import shutil
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -57,6 +58,17 @@ def load_state():
             return json.load(f)
     except FileNotFoundError:
         return None
+
+
+def backup_on_start(keep=10):
+    """Kopieer state.json bij het opstarten naar DATA/backups en bewaar de laatste `keep` kopieen."""
+    if not os.path.exists(STATE_FILE):
+        return
+    folder = os.path.join(DATA, "backups")
+    os.makedirs(folder, exist_ok=True)
+    shutil.copy2(STATE_FILE, os.path.join(folder, f"state-{time.strftime('%Y%m%d-%H%M%S')}.json"))
+    for old in sorted(os.listdir(folder))[:-keep]:
+        os.remove(os.path.join(folder, old))
 
 
 def save_state():
@@ -445,6 +457,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     global state
     state = load_state()
+    backup_on_start()
     srv = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
     print(f"Molproef draait op poort {PORT}. Beheer: /beheer  Invullen: /invul", flush=True)
     try:

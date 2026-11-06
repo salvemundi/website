@@ -191,6 +191,7 @@ jobs:
           MAIL_PORT="13003"
           MANAGEMENT_PORT="13004"
           MONITORING_PORT="13006"
+          WIEISDEMOL_URL="https://acc-mol.salvemundi.nl"
           if [ "${{ needs.prepare.outputs.tag }}" = "main" ]; then
             ENV_NAME="prod"
             FRONTEND_PORT="4000"
@@ -199,6 +200,7 @@ jobs:
             MAIL_PORT="3003"
             MANAGEMENT_PORT="3004"
             MONITORING_PORT="3006"
+            WIEISDEMOL_URL="https://mol.salvemundi.nl"
           fi
 
           echo "# Auto-generated V7 App Environment" > .env.${ENV_NAME}
@@ -248,6 +250,7 @@ jobs:
           echo "FINANCE_PORT=${FINANCE_PORT}" >> .env.${ENV_NAME}
           echo "MONITORING_PORT=${MONITORING_PORT}" >> .env.${ENV_NAME}
           echo "ENV_NAME=${ENV_NAME}" >> .env.${ENV_NAME}
+          echo "WIEISDEMOL_URL=${WIEISDEMOL_URL}" >> .env.${ENV_NAME}
 
           echo "HOSTNAME=0.0.0.0" >> .env.${ENV_NAME}
 

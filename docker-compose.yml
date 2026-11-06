@@ -272,13 +272,13 @@ services:
 
 
   # Wie is de mol (kamp): losstaande Python-app, bereikbaar via de reverse proxy als
-  # ${COMPOSE_PROJECT_NAME}-wieisdemol:8080 (bijv. wieisdemol.salvemundi.nl). Geen toegang tot de database.
+  # ${COMPOSE_PROJECT_NAME}-wieisdemol:8080 (acc-mol.salvemundi.nl voor acceptance, mol.salvemundi.nl voor productie). Geen toegang tot de database.
   wieisdemol:
     container_name: ${COMPOSE_PROJECT_NAME}-wieisdemol
     image: ghcr.io/salvemundi/v7-wieisdemol:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      - MOLPROEF_URL=https://wieisdemol.salvemundi.nl
+      - MOLPROEF_URL=${WIEISDEMOL_URL:-}
       - MOLPROEF_DATA=/data
       - TRUST_PROXY=1
       - TZ=Europe/Amsterdam
