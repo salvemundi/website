@@ -114,6 +114,14 @@ export async function saveProduct(formData: FormData) {
     const dropWindowIdRaw = formData.get('drop_window_id');
     const variantsRaw = formData.get('variants_json');
     const mediaRaw = formData.get('media_json');
+    const customFieldsRaw = formData.get('custom_fields_json');
+
+    let customFields: unknown = null;
+    try {
+        customFields = customFieldsRaw ? JSON.parse(String(customFieldsRaw)) : null;
+    } catch {
+        return { success: false, error: 'Ongeldige extra velden.' };
+    }
 
     const rawData = {
         drop_window_id: dropWindowIdRaw ? Number(dropWindowIdRaw) : null,
@@ -129,8 +137,7 @@ export async function saveProduct(formData: FormData) {
         stock_quantity: formData.get('stock_quantity') || null,
         is_active: formData.get('is_active') === 'on' || formData.get('is_active') === 'true',
         display_order: formData.get('display_order') ? Number(formData.get('display_order')) : 0,
-        custom_name_enabled: formData.get('custom_name_enabled') === 'on' || formData.get('custom_name_enabled') === 'true',
-        custom_name_max_length: formData.get('custom_name_max_length') || null
+        custom_fields: Array.isArray(customFields) && customFields.length > 0 ? customFields : null
     };
 
     const validated = webshopProductBeheerSchema.safeParse(rawData);
@@ -158,8 +165,7 @@ export async function saveProduct(formData: FormData) {
             price: data.price.toFixed(2),
             // No deposit concept anymore — the DB column is still notNull, so it's kept equal
             // to the price rather than exposed as a separate admin field.
-            deposit_amount: data.price.toFixed(2),
-            custom_name_max_length: data.custom_name_enabled ? (data.custom_name_max_length ?? null) : null
+            deposit_amount: data.price.toFixed(2)
         };
 
         let productId: number;

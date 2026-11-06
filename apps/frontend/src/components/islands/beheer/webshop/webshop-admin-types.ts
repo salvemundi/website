@@ -31,8 +31,7 @@ export interface AdminProduct {
     price: string | null;
     max_orders?: number | null;
     stock_quantity?: number | null;
-    custom_name_enabled?: boolean | null;
-    custom_name_max_length?: number | null;
+    custom_fields?: unknown;
     is_active: boolean | null;
     display_order: number | null;
     variants: AdminVariant[];
@@ -45,7 +44,7 @@ export interface AdminPreorderLine {
     unit_price: string | null;
     product_name_snapshot: string | null;
     variant_label_snapshot: string | null;
-    custom_name?: string | null;
+    custom_field_values?: unknown;
 }
 
 export interface AdminPreorder {
@@ -74,4 +73,14 @@ export interface AdminPickupOrder {
     picked_up?: boolean | null;
     picked_up_at?: string | null;
     lines: AdminPreorderLine[];
+}
+
+// jsonb columns come back as `unknown`; narrow them defensively before rendering.
+export function parseCustomFieldDefs(value: unknown): { label: string; max_length: number }[] {
+    return Array.isArray(value) ? value.filter((f): f is { label: string; max_length: number } => typeof f?.label === 'string' && typeof f?.max_length === 'number') : [];
+}
+
+export function formatCustomFieldValues(value: unknown): string {
+    if (!Array.isArray(value)) return '';
+    return value.filter(f => typeof f?.label === 'string' && typeof f?.value === 'string').map(f => ` · ${f.label}: ${f.value}`).join('');
 }

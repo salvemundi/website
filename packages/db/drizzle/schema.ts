@@ -2264,7 +2264,7 @@ export const webshop_preorder_lines = pgTable("webshop_preorder_lines", {
 	unit_price: numeric({ precision: 10, scale:  5 }).notNull(),
 	product_name_snapshot: varchar({ length: 255 }),
 	variant_label_snapshot: varchar({ length: 255 }),
-	custom_name: varchar({ length: 255 }),
+	custom_field_values: jsonb(),
 }, (table) => [
 	index("idx_webshop_preorder_lines_preorder").using("btree", table.preorder_id.asc().nullsLast().op("int4_ops")),
 	foreignKey({
@@ -2357,8 +2357,7 @@ export const webshop_products = pgTable("webshop_products", {
 	updated_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 	max_orders: integer(),
 	stock_quantity: integer(),
-	custom_name_enabled: boolean().default(false).notNull(),
-	custom_name_max_length: integer(),
+	custom_fields: jsonb(),
 }, (table) => [
 	index("idx_webshop_products_drop_window").using("btree", table.drop_window_id.asc().nullsLast().op("int4_ops")),
 	foreignKey({
