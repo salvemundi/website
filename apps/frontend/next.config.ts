@@ -69,7 +69,7 @@ const nextConfig: NextConfig = {
                 permanent: true,
             },
             {
-                source: '/declaratie',
+                source: '/:path(declaratie|declareren)',
                 destination: 'https://forms.cloud.microsoft/r/kN2T95wzRm',
                 permanent: false,
             },

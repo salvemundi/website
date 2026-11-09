@@ -62,7 +62,9 @@ const serwist = new Serwist({
                url.pathname.startsWith('/profiel') ||
                url.pathname.startsWith('/admin') ||
                url.pathname.startsWith('/beheer') ||
-               url.pathname.startsWith('/api');
+               url.pathname.startsWith('/api') ||
+               url.pathname === '/declaratie' ||
+               url.pathname === '/declareren';
       },
       handler: new NetworkOnly()
     },
