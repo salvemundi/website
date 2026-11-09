@@ -2367,3 +2367,49 @@ export const webshop_products = pgTable("webshop_products", {
 		}).onDelete("set null"),
 	unique("uq_webshop_products_slug").on(table.slug),
 ]);
+
+export const pizza_rounds = pgTable("pizza_rounds", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	creator_id: uuid().notNull(),
+	title: varchar({ length: 100 }).notNull(),
+	note: text(),
+	closes_at: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+	status: varchar({ length: 10 }).default('open').notNull(),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_pizza_rounds_creator").using("btree", table.creator_id.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.creator_id],
+			foreignColumns: [directus_users.id],
+			name: "pizza_rounds_creator_id_directus_users_id_fk"
+		}).onDelete("cascade"),
+	check("pizza_rounds_status_check", sql`${table.status} IN ('open', 'closed', 'paid')`),
+]);
+
+export const pizza_orders = pgTable("pizza_orders", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	round_id: uuid().notNull(),
+	user_id: uuid().notNull(),
+	item_name: varchar({ length: 100 }).notNull(),
+	size: varchar({ length: 20 }),
+	note: varchar({ length: 200 }),
+	price: numeric({ precision: 8, scale:  2 }).notNull(),
+	pay_confirmed_at: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+	added_to_order_at: timestamp({ withTimezone: true, mode: 'string' }),
+	paid_at: timestamp({ withTimezone: true, mode: 'string' }),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_pizza_orders_round").using("btree", table.round_id.asc().nullsLast().op("uuid_ops")),
+	index("idx_pizza_orders_user").using("btree", table.user_id.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.round_id],
+			foreignColumns: [pizza_rounds.id],
+			name: "pizza_orders_round_id_pizza_rounds_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.user_id],
+			foreignColumns: [directus_users.id],
+			name: "pizza_orders_user_id_directus_users_id_fk"
+		}).onDelete("cascade"),
+	check("pizza_orders_price_check", sql`${table.price} > 0`),
+]);

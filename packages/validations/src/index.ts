@@ -26,3 +26,4 @@ export * from './schema/cobo.zod.js';
 export * from './schema/audit.zod.js';
 export * from './schema/vacancy.zod.js';
 export * from './utils/boolean-utils.js';
+export * from './schema/pizza.zod.js';
