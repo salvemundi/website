@@ -33,15 +33,13 @@ const BRAND = {
     lichtPaars: '#936695',
     witPaars: '#F0F1F9',
     donkerBlauw: '#132A40',
-    geel: '#F8CF45',
 } as const;
 
-// Donker op licht, zoals de brand guide voorschrijft (en zoals scanners het het liefst zien).
+// Lichte modus: donker op licht. Donkere modus: licht logo op donkere achtergrond (brand guide).
 const COLOR_PRESETS: { label: string; fg: string; bg: string }[] = [
-    { label: 'Salve Mundi', fg: BRAND.donkerPaars, bg: BRAND.witPaars },
+    { label: 'Lichte modus', fg: BRAND.donkerPaars, bg: BRAND.witPaars },
+    { label: 'Donkere modus', fg: BRAND.witPaars, bg: BRAND.donkerBlauw },
     { label: 'Donker blauw', fg: BRAND.donkerBlauw, bg: BRAND.witPaars },
-    { label: 'Paars op geel', fg: BRAND.donkerPaars, bg: BRAND.geel },
-    { label: 'Blauw op geel', fg: BRAND.donkerBlauw, bg: BRAND.geel },
     { label: 'Licht paars', fg: BRAND.lichtPaars, bg: BRAND.witPaars },
 ];
 
@@ -181,7 +179,8 @@ export default function QrGeneratorIsland() {
         excavate: true,
     } : undefined), [showLogo, composedLogo, logoWidth]);
 
-    const lowContrast = contrastRatio(fgColor, bgColor) < 3 || luminance(fgColor) > luminance(bgColor);
+    const lowContrast = contrastRatio(fgColor, bgColor) < 3;
+    const inverted = !lowContrast && luminance(fgColor) > luminance(bgColor);
 
     const handleLevel = (next: ErrorLevel) => setLevel(next);
 
@@ -336,7 +335,12 @@ export default function QrGeneratorIsland() {
                 <div className="min-h-16" role="status" aria-live="polite">
                     {lowContrast && (
                         <p className="rounded-xl bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
-                            De voorgrond moet donkerder zijn dan de achtergrond met voldoende contrast, anders kan de code niet gescand worden.
+                            Het contrast tussen voorgrond en achtergrond is te laag, de code kan dan niet gescand worden.
+                        </p>
+                    )}
+                    {inverted && (
+                        <p className="rounded-xl bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
+                            Licht op donker wordt niet door alle QR-scanners herkend. Test de code met een telefoon voordat je hem gebruikt.
                         </p>
                     )}
                 </div>
