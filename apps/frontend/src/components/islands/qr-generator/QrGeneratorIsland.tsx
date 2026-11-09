@@ -2,31 +2,32 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
+import QRCode from 'qrcode';
 import { Check, Copy, Download, RotateCcw } from 'lucide-react';
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { Switch } from '@/shared/ui/Switch';
 import { safeConsoleError } from '@/server/utils/logger';
 
-type ErrorLevel = 'L' | 'M' | 'Q' | 'H';
-
-const LOGO_SRC = '/img/Logo.png';
-const LOGO_RENDER_WIDTH = 640;
+// Foutcorrectie staat altijd op het hoogste niveau (30%), zodat het logo zoveel mogelijk ruimte krijgt en de code scanbaar blijft.
+const ERROR_LEVEL = 'H';
+const DEFAULT_MODULES = 33;
 const OWL_CROP_RATIO = 0.74;
 const MIN_LOGO_PERCENT = 15;
 const MAX_LOGO_PERCENT = 60;
+// Maximaal deel van het oppervlak dat het logo mag bedekken bij niveau H (met veiligheidsmarge).
+const LOGO_AREA_CAP = 0.22;
+const MARGIN_MODULES = 4;
 
 type LogoVariant = 'full' | 'owl';
+type LogoStyle = 'kleur' | 'eenkleurig';
 
-// Maximaal deel van het oppervlak dat het logo mag bedekken per foutcorrectieniveau (met veiligheidsmarge).
-function areaCap(level: ErrorLevel): number {
-    switch (level) {
-        case 'L': return 0.05;
-        case 'M': return 0.1;
-        case 'Q': return 0.17;
-        default: return 0.22;
-    }
-}
+const LOGO_SOURCES = {
+    kleur: '/img/qr/logo-kleur.png',
+    paars: '/img/qr/logo-paars.png',
+    wit: '/img/qr/logo-wit.png',
+} as const;
+
 // Huisstijlkleuren uit de Salve Mundi brand guide.
 const BRAND = {
     donkerPaars: '#5A3761',
@@ -49,13 +50,6 @@ const DEFAULT_SIZE = 512;
 const DEFAULT_LOGO_PERCENT = 40;
 const DEFAULT_TEXT = 'https://salvemundi.nl';
 
-const LEVELS: { value: ErrorLevel; label: string }[] = [
-    { value: 'L', label: 'Laag (7%)' },
-    { value: 'M', label: 'Gemiddeld (15%)' },
-    { value: 'Q', label: 'Hoog (25%)' },
-    { value: 'H', label: 'Zeer hoog (30%)' },
-];
-
 function luminance(hex: string): number {
     const n = parseInt(hex.slice(1), 16);
     const channel = (v: number) => {
@@ -70,9 +64,8 @@ function contrastRatio(a: string, b: string): number {
     return (hi + 0.05) / (lo + 0.05);
 }
 
-// Het logo mag nooit te veel van de code bedekken: de maximale breedte hangt af van de foutcorrectie.
-function maxLogoPercentFor(level: ErrorLevel, ratio: number): number {
-    return Math.max(MIN_LOGO_PERCENT, Math.min(MAX_LOGO_PERCENT, Math.floor(Math.sqrt(areaCap(level) / ratio) * 100)));
+function maxLogoPercentFor(ratio: number): number {
+    return Math.max(MIN_LOGO_PERCENT, Math.min(MAX_LOGO_PERCENT, Math.floor(Math.sqrt(LOGO_AREA_CAP / ratio) * 100)));
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -84,36 +77,58 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     });
 }
 
-// Tint het logo in de voorgrondkleur en zet het op een afgeronde plaat in de achtergrondkleur.
-async function composeLogo(logoSrc: string, variant: LogoVariant, fg: string, bg: string): Promise<{ src: string; ratio: number }> {
-    const img = await loadImage(logoSrc);
-    const cropH = variant === 'owl' ? Math.round(img.naturalHeight * OWL_CROP_RATIO) : img.naturalHeight;
-    const logoW = LOGO_RENDER_WIDTH;
-    const logoH = Math.round(logoW * (cropH / img.naturalWidth));
-    const pad = Math.round(logoW * 0.08);
+// Snijdt het logo op de zichtbare pixels (geen lege rand), zodat er zo min mogelijk van de code wordt weggehaald.
+async function prepareLogo(src: string, variant: LogoVariant): Promise<{ src: string; ratio: number }> {
+    const img = await loadImage(src);
+    const srcH = variant === 'owl' ? Math.round(img.naturalHeight * OWL_CROP_RATIO) : img.naturalHeight;
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = srcH;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) throw new Error('Canvas niet beschikbaar');
+    ctx.drawImage(img, 0, 0, img.naturalWidth, srcH, 0, 0, canvas.width, canvas.height);
 
-    const tint = document.createElement('canvas');
-    tint.width = logoW;
-    tint.height = logoH;
-    const tctx = tint.getContext('2d');
-    if (!tctx) throw new Error('Canvas niet beschikbaar');
-    tctx.drawImage(img, 0, 0, img.naturalWidth, cropH, 0, 0, logoW, logoH);
-    tctx.globalCompositeOperation = 'source-in';
-    tctx.fillStyle = fg;
-    tctx.fillRect(0, 0, logoW, logoH);
+    const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let minX = width;
+    let minY = height;
+    let maxX = -1;
+    let maxY = -1;
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            if (data[(y * width + x) * 4 + 3] > 16) {
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+    }
+    if (maxX < 0) throw new Error('Logo is leeg');
 
-    const plate = document.createElement('canvas');
-    plate.width = logoW + pad * 2;
-    plate.height = logoH + pad * 2;
-    const pctx = plate.getContext('2d');
-    if (!pctx) throw new Error('Canvas niet beschikbaar');
-    pctx.fillStyle = bg;
-    pctx.beginPath();
-    pctx.roundRect(0, 0, plate.width, plate.height, pad * 1.6);
-    pctx.fill();
-    pctx.drawImage(tint, pad, pad);
+    const cw = maxX - minX + 1;
+    const ch = maxY - minY + 1;
+    const out = document.createElement('canvas');
+    out.width = cw;
+    out.height = ch;
+    const octx = out.getContext('2d');
+    if (!octx) throw new Error('Canvas niet beschikbaar');
+    octx.drawImage(canvas, minX, minY, cw, ch, 0, 0, cw, ch);
+    return { src: out.toDataURL('image/png'), ratio: ch / cw };
+}
 
-    return { src: plate.toDataURL('image/png'), ratio: plate.height / plate.width };
+// Kiest een logobreedte in hele modules (gecentreerd op het raster), zodat er zo weinig mogelijk lege ruimte rond het logo overblijft.
+function snapLogo(modules: number, targetModules: number, ratio: number): { wMod: number; hMod: number } {
+    const base = Math.round(targetModules);
+    let best = { wMod: Math.max(3, base), hMod: Math.max(3, base) * ratio, score: Infinity };
+    for (let w = Math.max(3, base - 3); w <= base + 3; w++) {
+        if ((modules - w) % 2 !== 0) continue;
+        const h = w * ratio;
+        const y = modules / 2 - h / 2;
+        const slack = Math.ceil(h + y - Math.floor(y)) - h;
+        const score = slack + 0.08 * Math.abs(w - targetModules);
+        if (score < best.score) best = { wMod: w, hMod: h, score };
+    }
+    return { wMod: best.wMod, hMod: best.hMod };
 }
 
 function saveBlob(blob: Blob, filename: string) {
@@ -133,64 +148,59 @@ export default function QrGeneratorIsland() {
     const [showLogo, setShowLogo] = useState(true);
     const [logoPercent, setLogoPercent] = useState(DEFAULT_LOGO_PERCENT);
     const [logoVariant, setLogoVariant] = useState<LogoVariant>('owl');
-    const [composedLogo, setComposedLogo] = useState<{ src: string; ratio: number } | null>(null);
-    const [level, setLevel] = useState<ErrorLevel>('H');
+    const [logoStyle, setLogoStyle] = useState<LogoStyle>('kleur');
+    const [preparedLogo, setPreparedLogo] = useState<{ src: string; ratio: number } | null>(null);
     const [margin, setMargin] = useState(true);
-    const [logoData, setLogoData] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const svgWrapRef = useRef<HTMLDivElement>(null);
 
-    // Logo als data-URI, zodat het ook in de gedownloade SVG zit en het canvas niet "tainted" raakt.
-    useEffect(() => {
-        let cancelled = false;
-        void (async () => {
-            try {
-                const res = await fetch(LOGO_SRC);
-                const blob = await res.blob();
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    if (!cancelled && typeof reader.result === 'string') setLogoData(reader.result);
-                };
-                reader.readAsDataURL(blob);
-            } catch (err: unknown) {
-                safeConsoleError('[QrGeneratorIsland.tsx][logo] ', err);
-            }
-        })();
-        return () => { cancelled = true; };
-    }, []);
-
     const value = text.trim();
-    useEffect(() => {
-        if (!logoData) return;
-        let cancelled = false;
-        composeLogo(logoData, logoVariant, fgColor, bgColor)
-            .then((result) => { if (!cancelled) setComposedLogo(result); })
-            .catch((err: unknown) => safeConsoleError('[QrGeneratorIsland.tsx][composeLogo] ', err));
-        return () => { cancelled = true; };
-    }, [logoData, logoVariant, fgColor, bgColor]);
+    const darkBackground = luminance(bgColor) < 0.4;
 
-    const logoRatio = composedLogo?.ratio ?? 0.7;
-    const maxLogoPercent = maxLogoPercentFor(level, logoRatio);
+    // Op een donkere achtergrond is het logo altijd wit, op een lichte achtergrond kleur of eenkleurig paars (brand guide).
+    const logoSource = darkBackground
+        ? LOGO_SOURCES.wit
+        : logoStyle === 'kleur' ? LOGO_SOURCES.kleur : LOGO_SOURCES.paars;
+
+    useEffect(() => {
+        let cancelled = false;
+        prepareLogo(logoSource, logoVariant)
+            .then((result) => { if (!cancelled) setPreparedLogo(result); })
+            .catch((err: unknown) => safeConsoleError('[QrGeneratorIsland.tsx][prepareLogo] ', err));
+        return () => { cancelled = true; };
+    }, [logoSource, logoVariant]);
+
+    // Aantal modules (blokjes) per zijde, nodig om het logo precies op het raster uit te lijnen.
+    const modules = useMemo(() => {
+        try {
+            return QRCode.create(value || ' ', { errorCorrectionLevel: ERROR_LEVEL }).modules.size;
+        } catch {
+            return DEFAULT_MODULES;
+        }
+    }, [value]);
+
+    const logoRatio = preparedLogo?.ratio ?? 0.5;
+    const maxLogoPercent = maxLogoPercentFor(logoRatio);
     const effectiveLogoPercent = Math.min(Math.max(logoPercent, MIN_LOGO_PERCENT), maxLogoPercent);
-    const logoWidth = Math.round(size * (effectiveLogoPercent / 100));
-    const imageSettings = useMemo(() => (showLogo && composedLogo ? {
-        src: composedLogo.src,
-        width: logoWidth,
-        height: Math.round(logoWidth * composedLogo.ratio),
-        excavate: true,
-    } : undefined), [showLogo, composedLogo, logoWidth]);
+
+    const imageSettings = useMemo(() => {
+        if (!showLogo || !preparedLogo) return undefined;
+        const totalModules = modules + (margin ? MARGIN_MODULES * 2 : 0);
+        const modulePx = size / totalModules;
+        const { wMod, hMod } = snapLogo(modules, (effectiveLogoPercent / 100) * totalModules, preparedLogo.ratio);
+        return {
+            src: preparedLogo.src,
+            width: wMod * modulePx,
+            height: hMod * modulePx,
+            excavate: true,
+        };
+    }, [showLogo, preparedLogo, modules, margin, size, effectiveLogoPercent]);
 
     const lowContrast = contrastRatio(fgColor, bgColor) < 3;
     const inverted = !lowContrast && luminance(fgColor) > luminance(bgColor);
-
-    const handleLevel = (next: ErrorLevel) => {
-        // Houd de getoonde logogrootte vast: alleen verkleinen als de nieuwe foutcorrectie dat vereist, nooit vanzelf vergroten.
-        setLogoPercent(Math.min(effectiveLogoPercent, maxLogoPercentFor(next, logoRatio)));
-        setLevel(next);
-    };
 
     const applyPreset = (preset: { fg: string; bg: string }) => {
         setFgColor(preset.fg);
@@ -201,10 +211,10 @@ export default function QrGeneratorIsland() {
         setFgColor(DEFAULT_FG);
         setBgColor(DEFAULT_BG);
         setSize(DEFAULT_SIZE);
-        setLevel('H');
         setMargin(true);
         setShowLogo(true);
         setLogoVariant('owl');
+        setLogoStyle('kleur');
         setLogoPercent(DEFAULT_LOGO_PERCENT);
     };
 
@@ -239,7 +249,7 @@ export default function QrGeneratorIsland() {
         }, 'image/png');
     }, []);
 
-    const qrProps = { value: value || ' ', size, fgColor, bgColor, level, marginSize: margin ? 4 : 0, imageSettings };
+    const qrProps = { value: value || ' ', size, fgColor, bgColor, level: ERROR_LEVEL, marginSize: margin ? MARGIN_MODULES : 0, imageSettings } as const;
 
     return (
         <div className="grid gap-6 lg:grid-cols-[1fr_minmax(0,22rem)]">
@@ -304,13 +314,6 @@ export default function QrGeneratorIsland() {
                     <input id="qr-size" type="range" min={200} max={1200} step={20} value={size} onChange={(e) => setSize(Number(e.target.value))} className="w-full accent-(--color-theme-purple,#a4539b)" />
                 </div>
 
-                <div>
-                    <label htmlFor="qr-level" className="mb-2 block text-sm font-bold text-text-main">Foutcorrectie</label>
-                    <select id="qr-level" value={level} onChange={(e) => handleLevel(e.target.value as ErrorLevel)} className="form-input">
-                        {LEVELS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
-                    </select>
-                </div>
-
                 <div className="flex items-center justify-between gap-4">
                     <span className="text-sm font-bold text-text-main">Rand rondom de code</span>
                     <Switch checked={margin} onChange={setMargin} ariaLabel="Rand rondom de code" />
@@ -323,18 +326,28 @@ export default function QrGeneratorIsland() {
 
                 {showLogo && (
                     <>
-                        <div>
-                            <label htmlFor="qr-logo-variant" className="mb-2 block text-sm font-bold text-text-main">Logo</label>
-                            <select id="qr-logo-variant" value={logoVariant} onChange={(e) => setLogoVariant(e.target.value as LogoVariant)} className="form-input">
-                                <option value="owl">Alleen uil (beter leesbaar)</option>
-                                <option value="full">Volledig logo met tekst</option>
-                            </select>
+                        <div className="grid gap-5 sm:grid-cols-2">
+                            <div>
+                                <label htmlFor="qr-logo-variant" className="mb-2 block text-sm font-bold text-text-main">Logo</label>
+                                <select id="qr-logo-variant" value={logoVariant} onChange={(e) => setLogoVariant(e.target.value as LogoVariant)} className="form-input">
+                                    <option value="owl">Alleen uil (beter leesbaar)</option>
+                                    <option value="full">Volledig logo met tekst</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label htmlFor="qr-logo-style" className="mb-2 block text-sm font-bold text-text-main">Logokleur</label>
+                                <select id="qr-logo-style" value={logoStyle} onChange={(e) => setLogoStyle(e.target.value as LogoStyle)} disabled={darkBackground} className="form-input">
+                                    <option value="kleur">Kleur (twee tinten paars)</option>
+                                    <option value="eenkleurig">Eenkleurig paars</option>
+                                </select>
+                            </div>
                         </div>
+                        {darkBackground && <p className="-mt-3 text-xs text-text-muted">Op een donkere achtergrond wordt automatisch het witte logo gebruikt.</p>}
                         <div>
                             <label htmlFor="qr-logo-size" className="mb-2 block text-sm font-bold text-text-main">Logo grootte: {effectiveLogoPercent}% van de code</label>
                             {/* eslint-disable-next-line no-restricted-syntax -- schuifregelaar, form-input is voor tekstvelden */}
                             <input id="qr-logo-size" type="range" min={MIN_LOGO_PERCENT} max={maxLogoPercent} value={effectiveLogoPercent} onChange={(e) => setLogoPercent(Number(e.target.value))} className="w-full accent-(--color-theme-purple,#a4539b)" />
-                            <p className="mt-1 text-xs text-text-muted">De maximale grootte past zich aan op de foutcorrectie, zodat de code scanbaar blijft.</p>
+                            <p className="mt-1 text-xs text-text-muted">De foutcorrectie staat altijd op het hoogste niveau. De maximale logogrootte zorgt dat de code scanbaar blijft.</p>
                         </div>
                     </>
                 )}
