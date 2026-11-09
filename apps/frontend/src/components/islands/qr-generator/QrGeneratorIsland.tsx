@@ -70,6 +70,11 @@ function contrastRatio(a: string, b: string): number {
     return (hi + 0.05) / (lo + 0.05);
 }
 
+// Het logo mag nooit te veel van de code bedekken: de maximale breedte hangt af van de foutcorrectie.
+function maxLogoPercentFor(level: ErrorLevel, ratio: number): number {
+    return Math.max(MIN_LOGO_PERCENT, Math.min(MAX_LOGO_PERCENT, Math.floor(Math.sqrt(areaCap(level) / ratio) * 100)));
+}
+
 function loadImage(src: string): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -168,8 +173,7 @@ export default function QrGeneratorIsland() {
     }, [logoData, logoVariant, fgColor, bgColor]);
 
     const logoRatio = composedLogo?.ratio ?? 0.7;
-    // Het logo mag nooit te veel van de code bedekken: de maximale breedte hangt af van de foutcorrectie.
-    const maxLogoPercent = Math.max(MIN_LOGO_PERCENT, Math.min(MAX_LOGO_PERCENT, Math.floor(Math.sqrt(areaCap(level) / logoRatio) * 100)));
+    const maxLogoPercent = maxLogoPercentFor(level, logoRatio);
     const effectiveLogoPercent = Math.min(Math.max(logoPercent, MIN_LOGO_PERCENT), maxLogoPercent);
     const logoWidth = Math.round(size * (effectiveLogoPercent / 100));
     const imageSettings = useMemo(() => (showLogo && composedLogo ? {
@@ -182,7 +186,11 @@ export default function QrGeneratorIsland() {
     const lowContrast = contrastRatio(fgColor, bgColor) < 3;
     const inverted = !lowContrast && luminance(fgColor) > luminance(bgColor);
 
-    const handleLevel = (next: ErrorLevel) => setLevel(next);
+    const handleLevel = (next: ErrorLevel) => {
+        // Houd de getoonde logogrootte vast: alleen verkleinen als de nieuwe foutcorrectie dat vereist, nooit vanzelf vergroten.
+        setLogoPercent(Math.min(effectiveLogoPercent, maxLogoPercentFor(next, logoRatio)));
+        setLevel(next);
+    };
 
     const applyPreset = (preset: { fg: string; bg: string }) => {
         setFgColor(preset.fg);
