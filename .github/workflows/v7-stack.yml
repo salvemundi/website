@@ -280,7 +280,20 @@ jobs:
           fi
 
           docker compose --env-file .env.${ENV_NAME} pull
-          docker compose --env-file .env.${ENV_NAME} up -d --remove-orphans
+          docker compose --env-file .env.${ENV_NAME} up -d
+          # Clean up removed services, preserving the independently maintained production game.
+          ACTIVE_SERVICES=$(docker compose --env-file .env.${ENV_NAME} config --services)
+          for CONTAINER_ID in $(docker ps -aq --filter "label=com.docker.compose.project=v7-${ENV_NAME}"); do
+            CONTAINER_NAME=$(docker inspect --format '{{.Name}}' "$CONTAINER_ID")
+            if [ "$CONTAINER_NAME" = "/v7-prod-wieisdemol" ]; then
+              continue
+            fi
+            SERVICE_NAME=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.service"}}' "$CONTAINER_ID")
+            ONE_OFF=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.oneoff"}}' "$CONTAINER_ID")
+            if [ "$ONE_OFF" != "True" ] && ! printf '%s\n' "$ACTIVE_SERVICES" | grep -Fxq -- "$SERVICE_NAME"; then
+              docker rm -f "$CONTAINER_ID"
+            fi
+          done
           docker image prune -af
           ENDSSH
 
