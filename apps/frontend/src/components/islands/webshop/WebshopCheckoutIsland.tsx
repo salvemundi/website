@@ -8,6 +8,7 @@ import { AlertCircle, Check, ChevronLeft, ChevronRight, CreditCard, Minus, Plus,
 import { FormField } from '@/shared/ui/FormField';
 import { Input } from '@/shared/ui/Input';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
+import { toInternationalPhoneNumber } from '@/shared/lib/countries';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { webshopPreorderFormSchema, type WebshopCatalogProduct, type WebshopPreorderForm } from '@salvemundi/validations/schema/webshop.zod';
 import { submitPreorderAndInitiatePayment } from '@/server/actions/public/webshop-checkout.actions';
@@ -63,7 +64,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
             first_name: initialUser?.first_name || '',
             last_name: initialUser?.last_name || '',
             email: initialUser?.email || '',
-            phone_number: initialUser?.phone_number || '',
+            phone_number: toInternationalPhoneNumber(initialUser?.phone_number),
             pickup_notes: '',
             terms_accepted: false,
             website: ''
