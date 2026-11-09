@@ -16,7 +16,8 @@ export const ROUTES = {
     SAFE_HAVENS: '/safe-havens',
     ADMIN: '/beheer',
     BIJBANENBANK: '/bijbanenbank',
-    COBO: '/cobo'
+    COBO: '/cobo',
+    PIZZA: '/pizza'
 } as const;
 
 // De routes die zonder inloggen toegankelijk zijn (de (public) groep in src/app)

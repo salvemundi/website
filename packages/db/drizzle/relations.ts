@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { intro_group_members, intro_group_attendance, directus_users, borrelbar_claims, intro_group_member_notes, cobo, cobo_board_preferences, vacancy_submissions, directus_files, vacancies, cobo_guest_boards, intro_group_attendance_log, nda_templates, nda_signatures, committees, nda_settings, clubs, club_members, Stickers, Board, Board_Members, contacts, directus_roles, directus_access, directus_policies, directus_comments, directus_dashboards, directus_folders, directus_collections, directus_flows, directus_panels, directus_permissions, directus_presets, directus_activity, directus_revisions, directus_versions, directus_shares, directus_notifications, vacancy_verification_tokens, directus_operations, intro_blogs, vacancy_ict_directions, vacancies_vacancy_ict_directions, documents, events, event_signups, events_directus_users, intro_blog_likes, events_members, hero_banners, intro_blog_gallery, pub_crawl_events, membership_history, pub_crawl_signups, pub_crawl_signups_transactions, transactions, push_notification, vacancy_submission_direction_links, intro_planning, pub_crawl_tickets, intro_parent_signups, trips, vacancy_direction_links, trip_signups, trip_activities, trip_signup_activities, safe_havens, sponsors, intro_confidants, directus_sessions, roles, role_permissions, permissions, webshop_preorders, auth_accounts, borrelbar_settings, auth_sessions, committee_members, intro_planning_signups, intro_signups, webshop_products, webshop_product_variants, intro_settings, directus_deployments, webshop_product_media, directus_deployment_projects, directus_settings, directus_deployment_runs, webshop_drop_windows, webshop_preorder_lines, intro_groups, intro_group_leaders } from "./schema";
+import { intro_group_members, intro_group_attendance, directus_users, borrelbar_claims, intro_group_member_notes, cobo, cobo_board_preferences, vacancy_submissions, directus_files, vacancies, cobo_guest_boards, intro_group_attendance_log, nda_templates, nda_signatures, committees, nda_settings, clubs, club_members, Stickers, Board, Board_Members, contacts, directus_roles, directus_access, directus_policies, directus_comments, directus_dashboards, directus_folders, directus_collections, directus_flows, directus_panels, directus_permissions, directus_presets, directus_activity, directus_revisions, directus_versions, directus_shares, directus_notifications, vacancy_verification_tokens, directus_operations, intro_blogs, vacancy_ict_directions, vacancies_vacancy_ict_directions, documents, events, event_signups, events_directus_users, intro_blog_likes, events_members, hero_banners, intro_blog_gallery, pub_crawl_events, membership_history, pub_crawl_signups, pub_crawl_signups_transactions, transactions, push_notification, vacancy_submission_direction_links, intro_planning, pub_crawl_tickets, intro_parent_signups, trips, vacancy_direction_links, trip_signups, trip_activities, trip_signup_activities, safe_havens, sponsors, intro_confidants, directus_sessions, roles, role_permissions, permissions, webshop_preorders, auth_accounts, borrelbar_settings, auth_sessions, committee_members, intro_planning_signups, intro_signups, webshop_products, webshop_product_variants, intro_settings, directus_deployments, webshop_product_media, directus_deployment_projects, directus_settings, directus_deployment_runs, webshop_drop_windows, webshop_preorder_lines, intro_groups, intro_group_leaders, pizza_rounds, pizza_orders } from "./schema";
 
 export const intro_group_attendanceRelations = relations(intro_group_attendance, ({one}) => ({
 	intro_group_member: one(intro_group_members, {
@@ -1245,6 +1245,24 @@ export const intro_group_leadersRelations = relations(intro_group_leaders, ({one
 	}),
 	directus_user: one(directus_users, {
 		fields: [intro_group_leaders.user_id],
+		references: [directus_users.id]
+	}),
+}));
+export const pizza_roundsRelations = relations(pizza_rounds, ({one, many}) => ({
+	creator: one(directus_users, {
+		fields: [pizza_rounds.creator_id],
+		references: [directus_users.id]
+	}),
+	pizza_orders: many(pizza_orders),
+}));
+
+export const pizza_ordersRelations = relations(pizza_orders, ({one}) => ({
+	round: one(pizza_rounds, {
+		fields: [pizza_orders.round_id],
+		references: [pizza_rounds.id]
+	}),
+	user: one(directus_users, {
+		fields: [pizza_orders.user_id],
 		references: [directus_users.id]
 	}),
 }));

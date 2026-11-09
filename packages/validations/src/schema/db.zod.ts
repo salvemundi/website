@@ -420,3 +420,11 @@ export const selectIntroGroupMembersSchema = createSelectSchema(schema.intro_gro
 export const insertWebshopProductsSchema = createInsertSchema(schema.webshop_products);
 export const selectWebshopProductsSchema = createSelectSchema(schema.webshop_products);
 
+
+// --- pizza_rounds ---
+export const insertPizzaRoundsSchema = createInsertSchema(schema.pizza_rounds);
+export const selectPizzaRoundsSchema = createSelectSchema(schema.pizza_rounds);
+
+// --- pizza_orders ---
+export const insertPizzaOrdersSchema = createInsertSchema(schema.pizza_orders);
+export const selectPizzaOrdersSchema = createSelectSchema(schema.pizza_orders);
