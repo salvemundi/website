@@ -2375,6 +2375,7 @@ export const pizza_rounds = pgTable("pizza_rounds", {
 	note: text(),
 	closes_at: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
 	status: varchar({ length: 10 }).default('open').notNull(),
+	payment_link: varchar({ length: 300 }),
 	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
 	index("idx_pizza_rounds_creator").using("btree", table.creator_id.asc().nullsLast().op("uuid_ops")),

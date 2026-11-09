@@ -1,8 +1,25 @@
 import { z } from 'zod';
 
+export const paymentLinkSchema = z
+    .string()
+    .trim()
+    .max(300, 'Betaallink mag maximaal 300 tekens zijn')
+    .refine((v) => {
+        if (v === '') return true;
+        try {
+            return new URL(v).protocol === 'https:';
+        } catch {
+            return false;
+        }
+    }, 'Betaallink moet een geldige https://-link zijn')
+    .transform((v) => (v === '' ? null : v))
+    .nullish()
+    .transform((v) => v ?? null);
+
 export const createPizzaRoundSchema = z.object({
     title: z.string().trim().min(1, 'Titel is verplicht').max(100, 'Titel mag maximaal 100 tekens zijn'),
     note: z.string().trim().max(500, 'Opmerking mag maximaal 500 tekens zijn').optional(),
+    paymentLink: paymentLinkSchema,
     closes_at: z.coerce
         .date({ message: 'Ongeldige sluitingstijd' })
         .refine((d) => d.getTime() > Date.now(), 'De sluitingstijd moet in de toekomst liggen')
@@ -36,6 +53,7 @@ export interface PizzaRoundSummary {
     orderCount: number;
     totalAmount: number;
     isOpen: boolean;
+    paymentLink: string | null;
 }
 
 export interface PizzaOrderView {
@@ -56,4 +74,26 @@ export interface PizzaRoundDetail {
     orders: PizzaOrderView[];
     isCreator: boolean;
     currentUserId: string;
+}
+
+export interface PizzaFavorite {
+    itemName: string;
+    size: string | null;
+    note: string | null;
+    price: number;
+    count: number;
+}
+
+export interface PizzaFavorites {
+    lastOrder: Omit<PizzaFavorite, 'count'> | null;
+    favorites: PizzaFavorite[];
+}
+
+export interface PizzaStats {
+    totalOrders: number;
+    totalSpent: number;
+    roundsCreated: number;
+    roundsJoined: number;
+    topPizzas: { itemName: string; count: number }[];
+    recent: { roundId: string; title: string; orderedAt: string; itemName: string; size: string | null; price: number }[];
 }

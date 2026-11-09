@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Pizza, Plus, Clock, Users, ChevronRight } from 'lucide-react';
+import { Pizza, Plus, Clock, Users, ChevronRight, BarChart3 } from 'lucide-react';
 import { createPizzaRoundSchema, type CreatePizzaRoundInput, type PizzaRoundSummary } from '@salvemundi/validations';
 import { Tile } from '@/components/islands/account/profile/ProfielUI';
 import { FormField } from '@/shared/ui/FormField';
@@ -74,7 +74,7 @@ export function PizzaOverviewIsland({ open, mine }: Props) {
         formState: { errors },
     } = useForm<z.input<typeof createPizzaRoundSchema>, unknown, CreatePizzaRoundInput>({
         resolver: zodResolver(createPizzaRoundSchema),
-        defaultValues: { title: '', note: '' },
+        defaultValues: { title: '', note: '', paymentLink: '' },
     });
 
     const onSubmit = (data: CreatePizzaRoundInput) => {
@@ -92,6 +92,14 @@ export function PizzaOverviewIsland({ open, mine }: Props) {
 
     return (
         <div className="space-y-8">
+            <Link
+                href="/pizza/statistieken"
+                className="form-button inline-flex"
+            >
+                <BarChart3 className="size-4" />
+                Mijn statistieken
+            </Link>
+
             <Tile title="Open rondes" icon={<Pizza className="size-6" />}>
                 <RoundList rounds={open} empty="Er zijn nu geen open pizza-rondes." />
             </Tile>
@@ -116,6 +124,9 @@ export function PizzaOverviewIsland({ open, mine }: Props) {
                             placeholder="Bijv. bestellen bij Domino's, ophalen om 19:00"
                             className="form-input"
                         />
+                    </FormField>
+                    <FormField label="Betaallink (optioneel, https)" error={errors.paymentLink?.message} className="md:col-span-2">
+                        <Input type="url" {...register('paymentLink')} placeholder="https://..." maxLength={500} />
                     </FormField>
                     <div className="md:col-span-2">
                         <button type="submit" disabled={isPending} className="form-button w-full sm:w-auto">

@@ -7,10 +7,13 @@ import { and, desc, eq, inArray, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import {
     createPizzaRoundSchema,
+    paymentLinkSchema,
     placePizzaOrderSchema,
+    type PizzaFavorites,
     type PizzaRoundDetail,
     type PizzaRoundStatus,
     type PizzaRoundSummary,
+    type PizzaStats,
 } from '@salvemundi/validations';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -80,6 +83,7 @@ async function summaries(whereClause: ReturnType<typeof eq> | ReturnType<typeof 
             status,
             orderCount: t ? Number(t.count) : 0,
             totalAmount: t ? Number(t.total) : 0,
+            paymentLink: r.payment_link,
             isOpen: status === 'open' && new Date(r.closes_at).getTime() > now,
         };
     });
@@ -185,6 +189,7 @@ export async function createPizzaRound(data: unknown): Promise<IdResult> {
                 creator_id: auth.userId,
                 title: parsed.data.title,
                 note: parsed.data.note || null,
+                payment_link: parsed.data.paymentLink,
                 closes_at: parsed.data.closes_at.toISOString(),
             })
             .returning({ id: schema.pizza_rounds.id })).at(0);
@@ -383,4 +388,132 @@ export async function closePizzaRound(roundId: string): Promise<Result> {
 
 export async function markPizzaRoundPaid(roundId: string): Promise<Result> {
     return setRoundStatus('pizza-round-paid', roundId, 'paid');
+}
+
+export async function setPizzaPaymentLink(roundId: string, link: string | null): Promise<Result> {
+    try {
+        const auth = await requireUser('pizza-round-paylink', 20);
+        if ('error' in auth) return { success: false, error: auth.error };
+        if (!uuidSchema.safeParse(roundId).success) return { success: false, error: 'Ongeldige ronde.' };
+        const parsed = paymentLinkSchema.safeParse(link);
+        if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? 'Ongeldige betaallink.' };
+
+        const round = (await db.select().from(schema.pizza_rounds).where(eq(schema.pizza_rounds.id, roundId))).at(0);
+        if (!round) return { success: false, error: 'Ronde niet gevonden.' };
+        if (round.creator_id !== auth.userId) return { success: false, error: 'Alleen de aanmaker van de ronde mag dit.' };
+        if (round.status === 'paid') return { success: false, error: 'Deze ronde is al als betaald gemarkeerd.' };
+
+        await db
+            .update(schema.pizza_rounds)
+            .set({ payment_link: parsed.data })
+            .where(eq(schema.pizza_rounds.id, roundId));
+        revalidate(roundId);
+        return { success: true };
+    } catch (error) {
+        safeConsoleError('[pizza] setPizzaPaymentLink failed', error);
+        return { success: false, error: GENERIC_ERROR };
+    }
+}
+
+export async function getPizzaFavorites(): Promise<PizzaFavorites> {
+    const empty: PizzaFavorites = { lastOrder: null, favorites: [] };
+    try {
+        const session = await getEnrichedSession();
+        const userId = session?.user.id;
+        if (!userId) return empty;
+        const o = schema.pizza_orders;
+
+        const [last, favs] = await Promise.all([
+            db
+                .select({ itemName: o.item_name, size: o.size, note: o.note, price: o.price })
+                .from(o)
+                .where(eq(o.user_id, userId))
+                .orderBy(desc(o.created_at))
+                .limit(1),
+            db.execute(sql`
+                SELECT DISTINCT ON (lower(item_name), coalesce(size, ''))
+                    item_name AS "itemName", size, note, price::float8 AS price,
+                    count(*) OVER (PARTITION BY lower(item_name), coalesce(size, ''))::int AS count
+                FROM pizza_orders
+                WHERE user_id = ${userId}
+                ORDER BY lower(item_name), coalesce(size, ''), created_at DESC
+            `),
+        ]);
+
+        const l = last.at(0);
+        const favorites = (favs as unknown as Array<{ itemName: string; size: string | null; note: string | null; price: number; count: number }>)
+            .map((f) => ({ itemName: f.itemName, size: f.size, note: f.note, price: Number(f.price), count: Number(f.count) }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5);
+        return {
+            lastOrder: l ? { itemName: l.itemName, size: l.size, note: l.note, price: Number(l.price) } : null,
+            favorites,
+        };
+    } catch (error) {
+        safeConsoleError('[pizza] getPizzaFavorites failed', error);
+        return empty;
+    }
+}
+
+export async function getPizzaStats(): Promise<PizzaStats | null> {
+    try {
+        const session = await getEnrichedSession();
+        const userId = session?.user.id;
+        if (!userId) return null;
+        const o = schema.pizza_orders;
+        const r = schema.pizza_rounds;
+
+        const [totals, created, top, recent] = await Promise.all([
+            db
+                .select({
+                    orders: sql<number>`count(*)::int`,
+                    spent: sql<string>`coalesce(sum(${o.price}), 0)`,
+                    rounds: sql<number>`count(distinct ${o.round_id})::int`,
+                })
+                .from(o)
+                .where(eq(o.user_id, userId)),
+            db.select({ n: sql<number>`count(*)::int` }).from(r).where(eq(r.creator_id, userId)),
+            db
+                .select({ itemName: sql<string>`min(${o.item_name})`, count: sql<number>`count(*)::int` })
+                .from(o)
+                .where(eq(o.user_id, userId))
+                .groupBy(sql`lower(${o.item_name})`)
+                .orderBy(sql`count(*) desc`, sql`lower(${o.item_name})`)
+                .limit(5),
+            db
+                .select({
+                    roundId: o.round_id,
+                    title: r.title,
+                    orderedAt: o.created_at,
+                    itemName: o.item_name,
+                    size: o.size,
+                    price: o.price,
+                })
+                .from(o)
+                .innerJoin(r, eq(o.round_id, r.id))
+                .where(eq(o.user_id, userId))
+                .orderBy(desc(o.created_at))
+                .limit(10),
+        ]);
+
+        const t = totals.at(0);
+        return {
+            totalOrders: Number(t?.orders ?? 0),
+            totalSpent: Number(t?.spent ?? 0),
+            roundsCreated: Number(created.at(0)?.n ?? 0),
+            roundsJoined: Number(t?.rounds ?? 0),
+            topPizzas: top.map((x) => ({ itemName: x.itemName, count: Number(x.count) })),
+            recent: recent.map((x) => ({
+                roundId: x.roundId,
+                title: x.title,
+                orderedAt: x.orderedAt ? toIso(x.orderedAt) : new Date(0).toISOString(),
+                itemName: x.itemName,
+                size: x.size,
+                price: Number(x.price),
+            })),
+        };
+    } catch (error) {
+        safeConsoleError('[pizza] getPizzaStats failed', error);
+        return null;
+    }
 }
