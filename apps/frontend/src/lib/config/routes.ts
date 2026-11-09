@@ -17,7 +17,8 @@ export const ROUTES = {
     ADMIN: '/beheer',
     BIJBANENBANK: '/bijbanenbank',
     COBO: '/cobo',
-    PIZZA: '/pizza'
+    PIZZA: '/pizza',
+    QR_GENERATOR: '/qr-generator'
 } as const;
 
 // De routes die zonder inloggen toegankelijk zijn (de (public) groep in src/app)
@@ -37,6 +38,7 @@ export const PUBLIC_ROUTES: string[] = [
     ROUTES.TRIP,
     ROUTES.MERCH,
     ROUTES.BIJBANENBANK,
+    ROUTES.QR_GENERATOR,
     '/api/assets',
     '/api/intro/planning.ics',
     '/api/activiteiten/ics',

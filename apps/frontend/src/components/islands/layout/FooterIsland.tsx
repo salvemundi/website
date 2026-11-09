@@ -61,6 +61,7 @@ const FooterIsland: React.FC<FooterIslandProps> = async ({ documents, disabledRo
         { label: 'Reis', href: ROUTES.TRIP },
         { label: 'Merch', href: ROUTES.MERCH },
         { label: 'Bijbanenbank', href: ROUTES.BIJBANENBANK },
+        { label: 'QR-generator', href: ROUTES.QR_GENERATOR },
     ];
 
     const pageLinks = allPageLinks.filter(link => !disabledRoutes.includes(link.href));
