@@ -190,7 +190,7 @@ export default function QrGeneratorIsland() {
         if (!showLogo || !preparedLogo) return undefined;
         const totalModules = modules + (margin ? MARGIN_MODULES * 2 : 0);
         const modulePx = size / totalModules;
-        const { wMod, hMod } = snapLogo(modules, (effectiveLogoPercent / 100) * totalModules, preparedLogo.ratio);
+        const { wMod, hMod } = snapLogo(modules, (effectiveLogoPercent / 100) * modules, preparedLogo.ratio);
         return {
             src: preparedLogo.src,
             width: wMod * modulePx,
