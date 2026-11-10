@@ -23,6 +23,7 @@ export interface SignupData {
     qr_token?: string | null;
     id?: string | number | null;
     event_id?: { id?: string | number; name: string; custom_url?: string };
+    event?: { custom_url?: string | null } | null;
     custom_url?: string;
 }
 
@@ -86,7 +87,7 @@ export default function ConfirmationIsland({
 
     useEffect(() => {
         if (status === 'paid' && !isMembership && !isTrip) {
-            const customUrl = signupData?.event_id?.custom_url || signupData?.custom_url;
+            const customUrl = signupData?.event?.custom_url || signupData?.event_id?.custom_url || signupData?.custom_url;
             if (customUrl) {
                 const timeout = setTimeout(() => {
                     window.location.href = customUrl;
