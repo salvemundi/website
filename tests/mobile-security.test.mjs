@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { verifyPKCE, validChallenge, hashMobileToken, newMobileToken, isNativeToken, MOBILE_CALLBACK, newOpaqueCode, validBrowserFlowCookie } from '../apps/frontend/src/server/mobile/security.ts';
 import { mobileEnabled, mobileAssociationID } from '../apps/frontend/src/server/mobile/policy.ts';
 
@@ -65,4 +67,12 @@ test('login completion requires the flow nonce from the initiating browser', () 
     assert.equal(validBrowserFlowCookie('', flow, hash), false);
     assert.equal(validBrowserFlowCookie(`${flow}.${newOpaqueCode()}`, flow, hash), false);
     assert.equal(validBrowserFlowCookie(`${newOpaqueCode()}.${nonce}`, flow, hash), false);
+});
+
+test('complete native auth flow against camelCase and snake_case session schemas', () => {
+    const testFile = fileURLToPath(new URL('./mobile-auth-flow.test.mjs', import.meta.url));
+    const result = spawnSync(process.execPath, ['--experimental-vm-modules', '--test', testFile], {
+        encoding: 'utf8', timeout: 60000, maxBuffer: 2 * 1024 * 1024
+    });
+    assert.equal(result.status, 0, `${result.error?.message || ''}\n${result.stdout}\n${result.stderr}`);
 });

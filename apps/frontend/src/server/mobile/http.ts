@@ -2,7 +2,13 @@ import 'server-only';
 import { safeConsoleError } from '@/server/utils/logger';
 
 export class MobileError extends Error {
-    constructor(public code: string, message: string, public status = 400) { super(message); }
+    public code: string;
+    public status: number;
+    constructor(code: string, message: string, status = 400) {
+        super(message);
+        this.code = code;
+        this.status = status;
+    }
 }
 export { mobileEnabled } from './policy';
 import { mobileEnabled } from './policy';

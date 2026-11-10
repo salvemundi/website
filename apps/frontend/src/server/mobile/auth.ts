@@ -7,6 +7,7 @@ import { MobileError, mobileResponse, readMobileJSON } from './http';
 import { MOBILE_CALLBACK, hashMobileToken, newOpaqueCode, validChallenge, verifyPKCE, validBrowserFlowCookie } from './security';
 import { createMobileSession, requireMobileUser } from './session';
 import { rateLimit } from '@/server/utils/ratelimit';
+import { getSessionColumns } from './session-columns';
 
 interface LoginFlow { challenge: string; state: string; redirectURI: string; browserNonceHash: string }
 interface LoginGrant extends LoginFlow { userId: string }
@@ -66,9 +67,10 @@ export async function completeMobileLogin(request: Request) {
     const session = await getEnrichedSession(browserHeaders);
     if (!session || !session.user.id || !session.session.id) throw new MobileError('unauthorized', 'Aanmelden mislukt.', 401);
     // Re-check the real session in PostgreSQL; never trust a cached/impersonated user alone.
+    const columns = await getSessionColumns();
     const verified = await pool.query<{ user_id: string }>(`
-        SELECT s.user_id FROM auth_sessions s JOIN directus_users u ON u.id=s.user_id
-        WHERE s.id=$1 AND s.user_id=$2 AND s.expires_at > NOW() AND u.status='active' AND s.id NOT LIKE 'mobile:%'
+        SELECT s.${columns.userId} AS user_id FROM auth_sessions s JOIN directus_users u ON u.id=s.${columns.userId}
+        WHERE s.id=$1 AND s.${columns.userId}=$2 AND s.${columns.expiresAt} > NOW() AND u.status='active' AND s.id NOT LIKE 'mobile:%'
     `, [session.session.id, session.user.id]);
     if (!verified.rows[0]) throw new MobileError('unauthorized', 'Aanmelden mislukt.', 401);
     if (await redis.getdel(`mobile:login:${flowId}`) !== raw) throw new MobileError('login_expired', 'Aanmeldsessie is al gebruikt.', 401);
@@ -94,7 +96,8 @@ export async function exchangeMobileLogin(request: Request) {
 }
 export async function logoutMobileSession(request: Request) {
     const user = await requireMobileUser(request);
-    await pool.query('DELETE FROM auth_sessions WHERE id=$1 AND user_id=$2', [user.sessionId, user.id]);
+    const columns = await getSessionColumns();
+    await pool.query(`DELETE FROM auth_sessions WHERE id=$1 AND ${columns.userId}=$2`, [user.sessionId, user.id]);
     const { removeMobileDevicesForSession } = await import('./notifications');
     await removeMobileDevicesForSession(user.id, user.sessionId);
     return mobileResponse({ success: true });

@@ -1,15 +1,17 @@
 import { allowedUserIds, deviceAllowed, snapshotOf, changesFor, notificationPayload, classifyAPNs, retryDelay, fingerprint } from './policy.mjs';
 import { sendAPNs } from './apns.mjs';
+import { getWorkerSessionColumns } from './session-columns.mjs';
 
 const preferenceColumns = { registrations: 'registrations', payments: 'payments', eventChanges: 'event_changes', reminders: 'reminders' };
 
 export async function reconcile(client, env) {
     const users = allowedUserIds(env);
     if (!users.length) return;
+    const sessionColumns = await getWorkerSessionColumns(client);
     const { rows: userRows } = await client.query(
-        `SELECT DISTINCT d.user_id FROM mobile_devices d JOIN auth_sessions s ON s.id=d.session_id
+        `SELECT DISTINCT d.user_id FROM mobile_devices d JOIN auth_sessions s ON s.id=d.session_id AND s.${sessionColumns.userId}=d.user_id
          JOIN directus_users u ON u.id=d.user_id
-         WHERE d.environment='acc' AND d.user_id = ANY($1::uuid[]) AND s.expires_at>now() AND u.status='active'
+         WHERE d.environment='acc' AND d.user_id = ANY($1::uuid[]) AND s.${sessionColumns.expiresAt}>now() AND u.status='active'
          AND (d.apns_environment='sandbox' OR $2::boolean)`, [users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']
     );
     for (const { user_id: userId } of userRows) {
@@ -37,9 +39,9 @@ export async function reconcile(client, env) {
                     await client.query(
                         `INSERT INTO mobile_notification_outbox(environment,device_id,kind,dedupe_key,payload)
                          SELECT 'acc',d.id,$2,$3,$4::jsonb FROM mobile_devices d
-                         JOIN auth_sessions s ON s.id=d.session_id
+                         JOIN auth_sessions s ON s.id=d.session_id AND s.${sessionColumns.userId}=d.user_id
                          LEFT JOIN mobile_notification_preferences p ON p.environment='acc' AND p.user_id=d.user_id
-                         WHERE d.environment='acc' AND d.user_id=$1 AND s.expires_at>now() AND COALESCE(p.${preferenceColumn},true)
+                         WHERE d.environment='acc' AND d.user_id=$1 AND s.${sessionColumns.expiresAt}>now() AND COALESCE(p.${preferenceColumn},true)
                          AND (d.apns_environment='sandbox' OR $5::boolean)
                          ON CONFLICT(environment,device_id,dedupe_key) DO NOTHING`,
                         [userId, change.kind, `${row.id}:${change.suffix}`, JSON.stringify(notificationPayload(change.kind, `event:${row.event_id}`)), env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']
@@ -58,6 +60,7 @@ export async function reconcile(client, env) {
 }
 
 export async function deliver(client, env, send = sendAPNs) {
+    const sessionColumns = await getWorkerSessionColumns(client);
     // Reclaim jobs from a crashed worker; each request has a 10-second timeout.
     await client.query(`UPDATE mobile_notification_outbox SET status='pending',locked_at=NULL WHERE environment='acc' AND status='processing' AND locked_at<now()-interval '5 minutes'`);
     for (let i = 0; i < 100; i++) {
@@ -69,10 +72,10 @@ export async function deliver(client, env, send = sendAPNs) {
         const job = rows[0];
         if (!job) break;
         const { rows: devices } = await client.query(
-            `SELECT d.*,u.status AS user_status,s.expires_at,p.registrations,p.payments,p.event_changes,p.reminders
-             FROM mobile_devices d JOIN auth_sessions s ON s.id=d.session_id JOIN directus_users u ON u.id=d.user_id
+            `SELECT d.*,u.status AS user_status,s.${sessionColumns.expiresAt} AS expires_at,p.registrations,p.payments,p.event_changes,p.reminders
+             FROM mobile_devices d JOIN auth_sessions s ON s.id=d.session_id AND s.${sessionColumns.userId}=d.user_id JOIN directus_users u ON u.id=d.user_id
              LEFT JOIN mobile_notification_preferences p ON p.environment='acc' AND p.user_id=d.user_id
-             WHERE d.id=$1 AND s.expires_at>now()`, [job.device_id]
+             WHERE d.id=$1 AND s.${sessionColumns.expiresAt}>now()`, [job.device_id]
         );
         const device = devices[0];
         if (!device || device.user_status !== 'active' || !deviceAllowed(device, env) || device[preferenceColumns[job.kind]] === false) {
@@ -109,4 +112,9 @@ export async function deliver(client, env, send = sendAPNs) {
             [job.id, retry ? 'pending' : action === 'sent' ? 'sent' : 'failed', result.reason ?? String(result.status), retryDelay(job.attempts)]
         );
     }
+}
+
+export async function removeExpiredDevices(client) {
+    const sessionColumns = await getWorkerSessionColumns(client);
+    await client.query(`DELETE FROM mobile_devices d WHERE environment='acc' AND NOT EXISTS(SELECT 1 FROM auth_sessions s WHERE s.id=d.session_id AND s.${sessionColumns.userId}=d.user_id AND s.${sessionColumns.expiresAt}>now())`);
 }

@@ -8,6 +8,7 @@ function deliveryDB(device, job, reminderActive = true) {
     const writes = [];
     let claimed = false;
     return { writes, async query(sql, args) {
+        if (sql.includes('information_schema.columns')) return { rows: ['expires_at', 'user_id'].map(column_name => ({ column_name })) };
         if (sql.includes('RETURNING o.*')) {
             if (claimed) return { rows: [] };
             claimed = true;
@@ -58,6 +59,7 @@ test('reconciliation baseline suppresses history but subsequent event changes de
     const enqueued = [];
     const row = { id: 12, event_id: 2, payment_status: 'paid', name: 'Borrel', location: 'Eindhoven', event_status: 'published', starts_at: new Date('2099-01-01T19:00Z') };
     const client = { async query(sql, args) {
+        if (sql.includes('information_schema.columns')) return { rows: ['expires_at', 'user_id'].map(column_name => ({ column_name })) };
         if (sql.includes('SELECT DISTINCT d.user_id')) return { rows: [{ user_id: userId }] };
         if (sql.includes('SELECT 1 FROM mobile_notification_users')) return { rows: [], rowCount: initialized ? 1 : 0 };
         if (sql.includes('SELECT s.id,s.event_id')) return { rows: [row] };

@@ -2,7 +2,7 @@ import pg from 'pg';
 import { setTimeout as delay } from 'node:timers/promises';
 import { deliveryEnabled, allowedUserIds } from './policy.mjs';
 import { providerToken } from './apns.mjs';
-import { reconcile, deliver } from './worker.mjs';
+import { reconcile, deliver, removeExpiredDevices } from './worker.mjs';
 
 if (!deliveryEnabled(process.env)) {
     console.error('Mobile notification delivery is disabled. Requires ENV_NAME=acc, MOBILE_API_ENABLED=true and MOBILE_NOTIFICATIONS_ENABLED=true.');
@@ -30,7 +30,7 @@ if (!deliveryEnabled(process.env)) {
             await deliver(client, process.env);
             // Delete old delivery payloads; never retain token values in logs.
             await client.query(`DELETE FROM mobile_notification_outbox WHERE environment='acc' AND status IN ('sent','failed','skipped') AND created_at<now()-interval '30 days'`);
-            await client.query(`DELETE FROM mobile_devices d WHERE environment='acc' AND NOT EXISTS(SELECT 1 FROM auth_sessions s WHERE s.id=d.session_id AND s.expires_at>now())`);
+            await removeExpiredDevices(client);
         } catch (error) {
             // SQL text and connection strings may contain identifiers; log only the machine code.
             console.error('Mobile notification cycle failed', typeof error?.code === 'string' ? error.code : 'WORKER_ERROR');
