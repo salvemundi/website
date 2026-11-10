@@ -160,11 +160,17 @@ export class EventHandlers {
     private static async preparePubCrawlTickets(data: LocalPaymentSuccessEvent, url: string, token: string) {
         try {
             if (!data.registrationId) return null;
-            const res = await fetch(`${url}/items/pub_crawl_signups/${data.registrationId}?fields=name,email,amount_tickets,pub_crawl_event_id.name`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const json = await res.json() as { data?: { name?: string; email?: string; amount_tickets?: number; pub_crawl_event_id?: { name?: string } } };
-            const signup = json.data;
+            const signup = await db
+                .select({
+                    name: schema.pub_crawl_signups.name,
+                    amount_tickets: schema.pub_crawl_signups.amount_tickets,
+                    event_name: schema.pub_crawl_events.name
+                })
+                .from(schema.pub_crawl_signups)
+                .leftJoin(schema.pub_crawl_events, eq(schema.pub_crawl_signups.pub_crawl_event_id, schema.pub_crawl_events.id))
+                .where(eq(schema.pub_crawl_signups.id, Number(data.registrationId)))
+                .limit(1)
+                .then(rows => rows[0]);
             const tickets = await this.fetchPubCrawlTicketsDb(data.registrationId, signup?.amount_tickets || 1);
 
             const whatsappCommunityUrl = await this.getPubCrawlWhatsAppLink(Number(data.registrationId));
@@ -175,7 +181,7 @@ export class EventHandlers {
                 email: data.email,
                 paymentId: data.paymentId,
                 signupId: data.registrationId,
-                eventName: signup?.pub_crawl_event_id?.name || 'Kroegentocht',
+                eventName: signup?.event_name || 'Kroegentocht',
                 whatsappCommunityUrl,
                 tickets: await Promise.all(tickets.map(async (t) => ({
                     ...t,
@@ -238,7 +244,6 @@ export class EventHandlers {
         for (let i = 0; i < 5; i++) {
             const tickets = await db
                 .select({
-                    id: schema.pub_crawl_tickets.id,
                     name: schema.pub_crawl_tickets.name,
                     initial: schema.pub_crawl_tickets.initial,
                     qr_token: schema.pub_crawl_tickets.qr_token
