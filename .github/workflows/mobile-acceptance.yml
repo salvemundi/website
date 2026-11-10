@@ -1,0 +1,31 @@
+name: Mobile acceptance checks
+
+on:
+  pull_request:
+    branches: [acceptance]
+    paths:
+      - "apps/frontend/src/server/mobile/**"
+      - "apps/frontend/src/server/services/**"
+      - "apps/frontend/src/app/api/mobile/**"
+      - "apps/services/mobile-notification-service/**"
+      - "tests/mobile-security.test.mjs"
+      - ".github/workflows/mobile-acceptance.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-policy-and-notifications:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Authentication and acceptance boundary tests
+        run: node --experimental-strip-types --test tests/mobile-security.test.mjs
+      - name: APNs and notification worker tests
+        run: node --test apps/services/mobile-notification-service/test/*.test.mjs
+      - name: Worker syntax checks
+        working-directory: apps/services/mobile-notification-service
+        run: npm run build

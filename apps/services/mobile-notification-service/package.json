@@ -1,0 +1,15 @@
+{
+  "name": "@salvemundi/mobile-notification-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.13.1" },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "once": "node src/server.mjs --once",
+    "test": "node --test test/*.test.mjs",
+    "build": "node --check src/server.mjs && node --check src/worker.mjs && node --check src/apns.mjs && node --check src/policy.mjs",
+    "type-check": "node --check src/server.mjs && node --check src/worker.mjs && node --check src/apns.mjs && node --check src/policy.mjs"
+  },
+  "dependencies": { "pg": "^8.22.0" }
+}

@@ -31,9 +31,9 @@ export async function requireBeheerFeature(feature: BeheerFeature) {
     return user;
 }
 
-export async function getEnrichedSession(): Promise<{ user: EnrichedUser; session: Session } | null> {
+export async function getEnrichedSession(requestHeaders?: Headers): Promise<{ user: EnrichedUser; session: Session } | null> {
     try {
-        const h = await headers().catch((error) => {
+        const h = requestHeaders ?? await headers().catch((error) => {
             safeConsoleError('[auth-utils.ts][getEnrichedSession] Header retrieval failed', error);
             return null;
         });
