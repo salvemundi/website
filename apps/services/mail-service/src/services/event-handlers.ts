@@ -170,7 +170,7 @@ export class EventHandlers {
                 .leftJoin(schema.pub_crawl_events, eq(schema.pub_crawl_signups.pub_crawl_event_id, schema.pub_crawl_events.id))
                 .where(eq(schema.pub_crawl_signups.id, Number(data.registrationId)))
                 .limit(1)
-                .then(rows => rows[0]);
+                .then(rows => rows[0] as (typeof rows)[number] | undefined);
             const tickets = await this.fetchPubCrawlTicketsDb(data.registrationId, signup?.amount_tickets || 1);
 
             const whatsappCommunityUrl = await this.getPubCrawlWhatsAppLink(Number(data.registrationId));
