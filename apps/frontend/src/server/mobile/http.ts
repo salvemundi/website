@@ -31,8 +31,8 @@ export function mobileRoute(handler: (request: Request) => Promise<Response>) {
     };
 }
 export interface MobileJSON { [key: string]: unknown }
-export async function readMobileJSON(request: Request): Promise<MobileJSON> {
-    if (Number(request.headers.get('content-length') || 0) > 16384) throw new MobileError('invalid_request', 'Verzoek te groot.', 413);
+export async function readMobileJSON(request: Request, maxBytes = 16384): Promise<MobileJSON> {
+    if (Number(request.headers.get('content-length') || 0) > maxBytes) throw new MobileError('invalid_request', 'Verzoek te groot.', 413);
     const reader = request.body?.getReader();
     const chunks: Uint8Array[] = [];
     let size = 0;
@@ -41,7 +41,7 @@ export async function readMobileJSON(request: Request): Promise<MobileJSON> {
             let chunk = await reader.read();
             while (!chunk.done) {
                 size += chunk.value.byteLength;
-                if (size > 16384) {
+                if (size > maxBytes) {
                     await reader.cancel();
                     throw new MobileError('invalid_request', 'Verzoek te groot.', 413);
                 }
