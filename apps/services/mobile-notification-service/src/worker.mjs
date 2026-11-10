@@ -9,7 +9,7 @@ export async function reconcile(client, env) {
     if (!users.length) return;
     const sessionColumns = await getWorkerSessionColumns(client);
     const { rows: userRows } = await client.query(
-        `SELECT DISTINCT d.user_id FROM mobile_devices d JOIN auth_sessions s ON s.id=d.session_id AND s.${sessionColumns.userId}=d.user_id
+        `SELECT DISTINCT d.user_id FROM mobile_devices d JOIN auth_sessions s ON s.id=d.session_id AND CAST(s.${sessionColumns.userId} AS TEXT)=CAST(d.user_id AS TEXT)
          JOIN directus_users u ON u.id=d.user_id
          WHERE d.environment='acc' AND d.user_id = ANY($1::uuid[]) AND s.${sessionColumns.expiresAt}>now() AND u.status='active'
          AND (d.apns_environment='sandbox' OR $2::boolean)`, [users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']
@@ -39,7 +39,7 @@ export async function reconcile(client, env) {
                     await client.query(
                         `INSERT INTO mobile_notification_outbox(environment,device_id,kind,dedupe_key,payload)
                          SELECT 'acc',d.id,$2,$3,$4::jsonb FROM mobile_devices d
-                         JOIN auth_sessions s ON s.id=d.session_id AND s.${sessionColumns.userId}=d.user_id
+                         JOIN auth_sessions s ON s.id=d.session_id AND CAST(s.${sessionColumns.userId} AS TEXT)=CAST(d.user_id AS TEXT)
                          LEFT JOIN mobile_notification_preferences p ON p.environment='acc' AND p.user_id=d.user_id
                          WHERE d.environment='acc' AND d.user_id=$1 AND s.${sessionColumns.expiresAt}>now() AND COALESCE(p.${preferenceColumn},true)
                          AND (d.apns_environment='sandbox' OR $5::boolean)
@@ -73,7 +73,7 @@ export async function deliver(client, env, send = sendAPNs) {
         if (!job) break;
         const { rows: devices } = await client.query(
             `SELECT d.*,u.status AS user_status,s.${sessionColumns.expiresAt} AS expires_at,p.registrations,p.payments,p.event_changes,p.reminders
-             FROM mobile_devices d JOIN auth_sessions s ON s.id=d.session_id AND s.${sessionColumns.userId}=d.user_id JOIN directus_users u ON u.id=d.user_id
+             FROM mobile_devices d JOIN auth_sessions s ON s.id=d.session_id AND CAST(s.${sessionColumns.userId} AS TEXT)=CAST(d.user_id AS TEXT) JOIN directus_users u ON u.id=d.user_id
              LEFT JOIN mobile_notification_preferences p ON p.environment='acc' AND p.user_id=d.user_id
              WHERE d.id=$1 AND s.${sessionColumns.expiresAt}>now()`, [job.device_id]
         );
@@ -116,5 +116,5 @@ export async function deliver(client, env, send = sendAPNs) {
 
 export async function removeExpiredDevices(client) {
     const sessionColumns = await getWorkerSessionColumns(client);
-    await client.query(`DELETE FROM mobile_devices d WHERE environment='acc' AND NOT EXISTS(SELECT 1 FROM auth_sessions s WHERE s.id=d.session_id AND s.${sessionColumns.userId}=d.user_id AND s.${sessionColumns.expiresAt}>now())`);
+    await client.query(`DELETE FROM mobile_devices d WHERE environment='acc' AND NOT EXISTS(SELECT 1 FROM auth_sessions s WHERE s.id=d.session_id AND CAST(s.${sessionColumns.userId} AS TEXT)=CAST(d.user_id AS TEXT) AND s.${sessionColumns.expiresAt}>now())`);
 }

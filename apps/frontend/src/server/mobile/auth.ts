@@ -69,7 +69,7 @@ export async function completeMobileLogin(request: Request) {
     // Re-check the real session in PostgreSQL; never trust a cached/impersonated user alone.
     const columns = await getSessionColumns();
     const verified = await pool.query<{ user_id: string }>(`
-        SELECT s.${columns.userId} AS user_id FROM auth_sessions s JOIN directus_users u ON u.id=s.${columns.userId}
+        SELECT s.${columns.userId} AS user_id FROM auth_sessions s JOIN directus_users u ON CAST(u.id AS TEXT)=CAST(s.${columns.userId} AS TEXT)
         WHERE s.id=$1 AND s.${columns.userId}=$2 AND s.${columns.expiresAt} > NOW() AND u.status='active' AND s.id NOT LIKE 'mobile:%'
     `, [session.session.id, session.user.id]);
     if (!verified.rows[0]) throw new MobileError('unauthorized', 'Aanmelden mislukt.', 401);
