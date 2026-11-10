@@ -23,6 +23,9 @@ import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/se
 import { safeConsoleError } from '@/server/utils/logger';
 import { isDeadlinePassed } from '@/shared/lib/utils/date';
 
+// Mollie end-states where the payment did not succeed; these signups must not block a new signup.
+const DEAD_PAYMENT_STATUSES = ['failed', 'canceled', 'expired'];
+
 interface FinancePaymentResponse {
     checkoutUrl?: string;
 }
@@ -67,7 +70,7 @@ export async function getActivitySignupCount(eventId: number): Promise<number> {
 export async function checkUserSignupStatus(eventId: number, email: string, userId?: string | null) {
     try {
         const { db, schema } = await import('@salvemundi/db');
-        const { eq, and, or, ilike, ne, desc, isNotNull } = await import('drizzle-orm');
+        const { eq, and, or, ilike, notInArray, desc, isNotNull } = await import('drizzle-orm');
 
         const rows = await db.select({
             id: schema.event_signups.id,
@@ -84,7 +87,7 @@ export async function checkUserSignupStatus(eventId: number, email: string, user
                         eq(schema.event_signups.directus_relations, userId || '')
                     )
                 ),
-                ne(schema.event_signups.payment_status, 'failed')
+                notInArray(schema.event_signups.payment_status, DEAD_PAYMENT_STATUSES)
             )
         )
         .orderBy(desc(schema.event_signups.created_at))
@@ -169,7 +172,7 @@ export async function signupForActivity(data: EventSignupForm) {
         const price = Number(priceRaw);
 
         const { db, schema } = await import('@salvemundi/db');
-        const { eq, and, or, ilike, ne } = await import('drizzle-orm');
+        const { eq, and, or, ilike, notInArray } = await import('drizzle-orm');
 
         let participantName = parsed.data.name;
         let participantEmail = parsed.data.email;
@@ -209,7 +212,7 @@ export async function signupForActivity(data: EventSignupForm) {
             and(
                 eq(schema.event_signups.event_id, parsed.data.event_id),
                 duplicateCondition,
-                ne(schema.event_signups.payment_status, 'failed')
+                notInArray(schema.event_signups.payment_status, DEAD_PAYMENT_STATUSES)
             )
         ).limit(1);
 

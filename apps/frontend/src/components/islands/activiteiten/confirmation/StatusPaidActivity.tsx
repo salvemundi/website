@@ -18,7 +18,7 @@ export default function StatusPaidActivity({
 }: StatusPaidActivityProps) {
     const amount = signupData?.amount_tickets || (signupData?.tickets?.length) || 1;
     const eventName = signupData?.event_id?.name || 'Activiteit';
-    const redirectUrl = signupData?.event_id?.custom_url || signupData?.custom_url;
+    const redirectUrl = signupData?.event?.custom_url || signupData?.event_id?.custom_url || signupData?.custom_url;
 
     return (
         <div className="animate-in zoom-in-95 space-y-12 duration-500">
