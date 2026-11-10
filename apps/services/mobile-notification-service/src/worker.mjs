@@ -1,0 +1,112 @@
+import { allowedUserIds, deviceAllowed, snapshotOf, changesFor, notificationPayload, classifyAPNs, retryDelay, fingerprint } from './policy.mjs';
+import { sendAPNs } from './apns.mjs';
+
+const preferenceColumns = { registrations: 'registrations', payments: 'payments', eventChanges: 'event_changes', reminders: 'reminders' };
+
+export async function reconcile(client, env) {
+    const users = allowedUserIds(env);
+    if (!users.length) return;
+    const { rows: userRows } = await client.query(
+        `SELECT DISTINCT d.user_id FROM mobile_devices d JOIN auth_sessions s ON s.id=d.session_id
+         JOIN directus_users u ON u.id=d.user_id
+         WHERE d.environment='acc' AND d.user_id = ANY($1::uuid[]) AND s.expires_at>now() AND u.status='active'
+         AND (d.apns_environment='sandbox' OR $2::boolean)`, [users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']
+    );
+    for (const { user_id: userId } of userRows) {
+        await client.query('BEGIN');
+        try {
+            // Serialize reconciliation for this account, including first-run baseline creation.
+            await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`mobile-notifications:${userId}`]);
+            const initialized = (await client.query(`SELECT 1 FROM mobile_notification_users WHERE environment='acc' AND user_id=$1`, [userId])).rowCount > 0;
+            const { rows } = await client.query(
+                `SELECT s.id,s.event_id,s.payment_status,e.name,e.location,e.status AS event_status,
+                 (((e.event_date + COALESCE(e.event_time,'00:00'::time)) AT TIME ZONE 'Europe/Amsterdam')) AS starts_at
+                 FROM event_signups s JOIN events e ON e.id=s.event_id JOIN directus_users u ON u.id=$1
+                 WHERE (s.directus_relations=u.id OR lower(s.participant_email)=lower(u.email))
+                 AND e.event_date>=CURRENT_DATE - interval '7 days' ORDER BY s.id`, [userId]
+            );
+            for (const row of rows) {
+                const current = snapshotOf({ ...row, starts_at: row.starts_at instanceof Date ? row.starts_at.toISOString() : row.starts_at });
+                const { rows: old } = await client.query(
+                    `SELECT snapshot FROM mobile_notification_observations WHERE environment='acc' AND user_id=$1 AND registration_id=$2`, [userId, row.id]
+                );
+                const changes = changesFor(old[0]?.snapshot, current, initialized);
+                for (const change of changes) {
+                    const preferenceColumn = preferenceColumns[change.kind];
+                    // Column comes from a closed internal map, never from request input.
+                    await client.query(
+                        `INSERT INTO mobile_notification_outbox(environment,device_id,kind,dedupe_key,payload)
+                         SELECT 'acc',d.id,$2,$3,$4::jsonb FROM mobile_devices d
+                         JOIN auth_sessions s ON s.id=d.session_id
+                         LEFT JOIN mobile_notification_preferences p ON p.environment='acc' AND p.user_id=d.user_id
+                         WHERE d.environment='acc' AND d.user_id=$1 AND s.expires_at>now() AND COALESCE(p.${preferenceColumn},true)
+                         AND (d.apns_environment='sandbox' OR $5::boolean)
+                         ON CONFLICT(environment,device_id,dedupe_key) DO NOTHING`,
+                        [userId, change.kind, `${row.id}:${change.suffix}`, JSON.stringify(notificationPayload(change.kind, `event:${row.event_id}`)), env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']
+                    );
+                }
+                await client.query(
+                    `INSERT INTO mobile_notification_observations(environment,user_id,registration_id,snapshot) VALUES('acc',$1,$2,$3::jsonb)
+                     ON CONFLICT(environment,user_id,registration_id) DO UPDATE SET snapshot=EXCLUDED.snapshot,observed_at=now()`,
+                    [userId, row.id, JSON.stringify(current)]
+                );
+            }
+            await client.query(`INSERT INTO mobile_notification_users(environment,user_id) VALUES('acc',$1) ON CONFLICT DO NOTHING`, [userId]);
+            await client.query('COMMIT');
+        } catch (error) { await client.query('ROLLBACK'); throw error; }
+    }
+}
+
+export async function deliver(client, env, send = sendAPNs) {
+    // Reclaim jobs from a crashed worker; each request has a 10-second timeout.
+    await client.query(`UPDATE mobile_notification_outbox SET status='pending',locked_at=NULL WHERE environment='acc' AND status='processing' AND locked_at<now()-interval '5 minutes'`);
+    for (let i = 0; i < 100; i++) {
+        const { rows } = await client.query(
+            `UPDATE mobile_notification_outbox o SET status='processing',locked_at=now(),attempts=attempts+1
+             WHERE id=(SELECT id FROM mobile_notification_outbox WHERE environment='acc' AND status='pending'
+             AND next_attempt_at<=now() ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING o.*`
+        );
+        const job = rows[0];
+        if (!job) break;
+        const { rows: devices } = await client.query(
+            `SELECT d.*,u.status AS user_status,s.expires_at,p.registrations,p.payments,p.event_changes,p.reminders
+             FROM mobile_devices d JOIN auth_sessions s ON s.id=d.session_id JOIN directus_users u ON u.id=d.user_id
+             LEFT JOIN mobile_notification_preferences p ON p.environment='acc' AND p.user_id=d.user_id
+             WHERE d.id=$1 AND s.expires_at>now()`, [job.device_id]
+        );
+        const device = devices[0];
+        if (!device || device.user_status !== 'active' || !deviceAllowed(device, env) || device[preferenceColumns[job.kind]] === false) {
+            await client.query(`UPDATE mobile_notification_outbox SET status='skipped',locked_at=NULL WHERE id=$1`, [job.id]);
+            continue;
+        }
+        if (job.kind === 'reminders') {
+            const registrationID = String(job.dedupe_key).split(':')[0];
+            const { rowCount } = await client.query(
+                `SELECT 1 FROM event_signups s JOIN events e ON e.id=s.event_id JOIN directus_users u ON u.id=$2
+                 WHERE s.id=$1 AND (s.directus_relations=u.id OR lower(s.participant_email)=lower(u.email))
+                 AND s.payment_status='paid' AND e.status='published'
+                 AND ((e.event_date + COALESCE(e.event_time,'00:00'::time)) AT TIME ZONE 'Europe/Amsterdam')>now()
+                 AND ((e.event_date + COALESCE(e.event_time,'00:00'::time)) AT TIME ZONE 'Europe/Amsterdam')<=now()+interval '24 hours'`,
+                [registrationID, device.user_id]
+            );
+            if (!rowCount) {
+                await client.query(`UPDATE mobile_notification_outbox SET status='skipped',locked_at=NULL WHERE id=$1`, [job.id]);
+                continue;
+            }
+        }
+        let result;
+        try { result = await send(device, job.payload, fingerprint(job.dedupe_key), env); }
+        catch { result = { status: 503, reason: 'ProviderUnavailable' }; }
+        const action = classifyAPNs(result.status, result.reason);
+        if (action === 'remove-device') {
+            await client.query(`DELETE FROM mobile_devices WHERE id=$1`, [device.id]);
+            continue;
+        }
+        const retry = action === 'retry' && job.attempts < 8;
+        await client.query(
+            `UPDATE mobile_notification_outbox SET status=$2,locked_at=NULL,last_error_code=$3,
+             next_attempt_at=now()+($4::int*interval '1 second'),sent_at=CASE WHEN $2='sent' THEN now() ELSE NULL END WHERE id=$1`,
+            [job.id, retry ? 'pending' : action === 'sent' ? 'sent' : 'failed', result.reason ?? String(result.status), retryDelay(job.attempts)]
+        );
+    }
+}

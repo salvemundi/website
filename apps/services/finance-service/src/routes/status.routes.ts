@@ -48,11 +48,13 @@ export default async function statusRoutes(fastify: FastifyInstance) {
 
             const dbStatus = String(transaction.payment_status);
             const mollieId = transaction.mollie_id;
+            let checkoutURL: string | null = null;
 
             if (dbStatus === 'open' && mollieId) {
                 try {
                     const mollie = getMollieClient();
                     const livePayment = await mollie.payments.get(mollieId);
+                    checkoutURL = livePayment._links.checkout?.href || null;
 
                     if (String(livePayment.status) !== dbStatus) {
                         fastify.log.info(`[STATUS] Live status mismatch for ${mollieId}: DB=${dbStatus}, Mollie=${livePayment.status}. Triggering finalization.`);
@@ -76,6 +78,7 @@ export default async function statusRoutes(fastify: FastifyInstance) {
 
             return {
                 ...transaction,
+                checkout_url: checkoutURL,
                 signup_id: transaction.registration || transaction.trip_signup || transaction.pub_crawl_signup || transaction.webshop_preorder
             };
         } catch (error) {

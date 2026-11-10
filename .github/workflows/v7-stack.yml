@@ -243,6 +243,14 @@ jobs:
           echo "FINANCE_PORT=${FINANCE_PORT}" >> .env.${ENV_NAME}
           echo "MONITORING_PORT=${MONITORING_PORT}" >> .env.${ENV_NAME}
           echo "ENV_NAME=${ENV_NAME}" >> .env.${ENV_NAME}
+          # The native app backend is acceptance-only, even if a production variable is set.
+          if [ "$ENV_NAME" = "acc" ]; then
+            echo "MOBILE_API_ENABLED=${{ vars.MOBILE_API_ENABLED || 'false' }}" >> .env.${ENV_NAME}
+            echo "MOBILE_APNS_ALLOW_PRODUCTION=${{ vars.MOBILE_APNS_ALLOW_PRODUCTION || 'false' }}" >> .env.${ENV_NAME}
+            echo "MOBILE_APPLE_TEAM_ID=${{ vars.MOBILE_APPLE_TEAM_ID }}" >> .env.${ENV_NAME}
+          else
+            echo "MOBILE_API_ENABLED=false" >> .env.${ENV_NAME}
+          fi
 
           echo "HOSTNAME=0.0.0.0" >> .env.${ENV_NAME}
 

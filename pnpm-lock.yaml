@@ -437,6 +437,12 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
 
+  apps/services/mobile-notification-service:
+    dependencies:
+      pg:
+        specifier: ^8.22.0
+        version: 8.22.0
+
   apps/services/monitoring-service:
     dependencies:
       socket.io-client:

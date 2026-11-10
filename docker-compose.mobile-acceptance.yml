@@ -1,0 +1,26 @@
+# Standalone, explicit opt-in acceptance worker. Does not alter the normal stack.
+# docker compose --env-file .env.acc --env-file .env.mobile-acc -f docker-compose.mobile-acceptance.yml --profile mobile-acceptance up -d --build
+services:
+  mobile-notifications-acceptance:
+    profiles: [mobile-acceptance]
+    build:
+      context: .
+      dockerfile: apps/services/mobile-notification-service/Dockerfile
+    env_file: [.env.acc, .env.mobile-acc]
+    environment:
+      ENV_NAME: acc
+      # The independent delivery gate and test-user allowlist come from .env.mobile-acc.
+      # Leaving either unset stops the worker before it can send anything.
+      MOBILE_API_ENABLED: ${MOBILE_API_ENABLED:-false}
+      MOBILE_NOTIFICATIONS_ENABLED: ${MOBILE_NOTIFICATIONS_ENABLED:-false}
+      MOBILE_NOTIFICATION_ALLOWED_USER_IDS: ${MOBILE_NOTIFICATION_ALLOWED_USER_IDS:-}
+      MOBILE_APNS_ALLOW_PRODUCTION: ${MOBILE_APNS_ALLOW_PRODUCTION:-false}
+    restart: "no"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [salve-mundi-v7-shared]
+networks:
+  salve-mundi-v7-shared:
+    external: true
+    name: salve-mundi-v7-shared
