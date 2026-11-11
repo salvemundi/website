@@ -61,7 +61,7 @@ jobs:
       - run: pnpm --filter=@salvemundi/db build
       - run: pnpm --filter=@salvemundi/validations build
       - name: Verify mobile activity administration and widget permissions
-        run: node --experimental-vm-modules --test tests/mobile-admin*.test.mjs
+        run: node --experimental-vm-modules --test tests/mobile-admin*.test.mjs tests/mobile-notification-preferences.test.mjs
       - run: pnpm type-check
       - run: pnpm -r lint
 

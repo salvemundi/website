@@ -54,4 +54,25 @@ CREATE TABLE IF NOT EXISTS mobile_notification_outbox (
   UNIQUE(environment, device_id, dedupe_key)
 );
 CREATE INDEX IF NOT EXISTS mobile_outbox_pending ON mobile_notification_outbox(environment, status, next_attempt_at);
+ALTER TABLE mobile_notification_outbox ADD COLUMN IF NOT EXISTS metadata jsonb NOT NULL DEFAULT '{}';
+-- Extended activity subscriptions and organizer thresholds. Also upgrades an earlier manual migration.
+ALTER TABLE mobile_notification_preferences ADD COLUMN IF NOT EXISTS activity_announcements boolean NOT NULL DEFAULT false;
+ALTER TABLE mobile_notification_preferences ADD COLUMN IF NOT EXISTS activity_committee_ids integer[] NOT NULL DEFAULT '{}';
+ALTER TABLE mobile_notification_preferences ADD COLUMN IF NOT EXISTS organizer_almost_full boolean NOT NULL DEFAULT false;
+ALTER TABLE mobile_notification_preferences ADD COLUMN IF NOT EXISTS organizer_capacity_percent integer NOT NULL DEFAULT 90 CHECK (organizer_capacity_percent BETWEEN 50 AND 100);
+ALTER TABLE mobile_notification_preferences ADD COLUMN IF NOT EXISTS organizer_signup_thresholds integer[] NOT NULL DEFAULT '{}';
+ALTER TABLE mobile_notification_outbox DROP CONSTRAINT IF EXISTS mobile_notification_outbox_kind_check;
+ALTER TABLE mobile_notification_outbox ADD CONSTRAINT mobile_notification_outbox_kind_check CHECK (kind IN ('registrations','payments','eventChanges','reminders','activityAnnouncements','organizerAlmostFull','organizerSignups'));
+CREATE TABLE IF NOT EXISTS mobile_notification_activity_users (
+  environment text NOT NULL CHECK (environment='acc'),
+  user_id uuid NOT NULL REFERENCES directus_users(id) ON DELETE CASCADE,
+  initialized_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(environment,user_id)
+);
+CREATE TABLE IF NOT EXISTS mobile_notification_activity_observations (
+  environment text NOT NULL CHECK (environment='acc'),
+  user_id uuid NOT NULL REFERENCES directus_users(id) ON DELETE CASCADE,
+  event_id bigint NOT NULL,
+  snapshot jsonb NOT NULL,
+  observed_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(environment,user_id,event_id)
+);
 COMMIT;
