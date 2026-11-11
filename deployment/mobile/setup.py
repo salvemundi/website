@@ -151,6 +151,15 @@ def execute(payload, scope, image, environment_file):
     production = database_name(ROOT / '.env.prod')
     acceptance = database_name(ROOT / '.env.acc')
     if production == acceptance:
+        if action == 'check':
+            # Inspect schema only: the doctor uses BEGIN READ ONLY / ROLLBACK.
+            # Keep a failing readiness result: this database is still not isolated.
+            command = docker_command(image, environment_file, production, False)
+            result = subprocess.run(command + ['node', 'src/readiness.mjs', '--database'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            for line in result.stdout.decode(errors='replace').splitlines():
+                if line.startswith(('PASS ', 'FAIL ', 'No notifications sent.')):
+                    print(line)
+            raise RuntimeError('Shared schema inspected; configuration and delivery remain blocked')
         raise ValueError('Acceptance and production database are shared; migration and startup refused')
     isolated = payload.get('confirm_isolation') is True
     command = docker_command(image, environment_file, production, isolated)

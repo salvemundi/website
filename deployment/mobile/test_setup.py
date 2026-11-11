@@ -76,6 +76,20 @@ class SetupTests(unittest.TestCase):
             # Only building the isolated image was allowed; no query, migration or run.
             self.assertTrue(all(call.args[0][:2] == ['docker', 'build'] for call in run.call_args_list))
 
+    def test_shared_check_only_runs_read_only_doctor(self):
+        import subprocess
+        with tempfile.TemporaryDirectory() as directory, patch.object(setup, 'ROOT', Path(directory)), patch.object(setup, 'run') as run, patch.object(setup.subprocess, 'run') as process:
+            (setup.ROOT / 'mobile-setup' / ('a' * 40)).mkdir(parents=True)
+            for filename in ['.env.acc', '.env.prod']:
+                (setup.ROOT / filename).write_text('DB_NAME=shared\n')
+            process.return_value = subprocess.CompletedProcess([], 1, b'FAIL database is shared\nPASS required table mobile_devices\n', b'')
+            with self.assertRaisesRegex(RuntimeError, 'Shared schema inspected'):
+                setup.main({'action': 'check', 'commit': 'a' * 40})
+            self.assertEqual(run.call_count, 1)
+            self.assertEqual(run.call_args.args[0][:2], ['docker', 'build'])
+            self.assertEqual(process.call_count, 1)
+            self.assertEqual(process.call_args.args[0][-3:], ['node', 'src/readiness.mjs', '--database'])
+
     def test_only_one_exact_email_is_resolved_with_bound_query(self):
         source = Path(__file__).with_name('setup.py').read_text()
         self.assertIn("WHERE lower(email)=lower($1) AND status='active' LIMIT 2", source)
