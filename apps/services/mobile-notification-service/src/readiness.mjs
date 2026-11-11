@@ -2,6 +2,7 @@
 import { createPrivateKey } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { getWorkerSessionColumns } from './session-columns.mjs';
+import { sharedPilotAllowed } from './policy.mjs';
 
 export const requiredTables = ['mobile_notification_preferences', 'mobile_devices', 'mobile_notification_users', 'mobile_notification_observations', 'mobile_notification_outbox', 'mobile_notification_activity_users', 'mobile_notification_activity_observations'];
 export const requiredPreferenceColumns = ['activity_announcements', 'activity_committee_ids', 'organizer_almost_full', 'organizer_capacity_percent', 'organizer_signup_thresholds'];
@@ -31,7 +32,11 @@ export async function databaseChecks(client, env) {
     await client.query('BEGIN READ ONLY');
     try {
         const { rows } = await client.query('SELECT current_database() AS name');
+        if (env.MOBILE_NOTIFICATION_SHARED_DB_PILOT === 'true') {
+            checks.push({ name: 'explicit single-account sandbox pilot on SHARED database (NOT isolated)', passed: sharedPilotAllowed(env) && env.MOBILE_ACCEPTANCE_DB_ISOLATION_CONFIRMED !== 'true' && rows[0]?.name === env.DB_NAME });
+        } else {
         checks.push({ name: 'acceptance database explicitly isolated from production', passed: env.MOBILE_ACCEPTANCE_DB_ISOLATION_CONFIRMED === 'true' && Boolean(env.PRODUCTION_DB_NAME) && typeof rows[0]?.name === 'string' && rows[0].name !== env.PRODUCTION_DB_NAME });
+        }
         const tableResult = await client.query('SELECT table_name FROM information_schema.tables WHERE table_schema=current_schema()');
         const present = new Set(tableResult.rows.map(row => row.table_name));
         for (const name of requiredTables) checks.push({ name: `required table ${name}`, passed: present.has(name) });

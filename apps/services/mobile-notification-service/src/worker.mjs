@@ -1,4 +1,4 @@
-import { allowedUserIds, deviceAllowed, snapshotOf, changesFor, notificationPayload, classifyAPNs, retryDelay, fingerprint } from './policy.mjs';
+import { scopedUserIds, deviceAllowed, snapshotOf, changesFor, notificationPayload, classifyAPNs, retryDelay, fingerprint } from './policy.mjs';
 import { sendAPNs } from './apns.mjs';
 import { getWorkerSessionColumns } from './session-columns.mjs';
 
@@ -9,7 +9,7 @@ import { currentOrganizerScope } from './activity-scope.mjs';
 const preferenceColumns = { registrations: 'registrations', payments: 'payments', eventChanges: 'event_changes', reminders: 'reminders' };
 
 export async function reconcile(client, env) {
-    const users = allowedUserIds(env);
+    const users = scopedUserIds(env);
     if (!users.length) return;
     const sessionColumns = await getWorkerSessionColumns(client);
     const { rows: userRows } = await client.query(
@@ -65,14 +65,18 @@ export async function reconcile(client, env) {
 }
 
 export async function deliver(client, env, send = sendAPNs) {
+    const users = scopedUserIds(env);
+    if (!users.length) return;
     const sessionColumns = await getWorkerSessionColumns(client);
     // Reclaim jobs from a crashed worker; each request has a 10-second timeout.
-    await client.query(`UPDATE mobile_notification_outbox SET status='pending',locked_at=NULL WHERE environment='acc' AND status='processing' AND locked_at<now()-interval '5 minutes'`);
+    await client.query(`UPDATE mobile_notification_outbox SET status='pending',locked_at=NULL WHERE environment='acc' AND status='processing' AND locked_at<now()-interval '5 minutes'
+        AND device_id IN (SELECT id FROM mobile_devices WHERE environment='acc' AND user_id=ANY($1::uuid[]) AND (apns_environment='sandbox' OR $2::boolean))`, [users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']);
     for (let i = 0; i < 100; i++) {
         const { rows } = await client.query(
             `UPDATE mobile_notification_outbox o SET status='processing',locked_at=now(),attempts=attempts+1
-             WHERE id=(SELECT id FROM mobile_notification_outbox WHERE environment='acc' AND status='pending'
-             AND next_attempt_at<=now() ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING o.*`
+             WHERE environment='acc' AND id=(SELECT id FROM mobile_notification_outbox WHERE environment='acc' AND status='pending'
+             AND device_id IN (SELECT id FROM mobile_devices WHERE environment='acc' AND user_id=ANY($1::uuid[]) AND (apns_environment='sandbox' OR $2::boolean))
+             AND next_attempt_at<=now() ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING o.*`, [users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']
         );
         const job = rows[0];
         if (!job) break;
@@ -80,15 +84,15 @@ export async function deliver(client, env, send = sendAPNs) {
             `SELECT d.*,u.status AS user_status,s.${sessionColumns.expiresAt} AS expires_at,p.registrations,p.payments,p.event_changes,p.reminders,p.activity_announcements,p.activity_committee_ids,p.organizer_almost_full,p.organizer_capacity_percent,p.organizer_signup_thresholds
              FROM mobile_devices d JOIN auth_sessions s ON s.id=d.session_id AND CAST(s.${sessionColumns.userId} AS TEXT)=CAST(d.user_id AS TEXT) JOIN directus_users u ON u.id=d.user_id
              LEFT JOIN mobile_notification_preferences p ON p.environment='acc' AND p.user_id=d.user_id
-             WHERE d.id=$1 AND s.${sessionColumns.expiresAt}>now()`, [job.device_id]
+             WHERE d.id=$1 AND d.environment='acc' AND d.user_id=ANY($2::uuid[]) AND (d.apns_environment='sandbox' OR $3::boolean) AND s.${sessionColumns.expiresAt}>now()`, [job.device_id, users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']
         );
         const device = devices[0];
         if (!device || device.user_status !== 'active' || !deviceAllowed(device, env) || device[preferenceColumns[job.kind]] === false) {
-            await client.query(`UPDATE mobile_notification_outbox SET status='skipped',locked_at=NULL WHERE id=$1`, [job.id]);
+            await client.query(`UPDATE mobile_notification_outbox SET status='skipped',locked_at=NULL WHERE id=$1 AND environment='acc' AND device_id IN (SELECT id FROM mobile_devices WHERE environment='acc' AND user_id=ANY($2::uuid[]) AND (apns_environment='sandbox' OR $3::boolean))`, [job.id, users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']);
             continue;
         }
         if (!preferenceColumns[job.kind] && !activityKinds.has(job.kind)) {
-            await client.query(`UPDATE mobile_notification_outbox SET status='skipped',locked_at=NULL WHERE id=$1`, [job.id]);
+            await client.query(`UPDATE mobile_notification_outbox SET status='skipped',locked_at=NULL WHERE id=$1 AND environment='acc' AND device_id IN (SELECT id FROM mobile_devices WHERE environment='acc' AND user_id=ANY($2::uuid[]) AND (apns_environment='sandbox' OR $3::boolean))`, [job.id, users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']);
             continue;
         }
         if (activityKinds.has(job.kind)) {
@@ -96,7 +100,7 @@ export async function deliver(client, env, send = sendAPNs) {
             const { rows: events } = match ? await client.query(futureEventsSQL + ' AND e.id=$1',[Number(match[1])]) : {rows:[]};
             const scope = await currentOrganizerScope(client,device.user_id);
             if (!events[0] || !activityDeliveryAllowed(job.kind,activitySnapshot(events[0]),device,scope,job.metadata)) {
-                await client.query(`UPDATE mobile_notification_outbox SET status='skipped',locked_at=NULL WHERE id=$1`, [job.id]);
+                await client.query(`UPDATE mobile_notification_outbox SET status='skipped',locked_at=NULL WHERE id=$1 AND environment='acc' AND device_id IN (SELECT id FROM mobile_devices WHERE environment='acc' AND user_id=ANY($2::uuid[]) AND (apns_environment='sandbox' OR $3::boolean))`, [job.id, users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']);
                 continue;
             }
         }
@@ -111,7 +115,7 @@ export async function deliver(client, env, send = sendAPNs) {
                 [registrationID, device.user_id]
             );
             if (!rowCount) {
-                await client.query(`UPDATE mobile_notification_outbox SET status='skipped',locked_at=NULL WHERE id=$1`, [job.id]);
+                await client.query(`UPDATE mobile_notification_outbox SET status='skipped',locked_at=NULL WHERE id=$1 AND environment='acc' AND device_id IN (SELECT id FROM mobile_devices WHERE environment='acc' AND user_id=ANY($2::uuid[]) AND (apns_environment='sandbox' OR $3::boolean))`, [job.id, users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']);
                 continue;
             }
         }
@@ -120,19 +124,28 @@ export async function deliver(client, env, send = sendAPNs) {
         catch { result = { status: 503, reason: 'ProviderUnavailable' }; }
         const action = classifyAPNs(result.status, result.reason);
         if (action === 'remove-device') {
-            await client.query(`DELETE FROM mobile_devices WHERE id=$1`, [device.id]);
+            await client.query(`DELETE FROM mobile_devices WHERE id=$1 AND environment='acc' AND user_id=ANY($2::uuid[]) AND (apns_environment='sandbox' OR $3::boolean)`, [device.id, users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']);
             continue;
         }
         const retry = action === 'retry' && job.attempts < 8;
         await client.query(
             `UPDATE mobile_notification_outbox SET status=$2,locked_at=NULL,last_error_code=$3,
-             next_attempt_at=now()+($4::int*interval '1 second'),sent_at=CASE WHEN $2='sent' THEN now() ELSE NULL END WHERE id=$1`,
-            [job.id, retry ? 'pending' : action === 'sent' ? 'sent' : 'failed', result.reason ?? String(result.status), retryDelay(job.attempts)]
+             next_attempt_at=now()+($4::int*interval '1 second'),sent_at=CASE WHEN $2='sent' THEN now() ELSE NULL END WHERE id=$1 AND environment='acc' AND device_id IN (SELECT id FROM mobile_devices WHERE environment='acc' AND user_id=ANY($5::uuid[]) AND (apns_environment='sandbox' OR $6::boolean))`,
+            [job.id, retry ? 'pending' : action === 'sent' ? 'sent' : 'failed', result.reason ?? String(result.status), retryDelay(job.attempts), users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']
         );
     }
 }
 
-export async function removeExpiredDevices(client) {
+export async function removeExpiredDevices(client, env) {
+    const users = scopedUserIds(env);
+    if (!users.length) return;
     const sessionColumns = await getWorkerSessionColumns(client);
-    await client.query(`DELETE FROM mobile_devices d WHERE environment='acc' AND NOT EXISTS(SELECT 1 FROM auth_sessions s WHERE s.id=d.session_id AND CAST(s.${sessionColumns.userId} AS TEXT)=CAST(d.user_id AS TEXT) AND s.${sessionColumns.expiresAt}>now())`);
+    await client.query(`DELETE FROM mobile_devices d WHERE environment='acc' AND d.user_id=ANY($1::uuid[]) AND (d.apns_environment='sandbox' OR $2::boolean) AND NOT EXISTS(SELECT 1 FROM auth_sessions s WHERE s.id=d.session_id AND CAST(s.${sessionColumns.userId} AS TEXT)=CAST(d.user_id AS TEXT) AND s.${sessionColumns.expiresAt}>now())`, [users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']);
+}
+
+export async function removeOldOutbox(client, env) {
+    const users = scopedUserIds(env);
+    if (!users.length) return;
+    await client.query(`DELETE FROM mobile_notification_outbox WHERE environment='acc' AND status IN ('sent','failed','skipped') AND created_at<now()-interval '30 days'
+        AND device_id IN (SELECT id FROM mobile_devices WHERE environment='acc' AND user_id=ANY($1::uuid[]) AND (apns_environment='sandbox' OR $2::boolean))`, [users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']);
 }
