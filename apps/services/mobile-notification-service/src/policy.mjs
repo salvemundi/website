@@ -1,12 +1,28 @@
 import { createHash } from 'node:crypto';
 
 export function deliveryEnabled(env) {
-    return env.ENV_NAME === 'acc' && env.MOBILE_API_ENABLED === 'true' && env.MOBILE_NOTIFICATIONS_ENABLED === 'true';
+    return env.ENV_NAME === 'acc' && env.MOBILE_API_ENABLED === 'true' && env.MOBILE_NOTIFICATIONS_ENABLED === 'true'
+        && (env.MOBILE_NOTIFICATION_SHARED_DB_PILOT !== 'true' || sharedPilotAllowed(env));
 }
 export function allowedUserIds(env) {
     return (env.MOBILE_NOTIFICATION_ALLOWED_USER_IDS ?? '').split(',').map(s => s.trim()).filter(Boolean);
 }
+export function sharedPilotAllowed(env) {
+    const users = allowedUserIds(env);
+    return env.MOBILE_NOTIFICATION_SHARED_DB_PILOT === 'true'
+        && env.ENV_NAME === 'acc' && env.MOBILE_API_ENABLED === 'true' && env.MOBILE_NOTIFICATIONS_ENABLED === 'true'
+        && users.length === 1 && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(users[0])
+        && users[0] === env.MOBILE_NOTIFICATION_SHARED_DB_USER_ID
+        && env.MOBILE_APNS_ALLOW_PRODUCTION === 'false'
+        && Boolean(env.DB_NAME) && env.DB_NAME === env.MOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME
+        && env.DB_NAME === env.PRODUCTION_DB_NAME;
+}
+export function scopedUserIds(env) {
+    if (env.MOBILE_NOTIFICATION_SHARED_DB_PILOT === 'true' && !sharedPilotAllowed(env)) return [];
+    return allowedUserIds(env).filter(id => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
+}
 export function deviceAllowed(device, env) {
+    if (env.MOBILE_NOTIFICATION_SHARED_DB_PILOT === 'true' && !sharedPilotAllowed(env)) return false;
     return device.environment === 'acc' && allowedUserIds(env).includes(device.user_id)
         && (device.apns_environment === 'sandbox'
             || (device.apns_environment === 'production' && env.MOBILE_APNS_ALLOW_PRODUCTION === 'true'));

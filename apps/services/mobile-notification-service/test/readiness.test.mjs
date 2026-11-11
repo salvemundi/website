@@ -50,3 +50,28 @@ test('original outbox schema cannot pass upgraded readiness', async () => {
         assert.equal(checks.find(c=>c.name==='validated outbox kinds include activity notifications').passed,upgraded);
     }
 });
+test('shared pilot is explicit, one-account sandbox and bound to actual configured database', async () => {
+    const user='00000000-0000-0000-0000-000000000001';
+    const pilot={...good,DB_NAME:'shared',PRODUCTION_DB_NAME:'shared',MOBILE_NOTIFICATION_SHARED_DB_PILOT:'true',MOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME:'shared',MOBILE_NOTIFICATION_SHARED_DB_USER_ID:user};
+    const clientFor = (actual='shared') => ({query:async(sql,params)=>{
+        if(sql.includes('current_database'))return {rows:[{name:actual}]};
+        if(sql.includes('information_schema.tables'))return {rows:requiredTables.map(table_name=>({table_name}))};
+        if(sql.includes('pg_constraint'))return {rows:[{convalidated:true,definition:`CHECK (kind IN (${requiredOutboxKinds.map(k=>`'${k}'`).join(',')}))`}]};
+        if(params?.[0]==='mobile_notification_preferences')return {rows:requiredPreferenceColumns.map(column_name=>({column_name}))};
+        if(params?.[0]==='mobile_notification_outbox')return {rows:[{column_name:'metadata'}]};
+        return {rows:[{column_name:'expiresAt'},{column_name:'userId'}]};
+    }});
+    const accepted=await databaseChecks(clientFor(),pilot);
+    assert(accepted.every(c=>c.passed));
+    assert(accepted[0].name.includes('SHARED database (NOT isolated)'));
+    assert(!accepted.some(c=>c.name==='acceptance database explicitly isolated from production'));
+    for(const patch of [
+        {MOBILE_NOTIFICATION_SHARED_DB_PILOT:undefined},
+        {MOBILE_NOTIFICATION_SHARED_DB_USER_ID:'00000000-0000-0000-0000-000000000002'},
+        {MOBILE_NOTIFICATION_ALLOWED_USER_IDS:user+',00000000-0000-0000-0000-000000000002'},
+        {MOBILE_APNS_ALLOW_PRODUCTION:'true'}, {MOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME:'other'},
+        {DB_NAME:'other'}, {PRODUCTION_DB_NAME:'other'}, {ENV_NAME:'prod'},
+        {MOBILE_ACCEPTANCE_DB_ISOLATION_CONFIRMED:'true'}, {MOBILE_API_ENABLED:'false'}, {MOBILE_NOTIFICATIONS_ENABLED:'false'}
+    ]) assert.equal((await databaseChecks(clientFor(),{...pilot,...patch}))[0].passed,false);
+    assert.equal((await databaseChecks(clientFor('wrong'),pilot))[0].passed,false);
+});

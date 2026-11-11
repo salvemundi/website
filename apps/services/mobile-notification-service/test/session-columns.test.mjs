@@ -42,7 +42,7 @@ function fixture(layout, state = 'active') {
             // Only SQL dialect syntax changes for SQLite; identifier selection and
             // ownership/expiry predicates are the actual generated worker query.
             const portable = sql.replace(/now\(\)/g, "datetime('now')")
-                .replace('= ANY($1::uuid[])', 'IN ($1)').replace(/::boolean/g, '')
+                .replace(/=\s*ANY\((\$[0-9]+)::uuid\[\]\)/g, ' IN ($1)').replace(/::boolean/g, '')
                 .replace(/\$(\d+)/g, '?$1').replace('DELETE FROM mobile_devices d WHERE', 'DELETE FROM mobile_devices AS d WHERE');
             const bindings = args.map(value => typeof value === 'boolean' ? Number(value) : Array.isArray(value) ? value[0] : value);
             if (sql.startsWith('DELETE')) return { rows: [], rowCount: database.prepare(portable).run(...bindings).changes };
@@ -72,7 +72,7 @@ for (const layout of ['camel', 'snake']) {
                 assert.match(deviceQuery, layout === 'camel' ? /s\."expiresAt" AS expires_at/ : /s\."expires_at" AS expires_at/);
                 assert.doesNotMatch(deviceQuery, layout === 'camel' ? /s\."?expires_at"?\s*>/ : /s\."?expiresAt"?\s*>/);
                 if (state !== 'suspended') {
-                    await removeExpiredDevices(db.client);
+                    await removeExpiredDevices(db.client, env);
                     assert.equal(db.database.prepare('SELECT count(*) AS count FROM mobile_devices').get().count, state === 'active' ? 1 : 0, `cleanup ${state}`);
                 }
             } finally { db.database.close(); }

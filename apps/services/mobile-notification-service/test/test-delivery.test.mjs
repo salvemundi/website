@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
-import { testDelivery, run } from '../src/test-delivery.mjs';
+import { testDelivery, run, pilotDestinationAllowed } from '../src/test-delivery.mjs';
 import { requiredTables, requiredPreferenceColumns, requiredOutboxKinds } from '../src/readiness.mjs';
 const user='00000000-0000-4000-8000-000000000001';
 const other='00000000-0000-4000-8000-000000000002';
@@ -65,4 +65,26 @@ test('APNs refusals and network failures never claim delivery or mutate device r
 test('CLI has no destination, payload or token override and never connects with arguments',async()=>{
  assert.deepEqual(await run(good,['--user',other]),{status:'unavailable'});
  assert.deepEqual(await run({...good,ENV_NAME:'prod'},[]),{status:'unavailable'});
+});
+
+const shared = {...good,DB_NAME:'production',MOBILE_ACCEPTANCE_DB_ISOLATION_CONFIRMED:undefined,
+    MOBILE_NOTIFICATION_SHARED_DB_PILOT:'true',MOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME:'production',MOBILE_NOTIFICATION_SHARED_DB_USER_ID:user};
+test('shared-database test delivery needs exact acknowledgment, account, sandbox and actual database anchors',async()=>{
+ for(const patch of [{MOBILE_NOTIFICATION_SHARED_DB_PILOT:undefined},{MOBILE_NOTIFICATION_SHARED_DB_PILOT:'false'},{MOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME:'other'},{DB_NAME:'other'},{MOBILE_NOTIFICATION_SHARED_DB_USER_ID:other},{MOBILE_NOTIFICATION_SHARED_DB_USER_ID:undefined},{MOBILE_NOTIFICATION_ALLOWED_USER_IDS:`${user},${other}`},{MOBILE_APNS_ALLOW_PRODUCTION:'true'}]){
+  const f=fixture('camel','shared-database');let sent=false;
+  try{const result=await testDelivery(f.client,{...shared,...patch},async()=>{sent=true;return{status:200};});assert.equal(result.status,'unavailable');assert.equal(sent,false);}finally{f.db.close();}
+ }
+ for(const actual of ['shared-database','active']) {
+  const f=fixture('camel',actual);let sent=0;
+  try{const result=await testDelivery(f.client,shared,async()=>{sent++;return{status:200};});assert.equal(result.status,actual==='shared-database'?'delivered':'unavailable');assert.equal(sent,actual==='shared-database'?1:0);
+  assert(f.statements.every(sql=>sql.trim().startsWith('SELECT')||['BEGIN READ ONLY','ROLLBACK'].includes(sql)));
+  }finally{f.db.close();}
+ }
+});
+test('shared pilot destination gate fails before DB connection on persisted anchor drift',async()=>{
+ assert.equal(pilotDestinationAllowed(shared),true);
+ assert.equal(pilotDestinationAllowed({...shared,MOBILE_NOTIFICATION_SHARED_DB_USER_ID:other}),false);
+ assert.equal(pilotDestinationAllowed({...shared,MOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME:'other'}),false);
+ assert.equal(pilotDestinationAllowed({...shared,DB_NAME:undefined}),false);
+ assert.deepEqual(await run({...shared,MOBILE_NOTIFICATION_SHARED_DB_USER_ID:other},[]),{status:'unavailable'});
 });

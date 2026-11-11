@@ -2,7 +2,8 @@ import pg from 'pg';
 import { setTimeout as delay } from 'node:timers/promises';
 import { deliveryEnabled, allowedUserIds } from './policy.mjs';
 import { providerToken } from './apns.mjs';
-import { reconcile, deliver, removeExpiredDevices } from './worker.mjs';
+import { configurationChecks, databaseChecks } from './readiness.mjs';
+import { reconcile, deliver, removeExpiredDevices, removeOldOutbox } from './worker.mjs';
 
 if (!deliveryEnabled(process.env)) {
     console.error('Mobile notification delivery is disabled. Requires ENV_NAME=acc, MOBILE_API_ENABLED=true and MOBILE_NOTIFICATIONS_ENABLED=true.');
@@ -26,11 +27,20 @@ if (!deliveryEnabled(process.env)) {
     do {
         const client = await pool.connect();
         try {
+            // Guard actual database identity on the very connection used for every cycle.
+            // The doctor completes its read-only transaction before reconciliation begins.
+            if (!configurationChecks(process.env).every(check => check.passed)
+                || !(await databaseChecks(client, process.env)).every(check => check.passed)) {
+                console.error('Mobile notification cycle refused: database/configuration readiness failed.');
+                process.exitCode = 1;
+                stopping = true;
+                break;
+            }
             await reconcile(client, process.env);
             await deliver(client, process.env);
             // Delete old delivery payloads; never retain token values in logs.
-            await client.query(`DELETE FROM mobile_notification_outbox WHERE environment='acc' AND status IN ('sent','failed','skipped') AND created_at<now()-interval '30 days'`);
-            await removeExpiredDevices(client);
+            await removeOldOutbox(client, process.env);
+            await removeExpiredDevices(client, process.env);
         } catch (error) {
             // SQL text and connection strings may contain identifiers; log only the machine code.
             console.error('Mobile notification cycle failed', typeof error?.code === 'string' ? error.code : 'WORKER_ERROR');

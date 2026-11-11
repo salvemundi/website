@@ -12,6 +12,10 @@ on:
         description: 'I verified acceptance and production use different databases'
         type: boolean
         default: false
+      mobile_shared_database_pilot_ack:
+        description: 'Explicit shared-DB single-account sandbox pilot; never migrate or claim isolation'
+        type: boolean
+        default: false
       mobile_test_user_ids:
         description: 'Explicit approved test-member UUIDs, comma separated (configure only)'
         type: string
@@ -352,4 +356,5 @@ jobs:
       action: ${{ inputs.mobile_setup_action }}
       confirm_isolation: ${{ inputs.mobile_confirm_isolation }}
       test_user_ids: ${{ inputs.mobile_test_user_ids }}
+      shared_database_pilot_ack: ${{ inputs.mobile_shared_database_pilot_ack }}
     secrets: inherit

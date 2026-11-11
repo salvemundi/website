@@ -51,6 +51,12 @@ when deliberately testing TestFlight pushes. The allowlist remains mandatory.
 An enabled worker stops immediately when `ENV_NAME` is anything except `acc`.
 For supervised operation, restart only after investigating any startup failure.
 
+For a directly launched **isolated-database** worker, also provide the verified
+`PRODUCTION_DB_NAME` and `MOBILE_ACCEPTANCE_DB_ISOLATION_CONFIRMED=true`.
+The runtime doctor checks actual database identity before every cycle.
+The shared-database pilot uses the separately acknowledged GitHub setup and its
+single-account anchors instead; it must never claim physical isolation.
+
 ## Run explicitly
 
 From the website checkout with dependencies installed:
