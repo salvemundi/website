@@ -15,7 +15,7 @@ function fixture(layout, state = 'active') {
         CREATE TABLE auth_sessions(id TEXT PRIMARY KEY,"${columns.expiry}" TEXT,"${columns.user}" TEXT);
         CREATE TABLE directus_users(id TEXT PRIMARY KEY,status TEXT);
         CREATE TABLE mobile_devices(id INTEGER PRIMARY KEY,environment TEXT,user_id TEXT,session_id TEXT,apns_environment TEXT,token TEXT);
-        CREATE TABLE mobile_notification_preferences(environment TEXT,user_id TEXT,registrations INTEGER,payments INTEGER,event_changes INTEGER,reminders INTEGER);
+        CREATE TABLE mobile_notification_preferences(environment TEXT,user_id TEXT,registrations INTEGER,payments INTEGER,event_changes INTEGER,reminders INTEGER,activity_announcements INTEGER,activity_committee_ids TEXT,organizer_almost_full INTEGER,organizer_capacity_percent INTEGER,organizer_signup_thresholds TEXT);
     `);
     database.prepare('INSERT INTO directus_users VALUES (?,?)').run(userId, state === 'suspended' ? 'suspended' : 'active');
     database.prepare('INSERT INTO mobile_devices VALUES (?,?,?,?,?,?)').run(5, 'acc', userId, 'session-1', 'sandbox', 'a'.repeat(64));

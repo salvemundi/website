@@ -112,3 +112,35 @@ To stop immediately, stop the standalone worker. To prevent restart, set
 `MOBILE_NOTIFICATIONS_ENABLED=false` in `.env.mobile-acc`. Disabling the mobile
 API alone also stops the worker at its next start; stop the running worker when
 changing gates. Do not merge or deploy these changes to `main` as part of the pilot.
+
+## Activity subscriptions and organizer thresholds
+
+Apply the expanded version of the same manual migration to add the preference columns,
+activity baseline/observation tables and outbox metadata. It is idempotent for an earlier
+mobile migration. This still requires confirmation of the actual acceptance database;
+no worker or build applies it automatically.
+
+`GET/PATCH /api/mobile/v1/notification-preferences` now includes:
+
+- `activityAnnouncements` (default false) and `activityCommitteeIDs` (empty means all
+  committees when enabled). These notify about newly published future activities.
+- `organizerAlmostFull` (default false), `organizerCapacityPercent` (50–100, default90).
+- `organizerSignupThresholds` (up to10 distinct positive counts, at most10000 each).
+
+`GET /api/mobile/v1/notification-preferences/options` returns public committee choices,
+the current organizer committee scope and `canReceiveOrganizerAlerts`. Only current
+activity administrators may enable organizer settings. Organizers receive notifications
+for their currently authorized activity scope; selected announcement subscriptions never
+grant organizer access. The worker imports the website's actual permission registry.
+
+Counts include confirmed **paid** registrations (including manually confirmed free signups),
+not pending/cancelled payments. A threshold alerts only when that count increases across it;
+changing preferences/capacity alone does not fabricate a crossing. Near-full and exact-count
+settings can be used independently. Each event/threshold is deduplicated per device.
+
+An independent expanded-feature baseline suppresses existing activity alerts on the first
+worker sync, including accounts initialized by the old worker. Future publications and
+subsequent count increases may then notify. Every queued delivery rechecks current session,
+account, publication/future event, preference, paid count and organizer committee membership.
+Lost rights, cancelled/reassigned events or deselected subscriptions suppress queued alerts.
+No counts, participant details or committee names are included in the APNs payload.

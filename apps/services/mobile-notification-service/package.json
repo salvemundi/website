@@ -3,13 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.13.1" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "start": "node src/server.mjs",
     "once": "node src/server.mjs --once",
     "test": "node --test test/*.test.mjs",
-    "build": "node --check src/server.mjs && node --check src/worker.mjs && node --check src/apns.mjs && node --check src/policy.mjs && node --check src/session-columns.mjs",
-    "type-check": "node --check src/server.mjs && node --check src/worker.mjs && node --check src/apns.mjs && node --check src/policy.mjs && node --check src/session-columns.mjs"
+    "build": "node --check src/server.mjs && node --check src/worker.mjs && node --check src/apns.mjs && node --check src/policy.mjs && node --check src/session-columns.mjs && node --check src/activity-scope.mjs && node --check src/activity-policy.mjs && node --check src/activity-reconcile.mjs && node --check src/readiness.mjs && node --check src/test-delivery.mjs",
+    "type-check": "node --check src/server.mjs && node --check src/worker.mjs && node --check src/apns.mjs && node --check src/policy.mjs && node --check src/session-columns.mjs && node --check src/activity-scope.mjs && node --check src/activity-policy.mjs && node --check src/activity-reconcile.mjs && node --check src/readiness.mjs && node --check src/test-delivery.mjs"
   },
-  "dependencies": { "pg": "^8.22.0" }
+  "dependencies": {
+    "pg": "^8.22.0"
+  }
 }

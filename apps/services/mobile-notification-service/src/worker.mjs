@@ -2,6 +2,10 @@ import { allowedUserIds, deviceAllowed, snapshotOf, changesFor, notificationPayl
 import { sendAPNs } from './apns.mjs';
 import { getWorkerSessionColumns } from './session-columns.mjs';
 
+import { reconcileActivityAlerts, futureEventsSQL } from './activity-reconcile.mjs';
+import { activityKinds, activitySnapshot, activityDeliveryAllowed } from './activity-policy.mjs';
+import { currentOrganizerScope } from './activity-scope.mjs';
+
 const preferenceColumns = { registrations: 'registrations', payments: 'payments', eventChanges: 'event_changes', reminders: 'reminders' };
 
 export async function reconcile(client, env) {
@@ -53,6 +57,7 @@ export async function reconcile(client, env) {
                     [userId, row.id, JSON.stringify(current)]
                 );
             }
+            await reconcileActivityAlerts(client,userId,sessionColumns,env);
             await client.query(`INSERT INTO mobile_notification_users(environment,user_id) VALUES('acc',$1) ON CONFLICT DO NOTHING`, [userId]);
             await client.query('COMMIT');
         } catch (error) { await client.query('ROLLBACK'); throw error; }
@@ -72,7 +77,7 @@ export async function deliver(client, env, send = sendAPNs) {
         const job = rows[0];
         if (!job) break;
         const { rows: devices } = await client.query(
-            `SELECT d.*,u.status AS user_status,s.${sessionColumns.expiresAt} AS expires_at,p.registrations,p.payments,p.event_changes,p.reminders
+            `SELECT d.*,u.status AS user_status,s.${sessionColumns.expiresAt} AS expires_at,p.registrations,p.payments,p.event_changes,p.reminders,p.activity_announcements,p.activity_committee_ids,p.organizer_almost_full,p.organizer_capacity_percent,p.organizer_signup_thresholds
              FROM mobile_devices d JOIN auth_sessions s ON s.id=d.session_id AND CAST(s.${sessionColumns.userId} AS TEXT)=CAST(d.user_id AS TEXT) JOIN directus_users u ON u.id=d.user_id
              LEFT JOIN mobile_notification_preferences p ON p.environment='acc' AND p.user_id=d.user_id
              WHERE d.id=$1 AND s.${sessionColumns.expiresAt}>now()`, [job.device_id]
@@ -81,6 +86,19 @@ export async function deliver(client, env, send = sendAPNs) {
         if (!device || device.user_status !== 'active' || !deviceAllowed(device, env) || device[preferenceColumns[job.kind]] === false) {
             await client.query(`UPDATE mobile_notification_outbox SET status='skipped',locked_at=NULL WHERE id=$1`, [job.id]);
             continue;
+        }
+        if (!preferenceColumns[job.kind] && !activityKinds.has(job.kind)) {
+            await client.query(`UPDATE mobile_notification_outbox SET status='skipped',locked_at=NULL WHERE id=$1`, [job.id]);
+            continue;
+        }
+        if (activityKinds.has(job.kind)) {
+            const match = /^event:([1-9][0-9]*)$/.exec(job.payload?.activityID || '');
+            const { rows: events } = match ? await client.query(futureEventsSQL + ' AND e.id=$1',[Number(match[1])]) : {rows:[]};
+            const scope = await currentOrganizerScope(client,device.user_id);
+            if (!events[0] || !activityDeliveryAllowed(job.kind,activitySnapshot(events[0]),device,scope,job.metadata)) {
+                await client.query(`UPDATE mobile_notification_outbox SET status='skipped',locked_at=NULL WHERE id=$1`, [job.id]);
+                continue;
+            }
         }
         if (job.kind === 'reminders') {
             const registrationID = String(job.dedupe_key).split(':')[0];
