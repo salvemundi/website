@@ -26,6 +26,7 @@ on:
       - "apps/services/azure-sync-service/**"
       - "apps/services/mail-service/**"
       - "apps/services/azure-management-service/**"
+      - "apps/services/mcp-service/**"
       - "packages/**"
       - "docker-compose.yml"
       - ".github/workflows/v7-stack.yml"
@@ -39,6 +40,7 @@ on:
       - "apps/services/azure-sync-service/**"
       - "apps/services/mail-service/**"
       - "apps/services/azure-management-service/**"
+      - "apps/services/mcp-service/**"
       - "packages/**"
       - "docker-compose.yml"
       - ".github/workflows/v7-stack.yml"
@@ -79,6 +81,7 @@ jobs:
         run: node --experimental-vm-modules --test tests/mobile-admin*.test.mjs tests/mobile-notification-preferences.test.mjs
       - run: pnpm type-check
       - run: pnpm -r lint
+      - run: pnpm --filter=@salvemundi/mcp-service test
 
   build-frontend:
     needs: [prepare, lint]
@@ -113,7 +116,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [finance, azure-sync, mail, azure-management]
+        service: [finance, azure-sync, mail, azure-management, mcp]
         include:
           - service: finance
             file: apps/services/finance-service/Dockerfile
@@ -127,6 +130,9 @@ jobs:
           - service: azure-management
             file: apps/services/azure-management-service/Dockerfile
             image: v7-management
+          - service: mcp
+            file: apps/services/mcp-service/Dockerfile
+            image: v7-mcp
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -302,6 +308,20 @@ jobs:
             echo "REDIS_URL=redis://default:${{ secrets.REDIS_PASSWORD }}@v7-core-redis:6379${REDIS_DB_SUFFIX}" >> .env.${ENV_NAME}
           else
             echo "REDIS_URL=redis://v7-core-redis:6379${REDIS_DB_SUFFIX}" >> .env.${ENV_NAME}
+          fi
+
+          # MCP-server (alleen-lezen Samu Bijbel) is opt-in per GitHub Environment (vars.MCP_ENABLED=true).
+          # Alle MCP_* waarden komen uit de Environment-eigen secrets/vars; er zijn bewust geen defaults,
+          # zodat Acceptance nooit productiecredentials of de productie-SharePointsite gebruikt.
+          if [ "${{ vars.MCP_ENABLED }}" = "true" ]; then
+            echo "COMPOSE_PROFILES=mcp" >> .env.${ENV_NAME}
+            echo "MCP_PUBLIC_URL=${{ vars.MCP_PUBLIC_URL }}" >> .env.${ENV_NAME}
+            echo "MCP_ENTRA_TENANT_ID=${{ secrets.AZURE_WEBSITEV7_TENANT_ID }}" >> .env.${ENV_NAME}
+            echo "MCP_ENTRA_CLIENT_ID=${{ vars.MCP_ENTRA_CLIENT_ID }}" >> .env.${ENV_NAME}
+            echo "MCP_ENTRA_CLIENT_SECRET=${{ secrets.MCP_ENTRA_CLIENT_SECRET }}" >> .env.${ENV_NAME}
+            echo "MCP_SHAREPOINT_SITE_ID=${{ vars.MCP_SHAREPOINT_SITE_ID }}" >> .env.${ENV_NAME}
+            echo "MCP_ALLOWED_PATH_PREFIX=${{ vars.MCP_ALLOWED_PATH_PREFIX || '/' }}" >> .env.${ENV_NAME}
+            echo "MCP_ALLOWED_ORIGINS=${{ vars.MCP_ALLOWED_ORIGINS }}" >> .env.${ENV_NAME}
           fi
 
           docker compose --env-file .env.${ENV_NAME} pull

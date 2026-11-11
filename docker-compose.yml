@@ -272,6 +272,43 @@ services:
 
 
 
+  # Alleen-lezen MCP-server voor de Samu Bijbel. Opt-in via COMPOSE_PROFILES=mcp (zie workflow).
+  # Bewust GEEN env_file: de service krijgt uitsluitend de MCP_* variabelen hieronder, niet de overige stack-secrets.
+  mcp-service:
+    profiles: ["mcp"]
+    container_name: ${COMPOSE_PROJECT_NAME}-mcp
+    image: ghcr.io/salvemundi/v7-mcp:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      - APP_ENV=${ENV_NAME}
+      - MCP_PUBLIC_URL=${MCP_PUBLIC_URL:-}
+      - MCP_ENTRA_TENANT_ID=${MCP_ENTRA_TENANT_ID:-}
+      - MCP_ENTRA_CLIENT_ID=${MCP_ENTRA_CLIENT_ID:-}
+      - MCP_ENTRA_CLIENT_SECRET=${MCP_ENTRA_CLIENT_SECRET:-}
+      - BIJBEL_WRITE_ENABLED=false
+      - MCP_SHAREPOINT_SITE_ID=${MCP_SHAREPOINT_SITE_ID:-}
+      - MCP_ALLOWED_PATH_PREFIX=${MCP_ALLOWED_PATH_PREFIX:-/}
+      - MCP_ALLOWED_ORIGINS=${MCP_ALLOWED_ORIGINS:-}
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    # Alleen proxy-network (bereikbaar voor Nginx Proxy Manager). Geen shared-network: geen toegang tot DB/Redis/Directus.
+    networks:
+      - proxy-network
+
 networks:
   salve-mundi-v7-shared:
     external: true
