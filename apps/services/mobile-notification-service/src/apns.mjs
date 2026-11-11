@@ -8,7 +8,7 @@ export function providerToken(env, now = Date.now()) {
     const header = Buffer.from(JSON.stringify({ alg: 'ES256', kid: env.APNS_KEY_ID })).toString('base64url');
     const payload = Buffer.from(JSON.stringify({ iss: env.APNS_TEAM_ID, iat: Math.floor(now / 1000) })).toString('base64url');
     const input = `${header}.${payload}`;
-    const key = createPrivateKey(env.APNS_PRIVATE_KEY.replace(/\\n/g, '\n'));
+    const key = createPrivateKey(env.APNS_PRIVATE_KEY.replace(/\\+n/g, '\n'));
     const signature = sign('sha256', Buffer.from(input), { key, dsaEncoding: 'ieee-p1363' }).toString('base64url');
     cachedJWT = { keyID: env.APNS_KEY_ID, teamID: env.APNS_TEAM_ID, createdAt: now, value: `${input}.${signature}` };
     return cachedJWT.value;

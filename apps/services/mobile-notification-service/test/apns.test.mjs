@@ -20,6 +20,8 @@ test('APNs PEM can contain literal escaped newline characters from environment i
     const { publicKey, privateKey } = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
     const pem = privateKey.export({ type: 'pkcs8', format: 'pem' });
     const env = { APNS_KEY_ID: 'ESCAPED123', APNS_TEAM_ID: 'TESTTEAM12', APNS_TOPIC: 'nl.salvemundi.ios', APNS_PRIVATE_KEY: pem.replace(/\n/g, '\\n') };
+    assert.equal(env.APNS_PRIVATE_KEY.includes(String.fromCharCode(92) + "n"), true);
+    assert.equal(env.APNS_PRIVATE_KEY.includes(String.fromCharCode(10)), false);
     const token = providerToken(env, Date.parse('2026-11-10T13:00Z'));
     const [header, claims, signature] = token.split('.');
     assert.equal(verify('sha256', Buffer.from(`${header}.${claims}`), { key: publicKey, dsaEncoding: 'ieee-p1363' }, Buffer.from(signature, 'base64url')), true);

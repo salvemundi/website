@@ -1,0 +1,106 @@
+name: Acceptance mobile notifications setup
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        type: string
+        required: true
+      confirm_isolation:
+        type: boolean
+        default: false
+      test_user_ids:
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: acceptance-mobile-notifications-setup
+  cancel-in-progress: false
+
+jobs:
+  setup:
+    # Never make production reachable through this reusable workflow.
+    if: github.ref == 'refs/heads/acceptance' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: Acceptance
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate fixed setup choices
+        env:
+          SETUP_ACTION: ${{ inputs.action }}
+          CONFIRM_ISOLATION: ${{ inputs.confirm_isolation }}
+          TEST_USER_IDS: ${{ inputs.test_user_ids }}
+        run: |
+          python3 - <<'PY'
+          import os,re
+          assert os.environ['SETUP_ACTION'] in {'check','configure','migrate','start','test'}, 'Invalid action'
+          assert all(re.fullmatch(r'[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}',v.strip()) for v in os.environ['TEST_USER_IDS'].split(',') if v.strip()), 'Invalid member UUID list'
+          if os.environ['SETUP_ACTION'] in {'migrate','start','test'}:
+              assert os.environ['CONFIRM_ISOLATION']=='true', 'Explicit isolation confirmation required'
+          PY
+      - name: Connect through existing deployment VPN
+        uses: Alemiz112/netbird-connect@v1
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
+      - name: Prepare existing deployment SSH identity
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          VPN_IP: ${{ secrets.VPN_IP }}
+        run: |
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          for i in {1..30}; do
+            if nc -z -w 1 "$VPN_IP" 22; then exit 0; fi
+            sleep 2
+          done
+          echo 'Deployment connection unavailable.'
+          exit 1
+      - name: Stage only reviewed notification source
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          VPN_IP: ${{ secrets.VPN_IP }}
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
+          target="/opt/salve-mundi-v7/mobile-setup/$GITHUB_SHA"
+          ssh -o StrictHostKeyChecking=yes -o BatchMode=yes -i ~/.ssh/deploy_key "$SSH_USER@$VPN_IP" "umask 077; mkdir -p '$target'"
+          tar -czf "$RUNNER_TEMP/mobile-setup.tgz" \
+            apps/services/mobile-notification-service/package.json \
+            apps/services/mobile-notification-service/Dockerfile \
+            apps/services/mobile-notification-service/src \
+            apps/frontend/src/shared/lib/permissions-config.ts \
+            packages/db/drizzle/mobile_notifications.sql deployment/mobile/setup.py
+          scp -o StrictHostKeyChecking=yes -o BatchMode=yes -i ~/.ssh/deploy_key "$RUNNER_TEMP/mobile-setup.tgz" "$SSH_USER@$VPN_IP:$target/source.tgz"
+          ssh -o StrictHostKeyChecking=yes -o BatchMode=yes -i ~/.ssh/deploy_key "$SSH_USER@$VPN_IP" "tar -xzf '$target/source.tgz' -C '$target'; rm '$target/source.tgz'"
+      - name: Run focused acceptance setup action
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          VPN_IP: ${{ secrets.VPN_IP }}
+          SETUP_ACTION: ${{ inputs.action }}
+          CONFIRM_ISOLATION: ${{ inputs.confirm_isolation }}
+          TEST_USER_IDS: ${{ inputs.test_user_ids }}
+          APNS_KEY_ID: ${{ secrets.APNS_KEY_ID }}
+          APNS_TEAM_ID: ${{ secrets.APNS_TEAM_ID }}
+          APNS_PRIVATE_KEY: ${{ secrets.APNS_PRIVATE_KEY }}
+          TEST_USER_EMAIL: ${{ secrets.MOBILE_NOTIFICATION_TEST_EMAIL }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' | ssh -o StrictHostKeyChecking=yes -o BatchMode=yes -i ~/.ssh/deploy_key "$SSH_USER@$VPN_IP" "python3 /opt/salve-mundi-v7/mobile-setup/$GITHUB_SHA/deployment/mobile/setup.py"
+          import json,os
+          action=os.environ['SETUP_ACTION']
+          payload={'action':action,'commit':os.environ['GITHUB_SHA'],'confirm_isolation':os.environ['CONFIRM_ISOLATION']=='true'}
+          if action=='configure':
+              payload.update(key_id=os.environ['APNS_KEY_ID'],team_id=os.environ['APNS_TEAM_ID'],private_key=os.environ['APNS_PRIVATE_KEY'],test_user_ids=os.environ['TEST_USER_IDS'],test_user_email=os.environ['TEST_USER_EMAIL'])
+          print(json.dumps(payload))
+          PY
+      - name: Remove runner SSH material
+        if: always()
+        run: rm -f ~/.ssh/deploy_key ~/.ssh/known_hosts "$RUNNER_TEMP/mobile-setup.tgz"

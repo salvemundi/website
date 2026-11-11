@@ -19,7 +19,7 @@ export function configurationChecks(env) {
     add('expected app topic', env.APNS_TOPIC === 'nl.salvemundi.ios');
     let keyValid = false;
     try {
-        const key = createPrivateKey((env.APNS_PRIVATE_KEY || '').replace(/\\n/g, '\n'));
+        const key = createPrivateKey((env.APNS_PRIVATE_KEY || '').replace(/\\+n/g, '\n'));
         keyValid = key.type === 'private' && key.asymmetricKeyType === 'ec' && key.asymmetricKeyDetails?.namedCurve === 'prime256v1';
     } catch { /* Never print crypto errors or secret material. */ }
     add('APNs private key is ES256 compatible', keyValid);
