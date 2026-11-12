@@ -271,6 +271,21 @@ services:
       - proxy-network
 
 
+  # Wie is de mol (kamp): losstaande Python-app, bereikbaar via de reverse proxy als
+  # ${COMPOSE_PROJECT_NAME}-wieisdemol:8080 (acc-mol.salvemundi.nl voor acceptance, mol.salvemundi.nl voor productie). Geen toegang tot de database.
+  wieisdemol:
+    container_name: ${COMPOSE_PROJECT_NAME}-wieisdemol
+    image: ghcr.io/salvemundi/v7-wieisdemol:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      - MOLPROEF_URL=${WIEISDEMOL_URL:-}
+      - MOLPROEF_DATA=/data
+      - TRUST_PROXY=1
+      - TZ=Europe/Amsterdam
+    volumes:
+      - wieisdemol_data:/data
+    networks:
+      - proxy-network
 
 networks:
   salve-mundi-v7-shared:
@@ -279,6 +294,7 @@ networks:
     external: true
 
 volumes:
+  wieisdemol_data:
   v7_next_cache:
   v7_kuma_data:
 
