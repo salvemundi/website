@@ -32,6 +32,7 @@ export const PUBLIC_ROUTES: string[] = [
     ROUTES.CLUBS,
     ROUTES.ACTIVITIES,
     ROUTES.PUB_CRAWL,
+    '/kroegentocht-scanner',
     ROUTES.COBO,
     ROUTES.INTRO,
     ROUTES.INTRO_QR_CODE,
