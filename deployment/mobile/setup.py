@@ -35,6 +35,11 @@ def validate(payload):
         raise ValueError('Invalid setup action')
     if not re.fullmatch(r'[0-9a-f]{40}', payload.get('commit', '')):
         raise ValueError('Invalid source revision')
+    shared = payload.get('shared_database_pilot_ack') is True
+    if shared and (payload['action'] == 'migrate' or not payload.get('test_user_email') or payload.get('test_user_ids', '').strip()):
+        raise ValueError('Shared pilot requires the single approved email and never permits migrations')
+    if shared and payload.get('confirm_isolation') is True:
+        raise ValueError('Shared pilot must not claim database isolation')
     if payload['action'] == 'configure':
         if not all(re.fullmatch(r'[A-Z0-9]{10}', payload.get(key, '')) for key in ['key_id', 'team_id']):
             raise ValueError('Apple identifiers missing or invalid')
@@ -46,7 +51,7 @@ def validate(payload):
         users = [u for u in payload.get('test_user_ids', '').split(',') if u.strip()]
         if not all(re.fullmatch(r'[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}', u.strip()) for u in users):
             raise ValueError('Explicit test-member UUIDs required')
-    if payload['action'] in {'migrate', 'start', 'test'} and payload.get('confirm_isolation') is not True:
+    if payload['action'] in {'migrate', 'start', 'test'} and not shared and payload.get('confirm_isolation') is not True:
         raise ValueError('Explicit database-isolation confirmation required')
 
 
@@ -59,7 +64,7 @@ def run(command, **kwargs):
 
 
 DATABASE_KEYS = {'DATABASE_URL', 'DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'}
-MOBILE_KEYS = {'ENV_NAME', 'MOBILE_API_ENABLED', 'MOBILE_NOTIFICATIONS_ENABLED', 'MOBILE_NOTIFICATION_ALLOWED_USER_IDS', 'MOBILE_APNS_ALLOW_PRODUCTION', 'APNS_KEY_ID', 'APNS_TEAM_ID', 'APNS_TOPIC', 'APNS_PRIVATE_KEY'}
+MOBILE_KEYS = {'ENV_NAME', 'MOBILE_API_ENABLED', 'MOBILE_NOTIFICATIONS_ENABLED', 'MOBILE_NOTIFICATION_ALLOWED_USER_IDS', 'MOBILE_APNS_ALLOW_PRODUCTION', 'APNS_KEY_ID', 'APNS_TEAM_ID', 'APNS_TOPIC', 'APNS_PRIVATE_KEY', 'MOBILE_NOTIFICATION_SHARED_DB_PILOT', 'MOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME', 'MOBILE_NOTIFICATION_SHARED_DB_USER_ID'}
 
 
 def read_selected_environment(path, allowed):
@@ -119,6 +124,11 @@ def configure(payload):
               'MOBILE_APNS_ALLOW_PRODUCTION': 'false', 'APNS_KEY_ID': payload['key_id'],
               'APNS_TEAM_ID': payload['team_id'], 'APNS_TOPIC': 'nl.salvemundi.ios',
               'APNS_PRIVATE_KEY': key.replace('\n', '\\n')}
+    shared = payload.get('shared_database_pilot_ack') is True
+    values['MOBILE_NOTIFICATION_SHARED_DB_PILOT'] = 'true' if shared else 'false'
+    if shared:
+        values['MOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME'] = payload['_shared_database_name']
+        values['MOBILE_NOTIFICATION_SHARED_DB_USER_ID'] = payload['_shared_user_id']
     content = ''.join(f'{key}={value}\n' for key, value in values.items())
     temporary = ROOT / '.env.mobile-acc.setup-tmp'
     fd = os.open(temporary, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
@@ -150,22 +160,44 @@ def execute(payload, scope, image, environment_file):
     action = payload['action']
     production = database_name(ROOT / '.env.prod')
     acceptance = database_name(ROOT / '.env.acc')
-    if production == acceptance:
+    shared = payload.get('shared_database_pilot_ack') is True
+    if shared and action == 'migrate':
+        raise ValueError('Shared pilot requires the single approved email and never permits migrations')
+    if shared and production != acceptance:
+        raise ValueError('Shared pilot requires an explicitly verified shared database')
+    if production == acceptance and not shared:
+        if action == 'check':
+            # Inspect schema only: the doctor uses BEGIN READ ONLY / ROLLBACK.
+            # Keep a failing readiness result: this database is still not isolated.
+            command = docker_command(image, environment_file, production, False)
+            result = subprocess.run(command + ['node', 'src/readiness.mjs', '--database'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            for line in result.stdout.decode(errors='replace').splitlines():
+                if line.startswith(('PASS ', 'FAIL ', 'No notifications sent.')):
+                    print(line)
+            raise RuntimeError('Shared schema inspected; configuration and delivery remain blocked')
         raise ValueError('Acceptance and production database are shared; migration and startup refused')
     isolated = payload.get('confirm_isolation') is True
     command = docker_command(image, environment_file, production, isolated)
     # Compare actual connected DB with BOTH existing environment identifiers.
     verify = "import pg from 'pg';const c=new pg.Client({connectionString:process.env.DATABASE_URL,host:process.env.DB_HOST,port:Number(process.env.DB_PORT||5432),database:process.env.DB_NAME,user:process.env.DB_USER,password:process.env.DB_PASSWORD,connectionTimeoutMillis:5000});try{await c.connect();const r=await c.query('SELECT current_database() AS name');if(r.rows[0]?.name!==process.env.EXPECTED_ACC_DB||r.rows[0]?.name===process.env.PRODUCTION_DB_NAME)process.exitCode=1}finally{await c.end()}"
+    if shared:
+        verify = verify.replace('r.rows[0]?.name===process.env.PRODUCTION_DB_NAME', 'r.rows[0]?.name!==process.env.PRODUCTION_DB_NAME')
     verify_command = command[:-1] + ['--env', f'EXPECTED_ACC_DB={acceptance}', image, 'node', '--input-type=module', '-e', verify]
     run(verify_command)
-    print('PASS actual acceptance database differs from production')
-    if action == 'configure' and payload.get('test_user_email'):
+    print('PASS explicit shared-database pilot verified; database is NOT isolated' if shared else 'PASS actual acceptance database differs from production')
+    if (action == 'configure' or shared) and payload.get('test_user_email'):
         lookup = "import pg from 'pg';let s='';for await(const c of process.stdin)s+=c;const email=JSON.parse(s).email;const c=new pg.Client({connectionString:process.env.DATABASE_URL,host:process.env.DB_HOST,port:Number(process.env.DB_PORT||5432),database:process.env.DB_NAME,user:process.env.DB_USER,password:process.env.DB_PASSWORD});try{await c.connect();await c.query('BEGIN READ ONLY');const r=await c.query(\"SELECT id::text AS id FROM directus_users WHERE lower(email)=lower($1) AND status='active' LIMIT 2\",[email]);if(r.rows.length!==1)process.exitCode=1;else process.stdout.write(JSON.stringify({id:r.rows[0].id}));await c.query('ROLLBACK')}finally{await c.end()}"
         result = run(command[:-1] + ['-i', image, 'node', '--input-type=module', '-e', lookup], input=json.dumps({'email': payload['test_user_email']}).encode())
         resolved = json.loads(result)['id']
         if not re.fullmatch(r'[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}', resolved):
             raise ValueError('Test member could not be resolved')
         payload = dict(payload, test_user_ids=resolved)
+        if shared:
+            payload = dict(payload, _shared_user_id=resolved, _shared_database_name=acceptance)
+            if action != 'configure':
+                configured = read_selected_environment(Path(environment_file), MOBILE_KEYS)
+                if configured.get('MOBILE_NOTIFICATION_SHARED_DB_PILOT') != 'true' or configured.get('MOBILE_NOTIFICATION_SHARED_DB_USER_ID') != resolved or configured.get('MOBILE_NOTIFICATION_ALLOWED_USER_IDS') != resolved or configured.get('MOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME') != acceptance or configured.get('MOBILE_APNS_ALLOW_PRODUCTION') != 'false':
+                    raise ValueError('Shared pilot configuration must match the single approved account and sandbox')
     if action == 'configure':
         # Validate the key cryptographically before persisting secrets.
         run(['docker', 'run', '--rm', '--network=none', '-i', image, 'node', '--input-type=module', '-e',
@@ -214,7 +246,7 @@ if __name__ == '__main__':
     try:
         main(json.load(sys.stdin))
     except ValueError as error:
-        safe = {'Acceptance and production database are shared; migration and startup refused', 'Explicit database-isolation confirmation required', 'Required database identifier missing', 'Test member could not be resolved'}
+        safe = {'Acceptance and production database are shared; migration and startup refused', 'Explicit database-isolation confirmation required', 'Required database identifier missing', 'Test member could not be resolved', 'Shared pilot requires the single approved email and never permits migrations', 'Shared pilot must not claim database isolation', 'Shared pilot requires an explicitly verified shared database', 'Shared pilot configuration must match the single approved account and sandbox'}
         print('FAIL ' + (str(error) if str(error) in safe else 'Setup configuration is invalid or incomplete'))
         sys.exit(1)
     except Exception:

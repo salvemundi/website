@@ -1,16 +1,21 @@
 // Explicit, single-account sandbox pilot. This module is never run by the worker.
 import { pathToFileURL } from 'node:url';
 import { configurationChecks, databaseChecks } from './readiness.mjs';
-import { allowedUserIds, deliveryEnabled } from './policy.mjs';
+import { allowedUserIds, deliveryEnabled, sharedPilotAllowed } from './policy.mjs';
 import { getWorkerSessionColumns } from './session-columns.mjs';
 import { sendAPNs } from './apns.mjs';
 
 const topic = 'nl.salvemundi.ios';
 const unavailable = () => ({ status: 'unavailable' });
+export function pilotDestinationAllowed(env) {
+    const users = allowedUserIds(env);
+    if (users.length !== 1 || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(users[0]) || env.MOBILE_APNS_ALLOW_PRODUCTION !== 'false') return false;
+    return env.MOBILE_NOTIFICATION_SHARED_DB_PILOT !== 'true' || sharedPilotAllowed(env);
+}
 export async function testDelivery(client, env, send = sendAPNs) {
     const users = allowedUserIds(env);
     // One explicit member and sandbox only, even if the regular worker permits TestFlight.
-    if (!deliveryEnabled(env) || users.length !== 1 || env.APNS_TOPIC !== topic || env.MOBILE_APNS_ALLOW_PRODUCTION !== 'false'
+    if (!deliveryEnabled(env) || !pilotDestinationAllowed(env) || env.APNS_TOPIC !== topic || env.MOBILE_APNS_ALLOW_PRODUCTION !== 'false'
         || !configurationChecks(env).every(check => check.passed)) return unavailable();
     try {
         // Repeat the doctor's read-only checks here so invoking the CLI directly is safe too.
@@ -37,7 +42,7 @@ export async function run(env = process.env, args = process.argv.slice(2)) {
     if (args.length) return { status: 'unavailable' };
     let client;
     try {
-        if (!deliveryEnabled(env) || env.MOBILE_APNS_ALLOW_PRODUCTION !== 'false' || allowedUserIds(env).length !== 1
+        if (!deliveryEnabled(env) || !pilotDestinationAllowed(env)
             || !configurationChecks(env).every(check => check.passed)) return unavailable();
         const { default: pg } = await import('pg');
         client = new pg.Client(env.DATABASE_URL ? { connectionString: env.DATABASE_URL, connectionTimeoutMillis: 5000 } : {

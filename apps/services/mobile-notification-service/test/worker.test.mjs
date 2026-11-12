@@ -51,7 +51,7 @@ test('transient failure returns to durable pending; eighth attempt ends retries'
 test('APNs expired device revokes the device and queued jobs via foreign-key cascade', async () => {
     const client = deliveryDB(device, job);
     await deliver(client, env, async () => ({ status: 410, reason: 'Unregistered' }));
-    assert.deepEqual(client.writes.find(write => write.sql.includes('DELETE FROM mobile_devices')).args, [device.id]);
+    assert.deepEqual(client.writes.find(write => write.sql.includes('DELETE FROM mobile_devices')).args, [device.id, [userId], false]);
 });
 test('reconciliation baseline suppresses history but subsequent event changes deep link correctly', async () => {
     let initialized = false;

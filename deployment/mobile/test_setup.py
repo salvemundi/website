@@ -76,6 +76,20 @@ class SetupTests(unittest.TestCase):
             # Only building the isolated image was allowed; no query, migration or run.
             self.assertTrue(all(call.args[0][:2] == ['docker', 'build'] for call in run.call_args_list))
 
+    def test_shared_check_only_runs_read_only_doctor(self):
+        import subprocess
+        with tempfile.TemporaryDirectory() as directory, patch.object(setup, 'ROOT', Path(directory)), patch.object(setup, 'run') as run, patch.object(setup.subprocess, 'run') as process:
+            (setup.ROOT / 'mobile-setup' / ('a' * 40)).mkdir(parents=True)
+            for filename in ['.env.acc', '.env.prod']:
+                (setup.ROOT / filename).write_text('DB_NAME=shared\n')
+            process.return_value = subprocess.CompletedProcess([], 1, b'FAIL database is shared\nPASS required table mobile_devices\n', b'')
+            with self.assertRaisesRegex(RuntimeError, 'Shared schema inspected'):
+                setup.main({'action': 'check', 'commit': 'a' * 40})
+            self.assertEqual(run.call_count, 1)
+            self.assertEqual(run.call_args.args[0][:2], ['docker', 'build'])
+            self.assertEqual(process.call_count, 1)
+            self.assertEqual(process.call_args.args[0][-3:], ['node', 'src/readiness.mjs', '--database'])
+
     def test_only_one_exact_email_is_resolved_with_bound_query(self):
         source = Path(__file__).with_name('setup.py').read_text()
         self.assertIn("WHERE lower(email)=lower($1) AND status='active' LIMIT 2", source)
@@ -97,6 +111,89 @@ class SetupTests(unittest.TestCase):
         self.assertIn("inputs.mobile_setup_action == 'none'", parent)
         self.assertIn('uses: ./.github/workflows/mobile-notifications-setup.yml', parent)
         self.assertNotIn('pull_request_target', workflow)
+
+
+class SharedPilotTests(unittest.TestCase):
+    user = '00000000-0000-0000-0000-000000000001'
+
+    def payload(self, action='check'):
+        return {'action':action,'commit':'a'*40,'shared_database_pilot_ack':True,'test_user_email':'approved@example.test','test_user_ids':'','key_id':'ABCDEFGHIJ','team_id':'ABCDEFGHIJ','private_key':'-----BEGIN PRIVATE KEY-----\nfixture\n-----END PRIVATE KEY-----'}
+
+    def test_pilot_forbids_migration_false_isolation_and_other_recipients(self):
+        for patch in [{'action':'migrate'}, {'confirm_isolation':True}, {'test_user_email':''}, {'test_user_ids':self.user}]:
+            with self.assertRaises(ValueError): setup.validate(dict(self.payload(),**patch))
+        for action in ['check','configure','start','test']:
+            setup.validate(self.payload(action))
+
+    def test_shared_configuration_persists_only_bound_single_account_and_stays_disabled(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(setup,'ROOT',Path(directory)):
+            payload=dict(self.payload('configure'),test_user_ids=self.user,_shared_user_id=self.user,_shared_database_name='shared')
+            setup.configure(payload)
+            values=setup.read_selected_environment(setup.ROOT/'.env.mobile-acc',setup.MOBILE_KEYS)
+            self.assertEqual(values['MOBILE_NOTIFICATIONS_ENABLED'],'false')
+            self.assertEqual(values['MOBILE_APNS_ALLOW_PRODUCTION'],'false')
+            self.assertEqual(values['MOBILE_NOTIFICATION_SHARED_DB_PILOT'],'true')
+            self.assertEqual(values['MOBILE_NOTIFICATION_SHARED_DB_USER_ID'],self.user)
+            self.assertEqual(values['MOBILE_NOTIFICATION_ALLOWED_USER_IDS'],self.user)
+            self.assertEqual(values['MOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME'],'shared')
+
+    def test_shared_check_revalidates_approved_account_and_never_starts_worker(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(setup,'ROOT',Path(directory)):
+            root=setup.ROOT
+            root.joinpath('.env.acc').write_text('DB_NAME=shared\n')
+            root.joinpath('.env.prod').write_text('DB_NAME=shared\n')
+            environment=root/'normalized.env'
+            environment.write_text('MOBILE_NOTIFICATION_SHARED_DB_PILOT=true\nMOBILE_NOTIFICATION_SHARED_DB_USER_ID='+self.user+'\nMOBILE_NOTIFICATION_ALLOWED_USER_IDS='+self.user+'\nMOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME=shared\nMOBILE_APNS_ALLOW_PRODUCTION=false\n')
+            def command_result(command,**kwargs):
+                if any('SELECT id::text' in part for part in command):return ('{"id":"'+self.user+'"}').encode()
+                return b''
+            with patch.object(setup,'run',side_effect=command_result) as run, patch.object(setup.subprocess,'run',return_value=type('Result',(),{'returncode':0,'stdout':b'PASS fixture','stderr':b''})()):
+                setup.execute(self.payload(),root,'image',str(environment))
+                self.assertFalse(any('src/server.mjs' in call.args[0] or '--detach' in call.args[0] or 'rm' in call.args[0] for call in run.call_args_list))
+                self.assertTrue(any('SELECT id::text' in part for call in run.call_args_list for part in call.args[0]))
+                environment.write_text(environment.read_text().replace('MOBILE_NOTIFICATION_ALLOWED_USER_IDS='+self.user,'MOBILE_NOTIFICATION_ALLOWED_USER_IDS=00000000-0000-0000-0000-000000000002'))
+                with self.assertRaises(ValueError):setup.execute(self.payload(),root,'image',str(environment))
+
+
+    def test_persisted_flag_never_bypasses_fresh_dispatch_ack(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(setup,'ROOT',Path(directory)), patch.object(setup,'run') as run:
+            root=setup.ROOT
+            root.joinpath('mobile-setup','a'*40).mkdir(parents=True)
+            root.joinpath('.env.acc').write_text('DB_NAME=shared\n')
+            root.joinpath('.env.prod').write_text('DB_NAME=shared\n')
+            root.joinpath('.env.mobile-acc').write_text('MOBILE_NOTIFICATION_SHARED_DB_PILOT=true\nMOBILE_NOTIFICATION_SHARED_DB_USER_ID='+self.user+'\nMOBILE_NOTIFICATION_ALLOWED_USER_IDS='+self.user+'\nMOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME=shared\nMOBILE_APNS_ALLOW_PRODUCTION=false\n')
+            for action in ['configure','start','test']:
+                payload=dict(self.payload(action),shared_database_pilot_ack=False,confirm_isolation=True)
+                with self.assertRaises(ValueError): setup.main(payload)
+            self.assertTrue(all(call.args[0][:2]==['docker','build'] for call in run.call_args_list))
+
+    def test_shared_action_rejects_stale_database_anchor_and_account(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(setup,'ROOT',Path(directory)):
+            root=setup.ROOT
+            root.joinpath('.env.acc').write_text('DB_NAME=shared\n')
+            root.joinpath('.env.prod').write_text('DB_NAME=shared\n')
+            environment=root/'normalized.env'
+            baseline={'MOBILE_NOTIFICATION_SHARED_DB_PILOT':'true','MOBILE_NOTIFICATION_SHARED_DB_USER_ID':self.user,'MOBILE_NOTIFICATION_ALLOWED_USER_IDS':self.user,'MOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME':'shared','MOBILE_APNS_ALLOW_PRODUCTION':'false'}
+            def command_result(command,**kwargs):
+                if any('SELECT id::text' in part for part in command):return ('{"id":"'+self.user+'"}').encode()
+                return b''
+            for patch_value in [{'MOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME':'wrong'}, {'MOBILE_NOTIFICATION_SHARED_DB_USER_ID':'00000000-0000-0000-0000-000000000002'}, {'MOBILE_APNS_ALLOW_PRODUCTION':'true'}, {'MOBILE_NOTIFICATION_SHARED_DB_PILOT':'false'}]:
+                values=dict(baseline,**patch_value)
+                environment.write_text(''.join(key+'='+value+'\n' for key,value in values.items()))
+                with patch.object(setup,'run',side_effect=command_result), patch.object(setup.subprocess,'run') as doctor:
+                    with self.assertRaises(ValueError):setup.execute(self.payload('start'),root,'image',str(environment))
+                    doctor.assert_not_called()
+
+    def test_workflow_pilot_email_is_secret_only_and_ack_defaults_false(self):
+        repository=Path(__file__).resolve().parents[2]
+        workflow=(repository/'.github/workflows/mobile-notifications-setup.yml').read_text()
+        caller=(repository/'.github/workflows/v7-stack.yml').read_text()
+        self.assertIn('TEST_USER_EMAIL: ${{ secrets.MOBILE_NOTIFICATION_TEST_EMAIL }}',workflow)
+        self.assertNotIn('inputs.test_user_email',workflow)
+        self.assertIn("assert not os.environ['TEST_USER_IDS'].strip()",workflow)
+        self.assertIn("assert os.environ['SETUP_ACTION'] != 'migrate'",workflow)
+        self.assertIn('shared_database_pilot_ack:\n        type: boolean\n        default: false',workflow)
+        self.assertIn('default: false',caller.split('mobile_shared_database_pilot_ack:',1)[1].split('mobile_test_user_ids:',1)[0])
 
 
 if __name__ == '__main__':

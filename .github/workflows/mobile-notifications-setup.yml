@@ -9,6 +9,9 @@ on:
       confirm_isolation:
         type: boolean
         default: false
+      shared_database_pilot_ack:
+        type: boolean
+        default: false
       test_user_ids:
         type: string
         default: ''
@@ -33,13 +36,19 @@ jobs:
         env:
           SETUP_ACTION: ${{ inputs.action }}
           CONFIRM_ISOLATION: ${{ inputs.confirm_isolation }}
+          SHARED_PILOT_ACK: ${{ inputs.shared_database_pilot_ack }}
           TEST_USER_IDS: ${{ inputs.test_user_ids }}
         run: |
           python3 - <<'PY'
           import os,re
           assert os.environ['SETUP_ACTION'] in {'check','configure','migrate','start','test'}, 'Invalid action'
           assert all(re.fullmatch(r'[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}',v.strip()) for v in os.environ['TEST_USER_IDS'].split(',') if v.strip()), 'Invalid member UUID list'
-          if os.environ['SETUP_ACTION'] in {'migrate','start','test'}:
+          shared=os.environ['SHARED_PILOT_ACK']=='true'
+          if shared:
+              assert os.environ['SETUP_ACTION'] != 'migrate', 'Shared pilot never permits migrations'
+              assert os.environ['CONFIRM_ISOLATION'] != 'true', 'Shared pilot must not claim isolation'
+              assert not os.environ['TEST_USER_IDS'].strip(), 'Shared pilot requires the approved secret email only'
+          if not shared and os.environ['SETUP_ACTION'] in {'migrate','start','test'}:
               assert os.environ['CONFIRM_ISOLATION']=='true', 'Explicit isolation confirmation required'
           PY
       - name: Connect through existing deployment VPN
@@ -86,6 +95,7 @@ jobs:
           VPN_IP: ${{ secrets.VPN_IP }}
           SETUP_ACTION: ${{ inputs.action }}
           CONFIRM_ISOLATION: ${{ inputs.confirm_isolation }}
+          SHARED_PILOT_ACK: ${{ inputs.shared_database_pilot_ack }}
           TEST_USER_IDS: ${{ inputs.test_user_ids }}
           APNS_KEY_ID: ${{ secrets.APNS_KEY_ID }}
           APNS_TEAM_ID: ${{ secrets.APNS_TEAM_ID }}
@@ -96,7 +106,9 @@ jobs:
           python3 - <<'PY' | ssh -o StrictHostKeyChecking=yes -o BatchMode=yes -i ~/.ssh/deploy_key "$SSH_USER@$VPN_IP" "python3 /opt/salve-mundi-v7/mobile-setup/$GITHUB_SHA/deployment/mobile/setup.py"
           import json,os
           action=os.environ['SETUP_ACTION']
-          payload={'action':action,'commit':os.environ['GITHUB_SHA'],'confirm_isolation':os.environ['CONFIRM_ISOLATION']=='true'}
+          payload={'action':action,'commit':os.environ['GITHUB_SHA'],'confirm_isolation':os.environ['CONFIRM_ISOLATION']=='true','shared_database_pilot_ack':os.environ['SHARED_PILOT_ACK']=='true'}
+          if payload['shared_database_pilot_ack']:
+              payload['test_user_email']=os.environ['TEST_USER_EMAIL']
           if action=='configure':
               payload.update(key_id=os.environ['APNS_KEY_ID'],team_id=os.environ['APNS_TEAM_ID'],private_key=os.environ['APNS_PRIVATE_KEY'],test_user_ids=os.environ['TEST_USER_IDS'],test_user_email=os.environ['TEST_USER_EMAIL'])
           print(json.dumps(payload))

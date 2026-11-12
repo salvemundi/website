@@ -72,9 +72,12 @@ export async function registerMobileActivity(request: Request, id: string) {
     }
     const result = await signupForActivityForUser({
         event_id: Number(activity.id), name: user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Lid',
-        email: user.email, phoneNumber: user.phone_number || ''
+        email: user.email, phoneNumber: /^\+[1-9][0-9\s\-()]{6,14}$/.test(user.phone_number || '') ? String(user.phone_number) : ''
     }, { user }, `${origin()}/api/mobile/v1/payment-return`);
-    if (!result.success) throw new MobileError('registration_failed', 'error' in result && result.error ? result.error : 'Inschrijving niet gelukt.', 409);
+    if (!result.success) {
+        const fieldErrors = 'errors' in result && result.errors ? Object.values(result.errors as Record<string, string[] | undefined>).flat().filter(Boolean) : [];
+        throw new MobileError('registration_failed', 'error' in result && result.error ? result.error : fieldErrors[0] || 'Inschrijving niet gelukt.', 409);
+    }
     return mobileResponse({ registrationID: String(result.signupId), checkoutURL: 'checkoutUrl' in result ? result.checkoutUrl : null, status: 'checkoutUrl' in result ? 'open' : 'paid' }, 201);
 }
 export async function mobileTickets(request: Request) {
