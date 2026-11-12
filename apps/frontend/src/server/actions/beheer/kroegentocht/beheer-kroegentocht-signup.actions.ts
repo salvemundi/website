@@ -7,6 +7,8 @@ import {
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
+import QRCode from 'qrcode';
+import { z } from 'zod';
 import { fetchPubCrawlSignupsDb, fetchPubCrawlSignupByIdDb, updatePubCrawlSignupDb, deletePubCrawlSignupDb } from '@/server/internal/kroegentocht/kroegentocht-signup-db.utils';;
 import { requireKroegAdmin } from './beheer-kroegentocht-event.actions';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -273,3 +275,73 @@ export async function createManualPubCrawlSignup(
 
 
 
+
+export async function resendPubCrawlTicketEmail(signupId: number): Promise<{ success: boolean; error?: string }> {
+    await requireKroegAdmin();
+    if (!Number.isSafeInteger(signupId) || signupId <= 0) {
+        return { success: false, error: 'Ongeldige aanmelding' };
+    }
+
+    try {
+        const signup = await db.select({
+            name: schema.pub_crawl_signups.name,
+            email: schema.pub_crawl_signups.email,
+            paymentStatus: schema.pub_crawl_signups.payment_status,
+            amountTickets: schema.pub_crawl_signups.amount_tickets,
+            eventName: schema.pub_crawl_events.name,
+            whatsappCommunityUrl: schema.pub_crawl_events.whatsapp_community_url
+        }).from(schema.pub_crawl_signups)
+            .leftJoin(schema.pub_crawl_events, eq(schema.pub_crawl_signups.pub_crawl_event_id, schema.pub_crawl_events.id))
+            .where(eq(schema.pub_crawl_signups.id, signupId)).limit(1).then(rows => rows.at(0));
+
+        if (!signup) return { success: false, error: 'Aanmelding niet gevonden' };
+        if (signup.paymentStatus !== 'paid') {
+            return { success: false, error: 'Alleen betaalde aanmeldingen kunnen tickets ontvangen' };
+        }
+        const email = z.string().email().safeParse(signup.email?.trim());
+        if (!email.success) return { success: false, error: 'De aanmelding heeft geen geldig e-mailadres' };
+
+        // Select only email fields: ticket IDs are BigInts and cannot be serialized to JSON.
+        const tickets = await db.select({
+            name: schema.pub_crawl_tickets.name,
+            qrToken: schema.pub_crawl_tickets.qr_token
+        }).from(schema.pub_crawl_tickets).where(eq(schema.pub_crawl_tickets.signup_id, signupId));
+        if (!tickets.length || tickets.length !== signup.amountTickets || tickets.some(ticket => !ticket.qrToken)) {
+            return { success: false, error: 'Tickets ontbreken of zijn onvolledig. Controleer de aanmelding.' };
+        }
+
+        const mailUrl = process.env.MAIL_SERVICE_URL;
+        const token = (process.env.INTERNAL_SERVICE_TOKEN || '').replace(/^"|"$/g, '').trim();
+        if (!mailUrl || !token) throw new Error('Mail service configuration missing');
+
+        const response = await fetch(`${mailUrl}/api/mail/send`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            signal: AbortSignal.timeout(15000),
+            body: JSON.stringify({
+                to: email.data,
+                templateId: 'pub_crawl_ticket',
+                data: {
+                    firstName: (signup.name || 'Deelnemer').split(' ')[0],
+                    email: email.data,
+                    signupId,
+                    eventName: signup.eventName || 'Kroegentocht',
+                    whatsappCommunityUrl: signup.whatsappCommunityUrl,
+                    totalTickets: tickets.length,
+                    tickets: await Promise.all(tickets.map(async ticket => ({
+                        name: ticket.name,
+                        qrDataUrl: await QRCode.toDataURL(ticket.qrToken || '', {
+                            errorCorrectionLevel: 'M', width: 300, margin: 2,
+                            color: { dark: '#5e2b52', light: '#ffffff' }
+                        })
+                    })))
+                }
+            })
+        });
+        if (!response.ok) throw new Error(`Mail service returned ${response.status}`);
+        return { success: true };
+    } catch (error) {
+        safeConsoleError('[kroegentocht-signup.actions.ts][resendPubCrawlTicketEmail]', error);
+        return { success: false, error: 'Ticketmail kon niet worden klaargezet. Probeer het later opnieuw.' };
+    }
+}

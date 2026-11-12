@@ -1,6 +1,7 @@
 'use client';
 
 import { Edit, Mail, Trash } from 'lucide-react';
+import ResendTicketEmailButton from './ResendTicketEmailButton';
 import GroupSelectDropdown from './GroupSelectDropdown';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
@@ -128,6 +129,7 @@ export default function SignupTableView({
                                                 )}
 
                                                 <div className="flex shrink-0 items-center gap-1">
+                                                    <ResendTicketEmailButton signupId={Number(signup.id)} email={signup.email} paid={signup.payment_status === 'paid'} />
                                                     <button
                                                         onClick={() => signup.id && onEdit(signup.id)}
                                                         className="icon-button cursor-pointer rounded-md p-1.5 text-(--text-muted) transition-all hover:bg-(--theme-purple)/10 hover:text-(--theme-purple)"

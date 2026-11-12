@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Crown, Plus, Users, X } from 'lucide-react';
+import ResendTicketEmailButton from './ResendTicketEmailButton';
 import GroupSelectDropdown from './GroupSelectDropdown';
 import AddLeaderForm from './AddLeaderForm';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
@@ -219,6 +220,15 @@ export default function GroupCard({
                         </div>
                     )}
                 </div>
+            </div>
+
+            <div className="mt-4 space-y-2 border-t border-(--border-color)/10 pt-3">
+                {groupSignups.map(signup => (
+                    <div key={String(signup.id)} className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-xs text-(--text-muted)">{signup.name}</span>
+                        <ResendTicketEmailButton signupId={Number(signup.id)} email={signup.email} paid={signup.payment_status === 'paid'} />
+                    </div>
+                ))}
             </div>
 
             {/* Action to add a leader */}
