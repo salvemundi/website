@@ -54,7 +54,6 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
         let busy = false;
         let lastToken = '';
         let lastSeen = 0;
-        let timer: ReturnType<typeof setTimeout> | undefined;
         const boot = cameraQueue.current.then(async () => {
             if (isDisposed()) return;
             if (!window.isSecureContext || typeof navigator.mediaDevices === 'undefined' || typeof navigator.mediaDevices.getUserMedia !== 'function') {
@@ -86,7 +85,7 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
                     if (!isDisposed()) setResult({ status: 'error', message: 'Scannen mislukt. Controleer je verbinding en probeer de code opnieuw.' });
                 }).finally(() => {
                     if (isDisposed()) return;
-                    timer = setTimeout(() => { setResult(null); busy = false; }, 2200);
+                    busy = false;
                 });
             }, () => {});
             if (!isDisposed()) setReady(true);
@@ -100,7 +99,6 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
         cameraQueue.current = handledBoot;
         return () => {
             disposed = true;
-            if (timer) clearTimeout(timer);
             // Wait for pending permission/start requests before releasing the camera.
             // A replacement camera starts only after this cleanup has finished.
             cameraQueue.current = handledBoot.then(async () => {
@@ -117,6 +115,7 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
         setError('');
         setResult(null);
         setFacing(value => value === 'environment' ? 'user' : 'environment');
+        setRunning(true);
     };
     const successful = result?.status === 'success';
     const warning = result?.status === 'duplicate' || result?.status === 'wrong-group';
@@ -144,19 +143,21 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
                 <p className="max-w-sm text-base text-gray-200">{error || (running ? 'Camera openen…' : !groups.length ? 'Er zijn nog geen groepen ingesteld. Vraag de organisatie om groepen toe te voegen.' : !group ? 'Kies hierboven je groep om te beginnen.' : 'Klaar om te scannen. De achtercamera opent automatisch.')}</p>
                 {error && <button type="button" className="form-button min-h-12 rounded-xl border border-white/30 px-5 text-white" onClick={switchCamera}>Andere camera proberen</button>}
             </div>}
-            {result && <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/50 p-4" role="status" aria-live="polite" aria-atomic="true">
-                <div className={`w-full max-w-sm rounded-2xl border-4 bg-white p-5 text-center text-gray-900 shadow-xl ${successful ? 'border-green-600' : warning ? 'border-amber-500' : 'border-red-600'}`}>
-                    {successful ? <CheckCircle2 className="mx-auto mb-2 size-10 text-green-600" aria-hidden="true" /> : <TriangleAlert className={`mx-auto mb-2 size-10 ${warning ? 'text-amber-600' : 'text-red-600'}`} aria-hidden="true" />}
-                    <h2 className="mb-2 text-xl font-bold">{successful ? 'Welkom!' : result.status === 'wrong-group' ? 'Andere groep' : result.status === 'duplicate' ? 'Al ingecheckt' : 'Niet toegelaten'}</h2>
-                    <p className="text-base">{result.message}</p>
-                </div>
-            </div>}
+
         </div>
 
         <footer className="shrink-0 space-y-3 px-5 py-4">
-            <p className="text-center text-sm text-gray-300" role="status">{ready ? 'Houd een QR-code in het kader. De volgende scan gaat vanzelf.' : running ? 'Geef toestemming om je camera te gebruiken.' : 'Alleen tickets van jouw groep worden ingecheckt.'}</p>
+            <div className={`${styles.status} ${result ? successful ? 'border-green-500 bg-green-950' : warning ? 'border-amber-500 bg-amber-950' : 'border-red-500 bg-red-950' : 'border-white/15 bg-gray-900'}`} role="status" aria-live="polite" aria-atomic="true">
+                {result ? <>
+                    {successful ? <CheckCircle2 className="size-7 shrink-0 text-green-400" aria-hidden="true" /> : <TriangleAlert className={`size-7 shrink-0 ${warning ? 'text-amber-400' : 'text-red-400'}`} aria-hidden="true" />}
+                    <div className="min-w-0">
+                        <h2 className="font-bold">{successful ? 'Welkom!' : result.status === 'wrong-group' ? 'Andere groep' : result.status === 'duplicate' ? 'Al ingecheckt' : 'Niet toegelaten'}</h2>
+                        <p className="line-clamp-3 text-sm wrap-break-word">{result.message}</p>
+                    </div>
+                </> : <p className="text-sm text-gray-300">{ready ? 'Houd een QR-code in het kader. De uitslag verschijnt hier; je kunt direct verder scannen.' : running ? 'Geef toestemming om je camera te gebruiken.' : 'Alleen tickets van jouw groep worden ingecheckt.'}</p>}
+            </div>
             <div className="flex gap-3">
-                <button type="button" disabled={!group || (running && !ready)} onClick={() => {
+                <button type="button" disabled={!group} onClick={() => {
                     if (running) { stop(); return; }
                     setError(''); setResult(null); setReady(false); setRunning(true);
                 }} className="form-button flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl bg-purple-600 px-4 font-semibold text-white disabled:opacity-50">
