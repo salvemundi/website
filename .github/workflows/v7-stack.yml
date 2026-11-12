@@ -31,6 +31,7 @@ on:
       - "apps/services/mail-service/**"
       - "apps/services/azure-management-service/**"
       - "apps/services/mcp-service/**"
+      - "apps/wieisdemol/**"
       - "packages/**"
       - "docker-compose.yml"
       - ".github/workflows/v7-stack.yml"
@@ -45,6 +46,7 @@ on:
       - "apps/services/mail-service/**"
       - "apps/services/azure-management-service/**"
       - "apps/services/mcp-service/**"
+      - "apps/wieisdemol/**"
       - "packages/**"
       - "docker-compose.yml"
       - ".github/workflows/v7-stack.yml"
@@ -120,7 +122,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [finance, azure-sync, mail, azure-management, mcp]
+        service: [finance, azure-sync, mail, azure-management, mcp, wieisdemol]
         include:
           - service: finance
             file: apps/services/finance-service/Dockerfile
@@ -137,6 +139,9 @@ jobs:
           - service: mcp
             file: apps/services/mcp-service/Dockerfile
             image: v7-mcp
+          - service: wieisdemol
+            file: apps/wieisdemol/Dockerfile
+            image: v7-wieisdemol
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -213,6 +218,7 @@ jobs:
           MAIL_PORT="13003"
           MANAGEMENT_PORT="13004"
           MONITORING_PORT="13006"
+          WIEISDEMOL_URL="https://acc-mol.salvemundi.nl"
           if [ "${{ needs.prepare.outputs.tag }}" = "main" ]; then
             ENV_NAME="prod"
             FRONTEND_PORT="4000"
@@ -221,6 +227,7 @@ jobs:
             MAIL_PORT="3003"
             MANAGEMENT_PORT="3004"
             MONITORING_PORT="3006"
+            WIEISDEMOL_URL="https://mol.salvemundi.nl"
           fi
 
           echo "# Auto-generated V7 App Environment" > .env.${ENV_NAME}
@@ -278,6 +285,7 @@ jobs:
           else
             echo "MOBILE_API_ENABLED=false" >> .env.${ENV_NAME}
           fi
+          echo "WIEISDEMOL_URL=${WIEISDEMOL_URL}" >> .env.${ENV_NAME}
 
           echo "HOSTNAME=0.0.0.0" >> .env.${ENV_NAME}
 
