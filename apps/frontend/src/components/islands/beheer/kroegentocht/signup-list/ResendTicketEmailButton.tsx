@@ -39,7 +39,7 @@ export default function ResendTicketEmailButton({ signupId, email, paid }: {
                 disabled={sending || !paid || !email?.trim()}
                 onClick={() => { void send(); }}
                 title={!email?.trim() ? 'Geen e-mailadres ingevuld' : `Ticketmail opnieuw versturen naar ${email}`}
-                className="beheer-button flex cursor-pointer items-center gap-1 rounded-md px-2 py-1.5 text-xs text-(--theme-purple) hover:bg-(--theme-purple)/10 disabled:cursor-not-allowed disabled:opacity-50"
+                className="beheer-button flex cursor-pointer items-center gap-1 rounded-md bg-purple-700 px-2 py-1.5 text-xs text-white hover:bg-purple-800 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-200 disabled:opacity-100"
             >
                 {sending ? <Loader2 className="size-3.5 animate-spin" /> : <Mail className="size-3.5" />}
                 {sending ? 'Bezig...' : 'Ticketmail versturen'}
