@@ -66,8 +66,16 @@ Omdat de bestaande app (`39a7165e-…`) ook bewerken/uploaden mogelijk maakt, kr
 3. Per omgeving uitsluitend de bijbehorende site vrijgeven met rol `read`: `POST /sites/{site-id}/permissions` met `{"roles":["read"],"grantedToIdentities":[{"application":{"id":"<client-id>","displayName":"Samu-Bijbel-MCP-ReadOnly"}}]}`; controleer met `GET …/permissions` dat er geen `write`/`owner` staat.
 4. Pre-registreer de MCP-client(s) en geef alleen de bedoelde gebruikers/groepen toegang (assignment required). De gebruikers hebben daarnaast zelf leestoegang tot de site nodig.
 
+## OAuth-voorportaal (gebruikers vullen geen client-ID/secret in)
+Entra ondersteunt geen dynamic client registration. Daarom is deze dienst zelf de autorisatieserver richting MCP-clients (`/.well-known/oauth-authorization-server`, `/register`, `/authorize`, `/oauth/callback`, `/token`; zie `src/oauth/proxy.ts`). Gebruikers plakken alleen `https://<host>/mcp` in Claude en melden zich aan met hun Microsoft-account.
+- `/register` geeft een stateless client_id (versleuteld, bevat de toegestane redirect-URI's). Toegestaan: `MCP_ALLOWED_REDIRECT_URIS` (default `https://claude.ai/api/mcp/auth_callback` en `https://claude.com/api/mcp/auth_callback`) en http-loopback.
+- `/authorize` stuurt door naar Entra met het echte client-ID, vaste scope `api://<client-id>/bijbel.read offline_access`, PKCE S256 verplicht naar de client, en **zonder** `resource`-parameter (voorkomt AADSTS9010010).
+- `/token` wisselt codes en refresh tokens uitsluitend server-side in met het Entra client secret; Entra-tokens worden doorgegeven en door de bestaande validatie (audience, scope, OBO) gecontroleerd. Het secret verlaat de server nooit.
+- Geen opslag: state en codes zijn versleuteld/geauthenticeerd (AES-GCM, sleutel afgeleid van het client secret), state 10 min, code 2 min. Entra dwingt eenmalig gebruik van de code af. Na roteren van het secret moeten gebruikers opnieuw inloggen.
+- Entra-app: voeg bij **Authentication → Web** de redirect-URI `https://<host>/oauth/callback` toe. De **Application ID URI** blijft `api://<client-id>` (geen https-URL). Er is geen aparte client-app of publieke client nodig.
+
 ## Redirect URI en hosting
-Deze dienst is alleen *resource server*: hij heeft **geen** `/auth/callback`. De redirect-URI hoort bij de gekozen MCP-client (zijn eigen vaste HTTPS-callback) en wordt in Entra bij die client geregistreerd. De lokale testserver met tunnel uit de bestaande documentatie wordt niet hergebruikt; er is nog geen vast productieadres aangetoond.
+De enige redirect-URI in Entra is de eigen callback `https://<host>/oauth/callback` (zie hierboven). Claude's eigen callback hoeft niet in Entra. De lokale testserver met tunnel uit de bestaande documentatie wordt niet hergebruikt; er is nog geen vast productieadres aangetoond.
 
 Nginx Proxy Manager (config staat niet in de repo, handmatig): `mcp.acc.salvemundi.nl` → `http://v7-acc-mcp:3005`; `mcp.salvemundi.nl` → `http://v7-prod-mcp:3005` (hostnamen zijn een voorstel). TLS (Let's Encrypt), Force SSL, `Host`-header ongewijzigd doorsturen, `/health` niet extern ontsluiten.
 

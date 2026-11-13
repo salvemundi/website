@@ -61,7 +61,7 @@ export const sourceOf = (pages: BijbelPage[], stale = false): BijbelSource => ({
     searchSet: (max) => Promise.resolve({ pages: pages.slice(0, max), totaal: pages.length, fetchedAt: FETCHED, stale }),
 });
 
-export async function makeApp(source: BijbelSource, over: NodeJS.ProcessEnv = {}) {
+export async function makeApp(source: BijbelSource, over: NodeJS.ProcessEnv = {}, fetchFn?: typeof fetch) {
     const { publicKey } = await getKeys();
     const cfg = config(over);
     const verifier = createVerifier({
@@ -70,7 +70,7 @@ export async function makeApp(source: BijbelSource, over: NodeJS.ProcessEnv = {}
         requiredScope: cfg.MCP_REQUIRED_SCOPE,
         keyResolver: () => Promise.resolve(publicKey),
     });
-    return buildApp({ config: cfg, verifier, sourceFor: () => source, logger: false });
+    return buildApp({ config: cfg, verifier, sourceFor: () => source, logger: false, fetchFn });
 }
 
 export type App = Awaited<ReturnType<typeof makeApp>>;

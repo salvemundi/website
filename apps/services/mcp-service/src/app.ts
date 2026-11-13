@@ -5,11 +5,12 @@ import { AuthError, type TokenVerifier, type UserContext } from './auth/jwt.js';
 import { protectedResourceMetadata, resourceMetadataUrl } from './auth/metadata.js';
 import type { Config } from './config.js';
 import type { SourceFactory } from './graph/source.js';
+import { registerOAuthRoutes } from './oauth/proxy.js';
 import { createMcpServer } from './tools/index.js';
 
-export interface Deps { config: Config; verifier: TokenVerifier; sourceFor: SourceFactory; logger?: boolean }
+export interface Deps { config: Config; verifier: TokenVerifier; sourceFor: SourceFactory; logger?: boolean; fetchFn?: typeof fetch }
 
-export async function buildApp({ config, verifier, sourceFor, logger = true }: Deps): Promise<FastifyInstance> {
+export async function buildApp({ config, verifier, sourceFor, logger = true, fetchFn }: Deps): Promise<FastifyInstance> {
     const app = Fastify({
         logger: logger ? { redact: ['req.headers.authorization', 'req.headers.cookie'] } : false,
         trustProxy: ['127.0.0.1', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10'],
@@ -37,6 +38,7 @@ export async function buildApp({ config, verifier, sourceFor, logger = true }: D
     app.get('/health', { logLevel: 'silent' }, () => ({ status: 'ok' }));
     app.get('/.well-known/oauth-protected-resource', () => protectedResourceMetadata(config));
     app.get('/.well-known/oauth-protected-resource/mcp', () => protectedResourceMetadata(config));
+    registerOAuthRoutes(app, config, fetchFn);
 
     // MCP gebruikt POST ook voor leesoperaties; read-only wordt afgedwongen op tool- en bronniveau.
     app.route({

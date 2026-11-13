@@ -43,10 +43,10 @@ describe('authenticatie en autorisatie', () => {
             expect((await app.inject({ method: m, url: '/admin', headers: { host: HOST } })).statusCode).toBe(404);
         }
     });
-    it('/health is open maar bevat geen details; metadata wijst naar Entra', async () => {
+    it('/health is open maar bevat geen details; metadata wijst naar de dienst zelf als autorisatieserver', async () => {
         const h = await app.inject({ method: 'GET', url: '/health' });
         expect(h.json()).toEqual({ status: 'ok' });
         const m = await app.inject({ method: 'GET', url: '/.well-known/oauth-protected-resource' });
-        expect(m.json<{ authorization_servers: string[] }>().authorization_servers).toEqual([`https://login.microsoftonline.com/${TENANT}/v2.0`]);
+        expect(m.json<{ authorization_servers: string[] }>().authorization_servers).toEqual([`https://${HOST}`]);
     });
 });
