@@ -58,7 +58,7 @@ describe('tekstextractie', () => {
     it('leest tekstbestanden en weigert niet-UTF-8 en onbekende types', async () => {
         expect(await extractText('a.md', Buffer.from('# Kop\r\n\r\n\r\n\r\ntekst'))).toBe('# Kop\n\ntekst');
         await expect(extractText('a.txt', Buffer.from([0xff, 0xfe, 0x00]))).rejects.toBeInstanceOf(FileUnreadableError);
-        await expect(extractText('a.pdf', Buffer.from('%PDF'))).rejects.toThrow(/niet ondersteund/);
+        await expect(extractText('a.psd', Buffer.from('8BPS'))).rejects.toThrow(/niet ondersteund/);
         await expect(extractText('a.xlsx', Buffer.from('x'))).rejects.toBeInstanceOf(FileUnreadableError);
     });
     it('weigert ongeldige zips en zip-bommen voordat er iets wordt uitgepakt', async () => {
@@ -260,5 +260,48 @@ describe('prompts', () => {
         expect(l2.result.prompts.map((p) => p.name).sort()).toEqual(['beantwoord_vraag', 'controleer_tegen_bijbel']);
         const q = (await rpc(plain, 'prompts/get', { name: 'beantwoord_vraag', arguments: { vraag: 'Mag je alcohol drinken?' } })).json<{ result: { messages: { content: { text: string } }[] } }>();
         expect(q.result.messages[0]!.content.text).toContain('Mag je alcohol drinken?');
+    });
+});
+
+function tinyPdf(lines: string[]): Buffer {
+    const stream = `BT /F1 12 Tf 72 720 Td ${lines.map((l, i) => `${i ? '0 -20 Td ' : ''}(${l}) Tj`).join(' ')} ET`;
+    const objs = [
+        '<< /Type /Catalog /Pages 2 0 R >>',
+        '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+        '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>',
+        `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,
+        '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+    ];
+    let out = '%PDF-1.4\n';
+    const offsets: number[] = [];
+    objs.forEach((o, i) => { offsets.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+    const xref = out.length;
+    out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n${offsets.map((o) => `${String(o).padStart(10, '0')} 00000 n \n`).join('')}trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+    return Buffer.from(out, 'latin1');
+}
+
+async function pptx(slides: string[][]): Promise<Buffer> {
+    const z = new JSZip();
+    z.file('[Content_Types].xml', '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>');
+    slides.forEach((paras, i) => z.file(`ppt/slides/slide${i + 1}.xml`, `<p:sld xmlns:a="x" xmlns:p="y"><p:cSld><p:spTree>${paras.map((t) => `<p:sp><p:txBody><a:p><a:r><a:t>${t}</a:t></a:r></a:p></p:txBody></p:sp>`).join('')}</p:spTree></p:cSld></p:sld>`));
+    z.file('ppt/slides/slide10.xml', '<a:p><a:r><a:t>Tiende</a:t></a:r></a:p>');
+    return z.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
+}
+
+describe('pdf en powerpoint', () => {
+    it('leest tekst per dia in slidevolgorde en decodeert XML-entiteiten', async () => {
+        const t = await extractText('Slide Template.pptx', await pptx([['Welkom &amp; hallo', 'Tweede regel'], ['Dia twee &lt;ok&gt;']]));
+        expect(t).toBe('[Dia 1]\nWelkom & hallo\nTweede regel\n\n[Dia 2]\nDia twee <ok>\n\n[Dia 10]\nTiende');
+    });
+    it('weigert een kapotte presentatie met een nette melding', async () => {
+        await expect(extractText('x.pptx', Buffer.from('geen zip'))).rejects.toBeInstanceOf(FileUnreadableError);
+    });
+    it('leest de tekstlaag van een pdf met paginanummers', async () => {
+        const t = await extractText('NDA.pdf', tinyPdf(['Geheimhouding tussen partijen', 'Tweede regel']));
+        expect(t).toContain('[Pagina 1]');
+        expect(t).toContain('Geheimhouding tussen partijen');
+    });
+    it('weigert een ongeldige pdf met een nette melding', async () => {
+        await expect(extractText('x.pdf', Buffer.from('%PDF-1.4 kapot'))).rejects.toBeInstanceOf(FileUnreadableError);
     });
 });

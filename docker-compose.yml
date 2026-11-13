@@ -305,6 +305,7 @@ services:
       - MCP_ALLOWED_PATH_PREFIX=${MCP_ALLOWED_PATH_PREFIX:-/}
       - MCP_ALLOWED_ORIGINS=${MCP_ALLOWED_ORIGINS:-}
       - MCP_FILES_PATH=${MCP_FILES_PATH:-/Sjablonen}
+      - MCP_MAX_DOWNLOAD_BYTES=${MCP_MAX_DOWNLOAD_BYTES:-262144}
     read_only: true
     tmpfs:
       - /tmp

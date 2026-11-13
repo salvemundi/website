@@ -57,7 +57,7 @@ interface UserCache { base?: string; files?: { data: { files: FileMeta[]; trunca
 
 /**
  * Bestanden per aangemelde gebruiker (OBO): de Graph-rechten van de gebruiker zijn bepalend. Alleen bestanden die in de
- * lijst onder de geconfigureerde map staan zijn leesbaar; alleen Word en platte tekst worden omgezet. Alleen GET.
+ * lijst onder de geconfigureerde map staan zijn leesbaar; Word, PowerPoint, pdf en platte tekst worden omgezet. Alleen GET.
  */
 export function createGraphFileSources(graph: GraphReader, opts: FileSourceOptions): FileSourceFactory {
     const now = opts.now ?? Date.now;
@@ -180,7 +180,7 @@ export function createGraphFileSources(graph: GraphReader, opts: FileSourceOptio
                 const f = await files();
                 const file = f.files.find((x) => x.id === id);
                 if (!file) return null;
-                if (!file.leesbaar) throw new FileUnreadableError(`Bestandstype .${file.type || '?'} wordt niet ondersteund (alleen Word en tekst).`);
+                if (!file.leesbaar) throw new FileUnreadableError(`Bestandstype .${file.type || '?'} wordt niet ondersteund (alleen Word, PowerPoint, pdf en tekst).`);
                 if (file.grootte > opts.maxFileBytes) throw new FileUnreadableError('Het bestand is te groot om te lezen.');
                 const key = `${file.id}:${file.gewijzigd ?? ''}`;
                 const hit = cache.texts.get(key);

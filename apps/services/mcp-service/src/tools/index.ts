@@ -255,7 +255,7 @@ function registerFileTools(server: McpServer, files: FileSource, cfg: ToolCfg): 
         {
             title: 'Lijst sjabloonbestanden',
             description:
-                'Geeft de bestanden (sjablonen) uit de sjablonenmap van de Samu Bijbel, met bestand_id, naam, pad, type, grootte, wijzigingsdatum en bronlink (gepagineerd). Alleen Word (.docx/.dotx) en tekstbestanden (.txt/.md/.csv) zijn leesbaar (leesbaar=true). Gebruik het bestand_id met lees_sjabloon.',
+                'Geeft de bestanden (sjablonen) uit de sjablonenmap van de Samu Bijbel, met bestand_id, naam, pad, type, grootte, wijzigingsdatum en bronlink (gepagineerd). Alleen Word (.docx/.dotx), PowerPoint (.pptx/.potx), pdf en tekstbestanden (.txt/.md/.csv) zijn als tekst leesbaar (leesbaar=true); andere bestanden kun je zo nodig met download_sjabloon ophalen. Gebruik het bestand_id met lees_sjabloon.',
             inputSchema: { limit: z.number().int().min(1).max(25).optional(), cursor: cursorSchema },
             annotations: READ_ONLY,
         },
@@ -286,7 +286,7 @@ function registerFileTools(server: McpServer, files: FileSource, cfg: ToolCfg): 
         {
             title: 'Lees een sjabloonbestand',
             description:
-                'Leest de letterlijke tekst van één bestand uit de sjablonenmap (bestand_id uit lijst_sjablonen). Alleen tekst wordt geleverd: opmaak, afbeeldingen, tabelstijlen en invulvelden gaan niet mee. Lange tekst komt in delen via volgende_cursor. Je kunt op basis van de tekst in de chat een nieuw bestand voor de gebruiker maken; er wordt niets in SharePoint geschreven.',
+                'Leest de letterlijke tekst van één bestand uit de sjablonenmap (bestand_id uit lijst_sjablonen). Alleen tekst wordt geleverd (bij pptx per dia, bij pdf per pagina): opmaak, afbeeldingen, tabelstijlen en invulvelden gaan niet mee, en een gescande pdf zonder tekstlaag levert niets op. Lange tekst komt in delen via volgende_cursor. Je kunt op basis van de tekst in de chat een nieuw bestand voor de gebruiker maken; er wordt niets in SharePoint geschreven.',
             inputSchema: { bestand_id: z.string().regex(/^[A-Za-z0-9!_-]{1,128}$/), cursor: cursorSchema },
             annotations: READ_ONLY,
         },
