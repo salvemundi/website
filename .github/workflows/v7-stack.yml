@@ -334,6 +334,7 @@ jobs:
             echo "MCP_SHAREPOINT_SITE_ID=${{ vars.MCP_SHAREPOINT_SITE_ID }}" >> .env.${ENV_NAME}
             echo "MCP_ALLOWED_PATH_PREFIX=${{ vars.MCP_ALLOWED_PATH_PREFIX || '/' }}" >> .env.${ENV_NAME}
             echo "MCP_ALLOWED_ORIGINS=${{ vars.MCP_ALLOWED_ORIGINS }}" >> .env.${ENV_NAME}
+            echo "MCP_FILES_PATH=${{ vars.MCP_FILES_PATH || '/Sjablonen' }}" >> .env.${ENV_NAME}
           fi
 
           docker compose --env-file .env.${ENV_NAME} pull

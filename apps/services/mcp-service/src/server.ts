@@ -1,7 +1,8 @@
 import { buildApp } from './app.js';
 import { createVerifier } from './auth/jwt.js';
 import { audienceOf, loadConfig } from './config.js';
-import { createGraphReader, createOboExchanger } from './graph/client.js';
+import { createGraphDownloader, createGraphReader, createOboExchanger } from './graph/client.js';
+import { createGraphFileSources } from './graph/files.js';
 import { createGraphBijbelSources } from './graph/source.js';
 import { safeConsoleError } from './utils/logger.js';
 
@@ -26,7 +27,15 @@ const start = async () => {
             maxStaleMs: config.MCP_MAX_STALE_SECONDS * 1000,
             exchange,
         });
-        const app = await buildApp({ config, verifier, sourceFor });
+        const filesFor = createGraphFileSources(graph, {
+            siteId: config.MCP_SHAREPOINT_SITE_ID,
+            rootPath: config.MCP_FILES_PATH,
+            ttlMs: config.MCP_CACHE_TTL_SECONDS * 1000,
+            maxFileBytes: config.MCP_MAX_FILE_BYTES,
+            exchange,
+            download: createGraphDownloader({ timeoutMs: config.MCP_REQUEST_TIMEOUT_MS }),
+        });
+        const app = await buildApp({ config, verifier, sourceFor, filesFor });
         await app.listen({ port: config.PORT, host: '0.0.0.0' });
     } catch (error) {
         safeConsoleError('[server.ts][start] ', error);

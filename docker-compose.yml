@@ -304,6 +304,7 @@ services:
       - MCP_SHAREPOINT_SITE_ID=${MCP_SHAREPOINT_SITE_ID:-}
       - MCP_ALLOWED_PATH_PREFIX=${MCP_ALLOWED_PATH_PREFIX:-/}
       - MCP_ALLOWED_ORIGINS=${MCP_ALLOWED_ORIGINS:-}
+      - MCP_FILES_PATH=${MCP_FILES_PATH:-/Sjablonen}
     read_only: true
     tmpfs:
       - /tmp

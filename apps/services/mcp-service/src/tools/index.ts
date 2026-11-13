@@ -3,6 +3,8 @@ import { z } from 'zod';
 import type { Config } from '../config.js';
 import { bronMeta, fail, notFound, ok, type ToolResult } from '../envelope.js';
 import { AccessDeniedError } from '../graph/client.js';
+import { FileUnreadableError } from '../graph/extract.js';
+import { FolderNotFoundError, type FileSource } from '../graph/files.js';
 import type { BijbelPage, BijbelSource } from '../graph/source.js';
 import { SERVER_INSTRUCTIONS } from '../instructions.js';
 
@@ -39,6 +41,8 @@ async function guarded(fn: () => Promise<ToolResult>): Promise<ToolResult> {
     try {
         return await fn();
     } catch (e) {
+        if (e instanceof FolderNotFoundError) return fail('De sjablonenmap is niet gevonden of niet zichtbaar voor dit account. Er is geen antwoord beschikbaar.');
+        if (e instanceof FileUnreadableError) return fail(e.message);
         if (e instanceof AccessDeniedError) {
             return fail('Geen toegang tot de Samu Bijbel met dit account via deze koppeling. Er is geen antwoord beschikbaar; vraag een beheerder om toegang.');
         }
@@ -48,7 +52,7 @@ async function guarded(fn: () => Promise<ToolResult>): Promise<ToolResult> {
 
 type ToolCfg = Pick<Config, 'MCP_MAX_RESULTS' | 'MCP_MAX_RESPONSE_CHARS' | 'MCP_MAX_SEARCH_PAGES'>;
 
-export function createMcpServer(source: BijbelSource, cfg: ToolCfg): McpServer {
+export function createMcpServer(source: BijbelSource, cfg: ToolCfg, files?: FileSource): McpServer {
     const server = new McpServer({ name: 'samu-bijbel', version: '1.1.0' }, { instructions: SERVER_INSTRUCTIONS });
 
     server.registerTool(
@@ -173,5 +177,73 @@ export function createMcpServer(source: BijbelSource, cfg: ToolCfg): McpServer {
             }),
     );
 
+    if (files) registerFileTools(server, files, cfg);
+
     return server;
+}
+
+function registerFileTools(server: McpServer, files: FileSource, cfg: ToolCfg): void {
+    server.registerTool(
+        'lijst_sjablonen',
+        {
+            title: 'Lijst sjabloonbestanden',
+            description:
+                'Geeft de bestanden (sjablonen) uit de sjablonenmap van de Samu Bijbel, met bestand_id, naam, pad, type, grootte, wijzigingsdatum en bronlink (gepagineerd). Alleen Word (.docx/.dotx) en tekstbestanden (.txt/.md/.csv) zijn leesbaar (leesbaar=true). Gebruik het bestand_id met lees_sjabloon.',
+            inputSchema: { limit: z.number().int().min(1).max(25).optional(), cursor: cursorSchema },
+            annotations: READ_ONLY,
+        },
+        ({ limit, cursor }) =>
+            guarded(async () => {
+                const snap = await files.list();
+                const offset = cursor ? Number(cursor) : 0;
+                if (snap.files.length === 0 || offset >= snap.files.length) return notFound('Geen sjabloonbestanden beschikbaar.');
+                const max = Math.min(limit ?? cfg.MCP_MAX_RESULTS, cfg.MCP_MAX_RESULTS);
+                const bestanden: unknown[] = [];
+                let size = 0;
+                let i = offset;
+                for (const f of snap.files.slice(offset)) {
+                    if (bestanden.length >= max) break;
+                    const item = { bestand_id: f.id, naam: f.naam, pad: f.pad, type: f.type, grootte_bytes: f.grootte, gewijzigd: f.gewijzigd, bron_url: f.url, leesbaar: f.leesbaar };
+                    const len = JSON.stringify(item).length;
+                    if (size + len > cfg.MCP_MAX_RESPONSE_CHARS && bestanden.length > 0) break;
+                    size += len;
+                    bestanden.push(item);
+                    i++;
+                }
+                return ok({ ...bronMeta(snap), status: 'gevonden', totaal: snap.files.length, lijst_afgekapt: snap.truncated, bestanden, volgende_cursor: i < snap.files.length ? String(i) : null });
+            }),
+    );
+
+    server.registerTool(
+        'lees_sjabloon',
+        {
+            title: 'Lees een sjabloonbestand',
+            description:
+                'Leest de letterlijke tekst van één bestand uit de sjablonenmap (bestand_id uit lijst_sjablonen). Alleen tekst wordt geleverd: opmaak, afbeeldingen, tabelstijlen en invulvelden gaan niet mee. Lange tekst komt in delen via volgende_cursor. Je kunt op basis van de tekst in de chat een nieuw bestand voor de gebruiker maken; er wordt niets in SharePoint geschreven.',
+            inputSchema: { bestand_id: z.string().regex(/^[A-Za-z0-9!_-]{1,128}$/), cursor: cursorSchema },
+            annotations: READ_ONLY,
+        },
+        ({ bestand_id, cursor }) =>
+            guarded(async () => {
+                const r = await files.read(bestand_id);
+                if (!r) return notFound('Dit bestand bestaat niet of staat niet in de sjablonenmap.');
+                const start = cursor ? Number(cursor) : 0;
+                if (r.tekst.length === 0) return notFound('Dit bestand bevat geen leesbare tekst.');
+                if (start >= r.tekst.length) return notFound('Cursor ligt voorbij het einde van de tekst.');
+                const end = Math.min(start + cfg.MCP_MAX_RESPONSE_CHARS, r.tekst.length);
+                return ok({
+                    ...bronMeta(r),
+                    status: 'gevonden',
+                    bestand_id: r.file.id,
+                    naam: r.file.naam,
+                    pad: r.file.pad,
+                    bron_url: r.file.url,
+                    gewijzigd: r.file.gewijzigd,
+                    type: 'letterlijke_tekst',
+                    inhoud: r.tekst.slice(start, end),
+                    bereik: { van: start, tot: end, totaal: r.tekst.length },
+                    volgende_cursor: end < r.tekst.length ? String(end) : null,
+                });
+            }),
+    );
 }

@@ -5,6 +5,13 @@ const csv = z
     .default('')
     .transform((v) => v.split(',').map((s) => s.trim()).filter(Boolean));
 
+const FOLDER_SEGMENT = /^[\p{L}\p{N} _.-]{1,100}$/u;
+/** "/Map" of "/Map/Submap" (max. 6 niveaus), zonder . of .. */
+function isSafeFolderPath(v: string): boolean {
+    const parts = v.split('/');
+    return parts[0] === '' && parts.length >= 2 && parts.length <= 7 && parts.slice(1).every((x) => x !== '.' && x !== '..' && FOLDER_SEGMENT.test(x));
+}
+
 const schema = z.object({
     PORT: z.coerce.number().int().min(1).max(65535).default(3005),
     APP_ENV: z.string().default('unknown'),
@@ -21,6 +28,9 @@ const schema = z.object({
     MCP_ALLOWED_ORIGINS: csv,
     // Redirect-URI's die MCP-clients mogen registreren (exacte match; http-loopback is altijd toegestaan).
     MCP_ALLOWED_REDIRECT_URIS: z.string().default('https://claude.ai/api/mcp/auth_callback,https://claude.com/api/mcp/auth_callback,https://chatgpt.com/connector_platform_oauth_redirect,https://platform.openai.com/apps-manage/oauth').transform((v) => v.split(',').map((s) => s.trim()).filter(Boolean)),
+    // Map in de standaard documentbibliotheek met de sjabloonbestanden (alleen lezen).
+    MCP_FILES_PATH: z.string().max(400).refine(isSafeFolderPath, 'ongeldig mappad').default('/Sjablonen'),
+    MCP_MAX_FILE_BYTES: z.coerce.number().int().min(1024).max(10 * 1024 * 1024).default(3 * 1024 * 1024),
     MCP_CACHE_TTL_SECONDS: z.coerce.number().int().min(30).max(3600).default(300),
     MCP_MAX_STALE_SECONDS: z.coerce.number().int().min(0).max(86400).default(3600),
     MCP_MAX_RESPONSE_CHARS: z.coerce.number().int().min(1000).max(50000).default(8000),

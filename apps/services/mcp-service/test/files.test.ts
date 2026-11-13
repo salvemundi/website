@@ -1,0 +1,175 @@
+import JSZip from 'jszip';
+import { describe, expect, it, vi } from 'vitest';
+import type { UserContext } from '../src/auth/jwt.js';
+import { AccessDeniedError, createGraphDownloader, FileTooLargeError, resolveGraphUrl, SourceUnavailableError, type FileDownloader, type GraphReader } from '../src/graph/client.js';
+import { extractText, FileUnreadableError, zipUncompressedSize } from '../src/graph/extract.js';
+import { createGraphFileSources, FolderNotFoundError } from '../src/graph/files.js';
+import { callTool, makeApp, page, sourceOf } from './helpers.js';
+
+const SITE = 'contoso.sharepoint.com,aaa,bbb';
+const user = (key: string): UserContext => ({ key, token: `user-token-${key}`, scopes: ['bijbel.read'] });
+
+async function docx(text: string, extra: Record<string, string | Buffer> = {}): Promise<Buffer> {
+    const z = new JSZip();
+    z.file('[Content_Types].xml', '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+    z.file('_rels/.rels', '<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+    z.file('word/document.xml', `<?xml version="1.0"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>${text}</w:t></w:r></w:p><w:p><w:r><w:t>Tweede alinea</w:t></w:r></w:p></w:body></w:document>`);
+    for (const [k, v] of Object.entries(extra)) z.file(k, v);
+    return z.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
+}
+
+describe('Graph-pad voor bestanden', () => {
+    it('staat alleen leesroutes in de documentbibliotheek toe', () => {
+        for (const ok of [
+            `/sites/${SITE}/drive/root:/Sjablonen`,
+            `/sites/${SITE}/drive/root:/Sjablonen/Sub%20map`,
+            `/sites/${SITE}/drive/items/01ABC!x_y-z`,
+            `/sites/${SITE}/drive/items/01ABC/children?$select=id,name&$top=200`,
+            `/sites/${SITE}/drive/items/01ABC/content`,
+        ]) expect(() => resolveGraphUrl(ok), ok).not.toThrow();
+        for (const bad of [
+            `/sites/${SITE}/drive/root:/..`,
+            `/sites/${SITE}/drive/root:/%2E%2E/x`,
+            `/sites/${SITE}/drive/root:/a%2Fb`,
+            `/sites/${SITE}/drive/root:`,
+            `/sites/${SITE}/drive/items/01ABC/permissions`,
+            `/sites/${SITE}/drive/items/01ABC/children?$filter=x;y`,
+            `/sites/${SITE}/drive/items/..`,
+            `/sites/${SITE}/drives/x`,
+            `/sites/${SITE}/lists`,
+        ]) expect(() => resolveGraphUrl(bad), bad).toThrow();
+    });
+});
+
+describe('tekstextractie', () => {
+    it('leest Word als letterlijke tekst', async () => {
+        const t = await extractText('Sjabloon.docx', await docx('Eerste alinea'));
+        expect(t).toBe('Eerste alinea\n\nTweede alinea');
+        expect(await extractText('Sjabloon.dotx', await docx('Sjabloon'))).toContain('Tweede alinea');
+    });
+    it('leest tekstbestanden en weigert niet-UTF-8 en onbekende types', async () => {
+        expect(await extractText('a.md', Buffer.from('# Kop\r\n\r\n\r\n\r\ntekst'))).toBe('# Kop\n\ntekst');
+        await expect(extractText('a.txt', Buffer.from([0xff, 0xfe, 0x00]))).rejects.toBeInstanceOf(FileUnreadableError);
+        await expect(extractText('a.pdf', Buffer.from('%PDF'))).rejects.toThrow(/niet ondersteund/);
+        await expect(extractText('a.xlsx', Buffer.from('x'))).rejects.toBeInstanceOf(FileUnreadableError);
+    });
+    it('weigert ongeldige zips en zip-bommen voordat er iets wordt uitgepakt', async () => {
+        await expect(extractText('a.docx', Buffer.from('dit is geen zip'))).rejects.toBeInstanceOf(FileUnreadableError);
+        const bomb = await docx('x', { 'word/media/groot.bin': Buffer.alloc(40 * 1024 * 1024) });
+        expect(bomb.length).toBeLessThan(1024 * 1024);
+        expect(zipUncompressedSize(bomb)).toBeGreaterThan(30 * 1024 * 1024);
+        await expect(extractText('a.docx', bomb)).rejects.toThrow(/te groot/);
+    });
+});
+
+describe('downloader', () => {
+    const body = (b: string) => new Response(new Blob([b]).stream(), { status: 200 });
+    it('volgt de voorgetekende link zonder Graph-token en alleen op SharePoint', async () => {
+        const f = vi.fn<typeof fetch>()
+            .mockResolvedValueOnce(new Response(null, { status: 302, headers: { location: 'https://contoso.sharepoint.com/_layouts/15/download.aspx?tempauth=abc' } }))
+            .mockResolvedValueOnce(body('inhoud'));
+        const buf = await createGraphDownloader({ timeoutMs: 1000 }, f).download(`/sites/${SITE}/drive/items/01A/content`, 'graph-token', 100);
+        expect(buf.toString()).toBe('inhoud');
+        expect((f.mock.calls[0]![1] as RequestInit).headers).toMatchObject({ Authorization: 'Bearer graph-token' });
+        expect((f.mock.calls[1]![1] as RequestInit).headers).toBeUndefined();
+        expect((f.mock.calls[1]![1] as RequestInit).redirect).toBe('error');
+    });
+    it('weigert andere hosts, te grote bestanden, toegangsfouten en andere paden', async () => {
+        const dl = (f: typeof fetch) => createGraphDownloader({ timeoutMs: 1000 }, f);
+        const path = `/sites/${SITE}/drive/items/01A/content`;
+        const evil = vi.fn<typeof fetch>().mockResolvedValueOnce(new Response(null, { status: 302, headers: { location: 'https://evil.example/x' } }));
+        await expect(dl(evil).download(path, 't', 100)).rejects.toBeInstanceOf(SourceUnavailableError);
+        expect(evil).toHaveBeenCalledTimes(1);
+        const big = vi.fn<typeof fetch>().mockResolvedValueOnce(body('x'.repeat(50)));
+        await expect(dl(big).download(path, 't', 10)).rejects.toBeInstanceOf(FileTooLargeError);
+        const denied = vi.fn<typeof fetch>().mockResolvedValueOnce(new Response(null, { status: 403 }));
+        await expect(dl(denied).download(path, 't', 10)).rejects.toBeInstanceOf(AccessDeniedError);
+        await expect(dl(vi.fn()).download(`/sites/${SITE}/drive/items/01A`, 't', 10)).rejects.toThrow();
+    });
+});
+
+const item = (id: string, name: string, kind: 'file' | 'folder', size = 100) => ({
+    id, name, size, lastModifiedDateTime: '2026-10-01T00:00:00Z', webUrl: `https://contoso.sharepoint.com/sites/bijbel/Shared%20Documents/Sjablonen/${name}`, [kind]: {},
+});
+
+function fakeGraph(mode: 'ok' | 'nofolder' | 'denied' = 'ok') {
+    const g = {
+        calls: [] as string[],
+        mode,
+        get(u: string) {
+            g.calls.push(u);
+            if (g.mode === 'denied') return Promise.reject(new AccessDeniedError('403'));
+            if (u.includes('/drive/root:/')) return g.mode === 'nofolder' ? Promise.reject(new SourceUnavailableError('Graph status 404')) : Promise.resolve(item('ROOT', 'Sjablonen', 'folder'));
+            if (u.includes('/items/ROOT/children')) return Promise.resolve({ value: [item('F1', 'Brief.docx', 'file'), item('D1', 'Sub', 'folder'), item('F2', 'Tabel.xlsx', 'file'), item('F3', 'Groot.docx', 'file', 99_000_000)] });
+            if (u.includes('/items/D1/children')) return Promise.resolve({ value: [item('F4', 'Notitie.txt', 'file')] });
+            return Promise.reject(new Error('onverwacht pad ' + u));
+        },
+    } satisfies GraphReader & Record<string, unknown>;
+    return g;
+}
+const fakeDownload = (content: Record<string, Buffer>) => ({ calls: [] as string[], download: vi.fn((path: string) => { const id = /items\/([^/]+)\/content/.exec(path)![1]!; return Promise.resolve(content[id] ?? Buffer.alloc(0)); }) }) satisfies FileDownloader & Record<string, unknown>;
+
+async function setup(mode: 'ok' | 'nofolder' | 'denied' = 'ok') {
+    const graph = fakeGraph(mode);
+    const dl = fakeDownload({ F1: await docx('Geachte lid'), F4: Buffer.from('notitie tekst') });
+    const exchange = vi.fn((t: string) => Promise.resolve(`graph-for-${t}`));
+    const filesFor = createGraphFileSources(graph, { siteId: SITE, rootPath: '/Sjablonen', ttlMs: 60_000, maxFileBytes: 1_000_000, exchange, download: dl });
+    return { graph, dl, exchange, filesFor };
+}
+
+describe('bestandsbron', () => {
+    it('lijst bestanden recursief met leesbaarheid en geeft de root met gecodeerd pad op', async () => {
+        const { graph, filesFor } = await setup();
+        const snap = await filesFor(user('a')).list();
+        expect(snap.files.map((f) => [f.pad, f.leesbaar])).toEqual([['Brief.docx', true], ['Groot.docx', true], ['Sub/Notitie.txt', true], ['Tabel.xlsx', false]]);
+        expect(graph.calls[0]).toBe(`/sites/${SITE}/drive/root:/Sjablonen`);
+        expect(graph.calls.every((c) => !/permissions|\/drives\//.test(c))).toBe(true);
+    });
+    it('leest alleen bestanden uit de lijst; onbekend ID, niet-ondersteund type en te groot geven geen download', async () => {
+        const { dl, filesFor } = await setup();
+        const src = filesFor(user('a'));
+        expect((await src.read('F1'))?.tekst).toBe('Geachte lid\n\nTweede alinea');
+        expect((await src.read('F4'))?.tekst).toBe('notitie tekst');
+        expect(await src.read('BUITEN')).toBeNull();
+        await expect(src.read('F2')).rejects.toThrow(/niet ondersteund/);
+        await expect(src.read('F3')).rejects.toThrow(/te groot/);
+        expect(dl.download).toHaveBeenCalledTimes(2);
+    });
+    it('cachet tekst per gebruiker en wist de cache bij een toegangsfout', async () => {
+        const { dl, filesFor, exchange } = await setup();
+        const a = filesFor(user('a'));
+        await a.read('F1');
+        await filesFor(user('a')).read('F1');
+        expect(dl.download).toHaveBeenCalledTimes(1);
+        await filesFor(user('b')).read('F1');
+        expect(dl.download).toHaveBeenCalledTimes(2);
+        expect(exchange).toHaveBeenCalledWith('user-token-a');
+        expect(dl.download.mock.calls[1]![1]).toBe('graph-for-user-token-b');
+    });
+    it('meldt een ontbrekende map en geeft toegangsfouten door', async () => {
+        await expect((await setup('nofolder')).filesFor(user('a')).list()).rejects.toBeInstanceOf(FolderNotFoundError);
+        await expect((await setup('denied')).filesFor(user('a')).list()).rejects.toBeInstanceOf(AccessDeniedError);
+    });
+});
+
+describe('tools voor sjablonen', () => {
+    it('lijst en lees via MCP; zonder bestandsbron bestaan de tools niet', async () => {
+        const { filesFor } = await setup();
+        const app = await makeApp(sourceOf([page()]), { MCP_MAX_RESPONSE_CHARS: '1000' }, undefined, filesFor);
+        const list = await callTool(app, 'lijst_sjablonen', {});
+        expect(list.data).toMatchObject({ status: 'gevonden', totaal: 4 });
+        const bestanden = (list.data as { bestanden: { bestand_id: string; leesbaar: boolean }[] }).bestanden;
+        expect(bestanden.find((b) => b.bestand_id === 'F2')?.leesbaar).toBe(false);
+
+        const read = await callTool(app, 'lees_sjabloon', { bestand_id: 'F1' });
+        expect(read.data).toMatchObject({ status: 'gevonden', naam: 'Brief.docx', type: 'letterlijke_tekst', inhoud: 'Geachte lid\n\nTweede alinea', volgende_cursor: null });
+        expect(JSON.stringify(read.data)).toContain('geen instructie');
+
+        expect((await callTool(app, 'lees_sjabloon', { bestand_id: 'BUITEN' })).data).toMatchObject({ status: 'niet_gevonden' });
+        expect((await callTool(app, 'lees_sjabloon', { bestand_id: 'F2' })).isError).toBe(true);
+        expect((await callTool(app, 'lees_sjabloon', { bestand_id: '../x' })).isError).toBe(true);
+
+        const plain = await makeApp(sourceOf([page()]));
+        expect((await callTool(plain, 'lijst_sjablonen', {})).isError).toBe(true);
+    });
+});

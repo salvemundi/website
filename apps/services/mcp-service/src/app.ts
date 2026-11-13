@@ -4,13 +4,14 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import { AuthError, type TokenVerifier, type UserContext } from './auth/jwt.js';
 import { protectedResourceMetadata, resourceMetadataUrl } from './auth/metadata.js';
 import type { Config } from './config.js';
+import type { FileSourceFactory } from './graph/files.js';
 import type { SourceFactory } from './graph/source.js';
 import { registerOAuthRoutes } from './oauth/proxy.js';
 import { createMcpServer } from './tools/index.js';
 
-export interface Deps { config: Config; verifier: TokenVerifier; sourceFor: SourceFactory; logger?: boolean; fetchFn?: typeof fetch }
+export interface Deps { config: Config; verifier: TokenVerifier; sourceFor: SourceFactory; filesFor?: FileSourceFactory; logger?: boolean; fetchFn?: typeof fetch }
 
-export async function buildApp({ config, verifier, sourceFor, logger = true, fetchFn }: Deps): Promise<FastifyInstance> {
+export async function buildApp({ config, verifier, sourceFor, filesFor, logger = true, fetchFn }: Deps): Promise<FastifyInstance> {
     const app = Fastify({
         logger: logger ? { redact: ['req.headers.authorization', 'req.headers.cookie'] } : false,
         trustProxy: ['127.0.0.1', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10'],
@@ -63,7 +64,8 @@ export async function buildApp({ config, verifier, sourceFor, logger = true, fet
             if (inFlight >= config.MCP_MAX_CONCURRENT) return reply.code(503).header('Retry-After', '2').send({ error: 'busy' });
             inFlight++;
             // Stateless: per verzoek een eigen server+transport, geen sessiedata.
-            const server = createMcpServer(sourceFor((req as unknown as { user: UserContext }).user), config);
+            const user = (req as unknown as { user: UserContext }).user;
+            const server = createMcpServer(sourceFor(user), config, filesFor?.(user));
             const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
             reply.hijack();
             reply.raw.on('close', () => {

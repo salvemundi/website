@@ -2,6 +2,7 @@ import { exportJWK, generateKeyPair, SignJWT, type CryptoKey } from 'jose';
 import { buildApp } from '../src/app.js';
 import { createVerifier } from '../src/auth/jwt.js';
 import { audienceOf, loadConfig, type Config } from '../src/config.js';
+import type { FileSourceFactory } from '../src/graph/files.js';
 import type { BijbelPage, BijbelSource } from '../src/graph/source.js';
 
 export const TENANT = '11111111-1111-4111-8111-111111111111';
@@ -61,7 +62,7 @@ export const sourceOf = (pages: BijbelPage[], stale = false): BijbelSource => ({
     searchSet: (max) => Promise.resolve({ pages: pages.slice(0, max), totaal: pages.length, fetchedAt: FETCHED, stale }),
 });
 
-export async function makeApp(source: BijbelSource, over: NodeJS.ProcessEnv = {}, fetchFn?: typeof fetch) {
+export async function makeApp(source: BijbelSource, over: NodeJS.ProcessEnv = {}, fetchFn?: typeof fetch, filesFor?: FileSourceFactory) {
     const { publicKey } = await getKeys();
     const cfg = config(over);
     const verifier = createVerifier({
@@ -70,7 +71,7 @@ export async function makeApp(source: BijbelSource, over: NodeJS.ProcessEnv = {}
         requiredScope: cfg.MCP_REQUIRED_SCOPE,
         keyResolver: () => Promise.resolve(publicKey),
     });
-    return buildApp({ config: cfg, verifier, sourceFor: () => source, logger: false, fetchFn });
+    return buildApp({ config: cfg, verifier, sourceFor: () => source, filesFor, logger: false, fetchFn });
 }
 
 export type App = Awaited<ReturnType<typeof makeApp>>;

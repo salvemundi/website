@@ -16,7 +16,12 @@ Remote MCP-server (Streamable HTTP, stateless, `POST /mcp`) waarmee een AI-assis
 | `lees_bijbel_pagina` (`pagina_id` (UUID), `sectie`, `cursor`) | Letterlijke tekst van één pagina, gepagineerd |
 | `zoek_in_bijbel` (`query`, `limit`, `cursor`) | Letterlijk zoeken op trefwoord in max. 50 pagina's (`MCP_MAX_SEARCH_PAGES`) |
 
-De bewerk- en uploadtools van de bestaande koppeling zijn **bewust niet overgenomen**. Er zijn geen tools of routes voor schrijven, uploaden, commando's of vrije URL's/paden. Alleen tekstwebonderdelen van moderne SharePoint-pagina's worden gelezen: geen PDF/Word-bijlagen, afbeeldingen, klassieke pagina's of dynamische webonderdelen. Links in pagina's worden niet gevolgd.
+| `lijst_sjablonen` (`limit`, `cursor`) | Bestanden uit de sjablonenmap (`MCP_FILES_PATH`, default `/Sjablonen` in de standaard documentbibliotheek van de site), recursief tot 3 niveaus/300 bestanden |
+| `lees_sjabloon` (`bestand_id`, `cursor`) | Letterlijke **tekst** van één bestand uit die map, gepagineerd. Alleen Word (`.docx`/`.dotx`) en tekst (`.txt`/`.md`/`.csv`); geen opmaak, afbeeldingen of invulvelden. Max. `MCP_MAX_FILE_BYTES` (3 MB), zip-bommen worden vooraf geweigerd. |
+
+Een nieuw bestand wordt door de AI-assistent in de chat gemaakt op basis van de gelezen tekst; er wordt **niets naar SharePoint geschreven**. De rechten zijn gelijk aan die voor pagina's (`Sites.Selected`, rol `read`, namens de gebruiker). Is `Sjablonen` een aparte bibliotheek in plaats van een map in de standaardbibliotheek, dan werkt `MCP_FILES_PATH` niet en is een aanpassing nodig. Optionele GitHub-variabele: `MCP_FILES_PATH`.
+
+De bewerk- en uploadtools van de bestaande koppeling zijn **bewust niet overgenomen**. Er zijn geen tools of routes voor schrijven, uploaden, commando's of vrije URL's/paden. Bij pagina's worden alleen tekstwebonderdelen van moderne SharePoint-pagina's gelezen: geen bijlagen, afbeeldingen, klassieke pagina's of dynamische webonderdelen. Links in pagina's worden niet gevolgd.
 
 ## Architectuur: OAuth + On-Behalf-Of
 1. De gebruiker meldt zich aan bij Entra; de MCP-client haalt een token op met scope `api://<MCP_ENTRA_CLIENT_ID>/bijbel.read`.
