@@ -5,20 +5,23 @@
 @font-face{font-family:"Geist";src:url(/assets/fonts/g600.woff2) format("woff2");font-weight:600;font-display:swap}
 
 :root{
-  --bg: oklch(0.155 0.012 255);
-  --bg-2: oklch(0.185 0.014 255);
-  --surface: oklch(0.215 0.016 255);
-  --surface-2: oklch(0.255 0.018 255);
-  --line: oklch(0.31 0.016 255);
-  --line-2: oklch(0.38 0.018 255);
-  --text: oklch(0.95 0.008 85);
-  --muted: oklch(0.76 0.014 255);
-  --faint: oklch(0.64 0.014 255);
-  --accent: oklch(0.83 0.12 78);
-  --accent-ink: oklch(0.21 0.03 70);
-  --accent-wash: oklch(0.83 0.12 78 / 0.12);
-  --go: oklch(0.64 0.17 148);
-  --go-text: oklch(0.8 0.13 150);
+  /* Kampthema "Wie is de mol?": donker bosgroen, salie-groene lijnen zoals de tekening van bergen, bomen en tent. */
+  --bg: oklch(0.2 0.035 155);
+  --bg-2: oklch(0.2 0.04 155 / .8);
+  --surface: oklch(0.27 0.05 155 / .9);
+  --surface-2: oklch(0.33 0.06 153);
+  --line: oklch(0.55 0.06 146 / .4);
+  --line-2: oklch(0.68 0.08 142 / .6);
+  --text: oklch(0.97 0.01 140);
+  --muted: oklch(0.85 0.035 145);
+  --faint: oklch(0.74 0.045 145);
+  --accent: oklch(0.8 0.1 138);
+  --accent-ink: oklch(0.2 0.04 155);
+  --accent-wash: oklch(0.8 0.1 138 / 0.14);
+  --go: oklch(0.7 0.17 152);
+  --go-text: oklch(0.87 0.13 152);
+  --veil-top: oklch(0.2 0.04 155 / .15);
+  --veil-bottom: oklch(0.12 0.03 155 / .55);
   --out: oklch(0.57 0.2 27);
   --out-deep: oklch(0.36 0.15 25);
   --out-text: oklch(0.78 0.12 30);
@@ -32,14 +35,16 @@
 html,body{margin:0;min-height:100%}
 body{
   background: var(--bg);
-  background-image: radial-gradient(120% 80% at 50% -10%, oklch(0.22 0.025 255) 0%, transparent 60%);
-  background-attachment: fixed;
   color: var(--text);
   font: 400 15px/1.5 var(--sans);
   -webkit-font-smoothing: antialiased;
   font-variant-numeric: tabular-nums;
   -webkit-tap-highlight-color: transparent;
 }
+/* Achtergrond: vingerafdruk met de lijntekening van het kamp, met een donkere sluier voor leesbaarheid. */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg, var(--veil-top), var(--veil-bottom)), url(/assets/achtergrond.webp) center bottom / cover no-repeat, var(--bg)}
+.logo{height:34px;width:auto;display:block;flex:none}
 ::selection{background:var(--accent);color:var(--accent-ink)}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -70,7 +75,7 @@ svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-widt
 .btn:active{transform:scale(.98)}
 .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.btn-primary:hover{background:oklch(0.87 0.11 80);border-color:oklch(0.87 0.11 80)}
+.btn-primary:hover{background:oklch(0.87 0.09 138);border-color:oklch(0.87 0.09 138)}
 .btn-danger{color:var(--out-text);border-color:oklch(0.57 0.2 27 / .45);background:oklch(0.57 0.2 27 / .1)}
 .btn-danger:hover{background:oklch(0.57 0.2 27 / .2);border-color:var(--out)}
 .btn-ghost{background:transparent;border-color:transparent;color:var(--muted)}
@@ -96,24 +101,24 @@ input[type=checkbox]{accent-color:var(--accent);width:17px;height:17px;cursor:po
 .pin{font:500 26px/1 var(--sans)!important;letter-spacing:.4em;text-align:center;padding:13px!important}
 .err{color:var(--out-text);font-size:14px;min-height:21px}
 
-.panel{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius)}
+.panel{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .pad{padding:20px}
 
 .tag{display:inline-flex;align-items:center;gap:6px;font:500 12px/1 var(--sans);padding:5px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
 .tag.go{color:var(--go-text);border-color:oklch(0.64 0.17 148 / .4);background:oklch(0.64 0.17 148 / .08)}
 .tag.out{color:var(--out-text);border-color:oklch(0.57 0.2 27 / .45);background:oklch(0.57 0.2 27 / .1)}
-.tag.acc{color:var(--accent);border-color:oklch(0.83 0.12 78 / .4);background:var(--accent-wash)}
+.tag.acc{color:var(--accent);border-color:oklch(0.8 0.1 138 / .4);background:var(--accent-wash)}
 .dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block;flex:none}
 
-.notice{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:9px;border:1px solid var(--line);background:var(--bg-2);color:var(--muted);font-size:14px}
-.notice.warn{border-color:oklch(0.83 0.12 78 / .35);background:var(--accent-wash);color:var(--text)}
+.notice{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:9px;border:1px solid var(--line);background:var(--bg-2);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:var(--muted);font-size:14px}
+.notice.warn{border-color:oklch(0.8 0.1 138 / .35);background:var(--accent-wash);color:var(--text)}
 .notice.warn svg{color:var(--accent)}
 .notice.bad{border-color:oklch(0.57 0.2 27 / .45);background:oklch(0.57 0.2 27 / .08);color:var(--text)}
 .notice.bad svg{color:var(--out-text)}
 .notice.ok{border-color:oklch(0.64 0.17 148 / .4);background:oklch(0.64 0.17 148 / .07);color:var(--text)}
 .notice.ok svg{color:var(--go-text)}
 
-.display{font:400 clamp(40px,6vw,84px)/1 var(--serif);letter-spacing:-0.02em}
+.display{font:400 clamp(40px,6vw,84px)/1.05 var(--serif);letter-spacing:-0.01em;text-shadow:0 4px 0 oklch(0.12 0.03 155 / .45)}
 
 .names{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
 .names button{
@@ -131,7 +136,8 @@ input[type=checkbox]{accent-color:var(--accent);width:17px;height:17px;cursor:po
 
 .center-screen{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
 .lock{max-width:400px;width:100%;text-align:center}
-.lock h1{font:400 46px/1 var(--serif);margin:10px 0}
+.lock h1{font:400 46px/1.05 var(--serif);margin:10px 0;text-shadow:0 3px 0 oklch(0.12 0.03 155 / .45)}
+.lock .logo{height:64px;margin:0 auto 6px}
 
 .enter{animation:enter .45s var(--ease-out) both}
 @keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
