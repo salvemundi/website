@@ -61,7 +61,13 @@ describe('OAuth-voorportaal', () => {
         for (const bad of ['https://evil.example/cb', 'http://evil.example/cb', 'javascript:alert(1)', 'https://claude.ai/api/mcp/auth_callback#x', 'http://localhost.evil.example/cb']) {
             expect((await register([CLAUDE_CB, bad])).statusCode).toBe(400);
         }
+        expect((await register(['https://chatgpt.com/connector_platform_oauth_redirect'])).statusCode).toBe(201);
+        expect((await register(['https://chatgpt.com/connector/oauth/abc_123-X'])).statusCode).toBe(201);
+        for (const bad of ['https://chatgpt.com/connector/oauth/abc/../x', 'https://chatgpt.com/connector/oauth/abc?x=1', 'https://chatgpt.com.evil.example/connector/oauth/abc']) {
+            expect((await register([bad])).statusCode).toBe(400);
+        }
         expect((await app.inject({ method: 'POST', url: '/register', headers, payload: {} })).statusCode).toBe(400);
+        expect((await app.inject({ method: 'GET', url: '/.well-known/openid-configuration' })).statusCode).toBe(200);
     });
 
     it('stuurt /authorize door naar Entra met het echte client-ID, eigen callback, vaste scope en zonder resource', async () => {

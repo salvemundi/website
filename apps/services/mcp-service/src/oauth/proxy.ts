@@ -24,6 +24,9 @@ interface CodeBlob { ec: string; cid: string; ru: string; cc: string; exp: numbe
 
 const sha256url = (s: string) => createHash('sha256').update(s).digest('base64url');
 
+// ChatGPT gebruikt (ouder) een vaste host met een connector-specifiek ID in het pad.
+const isChatGptConnector = (raw: string) => /^https:\/\/chatgpt\.com\/connector\/oauth\/[A-Za-z0-9_-]{1,128}$/.test(raw);
+
 const isLoopback = (u: URL) => u.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(u.hostname);
 
 export function registerOAuthRoutes(app: FastifyInstance, config: Config, fetchFn: typeof fetch = fetch): void {
@@ -39,7 +42,7 @@ export function registerOAuthRoutes(app: FastifyInstance, config: Config, fetchF
         let u: URL;
         try { u = new URL(raw); } catch { return false; }
         if (u.hash) return false;
-        return config.MCP_ALLOWED_REDIRECT_URIS.includes(raw) || isLoopback(u);
+        return config.MCP_ALLOWED_REDIRECT_URIS.includes(raw) || isLoopback(u) || isChatGptConnector(raw);
     };
 
     const noStore = (reply: FastifyReply) => reply.header('Cache-Control', 'no-store').header('Pragma', 'no-cache');
@@ -55,7 +58,7 @@ export function registerOAuthRoutes(app: FastifyInstance, config: Config, fetchF
         done(null, Object.fromEntries(new URLSearchParams(body as string)));
     });
 
-    app.get('/.well-known/oauth-authorization-server', () => ({
+    const asMetadata = () => ({
         issuer: base,
         authorization_endpoint: `${base}/authorize`,
         token_endpoint: `${base}/token`,
@@ -65,7 +68,10 @@ export function registerOAuthRoutes(app: FastifyInstance, config: Config, fetchF
         code_challenge_methods_supported: ['S256'],
         token_endpoint_auth_methods_supported: ['none'],
         scopes_supported: [config.MCP_REQUIRED_SCOPE],
-    }));
+    });
+    app.get('/.well-known/oauth-authorization-server', asMetadata);
+    // Sommige clients (o.a. ChatGPT) zoeken ook op de OIDC-discovery-URL.
+    app.get('/.well-known/openid-configuration', asMetadata);
 
     // Dynamic client registration (RFC 7591): stateless; de toegestane redirect-URI's zitten in het client_id.
     const registerSchema = z.object({ redirect_uris: z.array(z.string()).min(1).max(5) });

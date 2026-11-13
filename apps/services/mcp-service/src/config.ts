@@ -20,7 +20,7 @@ const schema = z.object({
     MCP_ALLOWED_PATH_PREFIX: z.string().regex(/^\/[A-Za-z0-9\-_./]*$/).default('/'),
     MCP_ALLOWED_ORIGINS: csv,
     // Redirect-URI's die MCP-clients mogen registreren (exacte match; http-loopback is altijd toegestaan).
-    MCP_ALLOWED_REDIRECT_URIS: z.string().default('https://claude.ai/api/mcp/auth_callback,https://claude.com/api/mcp/auth_callback').transform((v) => v.split(',').map((s) => s.trim()).filter(Boolean)),
+    MCP_ALLOWED_REDIRECT_URIS: z.string().default('https://claude.ai/api/mcp/auth_callback,https://claude.com/api/mcp/auth_callback,https://chatgpt.com/connector_platform_oauth_redirect,https://platform.openai.com/apps-manage/oauth').transform((v) => v.split(',').map((s) => s.trim()).filter(Boolean)),
     MCP_CACHE_TTL_SECONDS: z.coerce.number().int().min(30).max(3600).default(300),
     MCP_MAX_STALE_SECONDS: z.coerce.number().int().min(0).max(86400).default(3600),
     MCP_MAX_RESPONSE_CHARS: z.coerce.number().int().min(1000).max(50000).default(8000),
