@@ -18,6 +18,7 @@ export class AccessDeniedError extends Error {}
 const SITE_ID = /^[A-Za-z0-9.,-]+$/;
 const PAGE_ID = /^[0-9a-fA-F-]{36}$/;
 const SAFE_QUERY = /^[A-Za-z0-9$=&,_.%/ -]*$/;
+const LIST_ID = /^[0-9a-fA-F-]{36}$/;
 const ITEM_ID = /^[A-Za-z0-9!_-]{1,128}$/;
 const PATH_SEGMENT = /^[A-Za-z0-9%_~.-]{1,200}$/;
 
@@ -34,6 +35,7 @@ function safeSegment(seg: string): boolean {
 
 /** Alleen leesroutes in de standaard documentbibliotheek van de site: root:/<map>, items/{id}[/children|/content]. */
 function driveRestOk(rest: string[]): boolean {
+    if (rest.length === 1 && rest[0] === 'root') return true;
     if (rest[0] === 'root:') return rest.length >= 2 && rest.length <= 9 && rest.slice(1).every(safeSegment);
     if (rest[0] !== 'items' || !ITEM_ID.test(rest[1] ?? '')) return false;
     return rest.length === 2 || (rest.length === 3 && (rest[2] === 'children' || rest[2] === 'content'));
@@ -47,6 +49,12 @@ export function resolveGraphUrl(input: string): URL {
         const [, root, site, pages, ...rest] = parts;
         if (pages === 'drive') {
             if (root !== 'sites' || !SITE_ID.test(site) || !driveRestOk(rest) || !SAFE_QUERY.test(query)) throw new Error('Pad niet toegestaan');
+            return new URL(GRAPH_BASE + input);
+        }
+        if (pages === 'lists') {
+            // Documentbibliotheken van de site: alleen de lijst zelf en <lijst>/drive/<leesroutes>.
+            const listsOk = rest.length === 0 || (LIST_ID.test(rest[0] ?? '') && rest[1] === 'drive' && driveRestOk(rest.slice(2)));
+            if (root !== 'sites' || !SITE_ID.test(site) || !listsOk || !SAFE_QUERY.test(query)) throw new Error('Pad niet toegestaan');
             return new URL(GRAPH_BASE + input);
         }
         const restOk =

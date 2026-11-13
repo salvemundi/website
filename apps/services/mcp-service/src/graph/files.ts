@@ -22,6 +22,11 @@ const MAX_USERS = 20;
 const MAX_TEXTS = 10;
 const SELECT = '$select=id,name,size,lastModifiedDateTime,webUrl,file,folder&$top=200';
 
+const listsSchema = z.object({
+    value: z.array(z.object({ id: z.uuid(), displayName: z.string().nullish(), name: z.string().nullish(), list: z.object({ template: z.string().nullish() }).loose().nullish() })),
+    '@odata.nextLink': z.string().optional(),
+});
+
 const itemSchema = z.object({
     id: z.string(),
     name: z.string(),
@@ -44,7 +49,7 @@ export interface FileSourceOptions {
     now?: () => number;
 }
 
-interface UserCache { files?: { data: { files: FileMeta[]; truncated: boolean }; at: number }; texts: Map<string, { tekst: string; at: number }> }
+interface UserCache { base?: string; files?: { data: { files: FileMeta[]; truncated: boolean }; at: number }; texts: Map<string, { tekst: string; at: number }> }
 
 /**
  * Bestanden per aangemelde gebruiker (OBO): de Graph-rechten van de gebruiker zijn bepalend. Alleen bestanden die in de
@@ -69,12 +74,30 @@ export function createGraphFileSources(graph: GraphReader, opts: FileSourceOptio
         let graphToken: Promise<string> | undefined;
         const token = () => (graphToken ??= opts.exchange(user.token));
         const get = async (path: string) => graph.get(path, await token());
-        const reset = () => { cache.files = undefined; cache.texts.clear(); };
+        const reset = () => { cache.files = undefined; cache.base = undefined; cache.texts.clear(); };
+
+        /**
+         * `/Sjablonen/Sub`: bestaat er een documentbibliotheek met de naam van het eerste segment, dan is dat de bibliotheek
+         * (rest = map daarin). Anders is het een map in de standaardbibliotheek van de site.
+         */
+        async function resolveBase(): Promise<{ base: string; folder: string }> {
+            const [first = '', ...rest] = opts.rootPath.split('/').filter(Boolean);
+            let next: string | undefined = `/sites/${opts.siteId}/lists?$select=id,displayName,name,list&$top=200`;
+            for (let i = 0; next && i < 5; i++) {
+                const page: z.infer<typeof listsSchema> = listsSchema.parse(await get(next));
+                const lib = page.value.find((l) => l.list?.template === 'documentLibrary' && [l.displayName, l.name].some((n) => n?.toLowerCase() === first.toLowerCase()));
+                if (lib) return { base: `/sites/${opts.siteId}/lists/${lib.id.toLowerCase()}/drive`, folder: rest.map(encodeURIComponent).join('/') };
+                next = page['@odata.nextLink'];
+            }
+            return { base: `/sites/${opts.siteId}/drive`, folder: rootSegments };
+        }
 
         async function fetchFiles() {
+            const { base, folder } = await resolveBase();
+            cache.base = base;
             let root: z.infer<typeof itemSchema>;
             try {
-                root = itemSchema.parse(await get(`/sites/${opts.siteId}/drive/root:/${rootSegments}`));
+                root = itemSchema.parse(await get(folder ? `${base}/root:/${folder}` : `${base}/root`));
             } catch (e) {
                 if (e instanceof SourceUnavailableError && e.message === 'Graph status 404') throw new FolderNotFoundError('Map niet gevonden');
                 throw e;
@@ -85,7 +108,7 @@ export function createGraphFileSources(graph: GraphReader, opts: FileSourceOptio
             const queue: { id: string; path: string; depth: number }[] = [{ id: root.id, path: '', depth: 0 }];
             for (const dir of queue) {
                 if (truncated) break;
-                let next: string | undefined = `/sites/${opts.siteId}/drive/items/${dir.id}/children?${SELECT}`;
+                let next: string | undefined = `${base}/items/${dir.id}/children?${SELECT}`;
                 while (next && !truncated) {
                     const page: z.infer<typeof childrenSchema> = childrenSchema.parse(await get(next));
                     for (const it of page.value) {
@@ -140,7 +163,7 @@ export function createGraphFileSources(graph: GraphReader, opts: FileSourceOptio
                 if (hit && now() - hit.at <= opts.ttlMs) return { file, tekst: hit.tekst, fetchedAt: new Date(hit.at), stale: false };
                 let tekst: string;
                 try {
-                    const data = await guardedGraph(async () => opts.download.download(`/sites/${opts.siteId}/drive/items/${file.id}/content`, await token(), opts.maxFileBytes));
+                    const data = await guardedGraph(async () => opts.download.download(`${cache.base ?? `/sites/${opts.siteId}/drive`}/items/${file.id}/content`, await token(), opts.maxFileBytes));
                     tekst = await extractText(file.naam, data);
                 } catch (e) {
                     if (e instanceof FileTooLargeError) throw new FileUnreadableError('Het bestand is te groot om te lezen.');

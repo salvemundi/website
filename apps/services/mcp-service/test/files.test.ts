@@ -26,6 +26,10 @@ describe('Graph-pad voor bestanden', () => {
             `/sites/${SITE}/drive/items/01ABC!x_y-z`,
             `/sites/${SITE}/drive/items/01ABC/children?$select=id,name&$top=200`,
             `/sites/${SITE}/drive/items/01ABC/content`,
+            `/sites/${SITE}/drive/root`,
+            `/sites/${SITE}/lists?$select=id,displayName,name,list&$top=200`,
+            `/sites/${SITE}/lists/9b1e3c52-aaaa-4bbb-8ccc-0123456789ab/drive/root:/Sub`,
+            `/sites/${SITE}/lists/9b1e3c52-aaaa-4bbb-8ccc-0123456789ab/drive/items/01A/children`,
         ]) expect(() => resolveGraphUrl(ok), ok).not.toThrow();
         for (const bad of [
             `/sites/${SITE}/drive/root:/..`,
@@ -36,7 +40,10 @@ describe('Graph-pad voor bestanden', () => {
             `/sites/${SITE}/drive/items/01ABC/children?$filter=x;y`,
             `/sites/${SITE}/drive/items/..`,
             `/sites/${SITE}/drives/x`,
-            `/sites/${SITE}/lists`,
+            `/sites/${SITE}/lists/abc/drive/root`,
+            `/sites/${SITE}/lists/9b1e3c52-aaaa-4bbb-8ccc-0123456789ab/items`,
+            `/sites/${SITE}/lists/9b1e3c52-aaaa-4bbb-8ccc-0123456789ab/drive/items/01A/permissions`,
+            `/sites/${SITE}/lists/9b1e3c52-aaaa-4bbb-8ccc-0123456789ab/drive/root:/..`,
         ]) expect(() => resolveGraphUrl(bad), bad).toThrow();
     });
 });
@@ -92,14 +99,20 @@ const item = (id: string, name: string, kind: 'file' | 'folder', size = 100) => 
     id, name, size, lastModifiedDateTime: '2026-10-01T00:00:00Z', webUrl: `https://contoso.sharepoint.com/sites/bijbel/Shared%20Documents/Sjablonen/${name}`, [kind]: {},
 });
 
-function fakeGraph(mode: 'ok' | 'nofolder' | 'denied' = 'ok') {
+const LIB = '9b1e3c52-aaaa-4bbb-8ccc-0123456789ab';
+
+function fakeGraph(mode: 'ok' | 'nofolder' | 'denied' | 'library' = 'ok') {
     const g = {
         calls: [] as string[],
         mode,
         get(u: string) {
             g.calls.push(u);
             if (g.mode === 'denied') return Promise.reject(new AccessDeniedError('403'));
-            if (u.includes('/drive/root:/')) return g.mode === 'nofolder' ? Promise.reject(new SourceUnavailableError('Graph status 404')) : Promise.resolve(item('ROOT', 'Sjablonen', 'folder'));
+            if (u.includes('/lists?')) {
+                const libs = [{ id: LIB.toUpperCase(), displayName: 'Sjablonen', name: 'Sjablonen', list: { template: 'documentLibrary' } }, { id: 'ffffffff-aaaa-4bbb-8ccc-0123456789ab', displayName: 'Sjablonen', list: { template: 'genericList' } }];
+                return Promise.resolve({ value: g.mode === 'library' ? libs : [{ id: 'ffffffff-aaaa-4bbb-8ccc-0123456789ab', displayName: 'Documenten', list: { template: 'documentLibrary' } }] });
+            }
+            if (u.endsWith('/drive/root') || u.includes('/drive/root:/')) return g.mode === 'nofolder' ? Promise.reject(new SourceUnavailableError('Graph status 404')) : Promise.resolve(item('ROOT', 'Sjablonen', 'folder'));
             if (u.includes('/items/ROOT/children')) return Promise.resolve({ value: [item('F1', 'Brief.docx', 'file'), item('D1', 'Sub', 'folder'), item('F2', 'Tabel.xlsx', 'file'), item('F3', 'Groot.docx', 'file', 99_000_000)] });
             if (u.includes('/items/D1/children')) return Promise.resolve({ value: [item('F4', 'Notitie.txt', 'file')] });
             return Promise.reject(new Error('onverwacht pad ' + u));
@@ -109,7 +122,7 @@ function fakeGraph(mode: 'ok' | 'nofolder' | 'denied' = 'ok') {
 }
 const fakeDownload = (content: Record<string, Buffer>) => ({ calls: [] as string[], download: vi.fn((path: string) => { const id = /items\/([^/]+)\/content/.exec(path)![1]!; return Promise.resolve(content[id] ?? Buffer.alloc(0)); }) }) satisfies FileDownloader & Record<string, unknown>;
 
-async function setup(mode: 'ok' | 'nofolder' | 'denied' = 'ok') {
+async function setup(mode: 'ok' | 'nofolder' | 'denied' | 'library' = 'ok') {
     const graph = fakeGraph(mode);
     const dl = fakeDownload({ F1: await docx('Geachte lid'), F4: Buffer.from('notitie tekst') });
     const exchange = vi.fn((t: string) => Promise.resolve(`graph-for-${t}`));
@@ -122,8 +135,22 @@ describe('bestandsbron', () => {
         const { graph, filesFor } = await setup();
         const snap = await filesFor(user('a')).list();
         expect(snap.files.map((f) => [f.pad, f.leesbaar])).toEqual([['Brief.docx', true], ['Groot.docx', true], ['Sub/Notitie.txt', true], ['Tabel.xlsx', false]]);
-        expect(graph.calls[0]).toBe(`/sites/${SITE}/drive/root:/Sjablonen`);
+        expect(graph.calls[1]).toBe(`/sites/${SITE}/drive/root:/Sjablonen`);
         expect(graph.calls.every((c) => !/permissions|\/drives\//.test(c))).toBe(true);
+    });
+    it('gebruikt een documentbibliotheek met de naam van de map en leest daaruit', async () => {
+        const { graph, dl, filesFor } = await setup('library');
+        const src = filesFor(user('a'));
+        expect((await src.list()).files).toHaveLength(4);
+        expect(graph.calls.filter((c) => !c.includes('/lists?'))[0]).toBe(`/sites/${SITE}/lists/${LIB}/drive/root`);
+        expect(graph.calls.some((c) => c.includes('/drive/root:/Sjablonen'))).toBe(false);
+        expect((await src.read('F1'))?.tekst).toContain('Geachte lid');
+        expect(dl.download.mock.calls[0]![0]).toBe(`/sites/${SITE}/lists/${LIB}/drive/items/F1/content`);
+    });
+    it('valt terug op een map in de standaardbibliotheek als er geen bibliotheek met die naam is', async () => {
+        const { graph, filesFor } = await setup('ok');
+        await filesFor(user('a')).list();
+        expect(graph.calls[1]).toBe(`/sites/${SITE}/drive/root:/Sjablonen`);
     });
     it('leest alleen bestanden uit de lijst; onbekend ID, niet-ondersteund type en te groot geven geen download', async () => {
         const { dl, filesFor } = await setup();

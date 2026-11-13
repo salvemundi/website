@@ -121,7 +121,7 @@ describe('Graph-client: alleen GET naar vaste, gevalideerde URL\'s', () => {
     it('accepteert alleen sites/pages-paden en Graph-nextLinks', () => {
         expect(resolveGraphUrl(`/sites/${SITE}/pages/microsoft.graph.sitePage?$top=100`).origin).toBe('https://graph.microsoft.com');
         for (const bad of [
-            '/users', '/me/messages', `/sites/${SITE}/drive/root`, `/sites/${SITE}/pages/../../users`, '//evil.example/sites/x/pages',
+            '/users', '/me/messages', `/sites/${SITE}/drive/root/children`, `/sites/${SITE}/drive/items/x/permissions`, `/sites/${SITE}/pages/../../users`, '//evil.example/sites/x/pages',
             'https://evil.example/v1.0/sites/x/pages', 'http://graph.microsoft.com/v1.0/sites/x/pages', 'https://graph.microsoft.com/v1.0/users',
             'https://user@graph.microsoft.com/v1.0/sites/x/pages', `/sites/${SITE}/pages?$x=<script>`,
         ]) {
