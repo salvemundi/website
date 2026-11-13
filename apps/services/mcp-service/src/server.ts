@@ -32,6 +32,7 @@ const start = async () => {
             rootPath: config.MCP_FILES_PATH,
             ttlMs: config.MCP_CACHE_TTL_SECONDS * 1000,
             maxFileBytes: config.MCP_MAX_FILE_BYTES,
+            maxDownloadBytes: config.MCP_MAX_DOWNLOAD_BYTES,
             exchange,
             download: createGraphDownloader({ timeoutMs: config.MCP_REQUEST_TIMEOUT_MS }),
         });

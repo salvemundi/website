@@ -10,6 +10,8 @@ export interface FileSource {
     list(): Promise<{ files: FileMeta[]; truncated: boolean } & Freshness>;
     /** Letterlijke tekst van één bestand; null als het ID niet in de allowlist (de map) staat. */
     read(id: string): Promise<({ file: FileMeta; tekst: string } & Freshness) | null>;
+    /** Originele bytes van één bestand (ongewijzigd, niet geparsed); null als het ID niet in de map staat. */
+    bytes(id: string): Promise<({ file: FileMeta; data: Buffer } & Freshness) | null>;
 }
 export type FileSourceFactory = (user: UserContext) => FileSource;
 
@@ -44,12 +46,14 @@ export interface FileSourceOptions {
     rootPath: string;
     ttlMs: number;
     maxFileBytes: number;
+    /** Maximale grootte voor ruwe downloads (download_sjabloon). */
+    maxDownloadBytes: number;
     exchange: TokenExchanger;
     download: FileDownloader;
     now?: () => number;
 }
 
-interface UserCache { base?: string; files?: { data: { files: FileMeta[]; truncated: boolean }; at: number }; texts: Map<string, { tekst: string; at: number }> }
+interface UserCache { base?: string; files?: { data: { files: FileMeta[]; truncated: boolean }; at: number }; texts: Map<string, { tekst: string; at: number }>; raw: Map<string, { data: Buffer; at: number }> }
 
 /**
  * Bestanden per aangemelde gebruiker (OBO): de Graph-rechten van de gebruiker zijn bepalend. Alleen bestanden die in de
@@ -63,7 +67,7 @@ export function createGraphFileSources(graph: GraphReader, opts: FileSourceOptio
     const cacheFor = (key: string): UserCache => {
         let c = caches.get(key);
         if (c) caches.delete(key);
-        c ??= { texts: new Map() };
+        c ??= { texts: new Map(), raw: new Map() };
         caches.set(key, c);
         while (caches.size > MAX_USERS) caches.delete(caches.keys().next().value as string);
         return c;
@@ -74,7 +78,7 @@ export function createGraphFileSources(graph: GraphReader, opts: FileSourceOptio
         let graphToken: Promise<string> | undefined;
         const token = () => (graphToken ??= opts.exchange(user.token));
         const get = async (path: string) => graph.get(path, await token());
-        const reset = () => { cache.files = undefined; cache.base = undefined; cache.texts.clear(); };
+        const reset = () => { cache.files = undefined; cache.base = undefined; cache.texts.clear(); cache.raw.clear(); };
 
         /**
          * `/Sjablonen/Sub`: bestaat er een documentbibliotheek met de naam van het eerste segment, dan is dat de bibliotheek
@@ -151,6 +155,26 @@ export function createGraphFileSources(graph: GraphReader, opts: FileSourceOptio
             async list() {
                 const f = await files();
                 return { files: f.files, truncated: f.truncated, fetchedAt: new Date(f.at), stale: false };
+            },
+            async bytes(id) {
+                const f = await files();
+                const file = f.files.find((x) => x.id === id);
+                if (!file) return null;
+                if (file.grootte > opts.maxDownloadBytes) throw new FileUnreadableError(`Het bestand is te groot om te downloaden (maximaal ${Math.floor(opts.maxDownloadBytes / 1024)} KB).`);
+                const key = `${file.id}:${file.gewijzigd ?? ''}`;
+                const hit = cache.raw.get(key);
+                if (hit && now() - hit.at <= opts.ttlMs) return { file, data: hit.data, fetchedAt: new Date(hit.at), stale: false };
+                let data: Buffer;
+                try {
+                    data = await guardedGraph(async () => opts.download.download(`${cache.base ?? `/sites/${opts.siteId}/drive`}/items/${file.id}/content`, await token(), opts.maxDownloadBytes));
+                } catch (e) {
+                    if (e instanceof FileTooLargeError) throw new FileUnreadableError('Het bestand is te groot om te downloaden.');
+                    throw e;
+                }
+                cache.raw.delete(key);
+                cache.raw.set(key, { data, at: now() });
+                while (cache.raw.size > 3) cache.raw.delete(cache.raw.keys().next().value as string);
+                return { file, data, fetchedAt: new Date(now()), stale: false };
             },
             async read(id) {
                 const f = await files();

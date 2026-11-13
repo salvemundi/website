@@ -30,6 +30,7 @@ const schema = z.object({
     MCP_ALLOWED_REDIRECT_URIS: z.string().default('https://claude.ai/api/mcp/auth_callback,https://claude.com/api/mcp/auth_callback,https://chatgpt.com/connector_platform_oauth_redirect,https://platform.openai.com/apps-manage/oauth').transform((v) => v.split(',').map((s) => s.trim()).filter(Boolean)),
     // Map in de standaard documentbibliotheek met de sjabloonbestanden (alleen lezen).
     MCP_FILES_PATH: z.string().max(400).refine(isSafeFolderPath, 'ongeldig mappad').default('/Sjablonen'),
+    MCP_MAX_DOWNLOAD_BYTES: z.coerce.number().int().min(1024).max(1024 * 1024).default(256 * 1024),
     MCP_MAX_FILE_BYTES: z.coerce.number().int().min(1024).max(10 * 1024 * 1024).default(3 * 1024 * 1024),
     MCP_CACHE_TTL_SECONDS: z.coerce.number().int().min(30).max(3600).default(300),
     MCP_MAX_STALE_SECONDS: z.coerce.number().int().min(0).max(86400).default(3600),

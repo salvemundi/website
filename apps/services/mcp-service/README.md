@@ -18,7 +18,18 @@ Remote MCP-server (Streamable HTTP, stateless, `POST /mcp`) waarmee een AI-assis
 | `lijst_sjablonen` (`limit`, `cursor`) | Bestanden uit de sjablonenmap (`MCP_FILES_PATH`, default `/Sjablonen` in de standaard documentbibliotheek van de site), recursief tot 3 niveaus/300 bestanden |
 | `lees_sjabloon` (`bestand_id`, `cursor`) | Letterlijke **tekst** van één bestand uit die map, gepagineerd. Alleen Word (`.docx`/`.dotx`) en tekst (`.txt`/`.md`/`.csv`); geen opmaak, afbeeldingen of invulvelden. Max. `MCP_MAX_FILE_BYTES` (3 MB), zip-bommen worden vooraf geweigerd. |
 
-Een nieuw bestand wordt door de AI-assistent in de chat gemaakt op basis van de gelezen tekst; er wordt **niets naar SharePoint geschreven**. De rechten zijn gelijk aan die voor pagina's (`Sites.Selected`, rol `read`, namens de gebruiker). Het eerste segment van `MCP_FILES_PATH` wordt eerst als **documentbibliotheek** van de site gezocht (op weergavenaam, bv. een eigen bibliotheek `Sjablonen`); de rest is een map daarin. Bestaat zo'n bibliotheek niet, dan is het een map in de standaardbibliotheek. Optionele GitHub-variabele: `MCP_FILES_PATH` (default `/Sjablonen`).
+| `download_sjabloon` (`bestand_id`, `cursor`) | **Originele bytes** van één bestand uit die map als base64 in delen van 12 000 bytes (met `sha256_totaal`), zodat een assistent met code-uitvoering een kopie met behoud van opmaak kan invullen. Elk bestandstype, max. `MCP_MAX_DOWNLOAD_BYTES` (default 256 KB, max. 1 MB). De server parset niets; alleen bestanden uit de lijst zijn opvraagbaar. |
+
+### Prompts (werkwijzen die de gebruiker in de client kiest)
+| Prompt | Doel |
+|---|---|
+| `beantwoord_vraag` (`vraag`) | Zoekt in de Bijbel en antwoordt met bronvermelding; zegt expliciet als het er niet in staat |
+| `controleer_tegen_bijbel` (`tekst`) | Toetst een tekst of plan aan regels en afspraken, met citaat en bron per punt |
+| `vul_sjabloon_in` (`sjabloon`, `gegevens`) | Zoekt en leest een sjabloon, vraagt ontbrekende gegevens en levert een ingevulde kopie in de chat (alleen beschikbaar als de bestandstools actief zijn) |
+
+Prompts bevatten alleen instructies en de door de gebruiker ingevulde argumenten; ze geven geen extra toegang.
+
+Een nieuw bestand wordt door de AI-assistent in de chat gemaakt op basis van de gelezen tekst; er wordt **niets naar SharePoint geschreven**. De rechten zijn gelijk aan die voor pagina's (`Sites.Selected`, rol `read`, namens de gebruiker). Het eerste segment van `MCP_FILES_PATH` wordt eerst als **documentbibliotheek** van de site gezocht (op weergavenaam, bv. een eigen bibliotheek `Sjablonen`); de rest is een map daarin. Bestaat zo'n bibliotheek niet, dan is het een map in de standaardbibliotheek. Optionele GitHub-variabelen: `MCP_FILES_PATH` (default `/Sjablonen`) en `MCP_MAX_DOWNLOAD_BYTES` (default 262144; alleen in de service-omgeving, niet in compose gezet).
 
 De bewerk- en uploadtools van de bestaande koppeling zijn **bewust niet overgenomen**. Er zijn geen tools of routes voor schrijven, uploaden, commando's of vrije URL's/paden. Bij pagina's worden alleen tekstwebonderdelen van moderne SharePoint-pagina's gelezen: geen bijlagen, afbeeldingen, klassieke pagina's of dynamische webonderdelen. Links in pagina's worden niet gevolgd.
 
@@ -34,7 +45,7 @@ Overig: Host-/Origin-validatie, rate limit, 64 KB body-limiet, time-outs en maxi
 Container: non-root, read-only rootfs, `cap_drop: ALL`, `no-new-privileges`, geheugen/CPU/pids-limiet, alleen `proxy-network`, **geen `env_file`**, geen volumes, geen gepubliceerde poort.
 
 ## Alleen-lezen, op meerdere niveaus
-- **Tools/routes:** alleen de drie leestools; geen schrijfroutes.
+- **Tools/routes:** alleen leestools (pagina's en sjablonen) en prompts; geen schrijfroutes.
 - **Config:** `BIJBEL_WRITE_ENABLED` staat in compose vast op `false`; een andere waarde laat de service niet starten.
 - **Bron:** de Graph-client kan alleen `GET`.
 - **Bronrechten:** een **afzonderlijke app met alleen leesrechten** (zie hieronder). Dit laatste is niet vanuit de repo af te dwingen; het is een Entra-inrichting die een beheerder moet doen en controleren.

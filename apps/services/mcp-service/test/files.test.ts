@@ -1,10 +1,11 @@
+import { createHash } from 'node:crypto';
 import JSZip from 'jszip';
 import { describe, expect, it, vi } from 'vitest';
 import type { UserContext } from '../src/auth/jwt.js';
 import { AccessDeniedError, createGraphDownloader, FileTooLargeError, resolveGraphUrl, SourceUnavailableError, type FileDownloader, type GraphReader } from '../src/graph/client.js';
 import { extractText, FileUnreadableError, zipUncompressedSize } from '../src/graph/extract.js';
 import { createGraphFileSources, FolderNotFoundError } from '../src/graph/files.js';
-import { callTool, makeApp, page, sourceOf } from './helpers.js';
+import { callTool, makeApp, page, rpc, sourceOf } from './helpers.js';
 
 const SITE = 'contoso.sharepoint.com,aaa,bbb';
 const user = (key: string): UserContext => ({ key, token: `user-token-${key}`, scopes: ['bijbel.read'] });
@@ -126,7 +127,7 @@ async function setup(mode: 'ok' | 'nofolder' | 'denied' | 'library' = 'ok') {
     const graph = fakeGraph(mode);
     const dl = fakeDownload({ F1: await docx('Geachte lid'), F4: Buffer.from('notitie tekst') });
     const exchange = vi.fn((t: string) => Promise.resolve(`graph-for-${t}`));
-    const filesFor = createGraphFileSources(graph, { siteId: SITE, rootPath: '/Sjablonen', ttlMs: 60_000, maxFileBytes: 1_000_000, exchange, download: dl });
+    const filesFor = createGraphFileSources(graph, { siteId: SITE, rootPath: '/Sjablonen', ttlMs: 60_000, maxFileBytes: 1_000_000, maxDownloadBytes: 100_000, exchange, download: dl });
     return { graph, dl, exchange, filesFor };
 }
 
@@ -198,5 +199,66 @@ describe('tools voor sjablonen', () => {
 
         const plain = await makeApp(sourceOf([page()]));
         expect((await callTool(plain, 'lijst_sjablonen', {})).isError).toBe(true);
+    });
+});
+
+describe('download_sjabloon en bytes()', () => {
+    it('geeft originele bytes in delen met checksum; grote of onbekende bestanden niet', async () => {
+        const { dl, filesFor } = await setup();
+        const orig = await docx('Geachte lid');
+        const src = filesFor(user('a'));
+        const r = await src.bytes('F1');
+        expect(r?.data.equals(orig)).toBe(true);
+        expect(await src.bytes('BUITEN')).toBeNull();
+        await src.bytes('F1');
+        expect(dl.download).toHaveBeenCalledTimes(1); // gecachet
+        await expect(src.bytes('F3')).rejects.toThrow(/te groot/);
+    });
+
+    it('levert via MCP base64-delen die samen het origineel opleveren', async () => {
+        const { filesFor, dl } = await setup();
+        const big = Buffer.alloc(30_000, 7);
+        dl.download.mockImplementation((path: string) => Promise.resolve(/F1\//.test(path) ? big : Buffer.alloc(0)));
+        const app = await makeApp(sourceOf([page()]), {}, undefined, filesFor);
+        let cursor: string | undefined;
+        let b64 = '';
+        let parts = 0;
+        let sha = '';
+        do {
+            const r = await callTool(app, 'download_sjabloon', { bestand_id: 'F1', ...(cursor ? { cursor } : {}) });
+            const d = r.data as { base64: string; volgende_cursor: string | null; sha256_totaal: string; deel: { van: number } };
+            expect(r.isError).toBe(false);
+            b64 += d.base64;
+            sha = d.sha256_totaal;
+            parts++;
+            cursor = d.volgende_cursor ?? undefined;
+        } while (cursor);
+        expect(parts).toBe(3);
+        const joined = Buffer.from(b64, 'base64');
+        expect(joined.equals(big)).toBe(true);
+        expect(createHash('sha256').update(joined).digest('hex')).toBe(sha);
+
+        expect((await callTool(app, 'download_sjabloon', { bestand_id: 'F1', cursor: '5' })).data).toMatchObject({ status: 'niet_gevonden' });
+        expect((await callTool(app, 'download_sjabloon', { bestand_id: 'BUITEN' })).data).toMatchObject({ status: 'niet_gevonden' });
+        expect((await callTool(app, 'download_sjabloon', { bestand_id: 'F3' })).isError).toBe(true);
+        expect((await callTool(app, 'download_sjabloon', { bestand_id: '../x' })).isError).toBe(true);
+    });
+});
+
+describe('prompts', () => {
+    it('biedt werkwijzen aan; vul_sjabloon_in alleen met bestandsbron', async () => {
+        const { filesFor } = await setup();
+        const withFiles = await makeApp(sourceOf([page()]), {}, undefined, filesFor);
+        const list = (await rpc(withFiles, 'prompts/list', {})).json<{ result: { prompts: { name: string }[] } }>();
+        expect(list.result.prompts.map((p) => p.name).sort()).toEqual(['beantwoord_vraag', 'controleer_tegen_bijbel', 'vul_sjabloon_in']);
+        const got = (await rpc(withFiles, 'prompts/get', { name: 'vul_sjabloon_in', arguments: { sjabloon: 'Brief', gegevens: 'Naam: Jan' } })).json<{ result: { messages: { content: { text: string } }[] } }>();
+        expect(got.result.messages[0]!.content.text).toContain('lijst_sjablonen');
+        expect(got.result.messages[0]!.content.text).toContain('Naam: Jan');
+
+        const plain = await makeApp(sourceOf([page()]));
+        const l2 = (await rpc(plain, 'prompts/list', {})).json<{ result: { prompts: { name: string }[] } }>();
+        expect(l2.result.prompts.map((p) => p.name).sort()).toEqual(['beantwoord_vraag', 'controleer_tegen_bijbel']);
+        const q = (await rpc(plain, 'prompts/get', { name: 'beantwoord_vraag', arguments: { vraag: 'Mag je alcohol drinken?' } })).json<{ result: { messages: { content: { text: string } }[] } }>();
+        expect(q.result.messages[0]!.content.text).toContain('Mag je alcohol drinken?');
     });
 });
