@@ -15,7 +15,6 @@ Remote MCP-server (Streamable HTTP, stateless, `POST /mcp`) waarmee een AI-assis
 | `lijst_bijbel_paginas` (`limit`, `cursor`) | Pagina-ID's, titels, bronlinks, wijzigingsdatum (gepagineerd) |
 | `lees_bijbel_pagina` (`pagina_id` (UUID), `sectie`, `cursor`) | Letterlijke tekst van één pagina, gepagineerd |
 | `zoek_in_bijbel` (`query`, `limit`, `cursor`) | Letterlijk zoeken op trefwoord in max. 50 pagina's (`MCP_MAX_SEARCH_PAGES`) |
-
 | `lijst_sjablonen` (`limit`, `cursor`) | Bestanden uit de sjablonenmap (`MCP_FILES_PATH`, default `/Sjablonen` in de standaard documentbibliotheek van de site), recursief tot 3 niveaus/300 bestanden |
 | `lees_sjabloon` (`bestand_id`, `cursor`) | Letterlijke **tekst** van één bestand uit die map, gepagineerd. Alleen Word (`.docx`/`.dotx`) en tekst (`.txt`/`.md`/`.csv`); geen opmaak, afbeeldingen of invulvelden. Max. `MCP_MAX_FILE_BYTES` (3 MB), zip-bommen worden vooraf geweigerd. |
 
