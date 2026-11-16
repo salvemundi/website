@@ -1,6 +1,6 @@
 import 'server-only';
 import { createSign } from 'node:crypto';
-import { safeConsoleError } from '@/server/utils/logger';
+import { logInfo, logWarn, safeConsoleError } from '@/server/utils/logger';
 import { fetchPubCrawlSignupsDb } from './kroegentocht-signup-db.utils';
 import { db, schema } from '@salvemundi/db';
 import { eq } from 'drizzle-orm';
@@ -18,6 +18,7 @@ import { getAssociationStats, getParticipantNames } from '@/lib/utils/kroegentoc
 
 const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
 const TAB_GROUPS = 'Groepsindeling';
+/** Bestond vroeger; wordt alleen nog opgeruimd. */
 const TAB_SIGNUPS = 'Aanmeldingen';
 const TAB_ASSOCIATIONS = 'Verenigingen';
 
@@ -72,6 +73,7 @@ async function getAccessToken(cfg: SheetConfig): Promise<string> {
 
     const res = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
+        signal: AbortSignal.timeout(20_000),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
             grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
@@ -88,6 +90,7 @@ async function sheetsFetch(cfg: SheetConfig, path: string, init: RequestInit = {
     const token = await getAccessToken(cfg);
     const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${cfg.sheetId}${path}`, {
         ...init,
+        signal: AbortSignal.timeout(30_000),
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(init.headers ?? {}) }
     });
     if (!res.ok) throw new Error(`Google Sheets ${path} failed: ${res.status} ${await res.text()}`);
@@ -110,8 +113,13 @@ async function prepareTabs(cfg: SheetConfig, extraTitles: string[]): Promise<She
     const first = tabs.at(0);
     if (!first) throw new Error('Google Sheet heeft geen tabbladen');
     const requests: object[] = [];
-    const legacy = tabs.find((t) => t.title === TAB_GROUPS && t.sheetId !== first.sheetId);
-    if (legacy) requests.push({ deleteSheet: { sheetId: legacy.sheetId } });
+    // Opruimen: oud los 'Groepsindeling'-tabblad en het 'Aanmeldingen'-tabblad
+    // (bevat namen + e-mails, hoort niet in een gedeelde sheet).
+    for (const t of tabs) {
+        if (t.sheetId !== first.sheetId && (t.title === TAB_GROUPS || t.title === TAB_SIGNUPS)) {
+            requests.push({ deleteSheet: { sheetId: t.sheetId } });
+        }
+    }
     for (const title of extraTitles) {
         if (!tabs.some((t) => t.title === title)) requests.push({ addSheet: { properties: { title } } });
     }
@@ -188,15 +196,6 @@ async function buildSheetData(eventId: number) {
         groupRows.push(columns.map((c) => perGroup.get(c)?.at(i) ?? ''));
     }
 
-    // --- Tab 2: aanmeldingen (één rij per inschrijving) ---
-    const signupRows: Cell[][] = [[
-        'Ingeschreven door', 'E-mail', 'Vereniging', 'Personen', 'Overige deelnemers', 'Groep'
-    ]];
-    for (const s of [...signups].sort((a, b) => a.name.localeCompare(b.name, 'nl'))) {
-        const [, ...others] = getParticipantNames(s);
-        signupRows.push([s.name, s.email ?? '', s.association || '', s.amount_tickets, others.join(', '), s.group_name || 'Niet ingedeeld']);
-    }
-
     // --- Tab 3: verenigingen ---
     const stats = getAssociationStats(signups);
     const associationRows: Cell[][] = [
@@ -206,10 +205,24 @@ async function buildSheetData(eventId: number) {
         ['Totaal', stats.reduce((n, s) => n + s.participants, 0), stats.reduce((n, s) => n + s.signups, 0)]
     ];
 
-    return { groupRows, signupRows, associationRows, leaderCells, columnCount: columns.length };
+    return { groupRows, associationRows, leaderCells, columnCount: columns.length };
 }
 
-/** Schrijft de volledige stand van een event naar de Google Sheet (overschrijft de 3 tabbladen). */
+/**
+ * Groepsindeling als tabel voor de CSV-export (zelfde opzet als het eerste tabblad van de
+ * sheet). CSV kent geen kleuren, dus groepsleiders krijgen '(groepsleider)' achter hun naam.
+ */
+export async function getKroegGroupRowsForCsv(eventId: number): Promise<Cell[][]> {
+    const { groupRows, leaderCells } = await buildSheetData(eventId);
+    const isLeader = new Set(leaderCells.map(([r, c]) => `${r}:${c}`));
+    return groupRows.map((row, r) => row.map((value, c) => {
+        if (typeof value !== 'string') return value;
+        if (r === 0 && c === 0) return value.replace('laatst gesynchroniseerd', 'geëxporteerd op');
+        return isLeader.has(`${r}:${c}`) && value ? `${value} (groepsleider)` : value;
+    }));
+}
+
+/** Schrijft de volledige stand van een event naar de Google Sheet (groepsindeling op het eerste tabblad + verenigingen). */
 export async function syncKroegSheetNow(eventId: number): Promise<{ synced: boolean; reason?: string }> {
     const account = getServiceAccount();
     if (!account) return { synced: false, reason: 'Google service account is niet geconfigureerd op de server' };
@@ -217,10 +230,10 @@ export async function syncKroegSheetNow(eventId: number): Promise<{ synced: bool
     if (!sheetId) return { synced: false, reason: 'Geen Google Sheet ingesteld voor deze kroegentocht' };
     const cfg: SheetConfig = { ...account, sheetId };
 
-    const { groupRows, signupRows, associationRows, leaderCells, columnCount } = await buildSheetData(eventId);
-    const mainTab = await prepareTabs(cfg, [TAB_SIGNUPS, TAB_ASSOCIATIONS]);
+    const { groupRows, associationRows, leaderCells, columnCount } = await buildSheetData(eventId);
+    const mainTab = await prepareTabs(cfg, [TAB_ASSOCIATIONS]);
 
-    const tabs: [string, Cell[][]][] = [[mainTab.title, groupRows], [TAB_SIGNUPS, signupRows], [TAB_ASSOCIATIONS, associationRows]];
+    const tabs: [string, Cell[][]][] = [[mainTab.title, groupRows], [TAB_ASSOCIATIONS, associationRows]];
     await sheetsFetch(cfg, '/values:batchClear', {
         method: 'POST',
         body: JSON.stringify({ ranges: tabs.map(([t]) => `'${t.replace(/'/g, "''")}'`) })
@@ -253,18 +266,49 @@ export async function syncKroegSheetNow(eventId: number): Promise<{ synced: bool
     return { synced: true };
 }
 
-// Debounce per event zodat een reeks wijzigingen tot één sync leidt.
-const pending = new Map<number, ReturnType<typeof setTimeout>>();
+// Eén geplande sync per event. Op globalThis zodat alle server-bundels (en dev-hot-reloads)
+// dezelfde planning delen.
+const globalForSync = globalThis as unknown as { kroegSheetPending?: Map<number, ReturnType<typeof setTimeout>> };
+const pending = (globalForSync.kroegSheetPending ??= new Map<number, ReturnType<typeof setTimeout>>());
 
-/** Plant een sync in de achtergrond; faalt nooit naar de aanroeper toe. */
-export function scheduleKroegSheetSync(eventId: number, delayMs = 3000): void {
+function getSyncDelayMs(): number {
+    const fromEnv = Number(process.env.KROEGENTOCHT_SHEET_SYNC_DELAY_MS);
+    return Number.isFinite(fromEnv) && fromEnv > 0 ? fromEnv : 5 * 60 * 1000;
+}
+
+const RETRY_DELAY_MS = 60 * 1000;
+const MAX_RETRIES = 5;
+
+/**
+ * Plant een sync in de achtergrond, uiterlijk 5 minuten na de eerste wijziging die nog
+ * niet in de sheet staat. Latere wijzigingen schuiven de sync niet op; ze gaan mee in
+ * dezelfde sync (die altijd de actuele stand uit de database leest). Faalt nooit naar
+ * de aanroeper toe.
+ */
+export function scheduleKroegSheetSync(eventId: number): void {
     if (!getServiceAccount() || !Number.isFinite(eventId)) return;
-    const existing = pending.get(eventId);
-    if (existing) clearTimeout(existing);
+    if (pending.has(eventId)) return;
+    planSync(eventId, getSyncDelayMs(), 0);
+}
+
+function planSync(eventId: number, delayMs: number, attempt: number): void {
     pending.set(eventId, setTimeout(() => {
-        pending.delete(eventId);
-        syncKroegSheetNow(eventId).catch((error: unknown) => {
-            safeConsoleError('[kroegentocht-google-sheet.utils.ts][scheduleKroegSheetSync]', error);
-        });
+        void (async () => {
+            try {
+                const res = await syncKroegSheetNow(eventId);
+                pending.delete(eventId);
+                if (res.synced) logInfo(`[kroegentocht-sheet] Automatische sync event ${eventId} voltooid`);
+                else safeConsoleError('[kroegentocht-google-sheet.utils.ts][scheduleKroegSheetSync]', res.reason);
+            } catch (error: unknown) {
+                // Meestal een tijdelijk netwerkprobleem richting Google: na een minuut opnieuw.
+                if (attempt < MAX_RETRIES) {
+                    logWarn(`[kroegentocht-sheet] Sync event ${eventId} mislukt (poging ${attempt + 1}), opnieuw over 1 minuut`);
+                    planSync(eventId, RETRY_DELAY_MS, attempt + 1);
+                } else {
+                    pending.delete(eventId);
+                    safeConsoleError('[kroegentocht-google-sheet.utils.ts][scheduleKroegSheetSync]', error);
+                }
+            }
+        })();
     }, delayMs));
 }

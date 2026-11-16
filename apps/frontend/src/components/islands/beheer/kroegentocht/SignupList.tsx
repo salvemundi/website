@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import { useCallback, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAssociationStats, signupMatchesSearch } from '@/lib/utils/kroegentocht-signups';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
@@ -9,7 +9,8 @@ import {
     savePubCrawlGroupsAssignment,
     updatePubCrawlEventGroups,
     createManualPubCrawlSignup,
-    syncPubCrawlGoogleSheet
+    syncPubCrawlGoogleSheet,
+    getPubCrawlGroupsCsvRows
 } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
 import StatsToolbar from './signup-list/StatsToolbar';
 import SignupTableView from './signup-list/SignupTableView';
@@ -68,6 +69,7 @@ function getParticipants(signup: ExtendedSignup): Participant[] {
 export default function SignupList({
     signups,
     eventId,
+    eventName,
     onDelete,
     onEdit,
     eventGroups = [],
@@ -247,8 +249,6 @@ export default function SignupList({
     };
 
     const handleRemoveLeader = (groupName: string, leaderToRemove: GroupLeader) => {
-        if (!confirm(`Weet je zeker dat je ${leaderToRemove.name} wilt verwijderen als groepsleider?`)) return;
-
         void (async () => {
             try {
                 const currentGroups = groupConfigs.map(g => ({
@@ -300,13 +300,38 @@ export default function SignupList({
         }
     }, [eventId]);
 
-    // Automatisch: bij openen/wijzigen van de data en daarna elke 5 minuten
-    // (zodat nieuwe betaalde aanmeldingen ook in de sheet komen).
-    useEffect(() => {
-        void syncSheet();
-        const interval = setInterval(() => { void syncSheet(); }, 5 * 60 * 1000);
-        return () => clearInterval(interval);
-    }, [syncSheet, signups]);
+    const [isExporting, setIsExporting] = useState(false);
+    const exportCsv = async () => {
+        setIsExporting(true);
+        try {
+            const rows = await getPubCrawlGroupsCsvRows(Number(eventId));
+            const esc = (v: string | number) => {
+                const str = String(v);
+                return /[";\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+            };
+            // Puntkomma als scheidingsteken: opent direct goed in Nederlandse Excel.
+            const csv = rows.map((r) => r.map(esc).join(';')).join('\r\n');
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const safeName = eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+            link.href = url;
+            link.download = `kroegentocht-${safeName}-${new Date().toLocaleDateString('sv-SE')}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            safeConsoleError('[SignupList.tsx][exportCsv]', error);
+            alert('Exporteren mislukt. Probeer het opnieuw.');
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    // Automatische sync gebeurt op de server, 5 minuten na de laatste wijziging,
+    // zodat de pagina nooit op een lopende sync hoeft te wachten.
+    // Deze knop is alleen voor een handmatige 'sync nu'.
 
     return (
         <div className="space-y-6">
@@ -321,6 +346,8 @@ export default function SignupList({
                 totalAssociationsCount={totalAssociationsCount}
                 syncState={syncState}
                 onSyncSheet={() => { void syncSheet(); }}
+                onExportCsv={() => { void exportCsv(); }}
+                isExporting={isExporting}
                 groupNames={groupNames}
                 isPending={isPending}
                 onAutoDistribute={handleOpenDistributionPreview}

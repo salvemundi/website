@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Beer, Building2 as AssocIcon, ExternalLink, Grid, RefreshCw, Sheet, Search, Table as TableIcon, Users, Building2, ChevronDown, UserPlus } from 'lucide-react';
+import { Beer, Building2 as AssocIcon, Download, ExternalLink, Grid, RefreshCw, Sheet, Search, Table as TableIcon, Users, Building2, ChevronDown, UserPlus } from 'lucide-react';
 
 interface StatsToolbarProps {
     viewMode: 'table' | 'groups' | 'associations';
@@ -16,6 +16,8 @@ interface StatsToolbarProps {
     isPending: boolean;
     onAutoDistribute: () => void;
     onSyncSheet: () => void;
+    onExportCsv: () => void;
+    isExporting: boolean;
     syncState: { status: 'idle' | 'syncing' | 'ok' | 'error'; at?: Date; message?: string; url?: string | null };
     onAddParticipant: () => void;
     hasSignups: boolean;
@@ -34,6 +36,8 @@ export default function StatsToolbar({
     isPending,
     onAutoDistribute,
     onSyncSheet,
+    onExportCsv,
+    isExporting,
     syncState,
     onAddParticipant,
     hasSignups
@@ -121,11 +125,21 @@ export default function StatsToolbar({
                         </button>
                     )}
 
+                    <button
+                        onClick={onExportCsv}
+                        disabled={isExporting}
+                        title="Groepsindeling downloaden als CSV (zelfde indeling als de Google Sheet)"
+                        className="beheer-button flex cursor-pointer items-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-5 py-2.5 text-xs font-semibold text-(--beheer-text) shadow-xs transition-all hover:bg-(--beheer-card-soft) active:scale-95 disabled:cursor-wait disabled:opacity-60"
+                        type="button">
+                        <Download className="size-4" />
+                        {isExporting ? 'Exporteren...' : 'Exporteer CSV'}
+                    </button>
+
                     <div className="flex items-center gap-2">
                         <button
                             onClick={onSyncSheet}
                             disabled={syncState.status === 'syncing'}
-                            title={syncState.message ?? 'Synchroniseert automatisch; klik om nu te syncen'}
+                            title={syncState.message ?? 'Wijzigingen worden 5 minuten na de laatste aanpassing automatisch naar de sheet gezet. Klik om nu direct te syncen.'}
                             className="beheer-button flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-emerald-700 active:scale-95 disabled:cursor-wait disabled:opacity-70"
                             type="button">
                             {syncState.status === 'syncing'
@@ -137,7 +151,7 @@ export default function StatsToolbar({
                                     ? (syncState.message?.startsWith('Geen Google Sheet') ? 'Geen sheet ingesteld' : 'Sync mislukt – opnieuw')
                                     : syncState.at
                                         ? `Sheet gesynct ${syncState.at.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}`
-                                        : 'Sync Google Sheet'}
+                                        : 'Nu syncen'}
                         </button>
                         {syncState.url && (
                             <a

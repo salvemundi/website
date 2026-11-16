@@ -10,13 +10,16 @@ import { eq } from 'drizzle-orm';
 import { fetchPubCrawlSignupsDb, fetchPubCrawlSignupByIdDb, updatePubCrawlSignupDb, deletePubCrawlSignupDb } from '@/server/internal/kroegentocht/kroegentocht-signup-db.utils';;
 import { requireKroegAdmin } from './beheer-kroegentocht-event.actions';
 import { safeConsoleError } from '@/server/utils/logger';
-import { scheduleKroegSheetSync, syncKroegSheetNow, getKroegSheetUrl } from '@/server/internal/kroegentocht/kroegentocht-google-sheet.utils';
+import { scheduleKroegSheetSync, syncKroegSheetNow, getKroegSheetUrl, getKroegGroupRowsForCsv } from '@/server/internal/kroegentocht/kroegentocht-google-sheet.utils';
 
 export async function getPubCrawlSignups(eventId: number): Promise<Awaited<ReturnType<typeof fetchPubCrawlSignupsDb>>> {
     noStore();
     await requireKroegAdmin();
     try {
         const sqlSignups = await fetchPubCrawlSignupsDb(eventId);
+        // Nieuwe betaalde aanmeldingen komen binnen via de finance-service; bij openen
+        // van de beheerpagina zorgen we dat er (uiterlijk over 5 min) een sync volgt.
+        scheduleKroegSheetSync(eventId);
         return sqlSignups;
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
@@ -299,6 +302,14 @@ export async function syncPubCrawlGoogleSheet(eventId: number): Promise<{ succes
         if (msg.includes('token request failed')) {
             return { success: false, url, error: 'Inloggen bij Google mislukt. Controleer de service-account-gegevens in .env.' };
         }
+        if (msg.includes('fetch failed') || (error instanceof Error && error.name === 'TimeoutError')) {
+            return { success: false, url, error: 'Google is tijdelijk niet bereikbaar. Probeer het zo opnieuw; de automatische sync probeert het zelf ook nog.' };
+        }
         return { success: false, url, error: 'Synchroniseren met Google Sheet mislukt' };
     }
+}
+
+export async function getPubCrawlGroupsCsvRows(eventId: number): Promise<(string | number)[][]> {
+    await requireKroegAdmin();
+    return getKroegGroupRowsForCsv(eventId);
 }

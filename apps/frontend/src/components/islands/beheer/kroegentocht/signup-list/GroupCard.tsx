@@ -58,6 +58,7 @@ export default function GroupCard({
 }: GroupCardProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showAddLeaderForm, setShowAddLeaderForm] = useState(false);
+    const [confirmRemoveIdx, setConfirmRemoveIdx] = useState<number | null>(null);
 
     // Eén blok per inschrijving: inschrijver bovenaan, meegekomen deelnemers eronder.
     // Groepsleiders worden apart getoond en hier weggelaten.
@@ -152,14 +153,33 @@ export default function GroupCard({
                                             </span>
                                         </div>
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => onRemoveLeader?.(groupName, leader)}
-                                        className="icon-button cursor-pointer rounded p-1 text-amber-600 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500"
-                                        title="Verwijder groepsleider"
-                                    >
-                                        <X className="size-3.5" />
-                                    </button>
+                                    {confirmRemoveIdx === lIdx ? (
+                                        <div className="flex shrink-0 items-center gap-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => { setConfirmRemoveIdx(null); onRemoveLeader?.(groupName, leader); }}
+                                                className="beheer-button cursor-pointer rounded-md bg-red-500 px-2 py-1 text-[10px] font-bold text-white hover:bg-red-600"
+                                            >
+                                                Ja, afzetten
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setConfirmRemoveIdx(null)}
+                                                className="beheer-button cursor-pointer rounded-md px-2 py-1 text-[10px] font-bold text-(--text-muted) hover:bg-(--bg-main)/50"
+                                            >
+                                                Nee
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => setConfirmRemoveIdx(lIdx)}
+                                            className="beheer-button flex shrink-0 cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-[10px] font-bold text-amber-700 transition-all hover:bg-red-500/10 hover:text-red-500 dark:text-amber-300"
+                                            title="Groepsleider afzetten (wordt weer gewone deelnemer)"
+                                        >
+                                            <X className="size-3.5" /> Afzetten
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>

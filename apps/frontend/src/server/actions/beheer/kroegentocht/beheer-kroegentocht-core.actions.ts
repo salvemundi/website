@@ -85,3 +85,7 @@ export async function createManualPubCrawlSignup(
 export async function syncPubCrawlGoogleSheet(eventId: number): Promise<{ success: boolean; url: string | null; error?: string }> {
     return signups.syncPubCrawlGoogleSheet(eventId);
 }
+
+export async function getPubCrawlGroupsCsvRows(eventId: number): Promise<(string | number)[][]> {
+    return signups.getPubCrawlGroupsCsvRows(eventId);
+}
