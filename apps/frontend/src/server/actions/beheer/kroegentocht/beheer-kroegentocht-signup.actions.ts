@@ -6,7 +6,7 @@ import {
     type PubCrawlSignup
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { db, schema } from '@salvemundi/db';
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import { fetchPubCrawlSignupsDb, fetchPubCrawlSignupByIdDb, updatePubCrawlSignupDb, deletePubCrawlSignupDb } from '@/server/internal/kroegentocht/kroegentocht-signup-db.utils';;
 import { requireKroegAdmin } from './beheer-kroegentocht-event.actions';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -312,4 +312,39 @@ export async function syncPubCrawlGoogleSheet(eventId: number): Promise<{ succes
 export async function getPubCrawlGroupsCsvRows(eventId: number): Promise<(string | number)[][]> {
     await requireKroegAdmin();
     return getKroegGroupRowsForCsv(eventId);
+}
+
+export interface AdminPubCrawlTicket {
+    id: number;
+    name: string;
+    initial: string;
+    checkedIn: boolean;
+}
+
+/** Alle tickets van een event, gegroepeerd per inschrijving (voor de tabelweergave). */
+export async function getPubCrawlTicketsByEvent(eventId: number): Promise<Record<number, AdminPubCrawlTicket[]>> {
+    await requireKroegAdmin();
+    const rows = await db.select({
+        id: schema.pub_crawl_tickets.id,
+        signupId: schema.pub_crawl_tickets.signup_id,
+        name: schema.pub_crawl_tickets.name,
+        initial: schema.pub_crawl_tickets.initial,
+        checkedIn: schema.pub_crawl_tickets.checked_in
+    })
+        .from(schema.pub_crawl_tickets)
+        .innerJoin(schema.pub_crawl_signups, eq(schema.pub_crawl_tickets.signup_id, schema.pub_crawl_signups.id))
+        .where(eq(schema.pub_crawl_signups.pub_crawl_event_id, eventId))
+        .orderBy(asc(schema.pub_crawl_tickets.id));
+
+    const bySignup: Record<number, AdminPubCrawlTicket[]> = {};
+    for (const r of rows) {
+        if (r.signupId === null) continue;
+        (bySignup[r.signupId] ??= []).push({
+            id: Number(r.id),
+            name: r.name ?? '',
+            initial: r.initial ?? '',
+            checkedIn: !!r.checkedIn
+        });
+    }
+    return bySignup;
 }

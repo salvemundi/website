@@ -89,3 +89,7 @@ export async function syncPubCrawlGoogleSheet(eventId: number): Promise<{ succes
 export async function getPubCrawlGroupsCsvRows(eventId: number): Promise<(string | number)[][]> {
     return signups.getPubCrawlGroupsCsvRows(eventId);
 }
+
+export async function getPubCrawlTicketsByEvent(eventId: number): Promise<Record<number, signups.AdminPubCrawlTicket[]>> {
+    return signups.getPubCrawlTicketsByEvent(eventId);
+}

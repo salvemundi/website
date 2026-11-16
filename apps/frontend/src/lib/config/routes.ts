@@ -42,6 +42,8 @@ export const PUBLIC_ROUTES: string[] = [
     '/api/assets',
     '/api/intro/planning.ics',
     '/api/activiteiten/ics',
+    // Eigen toegangscontrole in de route (ticket-cookie, eigenaar of beheerder).
+    '/api/kroegentocht/tickets',
     '/map',
     '/404'
 ];

@@ -1,6 +1,6 @@
 'use client';
 
-import { Edit, Mail, Trash } from 'lucide-react';
+import { Edit, FileDown, Mail, Trash } from 'lucide-react';
 import GroupSelectDropdown from './GroupSelectDropdown';
 import { getParticipantNames } from '@/lib/utils/kroegentocht-signups';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
@@ -27,6 +27,7 @@ interface SignupTableViewProps {
     onUpdateGroup?: (signupId: number, newGroupName: string | null) => Promise<void>;
     onEdit: (id: number | string) => void;
     onDelete: (id: number | string) => void;
+    ticketsBySignup: Record<number, { id: number; name: string; initial: string; checkedIn: boolean }[]>;
 }
 
 export default function SignupTableView({
@@ -35,7 +36,8 @@ export default function SignupTableView({
     groupConfigs,
     onEdit,
     onDelete,
-    onUpdateGroup
+    onUpdateGroup,
+    ticketsBySignup
 }: SignupTableViewProps) {
     return (
         <div className="animate-in fade-in overflow-hidden rounded-2xl bg-(--bg-card) shadow-(--shadow-card) ring-1 ring-(--border-color)/30 duration-200">
@@ -46,13 +48,14 @@ export default function SignupTableView({
                             <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted)">Inschrijving</th>
                             <th className="px-6 py-4 text-center text-[10px] font-semibold text-(--text-muted)">Personen</th>
                             <th className="hidden px-6 py-4 text-[10px] font-semibold text-(--text-muted) lg:table-cell">Vereniging</th>
+                            <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted)">Tickets</th>
                             <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted)">Groep</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-(--border-color)/20">
                         {filteredSignups.length === 0 ? (
                             <tr>
-                                <td colSpan={4} className="px-6 py-16 text-center font-medium text-(--text-muted) italic">
+                                <td colSpan={5} className="px-6 py-16 text-center font-medium text-(--text-muted) italic">
                                     Geen aanmeldingen gevonden.
                                 </td>
                             </tr>
@@ -92,6 +95,35 @@ export default function SignupTableView({
                                         </td>
                                         <td className="hidden px-6 py-3 text-[11px] font-medium text-(--text-muted) lg:table-cell">
                                             {signup.association || '-'}
+                                        </td>
+                                        <td className="px-6 py-3">
+                                            {(() => {
+                                                const tickets = ticketsBySignup[Number(signup.id)] ?? [];
+                                                const checkedIn = tickets.filter((t) => t.checkedIn).length;
+                                                const mismatch = tickets.length !== signup.amount_tickets;
+                                                return (
+                                                    <div className="flex items-center gap-2">
+                                                        <span
+                                                            className={`text-[11px] font-semibold ${mismatch ? 'text-red-500' : 'text-(--text-muted)'}`}
+                                                            title={tickets.map((t) => `${t.name} ${t.initial}.${t.checkedIn ? ' – ingecheckt' : ''}`).join('\n') || 'Geen tickets'}
+                                                        >
+                                                            {tickets.length} ticket{tickets.length === 1 ? '' : 's'}
+                                                            {checkedIn > 0 && ` · ${checkedIn} ingecheckt`}
+                                                            {mismatch && ' ⚠'}
+                                                        </span>
+                                                        {tickets.length > 0 && (
+                                                            <a
+                                                                href={`/api/kroegentocht/tickets/${signup.id}`}
+                                                                download
+                                                                className="icon-button rounded-md p-1.5 text-(--text-muted) transition-all hover:bg-(--theme-purple)/10 hover:text-(--theme-purple)"
+                                                                title="Tickets downloaden (PDF met QR-codes)"
+                                                            >
+                                                                <FileDown className="size-3.5" />
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
                                         </td>
                                         <td className="px-6 py-3">
                                             <div className="flex items-center gap-3">

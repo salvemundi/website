@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState, useTransition } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAssociationStats, signupMatchesSearch } from '@/lib/utils/kroegentocht-signups';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
@@ -10,7 +10,8 @@ import {
     updatePubCrawlEventGroups,
     createManualPubCrawlSignup,
     syncPubCrawlGoogleSheet,
-    getPubCrawlGroupsCsvRows
+    getPubCrawlGroupsCsvRows,
+    getPubCrawlTicketsByEvent
 } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
 import StatsToolbar from './signup-list/StatsToolbar';
 import SignupTableView from './signup-list/SignupTableView';
@@ -300,6 +301,18 @@ export default function SignupList({
         }
     }, [eventId]);
 
+    // Tickets per inschrijving (alleen nodig in de tabelweergave).
+    type TicketMap = Awaited<ReturnType<typeof getPubCrawlTicketsByEvent>>;
+    const [ticketsBySignup, setTicketsBySignup] = useState<TicketMap>({});
+    useEffect(() => {
+        if (viewMode !== 'table') return;
+        let cancelled = false;
+        getPubCrawlTicketsByEvent(Number(eventId))
+            .then((map) => { if (!cancelled) setTicketsBySignup(map); })
+            .catch((error: unknown) => safeConsoleError('[SignupList.tsx][tickets]', error));
+        return () => { cancelled = true; };
+    }, [viewMode, eventId, signups]);
+
     const [isExporting, setIsExporting] = useState(false);
     const exportCsv = async () => {
         setIsExporting(true);
@@ -365,6 +378,7 @@ export default function SignupList({
                     onUpdateGroup={onUpdateGroup}
                     onEdit={onEdit}
                     onDelete={onDelete}
+                    ticketsBySignup={ticketsBySignup}
                 />
             ) : (
                 <SignupGroupsView
