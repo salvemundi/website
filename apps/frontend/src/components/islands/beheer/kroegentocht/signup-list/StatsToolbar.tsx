@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Beer, Download, Grid, Search, Table as TableIcon, Users, Building2, ChevronDown, UserPlus } from 'lucide-react';
+import { Beer, Building2 as AssocIcon, ExternalLink, Grid, RefreshCw, Sheet, Search, Table as TableIcon, Users, Building2, ChevronDown, UserPlus } from 'lucide-react';
 
 interface StatsToolbarProps {
-    viewMode: 'table' | 'groups';
-    setViewMode: (mode: 'table' | 'groups') => void;
+    viewMode: 'table' | 'groups' | 'associations';
+    setViewMode: (mode: 'table' | 'groups' | 'associations') => void;
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     enabledGroups: string[];
@@ -15,7 +15,8 @@ interface StatsToolbarProps {
     groupNames: string[];
     isPending: boolean;
     onAutoDistribute: () => void;
-    onExportCSV: () => void;
+    onSyncSheet: () => void;
+    syncState: { status: 'idle' | 'syncing' | 'ok' | 'error'; at?: Date; message?: string; url?: string | null };
     onAddParticipant: () => void;
     hasSignups: boolean;
 }
@@ -32,7 +33,8 @@ export default function StatsToolbar({
     groupNames,
     isPending,
     onAutoDistribute,
-    onExportCSV,
+    onSyncSheet,
+    syncState,
     onAddParticipant,
     hasSignups
 }: StatsToolbarProps) {
@@ -76,13 +78,22 @@ export default function StatsToolbar({
                             <TableIcon className="size-4" />
                             Tabel Weergave
                         </button>
+                        <button
+                            onClick={() => setViewMode('associations')}
+                            className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
+                                viewMode === 'associations' ? 'bg-(--beheer-accent) text-white shadow-xs' : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-bg)/50 hover:text-(--beheer-text)'
+                            }`}
+                            type="button">
+                            <AssocIcon className="size-4" />
+                            Per Vereniging
+                        </button>
                     </div>
 
                     {/* Inline Stats */}
                     <div className="flex flex-wrap items-center gap-4 border-l border-(--beheer-border) pl-4 text-xs font-semibold text-(--beheer-text-muted)">
                         <div className="flex items-center gap-1.5">
                             <Beer className="size-3.5 text-(--beheer-accent)" />
-                            <span>Tickets: <strong className="text-(--beheer-text)">{totalTicketsCount}</strong></span>
+                            <span>Deelnemers: <strong className="text-(--beheer-text)">{totalTicketsCount}</strong></span>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <Building2 className="size-3.5 text-emerald-500 dark:text-emerald-400" />
@@ -110,23 +121,51 @@ export default function StatsToolbar({
                         </button>
                     )}
 
-                    <button
-                        onClick={onExportCSV}
-                        disabled={!hasSignups}
-                        className="beheer-button flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-emerald-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-                        type="button">
-                        <Download className="size-4" />
-                        Exporteer CSV
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={onSyncSheet}
+                            disabled={syncState.status === 'syncing'}
+                            title={syncState.message ?? 'Synchroniseert automatisch; klik om nu te syncen'}
+                            className="beheer-button flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-emerald-700 active:scale-95 disabled:cursor-wait disabled:opacity-70"
+                            type="button">
+                            {syncState.status === 'syncing'
+                                ? <RefreshCw className="size-4 animate-spin" />
+                                : <Sheet className="size-4" />}
+                            {syncState.status === 'syncing'
+                                ? 'Synchroniseren...'
+                                : syncState.status === 'error'
+                                    ? (syncState.message?.startsWith('Geen Google Sheet') ? 'Geen sheet ingesteld' : 'Sync mislukt – opnieuw')
+                                    : syncState.at
+                                        ? `Sheet gesynct ${syncState.at.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}`
+                                        : 'Sync Google Sheet'}
+                        </button>
+                        {syncState.url && (
+                            <a
+                                href={syncState.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Open Google Sheet"
+                                className="icon-button rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) p-2.5 text-(--beheer-text-muted) transition-all hover:text-emerald-600">
+                                <ExternalLink className="size-4" />
+                            </a>
+                        )}
+                    </div>
                 </div>
             </div>
 
+            {syncState.status === 'error' && syncState.message && (
+                <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-600 dark:text-red-400">
+                    Google Sheet: {syncState.message}
+                </p>
+            )}
+
+            {viewMode !== 'associations' && (
             <div className="flex flex-col gap-4 md:flex-row">
                 <div className="group flex flex-1 items-center gap-3 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 transition-all focus-within:border-(--beheer-accent) focus-within:ring-2 focus-within:ring-(--beheer-accent)/20">
                     <Search className="size-4 shrink-0 text-(--beheer-text-muted) transition-colors group-focus-within:text-(--beheer-accent)" />
                     <input
                         type="text"
-                        placeholder="Zoek op naam, e-mail of vereniging..."
+                        placeholder="Zoek op naam (ook meegekomen deelnemers), e-mail, vereniging of groep..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         autoComplete="off"
@@ -242,6 +281,7 @@ export default function StatsToolbar({
                     )}
                 </div>
             </div>
+            )}
         </div>
     );
 }

@@ -81,3 +81,7 @@ export async function createManualPubCrawlSignup(
 ): Promise<{ success: boolean; signupId: number }> {
     return signups.createManualPubCrawlSignup(eventId, data);
 }
+
+export async function syncPubCrawlGoogleSheet(eventId: number): Promise<{ success: boolean; url: string | null; error?: string }> {
+    return signups.syncPubCrawlGoogleSheet(eventId);
+}

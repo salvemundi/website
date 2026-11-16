@@ -10,6 +10,7 @@ import { eq } from 'drizzle-orm';
 import { fetchPubCrawlSignupsDb, fetchPubCrawlSignupByIdDb, updatePubCrawlSignupDb, deletePubCrawlSignupDb } from '@/server/internal/kroegentocht/kroegentocht-signup-db.utils';;
 import { requireKroegAdmin } from './beheer-kroegentocht-event.actions';
 import { safeConsoleError } from '@/server/utils/logger';
+import { scheduleKroegSheetSync, syncKroegSheetNow, getKroegSheetUrl } from '@/server/internal/kroegentocht/kroegentocht-google-sheet.utils';
 
 export async function getPubCrawlSignups(eventId: number): Promise<Awaited<ReturnType<typeof fetchPubCrawlSignupsDb>>> {
     noStore();
@@ -40,6 +41,7 @@ export async function deletePubCrawlSignup(id: number, eventId: number): Promise
     try {
         await deletePubCrawlSignupDb(id);
         revalidateTag(`signups-${eventId}`, 'max');
+        scheduleKroegSheetSync(eventId);
 
         return { success: true };
     } catch (error: unknown) {
@@ -64,6 +66,7 @@ export async function updatePubCrawlSignup(id: number, eventId: number, data: Pa
     try {
         await updatePubCrawlSignupDb(id, filteredData);
         revalidateTag(`signups-${eventId}`, 'max');
+        scheduleKroegSheetSync(eventId);
 
         return { success: true };
     } catch (error: unknown) {
@@ -85,6 +88,7 @@ export async function togglePubCrawlTicketCheckIn(ticketId: number, currentStatu
         }).where(eq(schema.pub_crawl_tickets.id, BigInt(ticketId)));
 
         revalidateTag(`signups-${eventId}`, 'max');
+        scheduleKroegSheetSync(eventId);
         return { success: true, newStatus };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
@@ -107,6 +111,7 @@ export async function updatePubCrawlTickets(signupId: number, eventId: number, t
         await updatePubCrawlSignupDb(signupId, { name_initials: nameInitials });
 
         revalidateTag(`signups-${eventId}`, 'max');
+        scheduleKroegSheetSync(eventId);
         return { success: true };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
@@ -135,6 +140,7 @@ export async function deletePubCrawlTicket(ticketId: number, signupId: number, e
         }).where(eq(schema.pub_crawl_signups.id, signupId));
 
         revalidateTag(`signups-${eventId}`, 'max');
+        scheduleKroegSheetSync(eventId);
         return { success: true };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
@@ -190,6 +196,7 @@ export async function distributePubCrawlSignups(eventId: number): Promise<{ succ
         }
 
         revalidateTag(`signups-${eventId}`, 'max');
+        scheduleKroegSheetSync(eventId);
         return { success: true };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
@@ -206,6 +213,7 @@ export async function savePubCrawlGroupsAssignment(eventId: number, assignments:
             await updatePubCrawlSignupDb(item.signupId, { group_name: item.groupName });
         }
         revalidateTag(`signups-${eventId}`, 'max');
+        scheduleKroegSheetSync(eventId);
         return { success: true };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
@@ -263,6 +271,7 @@ export async function createManualPubCrawlSignup(
         }]);
 
         revalidateTag(`signups-${eventId}`, 'max');
+        scheduleKroegSheetSync(eventId);
         return { success: true, signupId };
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));
@@ -271,5 +280,25 @@ export async function createManualPubCrawlSignup(
     }
 }
 
-
-
+export async function syncPubCrawlGoogleSheet(eventId: number): Promise<{ success: boolean; url: string | null; error?: string }> {
+    await requireKroegAdmin();
+    const url = await getKroegSheetUrl(eventId).catch(() => null);
+    try {
+        const res = await syncKroegSheetNow(eventId);
+        return { success: res.synced, url, error: res.reason };
+    } catch (error: unknown) {
+        safeConsoleError('[kroegentocht-signup.actions.ts][syncPubCrawlGoogleSheet] ', error);
+        const msg = error instanceof Error ? error.message : '';
+        if (msg.includes(': 403')) {
+            const account = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ?? 'het service-account';
+            return { success: false, url, error: `Geen toegang tot de sheet. Deel de sheet als Bewerker met ${account}` };
+        }
+        if (msg.includes(': 404')) {
+            return { success: false, url, error: 'Google Sheet niet gevonden. Controleer de link bij de kroegentocht.' };
+        }
+        if (msg.includes('token request failed')) {
+            return { success: false, url, error: 'Inloggen bij Google mislukt. Controleer de service-account-gegevens in .env.' };
+        }
+        return { success: false, url, error: 'Synchroniseren met Google Sheet mislukt' };
+    }
+}

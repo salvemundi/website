@@ -1,6 +1,7 @@
 'use client';
 
 import GroupCard from './GroupCard';
+import { getParticipantNames } from '@/lib/utils/kroegentocht-signups';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
 interface Participant {
@@ -87,33 +88,13 @@ const GROUP_COLORS = [
 
 export function getSignupParticipants(
     signup: ExtendedSignup,
-    getParticipants: (signup: ExtendedSignup) => Participant[]
+    _getParticipants?: (signup: ExtendedSignup) => Participant[]
 ) {
-    const participantsList: { name: string; association: string; signupId: number }[] = [];
-    const ps = getParticipants(signup);
-    if (ps.length > 0) {
-        ps.forEach((p) => {
-            participantsList.push({
-                name: `${p.name} ${p.initial}.`.trim(),
-                association: signup.association || '-',
-                signupId: Number(signup.id)
-            });
-        });
-    } else {
-        participantsList.push({
-            name: signup.name,
-            association: signup.association || '-',
-            signupId: Number(signup.id)
-        });
-        for (let i = 1; i < signup.amount_tickets; i++) {
-            participantsList.push({
-                name: `Deelnemer ${i + 1} (${signup.name})`,
-                association: signup.association || '-',
-                signupId: Number(signup.id)
-            });
-        }
-    }
-    return participantsList;
+    return getParticipantNames(signup).map((name) => ({
+        name,
+        association: signup.association || '-',
+        signupId: Number(signup.id)
+    }));
 }
 
 export default function SignupGroupsView({

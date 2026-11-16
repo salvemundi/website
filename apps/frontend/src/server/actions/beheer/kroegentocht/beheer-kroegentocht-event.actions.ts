@@ -8,6 +8,8 @@ import { eq, and, inArray } from 'drizzle-orm';
 import { fetchPubCrawlEventsDb } from '@/server/internal/kroegentocht/kroegentocht-event-db.utils';
 import { requireBeheerFeature } from '@/server/auth/auth-utils';
 import { safeConsoleError } from '@/server/utils/logger';
+import { extractGoogleSheetId } from '@/lib/utils/kroegentocht-signups';
+import { scheduleKroegSheetSync } from '@/server/internal/kroegentocht/kroegentocht-google-sheet.utils';
 import { uploadToDirectus } from '@/server/utils/media';
 
 interface GroupConfig {
@@ -88,6 +90,9 @@ async function handleGroupCascadeUpdate(eventId: number, oldGroups: GroupConfig[
 export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>): Promise<{ success: boolean }> {
     await requireKroegAdmin();
     const { id, name, description, date, email, image, whatsapp_community_url } = data;
+    const rawSheet = data.google_sheet_id;
+    const google_sheet_id = rawSheet === undefined ? undefined : extractGoogleSheetId(rawSheet);
+    if (rawSheet && !google_sheet_id) throw new Error('Ongeldige Google Sheet-link of -ID');
     const groups = data.groups as unknown;
 
     try {
@@ -120,6 +125,7 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>): Promise
                 ...(typeof email === 'string' && { email }),
                 ...(image !== undefined && { image: image || null }),
                 ...(whatsapp_community_url !== undefined && { whatsapp_community_url: whatsapp_community_url || null }),
+                ...(google_sheet_id !== undefined && { google_sheet_id }),
                 ...(groups !== undefined && { groups })
             };
 
@@ -133,6 +139,7 @@ export async function upsertPubCrawlEvent(data: Partial<PubCrawlEvent>): Promise
                 date: date || null,
                 image: image || null,
                 whatsapp_community_url: whatsapp_community_url || null,
+                google_sheet_id: google_sheet_id ?? null,
                 groups: groups || []
             };
             const created = await db.insert(schema.pub_crawl_events).values(insertPayload).returning({ id: schema.pub_crawl_events.id });
@@ -175,6 +182,7 @@ export async function updatePubCrawlEventGroups(eventId: number, groups: unknown
     await requireKroegAdmin();
     try {
         await db.update(schema.pub_crawl_events).set({ groups: groups }).where(eq(schema.pub_crawl_events.id, eventId));
+        scheduleKroegSheetSync(eventId);
         revalidateTag('kroegentocht-events', 'max');
         revalidateTag('kroegentocht-event', 'max');
         revalidatePath('/beheer/kroegentocht');

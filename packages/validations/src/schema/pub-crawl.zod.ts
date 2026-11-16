@@ -30,6 +30,7 @@ export const pubCrawlEventSchema = selectPubCrawlEventsSchema.extend({
     price: z.coerce.number().optional().default(1),
     max_tickets_per_person: z.coerce.number().optional().default(10),
     whatsapp_community_url: z.url().nullable().optional(),
+    google_sheet_id: z.string().nullable().optional(),
     groups: z.any().nullable().optional(),
 });
 
