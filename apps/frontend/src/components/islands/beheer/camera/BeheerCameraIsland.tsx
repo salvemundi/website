@@ -80,7 +80,7 @@ function HandoutForm({ request, showToast }: { request: CameraAdminRequest; show
             <button
                 type="button"
                 onClick={() => setOpen(true)}
-                className="beheer-button inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-purple-300 px-4 py-2 text-xs font-bold text-purple-700 transition-all hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-500/10"
+                className="beheer-button bg-transparent inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-purple-300 px-4 py-2 text-xs font-bold text-purple-700 transition-all hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-500/10"
             >
                 <HandHelping className="size-3.5" /> Meegeven
             </button>
@@ -121,7 +121,7 @@ function HandoutForm({ request, showToast }: { request: CameraAdminRequest; show
                 <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    className="beheer-button cursor-pointer rounded-xl border border-border-color px-4 py-2 text-xs font-bold text-text-muted hover:bg-bg-card"
+                    className="beheer-button bg-transparent cursor-pointer rounded-xl border border-border-color px-4 py-2 text-xs font-bold text-text-muted hover:bg-bg-card"
                 >
                     Annuleren
                 </button>
@@ -166,7 +166,7 @@ function RequesterEditor({ request, showToast }: { request: CameraAdminRequest; 
             <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="beheer-button inline-flex cursor-pointer items-center gap-1 text-xs font-bold text-purple-700 hover:underline dark:text-purple-300"
+                className="beheer-button bg-transparent shadow-none inline-flex cursor-pointer items-center gap-1 text-xs font-bold text-purple-700 hover:underline dark:text-purple-300"
             >
                 <Pencil className="size-3" /> Aanvrager wijzigen
             </button>
@@ -205,7 +205,7 @@ function RequesterEditor({ request, showToast }: { request: CameraAdminRequest; 
                     setQuery('');
                     setResults([]);
                 }}
-                className="beheer-button cursor-pointer text-xs font-bold text-text-muted hover:underline"
+                className="beheer-button bg-transparent shadow-none cursor-pointer text-xs font-bold text-text-muted hover:underline"
             >
                 Annuleren
             </button>
@@ -361,7 +361,7 @@ function RequestCard({
                         type="button"
                         disabled={isPending}
                         onClick={() => save('rejected', 'Aanvraag afgewezen')}
-                        className="beheer-button inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-red-300 px-4 py-2 text-xs font-bold text-red-600 transition-all hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-500/10"
+                        className="beheer-button bg-transparent inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-red-300 px-4 py-2 text-xs font-bold text-red-600 transition-all hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-500/10"
                     >
                         <X className="size-3.5" /> Afwijzen
                     </button>
@@ -371,7 +371,7 @@ function RequestCard({
                         type="button"
                         disabled={isPending}
                         onClick={() => save('cancelled', 'Aanvraag geannuleerd')}
-                        className="beheer-button inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border-color px-4 py-2 text-xs font-bold text-text-muted transition-all hover:bg-bg-soft disabled:opacity-50"
+                        className="beheer-button bg-transparent inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border-color px-4 py-2 text-xs font-bold text-text-muted transition-all hover:bg-bg-soft disabled:opacity-50"
                     >
                         Annuleren
                     </button>
@@ -387,7 +387,7 @@ function RequestCard({
                         type="button"
                         disabled={isPending}
                         onClick={() => save('requested', 'Teruggezet naar aangevraagd')}
-                        className="beheer-button inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border-color px-4 py-2 text-xs font-bold text-text-muted transition-all hover:bg-bg-soft disabled:opacity-50"
+                        className="beheer-button bg-transparent inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border-color px-4 py-2 text-xs font-bold text-text-muted transition-all hover:bg-bg-soft disabled:opacity-50"
                     >
                         Terugzetten
                     </button>
@@ -477,7 +477,7 @@ function PhotographerRow({
                     <button
                         type="button"
                         onClick={cancel}
-                        className="beheer-button cursor-pointer rounded-xl border border-border-color px-4 py-2 text-xs font-bold text-text-muted hover:bg-bg-soft"
+                        className="beheer-button bg-transparent cursor-pointer rounded-xl border border-border-color px-4 py-2 text-xs font-bold text-text-muted hover:bg-bg-soft"
                     >
                         Annuleren
                     </button>
@@ -607,7 +607,7 @@ function PhotographersPanel({
                                     <button
                                         type="button"
                                         onClick={() => setMember(r)}
-                                        className="beheer-button w-full cursor-pointer rounded-lg border border-border-color px-3 py-2 text-left text-xs font-semibold text-text-main hover:bg-bg-soft"
+                                        className="beheer-button bg-transparent w-full cursor-pointer rounded-lg border border-border-color px-3 py-2 text-left text-xs font-semibold text-text-main hover:bg-bg-soft"
                                     >
                                         {r.name}
                                     </button>
