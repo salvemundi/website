@@ -135,3 +135,55 @@ export interface CameraMemberOption {
     id: string;
     name: string;
 }
+
+// ---- Uitleenlog ----
+
+export const CAMERA_CHECKLIST_ITEMS = [
+    { key: 'camera', label: 'Camera' },
+    { key: 'lens', label: 'Lens' },
+    { key: 'flash', label: 'Flitser' },
+    { key: 'battery', label: 'Accu' },
+    { key: 'card', label: 'Geheugenkaart' },
+] as const;
+
+export type CameraChecklistKey = (typeof CAMERA_CHECKLIST_ITEMS)[number]['key'];
+export type CameraChecklist = Record<CameraChecklistKey, boolean>;
+
+const checklistSchema = z.object({
+    camera: z.boolean(),
+    lens: z.boolean(),
+    flash: z.boolean(),
+    battery: z.boolean(),
+    card: z.boolean(),
+});
+
+export const handoutCameraSchema = z.object({
+    request_id: z.string().uuid(),
+    checklist: checklistSchema,
+    note: optionalText(500),
+});
+export type HandoutCameraInput = z.output<typeof handoutCameraSchema>;
+
+export const returnCameraSchema = z.object({
+    id: z.string().uuid(),
+    returned_on: dateString,
+    condition: optionalText(500),
+});
+export type ReturnCameraInput = z.output<typeof returnCameraSchema>;
+
+export interface CameraAdminLoan {
+    id: string;
+    request_id: string;
+    borrower_name: string;
+    event_name: string;
+    photographer_name: string | null;
+    start_date: string;
+    agreed_end_date: string;
+    handed_out_at: string;
+    returned_on: string | null;
+    checklist: CameraChecklist;
+    complete: boolean;
+    handout_note: string | null;
+    condition_on_return: string | null;
+    days_late: number;
+}

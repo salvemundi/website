@@ -2474,3 +2474,22 @@ export const camera_requests = pgTable("camera_requests", {
 	check("camera_requests_status_check", sql`${table.status} IN ('requested', 'approved', 'rejected', 'cancelled')`),
 	check("camera_requests_period_check", sql`${table.end_date} >= ${table.start_date}`),
 ]);
+
+export const camera_loans = pgTable("camera_loans", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	request_id: uuid().notNull(),
+	handed_out_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	checklist: jsonb().notNull(),
+	handout_note: varchar({ length: 500 }),
+	returned_on: date(),
+	condition_on_return: varchar({ length: 500 }),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_camera_loans_open").using("btree", table.returned_on.asc().nullsLast().op("date_ops")),
+	unique("camera_loans_request_id_unique").on(table.request_id),
+	foreignKey({
+			columns: [table.request_id],
+			foreignColumns: [camera_requests.id],
+			name: "camera_loans_request_id_camera_requests_id_fk"
+		}).onDelete("cascade"),
+]);

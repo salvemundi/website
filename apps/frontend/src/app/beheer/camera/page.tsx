@@ -1,5 +1,5 @@
 import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
-import { getCameraPhotographersDb, getCameraRequestsDb } from '@/server/queries/camera/beheer-camera.queries';
+import { getCameraLoansDb, getCameraPhotographersDb, getCameraRequestsDb } from '@/server/queries/camera/beheer-camera.queries';
 import BeheerCameraIsland from '@/components/islands/beheer/camera/BeheerCameraIsland';
 import { connection } from 'next/server';
 import type { Metadata } from 'next';
@@ -11,11 +11,15 @@ export const metadata: Metadata = {
 
 export default async function BeheerCameraPage() {
     await connection();
-    const [requests, photographers] = await Promise.all([getCameraRequestsDb(), getCameraPhotographersDb()]);
+    const [requests, photographers, loans] = await Promise.all([
+        getCameraRequestsDb(),
+        getCameraPhotographersDb(),
+        getCameraLoansDb(),
+    ]);
 
     return (
         <BeheerPageShell title="Camera Beheer" backHref="/beheer">
-            <BeheerCameraIsland requests={requests} photographers={photographers} />
+            <BeheerCameraIsland requests={requests} photographers={photographers} loans={loans} />
         </BeheerPageShell>
     );
 }
