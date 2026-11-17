@@ -2485,7 +2485,6 @@ export const camera_loans = pgTable("camera_loans", {
 	handout_note: varchar({ length: 500 }),
 	returned_on: date(),
 	condition_on_return: varchar({ length: 500 }),
-	last_reminder_on: date(),
 	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
 	index("idx_camera_loans_open").using("btree", table.returned_on.asc().nullsLast().op("date_ops")),

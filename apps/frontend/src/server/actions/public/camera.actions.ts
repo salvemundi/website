@@ -18,10 +18,9 @@ import { safeConsoleError } from '@/server/utils/logger';
 import { hhmm, periodsOverlap, type CameraPeriod } from '@/shared/lib/camera-period';
 import {
     formatMailPeriod,
-    getCameraAdminEmails,
+    getCameraPhotographerRecipients,
     getUserMailInfo,
     sendCameraMail,
-    siteUrl,
 } from '@/server/utils/camera-mail';
 
 type Result = { success: true } | { success: false; error: string };
@@ -229,12 +228,12 @@ async function notifyNewRequest(
         if (requester?.email) {
             await sendCameraMail(requester.email, 'camera-request-received', { name: requester.name, ...common });
         }
-        const admins = await getCameraAdminEmails();
+        const photographers = await getCameraPhotographerRecipients();
         await Promise.all(
-            admins.map((email) =>
-                sendCameraMail(email, 'camera-admin-new-request', {
+            photographers.map((p) =>
+                sendCameraMail(p.email, 'camera-photographer-new-request', {
+                    name: p.name,
                     requesterName: requester?.name ?? 'Een lid',
-                    url: `${siteUrl()}/beheer/camera`,
                     ...common,
                 }),
             ),

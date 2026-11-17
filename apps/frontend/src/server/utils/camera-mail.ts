@@ -1,8 +1,7 @@
 import 'server-only';
 
 import { db, schema } from '@salvemundi/db';
-import { and, eq, isNotNull } from 'drizzle-orm';
-import { COMMITTEES } from '@/shared/lib/permissions-config';
+import { eq, isNotNull } from 'drizzle-orm';
 import { hhmm, type CameraPeriod } from '@/shared/lib/camera-period';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -44,30 +43,29 @@ const formatDay = (date: string) =>
         timeZone: 'UTC',
     });
 
-export function formatMailDate(date: string): string {
-    return formatDay(date);
-}
-
 export function formatMailPeriod(p: CameraPeriod): string {
     const from = `${formatDay(p.start_date)}${p.start_time ? ` ${hhmm(p.start_time)}` : ''}`;
     const to = `${formatDay(p.end_date)}${p.end_time ? ` ${hhmm(p.end_time)}` : ''}`;
     return p.start_date === p.end_date && !p.start_time && !p.end_time ? from : `${from} t/m ${to}`;
 }
 
-export const siteUrl = () => process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-
-/** E-mailadressen van de MEDIA-commissie: zij beoordelen de aanvragen. */
-export async function getCameraAdminEmails(): Promise<string[]> {
+/** Alle toegelaten fotografen: zij krijgen bij elke aanvraag een mail. */
+export async function getCameraPhotographerRecipients(): Promise<{ name: string; email: string }[]> {
     try {
         const rows = await db
-            .select({ email: schema.directus_users.email })
-            .from(schema.committee_members)
-            .innerJoin(schema.committees, eq(schema.committee_members.committee_id, schema.committees.id))
-            .innerJoin(schema.directus_users, eq(schema.committee_members.user_id, schema.directus_users.id))
-            .where(and(eq(schema.committees.azure_group_id, COMMITTEES.MEDIA), isNotNull(schema.directus_users.email)));
-        return [...new Set(rows.map((r) => r.email).filter((e): e is string => !!e))];
+            .select({
+                first_name: schema.directus_users.first_name,
+                last_name: schema.directus_users.last_name,
+                email: schema.directus_users.email,
+            })
+            .from(schema.camera_photographers)
+            .innerJoin(schema.directus_users, eq(schema.camera_photographers.user_id, schema.directus_users.id))
+            .where(isNotNull(schema.directus_users.email));
+        return rows.flatMap((r) =>
+            r.email ? [{ name: `${r.first_name ?? ''} ${r.last_name ?? ''}`.trim() || 'fotograaf', email: r.email }] : [],
+        );
     } catch (error) {
-        safeConsoleError('[camera-mail.ts][getCameraAdminEmails] Error:', error);
+        safeConsoleError('[camera-mail.ts][getCameraPhotographerRecipients] Error:', error);
         return [];
     }
 }
