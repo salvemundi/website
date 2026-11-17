@@ -7,7 +7,11 @@
     "node": ">=22.13.1"
   },
   "scripts": {
-    "dev": "pnpm --filter @salvemundi/frontend dev",
+    "dev": "pnpm build:packages && pnpm --filter @salvemundi/frontend dev",
+    "build:packages": "pnpm --filter @salvemundi/db --filter @salvemundi/validations build",
+    "dev:infra": "docker compose -f infrastructure/dev/docker-compose.yml up -d --wait",
+    "dev:infra:down": "docker compose -f infrastructure/dev/docker-compose.yml down",
+    "dev:db:init": "pnpm --filter @salvemundi/db dev:init",
     "build": "pnpm -r build",
     "lint": "pnpm -r --parallel --if-present lint",
     "knip": "knip",

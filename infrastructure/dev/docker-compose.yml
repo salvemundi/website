@@ -1,0 +1,77 @@
+# Alleen voor lokale ontwikkeling. Productie en acceptatie gebruiken infrastructure/docker-compose.yml.
+name: salvemundi-dev
+
+services:
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: salvemundi
+      POSTGRES_PASSWORD: salvemundi
+      POSTGRES_DB: salvemundi
+      TZ: Europe/Amsterdam
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U salvemundi -d salvemundi"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:8-alpine
+    command: redis-server --requirepass salvemundi
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "salvemundi", "--no-auth-warning", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - redis_data:/data
+
+  directus:
+    image: directus/directus:11
+    command: >
+      sh -c "node /directus/cli.js bootstrap && node /directus/cli.js start"
+    ports:
+      - "127.0.0.1:8055:8055"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      KEY: local-dev-directus-key
+      SECRET: local-dev-directus-secret
+      DB_CLIENT: pg
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: salvemundi
+      DB_USER: salvemundi
+      DB_PASSWORD: salvemundi
+      CACHE_ENABLED: "true"
+      CACHE_STORE: redis
+      REDIS: redis://default:salvemundi@redis:6379
+      PUBLIC_URL: http://localhost:8055
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: http://localhost:3000
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: admin
+      ADMIN_TOKEN: local-dev-directus-token
+      TZ: Europe/Amsterdam
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8055/server/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    volumes:
+      - directus_uploads:/directus/uploads
+
+volumes:
+  postgres_data:
+  redis_data:
+  directus_uploads:

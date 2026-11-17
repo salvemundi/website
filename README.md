@@ -31,31 +31,67 @@ Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibilite
 
 ## Lokale Ontwikkeling
 
-1. **Clone de repository**:
-   ```bash
-   git clone https://github.com/salvemundi/website.git
-   cd website
-   ```
+### Vereisten
 
-2. **Installeer afhankelijkheden**:
-   ```bash
-   pnpm install
-   ```
+- Node.js ≥ 22.13 (de `mobile-notification-service` vraagt ≥ 24)
+- pnpm 11 (`corepack enable` pakt automatisch de versie uit `package.json`)
+- Docker met Docker Compose
 
-3. **Configureer de omgeving**:
-   Kopieer `.env.example` naar `.env` in de root en configureer `apps/frontend/.env.local` voor de Next.js frontend volgens de benodigde environment-variabelen.
+### Eerste keer opzetten
 
-4. **Start de development server**:
-   ```bash
-   pnpm dev
-   ```
-   *(Het `predev`/`prebuild` script `sync:maplibre-worker` kopieert automatisch de MapLibre v6 worker-bestanden naar `apps/frontend/public/map/worker/`.)*
+1.  **Clone de repository en installeer afhankelijkheden**:
+    ```bash
+    git clone https://github.com/salvemundi/website.git
+    cd website
+    pnpm install
+    ```
 
-5. **Validatie & kwaliteitscontrole**:
-   ```bash
-   pnpm --filter @salvemundi/frontend run validate
-   ```
-   Voert achtereenvolgens `tsc --noEmit`, `eslint src`, `knip` en `next build` uit.
+2.  **Configureer de frontend**. De standaardwaarden passen bij de lokale Docker-omgeving:
+    ```bash
+    cp apps/frontend/.env.example apps/frontend/.env.local
+    ```
+
+3.  **Start Postgres, Redis en Directus** (`infrastructure/dev/docker-compose.yml`). Het commando wacht tot alles gezond is:
+    ```bash
+    pnpm dev:infra
+    ```
+
+4.  **Maak de tabellen van de website aan**. Directus maakt bij de eerste start zijn eigen systeemtabellen aan. Dit script genereert de overige tabellen uit `packages/db/drizzle/schema.ts` en voegt de profielvelden toe aan `directus_users`. Het is veilig om het opnieuw te draaien:
+    ```bash
+    pnpm dev:db:init
+    ```
+
+5.  **Start de development server**. Dit bouwt eerst `@salvemundi/db` en `@salvemundi/validations`, daarna draait Next.js op http://localhost:3000:
+    ```bash
+    pnpm dev
+    ```
+    *(Het `predev`/`prebuild` script `sync:maplibre-worker` kopieert automatisch de MapLibre v6 worker-bestanden naar `apps/frontend/public/map/worker/`.)*
+
+6.  **Validatie & kwaliteitscontrole**:
+    ```bash
+    pnpm --filter @salvemundi/frontend run validate
+    ```
+    Voert achtereenvolgens `tsc --noEmit`, `eslint src`, `knip` en `next build` uit.
+
+### Lokale omgeving
+
+| Dienst | Adres | Inlog |
+| --- | --- | --- |
+| Website | http://localhost:3000 | Microsoft-login werkt lokaal niet zonder echte Entra-gegevens in `.env.local` |
+| Directus | http://localhost:8055 | `admin@example.com` / `admin` |
+| Postgres | `127.0.0.1:5432` | `salvemundi` / `salvemundi`, database `salvemundi` |
+| Redis | `127.0.0.1:6379` | wachtwoord `salvemundi` |
+
+De database begint leeg, dus pagina's laden zonder inhoud. Voeg data toe via Directus of laad een dump in Postgres.
+
+De microservices in `apps/services` zijn optioneel. Zet hun URL's in `.env.local` (zie `apps/frontend/.env.example`) als je aan betalingen, mail of Azure-synchronisatie werkt.
+
+### Stoppen en opnieuw beginnen
+
+```bash
+pnpm dev:infra:down                                               # containers stoppen, data blijft bewaard
+docker compose -f infrastructure/dev/docker-compose.yml down -v   # alles wissen, daarna weer vanaf stap 3
+```
 
 ## Deployment
 
