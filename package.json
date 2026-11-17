@@ -19,9 +19,9 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^9.39.5",
-    "eslint-plugin-security": "^4.0.1",
+    "eslint-plugin-security": "^4.2.1",
     "eslint-plugin-unused-imports": "^4.4.1",
-    "knip": "^6.29.0",
-    "typescript-eslint": "^8.65.0"
+    "knip": "^6.45.1",
+    "typescript-eslint": "^8.73.0"
   }
 }

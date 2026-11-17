@@ -106,22 +106,8 @@ const eslintConfig = [
                     "selector": "JSXIdentifier[name='Suspense']",
                     "message": "Zero-Skeleton rendering: `<Suspense>` is strictly forbidden. Await data directly at the component/page level to ensure atomic page loads without intermediate loading states."
                 },
-                {
-                    "selector": "JSXOpeningElement[name.name='input']:not(:has(JSXAttribute[name.name='type'][value.value=/hidden|checkbox|radio|file/])):not(:has(JSXAttribute[name.name='className'] Literal[value=/form-input|beheer-input|sr-only|hidden/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-input|beheer-input|sr-only|hidden/]))",
-                    "message": "Zichtbare rauwe <input> gevonden zonder 'form-input' of 'beheer-input' klasse."
-                },
-                {
-                    "selector": "JSXOpeningElement[name.name='button']:not(:has(JSXAttribute[name.name='className'] Literal[value=/form-button|beheer-button|icon-button|tab-button|btn-|beheer-select/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-button|beheer-button|icon-button|tab-button|btn-|beheer-select/]))",
-                    "message": "Rauwe <button> gevonden zonder 'form-button', 'beheer-button', 'icon-button', 'tab-button', 'btn-*' of 'beheer-select-*' klasse."
-                },
-                {
-                    "selector": "JSXOpeningElement[name.name='select']:not(:has(JSXAttribute[name.name='className'] Literal[value=/form-input|beheer-input|beheer-select/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-input|beheer-input|beheer-select/]))",
-                    "message": "Rauwe <select> gevonden zonder geldige klasse."
-                },
-                {
-                    "selector": "JSXOpeningElement[name.name='textarea']:not(:has(JSXAttribute[name.name='className'] Literal[value=/form-input|beheer-input/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-input|beheer-input/]))",
-                    "message": "Rauwe <textarea> gevonden zonder 'form-input' of 'beheer-input' klasse."
-                }
+                // TODO: Re-enable after shadcn/ui migration with updated component checks
+                // Button, input, select, textarea class enforcement rules disabled during migration
             ],
 
             "react-hooks/set-state-in-effect": "off",

@@ -1,12 +1,9 @@
-// Server Component — statische "Waarom Salve Mundi?" sectie met drie pijlerkaarten.
-// Geen interactiviteit, geen 'use client', geen ScrollTriggerWrapper.
-// Animatie via native CSS: animate-fade-in-up uit animations.css.
-// Alle kleuren via CSS design tokens — geen hardcoded hex of Tailwind kleurklassen.
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-// Pijlerkaart definitie — icoon als inline SVG (stroke="currentColor")
 interface Pijler {
     name: string;
     description: string;
+    iconClass: string;
     icon: React.ReactNode;
 }
 
@@ -15,6 +12,7 @@ const pijlers: Pijler[] = [
         name: 'Gezelligheid',
         description:
             'Van gezellig chillen in onze eigen ruimte tot onvergetelijke feesten en weekendjes weg bij Salve Mundi. Bouw vriendschappen die een leven lang meegaan.',
+        iconClass: 'bg-accent/20 text-accent',
         icon: (
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -26,7 +24,6 @@ const pijlers: Pijler[] = [
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="size-7 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
                 aria-hidden="true"
             >
                 <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
@@ -37,6 +34,7 @@ const pijlers: Pijler[] = [
         name: 'Studie',
         description:
             'Samen sta je sterker. We organiseren bijlessen, workshops en bedrijfsbezoeken om jou te helpen excelleren in je studie en carrière.',
+        iconClass: 'bg-secondary/20 text-secondary',
         icon: (
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -48,7 +46,6 @@ const pijlers: Pijler[] = [
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="size-7 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6"
                 aria-hidden="true"
             >
                 <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
@@ -60,6 +57,7 @@ const pijlers: Pijler[] = [
         name: 'Ontwikkeling',
         description:
             'Boost je CV door actief te worden in een van onze commissies. Leer organiseren, besturen en samenwerken in een professionele omgeving.',
+        iconClass: 'bg-success/20 text-success',
         icon: (
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -71,7 +69,6 @@ const pijlers: Pijler[] = [
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="size-7 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12"
                 aria-hidden="true"
             >
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
@@ -83,38 +80,27 @@ const pijlers: Pijler[] = [
 
 export function WhySalveMundiSection() {
     return (
-        <section className="py-fluid-lg">
-            <div className="max-w-app mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Sectie-header */}
-                <div className="mb-6 text-center sm:mb-10">
-                    <h2 className="text-gradient text-3xl font-black sm:text-4xl md:text-5xl">
-                        Waarom Salve Mundi?
-                    </h2>
-                </div>
+        <section>
+            <div className="mb-8 text-center">
+                <h2>Waarom Salve Mundi?</h2>
+            </div>
 
-                {/* Pijlerkaarten */}
-                <div className="grid gap-8 md:grid-cols-3">
-                    {pijlers.map((pijler) => (
-                        <div
-                            key={pijler.name}
-                            className="group squircle-lg relative bg-(--bg-card) p-8 shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl dark:border dark:border-white/10"
-                        >
-                            {/* Flex container for Icon + Title */}
-                            <div className="mb-4 flex items-center gap-3.5">
-                                <div className="group-hover:bg-gradient-theme inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-purple-300/10 text-purple-300 transition-all duration-300 group-hover:text-(--text-main) dark:bg-transparent">
-                                    {pijler.icon}
-                                </div>
-                                <h3 className="text-xl font-bold text-(--text-main)">
-                                    {pijler.name}
-                                </h3>
+            <div className="grid gap-6 md:grid-cols-3">
+                {pijlers.map((pijler) => (
+                    <Card key={pijler.name}>
+                        <CardHeader className="flex-row items-center gap-3 space-y-0 pb-3">
+                            <div className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${pijler.iconClass}`}>
+                                {pijler.icon}
                             </div>
-
-                            <p className="leading-relaxed text-(--text-muted)">
+                            <CardTitle>{pijler.name}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="leading-relaxed text-muted-foreground">
                                 {pijler.description}
                             </p>
-                        </div>
-                    ))}
-                </div>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
         </section>
     );

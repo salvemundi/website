@@ -1,6 +1,6 @@
 import { Camera, Trash2 } from 'lucide-react';
 import MediaAsset from '@/components/ui/media/MediaAsset';
-import { IconButton } from '@/components/ui/buttons/IconButton';
+import { Button } from '@/components/ui/button';
 
 interface PhotoUploaderProps {
     imagePreview: string | null;
@@ -33,16 +33,15 @@ export const PhotoUploader = ({
                             <Camera className="size-4" />
                             <span>Wijzigen</span>
                         </label>
-                        <IconButton
+                        <Button
                             type="button"
-                            variant="purple"
-                            size="md"
+                            variant="destructive"
+                            size="icon"
                             onClick={onRemoveImage}
                             aria-label="Foto verwijderen"
-                            className="min-h-11 min-w-11 bg-red-500/80 text-white hover:bg-red-600"
                         >
                             <Trash2 className="size-4" />
-                        </IconButton>
+                        </Button>
                     </div>
                 </div>
             ) : (

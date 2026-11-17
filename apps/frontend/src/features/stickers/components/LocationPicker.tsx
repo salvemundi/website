@@ -1,5 +1,5 @@
 import { LocateFixed, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/button';
 import { type LocationSearchResult } from '@/shared/lib/utils/geolocation';
 
 interface LocationPickerProps {
@@ -59,7 +59,7 @@ export const LocationPicker = ({
             <Button
                 type="button"
                 variant="secondary"
-                size="md"
+                size="default"
                 onClick={onUseCurrentLocation}
                 disabled={isLocatingCurrent}
                 className="inline-flex w-full items-center justify-center gap-2 text-xs font-black tracking-widest text-(--text-main) uppercase"
@@ -78,7 +78,7 @@ export const LocationPicker = ({
                     />
                     <Button
                         type="button"
-                        variant="primary"
+                        variant="default"
                         size="sm"
                         onClick={onAddressSearch}
                         disabled={isSearching}

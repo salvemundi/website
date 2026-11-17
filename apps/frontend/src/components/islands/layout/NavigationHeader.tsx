@@ -69,8 +69,8 @@ const NavigationHeader = ({
                             />
                         </div>
                         <div className="hidden text-left whitespace-nowrap transition-all duration-300 @[1024px]:block">
-                            <p className="text-[13px] leading-none font-semibold text-purple-500">Salve Mundi</p>
-                            <p className="mt-0.5 text-xs font-semibold text-(--text-main)">Fontys ICT</p>
+                            <p className="text-[13px] leading-none font-semibold text-primary">Salve Mundi</p>
+                            <p className="mt-0.5 text-xs font-semibold text-foreground">Fontys ICT</p>
                         </div>
                     </Link>
                 </div>
@@ -84,13 +84,13 @@ const NavigationHeader = ({
                                 href={link.href}
                                 className={cn(
                                     'group relative inline-flex shrink-0 items-center gap-2 text-sm font-semibold whitespace-nowrap transition-all duration-200',
-                                    active ? 'text-purple-500' : 'text-(--text-main)',
-                                    !active && 'hover:text-purple-500'
+                                    active ? 'text-primary' : 'text-foreground',
+                                    !active && 'hover:text-primary'
                                 )}
                             >
                                 <span className="text-[clamp(13px,1vw,15px)] font-semibold">{link.name}</span>
                                 <span className={cn(
-                                    'absolute -bottom-2 left-0 h-0.5 w-full origin-left rounded-full bg-purple-50 transition-transform duration-200 ease-out',
+                                    'absolute -bottom-2 left-0 h-0.5 w-full origin-left rounded-full bg-primary transition-transform duration-200 ease-out',
                                     active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
                                 )} />
                             </Link>

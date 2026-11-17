@@ -4,8 +4,7 @@ import { X, Loader2, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { searchLocations, reverseGeocode, type LocationSearchResult } from '@/shared/lib/utils/geolocation';
-import { IconButton } from '@/components/ui/buttons/IconButton';
-import { Button } from '@/components/ui/buttons/Button';
+import { Button } from '@/components/ui/button';
 import { LocationPicker } from '../LocationPicker';
 import { PhotoUploader } from '../PhotoUploader';
 
@@ -187,9 +186,9 @@ export default function AddStickerModal({
                         <h2 className="text-xl font-black tracking-tighter uppercase italic sm:text-2xl">Nieuwe Sticker <span className="text-white/70">Plakken</span></h2>
                         <p className="mt-1 text-[10px] font-black tracking-widest uppercase opacity-80">{selectedLocation ? 'Locatie geselecteerd op kaart' : 'Selecteer of zoek locatie'}</p>
                     </div>
-                    <IconButton onClick={onClose} aria-label="Sluiten">
+                    <Button variant="ghost" size="icon" onClick={onClose} aria-label="Sluiten">
                         <X className="size-6" />
-                    </IconButton>
+                    </Button>
                 </div>
 
                 <form onSubmit={onSubmit} autoComplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" className="space-y-6 overflow-y-auto p-4 sm:p-8">
