@@ -27,6 +27,7 @@ import {
     saveCameraRequestAction,
     searchCameraMembersAction,
     updateCameraPhotographerAction,
+    updateCameraRequesterAction,
 } from '@/server/actions/beheer/camera/beheer-camera.actions';
 import { badgeBase, STATUS_CLASS, STATUS_LABEL } from '@/components/islands/camera/camera-utils';
 
@@ -129,6 +130,89 @@ function HandoutForm({ request, showToast }: { request: CameraAdminRequest; show
     );
 }
 
+function RequesterEditor({ request, showToast }: { request: CameraAdminRequest; showToast: Toast }) {
+    const router = useRouter();
+    const [isPending, startTransition] = useTransition();
+    const [editing, setEditing] = useState(false);
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState<CameraMemberOption[]>([]);
+
+    const search = (value: string) => {
+        setQuery(value);
+        if (value.trim().length < 2) {
+            setResults([]);
+            return;
+        }
+        void searchCameraMembersAction(value).then(setResults);
+    };
+
+    const choose = (member: CameraMemberOption) => {
+        startTransition(async () => {
+            const result = await updateCameraRequesterAction(request.id, member.id);
+            if (result.success) {
+                showToast(`Aanvrager gewijzigd naar ${member.name}`, 'success');
+                setEditing(false);
+                setQuery('');
+                setResults([]);
+                router.refresh();
+            } else {
+                showToast(result.error, 'error');
+            }
+        });
+    };
+
+    if (!editing) {
+        return (
+            <button
+                type="button"
+                onClick={() => setEditing(true)}
+                className="beheer-button inline-flex cursor-pointer items-center gap-1 text-xs font-bold text-purple-700 hover:underline dark:text-purple-300"
+            >
+                <Pencil className="size-3" /> Aanvrager wijzigen
+            </button>
+        );
+    }
+
+    return (
+        <div className="w-full space-y-2 rounded-xl border border-border-color bg-bg-soft p-3">
+            <input
+                className="form-input"
+                value={query}
+                onChange={(e) => search(e.target.value)}
+                placeholder="Zoek een actief lid op voor- of achternaam"
+                disabled={isPending}
+            />
+            {results.length > 0 && (
+                <ul className="space-y-1">
+                    {results.map((r) => (
+                        <li key={r.id}>
+                            <button
+                                type="button"
+                                onClick={() => choose(r)}
+                                disabled={isPending}
+                                className="beheer-button w-full cursor-pointer rounded-lg border border-border-color bg-bg-card px-3 py-2 text-left text-xs font-semibold text-text-main hover:bg-bg-soft disabled:opacity-50"
+                            >
+                                {r.name}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
+            <button
+                type="button"
+                onClick={() => {
+                    setEditing(false);
+                    setQuery('');
+                    setResults([]);
+                }}
+                className="beheer-button cursor-pointer text-xs font-bold text-text-muted hover:underline"
+            >
+                Annuleren
+            </button>
+        </div>
+    );
+}
+
 function RequestCard({
     request,
     photographers,
@@ -187,6 +271,9 @@ function RequestCard({
                     Aanvrager: {request.requester_name}
                     {request.requester_email && ` (${request.requester_email})`}
                 </p>
+                <div className="sm:col-span-2">
+                    <RequesterEditor request={request} showToast={showToast} />
+                </div>
                 {request.proposed_photographer_name && <p>Gewenste fotograaf: {request.proposed_photographer_name}</p>}
                 {request.note && <p className="sm:col-span-2">Opmerking aanvrager: {request.note}</p>}
             </div>
