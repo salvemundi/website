@@ -2,19 +2,25 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Camera, Check, CalendarClock, Plus, Trash2, UserCheck, X } from 'lucide-react';
-import type {
-    CameraAdminPhotographer,
-    CameraAdminRequest,
-    CameraMemberOption,
-    CameraRequestStatus,
+import { AlertTriangle, Camera, CalendarDays, Check, CalendarClock, ClipboardList, HandHelping, Plus, Trash2, UserCheck, X } from 'lucide-react';
+import {
+    CAMERA_CHECKLIST_ITEMS,
+    type CameraAdminLoan,
+    type CameraAdminPhotographer,
+    type CameraAdminRequest,
+    type CameraChecklist,
+    type CameraMemberOption,
+    type CameraRequestStatus,
 } from '@salvemundi/validations';
+import CameraCalendar from './CameraCalendar';
+import CameraLoansPanel from './CameraLoansPanel';
 import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { formatDate } from '@/shared/lib/utils/date';
 import {
     addCameraPhotographerAction,
     removeCameraPhotographerAction,
+    handoutCameraAction,
     saveCameraRequestAction,
     searchCameraMembersAction,
 } from '@/server/actions/beheer/camera/beheer-camera.actions';
@@ -23,9 +29,10 @@ import { badgeBase, STATUS_CLASS, STATUS_LABEL } from '@/components/islands/came
 interface Props {
     requests: CameraAdminRequest[];
     photographers: CameraAdminPhotographer[];
+    loans: CameraAdminLoan[];
 }
 
-type Tab = 'pending' | 'upcoming' | 'archive' | 'photographers';
+type Tab = 'pending' | 'upcoming' | 'calendar' | 'loans' | 'archive' | 'photographers';
 type Toast = ReturnType<typeof useAdminToast>['showToast'];
 
 function formatPeriod(r: CameraAdminRequest) {
@@ -41,13 +48,92 @@ const tabClass = (active: boolean) =>
             : 'text-text-muted hover:text-text-main'
     }`;
 
+const EMPTY_CHECKLIST: CameraChecklist = { camera: false, lens: false, flash: false, battery: false, card: false };
+
+function HandoutForm({ request, showToast }: { request: CameraAdminRequest; showToast: Toast }) {
+    const router = useRouter();
+    const [isPending, startTransition] = useTransition();
+    const [open, setOpen] = useState(false);
+    const [checklist, setChecklist] = useState<CameraChecklist>(EMPTY_CHECKLIST);
+    const [note, setNote] = useState('');
+
+    const submit = () => {
+        startTransition(async () => {
+            const result = await handoutCameraAction({ request_id: request.id, checklist, note });
+            if (result.success) {
+                showToast('Camera meegegeven', 'success');
+                setOpen(false);
+                router.refresh();
+            } else {
+                showToast(result.error, 'error');
+            }
+        });
+    };
+
+    if (!open) {
+        return (
+            <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className="beheer-button inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-purple-300 px-4 py-2 text-xs font-bold text-purple-700 transition-all hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-500/10"
+            >
+                <HandHelping className="size-3.5" /> Meegeven
+            </button>
+        );
+    }
+
+    return (
+        <div className="w-full space-y-3 rounded-xl border border-border-color bg-bg-soft p-4">
+            <p className="text-xs font-bold text-text-main">Controleer samen met de lener of alles compleet is:</p>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+                {CAMERA_CHECKLIST_ITEMS.map((item) => (
+                    <label key={item.key} className="flex items-center gap-2 text-xs font-semibold text-text-main">
+                        <input
+                            type="checkbox"
+                            checked={checklist[item.key]}
+                            onChange={(e) => setChecklist((c) => ({ ...c, [item.key]: e.target.checked }))}
+                        />
+                        {item.label}
+                    </label>
+                ))}
+            </div>
+            <input
+                className="form-input"
+                value={note}
+                maxLength={500}
+                placeholder="Opmerking bij meegeven (optioneel)"
+                onChange={(e) => setNote(e.target.value)}
+            />
+            <div className="flex gap-2">
+                <button
+                    type="button"
+                    onClick={submit}
+                    disabled={isPending}
+                    className="beheer-button inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white transition-all hover:bg-purple-700 disabled:opacity-50"
+                >
+                    <HandHelping className="size-3.5" /> Bevestig meegeven
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    className="beheer-button cursor-pointer rounded-xl border border-border-color px-4 py-2 text-xs font-bold text-text-muted hover:bg-bg-card"
+                >
+                    Annuleren
+                </button>
+            </div>
+        </div>
+    );
+}
+
 function RequestCard({
     request,
     photographers,
+    loan,
     showToast,
 }: {
     request: CameraAdminRequest;
     photographers: CameraAdminPhotographer[];
+    loan: CameraAdminLoan | undefined;
     showToast: Toast;
 }) {
     const router = useRouter();
@@ -175,6 +261,12 @@ function RequestCard({
                     >
                         Annuleren
                     </button>
+                )}
+                {request.status === 'approved' && !loan && <HandoutForm request={request} showToast={showToast} />}
+                {loan && (
+                    <span className={`${badgeBase} ${loan.returned_on ? STATUS_CLASS.approved : STATUS_CLASS.requested}`}>
+                        {loan.returned_on ? 'Teruggebracht' : 'Meegegeven'}
+                    </span>
                 )}
                 {(request.status === 'rejected' || request.status === 'cancelled') && (
                     <button
@@ -336,11 +428,14 @@ function PhotographersPanel({
     );
 }
 
-export default function BeheerCameraIsland({ requests, photographers }: Props) {
+export default function BeheerCameraIsland({ requests, photographers, loans }: Props) {
     const { toast, showToast, hideToast } = useAdminToast();
     const [tab, setTab] = useState<Tab>('pending');
 
     const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Amsterdam' });
+
+    const loanByRequest = useMemo(() => new Map(loans.map((l) => [l.request_id, l])), [loans]);
+    const openLoan = loans.find((l) => l.returned_on === null);
 
     const groups = useMemo(() => {
         const pending = requests.filter((r) => r.status === 'requested').sort((a, b) => a.start_date.localeCompare(b.start_date));
@@ -363,6 +458,21 @@ export default function BeheerCameraIsland({ requests, photographers }: Props) {
 
     return (
         <div className="space-y-6">
+            <div
+                className={`flex flex-wrap items-center gap-2 rounded-xl px-4 py-3 text-xs font-bold ${
+                    openLoan
+                        ? openLoan.days_late > 0
+                            ? 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300'
+                            : 'bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-300'
+                        : 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300'
+                }`}
+            >
+                <Camera className="size-4" />
+                {openLoan
+                    ? `Camera nu uitgeleend aan ${openLoan.borrower_name} (${openLoan.event_name}), afgesproken tot ${formatDate(openLoan.agreed_end_date, 'd MMM yyyy')}${openLoan.days_late > 0 ? ` – ${openLoan.days_late} ${openLoan.days_late === 1 ? 'dag' : 'dagen'} te laat` : ''}`
+                    : 'Camera is nu beschikbaar'}
+            </div>
+
             <div className="flex w-full flex-wrap items-center gap-1.5 rounded-xl border border-border-color/60 bg-bg-soft p-1 md:w-fit">
                 <button type="button" onClick={() => setTab('pending')} className={`tab-button ${tabClass(tab === 'pending')}`}>
                     <CalendarClock className="size-3.5" />
@@ -371,6 +481,14 @@ export default function BeheerCameraIsland({ requests, photographers }: Props) {
                 <button type="button" onClick={() => setTab('upcoming')} className={`tab-button ${tabClass(tab === 'upcoming')}`}>
                     <Camera className="size-3.5" />
                     Goedgekeurd ({groups.upcoming.length})
+                </button>
+                <button type="button" onClick={() => setTab('calendar')} className={`tab-button ${tabClass(tab === 'calendar')}`}>
+                    <CalendarDays className="size-3.5" />
+                    Kalender
+                </button>
+                <button type="button" onClick={() => setTab('loans')} className={`tab-button ${tabClass(tab === 'loans')}`}>
+                    <ClipboardList className="size-3.5" />
+                    Uitleenlog
                 </button>
                 <button type="button" onClick={() => setTab('archive')} className={`tab-button ${tabClass(tab === 'archive')}`}>
                     Archief
@@ -383,6 +501,10 @@ export default function BeheerCameraIsland({ requests, photographers }: Props) {
 
             {tab === 'photographers' ? (
                 <PhotographersPanel photographers={photographers} showToast={showToast} />
+            ) : tab === 'calendar' ? (
+                <CameraCalendar requests={requests} loans={loans} today={today} />
+            ) : tab === 'loans' ? (
+                <CameraLoansPanel loans={loans} today={today} showToast={showToast} />
             ) : list.length === 0 ? (
                 <p className="py-12 text-center text-sm font-bold text-text-muted">{empty}</p>
             ) : (
@@ -392,6 +514,7 @@ export default function BeheerCameraIsland({ requests, photographers }: Props) {
                             key={`${r.id}-${r.status}-${r.assigned_photographer_id ?? ''}`}
                             request={r}
                             photographers={photographers}
+                            loan={loanByRequest.get(r.id)}
                             showToast={showToast}
                         />
                     ))}

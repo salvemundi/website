@@ -5,6 +5,8 @@ import { asc, desc, eq } from 'drizzle-orm';
 import { safeConsoleError } from '@/server/utils/logger';
 import { hhmm, periodsOverlap } from '@/shared/lib/camera-period';
 import type {
+    CameraAdminLoan,
+    CameraChecklist,
     CameraAdminPhotographer,
     CameraAdminRequest,
     CameraRequestStatus,
@@ -88,6 +90,59 @@ export async function getCameraRequestsDb(): Promise<CameraAdminRequest[]> {
         return mapped;
     } catch (error) {
         safeConsoleError('[beheer-camera.queries.ts][getCameraRequestsDb] Error:', error);
+        return [];
+    }
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Aantal hele dagen dat `date` na `agreed` ligt (0 als op tijd). Datums als YYYY-MM-DD. */
+function daysAfter(date: string, agreed: string): number {
+    const diff = Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${agreed}T00:00:00Z`)) / DAY_MS);
+    return Math.max(0, diff);
+}
+
+export async function getCameraLoansDb(): Promise<CameraAdminLoan[]> {
+    try {
+        const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Amsterdam' });
+        const [rows, photographers] = await Promise.all([
+            db
+                .select({
+                    l: schema.camera_loans,
+                    r: schema.camera_requests,
+                    first_name: schema.directus_users.first_name,
+                    last_name: schema.directus_users.last_name,
+                })
+                .from(schema.camera_loans)
+                .innerJoin(schema.camera_requests, eq(schema.camera_loans.request_id, schema.camera_requests.id))
+                .leftJoin(schema.directus_users, eq(schema.camera_requests.requester_id, schema.directus_users.id))
+                .orderBy(desc(schema.camera_loans.handed_out_at))
+                .limit(500),
+            getCameraPhotographersDb(),
+        ]);
+        const nameById = new Map(photographers.map((p) => [p.id, p.name]));
+
+        return rows.map(({ l, r, first_name, last_name }) => {
+            const checklist = l.checklist as CameraChecklist;
+            return {
+                id: l.id,
+                request_id: l.request_id,
+                borrower_name: fullName(first_name, last_name),
+                event_name: r.event_name,
+                photographer_name: r.assigned_photographer_id ? (nameById.get(r.assigned_photographer_id) ?? null) : null,
+                start_date: r.start_date,
+                agreed_end_date: r.end_date,
+                handed_out_at: l.handed_out_at,
+                returned_on: l.returned_on,
+                checklist,
+                complete: Object.values(checklist).every(Boolean),
+                handout_note: l.handout_note,
+                condition_on_return: l.condition_on_return,
+                days_late: daysAfter(l.returned_on ?? today, r.end_date),
+            };
+        });
+    } catch (error) {
+        safeConsoleError('[beheer-camera.queries.ts][getCameraLoansDb] Error:', error);
         return [];
     }
 }

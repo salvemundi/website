@@ -2,11 +2,13 @@
 
 import { enforceFeatureAccess } from '@/server/actions/beheer/beheer-utils.actions';
 import { db, schema } from '@salvemundi/db';
-import { and, eq, ilike, lte, gte, ne, or } from 'drizzle-orm';
+import { and, eq, ilike, isNull, lte, gte, ne, or } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import {
     addCameraPhotographerSchema,
+    handoutCameraSchema,
+    returnCameraSchema,
     saveCameraRequestSchema,
     type CameraMemberOption,
 } from '@salvemundi/validations';
@@ -163,5 +165,83 @@ export async function searchCameraMembersAction(query: string): Promise<CameraMe
     } catch (error) {
         safeConsoleError('[beheer-camera.actions.ts][searchCameraMembersAction] Error:', error);
         return [];
+    }
+}
+
+/** Camera meegeven aan de aanvrager van een goedgekeurde aanvraag. */
+export async function handoutCameraAction(input: unknown): Promise<Result> {
+    await enforceFeatureAccess('camera');
+
+    const parsed = handoutCameraSchema.safeParse(input);
+    if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? 'Ongeldige invoer' };
+    const data = parsed.data;
+
+    try {
+        const found = await db
+            .select({ status: schema.camera_requests.status })
+            .from(schema.camera_requests)
+            .where(eq(schema.camera_requests.id, data.request_id))
+            .limit(1);
+        if (found.length === 0) return { success: false, error: 'Aanvraag niet gevonden.' };
+        if (found[0].status !== 'approved') {
+            return { success: false, error: 'Alleen goedgekeurde aanvragen kunnen worden meegegeven.' };
+        }
+
+        // De camera kan maar aan één persoon tegelijk zijn meegegeven.
+        const open = await db
+            .select({ event_name: schema.camera_requests.event_name })
+            .from(schema.camera_loans)
+            .innerJoin(schema.camera_requests, eq(schema.camera_loans.request_id, schema.camera_requests.id))
+            .where(isNull(schema.camera_loans.returned_on))
+            .limit(1);
+        if (open.length > 0) {
+            return {
+                success: false,
+                error: `De camera is nog uitgeleend (${open[0].event_name}). Registreer eerst het terugbrengen.`,
+            };
+        }
+
+        const existing = await db
+            .select({ id: schema.camera_loans.id })
+            .from(schema.camera_loans)
+            .where(eq(schema.camera_loans.request_id, data.request_id))
+            .limit(1);
+        if (existing.length > 0) return { success: false, error: 'Deze aanvraag is al meegegeven.' };
+
+        await db.insert(schema.camera_loans).values({
+            request_id: data.request_id,
+            checklist: data.checklist,
+            handout_note: data.note,
+        });
+
+        revalidate();
+        return { success: true };
+    } catch (error) {
+        safeConsoleError('[beheer-camera.actions.ts][handoutCameraAction] Error:', error);
+        return { success: false, error: GENERIC_ERROR };
+    }
+}
+
+/** Terugbrengen van de camera registreren. */
+export async function returnCameraAction(input: unknown): Promise<Result> {
+    await enforceFeatureAccess('camera');
+
+    const parsed = returnCameraSchema.safeParse(input);
+    if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? 'Ongeldige invoer' };
+    const data = parsed.data;
+
+    try {
+        const updated = await db
+            .update(schema.camera_loans)
+            .set({ returned_on: data.returned_on, condition_on_return: data.condition })
+            .where(and(eq(schema.camera_loans.id, data.id), isNull(schema.camera_loans.returned_on)))
+            .returning({ id: schema.camera_loans.id });
+        if (updated.length === 0) return { success: false, error: 'Deze uitleen is al afgerond of bestaat niet.' };
+
+        revalidate();
+        return { success: true };
+    } catch (error) {
+        safeConsoleError('[beheer-camera.actions.ts][returnCameraAction] Error:', error);
+        return { success: false, error: GENERIC_ERROR };
     }
 }
