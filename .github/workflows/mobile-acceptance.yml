@@ -8,7 +8,6 @@ on:
       - "apps/frontend/src/server/services/**"
       - "apps/frontend/src/app/api/mobile/**"
       - "apps/services/mobile-notification-service/**"
-      - "tests/mobile-*.test.mjs"
       - "apps/frontend/src/shared/lib/permissions-config.ts"
       - "packages/db/drizzle/mobile_*.sql"
       - ".github/workflows/mobile-acceptance.yml"
@@ -31,9 +30,9 @@ jobs:
       - run: pnpm --filter=@salvemundi/db build
       - run: pnpm --filter=@salvemundi/validations build
       - name: Authentication and acceptance boundary tests
-        run: node --experimental-strip-types --test tests/mobile-security.test.mjs
+        run: node --experimental-strip-types --test apps/mobile/tests/mobile-security.test.mjs
       - name: Mobile auth, activity administration, widget and preference tests
-        run: node --experimental-vm-modules --test tests/mobile-auth-flow.test.mjs tests/mobile-admin*.test.mjs tests/mobile-notification-preferences.test.mjs
+        run: node --experimental-vm-modules --test apps/mobile/tests/mobile-auth-flow.test.mjs apps/mobile/tests/mobile-admin*.test.mjs apps/mobile/tests/mobile-notification-preferences.test.mjs
       - name: APNs and notification worker tests
         run: node --test apps/services/mobile-notification-service/test/*.test.mjs
       - name: Acceptance setup safety tests

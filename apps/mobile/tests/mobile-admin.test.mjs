@@ -8,7 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { SourceTextModule, SyntheticModule, createContext } from 'node:vm';
 import * as crypto from 'node:crypto';
 
-const source = resolve(dirname(fileURLToPath(import.meta.url)), '../apps/frontend/src');
+const source = resolve(dirname(fileURLToPath(import.meta.url)), '../../frontend/src');
 const require = createRequire(resolve(source, '../package.json'));
 const ts = require('typescript');
 const { z } = require('zod');
