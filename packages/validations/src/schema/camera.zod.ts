@@ -11,7 +11,8 @@ export const CAMERA_PHOTO_STATUS_LABEL: Record<CameraPhotoStatus, string> = {
     done: 'Klaar',
 };
 
-const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Vul een geldige datum in');
+const dateString = z.iso.date({ error: 'Vul een geldige datum in' })
+    .refine((date) => !date.startsWith('0000-'), 'Vul een geldige datum in');
 
 // Tijd is optioneel: lege invoer wordt null (dan geldt de hele dag).
 const optionalTime = z
@@ -53,7 +54,7 @@ export const createCameraRequestSchema = z
             ctx.addIssue({ code: 'custom', path: ['end_date'], message: 'De einddatum mag niet voor de startdatum liggen' });
             return;
         }
-        if (v.start_date === v.end_date && v.start_time && v.end_time && v.end_time <= v.start_time) {
+        if (v.start_date === v.end_date && v.end_time && v.end_time <= (v.start_time ?? '00:00')) {
             ctx.addIssue({ code: 'custom', path: ['end_time'], message: 'De eindtijd moet na de starttijd liggen' });
         }
     });
