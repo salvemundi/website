@@ -33,6 +33,7 @@ export const COMMITTEES = {
 
 export interface FeatureRegistry {
     activiteiten: readonly string[];
+    camera: readonly string[];
     cobo: readonly string[];
     commissies: readonly string[];
     coupons: readonly string[];
@@ -54,6 +55,7 @@ export interface FeatureRegistry {
 export const FEATURE_ACCESS: FeatureRegistry = {
     // Content group dashboard.
     activiteiten: [COMMITTEES.KAMP, COMMITTEES.FEEST, COMMITTEES.STUDY, COMMITTEES.ACTIVITEITEN, COMMITTEES.BESTUUR, COMMITTEES.KANDI],
+    camera: [COMMITTEES.MEDIA, COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     cobo: [COMMITTEES.COBO, COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     intro: [COMMITTEES.INTRO, COMMITTEES.BESTUUR, COMMITTEES.KANDI],
     kroegentocht: [COMMITTEES.FEEST, COMMITTEES.BESTUUR, COMMITTEES.KANDI],

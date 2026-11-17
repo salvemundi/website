@@ -18,6 +18,7 @@ export const ROUTES = {
     BIJBANENBANK: '/bijbanenbank',
     COBO: '/cobo',
     PIZZA: '/pizza',
+    CAMERA: '/camera',
     QR_GENERATOR: '/qr-generator'
 } as const;
 

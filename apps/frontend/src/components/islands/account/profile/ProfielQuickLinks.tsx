@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronRight, CreditCard, MessageCircle, Briefcase, FileSignature, Users, Pizza } from 'lucide-react';
+import { ChevronRight, CreditCard, MessageCircle, Briefcase, FileSignature, Users, Pizza, Camera } from 'lucide-react';
 import { Tile, QuickLink } from './ProfielUI';
 import { ROUTES } from '@/lib/config/routes';
 
@@ -45,6 +45,12 @@ export default function ProfielQuickLinks({ user = {} }: ProfielQuickLinksProps)
                     label="Pizza-rondes"
                     icon={<Pizza className="size-6" />}
                     href={ROUTES.PIZZA}
+                />
+                <QuickLink
+                    label="Camera aanvragen"
+                    icon={<Camera className="size-6" />}
+                    href={ROUTES.CAMERA}
+                    locked={!isMember}
                 />
                 <QuickLink
                     label="Mijn NDA's"
