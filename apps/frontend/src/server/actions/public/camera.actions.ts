@@ -2,6 +2,7 @@
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { db, schema } from '@salvemundi/db';
 import { and, asc, desc, eq, gte, inArray, lte, ne } from 'drizzle-orm';
 import { z } from 'zod';
@@ -211,6 +212,17 @@ export async function getCameraPageData(): Promise<{
     }
 }
 
+async function getSiteUrl(): Promise<string> {
+    if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '');
+    try {
+        const h = await headers();
+        const host = h.get('x-forwarded-host') || h.get('host') || 'localhost:3000';
+        return `${h.get('x-forwarded-proto') || 'https'}://${host}`;
+    } catch {
+        return 'http://localhost:3000';
+    }
+}
+
 /** Mails versturen mag nooit de aanvraag zelf laten mislukken. */
 async function notifyNewRequest(
     userId: string,
@@ -229,11 +241,13 @@ async function notifyNewRequest(
             await sendCameraMail(requester.email, 'camera-request-received', { name: requester.name, ...common });
         }
         const photographers = await getCameraPhotographerRecipients();
+        const adminUrl = `${await getSiteUrl()}/beheer/camera`;
         await Promise.all(
             photographers.map((p) =>
                 sendCameraMail(p.email, 'camera-photographer-new-request', {
                     name: p.name,
                     requesterName: requester?.name ?? 'Een lid',
+                    adminUrl,
                     ...common,
                 }),
             ),
