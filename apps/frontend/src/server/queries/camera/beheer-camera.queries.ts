@@ -7,6 +7,7 @@ import { hhmm, periodsOverlap } from '@/shared/lib/camera-period';
 import type {
     CameraAdminLoan,
     CameraChecklist,
+    CameraPhotoStatus,
     CameraAdminPhotographer,
     CameraAdminRequest,
     CameraRequestStatus,
@@ -67,6 +68,7 @@ export async function getCameraRequestsDb(): Promise<CameraAdminRequest[]> {
             end_date: r.end_date,
             end_time: hhmm(r.end_time),
             status: r.status as CameraRequestStatus,
+            photo_status: r.photo_status as CameraPhotoStatus,
             proposed_photographer_id: r.proposed_photographer_id,
             assigned_photographer_id: r.assigned_photographer_id,
             proposed_photographer_name: r.proposed_photographer_id

@@ -1,0 +1,17 @@
+{{#> layout headerTitle="CAMERA TERUGBRENGEN"}}
+    <div class="status-badge warning">Herinnering</div>
+    <p>Beste {{name}},</p>
+
+    {{#if late}}
+    <p>De verenigingscamera die je hebt geleend voor <strong>{{eventName}}</strong> had op <strong>{{agreedEnd}}</strong> teruggebracht moeten worden ({{daysLate}} {{daysLateLabel}} te laat). Breng de camera zo snel mogelijk terug.</p>
+    {{else}}
+    <p>De verenigingscamera die je hebt geleend voor <strong>{{eventName}}</strong> moet vandaag ({{agreedEnd}}) worden teruggebracht.</p>
+    {{/if}}
+
+    <p>Kun je de camera niet op tijd terugbrengen? Laat het het beheer dan weten, dan spreken we een nieuwe periode af.</p>
+
+    <p style="margin-top: 30px;">Met vriendelijke groet,<br><br>
+    <strong>Salve Mundi</strong><br>
+    Rachelsmolen 1<br>
+    5612 MA Eindhoven</p>
+{{/layout}}

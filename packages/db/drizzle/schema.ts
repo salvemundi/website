@@ -2446,6 +2446,7 @@ export const camera_requests = pgTable("camera_requests", {
 	note: varchar({ length: 500 }),
 	note_admin: varchar({ length: 500 }),
 	status: varchar({ length: 12 }).default('requested').notNull(),
+	photo_status: varchar({ length: 12 }).default('not_started').notNull(),
 	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 	updated_at: timestamp({ withTimezone: true, mode: 'string' }),
 }, (table) => [
@@ -2473,6 +2474,7 @@ export const camera_requests = pgTable("camera_requests", {
 		}).onDelete("set null"),
 	check("camera_requests_status_check", sql`${table.status} IN ('requested', 'approved', 'rejected', 'cancelled')`),
 	check("camera_requests_period_check", sql`${table.end_date} >= ${table.start_date}`),
+	check("camera_requests_photo_status_check", sql`${table.photo_status} IN ('not_started', 'editing', 'done')`),
 ]);
 
 export const camera_loans = pgTable("camera_loans", {
@@ -2483,6 +2485,7 @@ export const camera_loans = pgTable("camera_loans", {
 	handout_note: varchar({ length: 500 }),
 	returned_on: date(),
 	condition_on_return: varchar({ length: 500 }),
+	last_reminder_on: date(),
 	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
 	index("idx_camera_loans_open").using("btree", table.returned_on.asc().nullsLast().op("date_ops")),

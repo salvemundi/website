@@ -3,6 +3,14 @@ import { z } from 'zod';
 export const CAMERA_REQUEST_STATUSES = ['requested', 'approved', 'rejected', 'cancelled'] as const;
 export type CameraRequestStatus = (typeof CAMERA_REQUEST_STATUSES)[number];
 
+export const CAMERA_PHOTO_STATUSES = ['not_started', 'editing', 'done'] as const;
+export type CameraPhotoStatus = (typeof CAMERA_PHOTO_STATUSES)[number];
+export const CAMERA_PHOTO_STATUS_LABEL: Record<CameraPhotoStatus, string> = {
+    not_started: 'Nog niet begonnen',
+    editing: 'Aan het editen',
+    done: 'Klaar',
+};
+
 const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Vul een geldige datum in');
 
 // Tijd is optioneel: lege invoer wordt null (dan geldt de hele dag).
@@ -82,6 +90,7 @@ export interface CameraRequestSummary {
     end_date: string;
     end_time: string | null;
     status: CameraRequestStatus;
+    photo_status: CameraPhotoStatus;
     proposed_photographer_name: string | null;
     assigned_photographer_name: string | null;
     note_admin: string | null;
@@ -92,6 +101,7 @@ export interface CameraRequestSummary {
 export const saveCameraRequestSchema = z.object({
     id: z.string().uuid(),
     status: z.enum(CAMERA_REQUEST_STATUSES),
+    photo_status: z.enum(CAMERA_PHOTO_STATUSES).default('not_started'),
     assigned_photographer_id: z
         .string()
         .uuid()
@@ -108,6 +118,15 @@ export const addCameraPhotographerSchema = z.object({
     experienced: z.boolean().default(false),
     note: optionalText(300),
 });
+export const updateCameraPhotographerSchema = z.object({
+    id: z.string().uuid(),
+    admitted_on: dateString,
+    route: optionalText(100),
+    experienced: z.boolean(),
+    note: optionalText(300),
+});
+export type UpdateCameraPhotographerInput = z.output<typeof updateCameraPhotographerSchema>;
+
 export type AddCameraPhotographerInput = z.output<typeof addCameraPhotographerSchema>;
 
 export interface CameraAdminRequest extends CameraRequestSummary {

@@ -2,9 +2,12 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Camera, CalendarDays, Check, CalendarClock, ClipboardList, HandHelping, Plus, Trash2, UserCheck, X } from 'lucide-react';
+import { AlertTriangle, Camera, CalendarDays, Check, CalendarClock, ClipboardList, HandHelping, Pencil, Plus, Trash2, UserCheck, X } from 'lucide-react';
 import {
     CAMERA_CHECKLIST_ITEMS,
+    CAMERA_PHOTO_STATUSES,
+    CAMERA_PHOTO_STATUS_LABEL,
+    type CameraPhotoStatus,
     type CameraAdminLoan,
     type CameraAdminPhotographer,
     type CameraAdminRequest,
@@ -23,6 +26,7 @@ import {
     handoutCameraAction,
     saveCameraRequestAction,
     searchCameraMembersAction,
+    updateCameraPhotographerAction,
 } from '@/server/actions/beheer/camera/beheer-camera.actions';
 import { badgeBase, STATUS_CLASS, STATUS_LABEL } from '@/components/islands/camera/camera-utils';
 
@@ -142,12 +146,14 @@ function RequestCard({
         request.assigned_photographer_id ?? request.proposed_photographer_id ?? '',
     );
     const [noteAdmin, setNoteAdmin] = useState(request.note_admin ?? '');
+    const [photoStatus, setPhotoStatus] = useState<CameraPhotoStatus>(request.photo_status);
 
     const save = (status: CameraRequestStatus, message: string) => {
         startTransition(async () => {
             const result = await saveCameraRequestAction({
                 id: request.id,
                 status,
+                photo_status: photoStatus,
                 assigned_photographer_id: photographerId || null,
                 note_admin: noteAdmin,
             });
@@ -221,6 +227,25 @@ function RequestCard({
                 </label>
             </div>
 
+            {request.status === 'approved' && (
+                <label className="flex flex-col gap-1 text-xs font-semibold text-text-muted sm:max-w-xs">
+                    Foto&apos;s verwerken
+                    <select
+                        className="beheer-select"
+                        value={photoStatus}
+                        onChange={(e) => setPhotoStatus(e.target.value as CameraPhotoStatus)}
+                        disabled={isPending}
+                        suppressHydrationWarning
+                    >
+                        {CAMERA_PHOTO_STATUSES.map((st) => (
+                            <option key={st} value={st}>
+                                {CAMERA_PHOTO_STATUS_LABEL[st]}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+            )}
+
             <div className="flex flex-wrap gap-2">
                 {request.status !== 'approved' && (
                     <button
@@ -278,6 +303,135 @@ function RequestCard({
                         Terugzetten
                     </button>
                 )}
+            </div>
+        </li>
+    );
+}
+
+function PhotographerRow({
+    photographer: p,
+    showToast,
+    onRemove,
+    disabled,
+}: {
+    photographer: CameraAdminPhotographer;
+    showToast: Toast;
+    onRemove: (p: CameraAdminPhotographer) => void;
+    disabled: boolean;
+}) {
+    const router = useRouter();
+    const [isPending, startTransition] = useTransition();
+    const [editing, setEditing] = useState(false);
+    const [admittedOn, setAdmittedOn] = useState(p.admitted_on);
+    const [route, setRoute] = useState(p.route ?? '');
+    const [experienced, setExperienced] = useState(p.experienced);
+    const [note, setNote] = useState(p.note ?? '');
+
+    const save = () => {
+        startTransition(async () => {
+            const result = await updateCameraPhotographerAction({
+                id: p.id,
+                admitted_on: admittedOn,
+                route,
+                experienced,
+                note,
+            });
+            if (result.success) {
+                showToast(`${p.name} bijgewerkt`, 'success');
+                setEditing(false);
+                router.refresh();
+            } else {
+                showToast(result.error, 'error');
+            }
+        });
+    };
+
+    const cancel = () => {
+        setAdmittedOn(p.admitted_on);
+        setRoute(p.route ?? '');
+        setExperienced(p.experienced);
+        setNote(p.note ?? '');
+        setEditing(false);
+    };
+
+    if (editing) {
+        return (
+            <li className="space-y-3 rounded-2xl border border-purple-300 bg-bg-card p-4 shadow-sm md:col-span-2">
+                <p className="text-sm font-bold text-text-main">{p.name}</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="flex flex-col gap-1 text-xs font-semibold text-text-muted">
+                        Toegelaten op
+                        <input type="date" className="form-input" value={admittedOn} onChange={(e) => setAdmittedOn(e.target.value)} />
+                    </label>
+                    <label className="flex flex-col gap-1 text-xs font-semibold text-text-muted">
+                        Route
+                        <input className="form-input" value={route} maxLength={100} onChange={(e) => setRoute(e.target.value)} />
+                    </label>
+                    <label className="flex flex-col gap-1 text-xs font-semibold text-text-muted sm:col-span-2">
+                        Opmerking
+                        <input className="form-input" value={note} maxLength={300} onChange={(e) => setNote(e.target.value)} />
+                    </label>
+                    <label className="flex items-center gap-2 text-xs font-semibold text-text-main">
+                        <input type="checkbox" checked={experienced} onChange={(e) => setExperienced(e.target.checked)} />
+                        Ervaren fotograaf
+                    </label>
+                </div>
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={save}
+                        disabled={isPending || !admittedOn}
+                        className="beheer-button inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white transition-all hover:bg-purple-700 disabled:opacity-50"
+                    >
+                        <Check className="size-3.5" /> Opslaan
+                    </button>
+                    <button
+                        type="button"
+                        onClick={cancel}
+                        className="beheer-button cursor-pointer rounded-xl border border-border-color px-4 py-2 text-xs font-bold text-text-muted hover:bg-bg-soft"
+                    >
+                        Annuleren
+                    </button>
+                </div>
+            </li>
+        );
+    }
+
+    return (
+        <li className="flex items-center justify-between gap-3 rounded-2xl border border-border-color bg-bg-card p-4 shadow-sm">
+            <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-text-main">
+                    {p.name}
+                    {p.experienced && (
+                        <span className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-[9px] font-black tracking-widest text-purple-700 uppercase dark:bg-purple-500/10 dark:text-purple-300">
+                            Ervaren
+                        </span>
+                    )}
+                </p>
+                <p className="text-xs text-text-muted">
+                    Toegelaten op {formatDate(p.admitted_on, 'd MMM yyyy')}
+                    {p.route && ` · ${p.route}`}
+                </p>
+                {p.note && <p className="text-xs text-text-muted">{p.note}</p>}
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
+                <button
+                    type="button"
+                    onClick={() => setEditing(true)}
+                    aria-label={`${p.name} bewerken`}
+                    className="icon-button cursor-pointer rounded-lg p-2 text-text-muted hover:bg-bg-soft"
+                >
+                    <Pencil className="size-4" />
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onRemove(p)}
+                    disabled={disabled}
+                    aria-label={`${p.name} verwijderen`}
+                    className="icon-button cursor-pointer rounded-lg p-2 text-red-500 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-500/10"
+                >
+                    <Trash2 className="size-4" />
+                </button>
             </div>
         </li>
     );
@@ -396,31 +550,7 @@ function PhotographersPanel({
             ) : (
                 <ul className="grid gap-3 md:grid-cols-2">
                     {photographers.map((p) => (
-                        <li key={p.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border-color bg-bg-card p-4 shadow-sm">
-                            <div className="min-w-0">
-                                <p className="truncate text-sm font-bold text-text-main">
-                                    {p.name}
-                                    {p.experienced && (
-                                        <span className="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-[9px] font-black tracking-widest text-purple-700 uppercase dark:bg-purple-500/10 dark:text-purple-300">
-                                            Ervaren
-                                        </span>
-                                    )}
-                                </p>
-                                <p className="text-xs text-text-muted">
-                                    Toegelaten op {formatDate(p.admitted_on, 'd MMM yyyy')}
-                                    {p.route && ` · ${p.route}`}
-                                </p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => remove(p)}
-                                disabled={isPending}
-                                aria-label={`${p.name} verwijderen`}
-                                className="icon-button cursor-pointer rounded-lg p-2 text-red-500 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-500/10"
-                            >
-                                <Trash2 className="size-4" />
-                            </button>
-                        </li>
+                        <PhotographerRow key={p.id} photographer={p} showToast={showToast} onRemove={remove} disabled={isPending} />
                     ))}
                 </ul>
             )}
