@@ -8,7 +8,6 @@ overrides:
   sharp: 0.35.5
   '@img/sharp-win32-x64': 0.35.5
   '@img/sharp-linuxmusl-x64': 0.35.5
-  '@img/sharp-libvips-linuxmusl-x64': 1.3.2
   react: ^19.2.7
   react-dom: ^19.2.7
   better-auth: 1.7.7
@@ -1174,8 +1173,8 @@ packages:
     os: [linux]
     libc: [musl]
 
-  '@img/sharp-libvips-linuxmusl-x64@1.3.2':
-    resolution: {integrity: sha512-m0lrLiUt+lBYnCFr8qV/65yMR4E/c7/wf78I5eKTdkEakFAlZ9QlzEM3QIhhAwVeUhLAHLcCq7a7Vszq/oFNZQ==}
+  '@img/sharp-libvips-linuxmusl-x64@1.3.4':
+    resolution: {integrity: sha512-6zXKeE/p39I1AmA3cJG35eyBGNqNddLnUXjhwBnsGjFPWqf5VKkDBEqaEkPDoTEtkxwi2vv8Tcr2mDyP4So7Fg==}
     cpu: [x64]
     os: [linux]
     libc: [musl]
@@ -6560,7 +6559,7 @@ snapshots:
   '@img/sharp-libvips-linuxmusl-arm64@1.3.4':
     optional: true
 
-  '@img/sharp-libvips-linuxmusl-x64@1.3.2':
+  '@img/sharp-libvips-linuxmusl-x64@1.3.4':
     optional: true
 
   '@img/sharp-linux-arm64@0.35.5':
@@ -6600,7 +6599,7 @@ snapshots:
 
   '@img/sharp-linuxmusl-x64@0.35.5':
     optionalDependencies:
-      '@img/sharp-libvips-linuxmusl-x64': 1.3.2
+      '@img/sharp-libvips-linuxmusl-x64': 1.3.4
     optional: true
 
   '@img/sharp-wasm32@0.35.5':
@@ -10789,7 +10788,7 @@ snapshots:
       '@img/sharp-libvips-linux-s390x': 1.3.4
       '@img/sharp-libvips-linux-x64': 1.3.4
       '@img/sharp-libvips-linuxmusl-arm64': 1.3.4
-      '@img/sharp-libvips-linuxmusl-x64': 1.3.2
+      '@img/sharp-libvips-linuxmusl-x64': 1.3.4
       '@img/sharp-linux-arm': 0.35.5
       '@img/sharp-linux-arm64': 0.35.5
       '@img/sharp-linux-ppc64': 0.35.5
