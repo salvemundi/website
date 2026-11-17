@@ -2,7 +2,7 @@
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { db, schema } from '@salvemundi/db';
-import { eq } from 'drizzle-orm';
+import { eq, isNull } from 'drizzle-orm';
 import { safeConsoleError } from '@/server/utils/logger';
 
 export interface BorrelBarClaimStatus {
@@ -56,7 +56,7 @@ export async function getBorrelBarClaimStatus(): Promise<BorrelBarClaimStatus> {
         });
 
         return {
-            hasClaimed: !!userClaim,
+            hasClaimed: !!userClaim?.pass_url,
             claimedAt: userClaim?.claimed_at ?? null,
             isActive: true,
             logoImageId,
@@ -98,7 +98,7 @@ export async function claimBorrelBarLink(): Promise<BorrelBarClaimResult> {
             where: eq(schema.borrelbar_claims.user_id, userId)
         });
 
-        if (existingClaim) {
+        if (existingClaim?.pass_url) {
             return { success: true, passUrl: existingClaim.pass_url };
         }
 
@@ -129,48 +129,62 @@ export async function claimBorrelBarLink(): Promise<BorrelBarClaimResult> {
 
         let passUrl: string | null = null;
 
-        if (quizId) {
-            try {
-                const onmeResponse = await fetch('https://api.onme.nl/quiz/public/quiz/submit', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-                        Origin: 'https://portal.onme.nl',
-                        Referer: `https://portal.onme.nl/pass/activation/${quizId}`,
-                    },
-                    body: JSON.stringify({
-                        quizId,
-                        responder: {
-                            firstName: fullName,
-                            email,
-                            consentPrivacyPolicy: true,
-                        },
-                        submission: {},
-                    }),
-                });
+        if (!quizId) {
+            return { success: false, error: 'De claim link is ongeldig. Neem contact op met het bestuur.' };
+        }
 
-                if (onmeResponse.ok) {
-                    const data = (await onmeResponse.json()) as { passHolderId?: string };
-                    if (data.passHolderId) {
-                        passUrl = `https://portal.onme.nl/pass/acquisition/${quizId}/${data.passHolderId}`;
-                    }
-                } else {
-                    const errorText = await onmeResponse.text();
-                    safeConsoleError(`[BorrelBar Claim] OnMe submit responded with status ${onmeResponse.status}: ${errorText}`);
+        try {
+            const onmeResponse = await fetch('https://api.onme.nl/quiz/public/quiz/submit', {
+                method: 'POST',
+                signal: AbortSignal.timeout(15_000),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                    Origin: 'https://portal.onme.nl',
+                    Referer: `https://portal.onme.nl/pass/activation/${quizId}`,
+                },
+                body: JSON.stringify({
+                    quizId,
+                    responder: {
+                        firstName: fullName,
+                        email,
+                        consentPrivacyPolicy: true,
+                    },
+                    submission: {},
+                }),
+            });
+
+            if (onmeResponse.ok) {
+                const data = (await onmeResponse.json()) as { passHolderId?: string };
+                if (typeof data.passHolderId === 'string' && /^[a-zA-Z0-9_-]+$/.test(data.passHolderId)) {
+                    passUrl = `https://portal.onme.nl/pass/acquisition/${quizId}/${data.passHolderId}`;
                 }
-            } catch (err) {
-                safeConsoleError('[borrelbar-claim.actions.ts][onmeSubmit]', err);
+            } else {
+                safeConsoleError(`[BorrelBar Claim] OnMe submit responded with status ${onmeResponse.status}`);
             }
+        } catch (err) {
+            safeConsoleError('[borrelbar-claim.actions.ts][onmeSubmit]', err);
+        }
+
+        if (!passUrl) {
+            return { success: false, error: 'De pas kon niet worden aangemaakt. Probeer het later opnieuw.' };
         }
 
         await db.insert(schema.borrelbar_claims).values({
             user_id: userId,
             claimed_at: new Date().toISOString(),
             pass_url: passUrl
+        }).onConflictDoUpdate({
+            target: schema.borrelbar_claims.user_id,
+            set: { claimed_at: new Date().toISOString(), pass_url: passUrl },
+            setWhere: isNull(schema.borrelbar_claims.pass_url)
         });
 
-        return { success: true, passUrl };
+        const savedClaim = await db.query.borrelbar_claims.findFirst({
+            where: eq(schema.borrelbar_claims.user_id, userId)
+        });
+
+        return { success: true, passUrl: savedClaim?.pass_url ?? passUrl };
     } catch (error) {
         safeConsoleError('[borrelbar-claim.actions.ts][claimBorrelBarLink]', error);
         return { success: false, error: 'Er is een fout opgetreden bij het registreren van de claim.' };
