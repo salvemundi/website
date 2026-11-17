@@ -10,11 +10,19 @@ import {
     type CameraCommitteeOption,
     type CameraEventOption,
     type CameraPhotographerOption,
+    type CameraPhotoStatus,
     type CameraRequestStatus,
     type CameraRequestSummary,
 } from '@salvemundi/validations';
 import { safeConsoleError } from '@/server/utils/logger';
 import { hhmm, periodsOverlap, type CameraPeriod } from '@/shared/lib/camera-period';
+import {
+    formatMailPeriod,
+    getCameraAdminEmails,
+    getUserMailInfo,
+    sendCameraMail,
+    siteUrl,
+} from '@/server/utils/camera-mail';
 
 type Result = { success: true } | { success: false; error: string };
 
@@ -188,6 +196,7 @@ export async function getCameraPageData(): Promise<{
                 end_date: r.end_date,
                 end_time: hhmm(r.end_time),
                 status: r.status as CameraRequestStatus,
+                photo_status: r.photo_status as CameraPhotoStatus,
                 proposed_photographer_name: r.proposed_photographer_id
                     ? (nameById.get(r.proposed_photographer_id) ?? null)
                     : null,
@@ -200,6 +209,38 @@ export async function getCameraPageData(): Promise<{
     } catch (error) {
         safeConsoleError('[camera.actions.ts][getCameraPageData] Error:', error);
         return empty;
+    }
+}
+
+/** Mails versturen mag nooit de aanvraag zelf laten mislukken. */
+async function notifyNewRequest(
+    userId: string,
+    data: { event_name: string; note: string | null } & CameraPeriod,
+    photographer: string | null,
+) {
+    try {
+        const requester = await getUserMailInfo(userId);
+        const common = {
+            eventName: data.event_name,
+            period: formatMailPeriod(data),
+            photographer,
+            note: data.note,
+        };
+        if (requester?.email) {
+            await sendCameraMail(requester.email, 'camera-request-received', { name: requester.name, ...common });
+        }
+        const admins = await getCameraAdminEmails();
+        await Promise.all(
+            admins.map((email) =>
+                sendCameraMail(email, 'camera-admin-new-request', {
+                    requesterName: requester?.name ?? 'Een lid',
+                    url: `${siteUrl()}/beheer/camera`,
+                    ...common,
+                }),
+            ),
+        );
+    } catch (error) {
+        safeConsoleError('[camera.actions.ts][notifyNewRequest] Error:', error);
     }
 }
 
@@ -222,12 +263,15 @@ export async function createCameraRequest(input: unknown): Promise<Result> {
     }
 
     try {
+        let photographerName: string | null = null;
         if (data.proposed_photographer_id) {
             const found = await db
-                .select({ id: schema.camera_photographers.id })
+                .select({ id: schema.camera_photographers.id, first_name: schema.directus_users.first_name, last_name: schema.directus_users.last_name })
                 .from(schema.camera_photographers)
+                .leftJoin(schema.directus_users, eq(schema.camera_photographers.user_id, schema.directus_users.id))
                 .where(eq(schema.camera_photographers.id, data.proposed_photographer_id))
                 .limit(1);
+            if (found.length > 0) photographerName = fullName(found[0].first_name, found[0].last_name);
             if (found.length === 0) return { success: false, error: 'Deze fotograaf is niet toegelaten.' };
         }
 
@@ -259,6 +303,7 @@ export async function createCameraRequest(input: unknown): Promise<Result> {
         });
 
         revalidatePath('/camera');
+        await notifyNewRequest(member.userId, data, photographerName);
         return { success: true };
     } catch (error) {
         safeConsoleError('[camera.actions.ts][createCameraRequest] Error:', error);

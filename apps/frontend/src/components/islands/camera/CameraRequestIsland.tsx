@@ -7,6 +7,7 @@ import type { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Camera, CalendarClock, AlertTriangle, CheckCircle2, X } from 'lucide-react';
 import {
+    CAMERA_PHOTO_STATUS_LABEL,
     createCameraRequestSchema,
     type CameraCommitteeOption,
     type CameraEventOption,
@@ -288,6 +289,11 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
                                 {(r.assigned_photographer_name ?? r.proposed_photographer_name) && (
                                     <p className="text-xs text-(--text-muted)">
                                         Fotograaf: {r.assigned_photographer_name ?? `${r.proposed_photographer_name} (voorstel)`}
+                                    </p>
+                                )}
+                                {r.status === 'approved' && (
+                                    <p className="text-xs text-(--text-muted)">
+                                        Foto&apos;s: {CAMERA_PHOTO_STATUS_LABEL[r.photo_status]}
                                     </p>
                                 )}
                                 {r.note_admin && <p className="text-xs text-(--text-muted)">Beheer: {r.note_admin}</p>}

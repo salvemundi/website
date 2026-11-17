@@ -9,10 +9,12 @@ import {
     addCameraPhotographerSchema,
     handoutCameraSchema,
     returnCameraSchema,
+    updateCameraPhotographerSchema,
     saveCameraRequestSchema,
     type CameraMemberOption,
 } from '@salvemundi/validations';
 import { periodsOverlap } from '@/shared/lib/camera-period';
+import { formatMailPeriod, getUserMailInfo, sendCameraMail } from '@/server/utils/camera-mail';
 import { safeConsoleError } from '@/server/utils/logger';
 
 type Result = { success: true } | { success: false; error: string };
@@ -23,6 +25,43 @@ const uuidSchema = z.string().uuid();
 function revalidate() {
     revalidatePath('/beheer/camera');
     revalidatePath('/camera');
+}
+
+const DECISION_LABEL = { approved: 'goedgekeurd', rejected: 'afgewezen', cancelled: 'geannuleerd' } as const;
+
+async function notifyDecision(
+    request: typeof schema.camera_requests.$inferSelect,
+    status: 'approved' | 'rejected' | 'cancelled',
+    photographerId: string | null,
+    note: string | null,
+) {
+    try {
+        const requester = await getUserMailInfo(request.requester_id);
+        if (!requester?.email) return;
+
+        let photographer: string | null = null;
+        if (photographerId) {
+            const rows = await db
+                .select({ first_name: schema.directus_users.first_name, last_name: schema.directus_users.last_name })
+                .from(schema.camera_photographers)
+                .leftJoin(schema.directus_users, eq(schema.camera_photographers.user_id, schema.directus_users.id))
+                .where(eq(schema.camera_photographers.id, photographerId))
+                .limit(1);
+            if (rows.length > 0) photographer = `${rows[0].first_name ?? ''} ${rows[0].last_name ?? ''}`.trim() || null;
+        }
+
+        await sendCameraMail(requester.email, 'camera-request-decision', {
+            name: requester.name,
+            approved: status === 'approved',
+            statusLabel: DECISION_LABEL[status],
+            eventName: request.event_name,
+            period: formatMailPeriod(request),
+            photographer,
+            note,
+        });
+    } catch (error) {
+        safeConsoleError('[beheer-camera.actions.ts][notifyDecision] Error:', error);
+    }
 }
 
 /** Beslissing, toegewezen fotograaf en opmerking van het beheer opslaan. */
@@ -77,6 +116,7 @@ export async function saveCameraRequestAction(input: unknown): Promise<Result> {
             .update(schema.camera_requests)
             .set({
                 status: data.status,
+                photo_status: data.photo_status,
                 assigned_photographer_id: data.assigned_photographer_id,
                 note_admin: data.note_admin,
                 updated_at: new Date().toISOString(),
@@ -84,6 +124,11 @@ export async function saveCameraRequestAction(input: unknown): Promise<Result> {
             .where(eq(schema.camera_requests.id, data.id));
 
         revalidate();
+
+        // Aanvrager mailen als de beslissing is veranderd (niet bij alleen een foto-status of opmerking).
+        if (data.status !== 'requested' && data.status !== request.status) {
+            await notifyDecision(request, data.status, data.assigned_photographer_id, data.note_admin);
+        }
         return { success: true };
     } catch (error) {
         safeConsoleError('[beheer-camera.actions.ts][saveCameraRequestAction] Error:', error);
@@ -242,6 +287,29 @@ export async function returnCameraAction(input: unknown): Promise<Result> {
         return { success: true };
     } catch (error) {
         safeConsoleError('[beheer-camera.actions.ts][returnCameraAction] Error:', error);
+        return { success: false, error: GENERIC_ERROR };
+    }
+}
+
+export async function updateCameraPhotographerAction(input: unknown): Promise<Result> {
+    await enforceFeatureAccess('camera');
+
+    const parsed = updateCameraPhotographerSchema.safeParse(input);
+    if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? 'Ongeldige invoer' };
+    const data = parsed.data;
+
+    try {
+        const updated = await db
+            .update(schema.camera_photographers)
+            .set({ admitted_on: data.admitted_on, route: data.route, experienced: data.experienced, note: data.note })
+            .where(eq(schema.camera_photographers.id, data.id))
+            .returning({ id: schema.camera_photographers.id });
+        if (updated.length === 0) return { success: false, error: 'Fotograaf niet gevonden.' };
+
+        revalidate();
+        return { success: true };
+    } catch (error) {
+        safeConsoleError('[beheer-camera.actions.ts][updateCameraPhotographerAction] Error:', error);
         return { success: false, error: GENERIC_ERROR };
     }
 }

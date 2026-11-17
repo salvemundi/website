@@ -3,6 +3,10 @@
         {
             "path": "/api/cron/nda-expiry-check",
             "schedule": "0 4 * * *"
+        },
+        {
+            "path": "/api/cron/camera-return-reminders",
+            "schedule": "0 7 * * *"
         }
     ]
 }
