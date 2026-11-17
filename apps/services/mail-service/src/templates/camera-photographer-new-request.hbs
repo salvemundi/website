@@ -1,0 +1,16 @@
+{{#> layout headerTitle="NIEUWE CAMERA-AANVRAAG"}}
+    <div class="status-badge">Nieuwe aanvraag</div>
+    <p>Hoi {{name}},</p>
+
+    <p><strong>{{requesterName}}</strong> heeft de verenigingscamera aangevraagd. Je ontvangt deze mail omdat je bent toegelaten als fotograaf.</p>
+
+    <p><strong>Activiteit:</strong> {{eventName}}<br>
+    <strong>Periode:</strong> {{period}}{{#if photographer}}<br>
+    <strong>Gewenste fotograaf:</strong> {{photographer}}{{/if}}{{#if note}}<br>
+    <strong>Opmerking:</strong> {{note}}{{/if}}</p>
+
+    <p style="margin-top: 30px;">Met vriendelijke groet,<br><br>
+    <strong>Salve Mundi</strong><br>
+    Rachelsmolen 1<br>
+    5612 MA Eindhoven</p>
+{{/layout}}

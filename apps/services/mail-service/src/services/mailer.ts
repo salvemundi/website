@@ -57,8 +57,7 @@ export class MailerService {
         ['nda-secretary-missing-template', 'NDA Upload Vereist'],
         ['camera-request-received', 'Camera-aanvraag ontvangen'],
         ['camera-request-decision', 'Camera-aanvraag beoordeeld'],
-        ['camera-admin-new-request', 'Nieuwe camera-aanvraag'],
-        ['camera-return-reminder', 'Herinnering: camera terugbrengen']
+        ['camera-photographer-new-request', 'Nieuwe camera-aanvraag']
     ]);
 
     private static templateCache = new Map<string, HandlebarsTemplateDelegate>();
