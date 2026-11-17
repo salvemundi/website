@@ -18,3 +18,4 @@ export * from './webshop.zod.js';
 export * from './beheer-webshop.zod.js';
 export * from './beheer-dashboard.zod.js';
 export * from './pizza.zod.js';
+export * from './camera.zod.js';
