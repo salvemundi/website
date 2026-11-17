@@ -7,7 +7,7 @@ import { SourceTextModule, SyntheticModule, createContext } from 'node:vm';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '../apps/frontend/src');
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../frontend/src');
 const ts = createRequire(resolve(root, '../package.json'))('typescript');
 const userID = '11111111-1111-4111-8111-111111111111';
 const sessionID = 'mobile:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';

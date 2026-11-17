@@ -70,9 +70,9 @@ The process inherits its environment; pnpm does not automatically load `.env.acc
 Use a service manager/secret injector or the standalone Docker Compose file:
 
 ```sh
-docker compose --env-file .env.acc --env-file .env.mobile-acc -f docker-compose.mobile-acceptance.yml --profile mobile-acceptance up -d --build
-docker compose --env-file .env.acc --env-file .env.mobile-acc -f docker-compose.mobile-acceptance.yml --profile mobile-acceptance logs --tail 50
-docker compose --env-file .env.acc --env-file .env.mobile-acc -f docker-compose.mobile-acceptance.yml --profile mobile-acceptance down
+docker compose --env-file .env.acc --env-file .env.mobile-acc --project-directory . -f apps/mobile/docker-compose.mobile-acceptance.yml --profile mobile-acceptance up -d --build
+docker compose --env-file .env.acc --env-file .env.mobile-acc --project-directory . -f apps/mobile/docker-compose.mobile-acceptance.yml --profile mobile-acceptance logs --tail 50
+docker compose --env-file .env.acc --env-file .env.mobile-acc --project-directory . -f apps/mobile/docker-compose.mobile-acceptance.yml --profile mobile-acceptance down
 ```
 
 Confirm that the existing core database network is named `salve-mundi-v7-shared` on the server;

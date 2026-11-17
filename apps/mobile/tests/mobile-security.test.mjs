@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { verifyPKCE, validChallenge, hashMobileToken, newMobileToken, isNativeToken, MOBILE_CALLBACK, newOpaqueCode, validBrowserFlowCookie } from '../apps/frontend/src/server/mobile/security.ts';
-import { mobileEnabled, mobileAssociationID } from '../apps/frontend/src/server/mobile/policy.ts';
+import { verifyPKCE, validChallenge, hashMobileToken, newMobileToken, isNativeToken, MOBILE_CALLBACK, newOpaqueCode, validBrowserFlowCookie } from '../../frontend/src/server/mobile/security.ts';
+import { mobileEnabled, mobileAssociationID } from '../../frontend/src/server/mobile/policy.ts';
 
 test('native session secrets are random, hashed, and cannot be replayed using the stored value', () => {
     const first = newMobileToken();

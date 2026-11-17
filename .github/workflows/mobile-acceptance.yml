@@ -8,10 +8,11 @@ on:
       - "apps/frontend/src/server/services/**"
       - "apps/frontend/src/app/api/mobile/**"
       - "apps/services/mobile-notification-service/**"
-      - "tests/mobile-security.test.mjs"
+      - "apps/frontend/src/shared/lib/permissions-config.ts"
+      - "packages/db/drizzle/mobile_*.sql"
       - ".github/workflows/mobile-acceptance.yml"
       - ".github/workflows/mobile-notifications-setup.yml"
-      - "deployment/mobile/**"
+      - "apps/mobile/**"
 
 permissions:
   contents: read
@@ -23,13 +24,19 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 26
+      - run: npm install -g pnpm@11.8.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter=@salvemundi/db build
+      - run: pnpm --filter=@salvemundi/validations build
       - name: Authentication and acceptance boundary tests
-        run: node --experimental-strip-types --test tests/mobile-security.test.mjs
+        run: node --experimental-strip-types --test apps/mobile/tests/mobile-security.test.mjs
+      - name: Mobile auth, activity administration, widget and preference tests
+        run: node --experimental-vm-modules --test apps/mobile/tests/mobile-auth-flow.test.mjs apps/mobile/tests/mobile-admin*.test.mjs apps/mobile/tests/mobile-notification-preferences.test.mjs
       - name: APNs and notification worker tests
         run: node --test apps/services/mobile-notification-service/test/*.test.mjs
       - name: Acceptance setup safety tests
-        run: python3 -m unittest discover -s deployment/mobile -p 'test_*.py'
+        run: python3 -m unittest discover -s apps/mobile/deployment -p 'test_*.py'
       - name: Worker syntax checks
         working-directory: apps/services/mobile-notification-service
         run: npm run build
