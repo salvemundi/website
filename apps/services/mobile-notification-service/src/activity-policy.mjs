@@ -54,5 +54,5 @@ export function activityPayload(kind,eventID,info={}) {
             body = `${info.threshold} aanmeldingen bereikt (nu ${info.count}).`;
         }
     }
-    return {aps:{alert:{title,body},sound:'default'},activityID:`event:${eventID}`};
+    return {aps:{alert:{title,body},sound:'default'},activityID:`event:${eventID}`,kind};
 }

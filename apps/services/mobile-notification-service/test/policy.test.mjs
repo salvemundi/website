@@ -52,6 +52,7 @@ test('snapshots and payloads contain no QR, token, member identity or payment de
     assert.equal(JSON.stringify(record).includes('secret'), false);
     const payload = notificationPayload('payments', 'event:12');
     assert.equal(payload.activityID, 'event:12');
+    assert.equal(payload.kind, 'payments');
     assert.equal(JSON.stringify(payload).includes('private@example.com'), false);
 });
 test('APNs removes invalid devices, retries transient errors and stops permanent errors', () => {

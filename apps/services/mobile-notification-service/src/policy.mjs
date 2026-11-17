@@ -79,7 +79,7 @@ export function notificationPayload(kind, activityID, change = {}) {
     };
     const body = change.detail ? (kind === 'registrations' ? bodies[kind] : change.detail) : bodies[kind];
     const title = change.title ? String(change.title).slice(0, 100) : 'Salve Mundi';
-    return { aps: { alert: { title, body }, sound: 'default' }, activityID };
+    return { aps: { alert: { title, body }, sound: 'default' }, activityID, kind };
 }
 export function classifyAPNs(status, reason) {
     if (status === 200) return 'sent';
