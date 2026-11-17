@@ -259,7 +259,9 @@ function RequestCard({
                 <span className="text-sm font-bold text-text-main">{request.event_name}</span>
                 <span className={`${badgeBase} ${STATUS_CLASS[request.status]}`}>{STATUS_LABEL[request.status]}</span>
                 {request.overlap && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-[9px] font-black tracking-widest text-red-700 uppercase dark:bg-red-500/10 dark:text-red-300">
+                    <span
+                        title={`Overlapt met:\n${request.overlaps_with.join('\n')}`}
+                        className="inline-flex cursor-help items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-[9px] font-black tracking-widest text-red-700 uppercase dark:bg-red-500/10 dark:text-red-300">
                         <AlertTriangle className="size-3" /> Overlap
                     </span>
                 )}

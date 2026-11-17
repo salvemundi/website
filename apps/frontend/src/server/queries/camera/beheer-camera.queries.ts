@@ -83,11 +83,17 @@ export async function getCameraRequestsDb(): Promise<CameraAdminRequest[]> {
             requester_email: email,
             created_at: r.created_at,
             overlap: false,
+            overlaps_with: [] as string[],
         }));
 
         const active = mapped.filter((r) => r.status === 'requested' || r.status === 'approved');
         for (const r of active) {
-            r.overlap = active.some((o) => o.id !== r.id && periodsOverlap(r, o));
+            const others = active.filter((o) => o.id !== r.id && periodsOverlap(r, o));
+            r.overlap = others.length > 0;
+            r.overlaps_with = others.map(
+                (o) =>
+                    `${o.event_name} (${o.start_date}${o.end_date !== o.start_date ? ` t/m ${o.end_date}` : ''}, ${o.status === 'approved' ? 'goedgekeurd' : 'aangevraagd'}, ${o.requester_name})`,
+            );
         }
         return mapped;
     } catch (error) {

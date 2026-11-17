@@ -131,7 +131,13 @@
 @utility beheer-button {
     display: inline-flex;
     width: auto;
-    @apply py-2.5 px-5 rounded-xl font-semibold items-center justify-center gap-2 transition-all cursor-pointer bg-(--beheer-accent) text-white shadow-md hover:opacity-95 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply py-2.5 px-5 rounded-xl font-semibold items-center justify-center gap-2 transition-all cursor-pointer shadow-md hover:opacity-95 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    /* Standaardkleuren met lage specificiteit: een eigen bg-*/text-* klasse wint altijd,
+       zodat outline-knoppen (rand + gekleurde tekst) niet op een paarse achtergrond belanden. */
+    :where(&) {
+        background-color: var(--beheer-accent);
+        color: #fff;
+    }
 }
 
 @utility beheer-select-trigger {
