@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Camera, CalendarClock, AlertTriangle, CheckCircle2, X } from 'lucide-react';
 import {
     createCameraRequestSchema,
+    type CameraCommitteeOption,
     type CameraEventOption,
     type CameraPhotographerOption,
     type CameraRequestSummary,
@@ -29,6 +30,8 @@ import { badgeBase, STATUS_CLASS, STATUS_LABEL } from './camera-utils';
 
 interface Props {
     events: CameraEventOption[];
+    committees: CameraCommitteeOption[];
+    myCommitteeIds: number[];
     photographers: CameraPhotographerOption[];
     mine: CameraRequestSummary[];
 }
@@ -43,11 +46,20 @@ function formatPeriod(r: { start_date: string; start_time: string | null; end_da
     return r.start_date === r.end_date && !r.start_time && !r.end_time ? from : `${from} – ${to}`;
 }
 
-export function CameraRequestIsland({ events, photographers, mine }: Props) {
+export function CameraRequestIsland({ events, committees, myCommitteeIds, photographers, mine }: Props) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const { toast, showToast, hideToast } = useAdminToast();
     const [selected, setSelected] = useState<string>(events.length > 0 ? '' : OTHER);
+    // Standaard filteren op de commissies van het lid, tenzij daar geen activiteiten bij zijn.
+    const hasMine = events.some((e) => e.committee_id !== null && myCommitteeIds.includes(e.committee_id));
+    const [filter, setFilter] = useState<string>(hasMine ? 'mine' : 'all');
+
+    const visibleEvents = useMemo(() => {
+        if (filter === 'all') return events;
+        if (filter === 'mine') return events.filter((e) => e.committee_id !== null && myCommitteeIds.includes(e.committee_id));
+        return events.filter((e) => String(e.committee_id) === filter);
+    }, [events, filter, myCommitteeIds]);
     const [availability, setAvailability] = useState<CameraAvailability | null>(null);
 
     const {
@@ -149,6 +161,28 @@ export function CameraRequestIsland({ events, photographers, mine }: Props) {
         <div className="space-y-8">
             <Tile title="Camera aanvragen" icon={<Camera className="size-6" />}>
                 <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="grid grid-cols-1 gap-4 md:grid-cols-2" noValidate>
+                    {events.length > 0 && (
+                        <FormField label="Filter activiteiten" className="md:col-span-2">
+                            <select
+                                className="form-input"
+                                value={filter}
+                                onChange={(e) => {
+                                    setFilter(e.target.value);
+                                    if (selected !== OTHER) onSelectEvent('');
+                                }}
+                                suppressHydrationWarning
+                            >
+                                {myCommitteeIds.length > 0 && <option value="mine">Mijn commissies</option>}
+                                <option value="all">Alle activiteiten</option>
+                                {committees.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </FormField>
+                    )}
+
                     <FormField label="Activiteit" className="md:col-span-2">
                         <select
                             className="form-input"
@@ -157,9 +191,10 @@ export function CameraRequestIsland({ events, photographers, mine }: Props) {
                             suppressHydrationWarning
                         >
                             {events.length > 0 && <option value="">Kies een activiteit van de website…</option>}
-                            {events.map((ev) => (
+                            {visibleEvents.map((ev) => (
                                 <option key={ev.id} value={ev.id}>
                                     {ev.name} ({formatDate(ev.start_date, 'd MMM yyyy')})
+                                    {ev.status === 'draft' ? ' – concept' : ev.status === 'scheduled' ? ' – gepland' : ''}
                                 </option>
                             ))}
                             <option value={OTHER}>Anders / activiteit staat nog niet op de website</option>

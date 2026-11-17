@@ -7,12 +7,14 @@ import { and, asc, desc, eq, gte, inArray, lte, ne } from 'drizzle-orm';
 import { z } from 'zod';
 import {
     createCameraRequestSchema,
+    type CameraCommitteeOption,
     type CameraEventOption,
     type CameraPhotographerOption,
     type CameraRequestStatus,
     type CameraRequestSummary,
 } from '@salvemundi/validations';
 import { safeConsoleError } from '@/server/utils/logger';
+import { hhmm, periodsOverlap, type CameraPeriod } from '@/shared/lib/camera-period';
 
 type Result = { success: true } | { success: false; error: string };
 
@@ -48,21 +50,10 @@ async function limit(key: string, max: number): Promise<string | null> {
     }
 }
 
-const hhmm = (t: string | null) => (t ? t.slice(0, 5) : null);
-
-/** Zonder tijd geldt de hele dag: begin om 00:00, einde om 23:59. */
-const startKey = (date: string, time: string | null) => `${date}T${hhmm(time) ?? '00:00'}`;
-const endKey = (date: string, time: string | null) => `${date}T${hhmm(time) ?? '23:59'}`;
-
 const fullName = (first?: string | null, last?: string | null) =>
     `${first ?? ''} ${last ?? ''}`.trim() || 'Onbekend';
 
-interface Period {
-    start_date: string;
-    start_time: string | null;
-    end_date: string;
-    end_time: string | null;
-}
+type Period = CameraPeriod;
 
 async function findOverlaps(period: Period, excludeRequestId?: string) {
     // Grof filteren op datum in SQL, daarna exact op tijd in JS (tijd is optioneel).
@@ -86,11 +77,7 @@ async function findOverlaps(period: Period, excludeRequestId?: string) {
             ),
         );
 
-    const s = startKey(period.start_date, period.start_time);
-    const e = endKey(period.end_date, period.end_time);
-    return rows.filter(
-        (r) => startKey(r.start_date, r.start_time) < e && s < endKey(r.end_date, r.end_time),
-    );
+    return rows.filter((r) => periodsOverlap(period, r));
 }
 
 export async function getCameraAvailability(input: Period): Promise<CameraAvailability> {
@@ -117,16 +104,19 @@ export async function getCameraAvailability(input: Period): Promise<CameraAvaila
 
 export async function getCameraPageData(): Promise<{
     events: CameraEventOption[];
+    committees: CameraCommitteeOption[];
+    myCommitteeIds: number[];
     photographers: CameraPhotographerOption[];
     mine: CameraRequestSummary[];
 }> {
+    const empty = { events: [], committees: [], myCommitteeIds: [], photographers: [], mine: [] };
     const member = await requireActiveMember();
-    if (!member.ok) return { events: [], photographers: [], mine: [] };
+    if (!member.ok) return empty;
 
     const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Amsterdam' });
 
     try {
-        const [eventRows, photographerRows, requestRows] = await Promise.all([
+        const [eventRows, committeeRows, memberRows, photographerRows, requestRows] = await Promise.all([
             db
                 .select({
                     id: schema.events.id,
@@ -135,11 +125,19 @@ export async function getCameraPageData(): Promise<{
                     event_time: schema.events.event_time,
                     event_date_end: schema.events.event_date_end,
                     event_time_end: schema.events.event_time_end,
+                    committee_id: schema.events.committee_id,
+                    status: schema.events.status,
                 })
                 .from(schema.events)
-                .where(and(eq(schema.events.status, 'published'), gte(schema.events.event_date, today)))
+                // Ook concept-activiteiten: de aanvraag kan al voor publicatie nodig zijn.
+                .where(gte(schema.events.event_date, today))
                 .orderBy(asc(schema.events.event_date), asc(schema.events.name))
-                .limit(100),
+                .limit(200),
+            db.select({ id: schema.committees.id, name: schema.committees.name }).from(schema.committees),
+            db
+                .select({ committee_id: schema.committee_members.committee_id })
+                .from(schema.committee_members)
+                .where(eq(schema.committee_members.user_id, member.userId)),
             db
                 .select({
                     id: schema.camera_photographers.id,
@@ -163,7 +161,14 @@ export async function getCameraPageData(): Promise<{
         }));
         const nameById = new Map(photographers.map((p) => [p.id, p.name]));
 
+        const usedCommitteeIds = new Set(eventRows.map((e) => e.committee_id));
+
         return {
+            committees: committeeRows
+                .filter((c) => usedCommitteeIds.has(c.id))
+                .map((c) => ({ id: c.id, name: c.name }))
+                .sort((a, b) => a.name.localeCompare(b.name, 'nl')),
+            myCommitteeIds: memberRows.map((m) => m.committee_id),
             events: eventRows.map((e) => ({
                 id: e.id,
                 name: e.name,
@@ -171,6 +176,8 @@ export async function getCameraPageData(): Promise<{
                 start_time: hhmm(e.event_time),
                 end_date: e.event_date_end ?? e.event_date,
                 end_time: hhmm(e.event_time_end),
+                committee_id: e.committee_id,
+                status: e.status,
             })),
             photographers,
             mine: requestRows.map((r) => ({
@@ -192,7 +199,7 @@ export async function getCameraPageData(): Promise<{
         };
     } catch (error) {
         safeConsoleError('[camera.actions.ts][getCameraPageData] Error:', error);
-        return { events: [], photographers: [], mine: [] };
+        return empty;
     }
 }
 
@@ -229,7 +236,7 @@ export async function createCameraRequest(input: unknown): Promise<Result> {
             const evRows = await db
                 .select({ id: schema.events.id })
                 .from(schema.events)
-                .where(and(eq(schema.events.id, data.event_id), eq(schema.events.status, 'published')))
+                .where(eq(schema.events.id, data.event_id))
                 .limit(1);
             eventId = evRows.length > 0 ? evRows[0].id : null;
         }
