@@ -59,6 +59,14 @@ export interface CameraEventOption {
     start_time: string | null;
     end_date: string;
     end_time: string | null;
+    committee_id: number | null;
+    /** Alleen 'draft' (concept) en 'scheduled' wijken af van gepubliceerd. */
+    status: string | null;
+}
+
+export interface CameraCommitteeOption {
+    id: number;
+    name: string;
 }
 
 export interface CameraPhotographerOption {
@@ -77,4 +85,53 @@ export interface CameraRequestSummary {
     proposed_photographer_name: string | null;
     assigned_photographer_name: string | null;
     note_admin: string | null;
+}
+
+// ---- Beheer ----
+
+export const saveCameraRequestSchema = z.object({
+    id: z.string().uuid(),
+    status: z.enum(CAMERA_REQUEST_STATUSES),
+    assigned_photographer_id: z
+        .string()
+        .uuid()
+        .nullish()
+        .or(z.literal('').transform(() => null))
+        .transform((v) => v ?? null),
+    note_admin: optionalText(500),
+});
+export type SaveCameraRequestInput = z.output<typeof saveCameraRequestSchema>;
+
+export const addCameraPhotographerSchema = z.object({
+    user_id: z.string().uuid('Kies een lid'),
+    route: optionalText(100),
+    experienced: z.boolean().default(false),
+    note: optionalText(300),
+});
+export type AddCameraPhotographerInput = z.output<typeof addCameraPhotographerSchema>;
+
+export interface CameraAdminRequest extends CameraRequestSummary {
+    requester_name: string;
+    requester_email: string | null;
+    note: string | null;
+    proposed_photographer_id: string | null;
+    assigned_photographer_id: string | null;
+    /** Overlapt met een andere actieve (aangevraagd/goedgekeurd) aanvraag. */
+    overlap: boolean;
+    created_at: string | null;
+}
+
+export interface CameraAdminPhotographer {
+    id: string;
+    user_id: string;
+    name: string;
+    admitted_on: string;
+    route: string | null;
+    experienced: boolean;
+    note: string | null;
+}
+
+export interface CameraMemberOption {
+    id: string;
+    name: string;
 }

@@ -56,6 +56,7 @@ export default async function BeheerPage() {
         permissions.includes('stickers'),
         permissions.includes('kroegentocht'),
         permissions.includes('cobo'),
+        permissions.includes('camera'),
         permissions.includes('webshop'),
         permissions.includes('vacatures')
     ];

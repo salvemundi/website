@@ -21,7 +21,7 @@ export default async function CameraPage() {
         redirect('/profiel');
     }
 
-    const { events, photographers, mine } = await getCameraPageData();
+    const { events, committees, myCommitteeIds, photographers, mine } = await getCameraPageData();
 
     return (
         <PublicPageShell title="Camera aanvragen">
@@ -29,7 +29,13 @@ export default async function CameraPage() {
                 <BackButton href="/profiel" />
             </div>
             <div className="container mx-auto max-w-4xl px-4 py-8">
-                <CameraRequestIsland events={events} photographers={photographers} mine={mine} />
+                <CameraRequestIsland
+                    events={events}
+                    committees={committees}
+                    myCommitteeIds={myCommitteeIds}
+                    photographers={photographers}
+                    mine={mine}
+                />
             </div>
         </PublicPageShell>
     );
