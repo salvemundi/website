@@ -32,28 +32,60 @@ Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibilite
 
 ## Lokale Ontwikkeling
 
-1.  **Clone de repository**:
+### Vereisten
+
+- Node.js ≥ 22.13 (de `mobile-notification-service` vraagt ≥ 24)
+- pnpm 11 (`corepack enable` pakt automatisch de versie uit `package.json`)
+- Docker met Docker Compose
+
+### Eerste keer opzetten
+
+1.  **Clone de repository en installeer afhankelijkheden**:
     ```bash
     git clone https://github.com/salvemundi/website-v7.git
     cd website-v7
-    ```
-
-2.  **Installeer afhankelijkheden**:
-    ```bash
     pnpm install
     ```
 
-3.  **Configureer de omgeving**:
-    Kopieer `.env.example` naar `.env` in de root folder voor de services en Docker. Kopieer daarnaast `apps/frontend/.env.example` naar `apps/frontend/.env.local` voor de Next.js frontend.
+2.  **Configureer de frontend**. De standaardwaarden passen bij de lokale Docker-omgeving:
     ```bash
-    cp .env.example .env
     cp apps/frontend/.env.example apps/frontend/.env.local
     ```
 
-4.  **Start de development server**:
+3.  **Start Postgres, Redis en Directus** (`infrastructure/dev/docker-compose.yml`). Het commando wacht tot alles gezond is:
+    ```bash
+    pnpm dev:infra
+    ```
+
+4.  **Maak de tabellen van de website aan**. Directus maakt bij de eerste start zijn eigen systeemtabellen aan. Dit script genereert de overige tabellen uit `packages/db/drizzle/schema.ts` en voegt de profielvelden toe aan `directus_users`. Het is veilig om het opnieuw te draaien:
+    ```bash
+    pnpm dev:db:init
+    ```
+
+5.  **Start de development server**. Dit bouwt eerst `@salvemundi/db` en `@salvemundi/validations`, daarna draait Next.js op http://localhost:3000:
     ```bash
     pnpm dev
     ```
+
+### Lokale omgeving
+
+| Dienst | Adres | Inlog |
+| --- | --- | --- |
+| Website | http://localhost:3000 | Microsoft-login werkt lokaal niet zonder echte Entra-gegevens in `.env.local` |
+| Directus | http://localhost:8055 | `admin@example.com` / `admin` |
+| Postgres | `127.0.0.1:5432` | `salvemundi` / `salvemundi`, database `salvemundi` |
+| Redis | `127.0.0.1:6379` | wachtwoord `salvemundi` |
+
+De database begint leeg, dus pagina's laden zonder inhoud. Voeg data toe via Directus of laad een dump in Postgres.
+
+De microservices in `apps/services` zijn optioneel. Zet hun URL's in `.env.local` (zie `apps/frontend/.env.example`) als je aan betalingen, mail of Azure-synchronisatie werkt.
+
+### Stoppen en opnieuw beginnen
+
+```bash
+pnpm dev:infra:down                                               # containers stoppen, data blijft bewaard
+docker compose -f infrastructure/dev/docker-compose.yml down -v   # alles wissen, daarna weer vanaf stap 3
+```
 
 ## Deployment
 
