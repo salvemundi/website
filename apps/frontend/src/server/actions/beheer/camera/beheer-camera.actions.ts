@@ -313,3 +313,33 @@ export async function updateCameraPhotographerAction(input: unknown): Promise<Re
         return { success: false, error: GENERIC_ERROR };
     }
 }
+
+/** De aanvrager van een aanvraag wijzigen (bijvoorbeeld na een import of een handmatig toegevoegde aanvraag). */
+export async function updateCameraRequesterAction(requestId: string, userId: string): Promise<Result> {
+    await enforceFeatureAccess('camera');
+    if (!uuidSchema.safeParse(requestId).success || !uuidSchema.safeParse(userId).success) {
+        return { success: false, error: 'Ongeldige invoer.' };
+    }
+
+    try {
+        const user = await db
+            .select({ id: schema.directus_users.id })
+            .from(schema.directus_users)
+            .where(eq(schema.directus_users.id, userId))
+            .limit(1);
+        if (user.length === 0) return { success: false, error: 'Lid niet gevonden.' };
+
+        const updated = await db
+            .update(schema.camera_requests)
+            .set({ requester_id: userId, updated_at: new Date().toISOString() })
+            .where(eq(schema.camera_requests.id, requestId))
+            .returning({ id: schema.camera_requests.id });
+        if (updated.length === 0) return { success: false, error: 'Aanvraag niet gevonden.' };
+
+        revalidate();
+        return { success: true };
+    } catch (error) {
+        safeConsoleError('[beheer-camera.actions.ts][updateCameraRequesterAction] Error:', error);
+        return { success: false, error: GENERIC_ERROR };
+    }
+}
