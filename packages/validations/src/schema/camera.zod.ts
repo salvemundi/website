@@ -137,6 +137,8 @@ export interface CameraAdminRequest extends CameraRequestSummary {
     assigned_photographer_id: string | null;
     /** Overlapt met een andere actieve (aangevraagd/goedgekeurd) aanvraag. */
     overlap: boolean;
+    /** Omschrijving van de aanvragen waarmee deze overlapt (voor de tooltip). */
+    overlaps_with: string[];
     created_at: string | null;
 }
 
