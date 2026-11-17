@@ -11,7 +11,7 @@ on:
       - "tests/mobile-security.test.mjs"
       - ".github/workflows/mobile-acceptance.yml"
       - ".github/workflows/mobile-notifications-setup.yml"
-      - "deployment/mobile/**"
+      - "apps/mobile/deployment/**"
 
 permissions:
   contents: read
@@ -29,7 +29,7 @@ jobs:
       - name: APNs and notification worker tests
         run: node --test apps/services/mobile-notification-service/test/*.test.mjs
       - name: Acceptance setup safety tests
-        run: python3 -m unittest discover -s deployment/mobile -p 'test_*.py'
+        run: python3 -m unittest discover -s apps/mobile/deployment -p 'test_*.py'
       - name: Worker syntax checks
         working-directory: apps/services/mobile-notification-service
         run: npm run build

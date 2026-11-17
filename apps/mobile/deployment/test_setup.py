@@ -101,7 +101,7 @@ class SetupTests(unittest.TestCase):
             with self.assertRaises(ValueError): setup.validate(dict(payload,**patch))
 
     def test_setup_workflow_has_acceptance_and_dispatch_guards(self):
-        repository = Path(__file__).resolve().parents[2]
+        repository = Path(__file__).resolve().parents[3]
         workflow = (repository / '.github/workflows/mobile-notifications-setup.yml').read_text()
         parent = (repository / '.github/workflows/v7-stack.yml').read_text()
         self.assertIn("github.ref == 'refs/heads/acceptance' && github.event_name == 'workflow_dispatch'", workflow)
@@ -185,7 +185,7 @@ class SharedPilotTests(unittest.TestCase):
                     doctor.assert_not_called()
 
     def test_workflow_pilot_email_is_secret_only_and_ack_defaults_false(self):
-        repository=Path(__file__).resolve().parents[2]
+        repository=Path(__file__).resolve().parents[3]
         workflow=(repository/'.github/workflows/mobile-notifications-setup.yml').read_text()
         caller=(repository/'.github/workflows/v7-stack.yml').read_text()
         self.assertIn('TEST_USER_EMAIL: ${{ secrets.MOBILE_NOTIFICATION_TEST_EMAIL }}',workflow)
