@@ -32,7 +32,27 @@ export function activityDeliveryAllowed(kind, event, prefs, scope, metadata) {
     if (kind === 'organizerSignups') return (prefs.organizer_signup_thresholds || []).includes(metadata?.threshold) && event.count >= metadata.threshold;
     return false;
 }
-export function activityPayload(kind,eventID) {
-    const body = {activityAnnouncements:'Er is een nieuwe activiteit. Bekijk deze in de app.',organizerAlmostFull:'Een activiteit die je beheert is bijna vol.',organizerSignups:'Een activiteit die je beheert heeft een aanmeldingsmijlpaal bereikt.'}[kind];
-    return {aps:{alert:{title:'Salve Mundi',body},sound:'default'},activityID:`event:${eventID}`};
+function when(value) {
+    const date = new Date(value);
+    if (!value || Number.isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('nl-NL', { timeZone: 'Europe/Amsterdam', weekday: 'short', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }).format(date).replace(',', '');
+}
+export function activityPayload(kind,eventID,info={}) {
+    const name = info.name ? String(info.name).slice(0,100) : undefined;
+    const fallback = {activityAnnouncements:'Er is een nieuwe activiteit. Bekijk deze in de app.',organizerAlmostFull:'Een activiteit die je beheert is bijna vol.',organizerSignups:'Een activiteit die je beheert heeft een aanmeldingsmijlpaal bereikt.'}[kind];
+    let body = fallback, title = 'Salve Mundi';
+    if (name) {
+        if (kind === 'activityAnnouncements') {
+            title = `Nieuwe activiteit: ${name}`;
+            const parts = [when(info.startsAt), info.location].filter(Boolean);
+            if (parts.length) body = `${parts.join(' · ')}. Bekijk deze in de app.`;
+        } else if (kind === 'organizerAlmostFull' && info.capacity > 0) {
+            title = name;
+            body = `Bijna vol: ${info.count} van ${info.capacity} plekken bezet (${info.percent}% bereikt).`;
+        } else if (kind === 'organizerSignups' && info.threshold) {
+            title = name;
+            body = `${info.threshold} aanmeldingen bereikt (nu ${info.count}).`;
+        }
+    }
+    return {aps:{alert:{title,body},sound:'default'},activityID:`event:${eventID}`};
 }

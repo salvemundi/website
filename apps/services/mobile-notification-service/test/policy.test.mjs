@@ -24,13 +24,20 @@ test('first sync baselines history without any messages', () => {
     assert.deepEqual(changesFor(undefined, snapshot, false, new Date('2026-11-11T12:00Z')), []);
 });
 test('new registrations, changed payments and event changes have stable independent keys', () => {
-    assert.deepEqual(changesFor(undefined, snapshot, true, new Date('2026-11-01T00:00Z')), [{ kind: 'registrations', suffix: 'registered' }]);
+    assert.deepEqual(changesFor(undefined, snapshot, true, new Date('2026-11-01T00:00Z')), [{ kind: 'registrations', suffix: 'registered', title: snapshot.event.title }]);
     const previous = { ...snapshot, paymentStatus: 'open' };
-    assert.deepEqual(changesFor(previous, snapshot, true, new Date('2026-11-01T00:00Z')), [{ kind: 'payments', suffix: 'payment:paid' }]);
+    assert.deepEqual(changesFor(previous, snapshot, true, new Date('2026-11-01T00:00Z')), [{ kind: 'payments', suffix: 'payment:paid', title: snapshot.event.title, detail: 'Betaalstatus: betaald.' }]);
     const changed = { ...snapshot, event: { ...snapshot.event, location: 'Andere locatie' } };
     const changes = changesFor(snapshot, changed, true, new Date('2026-11-01T00:00Z'));
     assert.equal(changes[0].kind, 'eventChanges');
     assert.deepEqual(changesFor(snapshot, changed, true, new Date('2026-11-01T00:00Z')), changes);
+});
+test('event change notification names the activity and what changed', () => {
+    const changed = { ...snapshot, event: { ...snapshot.event, location: 'Andere locatie' } };
+    const [change] = changesFor(snapshot, changed, true, new Date('2026-11-01T00:00Z'));
+    const payload = notificationPayload('eventChanges', 'event:12', change);
+    assert.equal(payload.aps.alert.title, snapshot.event.title);
+    assert.equal(payload.aps.alert.body, 'Nieuwe locatie: Andere locatie.');
 });
 test('reminders only for paid published events within future 24 hours', () => {
     assert.equal(changesFor(snapshot, snapshot, true, new Date('2026-11-11T12:00Z'))[0].kind, 'reminders');

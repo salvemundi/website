@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { activityChanges,activityDeliveryAllowed,activitySnapshot } from '../src/activity-policy.mjs';
+import { activityChanges,activityDeliveryAllowed,activitySnapshot,activityPayload } from '../src/activity-policy.mjs';
 import { organizerScope } from '../src/activity-scope.mjs';
 import { deliver } from '../src/worker.mjs';
 const own={allowed:true,global:false,ids:[1]};
@@ -67,4 +67,12 @@ test('real delivery path skips an outbox alert after committee rights are lost',
  }};
  await deliver(db,{ENV_NAME:'acc',MOBILE_NOTIFICATION_ALLOWED_USER_IDS:user},async()=>{sent=true;return {status:200};});
  assert.equal(sent,false);assert.equal(skipped,true);
+});
+
+test('activity alerts name the activity and give details',()=>{
+ const n=activityPayload('activityAnnouncements',5,{name:'Borrel',location:'Eindhoven',startsAt:'2026-12-05T19:00:00Z'}).aps.alert;
+ assert.equal(n.title,'Nieuwe activiteit: Borrel'); assert.match(n.body,/Eindhoven/);
+ assert.equal(activityPayload('organizerAlmostFull',5,{name:'Borrel',count:45,capacity:50,percent:90}).aps.alert.body,'Bijna vol: 45 van 50 plekken bezet (90% bereikt).');
+ assert.equal(activityPayload('organizerSignups',5,{name:'Borrel',threshold:25,count:25}).aps.alert.body,'25 aanmeldingen bereikt (nu 25).');
+ assert.equal(activityPayload('organizerSignups',5).aps.alert.title,'Salve Mundi');
 });

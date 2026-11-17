@@ -1,6 +1,7 @@
 import { currentOrganizerScope } from './activity-scope.mjs';
 import { activitySnapshot, activityChanges, activityPayload } from './activity-policy.mjs';
-export const futureEventsSQL = `SELECT e.id,e.committee_id,e.status,e.max_sign_ups,
+export const futureEventsSQL = `SELECT e.id,e.committee_id,e.status,e.max_sign_ups,e.name,e.location,
+    ((e.event_date + COALESCE(e.event_time,'00:00'::time)) AT TIME ZONE 'Europe/Amsterdam') AS starts_at,
     (e.publish_date AT TIME ZONE 'Europe/Amsterdam') AS publish_date,
     (SELECT COUNT(*) FROM event_signups es WHERE es.event_id=e.id AND es.payment_status='paid') AS confirmed_count
     FROM events e WHERE ((e.event_date + COALESCE(e.event_time,'00:00'::time)) AT TIME ZONE 'Europe/Amsterdam')>now()`;
@@ -17,7 +18,7 @@ export async function reconcileActivityAlerts(client,userId,sessionColumns,env) 
                 SELECT 'acc',d.id,$2,$3,$4::jsonb,$6::jsonb FROM mobile_devices d JOIN auth_sessions s ON s.id=d.session_id AND CAST(s.${sessionColumns.userId} AS TEXT)=CAST(d.user_id AS TEXT)
                 WHERE d.environment='acc' AND d.user_id=$1 AND s.${sessionColumns.expiresAt}>now() AND (d.apns_environment='sandbox' OR $5::boolean)
                 ON CONFLICT(environment,device_id,dedupe_key) DO NOTHING`,
-                [userId,change.kind,`activity:${row.id}:${change.suffix}`,JSON.stringify(activityPayload(change.kind,row.id)),env.MOBILE_APNS_ALLOW_PRODUCTION==='true',JSON.stringify({threshold:change.threshold,percent:change.percent})]);
+                [userId,change.kind,`activity:${row.id}:${change.suffix}`,JSON.stringify(activityPayload(change.kind,row.id,{...change,name:row.name,location:row.location,startsAt:row.starts_at,count:current.count,capacity:current.capacity})),env.MOBILE_APNS_ALLOW_PRODUCTION==='true',JSON.stringify({threshold:change.threshold,percent:change.percent})]);
         }
         await client.query(`INSERT INTO mobile_notification_activity_observations(environment,user_id,event_id,snapshot) VALUES('acc',$1,$2,$3::jsonb)
             ON CONFLICT(environment,user_id,event_id) DO UPDATE SET snapshot=EXCLUDED.snapshot,observed_at=now()`,[userId,row.id,JSON.stringify(current)]);

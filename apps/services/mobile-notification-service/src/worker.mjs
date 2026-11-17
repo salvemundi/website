@@ -48,7 +48,7 @@ export async function reconcile(client, env) {
                          WHERE d.environment='acc' AND d.user_id=$1 AND s.${sessionColumns.expiresAt}>now() AND COALESCE(p.${preferenceColumn},true)
                          AND (d.apns_environment='sandbox' OR $5::boolean)
                          ON CONFLICT(environment,device_id,dedupe_key) DO NOTHING`,
-                        [userId, change.kind, `${row.id}:${change.suffix}`, JSON.stringify(notificationPayload(change.kind, `event:${row.event_id}`)), env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']
+                        [userId, change.kind, `${row.id}:${change.suffix}`, JSON.stringify(notificationPayload(change.kind, `event:${row.event_id}`, change)), env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']
                     );
                 }
                 await client.query(
