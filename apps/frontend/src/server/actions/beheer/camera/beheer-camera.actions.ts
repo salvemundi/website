@@ -92,6 +92,17 @@ export async function saveCameraRequestAction(input: unknown): Promise<Result> {
                 if (p.length === 0) return { success: false, error: 'Deze fotograaf is niet toegelaten.' };
             }
 
+            if (data.status !== 'approved') {
+                const openLoan = await tx
+                    .select({ id: schema.camera_loans.id })
+                    .from(schema.camera_loans)
+                    .where(and(eq(schema.camera_loans.request_id, data.id), isNull(schema.camera_loans.returned_on)))
+                    .limit(1);
+                if (openLoan.length > 0) {
+                    return { success: false, error: 'Registreer eerst het terugbrengen van de camera voordat je de status wijzigt.' };
+                }
+            }
+
             // De camera kan niet aan twee aanvragen tegelijk worden goedgekeurd.
             if (data.status === 'approved') {
                 const others = await tx
