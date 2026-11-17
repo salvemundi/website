@@ -2,7 +2,7 @@
 
 import { enforceFeatureAccess } from '@/server/actions/beheer/beheer-utils.actions';
 import { db, schema } from '@salvemundi/db';
-import { and, eq, ilike, isNull, lte, gte, ne, or } from 'drizzle-orm';
+import { and, eq, ilike, isNull, lte, gte, ne, notExists, or } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import {
@@ -15,9 +15,10 @@ import {
 } from '@salvemundi/validations';
 import { periodsOverlap } from '@/shared/lib/camera-period';
 import { formatMailPeriod, getUserMailInfo, sendCameraMail } from '@/server/utils/camera-mail';
+import { withCameraTransaction } from '@/server/utils/camera-transaction';
 import { safeConsoleError } from '@/server/utils/logger';
 
-type Result = { success: true } | { success: false; error: string };
+type Result<T = object> = ({ success: true } & T) | { success: false; error: string };
 
 const GENERIC_ERROR = 'Er ging iets mis. Probeer het later opnieuw.';
 const uuidSchema = z.string().uuid();
@@ -73,55 +74,60 @@ export async function saveCameraRequestAction(input: unknown): Promise<Result> {
     const data = parsed.data;
 
     try {
-        const found = await db
-            .select()
-            .from(schema.camera_requests)
-            .where(eq(schema.camera_requests.id, data.id))
-            .limit(1);
-        if (found.length === 0) return { success: false, error: 'Aanvraag niet gevonden.' };
-        const request = found[0];
-
-        if (data.assigned_photographer_id) {
-            const p = await db
-                .select({ id: schema.camera_photographers.id })
-                .from(schema.camera_photographers)
-                .where(eq(schema.camera_photographers.id, data.assigned_photographer_id))
-                .limit(1);
-            if (p.length === 0) return { success: false, error: 'Deze fotograaf is niet toegelaten.' };
-        }
-
-        // De camera kan niet aan twee aanvragen tegelijk worden goedgekeurd.
-        if (data.status === 'approved') {
-            const others = await db
+        const result = await withCameraTransaction<Result<{ request: typeof schema.camera_requests.$inferSelect }>>(async (tx) => {
+            const found = await tx
                 .select()
                 .from(schema.camera_requests)
-                .where(
-                    and(
-                        eq(schema.camera_requests.status, 'approved'),
-                        ne(schema.camera_requests.id, data.id),
-                        lte(schema.camera_requests.start_date, request.end_date),
-                        gte(schema.camera_requests.end_date, request.start_date),
-                    ),
-                );
-            const clash = others.find((o) => periodsOverlap(request, o));
-            if (clash) {
-                return {
-                    success: false,
-                    error: `Overlap met een al goedgekeurde aanvraag (${clash.event_name}). Pas eerst die aanvraag aan.`,
-                };
-            }
-        }
+                .where(eq(schema.camera_requests.id, data.id))
+                .limit(1);
+            if (found.length === 0) return { success: false, error: 'Aanvraag niet gevonden.' };
+            const request = found[0];
 
-        await db
-            .update(schema.camera_requests)
-            .set({
-                status: data.status,
-                photo_status: data.photo_status,
-                assigned_photographer_id: data.assigned_photographer_id,
-                note_admin: data.note_admin,
-                updated_at: new Date().toISOString(),
-            })
-            .where(eq(schema.camera_requests.id, data.id));
+            if (data.assigned_photographer_id) {
+                const p = await tx
+                    .select({ id: schema.camera_photographers.id })
+                    .from(schema.camera_photographers)
+                    .where(eq(schema.camera_photographers.id, data.assigned_photographer_id))
+                    .limit(1);
+                if (p.length === 0) return { success: false, error: 'Deze fotograaf is niet toegelaten.' };
+            }
+
+            // De camera kan niet aan twee aanvragen tegelijk worden goedgekeurd.
+            if (data.status === 'approved') {
+                const others = await tx
+                    .select()
+                    .from(schema.camera_requests)
+                    .where(
+                        and(
+                            eq(schema.camera_requests.status, 'approved'),
+                            ne(schema.camera_requests.id, data.id),
+                            lte(schema.camera_requests.start_date, request.end_date),
+                            gte(schema.camera_requests.end_date, request.start_date),
+                        ),
+                    );
+                const clash = others.find((o) => periodsOverlap(request, o));
+                if (clash) {
+                    return {
+                        success: false,
+                        error: `Overlap met een al goedgekeurde aanvraag (${clash.event_name}). Pas eerst die aanvraag aan.`,
+                    };
+                }
+            }
+
+            await tx
+                .update(schema.camera_requests)
+                .set({
+                    status: data.status,
+                    photo_status: data.photo_status,
+                    assigned_photographer_id: data.assigned_photographer_id,
+                    note_admin: data.note_admin,
+                    updated_at: new Date().toISOString(),
+                })
+                .where(eq(schema.camera_requests.id, data.id));
+            return { success: true, request };
+        });
+        if (!result.success) return result;
+        const { request } = result;
 
         revalidate();
 
@@ -222,42 +228,46 @@ export async function handoutCameraAction(input: unknown): Promise<Result> {
     const data = parsed.data;
 
     try {
-        const found = await db
-            .select({ status: schema.camera_requests.status })
-            .from(schema.camera_requests)
-            .where(eq(schema.camera_requests.id, data.request_id))
-            .limit(1);
-        if (found.length === 0) return { success: false, error: 'Aanvraag niet gevonden.' };
-        if (found[0].status !== 'approved') {
-            return { success: false, error: 'Alleen goedgekeurde aanvragen kunnen worden meegegeven.' };
-        }
+        const result = await withCameraTransaction<Result>(async (tx) => {
+            const found = await tx
+                .select({ status: schema.camera_requests.status })
+                .from(schema.camera_requests)
+                .where(eq(schema.camera_requests.id, data.request_id))
+                .limit(1);
+            if (found.length === 0) return { success: false, error: 'Aanvraag niet gevonden.' };
+            if (found[0].status !== 'approved') {
+                return { success: false, error: 'Alleen goedgekeurde aanvragen kunnen worden meegegeven.' };
+            }
 
-        // De camera kan maar aan één persoon tegelijk zijn meegegeven.
-        const open = await db
-            .select({ event_name: schema.camera_requests.event_name })
-            .from(schema.camera_loans)
-            .innerJoin(schema.camera_requests, eq(schema.camera_loans.request_id, schema.camera_requests.id))
-            .where(isNull(schema.camera_loans.returned_on))
-            .limit(1);
-        if (open.length > 0) {
-            return {
-                success: false,
-                error: `De camera is nog uitgeleend (${open[0].event_name}). Registreer eerst het terugbrengen.`,
-            };
-        }
+            // De camera kan maar aan één persoon tegelijk zijn meegegeven.
+            const open = await tx
+                .select({ event_name: schema.camera_requests.event_name })
+                .from(schema.camera_loans)
+                .innerJoin(schema.camera_requests, eq(schema.camera_loans.request_id, schema.camera_requests.id))
+                .where(isNull(schema.camera_loans.returned_on))
+                .limit(1);
+            if (open.length > 0) {
+                return {
+                    success: false,
+                    error: `De camera is nog uitgeleend (${open[0].event_name}). Registreer eerst het terugbrengen.`,
+                };
+            }
 
-        const existing = await db
-            .select({ id: schema.camera_loans.id })
-            .from(schema.camera_loans)
-            .where(eq(schema.camera_loans.request_id, data.request_id))
-            .limit(1);
-        if (existing.length > 0) return { success: false, error: 'Deze aanvraag is al meegegeven.' };
+            const existing = await tx
+                .select({ id: schema.camera_loans.id })
+                .from(schema.camera_loans)
+                .where(eq(schema.camera_loans.request_id, data.request_id))
+                .limit(1);
+            if (existing.length > 0) return { success: false, error: 'Deze aanvraag is al meegegeven.' };
 
-        await db.insert(schema.camera_loans).values({
-            request_id: data.request_id,
-            checklist: data.checklist,
-            handout_note: data.note,
+            await tx.insert(schema.camera_loans).values({
+                request_id: data.request_id,
+                checklist: data.checklist,
+                handout_note: data.note,
+            });
+            return { success: true };
         });
+        if (!result.success) return result;
 
         revalidate();
         return { success: true };
@@ -322,19 +332,26 @@ export async function updateCameraRequesterAction(requestId: string, userId: str
     }
 
     try {
-        const user = await db
-            .select({ id: schema.directus_users.id })
-            .from(schema.directus_users)
-            .where(eq(schema.directus_users.id, userId))
-            .limit(1);
-        if (user.length === 0) return { success: false, error: 'Lid niet gevonden.' };
+        const result = await withCameraTransaction<Result>(async (tx) => {
+            const user = await tx
+                .select({ id: schema.directus_users.id })
+                .from(schema.directus_users)
+                .where(eq(schema.directus_users.id, userId))
+                .limit(1);
+            if (user.length === 0) return { success: false, error: 'Lid niet gevonden.' };
 
-        const updated = await db
-            .update(schema.camera_requests)
-            .set({ requester_id: userId, updated_at: new Date().toISOString() })
-            .where(eq(schema.camera_requests.id, requestId))
-            .returning({ id: schema.camera_requests.id });
-        if (updated.length === 0) return { success: false, error: 'Aanvraag niet gevonden.' };
+            const loanExists = tx.select({ id: schema.camera_loans.id })
+                .from(schema.camera_loans)
+                .where(eq(schema.camera_loans.request_id, requestId));
+            const updated = await tx
+                .update(schema.camera_requests)
+                .set({ requester_id: userId, updated_at: new Date().toISOString() })
+                .where(and(eq(schema.camera_requests.id, requestId), notExists(loanExists)))
+                .returning({ id: schema.camera_requests.id });
+            if (updated.length === 0) return { success: false, error: 'Aanvraag niet gevonden of de camera is al meegegeven.' };
+            return { success: true };
+        });
+        if (!result.success) return result;
 
         revalidate();
         return { success: true };

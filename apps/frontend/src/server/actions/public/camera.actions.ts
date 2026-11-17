@@ -2,9 +2,8 @@
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { revalidatePath } from 'next/cache';
-import { headers } from 'next/headers';
 import { db, schema } from '@salvemundi/db';
-import { and, asc, desc, eq, gte, inArray, lte, ne } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNull, lte, notExists, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import {
     createCameraRequestSchema,
@@ -15,6 +14,7 @@ import {
     type CameraRequestStatus,
     type CameraRequestSummary,
 } from '@salvemundi/validations';
+import { withCameraTransaction, type CameraTransaction } from '@/server/utils/camera-transaction';
 import { safeConsoleError } from '@/server/utils/logger';
 import { hhmm, periodsOverlap, type CameraPeriod } from '@/shared/lib/camera-period';
 import {
@@ -24,7 +24,7 @@ import {
     sendCameraMail,
 } from '@/server/utils/camera-mail';
 
-type Result = { success: true } | { success: false; error: string };
+type Result<T = object> = ({ success: true } & T) | { success: false; error: string };
 
 const GENERIC_ERROR = 'Er ging iets mis. Probeer het later opnieuw.';
 const RATE_LIMIT_ERROR = 'Te veel acties. Probeer het over een minuut opnieuw.';
@@ -63,9 +63,9 @@ const fullName = (first?: string | null, last?: string | null) =>
 
 type Period = CameraPeriod;
 
-async function findOverlaps(period: Period, excludeRequestId?: string) {
+async function findOverlaps(period: Period, database: typeof db | CameraTransaction = db) {
     // Grof filteren op datum in SQL, daarna exact op tijd in JS (tijd is optioneel).
-    const rows = await db
+    const rows = await database
         .select({
             id: schema.camera_requests.id,
             event_name: schema.camera_requests.event_name,
@@ -81,7 +81,6 @@ async function findOverlaps(period: Period, excludeRequestId?: string) {
                 inArray(schema.camera_requests.status, ['requested', 'approved']),
                 lte(schema.camera_requests.start_date, period.end_date),
                 gte(schema.camera_requests.end_date, period.start_date),
-                excludeRequestId ? ne(schema.camera_requests.id, excludeRequestId) : undefined,
             ),
         );
 
@@ -110,6 +109,23 @@ export async function getCameraAvailability(input: Period): Promise<CameraAvaila
     }
 }
 
+function cameraEventVisibility(userId: string) {
+    const ownCommittees = db.select({ id: schema.committee_members.committee_id })
+        .from(schema.committee_members)
+        .where(eq(schema.committee_members.user_id, userId));
+
+    return or(
+        and(
+            eq(schema.events.status, 'published'),
+            or(isNull(schema.events.publish_date), lte(schema.events.publish_date, sql`now() at time zone 'UTC'`)),
+        ),
+        and(
+            inArray(schema.events.status, ['draft', 'published']),
+            inArray(schema.events.committee_id, ownCommittees),
+        ),
+    );
+}
+
 export async function getCameraPageData(): Promise<{
     events: CameraEventOption[];
     committees: CameraCommitteeOption[];
@@ -134,11 +150,15 @@ export async function getCameraPageData(): Promise<{
                     event_date_end: schema.events.event_date_end,
                     event_time_end: schema.events.event_time_end,
                     committee_id: schema.events.committee_id,
-                    status: schema.events.status,
+                    status: sql<string | null>`case
+                        when ${schema.events.status} = 'published'
+                            and ${schema.events.publish_date} > (now() at time zone 'UTC') then 'scheduled'
+                        else ${schema.events.status}
+                    end`,
                 })
                 .from(schema.events)
                 // Ook concept-activiteiten: de aanvraag kan al voor publicatie nodig zijn.
-                .where(gte(schema.events.event_date, today))
+                .where(and(gte(schema.events.event_date, today), cameraEventVisibility(member.userId)))
                 .orderBy(asc(schema.events.event_date), asc(schema.events.name))
                 .limit(200),
             db.select({ id: schema.committees.id, name: schema.committees.name }).from(schema.committees),
@@ -212,14 +232,16 @@ export async function getCameraPageData(): Promise<{
     }
 }
 
-async function getSiteUrl(): Promise<string> {
-    if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '');
+function getCameraAdminUrl(): string | null {
+    const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.BETTER_AUTH_URL;
+    if (!configuredUrl) return null;
+
     try {
-        const h = await headers();
-        const host = h.get('x-forwarded-host') || h.get('host') || 'localhost:3000';
-        return `${h.get('x-forwarded-proto') || 'https'}://${host}`;
+        const url = new URL(configuredUrl);
+        if (url.protocol !== 'https:' || url.username || url.password) return null;
+        return new URL('/beheer/camera', url.origin).href;
     } catch {
-        return 'http://localhost:3000';
+        return null;
     }
 }
 
@@ -241,7 +263,7 @@ async function notifyNewRequest(
             await sendCameraMail(requester.email, 'camera-request-received', { name: requester.name, ...common });
         }
         const photographers = await getCameraPhotographerRecipients();
-        const adminUrl = `${await getSiteUrl()}/beheer/camera`;
+        const adminUrl = getCameraAdminUrl();
         await Promise.all(
             photographers.map((p) =>
                 sendCameraMail(p.email, 'camera-photographer-new-request', {
@@ -276,47 +298,52 @@ export async function createCameraRequest(input: unknown): Promise<Result> {
     }
 
     try {
-        let photographerName: string | null = null;
-        if (data.proposed_photographer_id) {
-            const found = await db
-                .select({ id: schema.camera_photographers.id, first_name: schema.directus_users.first_name, last_name: schema.directus_users.last_name })
-                .from(schema.camera_photographers)
-                .leftJoin(schema.directus_users, eq(schema.camera_photographers.user_id, schema.directus_users.id))
-                .where(eq(schema.camera_photographers.id, data.proposed_photographer_id))
-                .limit(1);
-            if (found.length > 0) photographerName = fullName(found[0].first_name, found[0].last_name);
-            if (found.length === 0) return { success: false, error: 'Deze fotograaf is niet toegelaten.' };
-        }
+        const result = await withCameraTransaction<Result<{ photographerName: string | null }>>(async (tx) => {
+            let photographerName: string | null = null;
+            if (data.proposed_photographer_id) {
+                const found = await tx
+                    .select({ id: schema.camera_photographers.id, first_name: schema.directus_users.first_name, last_name: schema.directus_users.last_name })
+                    .from(schema.camera_photographers)
+                    .leftJoin(schema.directus_users, eq(schema.camera_photographers.user_id, schema.directus_users.id))
+                    .where(eq(schema.camera_photographers.id, data.proposed_photographer_id))
+                    .limit(1);
+                if (found.length > 0) photographerName = fullName(found[0].first_name, found[0].last_name);
+                if (found.length === 0) return { success: false, error: 'Deze fotograaf is niet toegelaten.' };
+            }
 
-        let eventId: number | null = null;
-        if (data.event_id) {
-            const evRows = await db
-                .select({ id: schema.events.id })
-                .from(schema.events)
-                .where(eq(schema.events.id, data.event_id))
-                .limit(1);
-            eventId = evRows.length > 0 ? evRows[0].id : null;
-        }
+            let eventId: number | null = null;
+            if (data.event_id) {
+                const evRows = await tx
+                    .select({ id: schema.events.id })
+                    .from(schema.events)
+                    .where(and(eq(schema.events.id, data.event_id), cameraEventVisibility(member.userId)))
+                    .limit(1);
+                if (evRows.length === 0) return { success: false, error: 'Deze activiteit is niet beschikbaar.' };
+                eventId = evRows[0].id;
+            }
 
-        const overlaps = await findOverlaps(data);
-        if (overlaps.some((r) => r.status === 'approved')) {
-            return { success: false, error: 'De camera is in deze periode al gereserveerd. Kies een andere periode.' };
-        }
+            const overlaps = await findOverlaps(data, tx);
+            if (overlaps.some((r) => r.status === 'approved')) {
+                return { success: false, error: 'De camera is in deze periode al gereserveerd. Kies een andere periode.' };
+            }
 
-        await db.insert(schema.camera_requests).values({
-            requester_id: member.userId,
-            event_id: eventId,
-            event_name: data.event_name,
-            start_date: data.start_date,
-            start_time: data.start_time,
-            end_date: data.end_date,
-            end_time: data.end_time,
-            proposed_photographer_id: data.proposed_photographer_id,
-            note: data.note,
+            await tx.insert(schema.camera_requests).values({
+                requester_id: member.userId,
+                event_id: eventId,
+                event_name: data.event_name,
+                start_date: data.start_date,
+                start_time: data.start_time,
+                end_date: data.end_date,
+                end_time: data.end_time,
+                proposed_photographer_id: data.proposed_photographer_id,
+                note: data.note,
+            });
+            return { success: true, photographerName };
         });
+        if (!result.success) return result;
 
         revalidatePath('/camera');
-        await notifyNewRequest(member.userId, data, photographerName);
+        await notifyNewRequest(member.userId, data, result.photographerName);
         return { success: true };
     } catch (error) {
         safeConsoleError('[camera.actions.ts][createCameraRequest] Error:', error);
@@ -331,19 +358,27 @@ export async function cancelCameraRequest(id: string): Promise<Result> {
     if (!uuidSchema.safeParse(id).success) return { success: false, error: 'Ongeldige aanvraag.' };
 
     try {
-        const updated = await db
-            .update(schema.camera_requests)
-            .set({ status: 'cancelled', updated_at: new Date().toISOString() })
-            .where(
-                and(
-                    eq(schema.camera_requests.id, id),
-                    eq(schema.camera_requests.requester_id, member.userId),
-                    inArray(schema.camera_requests.status, ['requested', 'approved']),
-                ),
-            )
-            .returning({ id: schema.camera_requests.id });
+        const result = await withCameraTransaction<Result>(async (tx) => {
+            const loanExists = tx.select({ id: schema.camera_loans.id })
+                .from(schema.camera_loans)
+                .where(eq(schema.camera_loans.request_id, id));
+            const updated = await tx
+                .update(schema.camera_requests)
+                .set({ status: 'cancelled', updated_at: new Date().toISOString() })
+                .where(
+                    and(
+                        eq(schema.camera_requests.id, id),
+                        eq(schema.camera_requests.requester_id, member.userId),
+                        notExists(loanExists),
+                        inArray(schema.camera_requests.status, ['requested', 'approved']),
+                    ),
+                )
+                .returning({ id: schema.camera_requests.id });
 
-        if (updated.length === 0) return { success: false, error: 'Deze aanvraag kan niet worden geannuleerd.' };
+            if (updated.length === 0) return { success: false, error: 'Deze aanvraag kan niet worden geannuleerd.' };
+            return { success: true };
+        });
+        if (!result.success) return result;
 
         revalidatePath('/camera');
         return { success: true };
