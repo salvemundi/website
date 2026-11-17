@@ -68,6 +68,7 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
         handleSubmit,
         reset,
         setValue,
+        trigger,
         watch,
         formState: { errors },
     } = useForm<FormInput, unknown, CreateCameraRequestInput>({
@@ -88,6 +89,14 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
     const startTime = watch('start_time');
     const endDate = watch('end_date');
     const endTime = watch('end_time');
+
+    // Valideer eind t.o.v. start direct, zodat een eindtijd voor de starttijd meteen wordt gemeld.
+    useEffect(() => {
+        if (endDate) void trigger('end_date');
+        if (endTime) void trigger('end_time');
+    }, [startDate, startTime, endDate, endTime, trigger]);
+
+    const sameDay = !!startDate && startDate === endDate;
 
     // Live "periode vrij?"-check zodra er een geldige periode is ingevuld.
     useEffect(() => {
@@ -213,10 +222,10 @@ export function CameraRequestIsland({ events, committees, myCommitteeIds, photog
                         <Input type="time" {...register('start_time')} />
                     </FormField>
                     <FormField label="Einddatum" required error={errors.end_date?.message}>
-                        <Input type="date" {...register('end_date')} />
+                        <Input type="date" min={startDate || undefined} {...register('end_date')} />
                     </FormField>
                     <FormField label="Eindtijd (optioneel)" error={errors.end_time?.message}>
-                        <Input type="time" {...register('end_time')} />
+                        <Input type="time" min={sameDay && startTime ? startTime : undefined} {...register('end_time')} />
                     </FormField>
 
                     {availability && (
