@@ -2,7 +2,8 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapPin, Loader2, Send } from 'lucide-react';
+import { MapPin, Send } from 'lucide-react';
+import { Alert, Anchor, Box, Button, Card, Group, Stack, Text, TextInput, Title } from '@mantine/core';
 import { SignaturePad, type SignaturePadHandle } from '@/components/ui/forms/SignaturePad';
 import { signMyNda } from '@/server/actions/nda/member-nda.actions';
 import { reverseGeocode } from '@/shared/lib/utils/geolocation';
@@ -76,59 +77,84 @@ export default function NdaSignIsland({ signatureId, committeeName, documentFile
     };
 
     return (
-        <div className="space-y-6">
-            <div className="rounded-3xl border border-purple-100 bg-(--bg-card) p-6 shadow-sm">
-                <h2 className="mb-2 font-bold text-(--text-main)">NDA — {committeeName}</h2>
-                <p className="mb-4 text-sm text-(--text-muted)">Dit document is al ondertekend door de secretaris namens SV Salve Mundi.</p>
-                <a
-                    href={`/api/assets/${documentFileId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm font-semibold text-(--theme-purple) hover:underline"
-                >
-                    Document bekijken
-                </a>
-            </div>
-
-            <div className="space-y-4 rounded-3xl border border-purple-100 bg-(--bg-card) p-6 shadow-sm">
-                <h3 className="font-bold text-(--text-main)">Locatie</h3>
-                <div className="flex flex-col gap-3 sm:flex-row">
-                    <input
-                        type="text"
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        placeholder="Stad waar je nu bent"
-                        className="form-input flex-1 rounded-xl border border-purple-100 px-4 py-2.5 text-sm"
-                    />
-                    <button
-                        type="button"
-                        onClick={handleUseLocation}
-                        disabled={locating}
-                        className="form-button inline-flex items-center justify-center gap-2 rounded-xl bg-(--bg-soft) px-4 py-2.5 text-sm font-bold text-(--theme-purple) transition-colors hover:bg-(--theme-purple)/10 disabled:opacity-50"
+        <Stack gap="lg">
+            <Card padding="lg" radius="xl" withBorder>
+                <Stack gap="xs">
+                    <Title order={2} size="h4">
+                        NDA — {committeeName}
+                    </Title>
+                    <Text size="sm" c="dimmed">
+                        Dit document is al ondertekend door de secretaris namens SV Salve Mundi.
+                    </Text>
+                    <Anchor
+                        href={`/api/assets/${documentFileId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        size="sm"
+                        fw={600}
+                        c="brand"
                     >
-                        {locating ? <Loader2 className="size-4 animate-spin" /> : <MapPin className="size-4" />}
-                        Locatie ophalen
-                    </button>
-                </div>
-                {locationError && <p className="text-xs font-semibold text-red-500">{locationError}</p>}
-            </div>
+                        Document bekijken
+                    </Anchor>
+                </Stack>
+            </Card>
 
-            <div className="space-y-4 rounded-3xl border border-purple-100 bg-(--bg-card) p-6 shadow-sm">
-                <h3 className="font-bold text-(--text-main)">Jouw handtekening</h3>
-                <SignaturePad ref={signaturePadRef} />
-            </div>
+            <Card padding="lg" radius="xl" withBorder>
+                <Stack gap="sm">
+                    <Title order={3} size="h5">
+                        Locatie
+                    </Title>
+                    <Group gap="sm" align="flex-start" wrap="wrap">
+                        <TextInput
+                            value={city}
+                            onChange={(e) => setCity(e.currentTarget.value)}
+                            placeholder="Stad waar je nu bent"
+                            style={{ flex: 1, minWidth: 200 }}
+                        />
+                        <Button
+                            type="button"
+                            variant="light"
+                            onClick={handleUseLocation}
+                            loading={locating}
+                            leftSection={<MapPin size={16} />}
+                        >
+                            Locatie ophalen
+                        </Button>
+                    </Group>
+                    {locationError && (
+                        <Text size="xs" fw={600} c="error">
+                            {locationError}
+                        </Text>
+                    )}
+                </Stack>
+            </Card>
 
-            {submitError && <p className="text-sm font-semibold text-red-500">{submitError}</p>}
+            <Card padding="lg" radius="xl" withBorder>
+                <Stack gap="sm">
+                    <Title order={3} size="h5">
+                        Jouw handtekening
+                    </Title>
+                    <SignaturePad ref={signaturePadRef} />
+                </Stack>
+            </Card>
 
-            <button
-                type="button"
-                onClick={() => { void handleSubmit(); }}
-                disabled={submitting}
-                className="form-button inline-flex items-center justify-center gap-2 rounded-xl bg-(--theme-purple) px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-            >
-                {submitting ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-                Ondertekenen
-            </button>
-        </div>
+            {submitError && (
+                <Alert color="error" variant="light">
+                    {submitError}
+                </Alert>
+            )}
+
+            <Box>
+                <Button
+                    type="button"
+                    size="md"
+                    onClick={() => { void handleSubmit(); }}
+                    loading={submitting}
+                    leftSection={<Send size={16} />}
+                >
+                    Ondertekenen
+                </Button>
+            </Box>
+        </Stack>
     );
 }

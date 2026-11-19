@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { Drawer, Stack, Text, Title } from '@mantine/core';
 import StickerFilters from './map/StickerFilters';
 import StickerStats from './map/StickerStats';
 import { type StickerPublic } from '@salvemundi/validations';
@@ -22,51 +22,40 @@ export const MobileOverlays = ({
     setFilterCountry,
     filterCity,
     setFilterCity,
-    stickers
+    stickers,
 }: MobileOverlaysProps) => {
-    if (!showMobileFilters && !showMobileStats) return null;
+    const isOpen = showMobileFilters || showMobileStats;
 
     return (
-        <div className="fixed inset-0 z-210 md:hidden">
-            <button
-                type="button"
-                className="absolute inset-0 form-button bg-black/45 backdrop-blur-[2px]"
-                onClick={closeMobileOverlays}
-                aria-label="Sluit overlay"
-            />
-            <div className="bg-bg-main absolute inset-x-0 bottom-0 max-h-[78dvh] overflow-y-auto rounded-t-4xl border-t border-white/10 shadow-[0_-20px_60px_rgba(0,0,0,0.35)]">
-                <div className="bg-bg-main/95 sticky top-0 z-10 flex items-center justify-between border-b border-border-color/10 p-4 backdrop-blur-md">
-                    <div>
-                        <p className="text-[10px] font-black tracking-[0.3em] text-text-muted uppercase">
-                            Salve Mundi
-                        </p>
-                        <h2 className="text-base font-black tracking-widest text-text-main uppercase">
-                            {showMobileFilters ? 'Filters' : 'Statistieken'}
-                        </h2>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={closeMobileOverlays}
-                        className="form-button inline-flex size-10 items-center justify-center rounded-full bg-bg-card text-text-main shadow-sm"
-                        aria-label="Sluit paneel"
-                    >
-                        <X className="size-4" />
-                    </button>
-                </div>
-
-                <div className="p-4">
-                    {showMobileFilters ? (
-                        <StickerFilters
-                            filterCountry={filterCountry}
-                            setFilterCountry={setFilterCountry}
-                            filterCity={filterCity}
-                            setFilterCity={setFilterCity}
-                        />
-                    ) : (
-                        <StickerStats stickers={stickers} />
-                    )}
-                </div>
-            </div>
-        </div>
+        <Drawer
+            opened={isOpen}
+            onClose={closeMobileOverlays}
+            position="bottom"
+            hiddenFrom="md"
+            zIndex={210}
+            size="auto"
+            radius="lg"
+            title={
+                <Stack gap={2}>
+                    <Text size="xs" fw={900} tt="uppercase" c="dimmed" style={{ letterSpacing: '0.2em' }}>
+                        Salve Mundi
+                    </Text>
+                    <Title order={4} tt="uppercase">
+                        {showMobileFilters ? 'Filters' : 'Statistieken'}
+                    </Title>
+                </Stack>
+            }
+        >
+            {showMobileFilters ? (
+                <StickerFilters
+                    filterCountry={filterCountry}
+                    setFilterCountry={setFilterCountry}
+                    filterCity={filterCity}
+                    setFilterCity={setFilterCity}
+                />
+            ) : (
+                <StickerStats stickers={stickers} />
+            )}
+        </Drawer>
     );
 };

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
-import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
+import Link from '@/components/ui/Link';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Divider, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import CommitteeManagementIsland from '@/components/islands/beheer/commissies/CommitteeManagementIsland';
 import { getCommittees, getCommitteeMembers, countUniqueCommitteeMembers } from '@/server/queries/commissies/beheer-commissies.queries';
 
@@ -12,34 +14,49 @@ export default async function CommissiesBeheerPage() {
         getCommittees().catch(() => []),
         countUniqueCommitteeMembers().catch(() => 0),
     ]);
-    
+
     const firstCommittee = committees[0] as typeof committees[0] | undefined;
     const initialMembers = firstCommittee ? await getCommitteeMembers(firstCommittee.id.toString()).catch(() => []) : [];
 
     return (
-        <BeheerPageShell
-            title="Commissies"
-            backHref="/beheer"
-            actions={
-                <div className="flex items-center gap-4">
-                    <div className="hidden items-center gap-4 rounded-2xl border border-border-color/50 bg-bg-soft px-4 py-2 shadow-sm md:flex">
-                        <div className="flex flex-col items-center px-2">
-                            <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Groepen</span>
-                            <span className="text-sm leading-none font-bold text-text-main">{committees.length}</span>
-                        </div>
-                        <div className="h-6 w-px bg-border-color/20" />
-                        <div className="flex flex-col items-center px-2">
-                            <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Totaal Leden</span>
-                            <span className="text-sm leading-none font-bold text-text-main">{totalUniqueMembers}</span>
-                        </div>
-                    </div>
-                </div>
-            }
-        >
-            <CommitteeManagementIsland 
-                initialCommittees={committees} 
-                initialMembers={initialMembers}
-            />
-        </BeheerPageShell>
+        <Container size="xl" py="lg">
+            <Stack gap="lg">
+                <Group justify="space-between" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href="/beheer"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                        <Title order={1} size="h2" c="brand">
+                            Commissies
+                        </Title>
+                    </Group>
+
+                    <Paper withBorder px="md" py="xs" radius="lg" visibleFrom="md">
+                        <Group gap="md" wrap="nowrap">
+                            <Stack gap={2} align="center" px={4}>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Groepen</Text>
+                                <Text size="sm" fw={700} lh={1}>{committees.length}</Text>
+                            </Stack>
+                            <Divider orientation="vertical" />
+                            <Stack gap={2} align="center" px={4}>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Totaal Leden</Text>
+                                <Text size="sm" fw={700} lh={1}>{totalUniqueMembers}</Text>
+                            </Stack>
+                        </Group>
+                    </Paper>
+                </Group>
+
+                <CommitteeManagementIsland
+                    initialCommittees={committees}
+                    initialMembers={initialMembers}
+                />
+            </Stack>
+        </Container>
     );
 }

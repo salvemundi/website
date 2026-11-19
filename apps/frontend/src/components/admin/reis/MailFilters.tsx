@@ -1,9 +1,9 @@
 'use client';
 
 import { Layout, Filter, Search, Users } from 'lucide-react';
+import { Badge, GridCol, Group, Paper, ScrollArea, Select, Stack, Text, TextInput } from '@mantine/core';
 import type { Trip, TripSignup } from '@salvemundi/validations';
 import { Card, FilterField } from './MailComponents';
-import BeheerSelect from '@/components/ui/beheer/BeheerSelect';
 
 interface MailFiltersProps {
     trips: Trip[];
@@ -42,6 +42,19 @@ const paymentOptions = [
     { value: 'full_paid', label: 'Volledig OK' }
 ];
 
+function getStatusBadgeProps(status: string): { color: string; label: string } {
+    switch (status) {
+        case 'confirmed':
+            return { color: 'success', label: 'Bevestigd' };
+        case 'cancelled':
+            return { color: 'error', label: 'Geannuleerd' };
+        case 'waitlist':
+            return { color: 'accent', label: 'Wachtlijst' };
+        default:
+            return { color: 'brand', label: 'Geregistreerd' };
+    }
+}
+
 export default function MailFilters({
     trips,
     selectedTripId,
@@ -58,90 +71,86 @@ export default function MailFilters({
     filteredRecipients
 }: MailFiltersProps) {
     const tripOptions = trips.map(trip => ({
-        value: trip.id,
+        value: String(trip.id),
         label: trip.name || 'Onbekende reis'
     }));
 
     return (
-        <div className="space-y-6 lg:col-span-1">
-            {/* Trip Selector */}
-            <Card title="Selecteer Reis" icon={<Layout className="size-4" />}>
-                <BeheerSelect
-                    value={selectedTripId}
-                    onChange={onTripChange}
-                    options={tripOptions}
+        <GridCol span={{ base: 12, lg: 3 }}>
+            <Stack gap="lg">
+                <Card title="Selecteer Reis" icon={<Layout size={16} />}>
+                <Select
+                    value={String(selectedTripId)}
+                    onChange={(val) => {
+                        if (val) onTripChange(Number(val));
+                    }}
+                    data={tripOptions}
                     size="sm"
+                    allowDeselect={false}
                 />
             </Card>
 
-            {/* Filters */}
-            <Card title="Ontvangers Filter" icon={<Filter className="size-4" />}>
-                <div className="space-y-6">
+            <Card title="Ontvangers Filter" icon={<Filter size={16} />}>
+                <Stack gap="md">
                     <FilterField label="Status" value={filterStatus} onChange={setFilterStatus} options={statusOptions} />
                     <FilterField label="Rol" value={filterRole} onChange={setFilterRole} options={roleOptions} />
                     <FilterField label="Betaling" value={filterPayment} onChange={setFilterPayment} options={paymentOptions} />
-                    <div className="flex items-center gap-3 rounded-2xl border border-(--beheer-border)/50 bg-(--bg-main)/50 px-4 py-3 shadow-inner transition-all focus-within:border-(--beheer-accent) focus-within:ring-2 focus-within:ring-(--beheer-accent) hover:bg-(--bg-main)">
-                        <Search className="size-4 shrink-0 text-(--beheer-text-muted) opacity-50" />
-                        <input 
-                            type="text" 
-                            placeholder="Zoek deelnemer..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="beheer-input w-full border-none bg-transparent p-0 text-xs font-semibold text-(--beheer-text) outline-none placeholder:text-(--beheer-text-muted)/50"
-                        />
-                    </div>
-                </div>
+                    <TextInput
+                        placeholder="Zoek deelnemer..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.currentTarget.value)}
+                        leftSection={<Search size={16} />}
+                    />
+                </Stack>
             </Card>
 
-            {/* Summary */}
-            <div className="group/summary relative overflow-hidden rounded-3xl border border-(--beheer-accent)/20 bg-(--beheer-accent)/5 p-8 shadow-sm">
-                <div className="absolute -right-4 -bottom-4 opacity-5 transition-transform duration-700 group-hover:scale-110 group-hover:rotate-12">
-                    <Users className="size-24 text-(--beheer-accent)" />
-                </div>
-                <div className="relative z-10">
-                    <div className="mb-1 flex items-center gap-3 text-(--beheer-accent)">
-                        <Users className="size-5" />
-                        <span className="text-3xl font-bold tracking-tight">{filteredCount}</span>
-                    </div>
-                    <p className="text-[10px] font-semibold tracking-widest text-(--beheer-text-muted) uppercase opacity-70">
+            <Paper withBorder radius="lg" p="lg">
+                <Stack gap={4}>
+                    <Group gap="sm">
+                        <Text span c="accent" lh={1}>
+                            <Users size={20} />
+                        </Text>
+                        <Text size="xl" fw={700}>
+                            {filteredCount}
+                        </Text>
+                    </Group>
+                    <Text size="xs" fw={700} tt="uppercase" c="dimmed" lts={1}>
                         Ontvangers geselecteerd
-                    </p>
-                </div>
-            </div>
+                    </Text>
+                </Stack>
+            </Paper>
 
-            {/* Geselecteerde Ontvangers */}
-            <Card title="Geselecteerde Ontvangers" icon={<Users className="size-4" />}>
-                <div className="custom-scrollbar max-h-62.5 space-y-2 overflow-y-auto pr-1">
+            <Card title="Geselecteerde Ontvangers" icon={<Users size={16} />}>
+                <ScrollArea.Autosize mah={250}>
                     {filteredRecipients.length === 0 ? (
-                        <p className="py-4 text-center text-[10px] text-(--beheer-text-muted) italic opacity-50">
+                        <Text size="xs" c="dimmed" fs="italic" ta="center" py="md">
                             Geen ontvangers geselecteerd
-                        </p>
+                        </Text>
                     ) : (
-                        filteredRecipients.map(recipient => (
-                            <div 
-                                key={recipient.id} 
-                                className="flex flex-col rounded-2xl border border-(--beheer-border)/20 bg-(--bg-main)/30 p-3 text-[11px] shadow-inner transition-all hover:border-(--beheer-accent)/30"
-                            >
-                                <div className="flex items-center justify-between gap-2">
-                                    <span className="truncate font-bold text-(--beheer-text)">{recipient.first_name} {recipient.last_name}</span>
-                                    <span className={`rounded px-1.5 py-0.5 text-[8px] font-bold uppercase ${
-                                        recipient.status === 'confirmed' ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-500' :
-                                        recipient.status === 'cancelled' ? 'border border-red-500/20 bg-red-500/10 text-red-500' :
-                                        recipient.status === 'waitlist' ? 'border border-yellow-500/20 bg-yellow-500/10 text-yellow-500' :
-                                        'border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 text-(--beheer-accent)'
-                                    }`}>
-                                        {recipient.status === 'confirmed' ? 'Bevestigd' :
-                                         recipient.status === 'cancelled' ? 'Geannuleerd' :
-                                         recipient.status === 'waitlist' ? 'Wachtlijst' :
-                                         'Geregistreerd'}
-                                    </span>
-                                </div>
-                                <span className="mt-0.5 truncate text-[10px] text-(--beheer-text-muted)">{recipient.email}</span>
-                            </div>
-                        ))
+                        <Stack gap="xs">
+                            {filteredRecipients.map(recipient => {
+                                const badge = getStatusBadgeProps(recipient.status);
+                                return (
+                                    <Paper key={recipient.id} withBorder radius="md" p="xs">
+                                        <Group justify="space-between" wrap="nowrap" gap="xs">
+                                            <Text size="xs" fw={700} truncate="end">
+                                                {recipient.first_name} {recipient.last_name}
+                                            </Text>
+                                            <Badge color={badge.color} variant="light" size="xs">
+                                                {badge.label}
+                                            </Badge>
+                                        </Group>
+                                        <Text size="xs" c="dimmed" truncate="end" mt={2}>
+                                            {recipient.email}
+                                        </Text>
+                                    </Paper>
+                                );
+                            })}
+                        </Stack>
                     )}
-                </div>
+                </ScrollArea.Autosize>
             </Card>
-        </div>
+            </Stack>
+        </GridCol>
     );
 }

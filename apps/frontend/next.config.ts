@@ -4,18 +4,11 @@ import withBundleAnalyzer from '@next/bundle-analyzer';
 
 process.env.SERWIST_SUPPRESS_TURBOPACK_WARNING = '1';
 
-interface CustomWebpackConfig {
-    resolve: {
-        fallback: Record<string, boolean>;
-        alias: Record<string, boolean | string>;
-    };
-}
-
 const nextConfig: NextConfig = {
-    serverExternalPackages: ['isomorphic-dompurify', 'jsdom', 'sharp'],
+    serverExternalPackages: ['sharp'],
     experimental: {
         serverSourceMaps: true,
-        optimizePackageImports: ['lucide-react', 'maplibre-gl'],
+        optimizePackageImports: ['lucide-react', 'maplibre-gl', '@mantine/core', '@mantine/dates', '@mantine/hooks', '@mantine/notifications'],
         serverActions: {
             bodySizeLimit: '20mb'
         },
@@ -43,22 +36,6 @@ const nextConfig: NextConfig = {
         localPatterns: [
             { pathname: '/api/assets/**' },
             { pathname: '/img/**' },
-        ],
-        remotePatterns: [
-            ...(process.env.NEXT_PUBLIC_DIRECTUS_URL
-                ? [{
-                    protocol: (process.env.NEXT_PUBLIC_DIRECTUS_URL.startsWith('https') ? 'https' : 'http') as 'http' | 'https',
-                    hostname: new URL(process.env.NEXT_PUBLIC_DIRECTUS_URL).hostname,
-                    pathname: '/assets/**',
-                }]
-                : []
-            ),
-            {
-                protocol: 'http',
-                hostname: 'localhost',
-                port: '3000',
-                pathname: '/assets/**',
-            },
         ],
     },
     async redirects() {
@@ -94,25 +71,7 @@ const nextConfig: NextConfig = {
                 source: '/img/:path*',
                 headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, must-revalidate' }],
             },
-            {
-                source: '/:path*',
-                headers: [
-                    { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-                    { key: 'X-Content-Type-Options', value: 'nosniff' },
-                    { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-                    { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },
-                ],
-            },
         ];
-    },
-
-    webpack: (config: unknown, { isServer }: { isServer: boolean }) => {
-        const webpackConfig = config as CustomWebpackConfig;
-        webpackConfig.resolve.fallback = { ...webpackConfig.resolve.fallback, fs: false, net: false, tls: false };
-        if (!isServer) { 
-            webpackConfig.resolve.alias['core-js'] = false; 
-        }
-        return webpackConfig;
     },
 };
 
@@ -122,8 +81,6 @@ const withSerwist = withSerwistInit({
     disable: process.env.NODE_ENV !== 'production',
     exclude: [
         /\.map$/,
-        /\.ai$/,
-        /\/img\/old\//,
         /react-loadable-manifest\.json$/,
         /build-manifest\.json$/,
         /middleware-manifest\.json$/,

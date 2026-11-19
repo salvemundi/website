@@ -3,23 +3,19 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Alert, Button, Card, Group, InputWrapper, Stack, Text, Textarea, ThemeIcon, Title } from '@mantine/core';
 import { submitIntroParentSignup } from '@/server/actions/public/intro.actions';
-import { FormField } from '@/shared/ui/FormField';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { Heart, Lock } from 'lucide-react';
-
 import { introParentSignupFormSchema, type IntroParentSignupForm } from '@salvemundi/validations/schema/intro.zod';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
-import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 
 interface IntroParentIslandProps {
     initialPhone: string;
-    className?: string;
     isOpen?: boolean;
 }
 
-export const IntroParentIsland = ({ initialPhone, className = '', isOpen = true }: IntroParentIslandProps) => {
-
+export const IntroParentIsland = ({ initialPhone, isOpen = true }: IntroParentIslandProps) => {
     const [submitted, setSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -56,8 +52,8 @@ export const IntroParentIsland = ({ initialPhone, className = '', isOpen = true 
             } else {
                 setError(result.error || 'Er is een fout opgetreden.');
             }
-        } catch (error) {
-            const message = error instanceof Error ? error.message : 'Er is een fout opgetreden bij het versturen van je aanmelding.';
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Er is een fout opgetreden bij het versturen van je aanmelding.';
             setError(message);
         } finally {
             setIsSubmitting(false);
@@ -66,82 +62,109 @@ export const IntroParentIsland = ({ initialPhone, className = '', isOpen = true 
 
     if (!isOpen) {
         return (
-            <div className={`dark:bg-gradient-theme squircle-xl flex min-h-75 flex-col items-center justify-center border border-border-color bg-bg-card p-10 text-center shadow-xl ${className}`}>
-                <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-purple-100 dark:bg-white/20">
-
-                    <Lock className="size-10 text-brand-primary dark:text-white" />
-                </div>
-                <h3 className="mb-4 text-3xl font-black tracking-tight text-text-main dark:text-white">Inschrijvingen Gesloten</h3>
-                <p className="max-w-sm font-medium text-text-muted dark:text-white/80">
-                    De inschrijvingen voor Intro Ouders zijn momenteel gesloten.
-                </p>
-            </div>
+            <Card flex={1} padding="xl" radius="xl" shadow="xl" withBorder ta="center" mih={300}>
+                <Stack align="center" justify="center" gap="md" h="100%">
+                    <ThemeIcon size={72} radius="xl" variant="light" color="brand">
+                        <Lock size={36} />
+                    </ThemeIcon>
+                    <Title order={3} size="h2">
+                        Inschrijvingen Gesloten
+                    </Title>
+                    <Text c="dimmed" maw={360}>
+                        De inschrijvingen voor Intro Ouders zijn momenteel gesloten.
+                    </Text>
+                </Stack>
+            </Card>
         );
     }
 
     if (submitted) {
         return (
-            <div className="dark:bg-gradient-theme squircle-lg border border-border-color bg-bg-card p-6 text-center shadow-lg lg:p-8">
-                <h3 className="mb-4 text-xl font-bold text-text-main lg:text-2xl dark:text-white">Je hebt je aangemeld als Intro Ouder</h3>
-                <p className="text-text-muted dark:text-white/80">
-                    Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.
-                </p>
-            </div>
+            <Card flex={1} padding="xl" radius="xl" shadow="lg" withBorder ta="center">
+                <Stack gap="sm" align="center">
+                    <Title order={3} size="h3">
+                        Je hebt je aangemeld als Intro Ouder
+                    </Title>
+                    <Text c="dimmed">
+                        Bedankt! Je inschrijving is ontvangen. Als je iets wilt aanpassen, neem contact op met de intro commissie.
+                    </Text>
+                </Stack>
+            </Card>
         );
     }
 
-
     return (
-        <StandardFormCard
-            title="Word Intro Ouder!"
-            icon={<Heart className="size-8" />}
-            description="Begeleid de nieuwe lichting studenten tijdens de introweek."
-            className={className}
-        >
-            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="flex flex-1 flex-col justify-between space-y-4 lg:space-y-6" autoComplete="off">
-                <div className="flex flex-1 flex-col space-y-4 lg:space-y-6">
-                    {!hasValidPhone ? (
-                        <FormField id="field-telefoonnummer" label="Telefoonnummer" required error={errors.telefoonnummer?.message}>
-                            <Controller
-                                name="telefoonnummer"
-                                control={control}
-                                render={({ field }) => (
-                                    <PhoneInput
-                                        {...field}
-                                        id="field-telefoonnummer"
-                                        required
-                                        autoComplete="one-time-code"
-                                    />
-                                )}
-                            />
-                        </FormField>
-                    ) : (
-                        <input type="hidden" {...register('telefoonnummer')} />
-                    )}
+        <Card flex={1} padding="xl" radius="xl" shadow="xl" withBorder>
+            <Stack gap="lg" h="100%">
+                <Stack gap="xs">
+                    <Group gap="sm" align="center">
+                        <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                            <Heart size={20} />
+                        </ThemeIcon>
+                        <Title order={2} size="h2" c="brand">
+                            Word Intro Ouder!
+                        </Title>
+                    </Group>
+                    <Text size="sm" c="dimmed">
+                        Begeleid de nieuwe lichting studenten tijdens de introweek.
+                    </Text>
+                </Stack>
 
-                    <FormField id="field-motivation" label="Motivatie" required error={errors.motivation?.message} className="flex flex-1 flex-col">
-                        <textarea
-                            {...register('motivation')}
+                <form
+                    onSubmit={(e) => { void handleSubmit(onSubmit)(e); }}
+                    style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 'var(--mantine-spacing-md)' }}
+                    autoComplete="off"
+                >
+                    <Stack gap="md" style={{ flex: 1 }}>
+                        {!hasValidPhone ? (
+                            <InputWrapper
+                                id="field-telefoonnummer"
+                                label="Telefoonnummer"
+                                required
+                                error={errors.telefoonnummer?.message}
+                            >
+                                <Controller
+                                    name="telefoonnummer"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <PhoneInput
+                                            {...field}
+                                            id="field-telefoonnummer"
+                                            required
+                                            autoComplete="one-time-code"
+                                            error={!!errors.telefoonnummer}
+                                        />
+                                    )}
+                                />
+                            </InputWrapper>
+                        ) : (
+                            <input type="hidden" {...register('telefoonnummer')} />
+                        )}
+
+                        <Textarea
                             id="field-motivation"
+                            label="Motivatie"
                             required
-                            className="form-input w-full flex-1 resize-none"
+                            minRows={5}
+                            autosize
                             placeholder="Vertel ons waarom jij een goede Intro Ouder zou zijn..."
                             autoComplete="off"
-                            suppressHydrationWarning
+                            error={errors.motivation?.message}
+                            {...register('motivation')}
                         />
-                    </FormField>
-                </div>
+                    </Stack>
 
-                {error && <p className="text-xs text-red-500 lg:text-sm dark:text-red-400">{error}</p>}
+                    {error && (
+                        <Alert color="error" variant="light">
+                            {error}
+                        </Alert>
+                    )}
 
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="mt-4 form-button w-full shrink-0"
-                >
-                    {isSubmitting ? 'Bezig...' : 'Meld je aan als Intro Ouder'}
-                </button>
-            </form>
-        </StandardFormCard>
+                    <Button type="submit" fullWidth size="md" loading={isSubmitting} mt="xs">
+                        {isSubmitting ? 'Bezig...' : 'Meld je aan als Intro Ouder'}
+                    </Button>
+                </form>
+            </Stack>
+        </Card>
     );
 };

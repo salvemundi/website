@@ -1,7 +1,9 @@
 'use client';
 
-import { Map as MapIcon, Globe, Award, TrendingUp } from 'lucide-react';
+import { useMemo } from 'react';
+import { SimpleGrid } from '@mantine/core';
 import { type StickerPublic } from '@salvemundi/validations';
+import { normalizeCountryNameToDutch } from '../../utils/country-names';
 import StatCard from './StatCard';
 
 interface StickerStatsProps {
@@ -9,29 +11,45 @@ interface StickerStatsProps {
 }
 
 export default function StickerStats({ stickers }: StickerStatsProps) {
-    const totalStickers = stickers.length;
-    const countriesCount = new Set(stickers.map((s) => s.country?.toLowerCase()).filter(Boolean)).size;
-    const citiesCount = new Set(stickers.map((s) => s.city?.toLowerCase()).filter(Boolean)).size;
+    const { totalStickers, countriesCount, citiesCount, topCountry } = useMemo(() => {
+        const countryCounts = new Map<string, number>();
+        const cities = new Set<string>();
 
-    const topCountry = (() => {
-        const counts: Record<string, number> = {};
-        stickers.forEach(s => {
-            if (s.country) counts[s.country] = (counts[s.country] || 0) + 1;
-        });
-        return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || '..';
-    })();
+        for (const sticker of stickers) {
+            const dutchCountry = normalizeCountryNameToDutch(sticker.country);
+            if (dutchCountry) {
+                countryCounts.set(dutchCountry, (countryCounts.get(dutchCountry) ?? 0) + 1);
+            }
+
+            const city = sticker.city?.trim().toLowerCase();
+            if (city) {
+                cities.add(city);
+            }
+        }
+
+        let leadingCountry = '-';
+        let maxCount = 0;
+        for (const [country, count] of countryCounts) {
+            if (count > maxCount) {
+                maxCount = count;
+                leadingCountry = country;
+            }
+        }
+
+        return {
+            totalStickers: stickers.length,
+            countriesCount: countryCounts.size,
+            citiesCount: cities.size,
+            topCountry: leadingCountry,
+        };
+    }, [stickers]);
 
     return (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <StatCard label="Totaal" value={totalStickers} icon={MapIcon} color="text-purple-500" />
-            <StatCard label="Landen" value={countriesCount} icon={Globe} color="text-blue-500" />
-            <StatCard label="Steden" value={citiesCount} icon={Award} color="text-green-500" />
-            <StatCard
-                label="Top Land"
-                value={topCountry}
-                icon={TrendingUp}
-                color="text-orange-500"
-            />
-        </div>
+        <SimpleGrid cols={{ base: 2, md: 4 }} spacing="md">
+            <StatCard label="Totaal" value={totalStickers} />
+            <StatCard label="Landen" value={countriesCount} />
+            <StatCard label="Steden" value={citiesCount} />
+            <StatCard label="Top land" value={topCountry} />
+        </SimpleGrid>
     );
 }

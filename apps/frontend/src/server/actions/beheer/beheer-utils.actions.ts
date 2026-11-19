@@ -1,7 +1,7 @@
 'use server';
 
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import type { ImpersonationInfo, ExtendedSession } from '@/types/auth';
+import type { EnrichedUser, ImpersonationInfo, ExtendedSession } from '@/types/auth';
 import { COMMITTEES, type BeheerFeature } from '@/shared/lib/permissions-config';
 import { checkFeatureAccess, getPermissions } from '@/shared/lib/permissions';
 import { fetchUserMetadataDb, fetchUserCommitteesDb } from "@/server/internal/leden/leden-db.utils";
@@ -23,8 +23,9 @@ const TOGGLEABLE_FEATURES: Record<string, BeheerFeature | undefined> = {
     '/cobo': 'cobo',
 };
 
-export interface StronglyTypedAdminUser extends DirectusUserSelect {
+export interface StronglyTypedAdminUser extends EnrichedUser {
     committees: CommitteeSelect[];
+    permissions?: string[];
 }
 
 const getCachedUserEnrichment = (userId: string) => unstable_cache(
@@ -56,8 +57,10 @@ export async function checkBeheerAccess() {
             return { isAuthorized: false, user: null, isIct: false, impersonation: null };
         }
 
-        const user = session.user as unknown as StronglyTypedAdminUser;
-        user.committees = [];
+        const user: StronglyTypedAdminUser = {
+            ...session.user,
+            committees: [],
+        };
 
         try {
             const { metadata, committees } = await getCachedUserEnrichment(user.id);
@@ -98,11 +101,9 @@ export async function checkBeheerAccess() {
             }
         }
 
-        Object.assign(user, {
-            permissions,
-        });
+        user.permissions = permissions;
 
-        let isAuthorized = isIct || isBoard || isKandi || currentCommittees.length > 0;
+        const isAuthorized = isIct || isBoard || isKandi || currentCommittees.length > 0;
 
         // Resolve impersonation info from session first (most reliable), fall back to cookie if needed.
         let impersonationInfo: ImpersonationInfo | null = null;
@@ -147,10 +148,6 @@ export async function checkBeheerAccess() {
                     }
                 }
             }
-        }
-
-        if (impersonationInfo) {
-            isAuthorized = true;
         }
 
         return {

@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { updateProfileSchema } from '@salvemundi/validations/schema/profiel.zod';
 import { updateUserProfile, uploadUserAvatar } from '@/server/actions/profile/profiel-update.actions';
 import { z } from 'zod';
-import { type SessionUser } from '@/lib/profile/profile-admin.utils';
+import { type ProfileViewDTO } from '@/server/actions/profile/profiel.actions';
 
 const minecraftFormSchema = updateProfileSchema.pick({ minecraft_username: true });
 const phoneFormSchema = updateProfileSchema.pick({ phone_number: true });
@@ -14,45 +14,43 @@ export type MinecraftFormData = z.infer<typeof minecraftFormSchema>;
 export type PhoneFormData = z.infer<typeof phoneFormSchema>;
 
 interface UseProfileStateProps {
-    user: SessionUser;
-    refetch: () => Promise<unknown>;
+    profile: ProfileViewDTO;
     showToast: (message: string, type: 'success' | 'error') => void;
 }
 
-export function useProfileState({ user, refetch, showToast }: UseProfileStateProps) {
+export function useProfileState({ profile, showToast }: UseProfileStateProps) {
     const router = useRouter();
     const [isEditingMinecraft, setIsEditingMinecraft] = useState(false);
     const [isEditingPhoneNumber, setIsEditingPhoneNumber] = useState(false);
     const [pendingAvatar, setPendingAvatar] = useState<{ file: File, preview: string } | null>(null);
     const [isPending, startUpdateTransition] = useTransition();
 
-    const [optimisticUser, addOptimisticUpdate] = useOptimistic(
-        user,
-        (current, update: Partial<SessionUser>) => ({ ...current, ...update })
+    const [optimisticProfile, addOptimisticUpdate] = useOptimistic(
+        profile,
+        (current, update: Partial<ProfileViewDTO>) => ({ ...current, ...update })
     );
 
     const minecraftForm = useForm<MinecraftFormData>({
         resolver: zodResolver(minecraftFormSchema),
-        defaultValues: { minecraft_username: user.minecraft_username || "" }
+        defaultValues: { minecraft_username: profile.minecraft_username || "" }
     });
 
     const phoneForm = useForm<PhoneFormData>({
         resolver: zodResolver(phoneFormSchema),
-        defaultValues: { phone_number: user.phone_number || "" }
+        defaultValues: { phone_number: profile.phone_number || "" }
     });
 
     useEffect(() => {
-        minecraftForm.reset({ minecraft_username: user.minecraft_username || "" });
-        phoneForm.reset({ phone_number: user.phone_number || "" });
-    }, [user, minecraftForm, phoneForm]);
+        minecraftForm.reset({ minecraft_username: profile.minecraft_username || "" });
+        phoneForm.reset({ phone_number: profile.phone_number || "" });
+    }, [profile, minecraftForm, phoneForm]);
 
     const onSaveMinecraft = (data: MinecraftFormData) => {
         startUpdateTransition(async () => {
-            addOptimisticUpdate({ minecraft_username: data.minecraft_username });
+            addOptimisticUpdate({ minecraft_username: data.minecraft_username ?? null });
             const result = await updateUserProfile(data);
             if (result.success) {
                 router.refresh();
-                await refetch();
                 showToast('Minecraft username succesvol bijgewerkt!', 'success');
                 setIsEditingMinecraft(false);
             } else {
@@ -63,11 +61,10 @@ export function useProfileState({ user, refetch, showToast }: UseProfileStatePro
 
     const onSavePhone = (data: PhoneFormData) => {
         startUpdateTransition(async () => {
-            addOptimisticUpdate({ phone_number: data.phone_number });
+            addOptimisticUpdate({ phone_number: data.phone_number ?? null });
             const result = await updateUserProfile(data);
             if (result.success) {
                 router.refresh();
-                await refetch();
                 showToast('Telefoonnummer succesvol bijgewerkt!', 'success');
                 setIsEditingPhoneNumber(false);
             } else {
@@ -101,7 +98,6 @@ export function useProfileState({ user, refetch, showToast }: UseProfileStatePro
 
             const result = await uploadUserAvatar(formData);
             if (result.success) {
-                await refetch();
                 router.refresh();
                 showToast('Profielfoto succesvol bijgewerkt!', 'success');
             } else {
@@ -112,7 +108,7 @@ export function useProfileState({ user, refetch, showToast }: UseProfileStatePro
     };
 
     return {
-        optimisticUser,
+        optimisticProfile,
         isPending,
         isEditingMinecraft, setIsEditingMinecraft,
         isEditingPhoneNumber, setIsEditingPhoneNumber,

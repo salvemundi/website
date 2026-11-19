@@ -2,8 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import type { SyntheticEvent } from 'react';
-import { X, Loader2, User, UserPlus, XCircle, CheckCircle } from 'lucide-react';
-import { createPortal } from 'react-dom';
+import { User, UserPlus, XCircle, CheckCircle } from 'lucide-react';
+import {
+    Alert,
+    Button,
+    Divider,
+    Group,
+    Modal,
+    Stack,
+    Tabs,
+    Text,
+    ThemeIcon,
+} from '@mantine/core';
 import { createManualSignupAction } from '@/server/actions/beheer/activiteiten/beheer-activiteiten-signups.actions';
 import { type UserBasic } from '@salvemundi/validations';
 
@@ -46,8 +56,6 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
         }
     }, [isOpen]);
 
-
-
     const handleMemberSelect = (user: UserBasic) => {
         setSelectedMember(user);
     };
@@ -84,88 +92,55 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
         setIsLoading(false);
     };
 
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-            return () => { document.body.style.overflow = 'unset'; };
-        }
-    }, [isOpen]);
-
-    if (!mounted || !isOpen) return null;
-
-    return createPortal(
-        <div className="fixed inset-0 isolate z-9999 flex items-center justify-center p-4 sm:p-6">
-            <div
-                className="animate-in fade-in absolute inset-0 bg-slate-950/60 backdrop-blur-xl duration-300"
-                onClick={onClose}
-            />
-
-            <div
-                className="animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 relative z-10 flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-4xl border border-(--beheer-border) bg-(--beheer-card-bg) shadow-(--shadow-card-elevated) ring-1 ring-white/10 duration-300 ease-out"
-            >
-                <div className="relative flex items-center justify-between border-b border-(--beheer-border) bg-(--beheer-card-soft)/80 px-8 py-6">
-                    <div className="absolute inset-x-0 -bottom-px h-px bg-linear-to-r from-transparent via-(--beheer-accent)/30 to-transparent" />
-                    <h2 className="flex items-center gap-3 text-[10px] font-semibold tracking-[0.2em] text-(--beheer-text)">
-                        <div className="rounded-2xl bg-(--beheer-accent) p-2.5 text-white shadow-(--shadow-glow)">
-                            <UserPlus className="size-4" />
-                        </div>
-                        Handmatig Inschrijven
-                    </h2>
-                    <button
-                        onClick={onClose}
-                        className="icon-button rounded-full border border-transparent p-2.5 text-(--beheer-text-muted) transition-all hover:border-(--beheer-border) hover:bg-(--beheer-card-bg) hover:text-(--beheer-text) focus:outline-none active:scale-90"
-                        type="button">
-                        <X className="size-5" />
-                    </button>
-                </div>
-
-                <div className="bg-(--beheer-card-bg) px-8 py-4">
-                    <div className="flex gap-1 rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft) p-1.5">
-                        <button
-                            type="button"
-                            className={`tab-button flex flex-1 items-center justify-center gap-2.5 rounded-xl py-2.5 text-[10px] font-semibold tracking-widest transition-all ${activeTab === 'member'
-                                ? 'border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-accent) shadow-md'
-                                : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-bg)/40 hover:text-(--beheer-text)'
-                                }`}
-                            onClick={() => setActiveTab('member')}
-                        >
-                            <User className="size-3.5" />
+    return (
+        <Modal
+            opened={isOpen}
+            onClose={onClose}
+            title={
+                <Group gap="sm">
+                    <ThemeIcon color="accent" radius="md" size="lg">
+                        <UserPlus size={18} />
+                    </ThemeIcon>
+                    <Text fw={700} size="lg">Handmatig Inschrijven</Text>
+                </Group>
+            }
+            size="lg"
+            centered
+        >
+            <Stack gap="md">
+                <Tabs
+                    value={activeTab}
+                    onChange={(val) => {
+                        if (val === 'member' || val === 'guest') {
+                            setActiveTab(val);
+                        }
+                    }}
+                    variant="pills"
+                    color="accent"
+                >
+                    <Tabs.List grow>
+                        <Tabs.Tab value="member" leftSection={<User size={14} />}>
                             Lid
-                        </button>
-                        <button
-                            type="button"
-                            className={`tab-button flex flex-1 items-center justify-center gap-2.5 rounded-xl py-2.5 text-[10px] font-semibold tracking-widest transition-all ${activeTab === 'guest'
-                                ? 'border border-(--beheer-border) bg-(--beheer-card-bg) text-(--beheer-accent) shadow-md'
-                                : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-bg)/40 hover:text-(--beheer-text)'
-                                }`}
-                            onClick={() => setActiveTab('guest')}
-                        >
-                            <UserPlus className="size-3.5" />
+                        </Tabs.Tab>
+                        <Tabs.Tab value="guest" leftSection={<UserPlus size={14} />}>
                             Gast (Niet-lid)
-                        </button>
-                    </div>
-                </div>
+                        </Tabs.Tab>
+                    </Tabs.List>
+                </Tabs>
 
-                <div className="custom-scrollbar overflow-y-auto px-8 pt-2 pb-8">
-                    {error && (
-                        <div className="animate-in slide-in-from-top-2 mb-6 flex items-start gap-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-[10px] font-semibold tracking-widest text-red-500">
-                            <XCircle className="size-5 shrink-0" />
-                            <span className="leading-relaxed">{error}</span>
-                        </div>
-                    )}
-                    {successMessage && (
-                        <div className="animate-in slide-in-from-top-2 mb-6 flex items-center gap-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-[10px] font-semibold tracking-widest text-emerald-500">
-                            <CheckCircle className="size-5 shrink-0" />
-                            <span className="leading-relaxed">{successMessage}</span>
-                        </div>
-                    )}
+                {error && (
+                    <Alert color="error" variant="light" icon={<XCircle size={18} />}>
+                        <Text size="xs" fw={600}>{error}</Text>
+                    </Alert>
+                )}
+                {successMessage && (
+                    <Alert color="success" variant="light" icon={<CheckCircle size={18} />}>
+                        <Text size="xs" fw={600}>{successMessage}</Text>
+                    </Alert>
+                )}
 
-                    <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-8" autoComplete="off">
+                <form onSubmit={(e) => { void handleSubmit(e); }} autoComplete="off">
+                    <Stack gap="lg">
                         {activeTab === 'member' ? (
                             <MemberTab
                                 selectedMember={selectedMember}
@@ -183,34 +158,30 @@ export default function ManualSignupModal({ isOpen, onClose, eventId, eventName 
                             />
                         )}
 
-                        <div className="mt-4 flex gap-4 border-t border-(--beheer-border) pt-8">
-                            <button
+                        <Divider />
+
+                        <Group justify="flex-end" gap="sm">
+                            <Button
                                 type="button"
+                                variant="default"
                                 onClick={onClose}
-                                className="active:scale-0.98 beheer-button h-14 flex-1 cursor-pointer rounded-2xl border border-(--beheer-border) text-[10px] font-semibold tracking-widest text-(--beheer-text) transition-all hover:bg-(--beheer-card-soft)"
                                 disabled={isLoading}
                             >
                                 Annuleren
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 type="submit"
+                                color="accent"
+                                loading={isLoading}
                                 disabled={isLoading || (activeTab === 'member' && !selectedMember)}
-                                className="group active:scale-0.98 form-button flex h-14 flex-[1.5] items-center justify-center gap-3 rounded-2xl border border-white/10 bg-(--beheer-accent) text-[10px] font-semibold tracking-widest text-white shadow-(--shadow-glow) transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
+                                rightSection={<CheckCircle size={16} />}
                             >
-                                {isLoading ? (
-                                    <Loader2 className="size-5 animate-spin" />
-                                ) : (
-                                    <>
-                                        <span>Bevestig Inschrijving</span>
-                                        <CheckCircle className="size-4 transition-transform group-hover:scale-110" />
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>,
-        document.body
+                                Bevestig Inschrijving
+                            </Button>
+                        </Group>
+                    </Stack>
+                </form>
+            </Stack>
+        </Modal>
     );
 }

@@ -1,36 +1,7 @@
-import type { Session, User } from "better-auth";
-import { type Committee } from "@/shared/lib/permissions";
+import type { EnrichedUser, ExtendedSession } from "@/types/auth";
 
-export type ExtendedUser = User & {
-    first_name?: string;
-    last_name?: string;
-    membership_status?: string;
-    membership_expiry?: string;
-    phone_number?: string;
-    date_of_birth?: string;
-    avatar?: string;
-    minecraft_username?: string;
-    entra_id?: string;
-    role?: string;
-    committees?: Committee[];
-    id: string;
-    email: string;
-    name?: string;
-    emailVerified?: boolean;
-    createdAt?: Date;
-    updatedAt?: Date;
-};
-
-export interface ExtendedSession {
-    user: ExtendedUser;
-    session: Session;
-    impersonatedBy?: {
-        id: string;
-        name: string;
-        email: string;
-        isNormallyAdmin: boolean;
-    };
-}
+export type ExtendedUser = EnrichedUser;
+export type { ExtendedSession };
 
 export interface AuthContext {
     path?: string;

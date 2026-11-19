@@ -2,7 +2,23 @@
 
 import { useState, Fragment, useMemo, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Search } from 'lucide-react';
+import {
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Code,
+    Divider,
+    Group,
+    Paper,
+    Stack,
+    Table,
+    Text,
+    TextInput,
+    Title,
+    Tooltip,
+} from '@mantine/core';
 import { formatDate } from '@/shared/lib/utils/date';
 import { SystemLog } from '@salvemundi/validations';
 import { acknowledgeSystemLogAction } from '@/server/actions/infrastructure/audit.actions';
@@ -19,6 +35,25 @@ const formatDuration = (ms: number) => {
     }
     return `${secs}s`;
 };
+
+function getStatusBadgeColor(status: string): string {
+    switch (status) {
+        case 'SUCCESS':
+            return 'success';
+        case 'INFO':
+            return 'brand';
+        case 'WARNING':
+            return 'accent';
+        default:
+            return 'error';
+    }
+}
+
+function getEnvBadgeColor(env: string): string {
+    if (env === 'productie') return 'error';
+    if (env === 'acceptatie') return 'accent';
+    return 'brand';
+}
 
 interface SyncSummaryPayload {
     processed?: number;
@@ -103,8 +138,6 @@ export default function LogsTab({
         }
     };
 
-
-
     const resolveIdToName = (key: string, val: unknown, context?: string, logType?: string) => {
         const valStr = String(val);
         if (!valStr || valStr === 'null' || valStr === 'undefined') return valStr;
@@ -121,12 +154,12 @@ export default function LogsTab({
     const hasMore = logs.length < totalCount;
 
     return (
-        <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
-            <div className="flex flex-col items-start justify-between gap-4 border-b border-(--beheer-border)/50 p-6 md:flex-row md:items-center">
-                <div>
-                    <h3 className="text-lg font-semibold tracking-tight text-(--beheer-text)">{title}</h3>
-                    <div className="mt-2 flex flex-wrap items-center gap-4">
-                        <div className="flex items-center gap-2">
+        <Paper withBorder radius="lg" style={{ overflow: 'hidden' }}>
+            <Group justify="space-between" align="flex-end" p="lg" wrap="wrap" gap="md">
+                <Stack gap="sm">
+                    <Title order={4}>{title}</Title>
+                    <Group gap="sm" wrap="wrap">
+                        <Group gap={6} wrap="wrap">
                             {[
                                 { id: 'ALL', label: 'Alles' },
                                 { id: 'SUCCESS', label: 'Succes' },
@@ -134,88 +167,98 @@ export default function LogsTab({
                                 { id: 'WARNING', label: 'Waarschuwingen' },
                                 { id: 'INFO', label: 'Info' }
                             ].map(f => (
-                                <button
+                                <Button
                                     key={f.id}
+                                    type="button"
+                                    size="xs"
+                                    variant={statusFilter === f.id ? 'light' : 'subtle'}
+                                    color={statusFilter === f.id ? 'brand' : undefined}
                                     onClick={() => setStatusFilter(f.id as typeof statusFilter)}
-                                    className={`tab-button rounded-lg border px-3 py-1 text-[11px] font-semibold transition-all ${statusFilter === f.id
-                                        ? 'border-(--beheer-accent)/20 bg-(--beheer-accent)/10 text-(--beheer-accent)'
-                                        : 'border-transparent text-(--beheer-text-muted) hover:bg-(--beheer-card-soft)'
-                                        }`}
-                                    type="button">
+                                >
                                     {f.label}
-                                </button>
+                                </Button>
                             ))}
-                        </div>
-                        <input
-                            type="text"
+                        </Group>
+                        <TextInput
+                            size="xs"
                             placeholder="Zoeken..."
                             value={localQuery}
-                            onChange={(e) => setLocalQuery(e.target.value)}
+                            onChange={(e) => setLocalQuery(e.currentTarget.value)}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     onSearch(localQuery);
                                 }
                             }}
-                            className="beheer-input w-48 rounded-lg border border-(--beheer-border)/50 bg-(--beheer-card-soft) px-3 py-1 text-xs text-(--beheer-text) placeholder-(--beheer-text-muted)/50 transition-all focus:border-(--beheer-accent) focus:outline-none md:w-64"
+                            leftSection={<Search size={14} />}
+                            w={{ base: 192, md: 256 }}
                         />
-                    </div>
-                </div>
-                <div className="flex items-center gap-2">
+                    </Group>
+                </Stack>
+
+                <Group gap="xs">
                     {actions}
-                    <span className="text-[11px] font-semibold text-(--beheer-text-muted)">
+                    <Text size="xs" fw={600} c="dimmed">
                         {logs.length} / {totalCount}
-                    </span>
-                    <button
-                        onClick={onRefresh}
-                        className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-accent)"
-                        type="button">
-                        <RefreshCw className="size-5" />
-                    </button>
-                </div>
-            </div>
-            <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                    <thead>
-                        <tr className="border-b border-(--beheer-border)/50 bg-(--beheer-card-soft)/50 text-xs font-semibold tracking-tight text-(--beheer-text-muted)">
-                            <th className="p-4">Datum</th>
-                            <th className="p-4">Type</th>
-                            <th className="p-4">Context</th>
-                            <th className="p-4">Uitgevoerd door</th>
-                            <th className="min-w-5 p-4">Details</th>
-                            <th className="p-4 text-center">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-(--beheer-border)/10">
+                    </Text>
+                    <Tooltip label="Vernieuwen">
+                        <ActionIcon
+                            type="button"
+                            variant="default"
+                            size="lg"
+                            onClick={onRefresh}
+                            aria-label="Vernieuwen"
+                        >
+                            <RefreshCw size={18} />
+                        </ActionIcon>
+                    </Tooltip>
+                </Group>
+            </Group>
+
+            <Divider />
+
+            <Table.ScrollContainer minWidth={820}>
+                <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
+                    <Table.Thead>
+                        <Table.Tr>
+                            <Table.Th>Datum</Table.Th>
+                            <Table.Th>Type</Table.Th>
+                            <Table.Th>Context</Table.Th>
+                            <Table.Th>Uitgevoerd door</Table.Th>
+                            <Table.Th>Details</Table.Th>
+                            <Table.Th ta="center">Status</Table.Th>
+                        </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
                         {filteredLogs.map((log) => {
-                            const isAcknowledged = !!log.acknowledged_at as boolean;
+                            const isAcknowledged = !!log.acknowledged_at;
                             return (
                                 <Fragment key={log.id}>
-                                    <tr
-                                        className="group cursor-pointer border-b border-(--beheer-border)/10 transition-colors hover:bg-(--beheer-accent)/2"
+                                    <Table.Tr
                                         onClick={() => toggleExpand(log.id)}
+                                        style={{ cursor: 'pointer' }}
                                     >
-                                        <td className="p-4 text-xs font-medium tracking-tight whitespace-nowrap text-(--beheer-text-muted)">
-                                            {formatDate(log.created_at, 'dd-MM-yyyy HH:mm')}
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-xs font-semibold tracking-tight text-(--beheer-text) capitalize">
+                                        <Table.Td>
+                                            <Text size="xs" c="dimmed" fw={500} style={{ whiteSpace: 'nowrap' }}>
+                                                {formatDate(log.created_at, 'dd-MM-yyyy HH:mm')}
+                                            </Text>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Stack gap={4} align="flex-start">
+                                                <Text size="xs" fw={600} tt="capitalize">
                                                     {log.type}
-                                                </span>
+                                                </Text>
                                                 {log.payload && typeof log.payload === 'object' && 'environment' in log.payload && (
-                                                    <span className={`inline-block w-fit rounded border px-1.5 py-0.5 text-[9px] font-bold capitalize ${
-                                                        String(log.payload.environment) === 'productie'
-                                                            ? 'border-red-500/20 bg-red-500/10 text-red-500'
-                                                            : String(log.payload.environment) === 'acceptatie'
-                                                                ? 'border-amber-500/20 bg-amber-500/10 text-amber-500'
-                                                                : 'border-blue-500/20 bg-blue-500/10 text-blue-500'
-                                                    }`}>
+                                                    <Badge
+                                                        color={getEnvBadgeColor(String(log.payload.environment))}
+                                                        variant="light"
+                                                        size="xs"
+                                                    >
                                                         {String(log.payload.environment)}
-                                                    </span>
+                                                    </Badge>
                                                 )}
-                                            </div>
-                                        </td>
-                                        <td className="p-4">
+                                            </Stack>
+                                        </Table.Td>
+                                        <Table.Td>
                                             {(() => {
                                                 let context = '';
                                                 let contextName = '';
@@ -227,7 +270,6 @@ export default function LogsTab({
                                                     if ('context_name' in log.payload && log.payload.context_name) {
                                                         contextName = String(log.payload.context_name);
                                                     } else {
-                                                        // Dynamically infer context name from ID keys if not explicitly provided
                                                         if (context === 'reis') {
                                                             if ('trip_id' in log.payload && log.payload.trip_id) {
                                                                 const resolved = lookupMap.get(`trip_${String(log.payload.trip_id)}`);
@@ -283,91 +325,96 @@ export default function LogsTab({
 
                                                 if (context) {
                                                     return (
-                                                        <div className="flex flex-col">
-                                                            <span className="text-xs font-semibold tracking-tight text-(--beheer-text) capitalize">
+                                                        <Stack gap={0}>
+                                                            <Text size="xs" fw={600} tt="capitalize">
                                                                 {context}
-                                                            </span>
+                                                            </Text>
                                                             {contextName && (
-                                                                <span className="max-w-30 truncate text-[10px] text-(--beheer-text-muted)" title={contextName}>
+                                                                <Text size="xs" c="dimmed" maw={140} truncate title={contextName}>
                                                                     {contextName}
-                                                                </span>
+                                                                </Text>
                                                             )}
-                                                        </div>
+                                                        </Stack>
                                                     );
                                                 }
 
-                                                return <span className="text-(--beheer-text-muted)">-</span>;
+                                                return <Text size="xs" c="dimmed">-</Text>;
                                             })()}
-                                        </td>
-                                        <td className="p-4 text-xs font-semibold text-(--beheer-text-muted)">
-                                            {(() => {
-                                                if (log.payload && typeof log.payload === 'object') {
-                                                    if ('admin_id' in log.payload && log.payload.admin_id) {
-                                                        const resolved = lookupMap.get(`user_${String(log.payload.admin_id)}`);
-                                                        if (resolved) return resolved;
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Text size="xs" fw={600} c="dimmed">
+                                                {(() => {
+                                                    if (log.payload && typeof log.payload === 'object') {
+                                                        if ('admin_id' in log.payload && log.payload.admin_id) {
+                                                            const resolved = lookupMap.get(`user_${String(log.payload.admin_id)}`);
+                                                            if (resolved) return resolved;
+                                                        }
+                                                        if ('admin_name' in log.payload && log.payload.admin_name) {
+                                                            return String(log.payload.admin_name);
+                                                        }
                                                     }
-                                                    if ('admin_name' in log.payload && log.payload.admin_name) {
-                                                        return String(log.payload.admin_name);
-                                                    }
-                                                }
-                                                return 'Systeem';
-                                            })()}
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="max-w-70 text-xs font-medium tracking-tight break-all text-(--beheer-text-muted)">
+                                                    return 'Systeem';
+                                                })()}
+                                            </Text>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Box maw={320}>
                                                 {log.payload && typeof log.payload === 'object' ? (
                                                     log.type === 'system_sync_summary' ? (
-                                                        <div className="space-y-1">
+                                                        <Stack gap={4}>
                                                             {(() => {
-                                                                // Gebruik de nieuwe interface in plaats van any
                                                                 const p = log.payload as unknown as SyncSummaryPayload;
                                                                 return (
                                                                     <>
-                                                                        <p className="font-semibold text-(--beheer-text)">
+                                                                        <Text size="xs" fw={600}>
                                                                             Sync voltooid
-                                                                        </p>
-                                                                        <p className="text-(--beheer-text-muted) opacity-95">
+                                                                        </Text>
+                                                                        <Text size="xs" c="dimmed">
                                                                             {String(p.processed || 0)} leden verwerkt in {p.duration_ms ? formatDuration(Number(p.duration_ms)) : 'onbekende tijd'}.
-                                                                        </p>
-                                                                        <div className="mt-1 flex flex-wrap gap-1.5 text-[10px]">
-                                                                            <span className="rounded bg-green-500/10 px-1.5 py-0.5 font-semibold whitespace-nowrap text-green-500">
+                                                                        </Text>
+                                                                        <Group gap={6} wrap="wrap">
+                                                                            <Badge color="success" variant="light" size="xs">
                                                                                 +{p.moved_active || 0} actief
-                                                                            </span>
-                                                                            <span className="rounded bg-amber-500/10 px-1.5 py-0.5 font-semibold whitespace-nowrap text-amber-500">
+                                                                            </Badge>
+                                                                            <Badge color="accent" variant="light" size="xs">
                                                                                 -{p.moved_expired || 0} verlopen
-                                                                            </span>
+                                                                            </Badge>
                                                                             {Number(p.errors || 0) > 0 && (
-                                                                                <span className="rounded bg-red-500/10 px-1.5 py-0.5 font-semibold whitespace-nowrap text-red-500">
+                                                                                <Badge color="error" variant="light" size="xs">
                                                                                     {p.errors} fouten
-                                                                                </span>
+                                                                                </Badge>
                                                                             )}
-                                                                        </div>
+                                                                        </Group>
                                                                         {Array.isArray(p.moved_active_users) && p.moved_active_users.length > 0 && (
-                                                                            <div className="mt-2 space-y-0.5">
-                                                                                <p className="text-[10px] font-bold tracking-widest text-green-500 uppercase">Actief geworden</p>
+                                                                            <Stack gap={2} mt={4}>
+                                                                                <Text size="xs" fw={700} c="success" tt="uppercase">
+                                                                                    Actief geworden
+                                                                                </Text>
                                                                                 {p.moved_active_users.map((u, i) => (
-                                                                                    <p key={i} className="truncate text-[10px] text-(--beheer-text)" title={u.email}>
+                                                                                    <Text key={u.email || i} size="xs" truncate title={u.email}>
                                                                                         {u.name ? String(u.name) : u.email}
-                                                                                    </p>
+                                                                                    </Text>
                                                                                 ))}
-                                                                            </div>
+                                                                            </Stack>
                                                                         )}
                                                                         {Array.isArray(p.moved_expired_users) && p.moved_expired_users.length > 0 && (
-                                                                            <div className="mt-2 space-y-0.5">
-                                                                                <p className="text-[10px] font-bold tracking-widest text-amber-500 uppercase">Verlopen geworden</p>
+                                                                            <Stack gap={2} mt={4}>
+                                                                                <Text size="xs" fw={700} c="accent" tt="uppercase">
+                                                                                    Verlopen geworden
+                                                                                </Text>
                                                                                 {p.moved_expired_users.map((u, i) => (
-                                                                                    <p key={i} className="truncate text-[10px] text-(--beheer-text)" title={u.email}>
+                                                                                    <Text key={u.email || i} size="xs" truncate title={u.email}>
                                                                                         {u.name ? String(u.name) : u.email}
-                                                                                    </p>
+                                                                                    </Text>
                                                                                 ))}
-                                                                            </div>
+                                                                            </Stack>
                                                                         )}
                                                                     </>
                                                                 );
                                                             })()}
-                                                        </div>
+                                                        </Stack>
                                                     ) : (
-                                                        <div className="space-y-1">
+                                                        <Stack gap={4}>
                                                             {Object.entries(log.payload)
                                                                 .filter(([key]) => !['admin_id', 'admin_name', 'timestamp', 'context', 'context_name', 'impersonated_by_id', 'impersonated_by_name', 'impersonated_target_id', 'impersonated_target_name'].includes(key))
                                                                 .map(([key, val]) => {
@@ -383,107 +430,153 @@ export default function LogsTab({
                                                                         return mappedName ? `${mappedName} (ID: ${itemStr})` : itemStr;
                                                                     }) : [];
                                                                     return (
-                                                                        <div key={key} className="flex flex-col gap-0.5">
-                                                                            <div className="flex flex-wrap items-center gap-1">
-                                                                                <span className="font-semibold opacity-50">{key}:</span>
-                                                                                 {isComplex ? (
-                                                                                    <button
-                                                                                        onClick={(e) => {
-                                                                                            e.stopPropagation();
-                                                                                            toggleExpand(log.id);
-                                                                                        }}
-                                                                                        className="beheer-button flex items-center gap-1 rounded bg-(--beheer-accent)/10 px-2 py-0.5 text-[10px] font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/20 active:scale-95"
-                                                                                        type="button">
-                                                                                        {expandedLogs.has(log.id) ? 'Verberg details' : 'Toon details'}
-                                                                                    </button>
-                                                                                ) : isArray ? (
-                                                                                    <span className="break-all text-(--beheer-text)">
-                                                                                        {resolvedArray.length > 0 ? resolvedArray.join(', ') : 'Geen'}
-                                                                                    </span>
-                                                                                ) : (
-                                                                                    <span className="break-all text-(--beheer-text)">{resolveIdToName(key, val, (log.payload && typeof log.payload === 'object' && 'context' in log.payload) ? String(log.payload.context) : undefined, log.type)}</span>
-                                                                                )}
-                                                                            </div>
-                                                                        </div>
+                                                                        <Group key={key} gap={4} wrap="wrap">
+                                                                            <Text span size="xs" fw={600} c="dimmed">
+                                                                                {key}:
+                                                                            </Text>
+                                                                            {isComplex ? (
+                                                                                <Button
+                                                                                    type="button"
+                                                                                    variant="light"
+                                                                                    color="brand"
+                                                                                    size="compact-xs"
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        toggleExpand(log.id);
+                                                                                    }}
+                                                                                >
+                                                                                    {expandedLogs.has(log.id) ? 'Verberg details' : 'Toon details'}
+                                                                                </Button>
+                                                                            ) : isArray ? (
+                                                                                <Text span size="xs" style={{ wordBreak: 'break-all' }}>
+                                                                                    {resolvedArray.length > 0 ? resolvedArray.join(', ') : 'Geen'}
+                                                                                </Text>
+                                                                            ) : (
+                                                                                <Text span size="xs" style={{ wordBreak: 'break-all' }}>
+                                                                                    {resolveIdToName(
+                                                                                        key,
+                                                                                        val,
+                                                                                        (log.payload && typeof log.payload === 'object' && 'context' in log.payload)
+                                                                                            ? String(log.payload.context)
+                                                                                            : undefined,
+                                                                                        log.type
+                                                                                    )}
+                                                                                </Text>
+                                                                            )}
+                                                                        </Group>
                                                                     );
                                                                 })}
-                                                        </div>
+                                                        </Stack>
                                                     )
                                                 ) : (
-                                                    <span className="break-all">-</span>
+                                                    <Text size="xs" c="dimmed">-</Text>
                                                 )}
-                                            </div>
-                                        </td>
-                                        <td className="p-4 text-center">
-                                            <div className="flex flex-col items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                                <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold tracking-tight ${log.status === 'SUCCESS' ? 'border-(--beheer-active)/20 bg-(--beheer-active)/10 text-(--beheer-active)'
-                                                    : (log.status as string) === 'INFO' ? 'border-(--beheer-accent)/20 bg-(--beheer-accent)/10 text-(--beheer-accent)'
-                                                        : (log.status as string) === 'WARNING' ? 'border-amber-500/20 bg-amber-500/10 text-amber-500'
-                                                            : 'border-(--beheer-inactive)/20 bg-(--beheer-inactive)/10 text-(--beheer-inactive)'
-                                                    }`}>
+                                            </Box>
+                                        </Table.Td>
+                                        <Table.Td ta="center">
+                                            <Stack
+                                                gap={6}
+                                                align="center"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <Badge
+                                                    color={getStatusBadgeColor(String(log.status))}
+                                                    variant="light"
+                                                    size="sm"
+                                                >
                                                     {log.status}
-                                                </span>
-                                                {log.status === 'ERROR' && !(isAcknowledged as boolean) && (
-                                                    <button
+                                                </Badge>
+                                                {log.status === 'ERROR' && !isAcknowledged && (
+                                                    <Button
+                                                        type="button"
+                                                        variant="subtle"
+                                                        color="brand"
+                                                        size="compact-xs"
+                                                        loading={acknowledging === log.id}
                                                         onClick={() => { void handleAcknowledge(log.id); }}
-                                                        disabled={acknowledging === log.id}
-                                                        className="beheer-button text-[10px] text-(--beheer-accent) hover:text-(--beheer-accent)/80 hover:underline disabled:opacity-50"
-                                                        type="button">
+                                                    >
                                                         {acknowledging === log.id ? 'Bezig...' : 'Markeer als gezien'}
-                                                    </button>
+                                                    </Button>
                                                 )}
-                                                {log.status === 'ERROR' && (isAcknowledged as boolean) && (
-                                                    <span className="flex items-center gap-1 text-[10px] text-(--beheer-text-muted)">
+                                                {log.status === 'ERROR' && isAcknowledged && (
+                                                    <Text size="xs" c="dimmed">
                                                         Gezien
-                                                    </span>
+                                                    </Text>
                                                 )}
-                                            </div>
-                                        </td>
-                                    </tr>
+                                            </Stack>
+                                        </Table.Td>
+                                    </Table.Tr>
                                     {expandedLogs.has(log.id) && (
-                                        <tr className="border-b border-(--beheer-border)/40 bg-(--beheer-card-soft)/20">
-                                            <td colSpan={6} className="p-4 md:p-6">
-                                                <div className="mx-auto flex max-w-4xl flex-col gap-3" onClick={(e) => e.stopPropagation()}>
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-xs font-semibold text-(--beheer-text-muted)">Volledige Payload Details</span>
-                                                        <button
-                                                            onClick={() => {
-                                                                void navigator.clipboard.writeText(JSON.stringify(log.payload, null, 2));
-                                                                showToast('Gekopieerd naar klembord', 'success');
-                                                            }}
-                                                            className="beheer-button flex items-center gap-1 rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-1 text-xs font-semibold text-(--beheer-text) transition-all hover:bg-(--beheer-card-soft) active:scale-95"
-                                                            type="button">
-                                                            Kopieer JSON
-                                                        </button>
-                                                    </div>
-                                                    <pre className="max-h-87.5 overflow-x-auto rounded-xl border border-(--beheer-border)/80 bg-(--beheer-card-bg) p-4 font-mono text-xs leading-relaxed break-all whitespace-pre-wrap text-(--beheer-text) shadow-inner md:whitespace-pre">
-                                                        {JSON.stringify(log.payload, null, 2)}
-                                                    </pre>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                        <Table.Tr>
+                                            <Table.Td colSpan={6} p="md">
+                                                <Paper
+                                                    withBorder
+                                                    p="md"
+                                                    radius="md"
+                                                    maw={900}
+                                                    mx="auto"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <Stack gap="sm">
+                                                        <Group justify="space-between" align="center">
+                                                            <Text size="xs" fw={600} c="dimmed">
+                                                                Volledige Payload Details
+                                                            </Text>
+                                                            <Button
+                                                                type="button"
+                                                                variant="default"
+                                                                size="xs"
+                                                                onClick={() => {
+                                                                    void navigator.clipboard.writeText(JSON.stringify(log.payload, null, 2));
+                                                                    showToast('Gekopieerd naar klembord', 'success');
+                                                                }}
+                                                            >
+                                                                Kopieer JSON
+                                                            </Button>
+                                                        </Group>
+                                                        <Code
+                                                            block
+                                                            style={{ maxHeight: 350, overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
+                                                        >
+                                                            {JSON.stringify(log.payload, null, 2)}
+                                                        </Code>
+                                                    </Stack>
+                                                </Paper>
+                                            </Table.Td>
+                                        </Table.Tr>
                                     )}
                                 </Fragment>
                             );
                         })}
                         {filteredLogs.length === 0 && (
-                            <tr>
-                                <td colSpan={6} className="p-20 text-center text-sm font-medium text-(--beheer-text-muted) italic">Geen logboekvermeldingen gevonden.</td>
-                            </tr>
+                            <Table.Tr>
+                                <Table.Td colSpan={6}>
+                                    <Text py="xl" ta="center" size="sm" c="dimmed" fs="italic">
+                                        Geen logboekvermeldingen gevonden.
+                                    </Text>
+                                </Table.Td>
+                            </Table.Tr>
                         )}
-                    </tbody>
-                </table>
-            </div>
+                    </Table.Tbody>
+                </Table>
+            </Table.ScrollContainer>
+
             {hasMore && (
-                <div className="flex justify-center border-t border-(--beheer-border)/50 p-4">
-                    <button
-                        onClick={onLoadMore}
-                        className="beheer-button rounded-xl border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 px-6 py-2 text-xs font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/20 active:scale-95"
-                        type="button">
-                        Meer laden
-                    </button>
-                </div>
+                <>
+                    <Divider />
+                    <Group justify="center" p="md">
+                        <Button
+                            type="button"
+                            variant="light"
+                            color="brand"
+                            size="xs"
+                            onClick={onLoadMore}
+                        >
+                            Meer laden
+                        </Button>
+                    </Group>
+                </>
             )}
-        </div>
+        </Paper>
     );
 }

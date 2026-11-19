@@ -2,18 +2,15 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-
+import { Center, Grid, Stack, Tabs } from '@mantine/core';
 import {
     sendBulkTripEmail,
-    sendBulkPaymentEmails
+    sendBulkPaymentEmails,
 } from '@/server/actions/beheer/reis/beheer-reis-mail.actions';
 import type { Trip, TripSignup } from '@salvemundi/validations';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
-
-import { TypeTab } from '@/components/admin/reis/MailComponents';
 import MailFilters from '@/components/admin/reis/MailFilters';
 import MailEditor from '@/components/admin/reis/MailEditor';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 
 interface ReisMailIslandProps {
     trips: Trip[];
@@ -21,9 +18,13 @@ interface ReisMailIslandProps {
     initialSelectedTripId: number;
 }
 
-export default function ReisMailIsland({ trips, initialSignups, initialSelectedTripId }: ReisMailIslandProps) {
+export default function ReisMailIsland({
+    trips,
+    initialSignups,
+    initialSelectedTripId,
+}: ReisMailIslandProps) {
     const router = useRouter();
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [selectedTripId, setSelectedTripId] = useState<number>(initialSelectedTripId);
     const [signups, setSignups] = useState<TripSignup[]>(initialSignups);
     const [sending, setSending] = useState(false);
@@ -33,7 +34,9 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
     const [filterPayment, setFilterPayment] = useState<string>('all');
     const [searchTerm, setSearchTerm] = useState('');
 
-    const [emailType, setEmailType] = useState<'custom' | 'deposit_request' | 'final_request'>('custom');
+    const [emailType, setEmailType] = useState<'custom' | 'deposit_request' | 'final_request'>(
+        'custom'
+    );
     const [subject, setSubject] = useState('');
     const [message, setMessage] = useState('');
 
@@ -47,15 +50,22 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
     };
 
     const filteredRecipients = useMemo(() => {
-        return signups.filter(s => {
-            const matchesSearch = `${s.first_name} ${s.last_name} ${s.email}`.toLowerCase().includes(searchTerm.toLowerCase());
+        return signups.filter((s) => {
+            const matchesSearch = `${s.first_name} ${s.last_name} ${s.email}`
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase());
             const matchesStatus = filterStatus === 'all' || s.status === filterStatus;
             const matchesRole = filterRole === 'all' || s.role === filterRole;
             const matchesPayment =
-                filterPayment === 'all' ? true :
-                    filterPayment === 'unpaid' ? (!s.deposit_paid && !s.full_payment_paid) :
-                        filterPayment === 'deposit_paid' ? (s.deposit_paid && !s.full_payment_paid) :
-                            filterPayment === 'full_paid' ? s.full_payment_paid : true;
+                filterPayment === 'all'
+                    ? true
+                    : filterPayment === 'unpaid'
+                      ? !s.deposit_paid && !s.full_payment_paid
+                      : filterPayment === 'deposit_paid'
+                        ? s.deposit_paid && !s.full_payment_paid
+                        : filterPayment === 'full_paid'
+                          ? s.full_payment_paid
+                          : true;
 
             return matchesSearch && matchesStatus && matchesRole && matchesPayment;
         });
@@ -64,9 +74,10 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
     const handleSend = async () => {
         if (filteredRecipients.length === 0) return;
 
-        const confirmMsg = emailType === 'custom'
-            ? `Weet je zeker dat je deze email wilt sturen naar ${filteredRecipients.length} deelnemers?`
-            : `Weet je zeker dat je een ${emailType === 'deposit_request' ? 'aanbetaling' : 'restbetaling'} verzoek wilt sturen naar ${filteredRecipients.length} deelnemers?`;
+        const confirmMsg =
+            emailType === 'custom'
+                ? `Weet je zeker dat je deze email wilt sturen naar ${filteredRecipients.length} deelnemers?`
+                : `Weet je zeker dat je een ${emailType === 'deposit_request' ? 'aanbetaling' : 'restbetaling'} verzoek wilt sturen naar ${filteredRecipients.length} deelnemers?`;
 
         if (!confirm(confirmMsg)) return;
 
@@ -76,12 +87,18 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
             if (emailType === 'custom') {
                 const res = await sendBulkTripEmail({
                     tripId: selectedTripId,
-                    recipients: filteredRecipients.map(r => ({ email: r.email, name: `${r.first_name} ${r.last_name}` })),
+                    recipients: filteredRecipients.map((r) => ({
+                        email: r.email,
+                        name: `${r.first_name} ${r.last_name}`,
+                    })),
                     subject,
-                    message
+                    message,
                 });
                 if (res.success) {
-                    showToast(`Email succesvol verzonden naar ${filteredRecipients.length} deelnemers!`, 'success');
+                    showToast(
+                        `Email succesvol verzonden naar ${filteredRecipients.length} deelnemers!`,
+                        'success'
+                    );
                     setSubject('');
                     setMessage('');
                 } else {
@@ -90,17 +107,21 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
             } else {
                 const res = await sendBulkPaymentEmails(
                     selectedTripId,
-                    filteredRecipients.map(r => r.id),
+                    filteredRecipients.map((r) => r.id),
                     emailType === 'deposit_request' ? 'deposit' : 'final'
                 );
                 if (res.success) {
-                    showToast(`${filteredRecipients.length} betalingsverzoeken succesvol verstuurd!`, 'success');
+                    showToast(
+                        `${filteredRecipients.length} betalingsverzoeken succesvol verstuurd!`,
+                        'success'
+                    );
                 } else {
-                    const errorMsg = res.errors.length > 0
-                        ? (res.errors.length === 1
-                            ? res.errors[0]
-                            : `${res.errors.length} verzoeken mislukt. Eerste fout: ${res.errors[0]}`)
-                        : `Verzenden voltooid: ${res.successCount || 0} gelukt, ${res.failCount || 0} mislukt.`;
+                    const errorMsg =
+                        res.errors.length > 0
+                            ? res.errors.length === 1
+                                ? res.errors[0]
+                                : `${res.errors.length} verzoeken mislukt. Eerste fout: ${res.errors[0]}`
+                            : `Verzenden voltooid: ${res.successCount || 0} gelukt, ${res.failCount || 0} mislukt.`;
                     showToast(errorMsg, 'error');
                 }
             }
@@ -112,48 +133,53 @@ export default function ReisMailIsland({ trips, initialSignups, initialSelectedT
     };
 
     return (
-        <div className="w-full">
-            <div className="flex flex-col gap-8">
-                <div className="flex justify-center">
-                    <div className="flex rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft) p-1 shadow-sm">
-                        <TypeTab active={emailType === 'custom'} onClick={() => setEmailType('custom')}>Eigen bericht</TypeTab>
-                        <TypeTab active={emailType === 'deposit_request'} onClick={() => setEmailType('deposit_request')}>Aanbetaling</TypeTab>
-                        <TypeTab active={emailType === 'final_request'} onClick={() => setEmailType('final_request')}>Restbetaling</TypeTab>
-                    </div>
-                </div>
+        <Stack gap="xl" w="100%">
+            <Center>
+                <Tabs
+                    value={emailType}
+                    onChange={(val) =>
+                        setEmailType((val as typeof emailType | null) ?? 'custom')
+                    }
+                    variant="pills"
+                >
+                    <Tabs.List>
+                        <Tabs.Tab value="custom">Eigen bericht</Tabs.Tab>
+                        <Tabs.Tab value="deposit_request">Aanbetaling</Tabs.Tab>
+                        <Tabs.Tab value="final_request">Restbetaling</Tabs.Tab>
+                    </Tabs.List>
+                </Tabs>
+            </Center>
 
-                <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-                    <MailFilters
-                        trips={trips}
-                        selectedTripId={selectedTripId}
-                        onTripChange={handleTripChange}
-                        filterStatus={filterStatus}
-                        setFilterStatus={setFilterStatus}
-                        filterRole={filterRole}
-                        setFilterRole={setFilterRole}
-                        filterPayment={filterPayment}
-                        setFilterPayment={setFilterPayment}
-                        searchTerm={searchTerm}
-                        setSearchTerm={setSearchTerm}
-                        filteredCount={filteredRecipients.length}
-                        filteredRecipients={filteredRecipients}
-                    />
+            <Grid gap="xl">
+                <MailFilters
+                    trips={trips}
+                    selectedTripId={selectedTripId}
+                    onTripChange={handleTripChange}
+                    filterStatus={filterStatus}
+                    setFilterStatus={setFilterStatus}
+                    filterRole={filterRole}
+                    setFilterRole={setFilterRole}
+                    filterPayment={filterPayment}
+                    setFilterPayment={setFilterPayment}
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    filteredCount={filteredRecipients.length}
+                    filteredRecipients={filteredRecipients}
+                />
 
-                    <MailEditor
-                        emailType={emailType}
-                        subject={subject}
-                        setSubject={setSubject}
-                        message={message}
-                        setMessage={setMessage}
-                        sending={sending}
-                        onSend={() => {
-                            void handleSend();
-                        }}
-                        filteredCount={filteredRecipients.length}
-                    />
-                </div>
-            </div>
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+                <MailEditor
+                    emailType={emailType}
+                    subject={subject}
+                    setSubject={setSubject}
+                    message={message}
+                    setMessage={setMessage}
+                    sending={sending}
+                    onSend={() => {
+                        void handleSend();
+                    }}
+                    filteredCount={filteredRecipients.length}
+                />
+            </Grid>
+        </Stack>
     );
 }

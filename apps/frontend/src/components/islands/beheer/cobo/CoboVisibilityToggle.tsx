@@ -3,7 +3,6 @@
 import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import BeheerVisibilityToggle from '@/components/ui/beheer/BeheerVisibilityToggle';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { toggleCoboVisibility } from '@/server/actions/beheer/cobo/beheer-cobo.actions';
 
@@ -16,7 +15,7 @@ export default function CoboVisibilityToggle({ initialVisible, canToggle }: Prop
     const router = useRouter();
     const [isVisible, setIsVisible] = useState(initialVisible);
     const [isPending, startTransition] = useTransition();
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
 
     useEffect(() => {
         setIsVisible(initialVisible);
@@ -43,13 +42,10 @@ export default function CoboVisibilityToggle({ initialVisible, canToggle }: Prop
     if (!canToggle) return null;
 
     return (
-        <>
-            <BeheerVisibilityToggle
-                isVisible={isVisible}
-                onToggle={handleToggle}
-                isPending={isPending}
-            />
-            {toast && <BeheerToast toast={toast} onClose={hideToast} />}
-        </>
+        <BeheerVisibilityToggle
+            isVisible={isVisible}
+            onToggle={handleToggle}
+            isPending={isPending}
+        />
     );
 }

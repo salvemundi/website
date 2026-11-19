@@ -2,14 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { User, Shield } from 'lucide-react';
+import { Avatar, Box, Button, Group } from '@mantine/core';
 import { authClient } from '@/lib/auth';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { ROUTES } from '@/lib/config/routes';
 import { getLoginCallbackURL } from '@/lib/utils/login-redirect';
-import { Button } from '@/components/ui/button';
 import { type ExtendedSession } from '@/types/auth';
 
 interface NavUserSectionProps {
@@ -27,28 +26,43 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
     const showAdmin = isAuthenticated && canAccessAdmin;
 
     return (
-        <div className="flex shrink-0 flex-nowrap items-center justify-end gap-1.5 lg:gap-2">
+        <Group gap="xs" wrap="nowrap" justify="flex-end" style={{ flexShrink: 0 }}>
             {showAdmin && (
-                <Button asChild size="sm">
-                    <Link href={ROUTES.ADMIN}>
-                        <Shield className="size-4 shrink-0" />
-                        <span className="hidden @[1200px]:inline">Beheer</span>
-                    </Link>
+                <Button
+                    component={Link}
+                    href={ROUTES.ADMIN}
+                    size="sm"
+                    leftSection={<Shield size={16} />}
+                    aria-label="Beheer"
+                >
+                    <Box component="span" visibleFrom="lg">
+                        Beheer
+                    </Box>
                 </Button>
             )}
 
             {isAuthenticated ? (
-                <Button asChild variant="secondary" size="sm">
-                    <Link href={ROUTES.ACCOUNT}>
-                        <div className="relative flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/15">
-                            {user.avatar ? (
-                                <Image src={getImageUrl(user.avatar)} alt={user.name || 'Profiel'} fill className="object-cover" priority unoptimized />
-                            ) : (
-                                <User className="size-3.5 text-primary" />
-                            )}
-                        </div>
-                        <span className="hidden @[1200px]:inline">Mijn profiel</span>
-                    </Link>
+                <Button
+                    component={Link}
+                    href={ROUTES.ACCOUNT}
+                    variant="default"
+                    size="sm"
+                    leftSection={
+                        <Avatar
+                            src={user.avatar ? getImageUrl(user.avatar) : undefined}
+                            alt={user.name || 'Profiel'}
+                            size={22}
+                            radius="xl"
+                            color="brand"
+                        >
+                            <User size={14} />
+                        </Avatar>
+                    }
+                    aria-label="Mijn profiel"
+                >
+                    <Box component="span" visibleFrom="lg">
+                        Mijn profiel
+                    </Box>
                 </Button>
             ) : (
                 <Button
@@ -64,6 +78,6 @@ export function NavUserSection({ initialSession, canAccessAdmin }: NavUserSectio
                     Inloggen
                 </Button>
             )}
-        </div>
+        </Group>
     );
 }

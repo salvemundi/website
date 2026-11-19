@@ -13,6 +13,8 @@ import {
     type EnrichedPubCrawlSignup
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { checkBeheerAccess } from '@/server/actions/beheer/beheer-utils.actions';
+import { calculateMembershipStatus } from '@/lib/profile/profile-admin.utils';
 import { db, schema } from '@salvemundi/db';
 import { eq, or, desc } from 'drizzle-orm';
 import { fetchUserEventSignupsDb } from '@/server/internal/activiteiten/activiteiten-db.utils';
@@ -114,4 +116,53 @@ export async function getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
     .where(eq(schema.whatsapp_groups.is_active, true));
 
     return safeParseArray(whatsappGroupSchema, rows, 'ProfielActions:WhatsAppGroups');
+}
+
+export interface ProfileViewDTO {
+    first_name: string | null;
+    last_name: string | null;
+    email: string;
+    fontys_email: string | null;
+    phone_number: string | null;
+    date_of_birth: string | null;
+    minecraft_username: string | null;
+    avatar: string | null;
+    image: string | null;
+    membership_status: string | null;
+    membership_expiry: string | null;
+    membershipBadge: {
+        text: string;
+        color: 'brand-light' | 'brand-filled' | 'error';
+        textColor: 'brand' | 'white';
+    };
+    committees: {
+        id: string | number;
+        name: string;
+        is_leader: boolean;
+    }[];
+}
+
+export async function getMyProfileView(): Promise<ProfileViewDTO | null> {
+    const { user } = await checkBeheerAccess();
+    if (!user) return null;
+
+    return {
+        first_name: user.first_name ?? null,
+        last_name: user.last_name ?? null,
+        email: user.email,
+        fontys_email: user.fontys_email ?? null,
+        phone_number: user.phone_number ?? null,
+        date_of_birth: user.date_of_birth ?? null,
+        minecraft_username: user.minecraft_username ?? null,
+        avatar: user.avatar ?? null,
+        image: user.image ?? null,
+        membership_status: user.membership_status ?? null,
+        membership_expiry: user.membership_expiry ?? null,
+        membershipBadge: calculateMembershipStatus(user),
+        committees: user.committees.map((committee) => ({
+            id: committee.id,
+            name: committee.name,
+            is_leader: 'is_leader' in committee ? Boolean(committee.is_leader) : false
+        }))
+    };
 }

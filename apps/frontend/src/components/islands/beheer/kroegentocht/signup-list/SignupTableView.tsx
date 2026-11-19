@@ -1,6 +1,16 @@
 'use client';
 
 import { Edit, Mail, Trash } from 'lucide-react';
+import {
+    ActionIcon,
+    Anchor,
+    Badge,
+    Card,
+    Group,
+    Stack,
+    Table,
+    Text,
+} from '@mantine/core';
 import ResendTicketEmailButton from './ResendTicketEmailButton';
 import GroupSelectDropdown from './GroupSelectDropdown';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
@@ -42,118 +52,161 @@ export default function SignupTableView({
     onEdit,
     onDelete,
     onUpdateGroup,
-    getParticipants
+    getParticipants,
 }: SignupTableViewProps) {
     return (
-        <div className="animate-in fade-in overflow-hidden rounded-2xl bg-(--bg-card) shadow-(--shadow-card) ring-1 ring-(--border-color)/30 duration-200">
-            <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                    <thead>
-                        <tr className="border-b border-(--border-color)/30 bg-(--bg-main)/50">
-                            <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted)">Deelnemers</th>
-                            <th className="px-6 py-4 text-center text-[10px] font-semibold text-(--text-muted)">Tickets</th>
-                            <th className="hidden px-6 py-4 text-[10px] font-semibold text-(--text-muted) lg:table-cell">Vereniging</th>
-                            <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted)">Groep</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-(--border-color)/20">
+        <Card p={0} shadow="sm" style={{ overflow: 'hidden' }}>
+            <Table.ScrollContainer minWidth={720}>
+                <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="lg">
+                    <Table.Thead>
+                        <Table.Tr>
+                            <Table.Th>Deelnemers</Table.Th>
+                            <Table.Th ta="center">Tickets</Table.Th>
+                            <Table.Th visibleFrom="lg">Vereniging</Table.Th>
+                            <Table.Th>Groep</Table.Th>
+                        </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
                         {filteredSignups.length === 0 ? (
-                            <tr>
-                                <td colSpan={4} className="px-6 py-16 text-center font-medium text-(--text-muted) italic">
-                                    Geen aanmeldingen gevonden.
-                                </td>
-                            </tr>
+                            <Table.Tr>
+                                <Table.Td colSpan={4} py={64} ta="center">
+                                    <Text size="sm" c="dimmed" fs="italic">
+                                        Geen aanmeldingen gevonden.
+                                    </Text>
+                                </Table.Td>
+                            </Table.Tr>
                         ) : (
                             filteredSignups.map((signup) => {
                                 const participants = getParticipants(signup);
-                                const isLeaderOfGroup = groupConfigs.find(g => 
-                                    (g.leaders || []).some(l => l.signupId === Number(signup.id))
+                                const isLeaderOfGroup = groupConfigs.find((g) =>
+                                    (g.leaders || []).some(
+                                        (l) => l.signupId === Number(signup.id)
+                                    )
                                 )?.name;
 
                                 return (
-                                    <tr key={signup.id} className="border-b border-(--border-color)/10 transition-colors last:border-0 hover:bg-(--bg-main)/30">
-                                        <td className="min-w-75 px-6 py-3">
-                                            <div className="flex flex-col gap-0.5">
-                                                <div className="flex items-center gap-2">
-                                                    <a href={`mailto:${signup.email ?? ''}`} className="flex items-center gap-2 text-sm font-semibold text-(--text-main) transition-colors hover:text-(--theme-purple)" title={signup.email ?? ''}>
-                                                        <Mail className="size-3.5 text-(--text-muted)" />
-                                                        {signup.name} <span className="text-xs font-normal text-(--text-muted)">({signup.email})</span>
-                                                    </a>
-                                                </div>
+                                    <Table.Tr key={signup.id}>
+                                        <Table.Td miw={300}>
+                                            <Stack gap={4}>
+                                                <Anchor
+                                                    component="a"
+                                                    href={`mailto:${signup.email ?? ''}`}
+                                                    title={signup.email ?? ''}
+                                                    size="sm"
+                                                    fw={600}
+                                                    underline="hover"
+                                                >
+                                                    <Group gap={6} wrap="nowrap">
+                                                        <Mail size={14} />
+                                                        <Text span fw={600}>
+                                                            {signup.name}
+                                                        </Text>
+                                                        <Text span size="xs" c="dimmed">
+                                                            ({signup.email})
+                                                        </Text>
+                                                    </Group>
+                                                </Anchor>
 
                                                 {isLeaderOfGroup && (
-                                                    <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[9px] font-semibold text-amber-700 dark:text-amber-400">
+                                                    <Badge
+                                                        size="xs"
+                                                        variant="light"
+                                                        color="accent"
+                                                        w="fit-content"
+                                                    >
                                                         👑 Groepsleider ({isLeaderOfGroup})
-                                                    </span>
+                                                    </Badge>
                                                 )}
 
                                                 {participants.length > 0 && (
-                                                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                                    <Group gap={6} wrap="wrap" mt={2}>
                                                         {participants.map((p, i) => {
                                                             const rawName = p.name || 'Onbekend';
                                                             const rawInitial = p.initial || '';
 
                                                             return (
-                                                                <div key={i} className="inline-flex items-center gap-1.5 rounded-md bg-(--bg-main)/80 px-2 py-0.5 text-[10px] font-medium text-(--text-light) ring-1 ring-(--border-color)/30">
-                                                                    <span className="max-w-30 truncate text-(--text-muted)">
-                                                                        {rawName}{rawInitial ? ` ${rawInitial}` : ''}
-                                                                    </span>
-                                                                </div>
+                                                                <Badge
+                                                                    key={i}
+                                                                    size="xs"
+                                                                    variant="default"
+                                                                >
+                                                                    {rawName}
+                                                                    {rawInitial ? ` ${rawInitial}` : ''}
+                                                                </Badge>
                                                             );
                                                         })}
-                                                    </div>
+                                                    </Group>
                                                 )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-3 text-center">
-                                            <span className="inline-flex items-center justify-center rounded-full bg-(--theme-purple)/10 px-2.5 py-0.5 text-[10px] font-semibold text-(--theme-purple) ring-1 ring-(--theme-purple)/30">
+                                            </Stack>
+                                        </Table.Td>
+                                        <Table.Td ta="center">
+                                            <Badge size="sm" variant="light" color="brand">
                                                 {signup.amount_tickets}
-                                            </span>
-                                        </td>
-                                        <td className="hidden px-6 py-3 text-[11px] font-medium text-(--text-muted) lg:table-cell">
-                                            {signup.association || '-'}
-                                        </td>
-                                        <td className="px-6 py-3">
-                                            <div className="flex items-center gap-3">
+                                            </Badge>
+                                        </Table.Td>
+                                        <Table.Td visibleFrom="lg">
+                                            <Text size="xs" c="dimmed">
+                                                {signup.association || '-'}
+                                            </Text>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Group gap="sm" wrap="nowrap">
                                                 {onUpdateGroup && groupNames.length > 0 ? (
                                                     <GroupSelectDropdown
                                                         value={signup.group_name || ''}
                                                         options={groupNames}
-                                                        onChange={(val) => { void onUpdateGroup(Number(signup.id), val); }}
+                                                        onChange={(val) => {
+                                                            void onUpdateGroup(
+                                                                Number(signup.id),
+                                                                val
+                                                            );
+                                                        }}
                                                         size="xs"
                                                     />
                                                 ) : (
-                                                    <span className="text-xs font-semibold text-(--text-muted)">
+                                                    <Text size="xs" fw={600} c="dimmed">
                                                         {signup.group_name || 'Niet ingedeeld'}
-                                                    </span>
+                                                    </Text>
                                                 )}
 
-                                                <div className="flex shrink-0 items-center gap-1">
-                                                    <ResendTicketEmailButton signupId={Number(signup.id)} email={signup.email} paid={signup.payment_status === 'paid'} />
-                                                    <button
+                                                <Group gap={4} wrap="nowrap">
+                                                    <ResendTicketEmailButton
+                                                        signupId={Number(signup.id)}
+                                                        email={signup.email}
+                                                        paid={signup.payment_status === 'paid'}
+                                                    />
+                                                    <ActionIcon
+                                                        type="button"
+                                                        variant="subtle"
+                                                        color="brand"
                                                         onClick={() => signup.id && onEdit(signup.id)}
-                                                        className="icon-button cursor-pointer rounded-md p-1.5 text-(--text-muted) transition-all hover:bg-(--theme-purple)/10 hover:text-(--theme-purple)"
                                                         title="Inschrijving bewerken"
-                                                        type="button">
-                                                        <Edit className="size-3.5" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => signup.id && onDelete(signup.id)}
-                                                        className="icon-button cursor-pointer rounded-md p-1.5 text-(--text-muted) transition-all hover:bg-red-500/10 hover:text-red-500"
+                                                        aria-label="Inschrijving bewerken"
+                                                    >
+                                                        <Edit size={14} />
+                                                    </ActionIcon>
+                                                    <ActionIcon
+                                                        type="button"
+                                                        variant="subtle"
+                                                        color="error"
+                                                        onClick={() =>
+                                                            signup.id && onDelete(signup.id)
+                                                        }
                                                         title="Inschrijving verwijderen"
-                                                        type="button">
-                                                        <Trash className="size-3.5" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                                        aria-label="Inschrijving verwijderen"
+                                                    >
+                                                        <Trash size={14} />
+                                                    </ActionIcon>
+                                                </Group>
+                                            </Group>
+                                        </Table.Td>
+                                    </Table.Tr>
                                 );
                             })
                         )}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    </Table.Tbody>
+                </Table>
+            </Table.ScrollContainer>
+        </Card>
     );
 }

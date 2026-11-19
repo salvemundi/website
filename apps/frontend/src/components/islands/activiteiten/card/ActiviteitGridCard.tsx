@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, Check, Info, UserPlus } from 'lucide-react';
+import { ActionIcon, AspectRatio, Badge, Box, Card, Center, Divider, Group, Stack, Text, Title } from '@mantine/core';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
 
@@ -43,111 +44,123 @@ export default function ActiviteitGridCard({
     onShowDetails
 }: ActiviteitGridCardProps) {
     return (
-        <div
+        <Card
             onClick={onShowDetails}
-            className={`group relative z-0 w-full cursor-pointer overflow-hidden rounded-[1.75rem] bg-(--bg-card) p-0 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md dark:border dark:border-white/10 ${isPast ? 'opacity-75 grayscale-50' : ''}`}
+            padding={0}
+            radius="xl"
+            withBorder
+            shadow="sm"
+            h="100%"
+            style={{
+                cursor: 'pointer',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                opacity: isPast ? 0.75 : 1,
+                filter: isPast ? 'grayscale(50%)' : undefined,
+            }}
         >
-            <div className="relative z-10 mb-0 aspect-video w-full overflow-hidden">
-                {image ? (
-                    <MediaAsset
-                        asset={image}
-                        alt={title}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                        objectFit="contain"
-                    />
-                ) : (
-                    <div className="flex size-full items-center justify-center bg-transparent">
-                        <Calendar className="size-12 text-(--theme-purple)/20" />
-                    </div>
-                )}
-                <div className="absolute top-4 right-4 z-20 flex flex-col items-end gap-2">
-                    <span className="rounded-full bg-(--theme-purple) px-3 py-1 text-[10px] font-bold tracking-wider text-white uppercase shadow-lg backdrop-blur-md">
-                        {committeeLabel}
-                    </span>
-                    {onlyMembers && (
-                        <span className="rounded-full bg-(--theme-warning) px-3 py-1 text-[10px] font-bold tracking-wider text-white uppercase shadow-lg backdrop-blur-md">
-                            Leden Alleen
-                        </span>
-                    )}
-                </div>
-            </div>
-
-            <div className="relative z-10 flex grow flex-col space-y-3 p-5">
-                <h3 className="line-clamp-2 text-xl leading-tight font-bold wrap-break-word text-(--theme-purple)/90 transition-colors group-hover:text-(--theme-purple)">
-                    {title}
-                </h3>
-
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-sm font-bold text-(--theme-purple)/80">
-                        <Calendar className="size-4" />
-                        <span>{displayDate}</span>
-                    </div>
-                    {timeRange && (
-                        <p className="ml-6 text-sm font-medium text-(--text-muted)">
-                            {timeRange}
-                        </p>
-                    )}
-                </div>
-
-                {short_description ? (
-                    <div className="line-clamp-5 overflow-hidden text-sm leading-relaxed wrap-break-word text-(--text-muted)">
-                        <SafeMarkdown content={short_description} className="prose-sm text-(--text-muted)! prose-headings:my-1 prose-p:my-1" />
-                    </div>
-                ) : description ? (
-                    <p className="line-clamp-3 overflow-hidden text-sm leading-relaxed wrap-break-word text-(--text-muted)">
-                        {description}
-                    </p>
-                ) : null}
-
-                <div className="mt-auto flex items-center justify-between border-t border-(--border-color) pt-4">
-                    <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-(--theme-purple)/50 uppercase">Prijs</span>
-                        <span className="text-lg font-bold text-(--theme-purple)/80">€{safePrice}</span>
-                    </div>
-
-                    <div className="flex gap-2">
-                        {!isPast && (
-                            <button
-                                onClick={handleSignupClick}
-                                className={`icon-button rounded-full p-2 transition-all duration-200
-                                    ${cannotSignUp
-                                        ? 'bg-(--bg-soft) text-(--text-muted)'
-                                        : 'bg-(--theme-purple) text-white shadow-(--theme-purple)/20 shadow-lg hover:scale-105'
-                                    }`}
-                                title={alreadySignedUp ? 'Al aangemeld' : isDeadlinePassed ? 'Aanmelding gesloten' : isFull ? 'Activiteit vol' : 'Aanmelden'}
-                                type="button">
-                                {alreadySignedUp ? (
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="20 6 9 17 4 12" />
-                                    </svg>
-                                ) : (
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                        <circle cx="9" cy="7" r="4" />
-                                        <line x1="19" y1="8" x2="19" y2="14" />
-                                        <line x1="22" y1="11" x2="16" y2="11" />
-                                    </svg>
-                                )}
-                            </button>
+            <Box pos="relative">
+                <AspectRatio ratio={16 / 9}>
+                    <Box pos="relative" w="100%" h="100%">
+                        {image ? (
+                            <MediaAsset
+                                asset={image}
+                                alt={title}
+                                fill
+                                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                                objectFit="contain"
+                            />
+                        ) : (
+                            <Center h="100%">
+                                <Text span c="brand" opacity={0.3} lh={1}>
+                                    <Calendar size={48} />
+                                </Text>
+                            </Center>
                         )}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onShowDetails?.();
-                            }}
-                            className="icon-button rounded-full bg-(--bg-soft) p-2 text-(--theme-purple)"
-                            title="Meer info"
-                            type="button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="10" />
-                                <line x1="12" y1="16" x2="12" y2="12" />
-                                <line x1="12" y1="8" x2="12.01" y2="8" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </Box>
+                </AspectRatio>
+                <Stack pos="absolute" top={16} right={16} align="flex-end" gap="xs" style={{ zIndex: 20 }}>
+                    <Badge color="brand" size="sm">
+                        {committeeLabel}
+                    </Badge>
+                    {onlyMembers && (
+                        <Badge color="accent" size="sm">
+                            Leden Alleen
+                        </Badge>
+                    )}
+                </Stack>
+            </Box>
+
+            <Stack justify="space-between" gap="sm" p="lg" style={{ flex: 1 }}>
+                <Stack gap="sm">
+                    <Title order={3} size="h3" c="brand" lineClamp={2}>
+                        {title}
+                    </Title>
+
+                    <Stack gap={2}>
+                        <Group gap="xs" c="brand">
+                            <Calendar size={16} />
+                            <Text size="sm" fw={700}>{displayDate}</Text>
+                        </Group>
+                        {timeRange && (
+                            <Text size="sm" fw={500} c="dimmed" ml={24}>
+                                {timeRange}
+                            </Text>
+                        )}
+                    </Stack>
+
+                    {short_description ? (
+                        <Text size="sm" c="dimmed" lineClamp={5} component="div">
+                            <SafeMarkdown content={short_description} />
+                        </Text>
+                    ) : description ? (
+                        <Text size="sm" c="dimmed" lineClamp={3}>
+                            {description}
+                        </Text>
+                    ) : null}
+                </Stack>
+
+                <Stack gap="sm" mt="auto">
+                    <Divider />
+                    <Group justify="space-between" align="center">
+                        <Stack gap={0}>
+                            <Text size="xs" fw={700} tt="uppercase" c="dimmed">Prijs</Text>
+                            <Text size="lg" fw={700} c="brand">€{safePrice}</Text>
+                        </Stack>
+
+                        <Group gap="xs">
+                            {!isPast && (
+                                <ActionIcon
+                                    type="button"
+                                    onClick={handleSignupClick}
+                                    variant={cannotSignUp ? 'light' : 'filled'}
+                                    color={cannotSignUp ? 'dimmed' : 'brand'}
+                                    size="lg"
+                                    title={alreadySignedUp ? 'Al aangemeld' : isDeadlinePassed ? 'Aanmelding gesloten' : isFull ? 'Activiteit vol' : 'Aanmelden'}
+                                    aria-label={alreadySignedUp ? 'Al aangemeld' : isDeadlinePassed ? 'Aanmelding gesloten' : isFull ? 'Activiteit vol' : 'Aanmelden'}
+                                >
+                                    {alreadySignedUp ? <Check size={18} strokeWidth={3} /> : <UserPlus size={18} />}
+                                </ActionIcon>
+                            )}
+                            <ActionIcon
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onShowDetails?.();
+                                }}
+                                variant="light"
+                                color="brand"
+                                size="lg"
+                                title="Meer info"
+                                aria-label="Meer info"
+                            >
+                                <Info size={18} />
+                            </ActionIcon>
+                        </Group>
+                    </Group>
+                </Stack>
+            </Stack>
+        </Card>
     );
 }

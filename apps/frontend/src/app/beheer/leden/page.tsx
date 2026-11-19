@@ -1,18 +1,17 @@
-import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
+import Link from '@/components/ui/Link';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Divider, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import LedenOverzichtIsland, { type Member } from '@/components/islands/beheer/leden/LedenOverzichtIsland';
 import { EXCLUDED_EMAILS } from '@/shared/lib/constants/admin.constants';
 import { db, schema } from '@salvemundi/db';
 import { isNotNull, notInArray, and, asc } from 'drizzle-orm';
-
 import { isMembershipActive } from '@/lib/leden/leden-utils';
-
 
 export const metadata = {
     title: 'Leden Beheer | SV Salve Mundi'
 };
 
 export default async function LedenBeheerPage() {
-
     let members: Member[] = [];
     let totalCount = 0;
 
@@ -41,33 +40,46 @@ export default async function LedenBeheerPage() {
     const inactiveCount = totalCount - activeCount;
 
     return (
-        <BeheerPageShell
-            title="Leden Overzicht"
-            backHref="/beheer"
-            actions={
-                <div className="flex items-center gap-4">
-                    <div className="hidden items-center gap-4 rounded-2xl border border-(--beheer-border)/50 bg-(--beheer-card-soft) px-4 py-2 shadow-sm md:flex">
-                        <div className="flex flex-col items-center px-2">
-                            <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Totaal</span>
-                            <span className="text-sm leading-none font-bold text-(--beheer-text)">{totalCount}</span>
-                        </div>
-                        <div className="h-6 w-px bg-(--beheer-border)/20" />
-                        <div className="flex flex-col items-center px-2">
-                            <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Actief</span>
-                            <span className="text-sm leading-none font-bold text-(--beheer-active)">{activeCount}</span>
-                        </div>
-                        <div className="h-6 w-px bg-(--beheer-border)/20" />
-                        <div className="flex flex-col items-center px-2">
-                            <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Verlopen</span>
-                            <span className="text-sm leading-none font-bold text-(--beheer-inactive)">{inactiveCount}</span>
-                        </div>
-                    </div>
-                </div>
-            }
-        >
-            <LedenOverzichtIsland
-                initialMembers={members}
-            />
-        </BeheerPageShell>
+        <Container size="xl" py="lg">
+            <Stack gap="lg">
+                <Group justify="space-between" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href="/beheer"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                        <Title order={1} size="h2" c="brand">
+                            Leden Overzicht
+                        </Title>
+                    </Group>
+
+                    <Paper withBorder px="md" py="xs" radius="lg" visibleFrom="md">
+                        <Group gap="md" wrap="nowrap">
+                            <Stack gap={2} align="center" px={4}>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Totaal</Text>
+                                <Text size="sm" fw={700} lh={1}>{totalCount}</Text>
+                            </Stack>
+                            <Divider orientation="vertical" />
+                            <Stack gap={2} align="center" px={4}>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Actief</Text>
+                                <Text size="sm" fw={700} lh={1} c="success">{activeCount}</Text>
+                            </Stack>
+                            <Divider orientation="vertical" />
+                            <Stack gap={2} align="center" px={4}>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Verlopen</Text>
+                                <Text size="sm" fw={700} lh={1} c="error">{inactiveCount}</Text>
+                            </Stack>
+                        </Group>
+                    </Paper>
+                </Group>
+
+                <LedenOverzichtIsland initialMembers={members} />
+            </Stack>
+        </Container>
     );
 }

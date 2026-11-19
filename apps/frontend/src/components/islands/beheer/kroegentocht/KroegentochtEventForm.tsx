@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import type { SyntheticEvent, ChangeEvent } from 'react';
+import type { SyntheticEvent } from 'react';
 import {
     Save,
-    Loader2,
     ArrowLeft,
     Calendar,
     Type,
@@ -14,26 +13,40 @@ import {
     X,
     MessageCircle,
     Users,
-    Plus
+    Plus,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { upsertPubCrawlEvent, uploadPubCrawlImage } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
+import {
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Card,
+    Divider,
+    FileButton,
+    Grid,
+    Group,
+    Input,
+    Loader,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    Textarea,
+    TextInput,
+    Title,
+} from '@mantine/core';
+import { DateInput } from '@mantine/dates';
+import {
+    upsertPubCrawlEvent,
+    uploadPubCrawlImage,
+} from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { type PubCrawlEvent } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { safeConsoleError } from '@/server/utils/logger';
-import { AdminDatepicker } from '@/components/ui/forms/AdminDatepicker';
-
-const toISODateString = (date: Date | null): string => {
-    if (!date) return '';
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-};
 
 interface KroegentochtEventFormProps {
     event?: PubCrawlEvent;
@@ -49,18 +62,31 @@ interface GroupConfig {
     leaders?: GroupLeader[];
 }
 
+function parseDutchDate(input: string): string | null {
+    const trimmed = input.trim();
+    const dmy = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(trimmed);
+    if (dmy) {
+        const [, d, m, y] = dmy;
+        return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    }
+    const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    return ymd ? trimmed : null;
+}
+
 export default function KroegentochtEventForm({ event }: KroegentochtEventFormProps) {
     const router = useRouter();
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
-    const normalizedEventGroups = ((event?.groups || []) as unknown[]).map((g: unknown): GroupConfig => {
-        if (typeof g === 'string') return { name: g, leaders: [] };
-        const obj = g && typeof g === 'object' ? (g as { name?: unknown; leaders?: unknown }) : {};
-        return {
-            name: typeof obj.name === 'string' ? obj.name : '',
-            leaders: Array.isArray(obj.leaders) ? (obj.leaders as GroupLeader[]) : []
-        };
-    });
+    const normalizedEventGroups = ((event?.groups || []) as unknown[]).map(
+        (g: unknown): GroupConfig => {
+            if (typeof g === 'string') return { name: g, leaders: [] };
+            const obj = g && typeof g === 'object' ? (g as { name?: unknown; leaders?: unknown }) : {};
+            return {
+                name: typeof obj.name === 'string' ? obj.name : '',
+                leaders: Array.isArray(obj.leaders) ? (obj.leaders as GroupLeader[]) : [],
+            };
+        }
+    );
 
     const [formData, setFormData] = useState({
         name: event?.name || '',
@@ -69,17 +95,13 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
         email: event?.email || 'feest@salvemundi.nl',
         image: event?.image || null,
         whatsapp_community_url: event?.whatsapp_community_url || '',
-        groups: (normalizedEventGroups.length > 0 ? normalizedEventGroups : []) as GroupConfig[]
-    });
-    const [eventDate, setEventDate] = useState<Date | null>(() => {
-        return formData.date ? new Date(formData.date) : null;
+        groups: (normalizedEventGroups.length > 0 ? normalizedEventGroups : []) as GroupConfig[],
     });
     const [uploading, setUploading] = useState(false);
 
     const isEdit = !!event?.id;
 
-    const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+    const handleImageUpload = (file: File | null) => {
         if (!file) return;
 
         const performUpload = async () => {
@@ -93,12 +115,15 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                     const obj = result as { data?: { id?: string }; id?: string };
                     const fileId = obj.data?.id ?? obj.id;
                     if (typeof fileId === 'string') {
-                        setFormData(prev => ({ ...prev, image: fileId }));
+                        setFormData((prev) => ({ ...prev, image: fileId }));
                     }
                 }
                 showToast('Afbeelding succesvol geüpload', 'success');
             } catch (error) {
-                safeConsoleError('[KroegentochtEventForm.tsx][KroegentochtEventForm] Upload mislukt', error);
+                safeConsoleError(
+                    '[KroegentochtEventForm.tsx][KroegentochtEventForm] Upload mislukt',
+                    error
+                );
                 const message = error instanceof Error ? error.message : 'Upload mislukt';
                 showToast(message, 'error');
             } finally {
@@ -115,259 +140,352 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
             try {
                 await upsertPubCrawlEvent({
                     ...formData,
-                    id: event?.id
+                    id: event?.id,
                 });
                 showToast('Event succesvol opgeslagen', 'success');
                 router.push('/beheer/kroegentocht');
                 router.refresh();
             } catch (error) {
                 const message = error instanceof Error ? error.message : 'Fout bij opslaan';
-                safeConsoleError(`[KroegentochtEventForm.tsx][KroegentochtEventForm] Error:`, error);
+                safeConsoleError(
+                    '[KroegentochtEventForm.tsx][KroegentochtEventForm] Error:',
+                    error
+                );
                 showToast(message, 'error');
             }
         });
     };
 
     return (
-        <>
-            <form onSubmit={handleSubmit} className="mx-auto max-w-4xl space-y-8">
-                <div className="rounded-2xl bg-(--bg-card) shadow-(--shadow-card) ring-1 ring-(--border-color)/30">
-                    <div className="space-y-8 p-8">
-                        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-                            <div className="space-y-6 md:col-span-2">
-                                <div className="space-y-2">
-                                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
-                                        <Type className="size-3" /> Event Naam
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
-                                        placeholder="Bijv. Kroegentocht Stratumseind"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
-                                            <Calendar className="size-3" /> Datum
-                                        </label>
-                                        <AdminDatepicker
-                                            value={eventDate}
-                                            onChange={(date) => {
-                                                setEventDate(date);
-                                                setFormData(prev => ({ ...prev, date: date ? toISODateString(date) : '' }));
-                                            }}
+        <Box maw={896} mx="auto">
+            <form onSubmit={handleSubmit}>
+                <Stack gap="lg">
+                    <Card p="xl" shadow="sm">
+                        <Stack gap="lg">
+                            <Grid gap="lg">
+                                <Grid.Col span={{ base: 12, md: 8 }}>
+                                    <Stack gap="md">
+                                        <TextInput
+                                            label="Event Naam"
+                                            required
+                                            leftSection={<Type size={14} />}
+                                            value={formData.name}
+                                            onChange={(e) =>
+                                                setFormData({ ...formData, name: e.target.value })
+                                            }
+                                            placeholder="Bijv. Kroegentocht Stratumseind"
                                         />
-                                    </div>
 
-                                    <div className="space-y-2">
-                                        <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
-                                            <Mail className="size-3" /> Contact E-mail
-                                        </label>
-                                        <input
-                                            type="email"
-                                            value={formData.email}
-                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                            className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
-                                            placeholder="Bijv. feest@salvemundi.nl"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
-                                        <MessageCircle className="size-3" /> WhatsApp Community Link
-                                    </label>
-                                    <input
-                                        type="url"
-                                        value={formData.whatsapp_community_url}
-                                        onChange={(e) => setFormData({ ...formData, whatsapp_community_url: e.target.value })}
-                                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
-                                        placeholder="Bijv. https://chat.whatsapp.com/..."
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
-                                    <ImagePlus className="size-3" /> Event Afbeelding
-                                </label>
-                                <div className="group/img relative h-46">
-                                    {formData.image ? (
-                                        <div className="group relative size-full overflow-hidden rounded-xl border-2 border-(--theme-purple)/30">
-                                            <MediaAsset
-                                                asset={formData.image}
-                                                alt="Preview"
-                                                fill
-                                                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                                            <DateInput
+                                                label="Datum"
+                                                leftSection={<Calendar size={14} />}
+                                                value={formData.date || null}
+                                                onChange={(val) =>
+                                                    setFormData((prev) => ({
+                                                        ...prev,
+                                                        date: val ?? '',
+                                                    }))
+                                                }
+                                                valueFormat="DD-MM-YYYY"
+                                                dateParser={parseDutchDate}
+                                                placeholder="dd-mm-jjjj"
+                                                clearable
                                             />
-                                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setFormData(prev => ({ ...prev, image: null }))}
-                                                    className="icon-button rounded-full bg-red-500 p-3 text-white shadow-xl transition-transform hover:scale-110"
-                                                >
-                                                    <X className="size-5" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <label className="group flex size-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-(--border-color)/50 bg-(--bg-main)/50 transition-all hover:border-(--theme-purple)/50 hover:bg-(--theme-purple)/5">
-                                            {uploading ? (
-                                                <Loader2 className="size-8 animate-spin text-(--theme-purple)" />
-                                            ) : (
-                                                <>
-                                                    <div className="mb-2 rounded-full bg-(--bg-card) p-4 transition-transform group-hover:scale-110">
-                                                        <ImagePlus className="size-6 text-(--text-muted)" />
-                                                    </div>
-                                                    <span className="text-[10px] font-semibold text-(--text-muted)">Upload Image</span>
-                                                </>
-                                            )}
-                                            <input
-                                                type="file"
-                                                className="hidden"
-                                                accept="image/*"
-                                                onChange={handleImageUpload}
-                                                disabled={uploading}
-                                            />
-                                        </label>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
 
-                        <div className="space-y-2">
-                            <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
-                                <FileText className="size-3" /> Beschrijving
-                            </label>
-                            <textarea
-                                value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                className="min-h-40 beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
-                                placeholder="Korte omschrijving voor de deelnemers..."
-                            />
-                        </div>
-
-                        <div className="space-y-4 border-t border-(--border-color)/20 pt-8">
-                            <h3 className="flex items-center gap-2 text-sm font-semibold text-(--text-main)">
-                                <Users className="size-4 text-(--theme-purple)" />
-                                Groepen Indeling ({formData.groups.length})
-                            </h3>
-                            <p className="text-xs leading-relaxed text-(--text-muted)">
-                                Definieer de groepen voor deze kroegentocht. Deelnemers kunnen vervolgens over deze groepen verdeeld worden.
-                            </p>
-
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                                {formData.groups.map((group, index) => (
-                                    <div key={index} className="flex flex-col gap-2 rounded-xl border border-(--border-color)/50 bg-(--bg-main)/50 p-3 transition-all focus-within:border-(--theme-purple)/50">
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="text"
-                                                value={group.name}
-                                                onChange={(e) => {
+                                            <TextInput
+                                                label="Contact E-mail"
+                                                type="email"
+                                                leftSection={<Mail size={14} />}
+                                                value={formData.email}
+                                                onChange={(e) =>
                                                     setFormData({
                                                         ...formData,
-                                                        groups: formData.groups.map((g, i) =>
-                                                            i === index ? { ...g, name: e.target.value } : g
-                                                        )
-                                                    });
-                                                }}
-                                                className="beheer-input flex-1 border-0 bg-transparent px-2 py-1 text-xs font-semibold text-(--text-main) focus:ring-0 focus:outline-none"
-                                                placeholder={`Groep ${index + 1}`}
-                                                required
+                                                        email: e.target.value,
+                                                    })
+                                                }
+                                                placeholder="Bijv. feest@salvemundi.nl"
                                             />
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const updated = formData.groups.filter((_, i) => i !== index);
-                                                    setFormData({ ...formData, groups: updated });
-                                                }}
-                                                className="icon-button cursor-pointer p-1 text-(--text-muted) transition-colors hover:text-red-500"
-                                                title="Verwijder groep"
-                                            >
-                                                <X className="size-3.5" />
-                                            </button>
-                                        </div>
+                                        </SimpleGrid>
 
-                                        {group.leaders && group.leaders.length > 0 && (
-                                            <div className="space-y-1 px-2 pb-1">
-                                                <p className="text-[9px] font-bold tracking-wider text-(--text-muted) uppercase">Leiders:</p>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {group.leaders.map((leader, lIdx) => (
-                                                        <span key={lIdx} className="inline-flex items-center gap-1 rounded border border-(--border-color)/50 bg-(--bg-card) px-1.5 py-0.5 text-[9px] font-semibold text-(--text-muted)">
-                                                            {leader.name}
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    setFormData({
-                                                                        ...formData,
-                                                                        groups: formData.groups.map((g, i) => {
-                                                                            if (i !== index) return g;
-                                                                            return { ...g, leaders: (g.leaders ?? []).filter((_, li) => li !== lIdx) };
-                                                                        })
-                                                                    });
-                                                                }}
-                                                                className="ml-1 icon-button cursor-pointer font-bold text-red-500 hover:text-red-700"
-                                                                title="Verwijder leider"
-                                                            >
-                                                                &times;
-                                                            </button>
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                        <TextInput
+                                            label="WhatsApp Community Link"
+                                            type="url"
+                                            leftSection={<MessageCircle size={14} />}
+                                            value={formData.whatsapp_community_url}
+                                            onChange={(e) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    whatsapp_community_url: e.target.value,
+                                                })
+                                            }
+                                            placeholder="Bijv. https://chat.whatsapp.com/..."
+                                        />
+                                    </Stack>
+                                </Grid.Col>
 
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setFormData({
-                                            ...formData,
-                                            groups: [...formData.groups, { name: `Groep ${formData.groups.length + 1}`, leaders: [] }]
-                                        });
-                                    }}
-                                    className="beheer-button flex h-fit cursor-pointer items-center justify-center gap-2 self-center rounded-xl border-2 border-dashed border-(--border-color)/50 bg-(--bg-main)/30 p-3 text-xs font-semibold text-(--text-muted) transition-all hover:border-(--theme-purple)/50 hover:bg-(--theme-purple)/5 hover:text-(--theme-purple)"
-                                >
-                                    <Plus className="size-4" />
-                                    Groep toevoegen
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                                <Grid.Col span={{ base: 12, md: 4 }}>
+                                    <Input.Wrapper label="Event Afbeelding">
+                                        <Box mt={4} h={184}>
+                                            {formData.image ? (
+                                                <Paper
+                                                    withBorder
+                                                    radius="md"
+                                                    pos="relative"
+                                                    h="100%"
+                                                    style={{ overflow: 'hidden' }}
+                                                >
+                                                    <MediaAsset
+                                                        asset={formData.image}
+                                                        alt="Preview"
+                                                        fill
+                                                        objectFit="cover"
+                                                    />
+                                                    <ActionIcon
+                                                        type="button"
+                                                        color="error"
+                                                        variant="filled"
+                                                        size="md"
+                                                        pos="absolute"
+                                                        top={8}
+                                                        right={8}
+                                                        onClick={() =>
+                                                            setFormData((prev) => ({
+                                                                ...prev,
+                                                                image: null,
+                                                            }))
+                                                        }
+                                                        aria-label="Afbeelding verwijderen"
+                                                    >
+                                                        <X size={16} />
+                                                    </ActionIcon>
+                                                </Paper>
+                                            ) : (
+                                                <FileButton
+                                                    onChange={handleImageUpload}
+                                                    accept="image/*"
+                                                    disabled={uploading}
+                                                >
+                                                    {(props) => (
+                                                        <Button
+                                                            {...props}
+                                                            type="button"
+                                                            variant="default"
+                                                            w="100%"
+                                                            h="100%"
+                                                            style={{ borderStyle: 'dashed' }}
+                                                        >
+                                                            <Stack align="center" gap="xs">
+                                                                {uploading ? (
+                                                                    <Loader size="sm" />
+                                                                ) : (
+                                                                    <>
+                                                                        <ImagePlus size={24} />
+                                                                        <Text size="xs" c="dimmed">
+                                                                            Upload Image
+                                                                        </Text>
+                                                                    </>
+                                                                )}
+                                                            </Stack>
+                                                        </Button>
+                                                    )}
+                                                </FileButton>
+                                            )}
+                                        </Box>
+                                    </Input.Wrapper>
+                                </Grid.Col>
+                            </Grid>
 
-                <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-                    <Link
-                        href="/beheer/kroegentocht"
-                        className="flex w-full items-center justify-center gap-2 rounded-xl border border-(--border-color) bg-(--bg-card) px-8 py-4 text-xs font-semibold text-(--text-muted) transition-all hover:bg-(--bg-main) hover:text-(--text-main) active:scale-95 sm:w-auto"
-                    >
-                        <ArrowLeft className="size-4" />
-                        Annuleren
-                    </Link>
+                            <Textarea
+                                label="Beschrijving"
+                                leftSection={<FileText size={14} />}
+                                value={formData.description}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, description: e.target.value })
+                                }
+                                minRows={5}
+                                autosize
+                                placeholder="Korte omschrijving voor de deelnemers..."
+                            />
 
-                    <button
-                        type="submit"
-                        disabled={isPending}
-                        className="beheer-button flex w-full items-center justify-center gap-3 rounded-xl bg-(--theme-purple) px-12 py-5 text-sm font-semibold text-white shadow-(--shadow-glow) transition-all hover:opacity-95 active:scale-95 disabled:opacity-50 sm:w-auto"
-                    >
-                        {isPending ? (
-                            <Loader2 className="size-5 animate-spin" />
-                        ) : (
-                            <Save className="size-5" />
-                        )}
-                        {isEdit ? 'Wijzigingen Opslaan' : 'Event Aanmaken'}
-                    </button>
-                </div>
+                            <Divider />
+
+                            <Stack gap="sm">
+                                <Group gap="xs">
+                                    <Text span c="brand" lh={1}>
+                                        <Users size={16} />
+                                    </Text>
+                                    <Title order={3} size="h5">
+                                        Groepen Indeling ({formData.groups.length})
+                                    </Title>
+                                </Group>
+                                <Text size="xs" c="dimmed">
+                                    Definieer de groepen voor deze kroegentocht. Deelnemers kunnen vervolgens over deze groepen verdeeld worden.
+                                </Text>
+
+                                <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
+                                    {formData.groups.map((group, index) => (
+                                        <Paper key={index} p="sm" withBorder radius="md">
+                                            <Stack gap="xs">
+                                                <Group gap="xs" wrap="nowrap">
+                                                    <TextInput
+                                                        size="xs"
+                                                        flex={1}
+                                                        value={group.name}
+                                                        onChange={(e) => {
+                                                            setFormData({
+                                                                ...formData,
+                                                                groups: formData.groups.map(
+                                                                    (g, i) =>
+                                                                        i === index
+                                                                            ? {
+                                                                                  ...g,
+                                                                                  name: e.target
+                                                                                      .value,
+                                                                              }
+                                                                            : g
+                                                                ),
+                                                            });
+                                                        }}
+                                                        placeholder={`Groep ${index + 1}`}
+                                                        required
+                                                    />
+                                                    <ActionIcon
+                                                        type="button"
+                                                        variant="subtle"
+                                                        color="error"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            const updated = formData.groups.filter(
+                                                                (_, i) => i !== index
+                                                            );
+                                                            setFormData({
+                                                                ...formData,
+                                                                groups: updated,
+                                                            });
+                                                        }}
+                                                        title="Verwijder groep"
+                                                        aria-label="Verwijder groep"
+                                                    >
+                                                        <X size={14} />
+                                                    </ActionIcon>
+                                                </Group>
+
+                                                {group.leaders && group.leaders.length > 0 && (
+                                                    <Stack gap={4}>
+                                                        <Text
+                                                            size="xs"
+                                                            fw={700}
+                                                            c="dimmed"
+                                                            tt="uppercase"
+                                                        >
+                                                            Leiders:
+                                                        </Text>
+                                                        <Group gap={4} wrap="wrap">
+                                                            {group.leaders.map((leader, lIdx) => (
+                                                                <Badge
+                                                                    key={lIdx}
+                                                                    size="sm"
+                                                                    variant="default"
+                                                                    rightSection={
+                                                                        <ActionIcon
+                                                                            type="button"
+                                                                            size="xs"
+                                                                            variant="transparent"
+                                                                            color="error"
+                                                                            onClick={() => {
+                                                                                setFormData({
+                                                                                    ...formData,
+                                                                                    groups: formData.groups.map(
+                                                                                        (g, i) => {
+                                                                                            if (
+                                                                                                i !==
+                                                                                                index
+                                                                                            )
+                                                                                                return g;
+                                                                                            return {
+                                                                                                ...g,
+                                                                                                leaders:
+                                                                                                    (
+                                                                                                        g.leaders ??
+                                                                                                        []
+                                                                                                    ).filter(
+                                                                                                        (
+                                                                                                            _,
+                                                                                                            li
+                                                                                                        ) =>
+                                                                                                            li !==
+                                                                                                            lIdx
+                                                                                                    ),
+                                                                                            };
+                                                                                        }
+                                                                                    ),
+                                                                                });
+                                                                            }}
+                                                                            title="Verwijder leider"
+                                                                            aria-label="Verwijder leider"
+                                                                        >
+                                                                            <X size={10} />
+                                                                        </ActionIcon>
+                                                                    }
+                                                                >
+                                                                    {leader.name}
+                                                                </Badge>
+                                                            ))}
+                                                        </Group>
+                                                    </Stack>
+                                                )}
+                                            </Stack>
+                                        </Paper>
+                                    ))}
+
+                                    <Button
+                                        type="button"
+                                        variant="default"
+                                        style={{ borderStyle: 'dashed' }}
+                                        leftSection={<Plus size={16} />}
+                                        onClick={() => {
+                                            setFormData({
+                                                ...formData,
+                                                groups: [
+                                                    ...formData.groups,
+                                                    {
+                                                        name: `Groep ${formData.groups.length + 1}`,
+                                                        leaders: [],
+                                                    },
+                                                ],
+                                            });
+                                        }}
+                                    >
+                                        Groep toevoegen
+                                    </Button>
+                                </SimpleGrid>
+                            </Stack>
+                        </Stack>
+                    </Card>
+
+                    <Group justify="space-between" wrap="wrap" gap="md">
+                        <Button
+                            component={Link}
+                            href="/beheer/kroegentocht"
+                            variant="default"
+                            size="md"
+                            leftSection={<ArrowLeft size={16} />}
+                        >
+                            Annuleren
+                        </Button>
+
+                        <Button
+                            type="submit"
+                            size="md"
+                            loading={isPending}
+                            leftSection={<Save size={18} />}
+                        >
+                            {isEdit ? 'Wijzigingen Opslaan' : 'Event Aanmaken'}
+                        </Button>
+                    </Group>
+                </Stack>
             </form>
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </>
+        </Box>
     );
 }
-
-
-

@@ -2,21 +2,24 @@
 
 import React from 'react';
 import { Users } from 'lucide-react';
+import { Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 
 export default function StatusFull() {
     return (
-        <div className="flex h-full flex-col items-center justify-center space-y-4 rounded-3xl border border-dashed border-border-color/60 bg-bg-soft/50 p-8 text-center sm:p-12 dark:bg-bg-soft/20">
-            <div className="flex size-12 items-center justify-center rounded-full border border-text-muted/10 bg-text-muted/5 text-text-muted/60">
-                <Users className="size-6" />
-            </div>
-            <div>
-                <h3 className="text-lg font-bold tracking-tight text-text-main sm:text-xl">
-                    Deze activiteit zit vol
-                </h3>
-                <p className="mx-auto mt-2 max-w-70 text-xs leading-relaxed font-medium text-text-muted sm:text-sm">
-                    Het maximum aantal aanmeldingen is bereikt. Aanmelden is helaas niet meer mogelijk.
-                </p>
-            </div>
-        </div>
+        <Paper p="xl" radius="xl" withBorder ta="center" h="100%" style={{ borderStyle: 'dashed' }}>
+            <Stack align="center" justify="center" gap="md" h="100%" py="lg">
+                <ThemeIcon size={48} radius="xl" variant="default">
+                    <Users size={24} />
+                </ThemeIcon>
+                <Stack gap={4} align="center">
+                    <Title order={3} size="h4">
+                        Deze activiteit zit vol
+                    </Title>
+                    <Text size="sm" c="dimmed" maw={280}>
+                        Het maximum aantal aanmeldingen is bereikt. Aanmelden is helaas niet meer mogelijk.
+                    </Text>
+                </Stack>
+            </Stack>
+        </Paper>
     );
 }

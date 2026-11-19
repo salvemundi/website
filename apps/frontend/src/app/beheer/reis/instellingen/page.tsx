@@ -1,3 +1,4 @@
+import { Box } from '@mantine/core';
 import ReisSettingsIsland from '@/components/islands/beheer/reis/ReisSettingsIsland';
 import { getReisSiteSettings } from '@/server/actions/events/reis/reis-public.actions';
 import { getTrips } from '@/server/queries/reis/beheer-reis.queries';
@@ -13,13 +14,13 @@ export default async function ReisInstellingenPage() {
     ]);
 
     return (
-        <div className="w-full">
+        <Box w="100%">
             <ReisSettingsIsland
                 initialTrips={trips as Trip[]}
                 initialSettings={{
                     show: settings?.show ?? false
                 }}
             />
-        </div>
+        </Box>
     );
 }

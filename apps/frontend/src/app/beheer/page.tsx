@@ -1,13 +1,13 @@
-import GlobalError from '@/components/ui/layout/GlobalError';
-import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
-import { 
-    DashboardHub, 
-    BirthdaysList, 
-    TopStickersList, 
+import { Box, Container, Grid, GridCol, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import BeheerUnauthorized from '@/components/ui/beheer/BeheerUnauthorized';
+import {
+    DashboardHub,
+    BirthdaysList,
+    TopStickersList,
     ActivitySignupsList
 } from '@/components/ui/beheer/dashboard/DashboardSections';
 import { checkBeheerAccess } from '@/server/actions/beheer/beheer-utils.actions';
-import { 
+import {
     getDashboardPermissions,
     getDashboardStats,
     getUpcomingBirthdays,
@@ -17,19 +17,17 @@ import {
 import { COMMITTEES } from '@/shared/lib/permissions-config';
 
 export const metadata = {
-    title: 'Beheer Dashboard | SV Salve Mundi' };
+    title: 'Beheer Dashboard | SV Salve Mundi'
+};
 
 export default async function BeheerPage() {
     const access = await checkBeheerAccess().catch(() => null);
     if (!access || !access.user || !access.isAuthorized) {
         return (
-            <div className="p-4 sm:p-6 lg:p-8">
-                <GlobalError 
-                    error={new Error("Geen toegang")} 
-                    reset={() => {}} 
-                    title="Beheerderspaneel Fout" 
-                />
-            </div>
+            <BeheerUnauthorized
+                title="Beheerderspaneel Fout"
+                description="Je hebt geen toegang tot het beheerderspaneel."
+            />
         );
     }
 
@@ -46,7 +44,7 @@ export default async function BeheerPage() {
         getRecentActivities(),
         getTopStickers()
     ]);
-    
+
     const allPermissions = [
         permissions.includes('intro'),
         permissions.includes('reis'),
@@ -68,41 +66,54 @@ export default async function BeheerPage() {
     const hideStickers = isIct || isBestuur;
 
     return (
-        <BeheerPageShell
-            title="Beheer Dashboard"
-            subtitle={`Welkom terug, ${access.user.first_name || 'Admin'}.`}
-            centered={true}
-            hideToolbar={true}
-        >
-            <div className="admin-container py-4 md:py-8">
-                <div className={`grid grid-cols-1 ${isLimitedAccess ? 'mx-auto max-w-5xl lg:grid-cols-1' : 'lg:grid-cols-12'} items-start gap-8 md:gap-12`}>
-                        
-                        <div className={isLimitedAccess ? 'w-full space-y-12' : 'space-y-12 lg:col-span-8'}>
-                            <DashboardHub permissions={permissions} stats={stats} />
-    
-                            {!isLimitedAccess && !hideStickers && (
-                                <div className="hidden border-t border-border-color pt-12 opacity-60 transition-opacity hover:opacity-100 md:block">
-                                    <TopStickersList data={stickers} />
-                                </div>
-                            )}
-                        </div>
-    
-                        <div className={isLimitedAccess ? 'grid w-full grid-cols-1 gap-6 border-t border-border-color pt-12 md:grid-cols-2' : 'space-y-8 lg:col-span-4'}>
-                            <div className="space-y-6">
-                                <ActivitySignupsList data={activities} />
-                            </div>
-                            
-                            <div className="space-y-6">
+        <Container>
+            <Stack gap="xl">
+                <Stack gap={4} align="center" ta="center">
+                    <Title order={1} c="brand">
+                        Beheer Dashboard
+                    </Title>
+                    <Text size="sm" c="dimmed">
+                        Welkom terug, {access.user.first_name || 'Admin'}.
+                    </Text>
+                </Stack>
+
+                {isLimitedAccess ? (
+                    <Stack gap="xl" w="100%">
+                        <DashboardHub permissions={permissions} stats={stats} />
+                        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+                            <ActivitySignupsList data={activities} />
+                            <Stack gap="lg">
                                 <BirthdaysList data={birthdays} />
-                                {isLimitedAccess && !hideStickers && (
-                                    <div className="opacity-60 md:hidden">
+                                {!hideStickers && (
+                                    <Box hiddenFrom="md">
                                         <TopStickersList data={stickers} />
-                                    </div>
+                                    </Box>
                                 )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-        </BeheerPageShell>
+                            </Stack>
+                        </SimpleGrid>
+                    </Stack>
+                ) : (
+                    <Grid gap="xl" align="flex-start">
+                        <GridCol span={{ base: 12, lg: 8, xl: 9 }}>
+                            <Stack gap="xl">
+                                <DashboardHub permissions={permissions} stats={stats} />
+                                {!hideStickers && (
+                                    <Box visibleFrom="md">
+                                        <TopStickersList data={stickers} />
+                                    </Box>
+                                )}
+                            </Stack>
+                        </GridCol>
+
+                        <GridCol span={{ base: 12, lg: 4, xl: 3 }}>
+                            <Stack gap="xl">
+                                <ActivitySignupsList data={activities} />
+                                <BirthdaysList data={birthdays} />
+                            </Stack>
+                        </GridCol>
+                    </Grid>
+                )}
+            </Stack>
+        </Container>
     );
 }

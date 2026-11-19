@@ -1,3 +1,4 @@
+import { Box } from '@mantine/core';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import BeheerUnauthorized from '@/components/ui/beheer/BeheerUnauthorized';
 import ActiviteitNieuwIsland from '@/components/islands/beheer/activities/ActiviteitNieuwIsland';
@@ -59,7 +60,7 @@ export default async function ActivityCreatePage() {
         );
     }
 
-    const user = session.user as unknown as EnrichedUser;
+    const user = session.user;
 
     let userCommittees: Awaited<ReturnType<typeof fetchUserCommitteesDb>> = [];
 
@@ -83,8 +84,8 @@ export default async function ActivityCreatePage() {
     const committees = await getCommitteesForUser(user, permissions);
 
     return (
-        <div className="pb-20">
+        <Box pb="xl">
             <ActiviteitNieuwIsland committees={committees} />
-        </div>
+        </Box>
     );
 }

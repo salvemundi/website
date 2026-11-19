@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { Box } from '@mantine/core';
 import ReisParticipantDetailIsland from '@/components/islands/beheer/reis/ReisParticipantDetailIsland';
 import { getTrips, getTripActivities } from '@/server/queries/reis/beheer-reis.queries';
 import { getTripSignup, getTripSignupActivitiesAction } from '@/server/actions/beheer/reis/beheer-reis-signups.actions';
@@ -55,13 +56,13 @@ export default async function ReisParticipantPage({ params }: PageProps) {
         .map((sa) => sa.trip_activity_id as number);
 
     return (
-        <div className="w-full">
+        <Box w="100%">
             <ReisParticipantDetailIsland
                 initialSignup={signup}
                 trips={trips}
                 allActivities={activities}
                 initialSelectedActivities={participantActivities}
             />
-        </div>
+        </Box>
     );
 }

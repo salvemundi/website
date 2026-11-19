@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Camera, CheckCircle2, FlipHorizontal2, ScanLine, Square, TriangleAlert } from 'lucide-react';
+import { ActionIcon, Box, Button, Center, Group, NativeSelect, Stack, Text, Title } from '@mantine/core';
 import type { Html5Qrcode } from 'html5-qrcode';
 import { scanPubCrawlTicket } from '@/server/actions/events/kroegentocht/kroegentocht-scanner.actions';
-import styles from './KroegentochtScannerIsland.module.css';
 
 type Result = Awaited<ReturnType<typeof scanPubCrawlTicket>>;
 
@@ -87,7 +87,7 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
                     if (isDisposed()) return;
                     busy = false;
                 });
-            }, () => {});
+            }, () => { });
             if (!isDisposed()) setReady(true);
         });
         const handledBoot = boot.catch((reason: unknown) => {
@@ -99,13 +99,11 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
         cameraQueue.current = handledBoot;
         return () => {
             disposed = true;
-            // Wait for pending permission/start requests before releasing the camera.
-            // A replacement camera starts only after this cleanup has finished.
             cameraQueue.current = handledBoot.then(async () => {
                 if (!scanner) return;
                 if (scanner.isScanning) await scanner.stop();
                 scanner.clear();
-            }).catch(() => {});
+            }).catch(() => { });
         };
     }, [running, eventId, group, facing]);
 
@@ -120,52 +118,155 @@ export default function KroegentochtScannerIsland({ eventId, eventName, groups }
     const successful = result?.status === 'success';
     const warning = result?.status === 'duplicate' || result?.status === 'wrong-group';
 
-    return <section className={styles.screen} aria-label="Kroegentocht ticketscanner">
-        <header className="shrink-0 space-y-3 px-5 pt-3 pb-4">
-            <div className="flex items-center gap-3">
-                <ScanLine className="size-7 shrink-0 text-purple-300" aria-hidden="true" />
-                <div className="min-w-0">
-                    <h1 className="text-lg font-bold">Tickets scannen</h1>
-                    <p className="truncate text-sm text-gray-300">{eventName}</p>
-                </div>
-            </div>
-            <label className="block text-sm font-medium" htmlFor="scanner-group">Jouw groep</label>
-            <select id="scanner-group" value={group} disabled={running} onChange={event => setGroup(event.target.value)} className="min-h-12 form-input w-full rounded-xl border border-white/20 bg-gray-900 px-4 text-base text-white disabled:opacity-80">
-                <option value="">Kies je groep</option>
-                {groups.map(name => <option key={name} value={name}>{name}</option>)}
-            </select>
-        </header>
+    const statusStyle = result
+        ? successful
+            ? { borderColor: 'var(--success)', backgroundColor: 'color-mix(in srgb, var(--success) 25%, var(--mantine-color-darkBase-filled))' }
+            : warning
+                ? { borderColor: 'var(--accent)', backgroundColor: 'color-mix(in srgb, var(--accent) 20%, var(--mantine-color-darkBase-filled))' }
+                : { borderColor: 'var(--destructive)', backgroundColor: 'color-mix(in srgb, var(--destructive) 25%, var(--mantine-color-darkBase-filled))' }
+        : { borderColor: 'rgba(255, 255, 255, 0.15)', backgroundColor: 'rgba(255, 255, 255, 0.06)' };
 
-        <div className={styles.camera}>
-            <div id="pub-crawl-reader" className={`${styles.reader} ${ready ? '' : 'invisible'}`} />
-            {!ready && <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center">
-                <Camera className="size-12 text-purple-300" aria-hidden="true" />
-                <p className="max-w-sm text-base text-gray-200">{error || (running ? 'Camera openen…' : !groups.length ? 'Er zijn nog geen groepen ingesteld. Vraag de organisatie om groepen toe te voegen.' : !group ? 'Kies hierboven je groep om te beginnen.' : 'Klaar om te scannen. De achtercamera opent automatisch.')}</p>
-                {error && <button type="button" className="form-button min-h-12 rounded-xl border border-white/30 px-5 text-white" onClick={switchCamera}>Andere camera proberen</button>}
-            </div>}
+    return (
+        <Box component="section" mod={{ 'scanner-screen': true }} aria-label="Kroegentocht ticketscanner">
+            <Box component="header" px="lg" pt="sm" pb="md" style={{ flexShrink: 0 }}>
+                <Stack gap="sm">
+                    <Group gap="sm" wrap="nowrap">
+                        <Text span c="lightPurple" lh={1}>
+                            <ScanLine size={28} aria-hidden="true" />
+                        </Text>
+                        <Box style={{ minWidth: 0 }}>
+                            <Title order={1} size="h4" c="white">
+                                Tickets scannen
+                            </Title>
+                            <Text size="sm" truncate style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                                {eventName}
+                            </Text>
+                        </Box>
+                    </Group>
 
-        </div>
+                    <NativeSelect
+                        id="scanner-group"
+                        label="Jouw groep"
+                        value={group}
+                        disabled={running}
+                        onChange={event => setGroup(event.currentTarget.value)}
+                        size="md"
+                        data={[
+                            { value: '', label: 'Kies je groep' },
+                            ...groups.map(name => ({ value: name, label: name })),
+                        ]}
+                        styles={{
+                            label: { color: '#FFFFFF' },
+                            input: {
+                                backgroundColor: 'var(--mantine-color-darkBase-filled)',
+                                color: '#FFFFFF',
+                                borderColor: 'rgba(255, 255, 255, 0.25)',
+                            },
+                        }}
+                    />
+                </Stack>
+            </Box>
 
-        <footer className="shrink-0 space-y-3 px-5 py-4">
-            <div className={`${styles.status} ${result ? successful ? 'border-green-500 bg-green-950' : warning ? 'border-amber-500 bg-amber-950' : 'border-red-500 bg-red-950' : 'border-white/15 bg-gray-900'}`} role="status" aria-live="polite" aria-atomic="true">
-                {result ? <>
-                    {successful ? <CheckCircle2 className="size-7 shrink-0 text-green-400" aria-hidden="true" /> : <TriangleAlert className={`size-7 shrink-0 ${warning ? 'text-amber-400' : 'text-red-400'}`} aria-hidden="true" />}
-                    <div className="min-w-0">
-                        <h2 className="font-bold">{successful ? 'Welkom!' : result.status === 'wrong-group' ? 'Andere groep' : result.status === 'duplicate' ? 'Al ingecheckt' : 'Niet toegelaten'}</h2>
-                        <p className="line-clamp-3 text-sm wrap-break-word">{result.message}</p>
-                    </div>
-                </> : <p className="text-sm text-gray-300">{ready ? 'Houd een QR-code in het kader. De uitslag verschijnt hier; je kunt direct verder scannen.' : running ? 'Geef toestemming om je camera te gebruiken.' : 'Alleen tickets van jouw groep worden ingecheckt.'}</p>}
-            </div>
-            <div className="flex gap-3">
-                <button type="button" disabled={!group} onClick={() => {
-                    if (running) { stop(); return; }
-                    setError(''); setResult(null); setReady(false); setRunning(true);
-                }} className="form-button flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl bg-purple-600 px-4 font-semibold text-white disabled:opacity-50">
-                    {running ? <Square className="size-5" aria-hidden="true" /> : <Camera className="size-5" aria-hidden="true" />}
-                    {running ? 'Stoppen / groep wijzigen' : error ? 'Opnieuw proberen' : 'Camera starten'}
-                </button>
-                {running && <button type="button" disabled={!ready} onClick={switchCamera} className="icon-button flex size-14 shrink-0 items-center justify-center rounded-xl border border-white/30 text-white disabled:opacity-50" aria-label="Wissel tussen voor- en achtercamera" title="Camera wisselen"><FlipHorizontal2 className="size-6" aria-hidden="true" /></button>}
-            </div>
-        </footer>
-    </section>;
+            <Center mod={{ 'scanner-camera': true }}>
+                <Box
+                    id="pub-crawl-reader"
+                    mod={{ 'scanner-reader': true }}
+                    style={{ visibility: ready ? 'visible' : 'hidden' }}
+                />
+                {!ready && (
+                    <Stack
+                        pos="absolute"
+                        inset={0}
+                        align="center"
+                        justify="center"
+                        gap="md"
+                        px="lg"
+                        ta="center"
+                    >
+                        <Text span c="lightPurple" lh={1}>
+                            <Camera size={48} aria-hidden="true" />
+                        </Text>
+                        <Text size="md" maw={360} style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+                            {error || (running ? 'Camera openen…' : !groups.length ? 'Er zijn nog geen groepen ingesteld. Vraag de organisatie om groepen toe te voegen.' : !group ? 'Kies hierboven je groep om te beginnen.' : 'Klaar om te scannen. De achtercamera opent automatisch.')}
+                        </Text>
+                        {error && (
+                            <Button type="button" variant="outline" color="white" size="md" onClick={switchCamera}>
+                                Andere camera proberen
+                            </Button>
+                        )}
+                    </Stack>
+                )}
+            </Center>
+
+            <Box component="footer" px="lg" py="md" style={{ flexShrink: 0 }}>
+                <Stack gap="sm">
+                    <Box
+                        mod={{ 'scanner-status': true }}
+                        style={statusStyle}
+                        role="status"
+                        aria-live="polite"
+                        aria-atomic="true"
+                    >
+                        {result ? (
+                            <>
+                                {successful ? (
+                                    <Text span c="success" lh={1} style={{ flexShrink: 0 }}>
+                                        <CheckCircle2 size={28} aria-hidden="true" />
+                                    </Text>
+                                ) : (
+                                    <Text span c={warning ? 'accent' : 'error'} lh={1} style={{ flexShrink: 0 }}>
+                                        <TriangleAlert size={28} aria-hidden="true" />
+                                    </Text>
+                                )}
+                                <Box style={{ minWidth: 0 }}>
+                                    <Title order={2} size="h5" c="white">
+                                        {successful ? 'Welkom!' : result.status === 'wrong-group' ? 'Andere groep' : result.status === 'duplicate' ? 'Al ingecheckt' : 'Niet toegelaten'}
+                                    </Title>
+                                    <Text size="sm" lineClamp={3} c="white" style={{ wordBreak: 'break-word' }}>
+                                        {result.message}
+                                    </Text>
+                                </Box>
+                            </>
+                        ) : (
+                            <Text size="sm" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>
+                                {ready ? 'Houd een QR-code in het kader. De uitslag verschijnt hier; je kunt direct verder scannen.' : running ? 'Geef toestemming om je camera te gebruiken.' : 'Alleen tickets van jouw groep worden ingecheckt.'}
+                            </Text>
+                        )}
+                    </Box>
+
+                    <Group gap="sm" wrap="nowrap">
+                        <Button
+                            type="button"
+                            disabled={!group}
+                            size="lg"
+                            h={56}
+                            style={{ flex: 1 }}
+                            leftSection={running ? <Square size={20} aria-hidden="true" /> : <Camera size={20} aria-hidden="true" />}
+                            onClick={() => {
+                                if (running) { stop(); return; }
+                                setError(''); setResult(null); setReady(false); setRunning(true);
+                            }}
+                        >
+                            {running ? 'Stoppen / groep wijzigen' : error ? 'Opnieuw proberen' : 'Camera starten'}
+                        </Button>
+
+                        {running && (
+                            <ActionIcon
+                                type="button"
+                                size={56}
+                                variant="outline"
+                                color="white"
+                                disabled={!ready}
+                                onClick={switchCamera}
+                                aria-label="Wissel tussen voor- en achtercamera"
+                                title="Camera wisselen"
+                            >
+                                <FlipHorizontal2 size={24} aria-hidden="true" />
+                            </ActionIcon>
+                        )}
+                    </Group>
+                </Stack>
+            </Box>
+        </Box>
+    );
 }

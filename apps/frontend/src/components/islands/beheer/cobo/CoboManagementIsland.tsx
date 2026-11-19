@@ -6,11 +6,20 @@ import {
     type CoboBoardPreference,
     type CoboGuestBoard
 } from '@salvemundi/validations';
+import {
+    Button,
+    Card,
+    Container,
+    Group,
+    Stack,
+    Tabs,
+    Text,
+    Title,
+} from '@mantine/core';
 import CoboQueueManager from './CoboQueueManager';
 import CoboBoardPreferencesManager from './CoboBoardPreferencesManager';
 import CoboEventModal from './CoboEventModal';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { Users, Shield, Calendar, MapPin, Plus } from 'lucide-react';
 import { formatDate } from '@/shared/lib/utils/date';
 
@@ -30,7 +39,7 @@ export default function CoboManagementIsland({
     initialTab = 'queue',
     initialQueueSubtab = 'queue'
 }: Props) {
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [activeTab, setActiveTab] = useState<'queue' | 'preferences'>(initialTab);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [eventToEdit, setEventToEdit] = useState<CoboEvent | null>(null);
@@ -47,91 +56,85 @@ export default function CoboManagementIsland({
 
     if (!activeEvent) {
         return (
-            <div className="mx-auto max-w-xl space-y-6 py-16 text-center">
-                <div className="space-y-2">
-                    <h2 className="text-2xl font-bold text-text-main">Nog geen CoBo evenement aangemaakt</h2>
-                    <p className="text-sm text-text-muted">
-                        Maak een CoBo evenement aan om te starten met bestuursvoorkeuren en de gasten-wachtlijst.
-                    </p>
-                </div>
-                <button
-                    type="button"
-                    onClick={() => {
-                        setEventToEdit(null);
-                        setIsModalOpen(true);
-                    }}
-                    className="beheer-button inline-flex cursor-pointer items-center gap-2 rounded-xl bg-purple-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-purple-700"
-                >
-                    <Plus className="size-4" />
-                    <span>Eerste CoBo Aanmaken</span>
-                </button>
+            <Container size="sm" py="xl">
+                <Stack align="center" gap="lg" ta="center" py="xl">
+                    <Stack gap="xs">
+                        <Title order={2} size="h3">Nog geen CoBo evenement aangemaakt</Title>
+                        <Text size="sm" c="dimmed">
+                            Maak een CoBo evenement aan om te starten met bestuursvoorkeuren en de gasten-wachtlijst.
+                        </Text>
+                    </Stack>
+                    <Button
+                        type="button"
+                        onClick={() => {
+                            setEventToEdit(null);
+                            setIsModalOpen(true);
+                        }}
+                        leftSection={<Plus size={16} />}
+                    >
+                        Eerste CoBo Aanmaken
+                    </Button>
 
-                <CoboEventModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    eventToEdit={eventToEdit}
-                    showToast={showToast}
-                />
-                {toast && <BeheerToast toast={toast} onClose={hideToast} />}
-            </div>
+                    <CoboEventModal
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                        eventToEdit={eventToEdit}
+                        showToast={showToast}
+                    />
+                </Stack>
+            </Container>
         );
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-border-color bg-bg-card p-4 sm:p-5 md:flex-row md:items-center">
-                <div className="flex min-w-0 items-center gap-3">
-                    <div className="min-w-0">
-                        <h2 className="truncate text-lg font-bold text-text-main sm:text-xl">
+        <Stack gap="lg">
+            <Card withBorder padding="md" radius="lg">
+                <Group justify="space-between" align="center" wrap="wrap" gap="md">
+                    <Stack gap={4} style={{ minWidth: 0 }}>
+                        <Title order={2} size="h4" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {activeEvent.title || 'CoBo'}
-                        </h2>
-                        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs font-medium text-text-muted">
+                        </Title>
+                        <Group gap="md" wrap="wrap">
                             {activeEvent.date && (
-                                <span className="flex items-center gap-1.5">
-                                    <Calendar className="size-3.5 text-purple-600 dark:text-purple-300" />
-                                    {formatDate(activeEvent.date, 'd MMMM yyyy HH:mm')}
-                                </span>
+                                <Group gap={6}>
+                                    <Text span c="brand" lh={1}><Calendar size={14} /></Text>
+                                    <Text size="xs" c="dimmed" fw={500}>
+                                        {formatDate(activeEvent.date, 'd MMMM yyyy HH:mm')}
+                                    </Text>
+                                </Group>
                             )}
                             {activeEvent.location && (
-                                <span className="flex items-center gap-1.5">
-                                    <MapPin className="size-3.5 text-purple-600 dark:text-purple-300" />
-                                    {activeEvent.location}
-                                </span>
+                                <Group gap={6}>
+                                    <Text span c="brand" lh={1}><MapPin size={14} /></Text>
+                                    <Text size="xs" c="dimmed" fw={500}>
+                                        {activeEvent.location}
+                                    </Text>
+                                </Group>
                             )}
-                        </div>
-                    </div>
-                </div>
+                        </Group>
+                    </Stack>
 
-                <div className="flex w-full items-center gap-1.5 rounded-xl border border-border-color/60 bg-bg-soft p-1 md:w-auto">
-                    <button
-                        type="button"
-                        onClick={() => handleTabChange('queue')}
-                        className={`tab-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-colors md:flex-none ${
-                            activeTab === 'queue'
-                                ? 'border border-border-color bg-bg-card text-purple-700 shadow-xs dark:text-purple-300'
-                                : 'text-text-muted hover:text-text-main'
-                        }`}
+                    <Tabs
+                        value={activeTab}
+                        onChange={(val) => {
+                            if (val === 'queue' || val === 'preferences') {
+                                handleTabChange(val);
+                            }
+                        }}
+                        variant="pills"
                     >
-                        <Users className="size-3.5" />
-                        <span>Gasten Wachtlijst</span>
-                    </button>
+                        <Tabs.List>
+                            <Tabs.Tab value="queue" leftSection={<Users size={14} />}>
+                                Gasten Wachtlijst
+                            </Tabs.Tab>
+                            <Tabs.Tab value="preferences" leftSection={<Shield size={14} />}>
+                                Bestuursvoorkeuren &amp; Veto&apos;s
+                            </Tabs.Tab>
+                        </Tabs.List>
+                    </Tabs>
+                </Group>
+            </Card>
 
-                    <button
-                        type="button"
-                        onClick={() => handleTabChange('preferences')}
-                        className={`tab-button flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-colors md:flex-none ${
-                            activeTab === 'preferences'
-                                ? 'border border-border-color bg-bg-card text-purple-700 shadow-xs dark:text-purple-300'
-                                : 'text-text-muted hover:text-text-main'
-                        }`}
-                    >
-                        <Shield className="size-3.5" />
-                        <span>Bestuursvoorkeuren &amp; Veto&apos;s</span>
-                    </button>
-                </div>
-            </div>
-
-            {/* Tab inhoud */}
             {activeTab === 'queue' ? (
                 <CoboQueueManager
                     coboId={activeEvent.id}
@@ -147,15 +150,12 @@ export default function CoboManagementIsland({
                 />
             )}
 
-            {/* Edit / New Modal */}
             <CoboEventModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 eventToEdit={eventToEdit}
                 showToast={showToast}
             />
-
-            {toast && <BeheerToast toast={toast} onClose={hideToast} />}
-        </div>
+        </Stack>
     );
 }

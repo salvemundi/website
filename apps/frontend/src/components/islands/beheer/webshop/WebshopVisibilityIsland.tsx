@@ -3,7 +3,6 @@
 import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import BeheerVisibilityToggle from '@/components/ui/beheer/BeheerVisibilityToggle';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { toggleWebshopVisibility } from '@/server/actions/beheer/webshop/beheer-webshop-settings.actions';
 
@@ -15,7 +14,7 @@ const WebshopVisibilityIsland: React.FC<WebshopVisibilityIslandProps> = ({ initi
     const router = useRouter();
     const [isVisible, setIsVisible] = useState(initialVisible);
     const [isPending, startTransition] = useTransition();
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
 
     const handleToggle = () => {
         startTransition(async () => {
@@ -35,14 +34,11 @@ const WebshopVisibilityIsland: React.FC<WebshopVisibilityIslandProps> = ({ initi
     };
 
     return (
-        <>
-            <BeheerVisibilityToggle
-                isVisible={isVisible}
-                onToggle={handleToggle}
-                isPending={isPending}
-            />
-            {toast && <BeheerToast toast={toast} onClose={hideToast} />}
-        </>
+        <BeheerVisibilityToggle
+            isVisible={isVisible}
+            onToggle={handleToggle}
+            isPending={isPending}
+        />
     );
 };
 

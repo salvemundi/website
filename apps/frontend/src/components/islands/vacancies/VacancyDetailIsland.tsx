@@ -1,10 +1,11 @@
 'use client';
 
-import { Building2, MapPin, Calendar, Banknote, Clock, Briefcase, Mail, Globe, Phone } from 'lucide-react';
+import Link from 'next/link';
+import { Building2, MapPin, Calendar, Banknote, Clock, Briefcase, Mail, Globe, Phone, ChevronLeft } from 'lucide-react';
+import { Anchor, AspectRatio, Badge, Box, Button, Card, Container, Divider, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import DocumentAsset from '@/components/ui/media/DocumentAsset';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
-import BackButton from '@/components/ui/navigation/BackButton';
 import type { VacancyDTO } from '@salvemundi/validations';
 
 interface VacancyDetailIslandProps {
@@ -19,138 +20,174 @@ export default function VacancyDetailIsland({ vacancy }: VacancyDetailIslandProp
     const isInternship = vacancy.type === 'internship';
 
     return (
-        <div className="mx-auto max-w-4xl">
-            <div className="mb-6">
-                <BackButton href="/bijbanenbank" />
-            </div>
+        <Container size="md" p={0}>
+            <Stack gap="lg">
+                <Box>
+                    <Button
+                        component={Link}
+                        href="/bijbanenbank"
+                        variant="default"
+                        leftSection={<ChevronLeft size={18} />}
+                    >
+                        Terug
+                    </Button>
+                </Box>
 
-            <div className="overflow-hidden rounded-4xl bg-(--bg-card) shadow-lg dark:border dark:border-white/10">
-                {vacancy.image && (
-                    <div className="relative aspect-video w-full">
-                        <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" priority />
-                    </div>
-                )}
-
-                <div className="space-y-8 p-6 sm:p-10">
-                    <div className="flex flex-wrap items-start justify-between gap-4">
-                        <div>
-                            <span className={`mb-3 inline-block rounded-full px-3 py-1 text-[10px] font-bold tracking-wider text-white uppercase ${isInternship ? 'bg-(--theme-purple)' : 'bg-(--theme-success)'}`}>
-                                {isInternship ? 'Stage' : 'Bijbaan'}
-                            </span>
-                            <h1 className="text-2xl leading-tight font-black text-(--theme-purple) sm:text-3xl">{vacancy.title}</h1>
-                            <p className="mt-2 flex items-center gap-2 font-bold text-(--text-muted)">
-                                <Building2 className="size-4" />
-                                {vacancy.company}
-                            </p>
-                        </div>
-                        <a
-                            href={`mailto:${vacancy.contact_email}`}
-                            className="hover:scale-1.02 form-button flex items-center gap-2 rounded-xl bg-(--theme-purple) px-5 py-3 font-bold text-white shadow-(--theme-purple)/20 shadow-lg transition-transform"
-                        >
-                            <Mail className="size-4" />
-                            Solliciteer / Neem contact op
-                        </a>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                        <div className="flex items-start gap-2">
-                            <MapPin className="mt-0.5 size-4 shrink-0 text-(--theme-purple)" />
-                            <div>
-                                <p className="text-[10px] font-bold text-(--text-muted) uppercase">Locatie</p>
-                                <p className="text-sm font-semibold text-(--text-main)">{vacancy.location}</p>
-                            </div>
-                        </div>
-                        {vacancy.salary && (
-                            <div className="flex items-start gap-2">
-                                <Banknote className="mt-0.5 size-4 shrink-0 text-(--theme-purple)" />
-                                <div>
-                                    <p className="text-[10px] font-bold text-(--text-muted) uppercase">Salaris</p>
-                                    <p className="text-sm font-semibold text-(--text-main)">{vacancy.salary}</p>
-                                </div>
-                            </div>
-                        )}
-                        {vacancy.employment_type && (
-                            <div className="flex items-start gap-2">
-                                <Briefcase className="mt-0.5 size-4 shrink-0 text-(--theme-purple)" />
-                                <div>
-                                    <p className="text-[10px] font-bold text-(--text-muted) uppercase">Dienstverband/stagetype</p>
-                                    <p className="text-sm font-semibold text-(--text-main)">{vacancy.employment_type}</p>
-                                </div>
-                            </div>
-                        )}
-                        {vacancy.working_hours && (
-                            <div className="flex items-start gap-2">
-                                <Clock className="mt-0.5 size-4 shrink-0 text-(--theme-purple)" />
-                                <div>
-                                    <p className="text-[10px] font-bold text-(--text-muted) uppercase">Werktijden</p>
-                                    <p className="text-sm font-semibold text-(--text-main)">{vacancy.working_hours}</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {isInternship && vacancy.directions.length > 0 && (
-                        <div>
-                            <h2 className="mb-2 text-sm font-bold text-(--text-main)">ICT-richtingen</h2>
-                            <div className="flex flex-wrap gap-2">
-                                {vacancy.directions.map((direction) => (
-                                    <span key={direction} className="rounded-full border border-(--theme-purple)/20 bg-(--bg-soft) px-3 py-1.5 text-xs font-bold text-(--theme-purple)">
-                                        {direction}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
+                <Card padding={0} radius="xl" shadow="lg" withBorder style={{ overflow: 'hidden' }}>
+                    {vacancy.image && (
+                        <AspectRatio ratio={16 / 9} w="100%">
+                            <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" priority />
+                        </AspectRatio>
                     )}
 
-                    {vacancy.skills.length > 0 && (
-                        <div>
-                            <h2 className="mb-2 text-sm font-bold text-(--text-main)">Gewenste vaardigheden</h2>
-                            <div className="flex flex-wrap gap-2">
-                                {vacancy.skills.map((skill) => (
-                                    <span key={skill} className="rounded-full bg-(--theme-purple)/10 px-3 py-1.5 text-xs font-bold text-(--theme-purple)">
-                                        {skill}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    <Stack gap="xl" p={{ base: 'lg', sm: 'xl' }}>
+                        <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
+                            <Stack gap="xs">
+                                <Box>
+                                    <Badge size="sm" color={isInternship ? 'brand' : 'success'}>
+                                        {isInternship ? 'Stage' : 'Bijbaan'}
+                                    </Badge>
+                                </Box>
+                                <Title order={1} fz={{ base: '1.5rem', sm: '2rem' }} c="brand">
+                                    {vacancy.title}
+                                </Title>
+                                <Group gap="xs" c="dimmed">
+                                    <Building2 size={16} />
+                                    <Text fw={700}>{vacancy.company}</Text>
+                                </Group>
+                            </Stack>
 
-                    <div>
-                        <h2 className="mb-2 text-sm font-bold text-(--text-main)">Omschrijving</h2>
-                        <SafeMarkdown content={vacancy.description} />
-                    </div>
+                            <Button
+                                component="a"
+                                href={`mailto:${vacancy.contact_email}`}
+                                size="md"
+                                leftSection={<Mail size={16} />}
+                            >
+                                Solliciteer / Neem contact op
+                            </Button>
+                        </Group>
 
-                    {vacancy.document && (
-                        <div>
-                            <h2 className="mb-2 text-sm font-bold text-(--text-main)">Stageopdracht</h2>
-                            <DocumentAsset id={vacancy.document} label="Download stageopdracht" />
-                        </div>
-                    )}
+                        <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="md">
+                            <Group align="flex-start" gap="xs" wrap="nowrap">
+                                <Text span c="brand" lh={1} mt={2}>
+                                    <MapPin size={16} />
+                                </Text>
+                                <Stack gap={2}>
+                                    <Text size="xs" fw={700} tt="uppercase" c="dimmed">Locatie</Text>
+                                    <Text size="sm" fw={600}>{vacancy.location}</Text>
+                                </Stack>
+                            </Group>
 
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-(--border-color) pt-6">
-                        <span className="flex items-center gap-2 text-sm font-semibold text-(--text-muted)">
-                            <Calendar className="size-4" />
-                            Geplaatst op {formatPublishedDate(vacancy.published_at)}
-                        </span>
-                        <a href={`mailto:${vacancy.contact_email}`} className="flex items-center gap-2 text-sm font-semibold text-(--theme-purple) hover:underline">
-                            <Mail className="size-4" />
-                            {vacancy.contact_email}
-                        </a>
-                        {vacancy.contact_phone && (
-                            <a href={`tel:${vacancy.contact_phone}`} className="flex items-center gap-2 text-sm font-semibold text-(--theme-purple) hover:underline">
-                                <Phone className="size-4" />
-                                {vacancy.contact_phone}
-                            </a>
+                            {vacancy.salary && (
+                                <Group align="flex-start" gap="xs" wrap="nowrap">
+                                    <Text span c="brand" lh={1} mt={2}>
+                                        <Banknote size={16} />
+                                    </Text>
+                                    <Stack gap={2}>
+                                        <Text size="xs" fw={700} tt="uppercase" c="dimmed">Salaris</Text>
+                                        <Text size="sm" fw={600}>{vacancy.salary}</Text>
+                                    </Stack>
+                                </Group>
+                            )}
+
+                            {vacancy.employment_type && (
+                                <Group align="flex-start" gap="xs" wrap="nowrap">
+                                    <Text span c="brand" lh={1} mt={2}>
+                                        <Briefcase size={16} />
+                                    </Text>
+                                    <Stack gap={2}>
+                                        <Text size="xs" fw={700} tt="uppercase" c="dimmed">Dienstverband/stagetype</Text>
+                                        <Text size="sm" fw={600}>{vacancy.employment_type}</Text>
+                                    </Stack>
+                                </Group>
+                            )}
+
+                            {vacancy.working_hours && (
+                                <Group align="flex-start" gap="xs" wrap="nowrap">
+                                    <Text span c="brand" lh={1} mt={2}>
+                                        <Clock size={16} />
+                                    </Text>
+                                    <Stack gap={2}>
+                                        <Text size="xs" fw={700} tt="uppercase" c="dimmed">Werktijden</Text>
+                                        <Text size="sm" fw={600}>{vacancy.working_hours}</Text>
+                                    </Stack>
+                                </Group>
+                            )}
+                        </SimpleGrid>
+
+                        {isInternship && vacancy.directions.length > 0 && (
+                            <Stack gap="xs">
+                                <Title order={2} size="h6">ICT-richtingen</Title>
+                                <Group gap="xs" wrap="wrap">
+                                    {vacancy.directions.map((direction) => (
+                                        <Badge key={direction} size="md" variant="outline" color="brand">
+                                            {direction}
+                                        </Badge>
+                                    ))}
+                                </Group>
+                            </Stack>
                         )}
-                        {vacancy.contact_website && (
-                            <a href={vacancy.contact_website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm font-semibold text-(--theme-purple) hover:underline">
-                                <Globe className="size-4" />
-                                Website
-                            </a>
+
+                        {vacancy.skills.length > 0 && (
+                            <Stack gap="xs">
+                                <Title order={2} size="h6">Gewenste vaardigheden</Title>
+                                <Group gap="xs" wrap="wrap">
+                                    {vacancy.skills.map((skill) => (
+                                        <Badge key={skill} size="md" variant="light" color="brand">
+                                            {skill}
+                                        </Badge>
+                                    ))}
+                                </Group>
+                            </Stack>
                         )}
-                    </div>
-                </div>
-            </div>
-        </div>
+
+                        <Stack gap="xs">
+                            <Title order={2} size="h6">Omschrijving</Title>
+                            <SafeMarkdown content={vacancy.description} />
+                        </Stack>
+
+                        {vacancy.document && (
+                            <Stack gap="xs">
+                                <Title order={2} size="h6">Stageopdracht</Title>
+                                <DocumentAsset id={vacancy.document} label="Download stageopdracht" />
+                            </Stack>
+                        )}
+
+                        <Divider />
+
+                        <Group gap="lg" wrap="wrap">
+                            <Group gap="xs" c="dimmed">
+                                <Calendar size={16} />
+                                <Text size="sm" fw={600}>
+                                    Geplaatst op {formatPublishedDate(vacancy.published_at)}
+                                </Text>
+                            </Group>
+                            <Anchor href={`mailto:${vacancy.contact_email}`} size="sm" fw={600} c="brand">
+                                <Group gap={6}>
+                                    <Mail size={16} />
+                                    <Text span inherit>{vacancy.contact_email}</Text>
+                                </Group>
+                            </Anchor>
+                            {vacancy.contact_phone && (
+                                <Anchor href={`tel:${vacancy.contact_phone}`} size="sm" fw={600} c="brand">
+                                    <Group gap={6}>
+                                        <Phone size={16} />
+                                        <Text span inherit>{vacancy.contact_phone}</Text>
+                                    </Group>
+                                </Anchor>
+                            )}
+                            {vacancy.contact_website && (
+                                <Anchor href={vacancy.contact_website} target="_blank" rel="noopener noreferrer" size="sm" fw={600} c="brand">
+                                    <Group gap={6}>
+                                        <Globe size={16} />
+                                        <Text span inherit>Website</Text>
+                                    </Group>
+                                </Anchor>
+                            )}
+                        </Group>
+                    </Stack>
+                </Card>
+            </Stack>
+        </Container>
     );
 }

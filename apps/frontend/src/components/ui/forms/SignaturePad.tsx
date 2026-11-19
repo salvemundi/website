@@ -3,6 +3,7 @@
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import SignaturePadLib from 'signature_pad';
 import { RotateCcw } from 'lucide-react';
+import { Button, Center, Paper, Text } from '@mantine/core';
 
 export interface SignaturePadHandle {
     isEmpty: () => boolean;
@@ -11,11 +12,10 @@ export interface SignaturePadHandle {
 }
 
 export interface SignaturePadProps {
-    className?: string;
     height?: number;
 }
 
-export const SignaturePad = React.forwardRef<SignaturePadHandle, SignaturePadProps>(({ className = '', height = 200 }, ref) => {
+export const SignaturePad = React.forwardRef<SignaturePadHandle, SignaturePadProps>(({ height = 200 }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const padRef = useRef<SignaturePadLib | null>(null);
     const [isEmpty, setIsEmpty] = useState(true);
@@ -69,29 +69,50 @@ export const SignaturePad = React.forwardRef<SignaturePadHandle, SignaturePadPro
     }), []);
 
     return (
-        <div className={`relative rounded-(--beheer-radius) border border-(--beheer-border) bg-white ${className}`}>
+        <Paper
+            bg="white"
+            radius="md"
+            pos="relative"
+            style={{
+                border: '1px solid var(--border)',
+                overflow: 'hidden',
+            }}
+        >
             <canvas
                 ref={canvasRef}
-                style={{ height, touchAction: 'none' }}
-                className="w-full cursor-crosshair rounded-(--beheer-radius)"
+                style={{
+                    height,
+                    width: '100%',
+                    touchAction: 'none',
+                    cursor: 'crosshair',
+                    display: 'block',
+                    borderRadius: 'var(--mantine-radius-md)',
+                }}
             />
             {isEmpty && (
-                <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-gray-400">
-                    Teken hier je handtekening
-                </span>
+                <Center pos="absolute" inset={0} style={{ pointerEvents: 'none' }}>
+                    <Text size="sm" c="#1E1221" opacity={0.45}>
+                        Teken hier je handtekening
+                    </Text>
+                </Center>
             )}
-            <button
+            <Button
                 type="button"
+                size="xs"
+                variant="light"
+                color="brand"
+                pos="absolute"
+                top={8}
+                right={8}
+                leftSection={<RotateCcw size={12} />}
                 onClick={() => {
                     padRef.current?.clear();
                     setIsEmpty(true);
                 }}
-                className="absolute top-2 right-2 form-button flex items-center gap-1 rounded-md border border-(--beheer-border) bg-white/90 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50"
             >
-                <RotateCcw className="size-3" />
                 Wissen
-            </button>
-        </div>
+            </Button>
+        </Paper>
     );
 });
 

@@ -21,7 +21,7 @@ import {
     removeGroupLeader
 } from '@/server/actions/beheer/intro/beheer-intro-core.actions';
 import { type IntroSignup as IntroSignupRow, type IntroParentSignup as IntroParentRow } from '@salvemundi/validations/schema/intro.zod';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
+import { Stack } from '@mantine/core';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { downloadCSV } from '@/lib/utils/export';
 import IntroSignupsTab from './intro/IntroSignupsTab';
@@ -54,7 +54,7 @@ interface Props {
 
 export default function IntroManagementIsland({ initialSignups, initialParents, initialPlanning, initialConfidants, initialGroups, initialApprovedOuders, initialPlanningImage, initialInfoBooklet, initialStudentSignupsOpen, initialParentSignupsOpen }: Props) {
 
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
 
     const [activeTab, setActiveTab] = useState<TabType>('signups');
 
@@ -259,7 +259,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
     };
 
     return (
-        <div className="w-full">
+        <Stack gap="sm" w="100%">
             <IntroFilters
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
@@ -276,7 +276,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
             />
 
 
-            <div className="mt-2 w-full">
+            <Stack gap="md" w="100%">
                 {activeTab === 'signups' && (
                     <IntroSignupsTab
                         signups={signups}
@@ -328,9 +328,7 @@ export default function IntroManagementIsland({ initialSignups, initialParents, 
                         deletingId={deletingGroupId}
                     />
                 )}
-            </div>
-
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+            </Stack>
+        </Stack>
     );
 }

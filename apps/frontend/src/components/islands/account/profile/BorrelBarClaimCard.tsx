@@ -2,7 +2,8 @@
 
 import React, { useState, useTransition } from 'react';
 import Image from 'next/image';
-import { Gift, CheckCircle2, Loader2, AlertCircle, ExternalLink } from 'lucide-react';
+import { Gift, CheckCircle2, AlertCircle, ExternalLink } from 'lucide-react';
+import { Alert, Badge, Box, Button, Group, Paper, Stack, Text } from '@mantine/core';
 import { claimBorrelBarLink, type BorrelBarClaimStatus } from '@/server/actions/profile/borrelbar-claim.actions';
 import { getImageUrl } from '@/lib/utils/image-utils';
 
@@ -41,89 +42,84 @@ export default function BorrelBarClaimCard({ initialStatus }: BorrelBarClaimCard
     const logoUrl = status.logoImageId ? getImageUrl(status.logoImageId, { width: 96, height: 96, fit: 'inside' }) : null;
 
     return (
-        <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <div className="flex h-6 items-center pl-1">
-                <p className="text-left text-[11px] font-black tracking-wider text-licht-paars uppercase dark:text-geel">
-                    BorrelBar Voordeel
-                </p>
-            </div>
+        <Stack gap={6} style={{ gridColumn: '1 / -1' }}>
+            <Text size="xs" fw={900} tt="uppercase" c="brand" pl={4}>
+                BorrelBar Voordeel
+            </Text>
 
-            <div className="squircle flex min-h-17 flex-col gap-4 border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between dark:border-white/10 dark:bg-white/5">
-                <div className="flex items-center gap-4">
-                    <div className="flex shrink-0 items-center justify-center text-purple-600 dark:text-purple-300">
-                        {logoUrl ? (
-                            <div className="relative size-6 overflow-hidden rounded-md">
-                                <Image
-                                    src={logoUrl}
-                                    alt="BorrelBar Logo"
-                                    fill
-                                    sizes="24px"
-                                    className="object-contain"
-                                />
-                            </div>
-                        ) : (
-                            <Gift className="size-5" />
-                        )}
-                    </div>
-                    <div className="flex flex-col">
-                        <p className="text-sm font-bold text-purple-700 dark:text-white">
-                            BorrelBar pas claimen
-                        </p>
-                        <p className="text-xs text-purple-600/70 dark:text-white/60">
-                            {hasClaimed
-                                ? 'Je hebt jouw eenmalige registratie al geclaimd.'
-                                : 'Claim je eenmalige Wallet registratie (1x per lid).'}
-                        </p>
-                    </div>
-                </div>
-
-                <div className="flex shrink-0 items-center">
-                    {hasClaimed ? (
-                        passUrl ? (
-                            <a
-                                href={passUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="squircle form-button flex items-center justify-center gap-2 bg-purple-600 px-4 py-2 text-xs font-bold text-white transition-all hover:bg-purple-700 active:scale-95 dark:bg-purple-500 dark:hover:bg-purple-600"
-                            >
-                                <span>Bekijk Pas</span>
-                                <ExternalLink className="size-3.5" />
-                            </a>
-                        ) : (
-                            <div className="flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                                <CheckCircle2 className="size-4 shrink-0" />
-                                <span>Al geclaimd</span>
-                            </div>
-                        )
-                    ) : (
-                        <button
-                            onClick={handleClaim}
-                            disabled={isPending}
-                            className="squircle form-button flex w-full items-center justify-center gap-2 bg-purple-600 px-5 py-2.5 text-xs font-extrabold text-white transition-all hover:bg-purple-700 active:scale-95 disabled:opacity-50 sm:w-auto dark:bg-purple-500 dark:hover:bg-purple-600"
-                            type="button"
-                        >
-                            {isPending ? (
-                                <>
-                                    <Loader2 className="size-3.5 animate-spin" />
-                                    <span>Bezig met activeren...</span>
-                                </>
+            <Paper p="md" withBorder>
+                <Group justify="space-between" align="center" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="nowrap">
+                        <Text span c="brand" lh={1}>
+                            {logoUrl ? (
+                                <Box pos="relative" w={24} h={24} style={{ borderRadius: 'var(--mantine-radius-sm)', overflow: 'hidden' }}>
+                                    <Image
+                                        src={logoUrl}
+                                        alt="BorrelBar Logo"
+                                        fill
+                                        sizes="24px"
+                                        style={{ objectFit: 'contain' }}
+                                    />
+                                </Box>
                             ) : (
-                                <>
-                                    <span>Claimen</span>
-                                    <ExternalLink className="size-3.5" />
-                                </>
+                                <Gift size={20} />
                             )}
-                        </button>
-                    )}
-                </div>
-            </div>
+                        </Text>
+                        <Stack gap={2}>
+                            <Text size="sm" fw={700}>
+                                BorrelBar pas claimen
+                            </Text>
+                            <Text size="xs" c="dimmed">
+                                {hasClaimed
+                                    ? 'Je hebt jouw eenmalige registratie al geclaimd.'
+                                    : 'Claim je eenmalige Wallet registratie (1x per lid).'}
+                            </Text>
+                        </Stack>
+                    </Group>
+
+                    <Box>
+                        {hasClaimed ? (
+                            passUrl ? (
+                                <Button
+                                    component="a"
+                                    href={passUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    size="xs"
+                                    rightSection={<ExternalLink size={14} />}
+                                >
+                                    Bekijk Pas
+                                </Button>
+                            ) : (
+                                <Badge
+                                    color="success"
+                                    variant="light"
+                                    size="lg"
+                                    leftSection={<CheckCircle2 size={14} />}
+                                >
+                                    Al geclaimd
+                                </Badge>
+                            )
+                        ) : (
+                            <Button
+                                type="button"
+                                size="xs"
+                                onClick={handleClaim}
+                                loading={isPending}
+                                rightSection={<ExternalLink size={14} />}
+                            >
+                                {isPending ? 'Bezig met activeren...' : 'Claimen'}
+                            </Button>
+                        )}
+                    </Box>
+                </Group>
+            </Paper>
 
             {error && (
-                <div className="flex items-center gap-2 rounded-lg bg-red-500/10 p-2.5 text-xs font-bold text-red-600 dark:text-red-400">
-                    <AlertCircle className="size-4 shrink-0" />
-                    <span>{error}</span>
-                </div>
+                <Alert color="error" icon={<AlertCircle size={16} />} variant="light">
+                    {error}
+                </Alert>
             )}
-        </div>
+        </Stack>
     );
 }

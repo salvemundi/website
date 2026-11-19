@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { AlertTriangle } from 'lucide-react';
+import { Alert, Group, Stack, Text } from '@mantine/core';
 
 interface DeletionTimerProps {
     expiryDateStr: string;
 }
 
 export default function DeletionTimer({ expiryDateStr }: DeletionTimerProps) {
-    const [timeLeft, setTimeLeft] = useState<{ days: number, hours: number, minutes: number } | null>(null);
+    const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number } | null>(null);
 
     useEffect(() => {
         if (!expiryDateStr) return;
@@ -48,16 +50,21 @@ export default function DeletionTimer({ expiryDateStr }: DeletionTimerProps) {
     if (!timeLeft || (timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0)) return null;
 
     return (
-        <div className="animate-in fade-in zoom-in mb-6 rounded-2xl border border-purple-100 bg-purple-50 p-4 text-center duration-500 dark:border-purple-800/20 dark:bg-purple-900/10">
-            <p className="mb-2 text-xs font-bold tracking-wider text-theme-purple uppercase dark:text-purple-400">
-                ⚠️ Account Verwijdering (AVG)
-            </p>
-            <p className="text-theme-text-muted mb-3 text-sm dark:text-white/60">
-                Je lidmaatschap is verlopen. Als je niet verlengt, worden je gegevens permanent verwijderd over:
-            </p>
-            <div className="font-mono text-2xl font-bold text-theme-purple dark:text-purple-400">
-                {timeLeft.days}d {timeLeft.hours}u {timeLeft.minutes}m
-            </div>
-        </div>
+        <Alert color="brand" variant="light" radius="lg" mb="lg">
+            <Stack align="center" gap="xs" ta="center">
+                <Group gap="xs" justify="center">
+                    <AlertTriangle size={16} />
+                    <Text size="xs" fw={700} tt="uppercase" style={{ letterSpacing: '0.05em' }}>
+                        Account Verwijdering (AVG)
+                    </Text>
+                </Group>
+                <Text size="sm" c="dimmed">
+                    Je lidmaatschap is verlopen. Als je niet verlengt, worden je gegevens permanent verwijderd over:
+                </Text>
+                <Text size="xl" fw={700} ff="monospace" c="brand">
+                    {timeLeft.days}d {timeLeft.hours}u {timeLeft.minutes}m
+                </Text>
+            </Stack>
+        </Alert>
     );
 }

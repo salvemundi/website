@@ -3,22 +3,28 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Alert, Button, Card, Group, InputWrapper, SimpleGrid, Stack, Text, TextInput, ThemeIcon, Title } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
 import { submitIntroSignup } from '@/server/actions/public/intro.actions';
-import { FormField } from '@/shared/ui/FormField';
-import { Input } from '@/shared/ui/Input';
-import { DateInput } from '@/shared/ui/DateInput';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { CheckCircle2, Send, Lock } from 'lucide-react';
 import { introSignupFormSchema, type IntroSignupForm } from '@salvemundi/validations/schema/intro.zod';
-import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 
 interface IntroStudentIslandProps {
-    className?: string;
     isOpen?: boolean;
 }
 
-export const IntroStudentIsland = ({ className = '', isOpen = true }: IntroStudentIslandProps) => {
+const parseNlDate = (input: string): string | null => {
+    const trimmed = input.trim();
+    const nlMatch = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(trimmed);
+    if (nlMatch) {
+        return `${nlMatch[3]}-${nlMatch[2].padStart(2, '0')}-${nlMatch[1].padStart(2, '0')}`;
+    }
+    const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    return isoMatch ? trimmed : null;
+};
 
+export const IntroStudentIsland = ({ isOpen = true }: IntroStudentIslandProps) => {
     const [submitted, setSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -43,7 +49,6 @@ export const IntroStudentIsland = ({ className = '', isOpen = true }: IntroStude
     });
 
     const onSubmit = async (data: IntroSignupForm) => {
-        // Filter bots
         if (data.website) {
             setSubmitted(true);
             return;
@@ -69,130 +74,161 @@ export const IntroStudentIsland = ({ className = '', isOpen = true }: IntroStude
 
     if (!isOpen) {
         return (
-            <div className={`dark:bg-gradient-theme squircle-xl flex min-h-75 flex-col items-center justify-center border border-border-color bg-bg-card p-10 text-center shadow-xl ${className}`}>
-                <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-purple-100 dark:bg-white/20">
-
-                    <Lock className="size-10 text-brand-primary dark:text-white" />
-                </div>
-                <h3 className="mb-4 text-3xl font-black tracking-tight text-text-main dark:text-white">Inschrijvingen Gesloten</h3>
-                <p className="max-w-sm font-medium text-text-muted dark:text-white/80">
-                    De inschrijvingen voor de introductie zijn momenteel gesloten.
-                </p>
-            </div>
+            <Card flex={1} padding="xl" radius="xl" shadow="xl" withBorder ta="center" mih={300}>
+                <Stack align="center" justify="center" gap="md" h="100%">
+                    <ThemeIcon size={72} radius="xl" variant="light" color="brand">
+                        <Lock size={36} />
+                    </ThemeIcon>
+                    <Title order={3} size="h2">
+                        Inschrijvingen Gesloten
+                    </Title>
+                    <Text c="dimmed" maw={360}>
+                        De inschrijvingen voor de introductie zijn momenteel gesloten.
+                    </Text>
+                </Stack>
+            </Card>
         );
     }
 
     if (submitted) {
         return (
-            <div className="dark:bg-gradient-theme squircle-lg border border-border-color bg-bg-card p-6 text-center shadow-lg lg:p-8">
-                <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-purple-100 lg:size-20 dark:bg-white/20">
-                    <CheckCircle2 className="size-8 text-brand-primary lg:size-10 dark:text-white" />
-                </div>
-                <h2 className="mb-4 text-2xl font-bold text-text-main lg:text-3xl dark:text-white">Bedankt!</h2>
-                <p className="text-base text-text-muted lg:text-lg dark:text-white/80">We hebben je inschrijving ontvangen.</p>
-            </div>
+            <Card flex={1} padding="xl" radius="xl" shadow="lg" withBorder ta="center">
+                <Stack align="center" gap="md">
+                    <ThemeIcon size={72} radius="xl" variant="light" color="brand">
+                        <CheckCircle2 size={36} />
+                    </ThemeIcon>
+                    <Title order={2} size="h2">
+                        Bedankt!
+                    </Title>
+                    <Text c="dimmed">
+                        We hebben je inschrijving ontvangen.
+                    </Text>
+                </Stack>
+            </Card>
         );
     }
 
-
     return (
-        <StandardFormCard
-            title="Schrijf je nu in!"
-            icon={<Send className="size-8" />}
-            description="Meld je aan voor de gezelligste week van het jaar!"
-            className={className}
-        >
-            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-4 lg:space-y-6" autoComplete="off">
-                <input {...register('website')} type="text" className="hidden" tabIndex={-1} autoComplete="off" />
+        <Card flex={1} padding="xl" radius="xl" shadow="xl" withBorder>
+            <Stack gap="lg">
+                <Stack gap="xs">
+                    <Group gap="sm" align="center">
+                        <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                            <Send size={20} />
+                        </ThemeIcon>
+                        <Title order={2} size="h2" c="brand">
+                            Schrijf je nu in!
+                        </Title>
+                    </Group>
+                    <Text size="sm" c="dimmed">
+                        Meld je aan voor de gezelligste week van het jaar!
+                    </Text>
+                </Stack>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <FormField id="field-voornaam" label="Voornaam" required error={errors.voornaam?.message}>
-                        <Input
-                            {...register('voornaam')}
-                            id="field-voornaam"
+                <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
+                    <Stack gap="md">
+                        <input {...register('website')} type="text" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
+
+                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                            <TextInput
+                                id="field-voornaam"
+                                label="Voornaam"
+                                required
+                                autoComplete="off"
+                                error={errors.voornaam?.message}
+                                {...register('voornaam')}
+                            />
+                            <TextInput
+                                id="field-tussenvoegsel"
+                                label="Tussenvoegsel"
+                                autoComplete="off"
+                                error={errors.tussenvoegsel?.message}
+                                {...register('tussenvoegsel')}
+                            />
+                        </SimpleGrid>
+
+                        <TextInput
+                            id="field-achternaam"
+                            label="Achternaam"
                             required
                             autoComplete="off"
+                            error={errors.achternaam?.message}
+                            {...register('achternaam')}
                         />
-                    </FormField>
 
-                    <FormField id="field-tussenvoegsel" label="Tussenvoegsel" error={errors.tussenvoegsel?.message}>
-                        <Input
-                            {...register('tussenvoegsel')}
-                            id="field-tussenvoegsel"
-                            autoComplete="off"
-                        />
-                    </FormField>
-                </div>
+                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                            <Controller
+                                name="geboortedatum"
+                                control={control}
+                                render={({ field }) => (
+                                    <DateInput
+                                        id="field-geboortedatum"
+                                        label="Geboortedatum"
+                                        required
+                                        value={field.value || null}
+                                        onChange={(val) => field.onChange(val ?? '')}
+                                        valueFormat="DD-MM-YYYY"
+                                        dateParser={parseNlDate}
+                                        placeholder="dd-mm-jjjj"
+                                        autoComplete="off"
+                                        error={errors.geboortedatum?.message}
+                                    />
+                                )}
+                            />
 
-                <FormField id="field-achternaam" label="Achternaam" required error={errors.achternaam?.message}>
-                    <Input
-                        {...register('achternaam')}
-                        id="field-achternaam"
-                        required
-                        autoComplete="off"
-                    />
-                </FormField>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <FormField id="field-geboortedatum" label="Geboortedatum" required error={errors.geboortedatum?.message}>
-                        <Controller
-                            name="geboortedatum"
-                            control={control}
-                            render={({ field }) => (
-                                <DateInput
-                                    {...field}
-                                    id="field-geboortedatum"
-                                    required
-                                    autoComplete="off"
+                            <InputWrapper
+                                id="field-telefoonnummer"
+                                label="Telefoonnummer"
+                                required
+                                error={errors.telefoonnummer?.message}
+                            >
+                                <Controller
+                                    name="telefoonnummer"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <PhoneInput
+                                            {...field}
+                                            id="field-telefoonnummer"
+                                            required
+                                            autoComplete="one-time-code"
+                                            error={!!errors.telefoonnummer}
+                                        />
+                                    )}
                                 />
-                            )}
+                            </InputWrapper>
+                        </SimpleGrid>
+
+                        <TextInput
+                            id="field-email"
+                            type="email"
+                            label="E-mailadres"
+                            required
+                            autoComplete="one-time-code"
+                            error={errors.email?.message}
+                            {...register('email')}
                         />
-                    </FormField>
 
-                    <FormField id="field-telefoonnummer" label="Telefoonnummer" required error={errors.telefoonnummer?.message}>
-                        <Controller
-                            name="telefoonnummer"
-                            control={control}
-                            render={({ field }) => (
-                                <PhoneInput
-                                    {...field}
-                                    id="field-telefoonnummer"
-                                    required
-                                    autoComplete="one-time-code"
-                                />
-                            )}
+                        <TextInput
+                            id="field-favorieteGif"
+                            type="url"
+                            label="Favoriete GIF URL (optioneel)"
+                            placeholder="https://..."
+                            error={errors.favorieteGif?.message}
+                            {...register('favorieteGif')}
                         />
-                    </FormField>
-                </div>
 
-                <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>
-                    <Input
-                        type="email"
-                        {...register('email')}
-                        id="field-email"
-                        required
-                        autoComplete="one-time-code"
-                    />
-                </FormField>
+                        {error && (
+                            <Alert color="error" variant="light">
+                                {error}
+                            </Alert>
+                        )}
 
-                <FormField id="field-favorieteGif" label="Favoriete GIF URL (optioneel)" error={errors.favorieteGif?.message}>
-                    <Input
-                        type="url"
-                        {...register('favorieteGif')}
-                        id="field-favorieteGif"
-                        placeholder="https://..."
-                    />
-                </FormField>
-
-                {error && <p className="text-xs text-red-500 lg:text-sm dark:text-red-400">{error}</p>}
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="mt-4 form-button w-full"
-                >
-                    {isSubmitting ? 'Bezig...' : 'Verstuur'}
-                </button>
-            </form>
-        </StandardFormCard>
+                        <Button type="submit" fullWidth size="md" loading={isSubmitting} mt="xs">
+                            {isSubmitting ? 'Bezig...' : 'Verstuur'}
+                        </Button>
+                    </Stack>
+                </form>
+            </Stack>
+        </Card>
     );
 };

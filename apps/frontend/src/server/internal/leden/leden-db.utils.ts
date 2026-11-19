@@ -4,42 +4,39 @@ import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { type Committee } from '@/shared/lib/permissions';
-export type { Committee };
+import {
+    type DirectusUser,
+    type UserBasic
+} from '@salvemundi/validations';
+import { selectDirectusUsersSchema } from '@salvemundi/validations/schema/db.zod';
+export type { Committee, UserBasic };
 
-export const userProfileSchema = z.object({
-    id: z.string().uuid(),
-    first_name: z.string().nullable().optional(),
-    last_name: z.string().nullable().optional(),
+export const userProfileSchema = selectDirectusUsersSchema.pick({
+    id: true,
+    first_name: true,
+    last_name: true,
+    avatar: true,
+    membership_status: true,
+    phone_number: true,
+    date_of_birth: true,
+    entra_id: true,
+    membership_expiry: true,
+    description: true,
+    location: true,
+    title: true,
+}).extend({
     email: z.string().email(),
-    avatar: z.string().uuid().nullable().optional(),
-    membership_status: z.string().nullable().optional(),
-    phone_number: z.string().nullable().optional(),
     date_of_birth: z.string().nullable().optional(),
-    entra_id: z.string().nullable().optional(),
     membership_expiry: z.string().nullable().optional(),
-    description: z.string().nullable().optional(),
-    location: z.string().nullable().optional(),
-    title: z.string().nullable().optional(),
     tags: z.array(z.string()).nullable().optional()
 });
 
 export type UserProfile = z.infer<typeof userProfileSchema>;
 
-export interface UserBasic {
-    id: string;
-    email: string;
-    first_name?: string | null;
-    last_name?: string | null;
-}
-
-export interface UserMetadata {
-    membership_status: string | null;
-    membership_expiry: string | null;
-    phone_number: string | null;
-    date_of_birth: string | null;
-    minecraft_username: string | null;
-    entra_id: string | null;
-}
+export type UserMetadata = Partial<Pick<
+    DirectusUser,
+    'membership_status' | 'membership_expiry' | 'phone_number' | 'date_of_birth' | 'minecraft_username' | 'entra_id'
+>>;
 
 export async function fetchUserProfileByEmailDb(email: string): Promise<UserProfile | null> {
     const result = await db.select({

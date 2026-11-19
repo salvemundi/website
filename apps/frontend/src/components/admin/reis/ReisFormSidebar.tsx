@@ -1,7 +1,23 @@
 'use client';
 
-import { Upload, X, Save, Loader2, Eye, Check } from 'lucide-react';
+import { Upload, X, Save, Eye, AlertTriangle } from 'lucide-react';
 import { useRef } from 'react';
+import {
+    ActionIcon,
+    Alert,
+    Badge,
+    Box,
+    Button,
+    Card,
+    Checkbox,
+    Divider,
+    Group,
+    Paper,
+    Stack,
+    Text,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 
 interface ReisFormSidebarProps {
@@ -43,113 +59,178 @@ export default function ReisFormSidebar({
     const isAutoOpen = !registrationOpen && registrationStartDate && new Date(registrationStartDate) <= new Date();
 
     return (
-        <div className="space-y-6 lg:sticky lg:top-8 lg:col-span-4">
-            <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
-                <div className="flex items-center gap-3 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
-                    <Upload className="size-4 text-(--beheer-accent)" />
-                    <h2 className="text-[10px] font-semibold tracking-widest text-(--beheer-text)">Banner</h2>
-                </div>
-                <div className="p-4">
-                    {!imagePreview ? (
-                        <div onClick={() => fileInputRef.current?.click()} className="group flex min-h-40 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-(--beheer-border) bg-(--beheer-card-soft) transition-all hover:border-(--beheer-accent) hover:bg-(--beheer-accent)/5">
-                            <Upload className="mb-2 size-6 text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-accent)" />
-                            <span className="px-4 text-center text-[9px] font-semibold tracking-widest text-(--beheer-text-muted) group-hover:text-(--beheer-accent)">Upload banner (afbeelding of video)</span>
-                            <input ref={fileInputRef} type="file" name="image_file" accept="image/*,video/*" onChange={onImageChange} className="hidden" />
-                        </div>
-                    ) : (
-                        <div className="group relative flex h-40 items-center justify-center overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft)/50">
-                            <MediaAsset
-                                asset={imagePreview}
-                                alt="Preview"
-                                fill
-                                objectFit="contain"
-                                unoptimized
+        <Stack gap="lg" pos={{ lg: 'sticky' }} top={{ lg: 32 }}>
+            <Card withBorder radius="lg" padding="lg">
+                <Group gap="sm" mb="md">
+                    <ThemeIcon size="md" radius="md" variant="light" color="accent">
+                        <Upload size={16} />
+                    </ThemeIcon>
+                    <Title order={2} size="h5">Banner</Title>
+                </Group>
+                <Divider mb="md" />
+                {!imagePreview ? (
+                    <Paper
+                        withBorder
+                        radius="md"
+                        p="xl"
+                        onClick={() => fileInputRef.current?.click()}
+                        style={{
+                            borderStyle: 'dashed',
+                            cursor: 'pointer',
+                            minHeight: 160,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Upload size={24} />
+                        <Text size="xs" fw={600} c="dimmed" mt="xs" ta="center">
+                            Upload banner (afbeelding of video)
+                        </Text>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            name="image_file"
+                            accept="image/*,video/*"
+                            onChange={onImageChange}
+                            style={{ display: 'none' }}
+                        />
+                    </Paper>
+                ) : (
+                    <Box
+                        pos="relative"
+                        h={160}
+                        style={{
+                            borderRadius: 'var(--mantine-radius-md)',
+                            overflow: 'hidden',
+                            border: '1px solid var(--mantine-color-default-border)',
+                        }}
+                    >
+                        <MediaAsset
+                            asset={imagePreview}
+                            alt="Preview"
+                            fill
+                            objectFit="contain"
+                            unoptimized
+                        />
+                        <Group gap="xs" pos="absolute" top={8} right={8}>
+                            <ActionIcon
+                                type="button"
+                                variant="default"
+                                size="md"
+                                onClick={() => fileInputRef.current?.click()}
+                                aria-label="Banner wijzigen"
+                            >
+                                <Upload size={14} />
+                            </ActionIcon>
+                            <ActionIcon
+                                type="button"
+                                color="error"
+                                variant="filled"
+                                size="md"
+                                onClick={onRemoveImage}
+                                aria-label="Banner verwijderen"
+                            >
+                                <X size={14} />
+                            </ActionIcon>
+                        </Group>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            name="image_file"
+                            accept="image/*,video/*"
+                            onChange={onImageChange}
+                            style={{ display: 'none' }}
+                        />
+                    </Box>
+                )}
+            </Card>
+
+            <Card withBorder radius="lg" padding="lg">
+                <Group gap="sm" mb="md">
+                    <ThemeIcon size="md" radius="md" variant="light" color="accent">
+                        <Eye size={16} />
+                    </ThemeIcon>
+                    <Title order={2} size="h5">Instellingen</Title>
+                </Group>
+                <Divider mb="md" />
+                <Stack gap="sm">
+                    <Paper withBorder radius="md" p="sm">
+                        <Group justify="space-between" wrap="wrap" gap="xs">
+                            <Checkbox
+                                checked={registrationOpen}
+                                onChange={(e) => setRegistrationOpen(e.currentTarget.checked)}
+                                label="Inschrijving Open"
+                                color="accent"
                             />
-                            <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                                <button type="button" onClick={() => fileInputRef.current?.click()} className="icon-button cursor-pointer rounded-xl bg-(--beheer-card-bg) p-2.5 text-(--beheer-text) shadow-xl transition-colors hover:bg-(--beheer-card-soft)"><Upload className="size-4" /></button>
-                                <button type="button" onClick={onRemoveImage} className="icon-button cursor-pointer rounded-xl bg-rose-600 p-2.5 text-white shadow-xl transition-colors hover:bg-rose-700"><X className="size-4" /></button>
-                            </div>
-                            <input ref={fileInputRef} type="file" name="image_file" accept="image/*,video/*" onChange={onImageChange} className="hidden" />
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
-                <div className="flex items-center gap-3 border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 px-6 py-4">
-                    <Eye className="size-4 text-(--beheer-accent)" />
-                    <h2 className="text-[10px] font-semibold tracking-widest text-(--beheer-text)">Instellingen</h2>
-                </div>
-                    <div className="space-y-3 p-4">
-                        <label className="group relative flex cursor-pointer items-center gap-4 rounded-xl border border-(--beheer-border)/30 bg-(--beheer-card-soft)/30 p-3 transition-all hover:bg-(--beheer-card-soft)/50">
-                            <div className="relative flex items-center justify-center">
-                                <input type="checkbox" checked={registrationOpen} onChange={(e) => setRegistrationOpen(e.target.checked)} className="peer sr-only" />
-                                <div className="size-5 rounded border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
-                                <Check className="absolute size-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" />
-                            </div>
-                            <span className="text-[10px] font-semibold tracking-widest text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">Inschrijving Open</span>
                             {isAutoOpen && (
-                                <div className="ml-auto animate-pulse rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[8px] font-black tracking-tighter text-emerald-500 uppercase">
+                                <Badge color="success" variant="light" size="xs">
                                     Auto-Open Actief
-                                </div>
+                                </Badge>
                             )}
-                        </label>
+                        </Group>
+                    </Paper>
 
-                        <label className="group relative flex cursor-pointer items-center gap-4 rounded-xl border border-(--beheer-border)/30 bg-(--beheer-card-soft)/30 p-3 transition-all hover:bg-(--beheer-card-soft)/50">
-                            <div className="relative flex items-center justify-center">
-                                <input type="checkbox" checked={allowDepositPayments} onChange={(e) => setAllowDepositPayments(e.target.checked)} className="peer sr-only" />
-                                <div className="size-5 rounded border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
-                                <Check className="absolute size-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" />
-                            </div>
-                            <span className="text-[10px] font-semibold tracking-widest text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">Aanbetalingen Open</span>
-                        </label>
+                    <Paper withBorder radius="md" p="sm">
+                        <Checkbox
+                            checked={allowDepositPayments}
+                            onChange={(e) => setAllowDepositPayments(e.currentTarget.checked)}
+                            label="Aanbetalingen Open"
+                            color="accent"
+                        />
+                    </Paper>
 
-                        <label className="group relative flex cursor-pointer items-center gap-4 rounded-xl border border-(--beheer-border)/30 bg-(--beheer-card-soft)/30 p-3 transition-all hover:bg-(--beheer-card-soft)/50">
-                            <div className="relative flex items-center justify-center">
-                                <input type="checkbox" checked={allowFinalPayments} onChange={(e) => setAllowFinalPayments(e.target.checked)} className="peer sr-only" />
-                                <div className="size-5 rounded border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
-                                <Check className="absolute size-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" />
-                            </div>
-                            <span className="text-[10px] font-semibold tracking-widest text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">Restbetalingen Aan</span>
-                        </label>
+                    <Paper withBorder radius="md" p="sm">
+                        <Checkbox
+                            checked={allowFinalPayments}
+                            onChange={(e) => setAllowFinalPayments(e.currentTarget.checked)}
+                            label="Restbetalingen Aan"
+                            color="accent"
+                        />
+                    </Paper>
 
-                        {allowFinalPayments && (
-                            <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3">
-                                <p className="text-[9px] leading-relaxed font-bold tracking-widest text-amber-600 uppercase">
-                                    Let op: Het inschakelen van restbetalingen sluit automatisch nieuwe inschrijvingen voor deze reis.
-                                </p>
-                            </div>
-                        )}
+                    {allowFinalPayments && (
+                        <Alert color="accent" variant="light" icon={<AlertTriangle size={16} />}>
+                            <Text size="xs" fw={600}>
+                                Let op: Het inschakelen van restbetalingen sluit automatisch nieuwe inschrijvingen voor deze reis.
+                            </Text>
+                        </Alert>
+                    )}
 
-                        <label className="group relative flex cursor-pointer items-center gap-4 rounded-xl border border-(--beheer-border)/30 bg-(--beheer-card-soft)/30 p-3 transition-all hover:bg-(--beheer-card-soft)/50">
-                            <div className="relative flex items-center justify-center">
-                                <input type="checkbox" checked={isBusTrip} onChange={(e) => setIsBusTrip(e.target.checked)} className="peer sr-only" />
-                                <div className="size-5 rounded border-2 border-(--beheer-border) transition-all peer-checked:border-(--beheer-accent) peer-checked:bg-(--beheer-accent)"></div>
-                                <Check className="absolute size-3 text-white opacity-0 transition-opacity peer-checked:opacity-100" />
-                            </div>
-                            <span className="text-[10px] font-semibold tracking-widest text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-text)">Busreis (Rijbewijs)</span>
-                        </label>
-                    </div>
-                </div>
+                    <Paper withBorder radius="md" p="sm">
+                        <Checkbox
+                            checked={isBusTrip}
+                            onChange={(e) => setIsBusTrip(e.currentTarget.checked)}
+                            label="Busreis (Rijbewijs)"
+                            color="accent"
+                        />
+                    </Paper>
+                </Stack>
+            </Card>
 
-            <div className="space-y-3">
-                <button 
-                    type="submit" 
-                    disabled={pending} 
-                    className="form-button flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--beheer-accent) px-8 py-4 text-[10px] font-semibold tracking-widest text-white shadow-lg transition-all hover:opacity-90 disabled:opacity-50"
+            <Stack gap="sm">
+                <Button
+                    type="submit"
+                    color="accent"
+                    loading={pending}
+                    fullWidth
+                    size="md"
+                    leftSection={<Save size={16} />}
                 >
-                    {pending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-                    <span>{pending ? 'Bezig...' : isAdding ? 'Reis Aanmaken' : 'Wijzigingen Opslaan'}</span>
-                </button>
-                
-                <button 
-                    type="button" 
-                    onClick={onCancel} 
-                    className="beheer-button flex w-full cursor-pointer items-center justify-center rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-8 py-4 text-[10px] font-semibold tracking-widest text-(--beheer-text) shadow-sm transition-all hover:bg-(--beheer-card-soft) active:scale-95"
+                    {pending ? 'Bezig...' : isAdding ? 'Reis Aanmaken' : 'Wijzigingen Opslaan'}
+                </Button>
+
+                <Button
+                    type="button"
+                    variant="default"
+                    onClick={onCancel}
+                    fullWidth
+                    size="md"
                 >
                     Annuleren
-                </button>
-            </div>
-        </div>
+                </Button>
+            </Stack>
+        </Stack>
     );
 }

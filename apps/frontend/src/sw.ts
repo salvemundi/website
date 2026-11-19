@@ -25,23 +25,21 @@ const serwist = new Serwist({
   disableDevLogs: true,
   runtimeCaching: [
     {
-      matcher: ({ url }) => {
-        const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL;
-        if (!directusUrl) return false;
-        const origin = new URL(directusUrl).origin;
-        return url.origin === origin && url.pathname.startsWith("/assets/");
-      },
+      matcher: ({ url }) => url.pathname.startsWith("/api/assets/"),
       handler: new NetworkFirst({
         cacheName: "directus-assets",
         networkTimeoutSeconds: 3,
         plugins: [
           new CacheableResponsePlugin({
-            statuses: [0, 200] }),
+            statuses: [0, 200]
+          }),
           new ExpirationPlugin({
             maxEntries: 100,
             maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
           }),
-        ] }) },
+        ]
+      })
+    },
     {
       matcher: ({ url }) => {
         return url.pathname.startsWith("/img/");
@@ -60,9 +58,8 @@ const serwist = new Serwist({
       matcher: ({ url }) => {
         return url.pathname.startsWith('/lidmaatschap') ||
                url.pathname.startsWith('/profiel') ||
-               url.pathname.startsWith('/admin') ||
                url.pathname.startsWith('/beheer') ||
-               url.pathname.startsWith('/api') ||
+               (url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/assets/')) ||
                url.pathname === '/declaratie' ||
                url.pathname === '/declareren';
       },

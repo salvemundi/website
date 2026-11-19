@@ -1,3 +1,4 @@
+import { Anchor, Stack, Text } from '@mantine/core';
 import type { Document } from '@salvemundi/validations/schema/website.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 
@@ -13,33 +14,33 @@ interface DocumentenLijstProps {
 export default function DocumentenLijst({ documenten }: DocumentenLijstProps) {
     if (documenten.length === 0) {
         return (
-            <p className="text-sm text-(--text-muted)">
+            <Text size="sm" c="dimmed">
                 Geen documenten beschikbaar
-            </p>
+            </Text>
         );
     }
 
     return (
-        <div className="ml-14 space-y-1.5">
+        <Stack gap={6} pl="xl">
             {documenten.map((doc) => {
-                // Asset-URL opbouwen via de publieke Directus URL
                 const fileUrl = getImageUrl(doc.file) || '#';
 
                 return (
-                    <a
+                    <Anchor
                         key={doc.id}
                         href={fileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group block w-fit text-(--text-muted) transition-colors hover:text-(--text-main)"
+                        size="sm"
+                        c="dimmed"
+                        underline="hover"
+                        w="fit-content"
                         title={doc.description !== null ? doc.description : undefined}
                     >
-                        {/* Kleine pijl-animatie op hover */}
-                        <span className="inline-block transition-transform group-hover:translate-x-1">→</span>{' '}
-                        {doc.title}
-                    </a>
+                        → {doc.title}
+                    </Anchor>
                 );
             })}
-        </div>
+        </Stack>
     );
 }

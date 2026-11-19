@@ -1,11 +1,26 @@
 'use client';
 
 import React, { useTransition } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { Controller, useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { FormField } from '@/shared/ui/FormField';
-import { Input } from '@/shared/ui/Input';
+import {
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Card,
+    Divider,
+    Group,
+    Paper,
+    ScrollArea,
+    Select,
+    Stack,
+    Text,
+    TextInput,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
 import { initiateKroegentochtPayment } from '@/server/actions/events/kroegentocht/kroegentocht-public.actions';
 import {
     type PubCrawlEvent,
@@ -14,8 +29,6 @@ import {
 } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { Plus, Minus, Mail, Building, Ticket } from 'lucide-react';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
-import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 
 interface KroegentochtFormIslandProps {
     event?: PubCrawlEvent;
@@ -30,7 +43,7 @@ export default function KroegentochtFormIsland({
     event = {} as PubCrawlEvent,
     initialUser
 }: KroegentochtFormIslandProps) {
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
 
     const {
@@ -87,144 +100,180 @@ export default function KroegentochtFormIsland({
     };
 
     return (
-        <StandardFormCard
-            title="Inschrijven"
-            icon={<Ticket className="size-8" />}
-            description="Vul hieronder je gegevens in en reserveer je plek voor de kroegentocht. Tickets kosten slechts €1,00 per stuk!"
-        >
-            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6" autoComplete="off">
-                <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>
-                    <div className="relative">
-                        <Mail className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
-                        <Input
-                            {...register('email')}
+        <Card padding="xl" radius="xl" shadow="xl" withBorder>
+            <Stack gap="lg">
+                <Stack gap="xs">
+                    <Group gap="sm">
+                        <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                            <Ticket size={20} />
+                        </ThemeIcon>
+                        <Title order={2} size="h2" c="brand">
+                            Inschrijven
+                        </Title>
+                    </Group>
+                    <Text size="sm" c="dimmed">
+                        Vul hieronder je gegevens in en reserveer je plek voor de kroegentocht. Tickets kosten slechts €1,00 per stuk!
+                    </Text>
+                </Stack>
+
+                <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
+                    <Stack gap="md">
+                        <TextInput
                             id="field-email"
                             type="email"
+                            label="E-mailadres"
+                            required
                             placeholder="jouw@email.nl"
-                            className="pl-10"
+                            leftSection={<Mail size={16} />}
+                            error={errors.email?.message}
+                            {...register('email')}
                         />
-                    </div>
-                </FormField>
 
-                <div className="grid grid-cols-1 gap-4">
-                    <FormField id="field-association" label="Vereniging" required error={errors.association?.message}>
-                        <div className="relative">
-                            <Building className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
-                            <select
-                                {...register('association')}
-                                id="field-association"
-                                className="form-input pl-10"
-                                suppressHydrationWarning
-                            >
-                                <option value="">Selecteer vereniging</option>
-                                {PUB_CRAWL_ASSOCIATIONS.map((a: string) => (
-                                    <option key={a} value={a}>
-                                        {a}
-                                    </option>
+                        <Controller
+                            name="association"
+                            control={control}
+                            render={({ field }) => (
+                                <Select
+                                    id="field-association"
+                                    label="Vereniging"
+                                    required
+                                    placeholder="Selecteer vereniging"
+                                    leftSection={<Building size={16} />}
+                                    data={PUB_CRAWL_ASSOCIATIONS.map((a: string) => ({ value: a, label: a }))}
+                                    value={field.value || null}
+                                    onChange={(val) => field.onChange(val ?? '')}
+                                    error={errors.association?.message}
+                                />
+                            )}
+                        />
+
+                        <Divider my="xs" />
+
+                        <Group justify="space-between" align="center">
+                            <Text size="sm" fw={700}>
+                                Aantal Personen
+                            </Text>
+                            <Paper p={4} radius="md" withBorder>
+                                <Group gap="sm" wrap="nowrap">
+                                    <ActionIcon
+                                        type="button"
+                                        variant="subtle"
+                                        size="md"
+                                        disabled={amount <= 1}
+                                        aria-label="Verminder aantal"
+                                        onClick={() => {
+                                            if (amount > 1) {
+                                                setValue('amount_tickets', amount - 1);
+                                                remove(fields.length - 1);
+                                            }
+                                        }}
+                                    >
+                                        <Minus size={16} />
+                                    </ActionIcon>
+                                    <Text size="lg" fw={900} w={32} ta="center">
+                                        {amount}
+                                    </Text>
+                                    <ActionIcon
+                                        type="button"
+                                        variant="subtle"
+                                        size="md"
+                                        disabled={amount >= 10}
+                                        aria-label="Verhoog aantal"
+                                        onClick={() => {
+                                            if (amount < 10) {
+                                                setValue('amount_tickets', amount + 1);
+                                                append({ name: '', initial: '' });
+                                            }
+                                        }}
+                                    >
+                                        <Plus size={16} />
+                                    </ActionIcon>
+                                </Group>
+                            </Paper>
+                        </Group>
+
+                        <ScrollArea.Autosize mah={400}>
+                            <Stack gap="sm">
+                                {fields.map((field, index) => (
+                                    <Paper key={field.id} p="md" radius="md" withBorder>
+                                        <Stack gap="xs">
+                                            <Group gap="xs">
+                                                <Badge size="sm" circle color="brand">
+                                                    {index + 1}
+                                                </Badge>
+                                                <Text size="xs" fw={700} tt="uppercase" c="dimmed">
+                                                    Deelnemer {index + 1}
+                                                </Text>
+                                            </Group>
+                                            <Group gap="sm" align="flex-start" wrap="nowrap">
+                                                <Controller
+                                                    name={`participants.${index}.name`}
+                                                    control={control}
+                                                    render={({ field: itemField, fieldState }) => (
+                                                        <TextInput
+                                                            id={`field-participants-${index}-name`}
+                                                            label="Voornaam + tussenvoegsel"
+                                                            placeholder="Bijv. Jan van"
+                                                            required
+                                                            style={{ flex: 1 }}
+                                                            value={itemField.value}
+                                                            onChange={itemField.onChange}
+                                                            onBlur={itemField.onBlur}
+                                                            error={fieldState.error?.message}
+                                                        />
+                                                    )}
+                                                />
+                                                <Controller
+                                                    name={`participants.${index}.initial`}
+                                                    control={control}
+                                                    render={({ field: itemField, fieldState }) => (
+                                                        <TextInput
+                                                            id={`field-participants-${index}-initial`}
+                                                            label="1e letter achtern."
+                                                            placeholder="Bijv. S"
+                                                            maxLength={1}
+                                                            required
+                                                            w={100}
+                                                            styles={{ input: { textAlign: 'center', fontWeight: 700, textTransform: 'uppercase' } }}
+                                                            value={itemField.value}
+                                                            onChange={(e) => itemField.onChange(e.currentTarget.value.slice(0, 1).toUpperCase())}
+                                                            onBlur={itemField.onBlur}
+                                                            error={fieldState.error?.message}
+                                                        />
+                                                    )}
+                                                />
+                                            </Group>
+                                        </Stack>
+                                    </Paper>
                                 ))}
-                            </select>
-                        </div>
-                    </FormField>
+                            </Stack>
+                        </ScrollArea.Autosize>
 
-                </div>
+                        <Button type="submit" fullWidth size="lg" loading={isPending} mt="xs">
+                            {isPending
+                                ? 'Verwerken...'
+                                : `Betalen & Inschrijven (€${(amount * 1.00).toFixed(2).replace('.', ',')})`}
+                        </Button>
 
-                <div className="mt-8 border-t border-slate-100 pt-6 dark:border-white/5">
-                    <div className="mb-6 flex items-center justify-between">
-                        <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                            Aantal Personen
-                        </label>
-                        <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 p-1 dark:border-white/10 dark:bg-white/5">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (amount > 1) {
-                                        setValue('amount_tickets', amount - 1);
-                                        remove(fields.length - 1);
-                                    }
-                                }}
-                                className="icon-button rounded-lg p-2 transition-colors hover:bg-white disabled:opacity-30 dark:hover:bg-white/10"
-                                disabled={amount <= 1}
-                            >
-                                <Minus className="size-4" />
-                            </button>
-                            <span className="w-8 text-center text-lg font-black">{amount}</span>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (amount < 10) {
-                                        setValue('amount_tickets', amount + 1);
-                                        append({ name: '', initial: '' });
-                                    }
-                                }}
-                                className="icon-button rounded-lg p-2 transition-colors hover:bg-white disabled:opacity-30 dark:hover:bg-white/10"
-                                disabled={amount >= 10}
-                            >
-                                <Plus className="size-4" />
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="custom-scrollbar max-h-100 space-y-4 overflow-y-auto pr-2">
-                        {fields.map((field, index) => (
-                            <div key={field.id} className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
-                                <div className="mb-3 flex items-center gap-2">
-                                    <div className="flex size-6 items-center justify-center rounded-full bg-theme-purple text-[10px] font-bold text-white">
-                                        {index + 1}
-                                    </div>
-                                    <span className="text-xs font-bold tracking-wider text-slate-400 uppercase">Deelnemer {index + 1}</span>
-                                </div>
-                                <div className="flex gap-3">
-                                    <div className="grow">
-                                        <label htmlFor={`field-participants-${index}-name`} className="mb-1 block text-[10px] font-bold text-slate-400 uppercase">Voornaam + tussenvoegsel</label>
-                                        <Input
-                                            {...register(`participants.${index}.name`)}
-                                            id={`field-participants-${index}-name`}
-                                            placeholder="Bijv. Jan van"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="w-fit shrink-0">
-                                        <label htmlFor={`field-participants-${index}-initial`} className="mb-1 block text-[10px] font-bold whitespace-nowrap text-slate-400 uppercase">1e letter achtern.</label>
-                                        <Input
-                                            {...register(`participants.${index}.initial`, {
-                                                onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                                                    setValue(`participants.${index}.initial`, e.target.value.slice(0, 1).toUpperCase());
-                                                }
-                                            })}
-                                            id={`field-participants-${index}-initial`}
-                                            placeholder="Bijv. S"
-                                            maxLength={1}
-                                            className="w-20 text-center font-bold uppercase"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <button
-                    type="submit"
-                    disabled={isPending}
-                    className="enabled:active:scale-0.98 form-button flex w-full items-center justify-center gap-2 rounded-xl bg-theme-purple py-4 text-lg font-black text-white shadow-lg shadow-purple-500/20 transition-all enabled:hover:bg-purple-600 disabled:opacity-50 sm:rounded-2xl"
-                >
-                    {isPending ? (
-                        <>
-                            <div className="size-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                            Verwerken...
-                        </>
-                    ) : (
-                        `Betalen & Inschrijven (€${(amount * 1.00).toFixed(2).replace('.', ',')})`
-                    )}
-                </button>
-
-                <div className="pointer-events-none absolute top-0 left-0 -z-10 size-0 overflow-hidden opacity-0" aria-hidden="true">
-                    <label htmlFor="website">Website</label>
-                    <input {...register('website')} id="website" tabIndex={-1} autoComplete="off" className="hidden" suppressHydrationWarning />
-                </div>
-            </form>
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </StandardFormCard>
+                        <Box
+                            aria-hidden="true"
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: 0,
+                                height: 0,
+                                overflow: 'hidden',
+                                opacity: 0,
+                                pointerEvents: 'none',
+                            }}
+                        >
+                            <label htmlFor="website">Website</label>
+                            <input {...register('website')} id="website" tabIndex={-1} autoComplete="off" style={{ display: 'none' }} suppressHydrationWarning />
+                        </Box>
+                    </Stack>
+                </form>
+            </Stack>
+        </Card>
     );
 }

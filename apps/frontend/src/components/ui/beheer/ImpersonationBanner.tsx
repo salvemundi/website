@@ -2,6 +2,7 @@
 
 import { useTransition } from 'react';
 import { Shield, X, User } from 'lucide-react';
+import { Badge, Box, Button, Container, Group, Text } from '@mantine/core';
 import { clearImpersonateToken } from '@/server/actions/beheer/impersonation/beheer-impersonation.actions';
 
 interface Props {
@@ -21,49 +22,64 @@ export default function ImpersonationBanner({ targetName, adminName, committees 
     };
 
     return (
-        <div className="animate-in slide-in-from-top fixed inset-x-0 top-0 z-9999 duration-500">
-            <div className="border-b border-white/20 bg-linear-to-r from-orange-600 to-amber-600 px-4 py-2 text-white shadow-xl">
-                <div className="mx-auto flex max-w-360 items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 overflow-hidden">
-                        <div className="shrink-0 rounded-lg bg-white/20 p-1.5">
-                            <Shield className="size-4" />
-                        </div>
-                        <div className="flex items-center gap-2 truncate text-base font-medium">
-                            <span className="hidden opacity-80 sm:inline">Test Modus Actief:</span>
-                            <span className="flex items-center gap-1.5 rounded-md bg-black/30 px-2 py-0.5 font-bold">
-                                <User className="size-3" />
+        <Box
+            pos="fixed"
+            top={0}
+            left={0}
+            right={0}
+            bg="accent"
+            c="darkBase"
+            style={{ zIndex: 9999 }}
+        >
+            <Container size="xl" py={6} px="md">
+                <Group justify="space-between" gap="md" wrap="nowrap">
+                    <Group gap="xs" wrap="nowrap" style={{ minWidth: 0, overflow: 'hidden' }}>
+                        <Shield size={16} style={{ flexShrink: 0 }} />
+                        <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
+                            <Text size="sm" fw={600} visibleFrom="sm">
+                                Test Modus Actief:
+                            </Text>
+                            <Badge
+                                color="darkBase"
+                                variant="filled"
+                                size="md"
+                                radius="sm"
+                                leftSection={<User size={12} />}
+                            >
                                 {targetName}
-                            </span>
-                            <span className="hidden text-base italic opacity-60 lg:inline">
+                            </Badge>
+                            <Text size="sm" fs="italic" visibleFrom="lg">
                                 (Geïmiteerd door {adminName})
-                            </span>
+                            </Text>
                             {committees.length > 0 && (
-                                <span className="hidden opacity-60 md:inline">– ({committees.join(', ')})</span>
+                                <Text size="sm" truncate="end" visibleFrom="md">
+                                    – ({committees.join(', ')})
+                                </Text>
                             )}
-                        </div>
-                    </div>
+                        </Group>
+                    </Group>
 
-                    <button
+                    <Button
+                        type="button"
+                        size="xs"
+                        variant="white"
+                        color="darkBase"
                         onClick={handleStop}
-                        disabled={isPending}
-                        className="form-button flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3 py-1 text-base font-bold text-orange-700 transition-all hover:scale-105 hover:bg-orange-50 active:scale-95 disabled:opacity-50"
-                        type="button">
-                        {isPending ? 'Bezig...' : (
-                            <>
-                                <X className="size-3" />
-                                <span className="xs:inline hidden">Stop Testen</span>
-                            </>
-                        )}
-                    </button>
-                </div>
-            </div>
+                        loading={isPending}
+                        leftSection={<X size={12} />}
+                        style={{ flexShrink: 0 }}
+                    >
+                        Stop Testen
+                    </Button>
+                </Group>
+            </Container>
 
-            {/* Standardize the height variable for other components like Header and BeheerToolbar */}
+            {/* Standardize the height variable for layout header offsets */}
             <style jsx global>{`
                 :root {
                     --impersonation-banner-height: 40px;
                 }
             `}</style>
-        </div>
+        </Box>
     );
 }

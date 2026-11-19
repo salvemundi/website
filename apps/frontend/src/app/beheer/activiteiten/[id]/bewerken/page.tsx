@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Box } from '@mantine/core';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import BeheerUnauthorized from '@/components/ui/beheer/BeheerUnauthorized';
 import { notFound } from 'next/navigation';
@@ -9,7 +10,6 @@ import { eq } from 'drizzle-orm';
 import { getPermissions } from '@/shared/lib/permissions';
 import { fetchUserCommitteesDb } from '@/server/internal/leden/leden-db.utils';
 import { safeConsoleError } from '@/server/utils/logger';
-import { type EnrichedUser } from '@/types/auth';
 import { type BeheerActivity } from "@salvemundi/validations";
 import { type Committee } from '@salvemundi/validations';
 
@@ -24,7 +24,7 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
     const session = await getEnrichedSession();
     if (!session) return <BeheerUnauthorized title="Activiteit Bewerken" />;
 
-    const user = session.user as unknown as EnrichedUser;
+    const user = session.user;
 
     let userCommittees: Awaited<ReturnType<typeof fetchUserCommitteesDb>> = [];
     try {
@@ -86,11 +86,11 @@ export default async function BewerkenActiviteitPage({ params }: { params: Promi
         : cleanedCommittees.filter((c) => userCommittees.some((m) => String(m.id) === String(c.id)));
 
     return (
-        <div className="pb-20">
+        <Box pb="xl">
             <ActiviteitBewerkenIsland
                 event={event as unknown as BeheerActivity}
                 committees={allowedCommitteesForDropdown as unknown as Committee[]}
             />
-        </div>
+        </Box>
     );
 }

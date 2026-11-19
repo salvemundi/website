@@ -1,45 +1,70 @@
 'use client';
 
-import { Map as MapIcon, Loader2, Plus } from 'lucide-react';
+import { Map as MapIcon, Plus } from 'lucide-react';
+import { Box, Button, Card, Group, Stack, Text, ThemeIcon } from '@mantine/core';
 import { type EnrichedUser } from '@/types/auth';
 
 interface StickerActionPanelProps {
     user: EnrichedUser | null;
-    isLocating: boolean;
     onPlaceSticker: () => void;
     compact?: boolean;
 }
 
-export default function StickerActionPanel({ user, isLocating, onPlaceSticker, compact = false }: StickerActionPanelProps) {
+export default function StickerActionPanel({ user, onPlaceSticker, compact = false }: StickerActionPanelProps) {
     if (!user) {
         return (
-            <div className={`pointer-events-auto rounded-2xl border border-white/20 bg-orange-500/90 text-white shadow-2xl backdrop-blur-md ${compact ? 'w-full px-4 py-2.5' : 'flex items-start gap-3 p-4'}`}>
-                <div className={`rounded-lg bg-white/20 p-2 ${compact ? 'hidden' : ''}`}>
-                    <Plus className="size-5" />
-                </div>
-                <div className={compact ? 'w-full text-center' : ''}>
-                    <p className={`font-black tracking-tight uppercase ${compact ? 'text-[10px] leading-tight' : 'text-xs'}`}>Login om sticker te plakken</p>
+            <Card
+                bg="var(--mantine-color-accent-filled)"
+                c="#1E1221"
+                p={compact ? 'xs' : 'md'}
+                radius="lg"
+                shadow="xl"
+                w={compact ? '100%' : undefined}
+                style={{ pointerEvents: 'auto' }}
+            >
+                <Group align="flex-start" gap="sm" wrap="nowrap" justify={compact ? 'center' : 'flex-start'}>
                     {!compact && (
-                        <p className="mt-1 text-[10px] opacity-80">Alleen leden kunnen nieuwe locaties toevoegen aan de wereldkaart.</p>
+                        <ThemeIcon variant="light" color="darkBase" radius="md" size="lg">
+                            <Plus size={18} />
+                        </ThemeIcon>
                     )}
-                </div>
-            </div>
+                    <Box ta={compact ? 'center' : 'left'}>
+                        <Text size="xs" fw={900} tt="uppercase" lh={1.2}>
+                            Login om sticker te plakken
+                        </Text>
+                        {!compact && (
+                            <Text size="xs" mt={4} opacity={0.85}>
+                                Alleen leden kunnen nieuwe locaties toevoegen aan de wereldkaart.
+                            </Text>
+                        )}
+                    </Box>
+                </Group>
+            </Card>
         );
     }
 
     return (
-        <div className={`pointer-events-auto rounded-2xl border border-white/10 bg-(--bg-card)/90 shadow-2xl backdrop-blur-md ${compact ? 'w-full p-2.5' : 'p-4'}`}>
-            <button
-                onClick={onPlaceSticker}
-                disabled={isLocating}
-                className={`form-button flex w-full items-center justify-center gap-2 rounded-xl bg-linear-to-r from-(--theme-purple) to-orange-500 font-black tracking-widest text-white uppercase shadow-lg transition-all hover:shadow-xl disabled:opacity-50 ${compact ? 'px-3 py-2 text-[10px] leading-tight' : 'py-3 text-xs'}`}
-                type="button">
-                {isLocating ? <Loader2 className="size-4 animate-spin" /> : <MapIcon className="size-4 shrink-0" />}
-                <span className="text-center whitespace-normal">Plaats sticker</span>
-            </button>
-            <p className={`mt-2 text-center text-[9px] font-bold tracking-tighter text-(--text-muted) uppercase italic ${compact ? 'leading-tight' : ''}`}>
-                Kies je huidige locatie of zoek een adres
-            </p>
-        </div>
+        <Card
+            p={compact ? 'xs' : 'md'}
+            radius="lg"
+            shadow="xl"
+            w={compact ? '100%' : undefined}
+            style={{ pointerEvents: 'auto' }}
+        >
+            <Stack gap="xs">
+                <Button
+                    type="button"
+                    fullWidth
+                    size={compact ? 'xs' : 'sm'}
+                    onClick={onPlaceSticker}
+                    leftSection={<MapIcon size={16} />}
+                >
+                    Plaats sticker
+                </Button>
+                <Text size="xs" fw={600} c="dimmed" ta="center" fs="italic">
+                    Kies je huidige locatie of zoek een adres
+                </Text>
+            </Stack>
+        </Card>
     );
 }

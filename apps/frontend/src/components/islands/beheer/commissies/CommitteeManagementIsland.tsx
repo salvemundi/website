@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Users } from 'lucide-react';
+import { Box, Grid, Paper, Stack, Text, Title } from '@mantine/core';
 import type { Committee, CommitteeMember } from '@/server/queries/commissies/beheer-commissies.queries';
 import {
     getCommitteeMembers,
@@ -11,10 +12,8 @@ import {
     updateCommitteeDetails
 } from '@/server/actions/beheer/committees/beheer-committees.actions';
 
-
 import CommitteeSidebar from './CommitteeSidebar';
 import CommitteeDetail from './CommitteeDetail';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { type UserBasic } from '@salvemundi/validations';
 
@@ -33,7 +32,7 @@ interface Props {
 }
 
 export default function CommitteeManagementIsland({ initialCommittees, initialMembers = [] }: Props) {
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [committees] = useState<Committee[]>(initialCommittees);
     const [selected, setSelected] = useState<Committee | null>(initialCommittees[0] || null);
     const [members, setMembers] = useState<CommitteeMember[]>(initialMembers);
@@ -53,7 +52,6 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
     const [editDesc, setEditDesc] = useState(initialCommittees[0]?.description || '');
     const [savingDetail, setSavingDetail] = useState(false);
 
-    // Filtering logic
     const filteredCommittees = useMemo(() => {
         const sorted = [...committees]
             .map(c => ({ ...c, isStandard: STANDARD_COMMITTEES.includes(normalizeName(c.name)) }))
@@ -68,7 +66,6 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
             return showAll ? true : c.isStandard;
         });
     }, [committees, searchQuery, showAll]);
-
 
     const handleSelectCommittee = useCallback(async (c: Committee) => {
         activeCommitteeIdRef.current = c.id;
@@ -109,7 +106,6 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
         }
     }, []);
 
-    // Read from localStorage on mount (client-side only)
     useEffect(() => {
         const savedShowAll = localStorage.getItem('sm_admin_comm_show_all');
         if (savedShowAll !== null) {
@@ -136,7 +132,6 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
             showToast(res.error ?? 'Toevoegen mislukt', 'error');
         } else {
             showToast(`${user.first_name} succesvol toegevoegd aan de commissie`, 'success');
-            // Sync is done on server, so we can reload immediately
             void handleSelectCommittee(selected);
         }
         setAddingMember(false);
@@ -146,7 +141,6 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
         if (!selected?.azure_group_id) return;
         if (!confirm(`Weet je zeker dat je ${member.displayName} wilt verwijderen?`)) return;
 
-        // Optimistic UI Update
         const previousMembers = [...members];
         setMembers(prev => prev.filter(m => m.entraId !== member.entraId));
         setActionLoading(`remove-${member.entraId}`);
@@ -155,7 +149,7 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
         if (res.success) {
             showToast('Lid succesvol verwijderd uit de commissie', 'success');
         } else {
-            setMembers(previousMembers); // Rollback
+            setMembers(previousMembers);
             showToast(res.error ?? 'Verwijderen mislukt', 'error');
         }
         setActionLoading(null);
@@ -167,7 +161,6 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
             return;
         }
 
-        // Optimistic UI Update
         const previousMembers = [...members];
         setMembers(prev => prev.map(m => m.entraId === member.entraId ? { ...m, isLeader: !m.isLeader } : m));
         setActionLoading(`leader-${member.entraId}`);
@@ -181,7 +174,7 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
         if (res.success) {
             showToast(`Status '${member.isLeader ? 'Lid' : 'Leider'}' succesvol bijgewerkt`, 'success');
         } else {
-            setMembers(previousMembers); // Rollback
+            setMembers(previousMembers);
             showToast(res.error ?? 'Bijwerken mislukt', 'error');
         }
         setActionLoading(null);
@@ -204,13 +197,11 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
         setSavingDetail(false);
     };
 
-
-
     return (
-        <div className="w-full">
-            <div className="grid grid-cols-1 items-stretch gap-4 md:gap-8 lg:grid-cols-12">
-                <div className="lg:col-span-4">
-                    <div className="w-full lg:sticky lg:top-45 lg:self-start">
+        <Box w="100%">
+            <Grid gap="lg" align="stretch">
+                <Grid.Col span={{ base: 12, lg: 4 }}>
+                    <Box pos={{ lg: 'sticky' }} top={{ lg: 100 }}>
                         <CommitteeSidebar
                             committees={filteredCommittees}
                             selectedId={selected?.id || null}
@@ -220,18 +211,20 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
                             showAll={showAll}
                             onShowAllChange={handleShowAllChange}
                         />
-                    </div>
-                </div>
+                    </Box>
+                </Grid.Col>
 
-                <div className="lg:col-span-8">
+                <Grid.Col span={{ base: 12, lg: 8 }}>
                     {!selected ? (
-                        <div className="rounded-(--beheer-radius) border-2 border-dashed border-(--beheer-border) bg-(--beheer-card-bg) p-24 text-center opacity-60 shadow-sm ring-1 ring-(--beheer-border)">
-                            <Users className="mx-auto mb-6 size-16 text-(--beheer-text-muted) opacity-20" />
-                            <h3 className="mb-2 text-xl font-semibold text-(--beheer-text)">Geen selectie</h3>
-                            <p className="mx-auto max-w-xs text-xs font-semibold text-(--beheer-text-muted) opacity-60">
-                                Kies een groep uit de lijst om de details en leden te beheren.
-                            </p>
-                        </div>
+                        <Paper withBorder p="xl" ta="center" style={{ borderStyle: 'dashed' }}>
+                            <Stack align="center" gap="xs" py="xl">
+                                <Users size={48} opacity={0.25} />
+                                <Title order={3} size="h4">Geen selectie</Title>
+                                <Text size="xs" fw={600} c="dimmed" maw={280}>
+                                    Kies een groep uit de lijst om de details en leden te beheren.
+                                </Text>
+                            </Stack>
+                        </Paper>
                     ) : (
                         <CommitteeDetail
                             selected={selected}
@@ -253,9 +246,8 @@ export default function CommitteeManagementIsland({ initialCommittees, initialMe
                             onToggleLeader={(member) => { void handleToggleLeader(member); }}
                         />
                     )}
-                </div>
-            </div>
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+                </Grid.Col>
+            </Grid>
+        </Box>
     );
 }

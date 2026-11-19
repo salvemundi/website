@@ -1,6 +1,9 @@
 export const dynamic = 'force-dynamic';
 
+import type { Metadata } from 'next';
 import { connection } from 'next/server';
+import { Wine, Calendar, Clock, MapPin, Mail, ScrollText } from 'lucide-react';
+import { Card, Container, Grid, GridCol, Group, List, ListItem, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { getFeatureFlagSettings } from '@/server/actions/beheer/beheer-utils.actions';
 import {
@@ -10,9 +13,7 @@ import {
 } from '@/server/queries/cobo/beheer-cobo.queries';
 import CoboPublicQueueIsland from '@/components/islands/cobo/CoboPublicQueueIsland';
 import CoboBoardMembersGrid from '@/components/islands/cobo/CoboBoardMembersGrid';
-import { Wine, Calendar, Clock, MapPin, Mail, ScrollText } from 'lucide-react';
 import { formatDate } from '@/shared/lib/utils/date';
-import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: 'Constitutieborrel (CoBo) | Salve Mundi',
@@ -39,19 +40,21 @@ export default async function CoboPage() {
                 title="Constitutieborrel"
                 description="Vier de constitutie van het nieuwe bestuur samen met Salve Mundi en zusterverenigingen."
             >
-                <div className="mx-auto max-w-7xl px-fluid-md pt-fluid-lg pb-16 sm:pb-24 lg:pb-32">
-                    <div className="squircle-lg mx-auto max-w-2xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
-                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10">
-                            <Wine className="size-8 text-purple-700 dark:text-purple-300" />
-                        </div>
-                        <h2 className="text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
-                            CoBo Gesloten
-                        </h2>
-                        <p className="mt-2 text-sm leading-relaxed font-medium text-text-muted">
-                            {featureFlag.disabled_message || 'De CoBo module is momenteel gesloten.'}
-                        </p>
-                    </div>
-                </div>
+                <Container size="sm" py="xl">
+                    <Card padding="xl">
+                        <Stack align="center" ta="center" gap="md">
+                            <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                                <Wine size={32} />
+                            </ThemeIcon>
+                            <Title order={2} c="brand">
+                                CoBo Gesloten
+                            </Title>
+                            <Text size="sm" c="dimmed">
+                                {featureFlag.disabled_message || 'De CoBo module is momenteel gesloten.'}
+                            </Text>
+                        </Stack>
+                    </Card>
+                </Container>
             </PublicPageShell>
         );
     }
@@ -62,19 +65,21 @@ export default async function CoboPage() {
                 title="Constitutieborrel"
                 description="Vier de constitutie van het nieuwe bestuur samen met Salve Mundi en zusterverenigingen."
             >
-                <div className="mx-auto max-w-7xl px-fluid-md pt-fluid-lg pb-16 sm:pb-24 lg:pb-32">
-                    <div className="squircle-lg mx-auto max-w-2xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
-                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10">
-                            <Calendar className="size-8 text-purple-700 dark:text-purple-300" />
-                        </div>
-                        <h2 className="text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
-                            Geen actieve CoBo gevonden
-                        </h2>
-                        <p className="mt-2 text-sm leading-relaxed font-medium text-text-muted">
-                            Er is momenteel geen actieve Constitutieborrel gepland. Houd de agenda in de gaten!
-                        </p>
-                    </div>
-                </div>
+                <Container size="sm" py="xl">
+                    <Card padding="xl">
+                        <Stack align="center" ta="center" gap="md">
+                            <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                                <Calendar size={32} />
+                            </ThemeIcon>
+                            <Title order={2} c="brand">
+                                Geen actieve CoBo gevonden
+                            </Title>
+                            <Text size="sm" c="dimmed">
+                                Er is momenteel geen actieve Constitutieborrel gepland. Houd de agenda in de gaten!
+                            </Text>
+                        </Stack>
+                    </Card>
+                </Container>
             </PublicPageShell>
         );
     }
@@ -91,83 +96,101 @@ export default async function CoboPage() {
             title={activeCobo.title || 'Constitutieborrel'}
             description={activeCobo.description || 'Vier de constitutie van het nieuwe bestuur samen met Salve Mundi en zusterverenigingen.'}
         >
-            <div className="mx-auto max-w-7xl space-y-12 px-fluid-md pt-fluid-lg pb-16 sm:pb-24 lg:pb-32">
-                <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
-                    <div className="space-y-8 lg:col-span-7">
-                        <CoboPublicQueueIsland
-                            coboId={activeCobo.id}
-                            initialGuestBoards={guestBoards}
-                            limit={3}
-                        />
-                    </div>
+            <Container size="xl" py="xl">
+                <Stack gap="xl">
+                    <Grid gap="xl" align="flex-start">
+                        <GridCol span={{ base: 12, lg: 7 }}>
+                            <CoboPublicQueueIsland
+                                coboId={activeCobo.id}
+                                initialGuestBoards={guestBoards}
+                                limit={3}
+                            />
+                        </GridCol>
 
-                    <aside className="space-y-6 lg:col-span-5">
-                        <section className="space-y-5 rounded-2xl border border-border-color bg-bg-card p-6 shadow-lg sm:rounded-3xl sm:p-8">
-                            <h2 className="flex items-center gap-3 text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
-                                Evenement Details
-                            </h2>
+                        <GridCol span={{ base: 12, lg: 5 }}>
+                            <Stack component="aside" gap="lg">
+                                <Card padding="xl">
+                                    <Stack gap="lg">
+                                        <Title order={2} size="h3" c="brand">
+                                            Evenement Details
+                                        </Title>
 
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3.5">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/5 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
-                                        <Clock className="size-5" />
-                                    </div>
-                                    <div className="space-y-0.5">
-                                        <p className="text-[10px] font-bold tracking-widest text-(--text-muted) uppercase">Datum &amp; Tijd</p>
-                                        <p className="text-sm leading-relaxed font-medium text-(--text-main)">
-                                            {formattedDate}
-                                        </p>
-                                    </div>
-                                </div>
+                                        <Stack gap="md">
+                                            <Group gap="md" wrap="nowrap">
+                                                <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                                    <Clock size={20} />
+                                                </ThemeIcon>
+                                                <Stack gap={2}>
+                                                    <Text size="xs" fw={700} tt="uppercase" c="dimmed">
+                                                        Datum &amp; Tijd
+                                                    </Text>
+                                                    <Text size="sm" fw={500}>
+                                                        {formattedDate}
+                                                    </Text>
+                                                </Stack>
+                                            </Group>
 
-                                <div className="flex items-center gap-3.5">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/5 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
-                                        <MapPin className="size-5" />
-                                    </div>
-                                    <div className="space-y-0.5">
-                                        <p className="text-[10px] font-bold tracking-widest text-(--text-muted) uppercase">Locatie</p>
-                                        <p className="text-sm leading-relaxed font-medium text-(--text-main)">
-                                            {activeCobo.location || 'Borrelbar Eindhoven'}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3.5">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/5 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
-                                        <Mail className="size-5" />
-                                    </div>
-                                    <div className="space-y-0.5">
-                                        <p className="text-[10px] font-bold tracking-widest text-(--text-muted) uppercase">Contact</p>
-                                        <p className="text-sm leading-relaxed font-medium text-(--text-main)">cobo@salvemundi.nl</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
+                                            <Group gap="md" wrap="nowrap">
+                                                <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                                    <MapPin size={20} />
+                                                </ThemeIcon>
+                                                <Stack gap={2}>
+                                                    <Text size="xs" fw={700} tt="uppercase" c="dimmed">
+                                                        Locatie
+                                                    </Text>
+                                                    <Text size="sm" fw={500}>
+                                                        {activeCobo.location || 'Borrelbar Eindhoven'}
+                                                    </Text>
+                                                </Stack>
+                                            </Group>
 
-                        {/* CoBo Etiquette & Regels */}
-                        <section className="space-y-4 rounded-2xl border border-border-color bg-bg-card p-6 shadow-lg sm:rounded-3xl sm:p-8">
-                            <h2 className="flex items-center gap-3 text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
-                                <ScrollText className="size-6 text-purple-600 dark:text-purple-300" />
-                                CoBo Etiquette
-                            </h2>
-                            <div className="space-y-3 text-sm leading-relaxed font-medium text-slate-600 dark:text-slate-400">
-                                <p>
-                                    Kom je het bestuur feliciteren? Meld je bij binnenkomst aan bij de <strong>pedel</strong> om op de wachtlijst te worden geplaatst.
-                                </p>
-                                <ul className="list-inside list-disc space-y-1.5 text-xs text-text-muted">
-                                    <li>Zorg dat je klaarstaat wanneer je bestuur bijna aan de beurt is.</li>
-                                    <li>Houd rekening met de alcohol- en veto-wensen van de bestuursleden hieronder.</li>
-                                    <li>Geniet van een gezellige avond samen met Salve Mundi!</li>
-                                </ul>
-                            </div>
-                        </section>
-                    </aside>
-                </div>
+                                            <Group gap="md" wrap="nowrap">
+                                                <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                                    <Mail size={20} />
+                                                </ThemeIcon>
+                                                <Stack gap={2}>
+                                                    <Text size="xs" fw={700} tt="uppercase" c="dimmed">
+                                                        Contact
+                                                    </Text>
+                                                    <Text size="sm" fw={500}>
+                                                        cobo@salvemundi.nl
+                                                    </Text>
+                                                </Stack>
+                                            </Group>
+                                        </Stack>
+                                    </Stack>
+                                </Card>
 
-                <CoboBoardMembersGrid
-                    boardMembers={boardMembers}
-                    coboId={activeCobo.id}
-                />
-            </div>
+                                <Card padding="xl">
+                                    <Stack gap="md">
+                                        <Group gap="sm">
+                                            <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                                                <ScrollText size={20} />
+                                            </ThemeIcon>
+                                            <Title order={2} size="h3" c="brand">
+                                                CoBo Etiquette
+                                            </Title>
+                                        </Group>
+                                        <Text size="sm" c="dimmed">
+                                            Kom je het bestuur feliciteren? Meld je bij binnenkomst aan bij de <strong>pedel</strong> om op de wachtlijst te worden geplaatst.
+                                        </Text>
+                                        <List size="xs" c="dimmed" spacing="xs">
+                                            <ListItem>Zorg dat je klaarstaat wanneer je bestuur bijna aan de beurt is.</ListItem>
+                                            <ListItem>Houd rekening met de alcohol- en veto-wensen van de bestuursleden hieronder.</ListItem>
+                                            <ListItem>Geniet van een gezellige avond samen met Salve Mundi!</ListItem>
+                                        </List>
+                                    </Stack>
+                                </Card>
+                            </Stack>
+                        </GridCol>
+                    </Grid>
+
+                    <CoboBoardMembersGrid
+                        boardMembers={boardMembers}
+                        coboId={activeCobo.id}
+                    />
+                </Stack>
+            </Container>
         </PublicPageShell>
     );
 }

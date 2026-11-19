@@ -1,3 +1,4 @@
+import { Box } from '@mantine/core';
 import BeheerVacanciesIsland from '@/components/islands/beheer/vacancies/BeheerVacanciesIsland';
 import { getAdminVacancies, getPendingSubmissions } from '@/server/actions/vacancies/vacancies-admin.actions';
 
@@ -19,8 +20,8 @@ export default async function BijbanenbankAdminPage() {
     }));
 
     return (
-        <div className="pb-20">
+        <Box pb="xl">
             <BeheerVacanciesIsland vacancies={vacancyRows} submissions={submissions} />
-        </div>
+        </Box>
     );
 }

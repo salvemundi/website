@@ -1,34 +1,37 @@
-/* Mobile menu - client component */
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils/cn';
-import { isPathActive } from '@/lib/utils/link-utils';
 import Image from 'next/image';
+import { Shield, Sparkles, LogOut, ChevronRight, X } from 'lucide-react';
 import {
-    Shield, Sparkles, LogOut
-} from 'lucide-react';
+    ActionIcon,
+    Anchor,
+    Avatar,
+    Box,
+    Button,
+    Divider,
+    Drawer,
+    Group,
+    NavLink,
+    Stack,
+    Text,
+} from '@mantine/core';
+import { isPathActive } from '@/lib/utils/link-utils';
 import { ROUTES } from '@/lib/config/routes';
 import { getLoginCallbackURL } from '@/lib/utils/login-redirect';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { BRAND_CONFIG } from '@/lib/config/brand';
 import { authClient } from '@/lib/auth';
 import { IconMap, type IconName } from '@/lib/utils/icons';
-
-interface User {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-    avatar?: string | null;
-}
+import { safeConsoleError } from '@/server/utils/logger';
+import { type EnrichedUser } from '@/types/auth';
 
 interface MobileMenuProps {
     isOpen: boolean;
     onClose: () => void;
-    user: User | null;
+    user: EnrichedUser | null;
     isAuthenticated: boolean;
     navItems: { name: string; href: string; icon: IconName }[];
     canAccessAdmin: boolean;
@@ -44,183 +47,181 @@ export default function MobileMenu({
     navItems,
     canAccessAdmin,
     onLogout,
-    mounted
+    mounted,
 }: MobileMenuProps) {
     const pathname = usePathname() || '/';
-    return (
-        <div
-            className={`lg:hidden ${isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
-                } transition-opacity duration-200`}
-        >
-            {/* Backdrop */}
-            <div
-                className="fixed inset-0 z-190 bg-black/40 backdrop-blur-sm transition-all duration-300"
-                onClick={onClose}
-                aria-hidden={!isOpen}
-                role="presentation"
-            />
 
-            {/* Slide-out paneel */}
-            <nav
-                className={`fixed right-0 z-200 flex w-full max-w-xs flex-col gap-6 overflow-y-auto bg-(--bg-main) px-6 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))] shadow-2xl transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'
-                    }`}
-                style={{ top: 0, height: '100dvh' }}
-                aria-label="Mobiele navigatie"
-                role="dialog"
-                aria-modal="true"
+    return (
+        <Drawer
+            opened={isOpen}
+            onClose={onClose}
+            position="right"
+            size="xs"
+            zIndex={200}
+            withCloseButton={false}
+            padding="lg"
+            aria-label="Mobiele navigatie"
+        >
+            <Stack
+                gap="lg"
+                mih="calc(100dvh - 2.5rem)"
+                style={{
+                    paddingTop: 'env(safe-area-inset-top, 0px)',
+                    paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+                }}
             >
-                {/* Koptekst van het paneel */}
-                <div className="flex items-center justify-between">
-                    <Link
-                        href="/"
-                        onClick={onClose}
-                        className="flex items-center gap-3"
-                    >
-                        <span className="relative inline-flex size-10 items-center justify-center overflow-hidden rounded-full bg-(--bg-card) shadow-sm">
+                <Group justify="space-between" wrap="nowrap">
+                    <Anchor component={Link} href="/" onClick={onClose} underline="never" c="inherit">
+                        <Group gap="sm" wrap="nowrap">
                             {mounted && (user?.avatar || user?.image) ? (
-                                <Image
-                                    src={(user.avatar ? getImageUrl(user.avatar) : (user.image || '')) as string}
+                                <Avatar
+                                    src={user.avatar ? getImageUrl(user.avatar) : (user.image || undefined)}
                                     alt={user.name || 'Profiel'}
-                                    fill
-                                    className="object-cover"
-                                    priority
-                                    unoptimized
+                                    size={40}
+                                    radius="xl"
+                                    color="brand"
                                 />
                             ) : (
-                                <div className="relative size-8">
-                                    <Image
-                                        src={BRAND_CONFIG.logoLightMode}
-                                        alt="Logo"
-                                        fill
-                                        className="object-contain dark:hidden"
-                                    />
-                                    <Image
-                                        src={BRAND_CONFIG.logoDarkMode}
-                                        alt="Logo"
-                                        fill
-                                        className="hidden object-contain dark:block"
-                                    />
-                                </div>
+                                <Avatar
+                                    size={40}
+                                    radius="xl"
+                                    bg="var(--mantine-color-default)"
+                                    style={{ boxShadow: 'var(--mantine-shadow-xs)' }}
+                                >
+                                    <Box pos="relative" w={32} h={32}>
+                                        <Image
+                                            src={BRAND_CONFIG.logoLightMode}
+                                            alt="Logo"
+                                            fill
+                                            className="object-contain dark:hidden"
+                                        />
+                                        <Image
+                                            src={BRAND_CONFIG.logoDarkMode}
+                                            alt="Logo"
+                                            fill
+                                            className="hidden object-contain dark:block"
+                                        />
+                                    </Box>
+                                </Avatar>
                             )}
-                        </span>
-                        <span className="text-sm font-semibold text-(--text-main)">
-                            Salve Mundi
-                        </span>
-                    </Link>
-                </div>
+                            <Text size="sm" fw={600}>
+                                Salve Mundi
+                            </Text>
+                        </Group>
+                    </Anchor>
 
-                {/* Navigatielinks */}
-                <div className="space-y-4">
+                    <ActionIcon
+                        type="button"
+                        variant="subtle"
+                        size="lg"
+                        onClick={onClose}
+                        aria-label="Sluit menu"
+                    >
+                        <X size={20} />
+                    </ActionIcon>
+                </Group>
+
+                <Stack gap="xs">
                     {canAccessAdmin && (
-                        <Link
+                        <Button
+                            component={Link}
                             href={ROUTES.ADMIN}
                             onClick={onClose}
-                            className="flex items-center gap-2 rounded-2xl bg-purple-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition-all active:scale-95"
+                            leftSection={<Shield size={18} />}
+                            fullWidth
+                            justify="flex-start"
                         >
-                            <Shield className="size-5" />
-                            <span>Beheer</span>
-                        </Link>
+                            Beheer
+                        </Button>
                     )}
 
                     {isAuthenticated && (
-                        <Link
+                        <NavLink
+                            component={Link}
                             href={ROUTES.ACCOUNT}
                             onClick={onClose}
-                            className="flex items-center justify-between rounded-2xl border border-(--border-color)/10 bg-(--bg-card) px-4 py-3 text-sm font-semibold text-(--text-main) shadow-sm transition-all active:scale-95"
-                        >
-                            <span className="flex items-center gap-3">
-                                <IconMap.User className="size-5 text-purple-500" />
-                                <span>Mijn Profiel</span>
-                            </span>
-                            <span aria-hidden className="text-(--text-muted)">›</span>
-                        </Link>
+                            label="Mijn Profiel"
+                            leftSection={<IconMap.User size={18} />}
+                            rightSection={<ChevronRight size={14} />}
+                            active={isPathActive(pathname, ROUTES.ACCOUNT)}
+                            variant="light"
+                            color="brand"
+                            style={{ borderRadius: 'var(--mantine-radius-md)' }}
+                        />
                     )}
 
-                    {navItems
-                        .filter(item => {
-                            if (!isAuthenticated && item.href === ROUTES.MEMBERSHIP) return false;
-                            return true;
-                        })
-                        .map((link) => {
+                    {navItems.map((link) => {
                             const Icon = IconMap[link.icon];
                             const active = isPathActive(pathname, link.href);
 
                             return (
-                                <Link
+                                <NavLink
                                     key={link.href}
+                                    component={Link}
                                     href={link.href}
                                     onClick={onClose}
-                                    className={cn(
-                                        'active:scale-0.98 flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold shadow-sm transition-all',
-                                        active
-                                            ? 'bg-purple-50 text-purple-500'
-                                            : 'bg-[color-mix(in_srgb,var(--bg-card)_70%,transparent)] text-(--text-main)'
-                                    )}
-                                >
-                                    <span className="flex items-center gap-3 whitespace-nowrap">
-                                        <Icon className="size-5 text-purple-500" aria-hidden="true" />
-                                        <span>{link.name}</span>
-                                    </span>
-                                    <span aria-hidden="true" className="text-(--text-muted)">›</span>
-                                </Link>
+                                    label={link.name}
+                                    leftSection={<Icon size={18} aria-hidden="true" />}
+                                    rightSection={<ChevronRight size={14} />}
+                                    active={active}
+                                    variant="light"
+                                    color="brand"
+                                    style={{ borderRadius: 'var(--mantine-radius-md)' }}
+                                />
                             );
                         })}
-                </div>
+                </Stack>
 
-                {/* Word-lid-knop (niet ingelogd) */}
                 {mounted && !isAuthenticated && (
-                    <Link
+                    <Button
+                        component={Link}
                         href={ROUTES.MEMBERSHIP}
                         onClick={onClose}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 transition-all active:scale-95"
-                        style={{
-                            background: 'linear-gradient(135deg, var(--color-purple-500), var(--color-purple-700))',
-                            color: 'white'
-                        }}
+                        leftSection={<Sparkles size={16} />}
+                        fullWidth
                     >
-                        <Sparkles className="size-4" />
                         Word lid
-                    </Link>
+                    </Button>
                 )}
 
-                {/* Onderste acties: uitlogknop / inlogknop */}
-                <div className="mt-auto border-t border-(--border-color)/10 pt-6">
+                <Box mt="auto">
+                    <Divider mb="md" />
                     {mounted && (
                         isAuthenticated ? (
-                            <button
+                            <Button
                                 type="button"
+                                color="error"
+                                variant="light"
+                                fullWidth
+                                leftSection={<LogOut size={18} />}
                                 onClick={onLogout}
-                                className="form-button flex w-full items-center justify-center gap-2 rounded-2xl bg-red-500/5 px-4 py-3 text-sm font-semibold text-red-500 transition-all hover:bg-red-500/10 active:scale-95"
                             >
-                                <LogOut className="size-5" />
-                                <span>Uitloggen</span>
-                            </button>
+                                Uitloggen
+                            </Button>
                         ) : (
-                            <button
+                            <Button
                                 type="button"
+                                fullWidth
                                 onClick={() => {
-                                    void (async () => {
-                                        try {
-                                            await authClient.signIn.social({
-                                                provider: 'microsoft',
-                                                callbackURL: getLoginCallbackURL(new URLSearchParams(window.location.search).get('callbackURL'), ROUTES.ACCOUNT)
-                                            });
-                                        } catch {
-                                        }
-                                    })();
-                                }}
-                                className="form-button flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg shadow-purple-500/10 transition-all active:scale-95"
-                                style={{
-                                    backgroundColor: 'var(--color-purple-500)',
-                                    color: 'white'
+                                    void authClient.signIn
+                                        .social({
+                                            provider: 'microsoft',
+                                            callbackURL: getLoginCallbackURL(
+                                                new URLSearchParams(window.location.search).get('callbackURL'),
+                                                ROUTES.ACCOUNT
+                                            ),
+                                        })
+                                        .catch((err) => {
+                                            safeConsoleError('[MobileMenu.tsx][MobileMenu] Sign-in failed:', err);
+                                        });
                                 }}
                             >
                                 Inloggen
-                            </button>
+                            </Button>
                         )
                     )}
-                </div>
-            </nav>
-        </div>
+                </Box>
+            </Stack>
+        </Drawer>
     );
 }

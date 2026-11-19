@@ -3,7 +3,6 @@
 import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import BeheerVisibilityToggle from '@/components/ui/beheer/BeheerVisibilityToggle';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { toggleIntroVisibility } from '@/server/actions/beheer/intro/beheer-intro-core.actions';
 
@@ -15,7 +14,7 @@ export default function IntroVisibilityIsland({ initialVisible }: Props) {
     const router = useRouter();
     const [isVisible, setIsVisible] = useState(initialVisible);
     const [isPending, startTransition] = useTransition();
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
 
     const handleToggle = () => {
         startTransition(async () => {
@@ -35,13 +34,10 @@ export default function IntroVisibilityIsland({ initialVisible }: Props) {
     };
 
     return (
-        <>
-            <BeheerVisibilityToggle
-                isVisible={isVisible}
-                onToggle={handleToggle}
-                isPending={isPending}
-            />
-            {toast && <BeheerToast toast={toast} onClose={hideToast} />}
-        </>
+        <BeheerVisibilityToggle
+            isVisible={isVisible}
+            onToggle={handleToggle}
+            isPending={isPending}
+        />
     );
 }

@@ -10,6 +10,7 @@ import { safeConsoleError } from '@/server/utils/logger';
 import { imageUploadSchema } from '@salvemundi/validations/schema/shared.zod';
 import { updateUserProfileForUser } from '@/server/services/member-profile';
 import { triggerUserSyncAction } from '@/server/actions/infrastructure/azure-sync/sync-tasks.actions';
+import { fetchInternalService } from '@/server/utils/internal-service';
 interface AzureErrorResponse { details?: string; error?: { code?: string; message?: string }; code?: string; message?: string }
 
 export async function updateUserProfile(data: z.infer<typeof updateProfileSchema>) {
@@ -36,7 +37,6 @@ export async function uploadUserAvatar(formData: FormData) {
     const safeFile = parsedFile.data;
 
     const AZURE_MGMT_URL = process.env.AZURE_MANAGEMENT_SERVICE_URL;
-    const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
     const entraId = user.entra_id;
 
     if (!entraId) return { success: false, error: 'Je account is nog niet gekoppeld aan Microsoft Entra ID.' };
@@ -53,13 +53,21 @@ export async function uploadUserAvatar(formData: FormData) {
         const azureFormData = new FormData();
         azureFormData.append('file', new Blob([new Uint8Array(compressedBuffer)], { type: 'image/jpeg' }), 'avatar.jpg');
 
-        const azureRes = await fetch(`${AZURE_MGMT_URL}/api/users/${entraId}/photo`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${INTERNAL_TOKEN}`
-            },
-            body: azureFormData
-        });
+        const serviceResult = await fetchInternalService(
+            'Microsoft Entra-beheerservice',
+            AZURE_MGMT_URL,
+            `/api/users/${encodeURIComponent(entraId)}/photo`,
+            {
+                method: 'PUT',
+                body: azureFormData,
+            }
+        );
+
+        if (!serviceResult.ok) {
+            return { success: false, error: serviceResult.userMessage };
+        }
+
+        const azureRes = serviceResult.response;
 
         if (!azureRes.ok) {
             const errorData = await azureRes.json().catch((error: unknown) => {

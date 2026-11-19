@@ -8,12 +8,6 @@ interface SyncServiceErrorResponse {
     error?: unknown;
 }
 
-interface DirectusUserRow {
-    id?: string;
-    entra_id?: unknown;
-    email?: unknown;
-}
-
 export async function triggerFullSyncAction(options?: { fields?: string[]; forceLink?: boolean; activeOnly?: boolean; sendExpiryEmails?: boolean; convertUpn?: boolean; ignoreGracePeriod?: boolean }) {
     const admin = await checkSyncAccess();
     if (!admin) return { success: false, error: "Unauthorized" };
@@ -87,14 +81,14 @@ export async function triggerUserSyncAction(userId: string, options?: { fields: 
         return { success: false, error: "Systeemfout: Sync service URL niet geconfigureerd." };
     }
 
-    let targetUser: DirectusUserRow | undefined;
+    let targetUser: { id: string; entra_id: string | null; email: string | null } | undefined;
     try {
         const { db, schema } = await import('@salvemundi/db');
         const { eq } = await import('drizzle-orm');
-        const user = await db.query.directus_users.findFirst({
-            where: eq(schema.directus_users.entra_id, userId)
+        targetUser = await db.query.directus_users.findFirst({
+            where: eq(schema.directus_users.entra_id, userId),
+            columns: { id: true, entra_id: true, email: true }
         });
-        targetUser = user as unknown as DirectusUserRow | undefined;
     } catch (error: unknown) {
         safeConsoleError(`[sync-tasks.actions.ts][triggerUserSyncAction] Drizzle lookup failed for user ${userId}`, error);
         return { success: false, error: "Kon de gebruiker niet ophalen uit de database." };

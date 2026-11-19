@@ -1,25 +1,27 @@
 'use client';
 
 import { User, Mail, Building2, Tag, Users } from 'lucide-react';
-import BeheerSelect from '@/components/ui/beheer/BeheerSelect';
+import { Select, SimpleGrid, Stack, TextInput } from '@mantine/core';
 
 interface SignupPersonalDetailsProps {
     formData: {
         name: string;
         email: string;
         association: string;
-        payment_status: "paid" | "open" | "failed" | "canceled" | "expired";
+        payment_status: 'paid' | 'open' | 'failed' | 'canceled' | 'expired';
         amount_tickets: number;
         group_name: string | null;
     };
-    setFormData: React.Dispatch<React.SetStateAction<{
-        name: string;
-        email: string;
-        association: string;
-        payment_status: "paid" | "open" | "failed" | "canceled" | "expired";
-        amount_tickets: number;
-        group_name: string | null;
-    }>>;
+    setFormData: React.Dispatch<
+        React.SetStateAction<{
+            name: string;
+            email: string;
+            association: string;
+            payment_status: 'paid' | 'open' | 'failed' | 'canceled' | 'expired';
+            amount_tickets: number;
+            group_name: string | null;
+        }>
+    >;
     eventGroups?: string[];
 }
 
@@ -28,85 +30,80 @@ const PAYMENT_STATUS_OPTIONS = [
     { value: 'open', label: 'Open' },
     { value: 'canceled', label: 'Geannuleerd' },
     { value: 'failed', label: 'Mislukt' },
-    { value: 'expired', label: 'Verlopen' }
-] as const;
+    { value: 'expired', label: 'Verlopen' },
+];
 
 const getGroupOptions = (groups: string[]) => [
     { value: '', label: 'Geen groep (nog niet ingedeeld)' },
-    ...groups.map((g) => ({ value: g, label: g }))
+    ...groups.map((g) => ({ value: g, label: g })),
 ];
 
-export default function SignupPersonalDetails({ formData, setFormData, eventGroups = [] }: SignupPersonalDetailsProps) {
+export default function SignupPersonalDetails({
+    formData,
+    setFormData,
+    eventGroups = [],
+}: SignupPersonalDetailsProps) {
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div className="space-y-2">
-                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
-                        <User className="size-3" /> Naam
-                    </label>
-                    <input
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
-                        required
-                        autoComplete="off"
-                    />
-                </div>
+        <Stack gap="md">
+            <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+                <TextInput
+                    label="Naam"
+                    leftSection={<User size={14} />}
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                    autoComplete="off"
+                />
 
-                <div className="space-y-2">
-                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
-                        <Mail className="size-3" /> E-mailadres
-                    </label>
-                    <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
-                        required
-                        autoComplete="off"
-                    />
-                </div>
-            </div>
+                <TextInput
+                    label="E-mailadres"
+                    type="email"
+                    leftSection={<Mail size={14} />}
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                    autoComplete="off"
+                />
+            </SimpleGrid>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div className="space-y-2">
-                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
-                        <Building2 className="size-3" /> Vereniging
-                    </label>
-                    <input
-                        type="text"
-                        value={formData.association}
-                        onChange={(e) => setFormData({ ...formData, association: e.target.value })}
-                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
-                        autoComplete="off"
-                    />
-                </div>
+            <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+                <TextInput
+                    label="Vereniging"
+                    leftSection={<Building2 size={14} />}
+                    value={formData.association}
+                    onChange={(e) => setFormData({ ...formData, association: e.target.value })}
+                    autoComplete="off"
+                />
 
-                <div className="space-y-2">
-                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
-                        <Tag className="size-3" /> Betaalstatus
-                    </label>
-                    <BeheerSelect
-                        value={formData.payment_status}
-                        onChange={(val) => setFormData({ ...formData, payment_status: val as typeof formData.payment_status })}
-                        options={PAYMENT_STATUS_OPTIONS}
-                    />
-                </div>
-            </div>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div className="space-y-2">
-                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
-                        <Users className="size-3" /> Groepsindeling
-                    </label>
-                    <BeheerSelect
-                        value={formData.group_name ?? undefined}
-                        onChange={(val) => setFormData({ ...formData, group_name: val ? String(val) : null })}
-                        options={getGroupOptions(eventGroups)}
-                        placeholder="Selecteer groep..."
-                    />
-                </div>
-            </div>
-        </div>
+                <Select
+                    label="Betaalstatus"
+                    leftSection={<Tag size={14} />}
+                    value={formData.payment_status}
+                    onChange={(val) => {
+                        if (val) {
+                            setFormData({
+                                ...formData,
+                                payment_status: val as typeof formData.payment_status,
+                            });
+                        }
+                    }}
+                    data={PAYMENT_STATUS_OPTIONS}
+                    allowDeselect={false}
+                />
+            </SimpleGrid>
+
+            <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+                <Select
+                    label="Groepsindeling"
+                    leftSection={<Users size={14} />}
+                    value={formData.group_name ?? ''}
+                    onChange={(val) =>
+                        setFormData({ ...formData, group_name: val || null })
+                    }
+                    data={getGroupOptions(eventGroups)}
+                    placeholder="Selecteer groep..."
+                />
+            </SimpleGrid>
+        </Stack>
     );
 }

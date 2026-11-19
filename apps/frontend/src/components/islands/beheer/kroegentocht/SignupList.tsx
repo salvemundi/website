@@ -2,13 +2,14 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { Stack } from '@mantine/core';
 import { downloadCSV } from '@/lib/utils/export';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { safeConsoleError } from '@/server/utils/logger';
 import {
     savePubCrawlGroupsAssignment,
     updatePubCrawlEventGroups,
-    createManualPubCrawlSignup
+    createManualPubCrawlSignup,
 } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
 import StatsToolbar from './signup-list/StatsToolbar';
 import SignupTableView from './signup-list/SignupTableView';
@@ -76,7 +77,7 @@ export default function SignupList({
     onEdit,
     eventGroups = [],
     onUpdateGroup,
-    onRefresh
+    onRefresh,
 }: SignupListProps) {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
@@ -85,40 +86,46 @@ export default function SignupList({
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     const [enabledGroups, setEnabledGroups] = useState<string[]>(() => {
-        const initialGroups = eventGroups.map((g: unknown): string => {
-            if (typeof g === 'string') return g;
-            const obj = g && typeof g === 'object' ? (g as { name?: unknown }) : {};
-            return typeof obj.name === 'string' ? obj.name : '';
-        }).filter(Boolean);
+        const initialGroups = eventGroups
+            .map((g: unknown): string => {
+                if (typeof g === 'string') return g;
+                const obj = g && typeof g === 'object' ? (g as { name?: unknown }) : {};
+                return typeof obj.name === 'string' ? obj.name : '';
+            })
+            .filter(Boolean);
         return [...initialGroups, 'unassigned'];
     });
 
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [previewData, setPreviewData] = useState<{
         assignments: { signupId: number; groupName: string }[];
-        groups: { name: string; signups: { signupId: number; name: string; amountTickets: number; oldGroup: string | null }[]; ticketCount: number }[];
+        groups: {
+            name: string;
+            signups: { signupId: number; name: string; amountTickets: number; oldGroup: string | null }[];
+            ticketCount: number;
+        }[];
     } | null>(null);
 
-    const groupConfigs: GroupConfig[] = eventGroups.map((g: unknown): GroupConfig => {
-        if (typeof g === 'string') {
-            return { name: g, leaders: [] };
-        }
-        if (g && typeof g === 'object') {
-            const obj = g as { name?: unknown; leaders?: unknown };
-            const name = typeof obj.name === 'string' ? obj.name : '';
-            const leaders = Array.isArray(obj.leaders)
-                ? (obj.leaders as GroupLeader[])
-                : [];
-            return { name, leaders };
-        }
-        return { name: '', leaders: [] };
-    }).filter(g => g.name !== '');
+    const groupConfigs: GroupConfig[] = eventGroups
+        .map((g: unknown): GroupConfig => {
+            if (typeof g === 'string') {
+                return { name: g, leaders: [] };
+            }
+            if (g && typeof g === 'object') {
+                const obj = g as { name?: unknown; leaders?: unknown };
+                const name = typeof obj.name === 'string' ? obj.name : '';
+                const leaders = Array.isArray(obj.leaders) ? (obj.leaders as GroupLeader[]) : [];
+                return { name, leaders };
+            }
+            return { name: '', leaders: [] };
+        })
+        .filter((g) => g.name !== '');
 
-    const groupNames = groupConfigs.map(g => g.name);
+    const groupNames = groupConfigs.map((g) => g.name);
 
-    const paidSignups = signups.filter(s => s.payment_status === 'paid');
+    const paidSignups = signups.filter((s) => s.payment_status === 'paid');
     const totalTicketsCount = paidSignups.reduce((sum, s) => sum + (s.amount_tickets || 0), 0);
-    const totalAssociationsCount = [...new Set(paidSignups.map(s => s.association).filter(Boolean))].length;
+    const totalAssociationsCount = [...new Set(paidSignups.map((s) => s.association).filter(Boolean))].length;
 
     const handleAddParticipant = async (data: {
         name: string;
@@ -147,8 +154,8 @@ export default function SignupList({
         const sortedSignups = [...paidSignups].sort((a, b) => b.amount_tickets - a.amount_tickets);
 
         type GroupEntry = { signupId: number; name: string; amountTickets: number; oldGroup: string | null };
-        const ticketCounts = new Map<string, number>(groupNames.map(n => [n, 0]));
-        const groupSignups = new Map<string, GroupEntry[]>(groupNames.map(n => [n, []]));
+        const ticketCounts = new Map<string, number>(groupNames.map((n) => [n, 0]));
+        const groupSignups = new Map<string, GroupEntry[]>(groupNames.map((n) => [n, []]));
 
         const assignmentsList: { signupId: number; groupName: string }[] = [];
 
@@ -170,7 +177,7 @@ export default function SignupList({
                 signupId: Number(signup.id),
                 name: signup.name,
                 amountTickets: signup.amount_tickets,
-                oldGroup: signup.group_name || null
+                oldGroup: signup.group_name || null,
             });
             ticketCounts.set(bestGroup, (ticketCounts.get(bestGroup) ?? 0) + signup.amount_tickets);
 
@@ -179,11 +186,11 @@ export default function SignupList({
 
         setPreviewData({
             assignments: assignmentsList,
-            groups: groupNames.map(name => ({
+            groups: groupNames.map((name) => ({
                 name,
                 signups: groupSignups.get(name) ?? [],
-                ticketCount: ticketCounts.get(name) ?? 0
-            }))
+                ticketCount: ticketCounts.get(name) ?? 0,
+            })),
         });
         setIsPreviewOpen(true);
     };
@@ -208,16 +215,16 @@ export default function SignupList({
     const handleAddLeader = (groupName: string, name: string, signupId: number | null) => {
         void (async () => {
             try {
-                const currentGroups = groupConfigs.map(g => ({
+                const currentGroups = groupConfigs.map((g) => ({
                     name: g.name,
-                    leaders: g.leaders || []
+                    leaders: g.leaders || [],
                 }));
 
-                const groupObj = currentGroups.find(g => g.name === groupName);
+                const groupObj = currentGroups.find((g) => g.name === groupName);
                 if (groupObj) {
                     const newLeader = {
                         name,
-                        signupId
+                        signupId,
                     };
                     groupObj.leaders = [...groupObj.leaders, newLeader];
                 }
@@ -232,19 +239,24 @@ export default function SignupList({
     };
 
     const handleRemoveLeader = (groupName: string, leaderToRemove: GroupLeader) => {
-        if (!confirm(`Weet je zeker dat je ${leaderToRemove.name} wilt verwijderen als groepsleider?`)) return;
+        if (!confirm(`Weet je zeker dat je ${leaderToRemove.name} wilt verwijderen als groepsleider?`))
+            return;
 
         void (async () => {
             try {
-                const currentGroups = groupConfigs.map(g => ({
+                const currentGroups = groupConfigs.map((g) => ({
                     name: g.name,
-                    leaders: g.leaders || []
+                    leaders: g.leaders || [],
                 }));
 
-                const groupObj = currentGroups.find(g => g.name === groupName);
+                const groupObj = currentGroups.find((g) => g.name === groupName);
                 if (groupObj) {
-                    groupObj.leaders = groupObj.leaders.filter((l) =>
-                        !(l.name === leaderToRemove.name && l.signupId === (leaderToRemove.signupId || null))
+                    groupObj.leaders = groupObj.leaders.filter(
+                        (l) =>
+                            !(
+                                l.name === leaderToRemove.name &&
+                                l.signupId === (leaderToRemove.signupId || null)
+                            )
                     );
                 }
 
@@ -257,7 +269,7 @@ export default function SignupList({
         })();
     };
 
-    const filteredSignups = signups.filter(s => {
+    const filteredSignups = signups.filter((s) => {
         const matchesSearch =
             s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (s.email ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -298,11 +310,18 @@ export default function SignupList({
                     }
                 }
 
-                const leaders = groupConfigs.find(g => g.name === groupName)?.leaders || [];
-                const regularNames = names.filter(name => !leaders.some(leader =>
-                    leader.signupId !== null && leader.signupId !== undefined && leader.signupId === Number(signup.id) &&
-                    leader.name.trim().toLocaleLowerCase('nl') === name.trim().toLocaleLowerCase('nl')
-                ));
+                const leaders = groupConfigs.find((g) => g.name === groupName)?.leaders || [];
+                const regularNames = names.filter(
+                    (name) =>
+                        !leaders.some(
+                            (leader) =>
+                                leader.signupId !== null &&
+                                leader.signupId !== undefined &&
+                                leader.signupId === Number(signup.id) &&
+                                leader.name.trim().toLocaleLowerCase('nl') ===
+                                    name.trim().toLocaleLowerCase('nl')
+                        )
+                );
                 const currentList = participantsPerGroup.get(groupName);
                 if (currentList) {
                     currentList.push(...regularNames);
@@ -311,13 +330,12 @@ export default function SignupList({
                 }
             });
 
-            // 1. Groepsleiders opsplitsen in losse rijen onder elkaar
             const leaderCounts = groupConfigs.map((g) => g.leaders?.length ?? 0);
             const maxLeaders = Math.max(1, ...leaderCounts);
 
             const leaderRows = Array.from({ length: maxLeaders }, (_, leaderIndex) => {
                 const entries: [string, string][] = [
-                    ['Groepnummer:', leaderIndex === 0 ? 'groepsleiders:' : '']
+                    ['Groepnummer:', leaderIndex === 0 ? 'groepsleiders:' : ''],
                 ];
 
                 groupConfigs.forEach((g, index) => {
@@ -330,7 +348,6 @@ export default function SignupList({
                 return Object.fromEntries(entries);
             });
 
-            // 2. Deelnemers opbouwen
             const activeColumns = [...groupConfigs.map((g) => g.name), 'Niet ingedeeld'];
             const maxRows = Math.max(
                 0,
@@ -338,9 +355,7 @@ export default function SignupList({
             );
 
             const participantRows = Array.from({ length: maxRows }, (_, rowIndex) => {
-                const entries: [string, string][] = [
-                    ['Groepnummer:', '']
-                ];
+                const entries: [string, string][] = [['Groepnummer:', '']];
 
                 groupConfigs.forEach((g, index) => {
                     const colKey = `${index + 1} - ${g.name}`;
@@ -354,11 +369,7 @@ export default function SignupList({
                 return Object.fromEntries(entries);
             });
 
-            const csvData = [
-                ...leaderRows,
-                { 'Groepnummer:': '' },
-                ...participantRows
-            ];
+            const csvData = [...leaderRows, { 'Groepnummer:': '' }, ...participantRows];
 
             const safeName = eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
             const filename = `kroegentocht-${safeName}-${getFilenameTimestamp()}.csv`;
@@ -370,7 +381,7 @@ export default function SignupList({
     };
 
     return (
-        <div className="space-y-6">
+        <Stack gap="lg">
             <StatsToolbar
                 viewMode={viewMode}
                 setViewMode={setViewMode}
@@ -425,6 +436,6 @@ export default function SignupList({
                 groupNames={groupNames}
                 onAdd={handleAddParticipant}
             />
-        </div>
+        </Stack>
     );
 }

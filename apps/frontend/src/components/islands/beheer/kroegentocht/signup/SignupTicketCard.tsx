@@ -1,6 +1,17 @@
 'use client';
 
-import { Pen, Trash, X, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Pen, Trash, X, CheckCircle, XCircle } from 'lucide-react';
+import {
+    ActionIcon,
+    Badge,
+    Button,
+    Group,
+    Loader,
+    Paper,
+    Stack,
+    Text,
+    TextInput,
+} from '@mantine/core';
 import { type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
 
 interface SignupTicketCardProps {
@@ -22,102 +33,121 @@ export default function SignupTicketCard({
     togglingId,
     handleToggleCheckIn,
     handleDeleteTicket,
-    handleTicketChange
+    handleTicketChange,
 }: SignupTicketCardProps) {
     const isEditing = editingTicketId === ticket.id;
 
     return (
-        <div className="group relative flex flex-col gap-3 rounded-xl border border-(--border-color)/50 bg-(--bg-main)/30 p-4 transition-all hover:border-(--theme-purple)/30">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <div className="flex size-6 items-center justify-center rounded-lg border border-(--border-color) bg-(--bg-card) text-[10px] font-semibold text-(--text-muted) transition-all select-none group-hover:border-(--theme-purple) group-hover:bg-(--theme-purple) group-hover:text-white">
-                        {idx + 1}
-                    </div>
-                    {!isEditing ? (
-                        <div className="flex items-center gap-1 transition-all">
-                            <button
+        <Paper withBorder p="md" radius="md">
+            <Stack gap="sm">
+                <Group justify="space-between" wrap="nowrap">
+                    <Group gap="xs">
+                        <Badge variant="default" size="sm">
+                            {idx + 1}
+                        </Badge>
+                        {!isEditing ? (
+                            <Group gap={4}>
+                                <ActionIcon
+                                    type="button"
+                                    variant="subtle"
+                                    size="sm"
+                                    onClick={() => setEditingTicketId(Number(ticket.id))}
+                                    title="Naam aanpassen"
+                                    aria-label="Naam aanpassen"
+                                >
+                                    <Pen size={12} />
+                                </ActionIcon>
+                                <ActionIcon
+                                    type="button"
+                                    variant="subtle"
+                                    color="error"
+                                    size="sm"
+                                    onClick={() => handleDeleteTicket(Number(ticket.id))}
+                                    title="Ticket verwijderen"
+                                    aria-label="Ticket verwijderen"
+                                >
+                                    <Trash size={12} />
+                                </ActionIcon>
+                            </Group>
+                        ) : (
+                            <ActionIcon
                                 type="button"
-                                onClick={() => setEditingTicketId(Number(ticket.id))}
-                                className="icon-button p-1 text-(--text-muted) hover:text-(--theme-purple)"
-                                title="Naam aanpassen"
+                                variant="subtle"
+                                size="sm"
+                                onClick={() => setEditingTicketId(null)}
+                                title="Sluiten"
+                                aria-label="Sluiten"
                             >
-                                <Pen className="size-3" />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleDeleteTicket(Number(ticket.id))}
-                                className="icon-button p-1 text-(--text-muted) hover:text-red-500"
-                                title="Ticket verwijderen"
-                            >
-                                <Trash className="size-3" />
-                            </button>
-                        </div>
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={() => setEditingTicketId(null)}
-                            className="icon-button p-1 text-(--theme-purple) transition-all hover:text-(--text-main)"
-                            title="Sluiten"
-                        >
-                            <X className="size-3" />
-                        </button>
-                    )}
-                </div>
-                <button
-                    type="button"
-                    onClick={() => handleToggleCheckIn(Number(ticket.id), !!ticket.checked_in)}
-                    disabled={!!togglingId}
-                    className="beheer-button transition-all active:scale-95 disabled:opacity-50"
-                >
-                    {ticket.checked_in ? (
-                        <span className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1 text-[9px] font-semibold text-green-500 ring-1 ring-green-500/20 transition-all hover:bg-green-500/20">
-                            {togglingId === ticket.id ? <Loader2 className="size-3 animate-spin" /> : <CheckCircle className="size-3" />}
-                            Ingecheckt
-                        </span>
-                    ) : (
-                        <span className="flex items-center gap-1.5 rounded-full bg-red-500/10 px-3 py-1 text-[9px] font-semibold text-red-500 ring-1 ring-red-500/20 transition-all hover:bg-red-500/20">
-                            {togglingId === ticket.id ? <Loader2 className="size-3 animate-spin" /> : <XCircle className="size-3 opacity-50" />}
-                            Inchecken
-                        </span>
-                    )}
-                </button>
-            </div>
+                                <X size={12} />
+                            </ActionIcon>
+                        )}
+                    </Group>
 
-            {isEditing ? (
-                <div className="animate-in fade-in slide-in-from-top-1 flex gap-2 duration-200">
-                    <div className="flex-1">
-                        <label className="mb-1 block text-[9px] font-bold text-(--text-muted) uppercase">Naam</label>
-                        <input
-                            type="text"
+                    <Button
+                        type="button"
+                        size="compact-xs"
+                        variant="light"
+                        color={ticket.checked_in ? 'success' : 'error'}
+                        onClick={() =>
+                            handleToggleCheckIn(Number(ticket.id), !!ticket.checked_in)
+                        }
+                        disabled={!!togglingId}
+                        leftSection={
+                            togglingId === ticket.id ? (
+                                <Loader size={12} />
+                            ) : ticket.checked_in ? (
+                                <CheckCircle size={12} />
+                            ) : (
+                                <XCircle size={12} />
+                            )
+                        }
+                    >
+                        {ticket.checked_in ? 'Ingecheckt' : 'Inchecken'}
+                    </Button>
+                </Group>
+
+                {isEditing ? (
+                    <Group gap="xs" align="flex-end" wrap="nowrap">
+                        <TextInput
+                            label="Naam"
+                            size="xs"
+                            flex={1}
                             value={ticket.name}
-                            onChange={(e) => handleTicketChange(Number(ticket.id), 'name', e.target.value)}
-                            className="beheer-input w-full rounded-lg border border-(--border-color) bg-(--bg-card) px-3 py-2 text-xs font-semibold text-(--text-main) transition-all focus:border-(--theme-purple)"
+                            onChange={(e) =>
+                                handleTicketChange(Number(ticket.id), 'name', e.target.value)
+                            }
                             autoFocus
                             autoComplete="off"
                         />
-                    </div>
-                    <div className="w-16">
-                        <label className="mb-1 block text-[9px] font-bold text-(--text-muted) uppercase">Init.</label>
-                        <input
-                            type="text"
+                        <TextInput
+                            label="Init."
+                            size="xs"
+                            w={64}
                             value={ticket.initial}
-                            onChange={(e) => handleTicketChange(Number(ticket.id), 'initial', e.target.value)}
-                            className="beheer-input w-full rounded-lg border border-(--border-color) bg-(--bg-card) px-3 py-2 text-center text-xs font-semibold text-(--text-main) transition-all focus:border-(--theme-purple)"
+                            onChange={(e) =>
+                                handleTicketChange(Number(ticket.id), 'initial', e.target.value)
+                            }
                             maxLength={1}
                             autoComplete="off"
+                            styles={{ input: { textAlign: 'center' } }}
                         />
-                    </div>
-                </div>
-            ) : (
-                <div
-                    className="group/name cursor-pointer"
-                    onClick={() => setEditingTicketId(Number(ticket.id))}
-                >
-                    <p className="text-sm font-bold text-(--text-main) transition-colors group-hover/name:text-(--theme-purple)">
-                        {ticket.name} {ticket.initial && <span className="text-[10px] uppercase opacity-50">{ticket.initial}.</span>}
-                    </p>
-                </div>
-            )}
-        </div>
+                    </Group>
+                ) : (
+                    <Text
+                        size="sm"
+                        fw={700}
+                        onClick={() => setEditingTicketId(Number(ticket.id))}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        {ticket.name}{' '}
+                        {ticket.initial && (
+                            <Text span size="xs" c="dimmed" tt="uppercase">
+                                {ticket.initial}.
+                            </Text>
+                        )}
+                    </Text>
+                )}
+            </Stack>
+        </Paper>
     );
 }

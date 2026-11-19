@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Pizza, Trophy, History, ChevronRight } from 'lucide-react';
+import { Anchor, Button, Group, Paper, SimpleGrid, Stack, Text } from '@mantine/core';
 import type { PizzaStats } from '@salvemundi/validations';
 import { Tile } from '@/components/islands/account/profile/ProfielUI';
 import { formatDate } from '@/shared/lib/utils/date';
@@ -9,80 +10,100 @@ import { formatEuro } from './pizza-utils';
 
 function StatTile({ label, value }: { label: string; value: string | number }) {
     return (
-        <div className="squircle border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
-            <p className="text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-70">{label}</p>
-            <p className="mt-1 text-2xl font-black text-purple-700 dark:text-white">{value}</p>
-        </div>
+        <Paper p="md" withBorder>
+            <Text size="xs" fw={900} tt="uppercase" c="dimmed">
+                {label}
+            </Text>
+            <Text size="1.5rem" fw={900} mt={4}>
+                {value}
+            </Text>
+        </Paper>
     );
 }
 
 export function PizzaStatsIsland({ stats }: { stats: PizzaStats | null }) {
     if (!stats || (stats.totalOrders === 0 && stats.roundsCreated === 0)) {
         return (
-            <div className="squircle-lg border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center shadow-inner dark:border-white/10 dark:bg-black/10">
-                <p className="text-sm font-bold text-(--text-muted)">Je hebt nog geen pizza&apos;s besteld. Doe mee met een ronde!</p>
-                <Link href="/pizza" className="mt-4 form-button inline-flex">
-                    <Pizza className="size-4" />
-                    Naar de rondes
-                </Link>
-            </div>
+            <Paper p="xl" radius="lg" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
+                <Stack align="center" gap="md">
+                    <Text size="sm" fw={700} c="dimmed">
+                        Je hebt nog geen pizza&apos;s besteld. Doe mee met een ronde!
+                    </Text>
+                    <Button component={Link} href="/pizza" leftSection={<Pizza size={16} />}>
+                        Naar de rondes
+                    </Button>
+                </Stack>
+            </Paper>
         );
     }
 
     return (
-        <div className="space-y-8">
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <Stack gap="xl">
+            <SimpleGrid cols={{ base: 2, md: 4 }} spacing="md">
                 <StatTile label="Totaal bestellingen" value={stats.totalOrders} />
                 <StatTile label="Totaal besteed" value={formatEuro(stats.totalSpent)} />
                 <StatTile label="Rondes gestart" value={stats.roundsCreated} />
                 <StatTile label="Rondes meebesteld" value={stats.roundsJoined} />
-            </div>
+            </SimpleGrid>
 
-            <Tile title="Jouw meest bestelde pizza's" icon={<Trophy className="size-6" />}>
+            <Tile title="Jouw meest bestelde pizza's" icon={<Trophy size={22} />}>
                 {stats.topPizzas.length === 0 ? (
-                    <p className="text-sm text-(--text-muted)">Nog geen bestellingen.</p>
+                    <Text size="sm" c="dimmed">
+                        Nog geen bestellingen.
+                    </Text>
                 ) : (
-                    <ol className="space-y-2">
+                    <Stack gap="xs">
                         {stats.topPizzas.slice(0, 5).map((p, i) => (
-                            <li key={p.itemName} className="flex items-center justify-between gap-3 rounded-xl bg-(--bg-soft) p-3 text-sm">
-                                <span className="font-bold text-(--text-main)">
-                                    <span className="mr-2 text-purple-500">{i + 1}.</span>
-                                    {p.itemName}
-                                </span>
-                                <span className="font-black text-purple-700 dark:text-white">{p.count}×</span>
-                            </li>
+                            <Paper key={p.itemName} p="sm" radius="md" withBorder>
+                                <Group justify="space-between" gap="sm">
+                                    <Text size="sm" fw={700}>
+                                        <Text span c="brand" mr="xs">{i + 1}.</Text>
+                                        {p.itemName}
+                                    </Text>
+                                    <Text size="sm" fw={900}>
+                                        {p.count}×
+                                    </Text>
+                                </Group>
+                            </Paper>
                         ))}
-                    </ol>
+                    </Stack>
                 )}
             </Tile>
 
-            <Tile title="Recente bestellingen" icon={<History className="size-6" />}>
+            <Tile title="Recente bestellingen" icon={<History size={22} />}>
                 {stats.recent.length === 0 ? (
-                    <p className="text-sm text-(--text-muted)">Nog geen bestellingen.</p>
+                    <Text size="sm" c="dimmed">
+                        Nog geen bestellingen.
+                    </Text>
                 ) : (
-                    <ul className="space-y-2">
+                    <Stack gap="xs">
                         {stats.recent.map((r) => (
-                            <li key={`${r.roundId}-${r.orderedAt}-${r.itemName}`}>
-                                <Link
-                                    href={`/pizza/${r.roundId}`}
-                                    className="group flex items-center gap-3 rounded-xl bg-(--bg-soft) p-3 text-sm transition-all hover:bg-licht-paars/10"
-                                >
-                                    <div className="min-w-0 flex-1">
-                                        <p className="truncate font-black text-purple-700 dark:text-white">
-                                            {r.itemName}{r.size ? ` (${r.size})` : ''}
-                                        </p>
-                                        <p className="truncate text-xs text-(--text-muted)">
-                                            {r.title} · {formatDate(r.orderedAt, 'd MMMM yyyy')}
-                                        </p>
-                                    </div>
-                                    <span className="font-black whitespace-nowrap text-(--text-main)">{formatEuro(r.price)}</span>
-                                    <ChevronRight className="size-4 shrink-0 text-purple-700 transition-all group-hover:translate-x-1 dark:text-purple-300" />
-                                </Link>
-                            </li>
+                            <Anchor key={`${r.roundId}-${r.orderedAt}-${r.itemName}`} component={Link} href={`/pizza/${r.roundId}`} underline="never">
+                                <Paper p="sm" radius="md" withBorder>
+                                    <Group justify="space-between" wrap="nowrap" gap="sm">
+                                        <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
+                                            <Text size="sm" fw={900} c="brand" truncate>
+                                                {r.itemName}{r.size ? ` (${r.size})` : ''}
+                                            </Text>
+                                            <Text size="xs" c="dimmed" truncate>
+                                                {r.title} · {formatDate(r.orderedAt, 'd MMMM yyyy')}
+                                            </Text>
+                                        </Stack>
+                                        <Group gap="xs" wrap="nowrap">
+                                            <Text size="sm" fw={900} style={{ whiteSpace: 'nowrap' }}>
+                                                {formatEuro(r.price)}
+                                            </Text>
+                                            <Text span c="brand" lh={1}>
+                                                <ChevronRight size={16} />
+                                            </Text>
+                                        </Group>
+                                    </Group>
+                                </Paper>
+                            </Anchor>
                         ))}
-                    </ul>
+                    </Stack>
                 )}
             </Tile>
-        </div>
+        </Stack>
     );
 }

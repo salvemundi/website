@@ -1,14 +1,27 @@
 import React from 'react';
-import Link from 'next/link';
+import Link from '@/components/ui/Link';
 import { ChevronRight } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import {
+    Anchor,
+    AspectRatio,
+    Card,
+    Container,
+    Grid,
+    GridCol,
+    Group,
+    Stack,
+    Text,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
 import type { HeroBanner } from '@salvemundi/validations/schema/home.zod';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
+import { toLocalISOString } from '@/lib/utils/date-utils';
 import { formatDateRange } from '@/shared/lib/utils/date';
-import dynamic from 'next/dynamic';
 import { getActivityUrl } from '@/shared/lib/utils/activity';
 import { type ExtendedSession } from '@/types/auth';
-import { Card, CardContent } from '@/components/ui/card';
 
 const HeroCarousel = dynamic(() => import('./HeroCarousel').then(mod => mod.HeroCarousel));
 
@@ -18,11 +31,11 @@ interface HeroIslandProps {
     initialSession?: ExtendedSession | null;
 }
 
-export async function HeroIsland({ banners = [], activiteiten = [], initialSession }: HeroIslandProps) {
+export function HeroIsland({ banners = [], activiteiten = [], initialSession }: HeroIslandProps) {
     const isAuthenticated = !!initialSession?.user;
 
     const slideUrls = banners.length
-        ? banners
+        ? [...banners]
             .sort((a, b) => a.display_order - b.display_order)
             .map((b) => getImageUrl(b.afbeelding_id, {
                 width: 1200,
@@ -32,84 +45,88 @@ export async function HeroIsland({ banners = [], activiteiten = [], initialSessi
             }))
         : [getImageUrl(null, { width: 1200, height: 800, quality: 90 })];
 
-    const nextEvent = (() => {
-        if (!activiteiten.length) return null;
-        const now = new Date();
-        const upcoming = activiteiten
-            .filter((a) => {
-                const date = new Date(a.event_date);
-                if (Number.isNaN(date.valueOf())) return false;
-                const endOfDay = new Date(date);
-                endOfDay.setHours(23, 59, 59, 999);
-                return endOfDay >= now;
-            })
-            .sort((a, b) => new Date(a.event_date).valueOf() - new Date(b.event_date).valueOf());
-        return upcoming[0] ?? null;
-    })();
+    const today = toLocalISOString(new Date()) ?? new Date().toISOString().slice(0, 10);
+    const nextEvent: Activiteit | null = activiteiten
+        .filter((a) => (a.event_date_end || a.event_date).slice(0, 10) >= today)
+        .sort((a, b) => a.event_date.localeCompare(b.event_date))
+        .at(0) ?? null;
 
     const showMembershipLink = !isAuthenticated;
 
     return (
-        <section id="home">
-            <div className="grid gap-8 md:grid-cols-[3fr_2fr] md:items-center">
-                <div className="min-w-0 space-y-6">
-                    <div className="space-y-4">
-                        <h1>
-                            <span className="block">Studievereniging</span>
-                            <span className="block text-primary">Salve Mundi</span>
-                        </h1>
-                        <p className="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-                            Dè studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd.
-                        </p>
-                    </div>
+        <Container component="section" id="home">
+            <Grid gap="xl" align="center">
+                <GridCol span={{ base: 12, md: 7 }}>
+                    <Stack gap="xl">
+                        <Stack gap="md">
+                            <Title order={1} fz={{ base: '2.5rem', md: '4rem' }} lh={1.1}>
+                                Studievereniging
+                                <br />
+                                <Text span inherit c="brand">Salve Mundi</Text>
+                            </Title>
+                            <Text size="lg" c="dimmed" maw={560}>
+                                Dè studievereniging voor HBO-studenten in Eindhoven. Ontmoet nieuwe mensen, bouw aan je netwerk en maak het meeste van je studententijd.
+                            </Text>
+                        </Stack>
 
-                    <div>
                         {showMembershipLink ? (
-                            <Link href="/lidmaatschap" className="group block">
-                                <Card className="transition-transform duration-200 group-hover:-translate-y-0.5">
-                                    <CardContent className="flex items-center justify-between gap-4 p-6">
-                                        <div className="min-w-0 flex-1 space-y-1">
-                                            <p className="text-xs font-semibold tracking-wider text-primary uppercase">Word lid</p>
-                                            <p className="truncate text-lg font-bold text-foreground">Sluit je aan bij Salve Mundi</p>
-                                            <p className="line-clamp-2 text-sm text-muted-foreground">Ontdek alle voordelen van een lidmaatschap!</p>
-                                        </div>
-                                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                                            <ChevronRight className="size-5" />
-                                        </div>
-                                    </CardContent>
+                            <Anchor component={Link} href="/lidmaatschap" underline="never">
+                                <Card>
+                                    <Group justify="space-between" wrap="nowrap" gap="md">
+                                        <Stack gap={4}>
+                                            <Text size="xs" fw={700} c="brand" tt="uppercase">Word lid</Text>
+                                            <Text size="lg" fw={700} truncate>Sluit je aan bij Salve Mundi</Text>
+                                            <Text size="sm" c="dimmed" lineClamp={2}>Ontdek alle voordelen van een lidmaatschap!</Text>
+                                        </Stack>
+                                        <ThemeIcon size="lg" radius="xl" variant="light">
+                                            <ChevronRight size={20} />
+                                        </ThemeIcon>
+                                    </Group>
                                 </Card>
-                            </Link>
+                            </Anchor>
                         ) : nextEvent ? (
-                            <Link href={getActivityUrl({ name: nextEvent.name || '', custom_url: nextEvent.custom_url })} className="group block">
-                                <Card className="transition-transform duration-200 group-hover:-translate-y-0.5">
-                                    <CardContent className="flex items-center justify-between gap-4 p-6">
-                                        <div className="min-w-0 flex-1 space-y-1">
-                                            <p className="text-xs font-semibold tracking-wider text-primary uppercase">Volgende activiteit</p>
-                                            <p className="truncate text-lg font-bold text-foreground">{nextEvent.name} • {formatDateRange(nextEvent.event_date, nextEvent.event_date_end)}</p>
-                                            <p className="line-clamp-2 text-sm text-muted-foreground">{nextEvent.description ?? 'Kom gezellig langs!'}</p>
-                                        </div>
-                                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                                            <ChevronRight className="size-5" />
-                                        </div>
-                                    </CardContent>
+                            <Anchor
+                                component={Link}
+                                href={getActivityUrl({ name: nextEvent.name || '', custom_url: nextEvent.custom_url })}
+                                underline="never"
+                            >
+                                <Card>
+                                    <Group justify="space-between" wrap="nowrap" gap="md">
+                                        <Stack gap={4}>
+                                            <Text size="xs" fw={700} c="brand" tt="uppercase">Volgende activiteit</Text>
+                                            <Text size="lg" fw={700} truncate>
+                                                {nextEvent.name} • {formatDateRange(nextEvent.event_date, nextEvent.event_date_end)}
+                                            </Text>
+                                            <Text size="sm" c="dimmed" lineClamp={2}>
+                                                {nextEvent.description ?? 'Kom gezellig langs!'}
+                                            </Text>
+                                        </Stack>
+                                        <ThemeIcon size="lg" radius="xl" variant="light">
+                                            <ChevronRight size={20} />
+                                        </ThemeIcon>
+                                    </Group>
                                 </Card>
-                            </Link>
+                            </Anchor>
                         ) : (
                             <Card>
-                                <CardContent className="space-y-1 p-6">
-                                    <p className="text-xs font-semibold tracking-wider text-primary uppercase">Volgende activiteit</p>
-                                    <p className="text-lg font-bold text-foreground">Binnenkort meer activiteiten</p>
-                                    <p className="text-sm text-muted-foreground">Check regelmatig onze agenda.</p>
-                                </CardContent>
+                                <Stack gap={4}>
+                                    <Text size="xs" fw={700} c="brand" tt="uppercase">Volgende activiteit</Text>
+                                    <Text size="lg" fw={700}>Binnenkort meer activiteiten</Text>
+                                    <Text size="sm" c="dimmed">Check regelmatig onze agenda.</Text>
+                                </Stack>
                             </Card>
                         )}
-                    </div>
-                </div>
+                    </Stack>
+                </GridCol>
 
-                <div className="relative aspect-3/2 w-full overflow-hidden rounded-2xl bg-card shadow-lg">
-                    <HeroCarousel slideUrls={slideUrls} />
-                </div>
-            </div>
-        </section>
+                <GridCol span={{ base: 12, md: 5 }}>
+                    <Card p={0} style={{ overflow: 'hidden' }}>
+                        <AspectRatio ratio={3 / 2}>
+                            <HeroCarousel slideUrls={slideUrls} />
+                        </AspectRatio>
+                    </Card>
+                </GridCol>
+            </Grid>
+        </Container>
     );
 }

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
-import BackButton from '@/components/ui/navigation/BackButton';
+import Link from '@/components/ui/Link';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Card, Container, Group, Stack, Text, Title } from '@mantine/core';
 import NdaSignIsland from '@/components/islands/nda/NdaSignIsland';
 import { getMyNdaToSign } from '@/server/actions/nda/member-nda.actions';
 
@@ -12,23 +14,37 @@ export default async function SignNdaPage({ params }: { params: Promise<{ id: st
     const nda = await getMyNdaToSign(Number(id));
 
     return (
-        <div>
-            <header className="bg-(--bg-soft) py-12">
-                <div className="max-w-app mx-auto space-y-4 px-4">
-                    <BackButton href="/profiel/nda" text="Terug naar mijn NDA's" />
-                    <h1 className="text-4xl font-extrabold text-(--text-main)">NDA Ondertekenen</h1>
-                </div>
-            </header>
+        <Container size="xl" py="xl">
+            <Stack gap="xl">
+                <Stack component="header" gap="md">
+                    <Group>
+                        <Button
+                            component={Link}
+                            href="/profiel/nda"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug naar mijn NDA&apos;s
+                        </Button>
+                    </Group>
+                    <Title order={1}>NDA Ondertekenen</Title>
+                </Stack>
 
-            <div className="max-w-app mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
-                {'error' in nda ? (
-                    <div className="rounded-3xl border border-purple-100 bg-(--bg-card) p-8 text-center shadow-lg">
-                        <p className="text-(--text-muted)">{nda.error}</p>
-                    </div>
-                ) : (
-                    <NdaSignIsland signatureId={nda.signatureId} committeeName={nda.committeeName} documentFileId={nda.documentFileId} />
-                )}
-            </div>
-        </div>
+                <Container size="sm" p={0} w="100%">
+                    {'error' in nda ? (
+                        <Card padding="xl">
+                            <Text c="dimmed" ta="center">{nda.error}</Text>
+                        </Card>
+                    ) : (
+                        <NdaSignIsland
+                            signatureId={nda.signatureId}
+                            committeeName={nda.committeeName}
+                            documentFileId={nda.documentFileId}
+                        />
+                    )}
+                </Container>
+            </Stack>
+        </Container>
     );
 }

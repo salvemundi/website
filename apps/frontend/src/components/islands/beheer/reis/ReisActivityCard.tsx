@@ -1,14 +1,24 @@
 'use client';
 
 import React from 'react';
-import { 
-    Users, 
-    Pen, 
-    Trash, 
-    LayoutGrid 
+import {
+    Users,
+    Pen,
+    Trash,
+    LayoutGrid,
 } from 'lucide-react';
+import {
+    Badge,
+    Box,
+    Button,
+    Card,
+    Group,
+    Stack,
+    Text,
+    ActionIcon,
+    Title,
+} from '@mantine/core';
 import MediaAsset from '@/components/ui/media/MediaAsset';
-
 import { type TripActivity } from '@salvemundi/validations/schema/beheer-trip.zod';
 import { parseActivityOptions } from '@/lib/reis';
 
@@ -19,92 +29,148 @@ interface Props {
     onViewSignups: (id: number) => void;
 }
 
-export default function ReisActivityCard({ activity, onEdit, onDelete, onViewSignups }: Props) {
+export default function ReisActivityCard({
+    activity,
+    onEdit,
+    onDelete,
+    onViewSignups,
+}: Props) {
     const options = parseActivityOptions(activity.options);
 
     return (
-        <div className="group flex flex-col overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm transition-all duration-500 hover:border-(--beheer-accent)/30 hover:shadow-xl">
-            {/* Visual Header */}
-            {activity.image ? (
-                <div className="relative h-48 overflow-hidden bg-(--beheer-card-soft)">
-                    <MediaAsset asset={activity.image || undefined} alt={activity.name || undefined} fill className="object-cover" />
-                    <div className={`absolute top-4 right-4 rounded-full px-3 py-1 text-[9px] font-semibold tracking-widest shadow-lg ${activity.is_active ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-                        {activity.is_active ? 'Actief' : 'Inactief'}
-                    </div>
-                </div>
-            ) : (
-                <div className="flex h-24 items-center justify-center border-b border-(--beheer-border) bg-(--beheer-card-soft)/50">
-                    <LayoutGrid className="size-8 text-(--beheer-text-muted) opacity-20" />
-                </div>
-            )}
+        <Card
+            p={0}
+            shadow="sm"
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+            }}
+        >
+            <Card.Section pos="relative" h={activity.image ? 192 : 96}>
+                {activity.image ? (
+                    <>
+                        <MediaAsset
+                            asset={activity.image || undefined}
+                            alt={activity.name || undefined}
+                            fill
+                            objectFit="cover"
+                        />
+                        <Badge
+                            pos="absolute"
+                            top={12}
+                            right={12}
+                            size="sm"
+                            variant="filled"
+                            color={activity.is_active ? 'success' : 'error'}
+                        >
+                            {activity.is_active ? 'Actief' : 'Inactief'}
+                        </Badge>
+                    </>
+                ) : (
+                    <Group h="100%" justify="center" align="center">
+                        <Text span c="dimmed" lh={1}>
+                            <LayoutGrid size={32} />
+                        </Text>
+                    </Group>
+                )}
+            </Card.Section>
 
-            <div className="flex flex-1 flex-col p-6">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                    <h3 className="line-clamp-1 text-lg font-semibold tracking-tight text-(--beheer-text) transition-colors group-hover:text-(--beheer-accent)">
+            <Stack p="lg" gap="md" flex={1} justify="space-between">
+                <Stack gap="xs">
+                    <Title order={3} size="h4" lineClamp={1}>
                         {activity.name}
-                    </h3>
-                </div>
-                
-                {activity.description && (
-                    <p className="mt-1 mb-4 line-clamp-4 text-xs leading-relaxed font-medium text-(--beheer-text-muted)">
-                        {activity.description}
-                    </p>
-                )}
-
-                <div className="mt-auto mb-4 flex items-end justify-between border-t border-(--beheer-border)/20 pt-4">
-                    <div className="flex flex-col">
-                        <span className="mb-0.5 text-[9px] font-semibold text-(--beheer-text-muted) opacity-60">Basisprijs</span>
-                        <span className="text-xl font-semibold text-(--beheer-accent)">€{Number(activity.price || 0).toFixed(2)}</span>
-                    </div>
-                    {activity.max_participants && (
-                        <div className="flex flex-col items-end">
-                            <span className="mb-0.5 text-[9px] font-semibold text-(--beheer-text-muted) opacity-60">Capaciteit</span>
-                            <span className="flex items-center gap-1.5 rounded-lg border border-(--beheer-border)/50 bg-(--beheer-card-soft) px-2 py-1 text-xs font-semibold text-(--beheer-text)"><Users className="size-3" /> {activity.max_participants}</span>
-                        </div>
+                    </Title>
+                    {activity.description && (
+                        <Text size="xs" c="dimmed" lineClamp={4}>
+                            {activity.description}
+                        </Text>
                     )}
-                </div>
+                </Stack>
 
-                {options.length > 0 && (
-                    <div className="mb-4 rounded-xl border border-(--beheer-border)/30 bg-(--beheer-card-soft)/50 p-3">
-                        <span className="mb-1.5 block text-[9px] font-semibold text-(--beheer-text-muted) opacity-60">{activity.max_selections === 1 ? 'Keuze verplicht' : 'Extra opties'} ({options.length})</span>
-                        <div className="flex flex-wrap gap-1.5">
-                            {options.slice(0, 2).map((o, i) => (
-                                <span key={i} className="rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-2 py-0.5 text-[9px] font-semibold tracking-tight text-(--beheer-text-muted)">
-                                    {o.name || 'Naamloos'}
-                                </span>
-                            ))}
-                            {options.length > 2 && (
-                                <span className="px-2 py-0.5 text-[9px] font-semibold text-(--beheer-text-muted) opacity-50">+{options.length - 2}</span>
-                            )}
-                        </div>
-                    </div>
-                )}
+                <Stack gap="md">
+                    <Group justify="space-between" align="flex-end">
+                        <Box>
+                            <Text size="xs" fw={600} c="dimmed">
+                                Basisprijs
+                            </Text>
+                            <Text size="xl" fw={700} c="brand">
+                                €{Number(activity.price || 0).toFixed(2)}
+                            </Text>
+                        </Box>
+                        {activity.max_participants && (
+                            <Stack gap={2} align="flex-end">
+                                <Text size="xs" fw={600} c="dimmed">
+                                    Capaciteit
+                                </Text>
+                                <Badge
+                                    variant="default"
+                                    size="md"
+                                    leftSection={<Users size={12} />}
+                                >
+                                    {activity.max_participants}
+                                </Badge>
+                            </Stack>
+                        )}
+                    </Group>
 
-                <div className="space-y-2 border-t border-(--beheer-border)/20 pt-4">
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => onEdit(activity)}
-                            className="beheer-button flex flex-1 items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 text-[11px] font-semibold text-(--beheer-text) shadow-2xs transition-colors hover:border-(--beheer-accent) hover:bg-(--beheer-accent)/5 hover:text-(--beheer-accent)"
-                            type="button">
-                            <Pen className="size-3.5" /> Bewerken
-                        </button>
-                        <button
-                            onClick={() => onDelete(activity.id as number)}
-                            className="icon-button flex items-center justify-center rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) p-2.5 text-(--beheer-text-muted) shadow-2xs transition-colors hover:border-red-500/20 hover:bg-red-500/5 hover:text-red-500"
-                            type="button">
-                            <Trash className="size-4" />
-                        </button>
-                    </div>
-                    <button
-                        onClick={() => onViewSignups(activity.id as number)}
-                        className="beheer-button flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) text-[11px] font-semibold text-(--beheer-text) shadow-2xs transition-colors hover:border-(--beheer-accent) hover:bg-(--beheer-accent)/5 hover:text-(--beheer-accent)"
-                        type="button">
-                        <Users className="size-3.5" /> Inschrijvingen
-                    </button>
-                </div>
-            </div>
-        </div>
+                    {options.length > 0 && (
+                        <Box>
+                            <Text size="xs" fw={600} c="dimmed" mb={6}>
+                                {activity.max_selections === 1 ? 'Keuze verplicht' : 'Extra opties'}{' '}
+                                ({options.length})
+                            </Text>
+                            <Group gap={6} wrap="wrap">
+                                {options.slice(0, 2).map((o, i) => (
+                                    <Badge key={i} size="xs" variant="default">
+                                        {o.name || 'Naamloos'}
+                                    </Badge>
+                                ))}
+                                {options.length > 2 && (
+                                    <Text size="xs" c="dimmed">
+                                        +{options.length - 2}
+                                    </Text>
+                                )}
+                            </Group>
+                        </Box>
+                    )}
+
+                    <Stack gap="xs">
+                        <Group gap="xs" wrap="nowrap">
+                            <Button
+                                type="button"
+                                variant="default"
+                                size="xs"
+                                flex={1}
+                                onClick={() => onEdit(activity)}
+                                leftSection={<Pen size={14} />}
+                            >
+                                Bewerken
+                            </Button>
+                            <ActionIcon
+                                type="button"
+                                variant="light"
+                                color="error"
+                                size="lg"
+                                onClick={() => onDelete(activity.id as number)}
+                                aria-label="Activiteit verwijderen"
+                            >
+                                <Trash size={16} />
+                            </ActionIcon>
+                        </Group>
+                        <Button
+                            type="button"
+                            variant="light"
+                            size="xs"
+                            fullWidth
+                            onClick={() => onViewSignups(activity.id as number)}
+                            leftSection={<Users size={14} />}
+                        >
+                            Inschrijvingen
+                        </Button>
+                    </Stack>
+                </Stack>
+            </Stack>
+        </Card>
     );
 }
-
-

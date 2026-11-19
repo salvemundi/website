@@ -15,8 +15,20 @@ import {
     Clock,
     XCircle,
     Bus,
-    Briefcase
+    Briefcase,
 } from 'lucide-react';
+import {
+    Alert,
+    Badge,
+    Box,
+    Divider,
+    Group,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    Title,
+} from '@mantine/core';
 import { safeConsoleError } from '@/server/utils/logger';
 
 interface SignupViewProps {
@@ -29,7 +41,7 @@ const formatFullDate = (d: Date) => {
         return new Intl.DateTimeFormat('nl-NL', {
             day: 'numeric',
             month: 'long',
-            year: 'numeric'
+            year: 'numeric',
         }).format(d);
     } catch (error) {
         safeConsoleError('[SignupView.tsx][formatFullDate] ', error);
@@ -40,85 +52,161 @@ const formatFullDate = (d: Date) => {
 export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
     const getStatusInfo = (status: string | null | undefined) => {
         switch (status) {
-            case 'confirmed': return { icon: CheckCircle2, color: 'text-emerald-500', label: 'Bevestigd' };
-            case 'waitlist': return { icon: Clock, color: 'text-yellow-500', label: 'Wachtlijst' };
-            case 'cancelled': return { icon: XCircle, color: 'text-red-500', label: 'Geannuleerd' };
-            default: return { icon: AlertCircle, color: 'text-(--beheer-accent)', label: 'Geregistreerd' };
+            case 'confirmed':
+                return { icon: CheckCircle2, color: 'success', label: 'Bevestigd' };
+            case 'waitlist':
+                return { icon: Clock, color: 'accent', label: 'Wachtlijst' };
+            case 'cancelled':
+                return { icon: XCircle, color: 'error', label: 'Geannuleerd' };
+            default:
+                return { icon: AlertCircle, color: 'brand', label: 'Geregistreerd' };
         }
     };
 
     const statusInfo = getStatusInfo(signup.status);
 
     return (
-        <div className="grid grid-cols-1 gap-6 p-2 md:grid-cols-2">
-            <div className="space-y-6">
-                <section>
-                    <div className="mb-3 flex items-center gap-2 opacity-50">
-                        <User className="size-3 text-(--beheer-accent)" />
-                        <h3 className="text-[10px] font-semibold text-(--beheer-text)">Reiziger</h3>
-                    </div>
-                    <div className="space-y-3 rounded-2xl border border-(--beheer-border)/10 bg-(--bg-main)/30 p-4 shadow-inner">
-                        <ViewField label="Naam" value={`${signup.first_name} ${signup.last_name}`} icon={User} />
-                        <ViewField label="Email" value={signup.email} icon={Mail} />
-                        <ViewField label="Telefoon" value={signup.phone_number || 'Niet opgegeven'} icon={Phone} />
-                        <ViewField
-                            label="Geb. Datum"
-                            value={signup.date_of_birth ? formatFullDate(new Date(signup.date_of_birth)) : 'Niet opgegeven'}
-                            icon={Calendar}
-                        />
-                    </div>
-                </section>
+        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+            <Stack gap="lg">
+                <Stack gap="xs">
+                    <Group gap="xs">
+                        <Text span c="brand" lh={1}>
+                            <User size={14} />
+                        </Text>
+                        <Title order={3} size="h6">
+                            Reiziger
+                        </Title>
+                    </Group>
+                    <Paper withBorder p="md" radius="md">
+                        <Stack gap={0}>
+                            <ViewField
+                                label="Naam"
+                                value={`${signup.first_name} ${signup.last_name}`}
+                                icon={User}
+                            />
+                            <Divider />
+                            <ViewField label="Email" value={signup.email} icon={Mail} />
+                            <Divider />
+                            <ViewField
+                                label="Telefoon"
+                                value={signup.phone_number || 'Niet opgegeven'}
+                                icon={Phone}
+                            />
+                            <Divider />
+                            <ViewField
+                                label="Geb. Datum"
+                                value={
+                                    signup.date_of_birth
+                                        ? formatFullDate(new Date(signup.date_of_birth))
+                                        : 'Niet opgegeven'
+                                }
+                                icon={Calendar}
+                            />
+                        </Stack>
+                    </Paper>
+                </Stack>
 
-                <section>
-                    <div className="mb-3 flex items-center gap-2 opacity-50">
-                        {isBusTrip ? <Bus className="size-3 text-(--beheer-accent)" /> : <FileText className="size-3 text-(--beheer-accent)" />}
-                        <h3 className="text-[10px] font-semibold text-(--beheer-text)">{isBusTrip ? 'Vervoer' : 'Documenten'}</h3>
-                    </div>
-                    <div className="space-y-3 rounded-2xl border border-(--beheer-border)/10 bg-(--bg-main)/30 p-4 shadow-inner">
+                <Stack gap="xs">
+                    <Group gap="xs">
+                        <Text span c="brand" lh={1}>
+                            {isBusTrip ? <Bus size={14} /> : <FileText size={14} />}
+                        </Text>
+                        <Title order={3} size="h6">
+                            {isBusTrip ? 'Vervoer' : 'Documenten'}
+                        </Title>
+                    </Group>
+                    <Paper withBorder p="md" radius="md">
                         {isBusTrip ? (
-                            <div className={`flex items-center justify-between rounded-xl border px-3 py-2 text-[9px] font-semibold ${signup.willing_to_drive ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500' : 'border-red-500/20 bg-red-500/10 text-red-500'}`}>
-                                <div className="flex items-center gap-2">
-                                    <Bus className="size-3.5" />
-                                    <span>Chauffeur</span>
-                                </div>
-                                <span>{signup.willing_to_drive ? 'Beschikbaar' : 'Nee'}</span>
-                            </div>
+                            <Group justify="space-between">
+                                <Group gap="xs">
+                                    <Bus size={14} />
+                                    <Text size="xs" fw={600}>
+                                        Chauffeur
+                                    </Text>
+                                </Group>
+                                <Badge
+                                    size="sm"
+                                    variant="light"
+                                    color={signup.willing_to_drive ? 'success' : 'error'}
+                                >
+                                    {signup.willing_to_drive ? 'Beschikbaar' : 'Nee'}
+                                </Badge>
+                            </Group>
                         ) : (
-                            <>
-                                <ViewField label="ID Type" value={signup.id_document === 'passport' ? 'Paspoort' : signup.id_document === 'id_card' ? 'ID Kaart' : 'Niet opgegeven'} icon={FileText} />
-                                <ViewField label="ID Nummer" value={signup.document_number || 'Niet opgegeven'} icon={Briefcase} />
+                            <Stack gap={0}>
+                                <ViewField
+                                    label="ID Type"
+                                    value={
+                                        signup.id_document === 'passport'
+                                            ? 'Paspoort'
+                                            : signup.id_document === 'id_card'
+                                              ? 'ID Kaart'
+                                              : 'Niet opgegeven'
+                                    }
+                                    icon={FileText}
+                                />
+                                <Divider />
+                                <ViewField
+                                    label="ID Nummer"
+                                    value={signup.document_number || 'Niet opgegeven'}
+                                    icon={Briefcase}
+                                />
+                                <Divider />
                                 <ViewField
                                     label="Vervaldatum"
-                                    value={signup.document_expiry_date ? formatShortDate(new Date(signup.document_expiry_date)) : 'Niet opgegeven'}
+                                    value={
+                                        signup.document_expiry_date
+                                            ? formatShortDate(new Date(signup.document_expiry_date))
+                                            : 'Niet opgegeven'
+                                    }
                                     icon={Calendar}
                                 />
-                                <ViewField label="Extra Koffer" value={signup.extra_luggage ? 'Ja' : 'Nee'} icon={Briefcase} />
-                            </>
+                                <Divider />
+                                <ViewField
+                                    label="Extra Koffer"
+                                    value={signup.extra_luggage ? 'Ja' : 'Nee'}
+                                    icon={Briefcase}
+                                />
+                            </Stack>
                         )}
-                    </div>
-                </section>
-            </div>
+                    </Paper>
+                </Stack>
+            </Stack>
 
-            <div className="space-y-6">
-                <section>
-                    <div className="mb-3 flex items-center gap-2 opacity-50">
-                        <CreditCard className="size-3 text-(--beheer-accent)" />
-                        <h3 className="text-[10px] font-semibold text-(--beheer-text)">Status</h3>
-                    </div>
-                    <div className="space-y-4 rounded-2xl border border-(--beheer-border)/10 bg-(--bg-main)/30 p-4 shadow-inner">
-                        <div className="flex items-center justify-between">
-                            <span className="text-[9px] font-semibold text-(--beheer-text-muted) opacity-50">Status</span>
-                            <div className={`flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 ${statusInfo.color}`}>
-                                <statusInfo.icon className="size-3" />
-                                <span className="text-[10px] font-semibold">{statusInfo.label}</span>
-                            </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-[9px] font-semibold text-(--beheer-text-muted) opacity-50">Rol</span>
-                            <span className="text-[10px] font-semibold text-(--beheer-text)">{signup.role === 'crew' ? 'Crew' : 'Reguliere Reiziger'}</span>
-                        </div>
-
-                        <div className="space-y-2 border-t border-white/5 pt-2">
+            <Stack gap="lg">
+                <Stack gap="xs">
+                    <Group gap="xs">
+                        <Text span c="brand" lh={1}>
+                            <CreditCard size={14} />
+                        </Text>
+                        <Title order={3} size="h6">
+                            Status
+                        </Title>
+                    </Group>
+                    <Paper withBorder p="md" radius="md">
+                        <Stack gap="sm">
+                            <Group justify="space-between">
+                                <Text size="xs" fw={600} c="dimmed">
+                                    Status
+                                </Text>
+                                <Badge
+                                    size="sm"
+                                    variant="light"
+                                    color={statusInfo.color}
+                                    leftSection={<statusInfo.icon size={12} />}
+                                >
+                                    {statusInfo.label}
+                                </Badge>
+                            </Group>
+                            <Group justify="space-between">
+                                <Text size="xs" fw={600} c="dimmed">
+                                    Rol
+                                </Text>
+                                <Text size="xs" fw={600}>
+                                    {signup.role === 'crew' ? 'Crew' : 'Reguliere Reiziger'}
+                                </Text>
+                            </Group>
+                            <Divider />
                             <PaymentStatus
                                 label="Aanbetaling"
                                 isPaid={!!signup.deposit_paid}
@@ -129,64 +217,93 @@ export default function SignupView({ signup, isBusTrip }: SignupViewProps) {
                                 isPaid={!!signup.full_payment_paid}
                                 date={signup.full_payment_paid_at}
                             />
-                        </div>
-                    </div>
-                </section>
+                        </Stack>
+                    </Paper>
+                </Stack>
 
-                <section>
-                    <div className="mb-3 flex items-center gap-2 opacity-50">
-                        <AlertCircle className="size-3 text-(--beheer-accent)" />
-                        <h3 className="text-[10px] font-semibold text-(--beheer-text)">Notities</h3>
-                    </div>
-                    <div className="space-y-3">
-                        <div className="rounded-xl border border-red-500/10 bg-red-500/5 p-3">
-                            <h4 className="mb-1 text-[8px] font-semibold text-red-500">Allergieën</h4>
-                            <p className="text-xs leading-relaxed font-medium text-(--beheer-text)">
-                                {signup.allergies || 'Geen'}
-                            </p>
-                        </div>
-                        <div className="rounded-xl border border-(--beheer-accent)/10 bg-(--beheer-accent)/5 p-3">
-                            <h4 className="mb-1 text-[8px] font-semibold text-(--beheer-accent)">Bijzonderheden</h4>
-                            <p className="text-xs leading-relaxed font-medium text-(--beheer-text)">
-                                {signup.special_notes || 'Geen'}
-                            </p>
-                        </div>
-                    </div>
-                </section>
-            </div>
-        </div>
+                <Stack gap="xs">
+                    <Group gap="xs">
+                        <Text span c="brand" lh={1}>
+                            <AlertCircle size={14} />
+                        </Text>
+                        <Title order={3} size="h6">
+                            Notities
+                        </Title>
+                    </Group>
+                    <Stack gap="xs">
+                        <Alert color="error" variant="light" title="Allergieën">
+                            <Text size="xs">{signup.allergies || 'Geen'}</Text>
+                        </Alert>
+                        <Alert color="brand" variant="light" title="Bijzonderheden">
+                            <Text size="xs">{signup.special_notes || 'Geen'}</Text>
+                        </Alert>
+                    </Stack>
+                </Stack>
+            </Stack>
+        </SimpleGrid>
     );
 }
 
-function ViewField({ label, value, icon: Icon }: { label: string; value: string; icon: React.ComponentType<{ className?: string }> }) {
+function ViewField({
+    label,
+    value,
+    icon: Icon,
+}: {
+    label: string;
+    value: string;
+    icon: React.ComponentType<{ size?: number }>;
+}) {
     return (
-        <div className="flex items-center justify-between gap-4 border-b border-white/5 py-1.5 last:border-0">
-            <div className="flex items-center gap-2">
-                <Icon className="size-3 text-(--beheer-text-muted) opacity-30" />
-                <span className="text-[9px] font-semibold text-(--beheer-text-muted) opacity-50">{label}</span>
-            </div>
-            <span className="max-w-50 truncate text-[11px] font-semibold text-(--beheer-text)">{value}</span>
-        </div>
+        <Group justify="space-between" gap="md" py={8} wrap="nowrap">
+            <Group gap="xs" wrap="nowrap">
+                <Text span c="dimmed" lh={1}>
+                    <Icon size={13} />
+                </Text>
+                <Text size="xs" fw={600} c="dimmed">
+                    {label}
+                </Text>
+            </Group>
+            <Text size="xs" fw={600} truncate maw={200}>
+                {value}
+            </Text>
+        </Group>
     );
 }
 
-function PaymentStatus({ label, isPaid, date }: { label: string; isPaid: boolean; date?: string | null }) {
+function PaymentStatus({
+    label,
+    isPaid,
+    date,
+}: {
+    label: string;
+    isPaid: boolean;
+    date?: string | null;
+}) {
     return (
-        <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-                <div className={`size-1.5 rounded-full ${isPaid ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                <span className="text-[9px] font-semibold text-(--beheer-text-muted) opacity-50">{label}</span>
-            </div>
-            <div className="flex flex-col items-end">
-                <span className={`text-[10px] font-semibold ${isPaid ? 'text-emerald-500' : 'text-red-500'}`}>
+        <Group justify="space-between" align="flex-start">
+            <Group gap="xs">
+                <Box
+                    w={6}
+                    h={6}
+                    style={{
+                        borderRadius: '50%',
+                        backgroundColor: isPaid ? 'var(--success)' : 'var(--destructive)',
+                    }}
+                />
+                <Text size="xs" fw={600} c="dimmed">
+                    {label}
+                </Text>
+            </Group>
+            <Stack gap={2} align="flex-end">
+                <Badge size="xs" variant="light" color={isPaid ? 'success' : 'error'}>
                     {isPaid ? 'Betaald' : 'Niet betaald'}
-                </span>
+                </Badge>
                 {isPaid && date && (
-                    <span className="text-[8px] font-medium text-(--beheer-text-muted) opacity-40">
+                    <Text size="xs" c="dimmed">
                         {formatShortDate(new Date(date))}
-                    </span>
+                    </Text>
                 )}
-            </div>
-        </div>
+            </Stack>
+        </Group>
     );
 }

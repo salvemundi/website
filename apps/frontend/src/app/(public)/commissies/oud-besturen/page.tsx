@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
+import Link from '@/components/ui/Link';
+import { connection } from 'next/server';
+import { ChevronLeft, History } from 'lucide-react';
+import { Box, Button, Container, Divider, Group, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import BoardHistoryTimeline from '@/components/ui/commissies/BoardHistoryTimeline';
 import { getBoardHistory } from '@/server/actions/beheer/beheer-board.actions';
-import BackButton from '@/components/ui/navigation/BackButton';
-import { History } from 'lucide-react';
-import { connection } from 'next/server';
 
 export const metadata: Metadata = {
     title: 'Bestuursgeschiedenis | Salve Mundi',
@@ -18,28 +19,42 @@ export default async function BoardHistoryPage() {
 
     return (
         <PublicPageShell>
-            <div className="container max-w-7xl px-fluid-md pt-fluid-md pb-4">
-                <BackButton href="/commissies/bestuur" title="Terug naar Huidig Bestuur" text="Huidig Bestuur" />
-            </div>
+            <Container size="xl" py="xl">
+                <Stack gap="xl">
+                    <Group>
+                        <Button
+                            component={Link}
+                            href="/commissies/bestuur"
+                            title="Terug naar Huidig Bestuur"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Huidig Bestuur
+                        </Button>
+                    </Group>
 
-            <main className="max-w-app mx-auto px-fluid-md pt-fluid-md pb-fluid-lg">
-                {/* Header Section */}
-                <div className="mb-12 flex flex-col items-center text-center sm:mb-16">
-                    <div className="mb-6 rounded-3xl border border-purple-500/10 bg-purple-500/5 p-4 text-purple-700 shadow-sm dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
-                        <History className="size-10" />
-                    </div>
-                    <h1 className="mb-4 text-3xl font-black tracking-tight text-purple-700 sm:text-4xl dark:text-purple-300">
-                        Onze Geschiedenis
-                    </h1>
-                    <p className="max-w-2xl text-base leading-relaxed font-medium text-(--text-muted) sm:text-lg">
-                        Sinds de oprichting van Salve Mundi hebben vele gedreven studenten zich ingezet om de vereniging te laten groeien.
-                        Hieronder vind je het overzicht van alle besturen die de basis hebben gelegd voor wat we vandaag zijn.
-                    </p>
-                    <div className="mt-10 h-1 w-24 rounded-full bg-linear-to-r from-transparent via-purple-500 to-transparent" />
-                </div>
+                    <Box component="main">
+                        <Stack gap="xl">
+                            <Stack align="center" ta="center" gap="md">
+                                <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                                    <History size={32} />
+                                </ThemeIcon>
+                                <Title order={1} c="brand">
+                                    Onze Geschiedenis
+                                </Title>
+                                <Text size="lg" c="dimmed" maw={680}>
+                                    Sinds de oprichting van Salve Mundi hebben vele gedreven studenten zich ingezet om de vereniging te laten groeien.
+                                    Hieronder vind je het overzicht van alle besturen die de basis hebben gelegd voor wat we vandaag zijn.
+                                </Text>
+                                <Divider w={96} size="md" color="brand" />
+                            </Stack>
 
-                <BoardHistoryTimeline boards={boards} />
-            </main>
+                            <BoardHistoryTimeline boards={boards} />
+                        </Stack>
+                    </Box>
+                </Stack>
+            </Container>
         </PublicPageShell>
     );
 }

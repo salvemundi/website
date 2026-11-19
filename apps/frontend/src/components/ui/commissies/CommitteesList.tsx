@@ -1,3 +1,4 @@
+import { Card, Grid, GridCol, Text } from '@mantine/core';
 import { CommitteeCard } from '@/components/ui/commissies/CommitteeCard';
 import { type Committee } from '@salvemundi/validations/schema/committees.zod';
 
@@ -20,27 +21,29 @@ export default function CommitteesList({ initialCommittees = [] }: CommitteesLis
 
     if (sortedCommittees.length === 0) {
         return (
-            <div className="rounded-3xl bg-(--bg-card)/80 p-12 text-center shadow-lg dark:border dark:border-white/10">
-                <p className="text-lg text-(--text-muted) italic">Geen commissies gevonden.</p>
-            </div>
+            <Card p="xl" ta="center">
+                <Text size="lg" c="dimmed" fs="italic">
+                    Geen commissies gevonden.
+                </Text>
+            </Card>
         );
     }
 
     return (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Grid gap="lg">
             {sortedCommittees.map((committee, idx) => {
                 const cleanedName = cleanCommitteeName(committee.name);
                 const isBestuur = cleanedName.toLowerCase().includes('bestuur');
 
                 return (
-                    <div
+                    <GridCol
                         key={committee.id}
-                        className={`${isBestuur ? 'md:col-span-2' : ''} h-full`}
+                        span={isBestuur ? { base: 12, md: 12, lg: 6 } : { base: 12, md: 6, lg: 3 }}
                     >
                         <CommitteeCard committee={committee} index={idx} />
-                    </div>
+                    </GridCol>
                 );
             })}
-        </div>
+        </Grid>
     );
 }

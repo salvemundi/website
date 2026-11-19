@@ -1,24 +1,23 @@
+import { connection } from 'next/server';
+import { Box, Card, Container, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import MembershipFormIsland from '@/components/islands/membership/MembershipFormIsland';
-import MembershipStatusIsland, { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
+import MembershipStatusIsland from '@/components/islands/account/MembershipStatusIsland';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { fetchUserCommitteesDb, type Committee } from '@/server/internal/leden/leden-db.utils';
-import { connection } from 'next/server';
 import { safeConsoleError } from '@/server/utils/logger';
-import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 
 export const metadata = {
     title: 'Word Lid | Salve Mundi',
     description: 'Beheer je lidmaatschap bij Salve Mundi.'
 };
 
-
 export default async function MembershipPage() {
     await connection();
 
     const session = await getEnrichedSession();
 
-    const user = session?.user as MembershipUserData | undefined;
+    const user = session?.user;
     const isGuest = !user;
 
     let committees: Committee[] = [];
@@ -35,37 +34,48 @@ export default async function MembershipPage() {
 
     return (
         <PublicPageShell
-            title={isGuest ? "Word Lid!" : "Mijn Lidmaatschap"}
-            backgroundImage="" // Default gradient
+            title={isGuest ? 'Word Lid!' : 'Mijn Lidmaatschap'}
+            backgroundImage=""
         >
-            <div className="max-w-app mx-auto">
-                <div className={isGuest ? "flex flex-col gap-6 px-6 pt-8 pb-16 sm:flex-row sm:pt-10 sm:pb-24 md:pt-12 md:pb-32" : "px-6 pt-8 pb-16 sm:pt-10 sm:pb-24 md:pt-12 md:pb-32"}>
-                    <StandardFormCard
-                        title={isGuest ? 'Inschrijven' : (user.membership_status === 'active' ? 'STATUS' : 'VERLENGEN')}
-                        className={isGuest ? 'w-full sm:w-1/2' : 'mx-auto w-full max-w-2xl'}
-                    >
-                        {isGuest ? (
-                            <MembershipFormIsland baseAmount={baseAmount} />
-                        ) : (
-                            <MembershipStatusIsland user={user as MembershipUserData} baseAmount={baseAmount} />
-                        )}
-                    </StandardFormCard>
+            {isGuest ? (
+                <Container size="xl" py="xl">
+                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl">
+                        <Card padding="xl">
+                            <Stack gap="lg">
+                                <Title order={1} size="h2" c="brand">
+                                    Inschrijven
+                                </Title>
+                                <MembershipFormIsland baseAmount={baseAmount} />
+                            </Stack>
+                        </Card>
 
-                    {isGuest && (
-                        <aside className="flex w-full flex-col gap-6 sm:w-1/2">
-                            <div className="squircle-xl w-full bg-bg-card p-8 text-center shadow-lg dark:border dark:border-white/10">
-                                <h2 className="mb-4 text-3xl font-black tracking-tight text-theme-purple">
-                                    Waarom Lid Worden?
-                                </h2>
-                                <p className="text-lg leading-relaxed font-medium opacity-80">
-                                    Als lid van Salve Mundi krijg je toegang tot exclusieve activiteiten en workshops.
-                                    Word vandaag lid!
-                                </p>
-                            </div>
-                        </aside>
-                    )}
-                </div>
-            </div>
+                        <Box component="aside">
+                            <Card padding="xl">
+                                <Stack gap="md" align="center" ta="center">
+                                    <Title order={2} c="brand">
+                                        Waarom Lid Worden?
+                                    </Title>
+                                    <Text size="lg" c="dimmed">
+                                        Als lid van Salve Mundi krijg je toegang tot exclusieve activiteiten en workshops.
+                                        Word vandaag lid!
+                                    </Text>
+                                </Stack>
+                            </Card>
+                        </Box>
+                    </SimpleGrid>
+                </Container>
+            ) : (
+                <Container size="sm" py="xl">
+                    <Card padding="xl">
+                        <Stack gap="lg">
+                            <Title order={1} size="h2" c="brand">
+                                {user.membership_status === 'active' ? 'STATUS' : 'VERLENGEN'}
+                            </Title>
+                            <MembershipStatusIsland user={user} baseAmount={baseAmount} />
+                        </Stack>
+                    </Card>
+                </Container>
+            )}
         </PublicPageShell>
     );
 }

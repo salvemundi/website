@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Building2, MapPin, Calendar, Banknote, Clock, Briefcase, Mail, Globe, Phone, Lock } from 'lucide-react';
+import { ActionIcon, AspectRatio, Badge, Box, Card, Center, Divider, Flex, Group, Stack, Text, Title } from '@mantine/core';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
 import type { VacancyDTO } from '@salvemundi/validations';
@@ -24,123 +25,202 @@ export default function VacancyCard({ vacancy, variant = 'grid', isLoggedIn }: V
     if (!isLoggedIn) {
         const loginUrl = `/?needLogin=true&callbackURL=${encodeURIComponent('/bijbanenbank')}`;
         return (
-            <div
+            <Card
                 onClick={() => router.push(loginUrl)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => { if (e.key === 'Enter') router.push(loginUrl); }}
-                className={`group relative z-0 flex w-full cursor-pointer overflow-hidden rounded-[1.75rem] bg-(--bg-card) shadow-sm transition-all hover:-translate-y-1 hover:shadow-md dark:border dark:border-white/10 ${isList ? 'flex-col sm:flex-row sm:items-center' : 'flex-col'}`}
+                padding={0}
+                radius="xl"
+                withBorder
+                shadow="sm"
+                style={{ cursor: 'pointer', overflow: 'hidden' }}
             >
-                <div className={`relative shrink-0 overflow-hidden bg-(--bg-soft) ${isList ? 'aspect-video w-full sm:aspect-square sm:w-40' : 'aspect-video w-full'}`}>
-                    {vacancy.image ? (
-                        <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" />
-                    ) : (
-                        <div className="flex size-full items-center justify-center">
-                            <Briefcase className="size-10 text-(--theme-purple)/20" />
-                        </div>
-                    )}
-                </div>
-                <div className="flex min-w-0 flex-1 items-center justify-between gap-3 p-5">
-                    <h3 className="line-clamp-2 text-lg leading-tight font-bold wrap-break-word text-(--theme-purple)/90">
-                        {vacancy.title}
-                    </h3>
-                    <span className="flex shrink-0 items-center gap-1.5 text-xs font-bold text-(--theme-purple)">
-                        <Lock className="size-3.5" />
-                        Inloggen
-                    </span>
-                </div>
-            </div>
+                <Box style={{ display: 'flex', flexDirection: isList ? 'row' : 'column', flexWrap: 'wrap' }}>
+                    <Box w={{ base: '100%', sm: isList ? 160 : '100%' }} style={{ flexShrink: 0, overflow: 'hidden' }}>
+                        <AspectRatio ratio={16 / 9}>
+                            {vacancy.image ? (
+                                <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" />
+                            ) : (
+                                <Center h="100%" style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)' }}>
+                                    <Text span c="brand" opacity={0.3} lh={1}>
+                                        <Briefcase size={40} />
+                                    </Text>
+                                </Center>
+                            )}
+                        </AspectRatio>
+                    </Box>
+                    <Group justify="space-between" align="center" p="lg" gap="sm" style={{ flex: 1, minWidth: 0 }}>
+                        <Title order={3} size="h4" c="brand" lineClamp={2}>
+                            {vacancy.title}
+                        </Title>
+                        <Group gap={4} c="brand" style={{ flexShrink: 0 }}>
+                            <Lock size={14} />
+                            <Text size="xs" fw={700}>Inloggen</Text>
+                        </Group>
+                    </Group>
+                </Box>
+            </Card>
         );
     }
 
     return (
-        <div
+        <Card
             onClick={() => router.push(`/bijbanenbank/${vacancy.id}`)}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/bijbanenbank/${vacancy.id}`); }}
-            className={`group relative z-0 flex w-full cursor-pointer overflow-hidden rounded-[1.75rem] bg-(--bg-card) shadow-sm transition-all hover:-translate-y-1 hover:shadow-md dark:border dark:border-white/10 ${isList ? 'flex-col md:flex-row' : 'flex-col'}`}
+            padding={0}
+            radius="xl"
+            withBorder
+            shadow="sm"
+            h="100%"
+            style={{ cursor: 'pointer', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
         >
-            {vacancy.image && (
-                <div className={`relative shrink-0 overflow-hidden ${isList ? 'aspect-video w-full md:aspect-auto md:w-56' : 'aspect-video w-full'}`}>
-                    <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" />
-                </div>
-            )}
+            <Flex direction={{ base: 'column', md: isList ? 'row' : 'column' }} flex={1}>
+                {vacancy.image && (
+                    <Box w={{ base: '100%', md: isList ? 224 : '100%' }} style={{ flexShrink: 0, overflow: 'hidden' }}>
+                        <AspectRatio ratio={16 / 9} h={isList ? '100%' : undefined}>
+                            <MediaAsset asset={vacancy.image} alt={vacancy.title} fill objectFit="cover" />
+                        </AspectRatio>
+                    </Box>
+                )}
 
-            <div className={`flex grow flex-col gap-3 p-5 ${isList ? 'md:flex-row md:items-center md:gap-6' : ''}`}>
-                <div className={isList ? 'space-y-3 md:min-w-0 md:flex-1' : 'contents'}>
-                    <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                            <h3 className={`leading-tight font-bold wrap-break-word text-(--theme-purple)/90 ${isList ? 'line-clamp-1 text-lg' : 'line-clamp-2 text-lg'}`}>
-                                {vacancy.title}
-                            </h3>
-                            <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-(--text-muted)">
-                                <Building2 className="size-3.5 shrink-0" />
-                                <span className="truncate">{vacancy.company}</span>
-                            </p>
-                        </div>
-                        <span className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-bold tracking-wider text-white uppercase shadow-sm ${isInternship ? 'bg-(--theme-purple)' : 'bg-(--theme-success)'}`}>
-                            {isInternship ? 'Stage' : 'Bijbaan'}
-                        </span>
-                    </div>
+                <Stack justify="space-between" gap="sm" p="lg" style={{ flex: 1, minWidth: 0 }}>
+                    <Stack gap="sm">
+                        <Group justify="space-between" align="flex-start" wrap="nowrap" gap="xs">
+                            <Stack gap={4} style={{ minWidth: 0 }}>
+                                <Title order={3} size="h4" c="brand" lineClamp={isList ? 1 : 2}>
+                                    {vacancy.title}
+                                </Title>
+                                <Group gap={6} c="dimmed" wrap="nowrap">
+                                    <Building2 size={14} style={{ flexShrink: 0 }} />
+                                    <Text size="sm" fw={600} truncate>
+                                        {vacancy.company}
+                                    </Text>
+                                </Group>
+                            </Stack>
+                            <Badge
+                                size="sm"
+                                color={isInternship ? 'brand' : 'success'}
+                                style={{ flexShrink: 0 }}
+                            >
+                                {isInternship ? 'Stage' : 'Bijbaan'}
+                            </Badge>
+                        </Group>
 
-                    <div className={`overflow-hidden text-sm leading-relaxed wrap-break-word text-(--text-muted) ${isList ? 'line-clamp-2' : 'line-clamp-3'}`}>
-                        <SafeMarkdown content={vacancy.description} className="prose-sm text-(--text-muted)! prose-headings:my-1 prose-p:my-1" />
-                    </div>
+                        <Text size="sm" c="dimmed" lineClamp={isList ? 2 : 3} component="div">
+                            <SafeMarkdown content={vacancy.description} />
+                        </Text>
 
-                    <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-medium text-(--text-muted)">
-                        <span className="flex items-center gap-1"><MapPin className="size-3.5" />{vacancy.location}</span>
-                        {vacancy.salary && <span className="flex items-center gap-1"><Banknote className="size-3.5" />{vacancy.salary}</span>}
-                        {vacancy.working_hours && <span className="flex items-center gap-1"><Clock className="size-3.5" />{vacancy.working_hours}</span>}
-                        {vacancy.employment_type && <span className="flex items-center gap-1"><Briefcase className="size-3.5" />{vacancy.employment_type}</span>}
-                    </div>
-
-                    {isInternship && vacancy.directions.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
-                            {vacancy.directions.map((direction) => (
-                                <span key={direction} className="rounded-full border border-(--theme-purple)/20 bg-(--bg-soft) px-2.5 py-1 text-[10px] font-bold text-(--theme-purple)">
-                                    {direction}
-                                </span>
-                            ))}
-                        </div>
-                    )}
-
-                    {vacancy.skills.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
-                            {vacancy.skills.slice(0, 6).map((skill) => (
-                                <span key={skill} className="rounded-full bg-(--theme-purple)/10 px-2.5 py-1 text-[10px] font-bold text-(--theme-purple)">
-                                    {skill}
-                                </span>
-                            ))}
-                            {vacancy.skills.length > 6 && (
-                                <span className="px-2.5 py-1 text-[10px] font-bold text-(--text-muted)">+{vacancy.skills.length - 6}</span>
+                        <Group gap="md" wrap="wrap" c="dimmed">
+                            <Group gap={4}>
+                                <MapPin size={14} />
+                                <Text size="xs" fw={500}>{vacancy.location}</Text>
+                            </Group>
+                            {vacancy.salary && (
+                                <Group gap={4}>
+                                    <Banknote size={14} />
+                                    <Text size="xs" fw={500}>{vacancy.salary}</Text>
+                                </Group>
                             )}
-                        </div>
-                    )}
-                </div>
+                            {vacancy.working_hours && (
+                                <Group gap={4}>
+                                    <Clock size={14} />
+                                    <Text size="xs" fw={500}>{vacancy.working_hours}</Text>
+                                </Group>
+                            )}
+                            {vacancy.employment_type && (
+                                <Group gap={4}>
+                                    <Briefcase size={14} />
+                                    <Text size="xs" fw={500}>{vacancy.employment_type}</Text>
+                                </Group>
+                            )}
+                        </Group>
 
-                <div className={`flex items-center justify-between border-(--border-color) ${isList ? 'mt-auto border-t pt-3 md:mt-0 md:flex-col md:items-end md:justify-center md:gap-3 md:border-t-0 md:border-l md:pt-0 md:pl-6' : 'mt-auto border-t pt-3'}`}>
-                    <span className="flex items-center gap-1.5 text-[11px] font-semibold whitespace-nowrap text-(--text-muted)">
-                        <Calendar className="size-3.5" />
-                        {formatPublishedDate(vacancy.published_at)}
-                    </span>
-                    <div className="flex items-center gap-2">
-                        {vacancy.contact_website && (
-                            <a href={vacancy.contact_website} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="icon-button rounded-full bg-(--bg-soft) p-2 text-(--theme-purple)" title="Website">
-                                <Globe className="size-4" />
-                            </a>
+                        {isInternship && vacancy.directions.length > 0 && (
+                            <Group gap={6} wrap="wrap">
+                                {vacancy.directions.map((direction) => (
+                                    <Badge key={direction} size="xs" variant="outline" color="brand">
+                                        {direction}
+                                    </Badge>
+                                ))}
+                            </Group>
                         )}
-                        {vacancy.contact_phone && (
-                            <a href={`tel:${vacancy.contact_phone}`} onClick={(e) => e.stopPropagation()} className="icon-button rounded-full bg-(--bg-soft) p-2 text-(--theme-purple)" title="Bellen">
-                                <Phone className="size-4" />
-                            </a>
+
+                        {vacancy.skills.length > 0 && (
+                            <Group gap={6} wrap="wrap">
+                                {vacancy.skills.slice(0, 6).map((skill) => (
+                                    <Badge key={skill} size="xs" variant="light" color="brand">
+                                        {skill}
+                                    </Badge>
+                                ))}
+                                {vacancy.skills.length > 6 && (
+                                    <Text size="xs" fw={700} c="dimmed">
+                                        +{vacancy.skills.length - 6}
+                                    </Text>
+                                )}
+                            </Group>
                         )}
-                        <a href={`mailto:${vacancy.contact_email}`} onClick={(e) => e.stopPropagation()} className="icon-button rounded-full bg-(--theme-purple) p-2 text-white shadow-(--theme-purple)/20 shadow-lg hover:scale-105" title="E-mailen">
-                            <Mail className="size-4" />
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </Stack>
+
+                    <Stack gap="xs" mt="auto">
+                        <Divider />
+                        <Group justify="space-between" align="center" wrap="nowrap">
+                            <Group gap={6} c="dimmed">
+                                <Calendar size={14} />
+                                <Text size="xs" fw={600} style={{ whiteSpace: 'nowrap' }}>
+                                    {formatPublishedDate(vacancy.published_at)}
+                                </Text>
+                            </Group>
+                            <Group gap="xs" wrap="nowrap">
+                                {vacancy.contact_website && (
+                                    <ActionIcon
+                                        component="a"
+                                        href={vacancy.contact_website}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={(e) => e.stopPropagation()}
+                                        variant="light"
+                                        color="brand"
+                                        size="md"
+                                        title="Website"
+                                        aria-label="Website"
+                                    >
+                                        <Globe size={16} />
+                                    </ActionIcon>
+                                )}
+                                {vacancy.contact_phone && (
+                                    <ActionIcon
+                                        component="a"
+                                        href={`tel:${vacancy.contact_phone}`}
+                                        onClick={(e) => e.stopPropagation()}
+                                        variant="light"
+                                        color="brand"
+                                        size="md"
+                                        title="Bellen"
+                                        aria-label="Bellen"
+                                    >
+                                        <Phone size={16} />
+                                    </ActionIcon>
+                                )}
+                                <ActionIcon
+                                    component="a"
+                                    href={`mailto:${vacancy.contact_email}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    variant="filled"
+                                    color="brand"
+                                    size="md"
+                                    title="E-mailen"
+                                    aria-label="E-mailen"
+                                >
+                                    <Mail size={16} />
+                                </ActionIcon>
+                            </Group>
+                        </Group>
+                    </Stack>
+                </Stack>
+            </Flex>
+        </Card>
     );
 }

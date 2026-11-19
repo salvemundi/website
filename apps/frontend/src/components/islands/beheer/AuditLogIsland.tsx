@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
     Clock, Server, RefreshCw, Shield
 } from 'lucide-react';
+import { Button, Group, Paper, Stack, Switch, Tabs, Text } from '@mantine/core';
 import {
     approveSignupAction,
     rejectSignupAction,
@@ -14,7 +16,6 @@ import {
     bulkRejectSignupsAction
 } from '@/server/actions/infrastructure/audit.actions';
 import { type PendingSignup, type QueueInfo, type SystemLog } from '@salvemundi/validations';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 
 import PendingTab from './audit/PendingTab';
@@ -40,7 +41,7 @@ interface AuditLogIslandProps {
 }
 
 export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [activeTab, setActiveTab] = useState<'pending' | 'admin_logs' | 'system_logs' | 'queues'>('admin_logs');
     
     const [idNameLookup, setIdNameLookup] = useState<Record<string, string>>(initialData.idNameLookup);
@@ -282,107 +283,102 @@ export default function AuditLogIsland({ initialData }: AuditLogIslandProps) {
 
 
     return (
-        <div className="w-full">
-            <div className="flex flex-col gap-8">
-                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                    <div className="flex w-fit gap-1 rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft) p-1">
-                        {[
-                            { id: 'pending', label: 'Wachtrij', icon: Clock },
-                            { id: 'admin_logs', label: 'Commissie', icon: Shield },
-                            { id: 'system_logs', label: 'Systeem', icon: Server },
-                            { id: 'queues', label: 'Wachtrijen', icon: RefreshCw },
-                        ].map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => handleTabChange(tab.id as typeof activeTab)}
-                                className={`tab-button flex items-center gap-2 rounded-xl px-4 py-2 text-[11px] font-semibold transition-all ${activeTab === tab.id ? 'bg-(--beheer-card-bg) text-(--beheer-accent) shadow-md' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
-                                type="button">
-                                <tab.icon className="size-3" /> {tab.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Compact Config Toggle */}
-                    <div className="flex items-center gap-4 rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft) px-4 py-2 shadow-sm">
-                        <div className="flex items-center gap-2">
-                            <Shield className={`size-3.5 ${manualApproval ? 'text-amber-500' : 'text-green-500'}`} />
-                            <span className="text-[11px] leading-tight font-semibold text-(--beheer-text)">
-                                {manualApproval
-                                    ? "Handmatige goedkeuring is ACTIEF. Alle aanmeldingen moeten worden goedgekeurd."
-                                    : "Automatische goedkeuring is ACTIEF. Aanmeldingen worden direct verwerkt."}
-                            </span>
-                        </div>
-                        <button
-                            onClick={() => { void toggleManualApproval(); }}
-                            aria-label="Toggle handmatige goedkeuring"
-                            className={`tab-button relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors duration-200 outline-none ${manualApproval ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                            type="button"
-                        >
-                            <span className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-xs transition-transform duration-200 ease-in-out ${manualApproval ? 'translate-x-5' : 'translate-x-0'}`} />
-                        </button>
-                    </div>
-                </div>
-
-                {activeTab === 'pending' && (
-                    <PendingTab
-                        isProcessing={isProcessing}
-                        isBulkProcessing={isBulkProcessing}
-                        filteredSignups={filteredSignups}
-                        selectedIds={selectedIds}
-                        onToggleSelectAll={toggleSelectAll}
-                        onToggleSelectOne={toggleSelectOne}
-                        onApprove={(id, type) => { void handleApprove(id, type); }}
-                        onReject={(id, type) => { void handleReject(id, type); }}
-                        onBulkApprove={() => { void handleBulkApprove(); }}
-                        onBulkReject={() => { void handleBulkReject(); }}
-                        onRefresh={() => { void refreshLogs(); }}
-                    />
-                )}
-
-                {activeTab === 'admin_logs' && (
-                    <LogsTab
-                        logs={adminLogs}
-                        totalCount={adminLogsTotalCount}
-                        onRefresh={() => { void refreshLogs(); }}
-                        onLoadMore={() => { void loadMoreAdminLogs(); }}
-                        onSearch={(q) => { void handleAdminSearch(q); }}
-                        searchQuery={adminSearch}
-                        title="Commissie Acties"
-                        idNameLookup={idNameLookup}
-                    />
-                )}
-
-                {activeTab === 'system_logs' && (
-                    <LogsTab
-                        logs={systemLogs}
-                        totalCount={systemLogsTotalCount}
-                        onRefresh={() => { void refreshLogs(); }}
-                        onLoadMore={() => { void loadMoreSystemLogs(); }}
-                        onSearch={(q) => { void handleSystemSearch(q); }}
-                        searchQuery={systemSearch}
-                        title="Systeem Events"
-                        idNameLookup={idNameLookup}
-                        actions={
-                            <a
-                                href="/beheer/sync"
-                                className="flex items-center gap-2 rounded-lg bg-(--beheer-accent)/10 px-3 py-1.5 text-xs font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/20 active:scale-95"
-                            >
-                                Sync Beheren
-                            </a>
+        <Stack gap="lg" w="100%">
+            <Group justify="space-between" align="center" wrap="wrap" gap="md">
+                <Tabs
+                    value={activeTab}
+                    onChange={(val) => {
+                        if (val === 'pending' || val === 'admin_logs' || val === 'system_logs' || val === 'queues') {
+                            handleTabChange(val);
                         }
-                    />
-                )}
+                    }}
+                    variant="pills"
+                >
+                    <Tabs.List>
+                        <Tabs.Tab value="pending" leftSection={<Clock size={14} />}>Wachtrij</Tabs.Tab>
+                        <Tabs.Tab value="admin_logs" leftSection={<Shield size={14} />}>Commissie</Tabs.Tab>
+                        <Tabs.Tab value="system_logs" leftSection={<Server size={14} />}>Systeem</Tabs.Tab>
+                        <Tabs.Tab value="queues" leftSection={<RefreshCw size={14} />}>Wachtrijen</Tabs.Tab>
+                    </Tabs.List>
+                </Tabs>
 
-                {activeTab === 'queues' && (
-                    <QueuesTab
-                        queueData={queueData}
-                        isLoading={isLoadingQueues}
-                        error={queueError}
-                        onRefresh={() => { void fetchQueueData(); }}
-                    />
-                )}
-            </div>
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+                <Paper withBorder px="md" py="xs" radius="md">
+                    <Group gap="md" wrap="nowrap">
+                        <Group gap="xs" wrap="nowrap">
+                            <Text span c={manualApproval ? 'accent' : 'success'} lh={1}>
+                                <Shield size={14} />
+                            </Text>
+                            <Text size="xs" fw={600}>
+                                {manualApproval
+                                    ? 'Handmatige goedkeuring is ACTIEF. Alle aanmeldingen moeten worden goedgekeurd.'
+                                    : 'Automatische goedkeuring is ACTIEF. Aanmeldingen worden direct verwerkt.'}
+                            </Text>
+                        </Group>
+                        <Switch
+                            checked={manualApproval}
+                            onChange={() => { void toggleManualApproval(); }}
+                            color={manualApproval ? 'accent' : 'success'}
+                            aria-label="Toggle handmatige goedkeuring"
+                        />
+                    </Group>
+                </Paper>
+            </Group>
+
+            {activeTab === 'pending' && (
+                <PendingTab
+                    isProcessing={isProcessing}
+                    isBulkProcessing={isBulkProcessing}
+                    filteredSignups={filteredSignups}
+                    selectedIds={selectedIds}
+                    onToggleSelectAll={toggleSelectAll}
+                    onToggleSelectOne={toggleSelectOne}
+                    onApprove={(id, type) => { void handleApprove(id, type); }}
+                    onReject={(id, type) => { void handleReject(id, type); }}
+                    onBulkApprove={() => { void handleBulkApprove(); }}
+                    onBulkReject={() => { void handleBulkReject(); }}
+                    onRefresh={() => { void refreshLogs(); }}
+                />
+            )}
+
+            {activeTab === 'admin_logs' && (
+                <LogsTab
+                    logs={adminLogs}
+                    totalCount={adminLogsTotalCount}
+                    onRefresh={() => { void refreshLogs(); }}
+                    onLoadMore={() => { void loadMoreAdminLogs(); }}
+                    onSearch={(q) => { void handleAdminSearch(q); }}
+                    searchQuery={adminSearch}
+                    title="Commissie Acties"
+                    idNameLookup={idNameLookup}
+                />
+            )}
+
+            {activeTab === 'system_logs' && (
+                <LogsTab
+                    logs={systemLogs}
+                    totalCount={systemLogsTotalCount}
+                    onRefresh={() => { void refreshLogs(); }}
+                    onLoadMore={() => { void loadMoreSystemLogs(); }}
+                    onSearch={(q) => { void handleSystemSearch(q); }}
+                    searchQuery={systemSearch}
+                    title="Systeem Events"
+                    idNameLookup={idNameLookup}
+                    actions={
+                        <Button component={Link} href="/beheer/sync" variant="light" color="accent" size="xs">
+                            Sync Beheren
+                        </Button>
+                    }
+                />
+            )}
+
+            {activeTab === 'queues' && (
+                <QueuesTab
+                    queueData={queueData}
+                    isLoading={isLoadingQueues}
+                    error={queueError}
+                    onRefresh={() => { void fetchQueueData(); }}
+                />
+            )}
+        </Stack>
     );
 }

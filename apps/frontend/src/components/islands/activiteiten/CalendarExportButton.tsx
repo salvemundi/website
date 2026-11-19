@@ -1,17 +1,31 @@
 'use client';
 
-import { useState, useRef, useEffect, useId } from 'react';
-import { 
-    Calendar, 
-    Download, 
-    Check, 
-    Copy, 
-    X, 
-    Sparkles, 
+import { useState, useEffect } from 'react';
+import {
+    Calendar,
+    Download,
+    Check,
+    Copy,
+    Sparkles,
     ExternalLink,
     CalendarPlus
 } from 'lucide-react';
-import { cn } from '@/lib/utils/cn';
+import {
+    Alert,
+    Anchor,
+    Button,
+    Code,
+    Divider,
+    Group,
+    Modal,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    ThemeIcon,
+    Title,
+    UnstyledButton,
+} from '@mantine/core';
 import { safeConsoleError } from '@/server/utils/logger';
 
 interface CalendarExportButtonProps {
@@ -20,24 +34,20 @@ interface CalendarExportButtonProps {
     calendarToken?: string | null;
     isLoggedIn?: boolean;
     label?: string;
-    buttonClassName?: string;
 }
 
-export default function CalendarExportButton({ 
+export default function CalendarExportButton({
     feedPath = '/api/activiteiten/ics',
     calendarName,
-    calendarToken, 
+    calendarToken,
     isLoggedIn = false,
     label = 'Agenda koppelen',
-    buttonClassName
 }: CalendarExportButtonProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
     const [googleCopied, setGoogleCopied] = useState(false);
     const [showGoogleInstructions, setShowGoogleInstructions] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-    const modalRef = useRef<HTMLDivElement>(null);
-    const modalTitleId = useId();
 
     const resolvedCalendarName = calendarName || (isLoggedIn && calendarToken ? 'Salve Mundi Mijn Activiteiten' : 'Salve Mundi Activiteiten');
 
@@ -48,8 +58,8 @@ export default function CalendarExportButton({
     const getBaseFeedUrl = () => {
         if (typeof window === 'undefined') return '';
         const separator = feedPath.includes('?') ? '&' : '?';
-        const path = calendarToken 
-            ? `${feedPath}${separator}token=${encodeURIComponent(calendarToken)}` 
+        const path = calendarToken
+            ? `${feedPath}${separator}token=${encodeURIComponent(calendarToken)}`
             : feedPath;
         return `${window.location.origin}${path}`;
     };
@@ -57,8 +67,8 @@ export default function CalendarExportButton({
     const getWebcalUrl = () => {
         if (typeof window === 'undefined') return '';
         const separator = feedPath.includes('?') ? '&' : '?';
-        const path = calendarToken 
-            ? `${feedPath}${separator}token=${encodeURIComponent(calendarToken)}` 
+        const path = calendarToken
+            ? `${feedPath}${separator}token=${encodeURIComponent(calendarToken)}`
             : feedPath;
         return `webcal://${window.location.host}${path}`;
     };
@@ -69,33 +79,6 @@ export default function CalendarExportButton({
         const tokenPart = calendarToken ? `token=${encodeURIComponent(calendarToken)}&` : '';
         return `${feedPath}${separator}${tokenPart}download=1`;
     };
-
-    useEffect(() => {
-        if (!isOpen) return;
-
-        function handleKeyDown(event: KeyboardEvent) {
-            if (event.key === 'Escape') {
-                setIsOpen(false);
-            }
-        }
-
-        function handleClickOutside(event: MouseEvent) {
-            if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-        }
-
-        document.addEventListener('keydown', handleKeyDown);
-        document.addEventListener('mousedown', handleClickOutside);
-        const originalOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-            document.removeEventListener('mousedown', handleClickOutside);
-            document.body.style.overflow = originalOverflow;
-        };
-    }, [isOpen]);
 
     const handleAppleCalendar = async () => {
         const webcalUrl = getWebcalUrl();
@@ -152,218 +135,194 @@ export default function CalendarExportButton({
     };
 
     return (
-        <div className="relative inline-block text-left">
-            <button
+        <>
+            <Button
                 type="button"
+                variant="default"
+                size="sm"
                 onClick={() => setIsOpen(true)}
-                className={buttonClassName || cn(
-                    "tab-button group min-h-42px relative inline-flex items-center justify-center gap-2.5 rounded-xl border px-4 py-2.5 text-[10px] font-black tracking-widest uppercase transition-all active:scale-95 sm:px-6 sm:py-3",
-                    "border-border-color/30 bg-bg-card text-theme-purple shadow-xs hover:border-theme-purple/30 hover:bg-theme-purple/5"
-                )}
+                leftSection={<Calendar size={16} />}
                 aria-expanded={isOpen}
                 aria-haspopup="dialog"
             >
-                <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-theme-purple/10 text-theme-purple transition-colors group-hover:bg-theme-purple group-hover:text-white">
-                    <Calendar className="size-3" />
-                </div>
-                <span>{label}</span>
-            </button>
+                {label}
+            </Button>
 
-            {isOpen && (
-                <div 
-                    className="animate-in fade-in fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-xs duration-200 sm:items-center sm:p-4"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby={modalTitleId}
-                >
-                    <div 
-                        ref={modalRef}
-                        className={cn(
-                            "w-full border border-border-color/40 bg-(--bg-card) shadow-2xl sm:max-w-lg dark:border-white/10",
-                            "flex max-h-[90vh] flex-col space-y-5 overflow-y-auto overscroll-contain rounded-t-3xl p-5 sm:max-h-[85vh] sm:rounded-3xl sm:p-7",
-                            "animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-2 duration-200"
-                        )}
-                    >
-                        <div className="flex items-start justify-between gap-4 border-b border-border-color/20 pb-4">
-                            <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                    <div className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-purple-500/20 bg-purple-500/10 text-purple-700 dark:text-purple-300">
-                                        <CalendarPlus className="size-4" />
-                                    </div>
-                                    <h3 id={modalTitleId} className="text-lg font-black text-purple-700 sm:text-xl dark:text-purple-300">
-                                        Agenda Koppelen
-                                    </h3>
-                                </div>
-                                <p className="text-xs leading-relaxed text-(--text-muted)">
-                                    {isLoggedIn && calendarToken ? (
-                                        <span className="flex flex-wrap items-center gap-1.5">
-                                            <span>met jouw inschrijfstatus (🟢 ingeschreven / 🔴 niet ingeschreven).</span>
-                                        </span>
+            <Modal
+                opened={isOpen}
+                onClose={() => setIsOpen(false)}
+                centered
+                radius="xl"
+                size="lg"
+                title={
+                    <Group gap="xs">
+                        <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                            <CalendarPlus size={16} />
+                        </ThemeIcon>
+                        <Title order={3} size="h4" c="brand">
+                            Agenda Koppelen
+                        </Title>
+                    </Group>
+                }
+            >
+                <Stack gap="md">
+                    <Text size="xs" c="dimmed">
+                        {isLoggedIn && calendarToken
+                            ? 'met jouw inschrijfstatus (🟢 ingeschreven / 🔴 niet ingeschreven).'
+                            : `Synchroniseer ${resolvedCalendarName.toLowerCase()} direct met jouw agenda.`}
+                    </Text>
+
+                    {showGoogleInstructions && (
+                        <Alert
+                            color="brand"
+                            variant="light"
+                            radius="lg"
+                            withCloseButton
+                            onClose={() => setShowGoogleInstructions(false)}
+                            icon={<Sparkles size={16} />}
+                            title={isMobile ? 'Google Agenda (via browser of PC)' : 'Google Agenda geopend'}
+                        >
+                            <Stack gap="xs">
+                                <Text size="xs" c="dimmed">
+                                    {isMobile ? (
+                                        <>
+                                            De Google Agenda mobiele app ondersteunt internetagenda&apos;s (URL) helaas niet rechtstreeks.
+                                            Plak de link eenmalig op je computer in Google Agenda bij <strong>&quot;Andere agenda&apos;s &gt; Via URL&quot;</strong>.
+                                            De agenda synchroniseert daarna vanzelf naar je telefoon!
+                                        </>
                                     ) : (
-                                        `Synchroniseer ${resolvedCalendarName.toLowerCase()} direct met jouw agenda.`
+                                        googleCopied
+                                            ? 'De link is gekopieerd! Plak deze in Google Agenda in het veld "Van URL" en klik op Toevoegen.'
+                                            : 'Kopieer de link hieronder en plak deze in het veld "Van URL".'
                                     )}
-                                </p>
-                            </div>
+                                </Text>
 
-                            <button
-                                type="button"
-                                onClick={() => setIsOpen(false)}
-                                className="icon-button flex size-8 shrink-0 items-center justify-center rounded-full bg-(--bg-main) text-(--text-muted) transition-colors hover:bg-border-color/40 hover:text-(--text-main) active:scale-95"
-                                aria-label="Sluiten"
-                            >
-                                <X className="size-4" />
-                            </button>
-                        </div>
-
-                        {showGoogleInstructions && (
-                            <div className="animate-in fade-in space-y-3 rounded-2xl border border-purple-500/30 bg-purple-500/5 p-4 duration-200 dark:bg-purple-500/10">
-                                <div className="flex items-start justify-between gap-2">
-                                    <div className="space-y-1">
-                                        <p className="flex items-center gap-1.5 text-xs font-bold text-purple-700 dark:text-purple-300">
-                                            <Sparkles className="size-3.5 text-purple-500" />
-                                            {isMobile ? 'Google Agenda (via browser of PC)' : 'Google Agenda geopend'}
-                                        </p>
-                                        <p className="text-xs leading-relaxed text-(--text-muted)">
-                                            {isMobile ? (
-                                                <>
-                                                    De Google Agenda mobiele app ondersteunt internetagenda&apos;s (URL) helaas niet rechtstreeks.
-                                                    Plak de link eenmalig op je computer in Google Agenda bij <strong className="text-(--text-main)">&quot;Andere agenda&apos;s &gt; Via URL&quot;</strong>.
-                                                    De agenda synchroniseert daarna vanzelf naar je telefoon!
-                                                </>
-                                            ) : (
-                                                googleCopied 
-                                                    ? 'De link is gekopieerd! Plak deze in Google Agenda in het veld "Van URL" en klik op Toevoegen.' 
-                                                    : 'Kopieer de link hieronder en plak deze in het veld "Van URL".'
-                                            )}
-                                        </p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowGoogleInstructions(false)}
-                                        className="icon-button p-1 text-(--text-muted) hover:text-(--text-main)"
-                                        aria-label="Verberg instructies"
-                                    >
-                                        <X className="size-3.5" />
-                                    </button>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <code className="flex-1 truncate rounded-xl border border-border-color/30 bg-(--bg-card) px-2.5 py-1.5 font-mono text-[11px] text-(--text-muted)">
+                                <Group gap="xs" wrap="nowrap">
+                                    <Code style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         {getBaseFeedUrl()}
-                                    </code>
-                                    <button
+                                    </Code>
+                                    <Button
                                         type="button"
+                                        size="xs"
                                         onClick={() => { void handleCopyGoogleUrl(); }}
-                                        className="form-button inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-purple-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-purple-700 active:scale-95"
+                                        leftSection={googleCopied ? <Check size={14} /> : <Copy size={14} />}
                                     >
-                                        {googleCopied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                                        <span>{googleCopied ? 'Gekopieerd' : 'Kopieer'}</span>
-                                    </button>
-                                </div>
+                                        {googleCopied ? 'Gekopieerd' : 'Kopieer'}
+                                    </Button>
+                                </Group>
 
                                 {isMobile && (
-                                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border-color/20 pt-2 text-[11px] text-(--text-muted)">
-                                        <span>Tip: Direct op je mobiel? Gebruik de Apple/Systeem knop hieronder.</span>
-                                        <a
-                                            href="https://calendar.google.com/calendar/r/settings/addbyurl"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1 font-bold text-purple-600 hover:underline dark:text-purple-400"
-                                        >
-                                            <span>Toch openen in browser</span>
-                                            <ExternalLink className="size-3" />
-                                        </a>
-                                    </div>
+                                    <>
+                                        <Divider />
+                                        <Group justify="space-between" wrap="wrap" gap="xs">
+                                            <Text size="xs" c="dimmed">
+                                                Tip: Direct op je mobiel? Gebruik de Apple/Systeem knop hieronder.
+                                            </Text>
+                                            <Anchor
+                                                href="https://calendar.google.com/calendar/r/settings/addbyurl"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                size="xs"
+                                                fw={700}
+                                                c="brand"
+                                            >
+                                                Toch openen in browser <ExternalLink size={12} style={{ display: 'inline' }} />
+                                            </Anchor>
+                                        </Group>
+                                    </>
                                 )}
-                            </div>
-                        )}
+                            </Stack>
+                        </Alert>
+                    )}
 
-                        <div className="space-y-2">
-                            <p className="px-1 text-[10px] font-bold tracking-widest text-(--text-muted) uppercase">
-                                Kies jouw agenda
-                            </p>
+                    <Stack gap="xs">
+                        <Text size="xs" fw={700} tt="uppercase" c="dimmed">
+                            Kies jouw agenda
+                        </Text>
 
-                            <button
-                                type="button"
-                                onClick={() => { void handleGoogleCalendar(); }}
-                                className="btn-calendar-google group active:scale-0.99 flex w-full items-center gap-3.5 rounded-2xl border border-border-color/30 bg-(--bg-card) p-3 text-left transition-all hover:border-purple-500/30 hover:bg-purple-500/5"
-                            >
-                                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/10 text-purple-700 transition-transform group-hover:scale-105 dark:text-purple-300">
-                                    <CalendarPlus className="size-5" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-bold text-(--text-main) transition-colors group-hover:text-purple-700 dark:group-hover:text-purple-300">
-                                        Google Calendar
-                                    </p>
-                                    <p className="truncate text-xs text-(--text-muted)">
-                                        {isMobile ? 'Instellen via computer/browser' : 'Voor Google accounts'}
-                                    </p>
-                                </div>
-                                <ExternalLink className="size-4 shrink-0 text-(--text-muted) transition-colors group-hover:text-purple-500" />
-                            </button>
+                        <UnstyledButton type="button" onClick={() => { void handleGoogleCalendar(); }} w="100%">
+                            <Paper p="sm" radius="lg" withBorder>
+                                <Group justify="space-between" wrap="nowrap" gap="md">
+                                    <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
+                                        <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                            <CalendarPlus size={20} />
+                                        </ThemeIcon>
+                                        <Stack gap={0} style={{ minWidth: 0 }}>
+                                            <Text size="sm" fw={700}>Google Calendar</Text>
+                                            <Text size="xs" c="dimmed" truncate>
+                                                {isMobile ? 'Instellen via computer/browser' : 'Voor Google accounts'}
+                                            </Text>
+                                        </Stack>
+                                    </Group>
+                                    <Text span c="dimmed" lh={1}><ExternalLink size={16} /></Text>
+                                </Group>
+                            </Paper>
+                        </UnstyledButton>
 
-                            <button
-                                type="button"
-                                onClick={() => { void handleAppleCalendar(); }}
-                                className="btn-calendar-apple group active:scale-0.99 flex w-full items-center gap-3.5 rounded-2xl border border-border-color/30 bg-(--bg-card) p-3 text-left transition-all hover:border-purple-500/30 hover:bg-purple-500/5"
-                            >
-                                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/10 text-purple-700 transition-transform group-hover:scale-105 dark:text-purple-300">
-                                    <Calendar className="size-5" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-bold text-(--text-main) transition-colors group-hover:text-purple-700 dark:group-hover:text-purple-300">
-                                        Apple & Systeemagenda
-                                    </p>
-                                    <p className="truncate text-xs text-(--text-muted)">
-                                        Direct synchroniseren (iOS, macOS & Android webcal)
-                                    </p>
-                                </div>
-                                <ExternalLink className="size-4 shrink-0 text-(--text-muted) transition-colors group-hover:text-purple-500" />
-                            </button>
+                        <UnstyledButton type="button" onClick={() => { void handleAppleCalendar(); }} w="100%">
+                            <Paper p="sm" radius="lg" withBorder>
+                                <Group justify="space-between" wrap="nowrap" gap="md">
+                                    <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
+                                        <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                            <Calendar size={20} />
+                                        </ThemeIcon>
+                                        <Stack gap={0} style={{ minWidth: 0 }}>
+                                            <Text size="sm" fw={700}>Apple &amp; Systeemagenda</Text>
+                                            <Text size="xs" c="dimmed" truncate>
+                                                Direct synchroniseren (iOS, macOS &amp; Android webcal)
+                                            </Text>
+                                        </Stack>
+                                    </Group>
+                                    <Text span c="dimmed" lh={1}><ExternalLink size={16} /></Text>
+                                </Group>
+                            </Paper>
+                        </UnstyledButton>
 
-                            <button
-                                type="button"
-                                onClick={handleOutlookCalendar}
-                                className="btn-calendar-outlook group active:scale-0.99 flex w-full items-center gap-3.5 rounded-2xl border border-border-color/30 bg-(--bg-card) p-3 text-left transition-all hover:border-purple-500/30 hover:bg-purple-500/5"
-                            >
-                                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/10 text-purple-700 transition-transform group-hover:scale-105 dark:text-purple-300">
-                                    <Calendar className="size-5" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-bold text-(--text-main) transition-colors group-hover:text-purple-700 dark:group-hover:text-purple-300">
-                                        Outlook / Office 365
-                                    </p>
-                                    <p className="truncate text-xs text-(--text-muted)">
-                                        Toevoegen aan je Microsoft school- of werkagenda
-                                    </p>
-                                </div>
-                                <ExternalLink className="size-4 shrink-0 text-(--text-muted) transition-colors group-hover:text-purple-500" />
-                            </button>
-                        </div>
+                        <UnstyledButton type="button" onClick={handleOutlookCalendar} w="100%">
+                            <Paper p="sm" radius="lg" withBorder>
+                                <Group justify="space-between" wrap="nowrap" gap="md">
+                                    <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
+                                        <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                            <Calendar size={20} />
+                                        </ThemeIcon>
+                                        <Stack gap={0} style={{ minWidth: 0 }}>
+                                            <Text size="sm" fw={700}>Outlook / Office 365</Text>
+                                            <Text size="xs" c="dimmed" truncate>
+                                                Toevoegen aan je Microsoft school- of werkagenda
+                                            </Text>
+                                        </Stack>
+                                    </Group>
+                                    <Text span c="dimmed" lh={1}><ExternalLink size={16} /></Text>
+                                </Group>
+                            </Paper>
+                        </UnstyledButton>
+                    </Stack>
 
-                        <div className="grid grid-cols-1 gap-2 border-t border-border-color/20 pt-2 sm:grid-cols-2">
-                            <a
-                                href={getDownloadUrl()}
-                                download={`${resolvedCalendarName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.ics`}
-                                onClick={() => setIsOpen(false)}
-                                className="form-button flex items-center justify-center gap-2 rounded-xl border border-border-color/30 bg-(--bg-main) p-3 text-xs font-bold text-(--text-main) transition-all hover:border-purple-500/30 hover:bg-purple-500/5 active:scale-95"
-                            >
-                                <Download className="size-4 text-purple-500" />
-                                <span>Download .ics</span>
-                            </a>
+                    <Divider />
 
-                            <button
-                                type="button"
-                                onClick={() => { void handleCopyGeneralFeed(); }}
-                                className="form-button flex items-center justify-center gap-2 rounded-xl border border-border-color/30 bg-(--bg-main) p-3 text-xs font-bold text-(--text-main) transition-all hover:border-purple-500/30 hover:bg-purple-500/5 active:scale-95"
-                            >
-                                {copied ? <Check className="size-4 text-emerald-500" /> : <Copy className="size-4 text-purple-500" />}
-                                <span>{copied ? 'Link gekopieerd!' : 'Kopieer URL'}</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
+                        <Button
+                            component="a"
+                            href={getDownloadUrl()}
+                            download={`${resolvedCalendarName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.ics`}
+                            onClick={() => setIsOpen(false)}
+                            variant="default"
+                            leftSection={<Download size={16} />}
+                        >
+                            Download .ics
+                        </Button>
+
+                        <Button
+                            type="button"
+                            variant="default"
+                            onClick={() => { void handleCopyGeneralFeed(); }}
+                            leftSection={copied ? <Check size={16} /> : <Copy size={16} />}
+                        >
+                            {copied ? 'Link gekopieerd!' : 'Kopieer URL'}
+                        </Button>
+                    </SimpleGrid>
+                </Stack>
+            </Modal>
+        </>
     );
 }

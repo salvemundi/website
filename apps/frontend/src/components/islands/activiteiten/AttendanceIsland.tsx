@@ -3,7 +3,23 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getActivitySignups } from '@/server/actions/beheer/activiteiten/beheer-activiteiten-core.actions';
 import { toggleCheckInAction } from '@/server/actions/beheer/activiteiten/beheer-activiteiten-signups.actions';
-import { Search, UserCheck, UserX, QrCode, Loader2, RefreshCw } from 'lucide-react';
+import { Search, UserCheck, UserX, QrCode, RefreshCw } from 'lucide-react';
+import {
+    Alert,
+    Badge,
+    Box,
+    Button,
+    Card,
+    Center,
+    Loader,
+    Modal,
+    ScrollArea,
+    SimpleGrid,
+    Stack,
+    Table,
+    Text,
+    TextInput,
+} from '@mantine/core';
 import { safeConsoleError } from '@/server/utils/logger';
 
 interface AttendanceSignup {
@@ -117,7 +133,7 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
                 const { Html5QrcodeScanner } = await import('html5-qrcode');
 
                 setTimeout(() => {
-                    const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+                    const scanner = new Html5QrcodeScanner('reader', { fps: 10, qrbox: { width: 250, height: 250 } }, false);
                     scannerRef.current = scanner;
                     scannerBootingRef.current = false;
 
@@ -156,144 +172,172 @@ export default function AttendanceIsland({ eventId, initialSignups = [] }: Atten
     };
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
-                <div className="squircle border border-(--border-color) bg-(--bg-card) p-4 shadow-sm sm:p-6">
-                    <p className="text-sm font-bold text-(--text-muted) sm:text-base">Totaal inschrijvingen</p>
-                    <p className="text-2xl font-black text-(--theme-purple) sm:text-3xl">{stats.total}</p>
-                </div>
-                <div className="squircle border border-(--border-color) bg-(--bg-card) p-4 shadow-sm sm:p-6">
-                    <p className="text-sm font-bold text-(--text-muted) sm:text-base">Aanwezig</p>
-                    <p className="text-2xl font-black text-green-600 sm:text-3xl">{stats.checkedIn}</p>
-                </div>
-                <div className="squircle border border-(--border-color) bg-(--bg-card) p-4 shadow-sm sm:p-6">
-                    <p className="text-sm font-bold text-(--text-muted) sm:text-base">Nog verwacht</p>
-                    <p className="text-2xl font-black text-blue-600 sm:text-3xl">{stats.total - stats.checkedIn}</p>
-                </div>
-            </div>
+        <Stack gap="lg">
+            <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
+                <Card padding="lg" radius="lg" withBorder shadow="xs">
+                    <Text size="sm" fw={700} c="dimmed">Totaal inschrijvingen</Text>
+                    <Text size="2rem" fw={900} c="brand">{stats.total}</Text>
+                </Card>
+                <Card padding="lg" radius="lg" withBorder shadow="xs">
+                    <Text size="sm" fw={700} c="dimmed">Aanwezig</Text>
+                    <Text size="2rem" fw={900} c="success">{stats.checkedIn}</Text>
+                </Card>
+                <Card padding="lg" radius="lg" withBorder shadow="xs">
+                    <Text size="sm" fw={700} c="dimmed">Nog verwacht</Text>
+                    <Text size="2rem" fw={900} c="lightPurple">{stats.total - stats.checkedIn}</Text>
+                </Card>
+            </SimpleGrid>
 
-            <div className="flex flex-col gap-3 sm:gap-4">
-                <div className="flex h-10 items-center gap-3 rounded-xl bg-(--bg-soft) px-4 transition-all focus-within:ring-2 focus-within:ring-(--theme-purple)/20 sm:h-12">
-                    <Search className="size-4 shrink-0 text-(--text-muted) sm:size-5" />
-                    <input
-                        type="text"
-                        placeholder="Zoek deelnemers..."
-                        className="form-input w-full border-none bg-transparent p-0 text-sm font-medium outline-none sm:text-base"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
-                <button
-                    onClick={startScanner}
-                    className="squircle form-button flex h-10 w-full items-center justify-center gap-2 bg-(--theme-purple) px-4 text-sm font-bold text-white shadow-(--theme-purple)/20 shadow-lg transition-all hover:scale-105 sm:h-12 sm:w-auto sm:justify-start sm:px-6 sm:text-base"
-                    type="button">
-                    <QrCode className="size-4 sm:size-5" />
-                    Scan QR
-                </button>
-            </div>
+            <Stack gap="sm">
+                <TextInput
+                    placeholder="Zoek deelnemers..."
+                    leftSection={<Search size={18} />}
+                    size="md"
+                    value={search}
+                    onChange={(e) => setSearch(e.currentTarget.value)}
+                />
+                <Box>
+                    <Button
+                        type="button"
+                        onClick={startScanner}
+                        size="md"
+                        w={{ base: '100%', sm: 'auto' }}
+                        leftSection={<QrCode size={18} />}
+                    >
+                        Scan QR
+                    </Button>
+                </Box>
+            </Stack>
 
-            {scanning && (
-                <div className="fixed inset-0 isolate z-200 flex flex-col items-center justify-center bg-black/80 p-4">
-                    <div id="reader" className="scanner-reader squircle-lg w-full max-w-md overflow-hidden bg-(--bg-card) shadow-2xl" />
-                    <button
-                        onClick={handleCancelScanner}
-                        className="squircle mt-6 form-button bg-white/20 px-8 py-3 text-base font-bold text-white transition-all hover:bg-white/30"
-                        type="button">
+            <Modal
+                opened={scanning}
+                onClose={handleCancelScanner}
+                title="QR-code scannen"
+                centered
+                radius="lg"
+                size="md"
+            >
+                <Stack gap="md" align="center">
+                    <Box id="reader" w="100%" style={{ overflow: 'hidden', borderRadius: 'var(--mantine-radius-md)' }} />
+                    <Button type="button" variant="default" fullWidth onClick={handleCancelScanner}>
                         Annuleren
-                    </button>
+                    </Button>
                     <style jsx global>{`
-                        .scanner-reader { color: var(--text-main); }
-                        .scanner-reader :is(p, span, label, small, h1, h2, h3, h4, h5, h6) { color: var(--text-main) !important; }
-                        .scanner-reader :is(button, select, input) { color: var(--text-main) !important; background: var(--bg-soft) !important; border-color: var(--border-color) !important; }
-                        .scanner-reader button:hover, .scanner-reader button:focus-visible { background: var(--bg-card) !important; }
-                        .scanner-reader #reader__dashboard, .scanner-reader #reader__dashboard_section { color: var(--text-main) !important; }
-                        .scanner-reader #reader__dashboard_section_csr, .scanner-reader #reader__dashboard_section_swaplink, .scanner-reader #reader__status_span { color: var(--text-main) !important; }
-                        .scanner-reader #reader__dashboard_section_csr select, .scanner-reader #reader__dashboard_section_csr button, .scanner-reader #reader__dashboard_section_swaplink { background: var(--bg-soft) !important; color: var(--text-main) !important; border: 1px solid var(--border-color) !important; }
-                        .scanner-reader #reader__scan_region { border-color: var(--border-color) !important; }
+                        #reader { color: var(--mantine-color-text); }
+                        #reader :is(p, span, label, small, h1, h2, h3, h4, h5, h6) { color: var(--mantine-color-text) !important; }
+                        #reader :is(button, select, input) { color: var(--mantine-color-text) !important; background: var(--mantine-color-default) !important; border-color: var(--mantine-color-default-border) !important; }
+                        #reader button:hover, #reader button:focus-visible { background: var(--mantine-color-default-hover) !important; }
+                        #reader #reader__dashboard, #reader #reader__dashboard_section { color: var(--mantine-color-text) !important; }
+                        #reader #reader__dashboard_section_csr, #reader #reader__dashboard_section_swaplink, #reader #reader__status_span { color: var(--mantine-color-text) !important; }
+                        #reader #reader__dashboard_section_csr select, #reader #reader__dashboard_section_csr button, #reader #reader__dashboard_section_swaplink { background: var(--mantine-color-default) !important; color: var(--mantine-color-text) !important; border: 1px solid var(--mantine-color-default-border) !important; }
+                        #reader #reader__scan_region { border-color: var(--mantine-color-default-border) !important; }
                     `}</style>
-                </div>
-            )}
+                </Stack>
+            </Modal>
 
             {scanResult && (
-                <div className={`animate-in zoom-in flex items-center gap-3 rounded-xl p-4 duration-300 ${scanResult.success ? 'border border-green-100 bg-green-50 text-green-700' : 'border border-red-100 bg-red-50 text-red-700'}`}>
-                    {scanResult.success ? <UserCheck className="size-6" /> : <UserX className="size-6" />}
-                    <p className="text-base font-bold">{scanResult.message}</p>
-                    <button
-                        onClick={() => setScanResult(null)}
-                        className="ml-auto icon-button text-sm font-bold opacity-50"
-                        type="button">Sluiten</button>
-                </div>
+                <Alert
+                    color={scanResult.success ? 'success' : 'error'}
+                    variant="light"
+                    icon={scanResult.success ? <UserCheck size={20} /> : <UserX size={20} />}
+                    withCloseButton
+                    onClose={() => setScanResult(null)}
+                >
+                    <Text fw={700}>{scanResult.message}</Text>
+                </Alert>
             )}
 
-            <div className="squircle-lg overflow-hidden border border-(--border-color) bg-(--bg-card) shadow-xl">
-                <div className="overflow-x-auto">
-                    <table className="w-full min-w-full text-left">
-                        <thead className="border-b border-(--border-color) bg-(--bg-soft)">
-                            <tr>
-                                <th className="p-4 text-sm font-black text-(--theme-purple)/40 sm:px-6 sm:text-base">Deelnemer</th>
-                                <th className="hidden p-4 text-sm font-black text-(--theme-purple)/40 sm:px-6 sm:text-base md:table-cell">E-mail</th>
-                                <th className="p-4 text-sm font-black text-(--theme-purple)/40 sm:px-6 sm:text-base">Status</th>
-                                <th className="p-4 text-right text-sm font-black whitespace-nowrap text-(--theme-purple)/40 sm:px-6 sm:text-base">Actie</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-(--border-color)">
+            <Card padding={0} radius="lg" withBorder shadow="lg" style={{ overflow: 'hidden' }}>
+                <ScrollArea>
+                    <Table verticalSpacing="md" horizontalSpacing="lg" highlightOnHover>
+                        <Table.Thead>
+                            <Table.Tr>
+                                <Table.Th>
+                                    <Text size="sm" fw={900} c="dimmed">Deelnemer</Text>
+                                </Table.Th>
+                                <Table.Th visibleFrom="md">
+                                    <Text size="sm" fw={900} c="dimmed">E-mail</Text>
+                                </Table.Th>
+                                <Table.Th>
+                                    <Text size="sm" fw={900} c="dimmed">Status</Text>
+                                </Table.Th>
+                                <Table.Th ta="right">
+                                    <Text size="sm" fw={900} c="dimmed">Actie</Text>
+                                </Table.Th>
+                            </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
                             {loading ? (
-                                <tr>
-                                    <td colSpan={4} className="px-4 py-12 text-center text-sm text-(--text-muted) sm:px-6 sm:text-base">
-                                        <Loader2 className="mx-auto mb-2 size-8 animate-spin" />
-                                        Laden...
-                                    </td>
-                                </tr>
+                                <Table.Tr>
+                                    <Table.Td colSpan={4}>
+                                        <Center py="xl">
+                                            <Stack align="center" gap="xs">
+                                                <Loader size="md" color="brand" />
+                                                <Text size="sm" c="dimmed">Laden...</Text>
+                                            </Stack>
+                                        </Center>
+                                    </Table.Td>
+                                </Table.Tr>
                             ) : filteredSignups.length === 0 ? (
-                                <tr>
-                                    <td colSpan={4} className="px-4 py-12 text-center text-sm text-(--text-muted) italic sm:px-6 sm:text-base">Geen deelnemers gevonden</td>
-                                </tr>
+                                <Table.Tr>
+                                    <Table.Td colSpan={4}>
+                                        <Center py="xl">
+                                            <Text size="sm" c="dimmed" fs="italic">
+                                                Geen deelnemers gevonden
+                                            </Text>
+                                        </Center>
+                                    </Table.Td>
+                                </Table.Tr>
                             ) : filteredSignups.map((s) => (
-                                <tr key={s.id} className="transition-colors hover:bg-(--bg-soft)">
-                                    <td className="p-4 sm:px-6">
-                                        <p className="text-sm font-bold text-(--theme-purple)/80 sm:text-base">{s.participant_name}</p>
-                                        <p className="text-xs text-(--text-muted) sm:text-sm md:hidden">{s.participant_email}</p>
-                                    </td>
-                                    <td className="hidden p-4 text-sm font-medium text-(--text-muted) sm:px-6 sm:text-base md:table-cell">
-                                        {s.participant_email}
-                                    </td>
-                                    <td className="p-4 sm:px-6">
+                                <Table.Tr key={s.id}>
+                                    <Table.Td>
+                                        <Text size="sm" fw={700} c="brand">{s.participant_name}</Text>
+                                        <Text size="xs" c="dimmed" hiddenFrom="md">{s.participant_email}</Text>
+                                    </Table.Td>
+                                    <Table.Td visibleFrom="md">
+                                        <Text size="sm" fw={500} c="dimmed">{s.participant_email}</Text>
+                                    </Table.Td>
+                                    <Table.Td>
                                         {s.checked_in ? (
-                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700 ring-1 ring-green-600/20 ring-inset sm:text-sm">
-                                                <UserCheck className="size-3" />
+                                            <Badge color="success" variant="light" leftSection={<UserCheck size={12} />}>
                                                 Aanwezig
-                                            </span>
+                                            </Badge>
                                         ) : (
-                                            <span className="inline-flex items-center gap-1.5 rounded-full bg-(--bg-soft) px-3 py-1 text-xs font-bold text-(--text-muted) ring-1 ring-(--border-color) ring-inset sm:text-sm">
+                                            <Badge variant="default">
                                                 Niet ingecheckt
-                                            </span>
+                                            </Badge>
                                         )}
-                                    </td>
-                                    <td className="p-4 text-right sm:px-6">
-                                        <button
+                                    </Table.Td>
+                                    <Table.Td ta="right">
+                                        <Button
+                                            type="button"
+                                            size="xs"
+                                            variant="subtle"
+                                            color={s.checked_in ? 'error' : 'success'}
                                             onClick={() => void handleToggleCheckIn(s.id, s.checked_in)}
-                                            className={`form-button rounded-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-all sm:px-4 sm:text-sm ${s.checked_in ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
-                                            type="button">
+                                        >
                                             {s.checked_in ? 'Afmelden' : 'Inchecken'}
-                                        </button>
-                                    </td>
-                                </tr>
+                                        </Button>
+                                    </Table.Td>
+                                </Table.Tr>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        </Table.Tbody>
+                    </Table>
+                </ScrollArea>
+            </Card>
 
-            <div className="flex justify-center">
-                <button
+            <Center>
+                <Button
+                    type="button"
+                    variant="subtle"
+                    color="brand"
                     onClick={() => void fetchData()}
-                    disabled={loading}
-                    className="form-button flex items-center gap-2 text-base font-bold text-(--theme-purple)/60 transition-all hover:text-(--theme-purple) disabled:opacity-50"
-                    type="button">
-                    <RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} />
+                    loading={loading}
+                    leftSection={<RefreshCw size={16} />}
+                >
                     Lijst vernieuwen
-                </button>
-            </div>
-        </div>
+                </Button>
+            </Center>
+        </Stack>
     );
 }

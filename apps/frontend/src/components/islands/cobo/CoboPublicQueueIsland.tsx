@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { CoboGuestBoard } from '@salvemundi/validations';
 import { Clock, AlertTriangle, UserCheck, ArrowRight } from 'lucide-react';
+import { Badge, Button, Card, Divider, Group, Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 
 interface Props {
     coboId: number;
@@ -52,7 +53,6 @@ export default function CoboPublicQueueIsland({
         return () => clearInterval(interval);
     }, [coboId]);
 
-    // Filteren en sorteren
     const currentBoard = boards.find(b => b.status === 'current');
     const allActiveQueue = boards
         .filter(b => b.status === 'waiting' || b.status === 'late')
@@ -62,138 +62,156 @@ export default function CoboPublicQueueIsland({
     const remainingCount = limit ? Math.max(0, allActiveQueue.length - limit) : 0;
 
     const renderActivityBadge = (type: string | null | undefined, custom?: string | null, isCurrent: boolean = false) => {
-        const sizeClasses = isCurrent
-            ? 'px-3.5 py-1 rounded-full text-sm font-bold uppercase tracking-wider'
-            : 'px-2.5 py-1 rounded-full text-xs font-semibold';
+        const size = isCurrent ? 'lg' : 'sm';
 
         if (type === 'shotjes') {
             return (
-                <span className={`inline-flex items-center ${sizeClasses} border border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300`}>
-                    <span>Shotjes</span>
-                </span>
+                <Badge size={size} color="accent" variant="light">
+                    Shotjes
+                </Badge>
             );
         }
         if (type === 'watervallen') {
             return (
-                <span className={`inline-flex items-center ${sizeClasses} border border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300`}>
-                    <span>Watervallen</span>
-                </span>
+                <Badge size={size} color="lightPurple" variant="light">
+                    Watervallen
+                </Badge>
             );
         }
         return (
-            <span className={`inline-flex items-center ${sizeClasses} border border-purple-500/20 bg-purple-500/10 text-purple-700 dark:text-purple-300`}>
-                <span>{custom || 'Activiteit'}</span>
-            </span>
+            <Badge size={size} color="brand" variant="light">
+                {custom || 'Activiteit'}
+            </Badge>
         );
     };
 
     const hasAnyActive = Boolean(currentBoard || allActiveQueue.length > 0);
 
     return (
-        <div className="space-y-6">
+        <Stack gap="lg">
             {!hasAnyActive && (
-                <div className="space-y-3 rounded-2xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:rounded-3xl sm:p-12">
-                    <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-purple-500/20 bg-purple-500/10 text-purple-700 dark:text-purple-300">
-                        <UserCheck className="size-7" />
-                    </div>
-                    <h3 className="text-lg font-black text-text-main sm:text-xl">
-                        De wachtlijst is momenteel leeg
-                    </h3>
-                    <p className="mx-auto max-w-md text-sm font-medium text-text-muted">
-                        Meld je aan bij de pedel om op de lijst te komen.
-                    </p>
-                </div>
+                <Card padding="xl" radius="xl" withBorder ta="center">
+                    <Stack align="center" gap="sm">
+                        <ThemeIcon size={56} radius="lg" variant="light" color="brand">
+                            <UserCheck size={28} />
+                        </ThemeIcon>
+                        <Title order={3} size="h4">
+                            De wachtlijst is momenteel leeg
+                        </Title>
+                        <Text size="sm" fw={500} c="dimmed" maw={420}>
+                            Meld je aan bij de pedel om op de lijst te komen.
+                        </Text>
+                    </Stack>
+                </Card>
             )}
 
             {currentBoard && (
-                <div className="space-y-3 rounded-2xl border-2 border-purple-500/30 bg-bg-card p-6 text-center shadow-xl sm:rounded-3xl sm:p-8">
-                    <div className="flex flex-wrap items-center justify-center gap-2.5">
-                        <span className="inline-flex items-center rounded-full border border-purple-500/20 bg-purple-500/10 px-3.5 py-1 text-sm font-bold tracking-wider text-purple-700 uppercase dark:text-purple-300">
-                            Nu aan de beurt
-                        </span>
-                        {renderActivityBadge(currentBoard.activity_type, currentBoard.activity_custom, true)}
-                    </div>
-
-                    <div>
-                        <h3 className="text-3xl font-black tracking-tight text-theme-purple sm:text-4xl">
+                <Card
+                    padding="xl"
+                    radius="xl"
+                    withBorder
+                    ta="center"
+                    style={{ borderWidth: 2, borderColor: 'color-mix(in srgb, var(--primary) 35%, transparent)' }}
+                >
+                    <Stack align="center" gap="md">
+                        <Group justify="center" gap="sm" wrap="wrap">
+                            <Badge size="lg" color="brand" variant="light">
+                                Nu aan de beurt
+                            </Badge>
+                            {renderActivityBadge(currentBoard.activity_type, currentBoard.activity_custom, true)}
+                        </Group>
+                        <Title order={3} fz={{ base: '1.875rem', sm: '2.25rem' }} c="brand">
                             {currentBoard.board_name}
-                        </h3>
-                    </div>
-                </div>
+                        </Title>
+                    </Stack>
+                </Card>
             )}
 
             {displayedQueue.length > 0 && (
-                <div className="space-y-4 rounded-2xl border border-border-color bg-bg-card p-6 shadow-lg sm:rounded-3xl sm:p-8">
-                    <div className="flex items-center justify-between border-b border-border-color/60 pb-3">
-                        <h3 className="flex items-center gap-2 text-sm font-black tracking-wider text-text-muted uppercase">
-                            <Clock className="size-4 text-purple-600 dark:text-purple-300" />
-                            {limit && allActiveQueue.length > limit
-                                ? `Eerstvolgende (${displayedQueue.length} van ${allActiveQueue.length})`
-                                : `Wachtend (${allActiveQueue.length})`}
-                        </h3>
-                    </div>
+                <Card padding="lg" radius="xl" withBorder>
+                    <Stack gap="md">
+                        <Group gap="xs">
+                            <Text span c="brand" lh={1}>
+                                <Clock size={16} />
+                            </Text>
+                            <Text size="sm" fw={900} tt="uppercase" c="dimmed">
+                                {limit && allActiveQueue.length > limit
+                                    ? `Eerstvolgende (${displayedQueue.length} van ${allActiveQueue.length})`
+                                    : `Wachtend (${allActiveQueue.length})`}
+                            </Text>
+                        </Group>
+                        <Divider />
 
-                    <div className="divide-y divide-border-color/40">
-                        {displayedQueue.map((board, index) => {
-                            const isLate = board.status === 'late';
+                        <Stack gap="xs">
+                            {displayedQueue.map((board, index) => {
+                                const isLate = board.status === 'late';
 
-                            return (
-                                <div
-                                    key={board.id}
-                                    className={`flex items-center justify-between gap-4 py-4 transition-colors ${
-                                        isLate ? '-mx-4 rounded-xl bg-rose-500/5 px-4 opacity-90' : ''
-                                    }`}
+                                return (
+                                    <Paper
+                                        key={board.id}
+                                        p="sm"
+                                        radius="md"
+                                        withBorder={isLate}
+                                        style={isLate ? {
+                                            backgroundColor: 'color-mix(in srgb, var(--destructive) 8%, transparent)',
+                                            borderColor: 'color-mix(in srgb, var(--destructive) 25%, transparent)',
+                                        } : undefined}
+                                    >
+                                        <Group justify="space-between" wrap="nowrap" gap="md">
+                                            <Group gap="sm" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
+                                                <ThemeIcon
+                                                    size={32}
+                                                    radius="md"
+                                                    variant="light"
+                                                    color={isLate ? 'error' : 'brand'}
+                                                >
+                                                    <Text size="xs" fw={900}>
+                                                        #{index + 1}
+                                                    </Text>
+                                                </ThemeIcon>
+
+                                                <Group gap="xs" wrap="wrap" style={{ minWidth: 0 }}>
+                                                    <Text size="sm" fw={700} truncate>
+                                                        {board.board_name}
+                                                    </Text>
+                                                    {isLate && (
+                                                        <Badge
+                                                            size="xs"
+                                                            color="error"
+                                                            variant="light"
+                                                            leftSection={<AlertTriangle size={12} />}
+                                                        >
+                                                            Niet op tijd
+                                                        </Badge>
+                                                    )}
+                                                </Group>
+                                            </Group>
+
+                                            {renderActivityBadge(board.activity_type, board.activity_custom)}
+                                        </Group>
+                                    </Paper>
+                                );
+                            })}
+                        </Stack>
+
+                        {remainingCount > 0 && (
+                            <>
+                                <Divider />
+                                <Button
+                                    component={Link}
+                                    href="/cobo/wachtlijst"
+                                    variant="light"
+                                    color="brand"
+                                    fullWidth
+                                    rightSection={<ArrowRight size={16} />}
                                 >
-                                    <div className="flex min-w-0 flex-1 items-center gap-3.5">
-                                        <div
-                                            className={`flex size-8 shrink-0 items-center justify-center rounded-xl text-xs font-black ${
-                                                isLate
-                                                    ? 'border border-rose-500/30 bg-rose-500/15 text-rose-600 dark:text-rose-400'
-                                                    : 'border border-purple-500/15 bg-purple-500/10 text-purple-700 dark:text-purple-300'
-                                            }`}
-                                        >
-                                            #{index + 1}
-                                        </div>
-
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <h4 className="truncate text-sm font-bold text-text-main sm:text-base">
-                                                    {board.board_name}
-                                                </h4>
-                                                {isLate && (
-                                                    <span className="inline-flex items-center gap-1 rounded-md border border-rose-500/30 bg-rose-500/15 px-2 py-0.5 text-[11px] font-black tracking-wider text-rose-600 uppercase dark:text-rose-400">
-                                                        <AlertTriangle className="size-3" />
-                                                        Niet op tijd
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="shrink-0">
-                                        {renderActivityBadge(board.activity_type, board.activity_custom)}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {remainingCount > 0 && (
-                        <div className="border-t border-border-color/40 pt-4">
-                            <Link
-                                href="/cobo/wachtlijst"
-                                className="beheer-button flex w-full items-center justify-center gap-2 rounded-xl border border-purple-500/20 bg-purple-500/10 px-4 py-3 text-sm font-bold text-purple-700 shadow-xs transition-all hover:bg-purple-500/15 dark:text-purple-300"
-                            >
-                                <span>
                                     Bekijk nog {remainingCount} {remainingCount === 1 ? 'ander wachtend bestuur' : 'andere wachtende besturen'}
-                                </span>
-                                <ArrowRight className="size-4" />
-                            </Link>
-                        </div>
-                    )}
-                </div>
+                                </Button>
+                            </>
+                        )}
+                    </Stack>
+                </Card>
             )}
-        </div>
+        </Stack>
     );
 }
-

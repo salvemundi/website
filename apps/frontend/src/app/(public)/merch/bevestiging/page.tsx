@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import { CheckCircle2, Clock, XCircle } from 'lucide-react';
+import Link from '@/components/ui/Link';
+import { CheckCircle2, ChevronLeft, Clock, XCircle } from 'lucide-react';
+import { Button, Card, Center, Container, Divider, Group, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
-import BackButton from '@/components/ui/navigation/BackButton';
 import { getPreorderStatus, syncPreorderPaymentStatus } from '@/server/actions/public/webshop.actions';
 
 export const metadata: Metadata = {
@@ -14,22 +15,43 @@ interface PageProps {
 
 function ErrorCard({ title, message }: { title: string; message: string }) {
     return (
-        <div className="flex min-h-[70vh] items-center justify-center p-6">
-            <div className="w-full max-w-md rounded-[1.75rem] border border-(--border-color) bg-(--bg-card) p-12 text-center shadow-xl">
-                <XCircle className="mx-auto mb-6 size-16 text-red-500" />
-                <h1 className="mb-4 text-2xl font-black text-(--theme-purple)">{title}</h1>
-                <p className="mb-8 leading-relaxed text-(--text-muted)">{message}</p>
-                <BackButton href="/merch" text="Terug naar merch" />
-            </div>
-        </div>
+        <Center mih="70vh">
+            <Card w="100%" maw={440} padding="xl">
+                <Stack align="center" ta="center" gap="lg">
+                    <ThemeIcon size={64} radius="xl" variant="light" color="error">
+                        <XCircle size={32} />
+                    </ThemeIcon>
+                    <Title order={1} size="h2" c="brand">
+                        {title}
+                    </Title>
+                    <Text c="dimmed">{message}</Text>
+                    <Button
+                        component={Link}
+                        href="/merch"
+                        variant="default"
+                        size="sm"
+                        leftSection={<ChevronLeft size={16} />}
+                    >
+                        Terug naar merch
+                    </Button>
+                </Stack>
+            </Card>
+        </Center>
     );
 }
 
-const STATUS_LABELS: Record<string, string> = {
-    awaiting_deposit: 'Wacht op betaling',
-    completed: 'Betaald',
-    cancelled: 'Geannuleerd'
-};
+function getStatusLabel(status: string | null | undefined): string {
+    switch (status) {
+        case 'awaiting_deposit':
+            return 'Wacht op betaling';
+        case 'completed':
+            return 'Betaald';
+        case 'cancelled':
+            return 'Geannuleerd';
+        default:
+            return status || 'Onbekend';
+    }
+}
 
 export default async function WebshopBevestigingPage({ searchParams }: PageProps) {
     const params = await searchParams;
@@ -38,10 +60,12 @@ export default async function WebshopBevestigingPage({ searchParams }: PageProps
     if (!params.preorder || Number.isNaN(preorderId)) {
         return (
             <PublicPageShell>
-                <ErrorCard
-                    title="Ongeldige bestelling"
-                    message="We kunnen de status van je bestelling niet verifiëren zonder een geldig bestelnummer."
-                />
+                <Container size="sm" py="xl">
+                    <ErrorCard
+                        title="Ongeldige bestelling"
+                        message="We kunnen de status van je bestelling niet verifiëren zonder een geldig bestelnummer."
+                    />
+                </Container>
             </PublicPageShell>
         );
     }
@@ -55,7 +79,9 @@ export default async function WebshopBevestigingPage({ searchParams }: PageProps
     if (result.status === 'not_found') {
         return (
             <PublicPageShell>
-                <ErrorCard title="Bestelling niet gevonden" message="Deze bestelling bestaat niet (meer)." />
+                <Container size="sm" py="xl">
+                    <ErrorCard title="Bestelling niet gevonden" message="Deze bestelling bestaat niet (meer)." />
+                </Container>
             </PublicPageShell>
         );
     }
@@ -63,7 +89,9 @@ export default async function WebshopBevestigingPage({ searchParams }: PageProps
     if (result.status === 'unauthorized') {
         return (
             <PublicPageShell>
-                <ErrorCard title="Geen toegang" message="Je hebt geen toegang tot deze bestelling. Log in met het account waarmee je hebt besteld." />
+                <Container size="sm" py="xl">
+                    <ErrorCard title="Geen toegang" message="Je hebt geen toegang tot deze bestelling. Log in met het account waarmee je hebt besteld." />
+                </Container>
             </PublicPageShell>
         );
     }
@@ -71,7 +99,9 @@ export default async function WebshopBevestigingPage({ searchParams }: PageProps
     if (result.status === 'error') {
         return (
             <PublicPageShell>
-                <ErrorCard title="Er ging iets mis" message="We konden de status van je bestelling niet ophalen. Probeer het later opnieuw." />
+                <Container size="sm" py="xl">
+                    <ErrorCard title="Er ging iets mis" message="We konden de status van je bestelling niet ophalen. Probeer het later opnieuw." />
+                </Container>
             </PublicPageShell>
         );
     }
@@ -79,57 +109,83 @@ export default async function WebshopBevestigingPage({ searchParams }: PageProps
     const { preorder } = result;
     const isCompleted = preorder.status === 'completed';
     const isCancelled = preorder.status === 'cancelled';
-    const statusLabel = preorder.status ? STATUS_LABELS[preorder.status] ?? preorder.status : 'Onbekend';
+    const statusLabel = getStatusLabel(preorder.status);
 
     return (
         <PublicPageShell>
-            <div className="container mx-auto max-w-2xl px-4 py-16 sm:py-24">
-                <div className="rounded-[1.75rem] border border-(--border-color) bg-(--bg-card) p-8 shadow-xl sm:p-12">
-                    <div className="mb-8 flex flex-col items-center text-center">
-                        {isCancelled ? (
-                            <XCircle className="mb-4 size-16 text-red-500" />
-                        ) : isCompleted ? (
-                            <CheckCircle2 className="mb-4 size-16 text-green-500" />
-                        ) : (
-                            <Clock className="mb-4 size-16 text-(--theme-purple)" />
-                        )}
-                        <h1 className="text-2xl font-black text-(--theme-purple) sm:text-3xl">Bestelling #{preorder.id}</h1>
-                        <p className="mt-2 text-(--text-muted)">{statusLabel}</p>
-                    </div>
+            <Container size="sm" py="xl">
+                <Card padding="xl">
+                    <Stack gap="xl">
+                        <Stack align="center" ta="center" gap="sm">
+                            <ThemeIcon
+                                size={64}
+                                radius="xl"
+                                variant="light"
+                                color={isCancelled ? 'error' : isCompleted ? 'success' : 'brand'}
+                            >
+                                {isCancelled ? (
+                                    <XCircle size={32} />
+                                ) : isCompleted ? (
+                                    <CheckCircle2 size={32} />
+                                ) : (
+                                    <Clock size={32} />
+                                )}
+                            </ThemeIcon>
+                            <Title order={1} size="h2" c="brand">
+                                Bestelling #{preorder.id}
+                            </Title>
+                            <Text c="dimmed">{statusLabel}</Text>
+                        </Stack>
 
-                    <div className="mb-6 space-y-3">
-                        {preorder.lines.map((line) => (
-                            <div key={line.id} className="flex items-center justify-between border-b border-(--border-color) pb-3">
-                                <div>
-                                    <p className="font-bold text-(--theme-purple)/90">{line.product_name_snapshot}</p>
-                                    {line.variant_label_snapshot && (
-                                        <p className="text-sm text-(--text-muted)">{line.variant_label_snapshot} &middot; {line.quantity}x</p>
-                                    )}
-                                    {Array.isArray(line.custom_field_values) && (line.custom_field_values as { label: string; value: string }[]).map((f) => (
-                                        <p key={f.label} className="text-sm text-(--text-muted)">{f.label}: {f.value}</p>
-                                    ))}
-                                </div>
-                                <span className="font-bold text-(--theme-purple)/80">€{(Number(line.unit_price) * line.quantity).toFixed(2)}</span>
-                            </div>
-                        ))}
-                    </div>
+                        <Stack gap="sm">
+                            {preorder.lines.map((line) => (
+                                <Stack key={line.id} gap="xs">
+                                    <Group justify="space-between" align="flex-start" wrap="nowrap">
+                                        <Stack gap={2}>
+                                            <Text fw={700} c="brand">{line.product_name_snapshot}</Text>
+                                            {line.variant_label_snapshot && (
+                                                <Text size="sm" c="dimmed">{line.variant_label_snapshot} &middot; {line.quantity}x</Text>
+                                            )}
+                                            {Array.isArray(line.custom_field_values) && (line.custom_field_values as { label: string; value: string }[]).map((f) => (
+                                                <Text key={f.label} size="sm" c="dimmed">{f.label}: {f.value}</Text>
+                                            ))}
+                                        </Stack>
+                                        <Text fw={700} c="brand">
+                                            €{(Number(line.unit_price) * line.quantity).toFixed(2)}
+                                        </Text>
+                                    </Group>
+                                    <Divider />
+                                </Stack>
+                            ))}
+                        </Stack>
 
-                    <div className="mb-8 space-y-1">
-                        <div className="flex items-center justify-between text-(--text-muted)">
-                            <span>Totaalprijs {preorder.deposit_paid ? '(betaald)' : '(nog niet betaald)'}</span>
-                            <span>€{Number(preorder.subtotal_amount).toFixed(2)}</span>
-                        </div>
-                    </div>
+                        <Group justify="space-between">
+                            <Text c="dimmed">
+                                Totaalprijs {preorder.deposit_paid ? '(betaald)' : '(nog niet betaald)'}
+                            </Text>
+                            <Text fw={700} c="dimmed">
+                                €{Number(preorder.subtotal_amount).toFixed(2)}
+                            </Text>
+                        </Group>
 
-                    <p className="mb-8 text-center text-sm text-(--text-muted)">
-                        Je ontvangt per e-mail bericht zodra je bestelling klaarstaat om af te halen.
-                    </p>
+                        <Text size="sm" c="dimmed" ta="center">
+                            Je ontvangt per e-mail bericht zodra je bestelling klaarstaat om af te halen.
+                        </Text>
 
-                    <div className="flex justify-center">
-                        <BackButton href="/merch" text="Terug naar merch" />
-                    </div>
-                </div>
-            </div>
+                        <Center>
+                            <Button
+                                component={Link}
+                                href="/merch"
+                                variant="default"
+                                size="sm"
+                                leftSection={<ChevronLeft size={16} />}
+                            >
+                                Terug naar merch
+                            </Button>
+                        </Center>
+                    </Stack>
+                </Card>
+            </Container>
         </PublicPageShell>
     );
 }

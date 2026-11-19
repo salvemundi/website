@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 import { AlertTriangle, RefreshCcw, Home } from 'lucide-react';
-import BackButton from '@/components/ui/navigation/BackButton';
+import { Button, Center, Container, Group, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 
 interface GlobalErrorProps {
     error: Error & { digest?: string };
@@ -10,56 +11,59 @@ interface GlobalErrorProps {
     title?: string;
 }
 
-export default function GlobalError({ 
-    error, 
-    reset, 
-    title = "Er is iets misgegaan" 
+export default function GlobalError({
+    error,
+    reset,
+    title = 'Er is iets misgegaan',
 }: GlobalErrorProps) {
     useEffect(() => {
         // Log the error to an error reporting service if available
-        
     }, [error]);
 
     return (
-        <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
-            <div className="relative mb-8">
-                <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto size-40 rounded-full bg-purple-500/10 blur-3xl" />
-                <div className="squircle-lg relative border border-(--border-color)/20 bg-(--bg-card) p-6 text-purple-500 shadow-2xl">
-                    <AlertTriangle className="size-16" />
-                </div>
-            </div>
+        <Container size="sm">
+            <Center mih="60vh">
+                <Stack align="center" gap="lg" ta="center">
+                    <ThemeIcon size={80} radius="lg" variant="light" color="error">
+                        <AlertTriangle size={40} />
+                    </ThemeIcon>
 
-            <h2 className="mb-3 text-3xl font-black text-(--text-main)">
-                {title}
-            </h2>
-            
-            <p className="mx-auto mb-8 max-w-md text-(--text-muted)">
-                {error.message || "Onze servers konden het verzoek niet verwerken. Probeer het opnieuw of ga terug naar de homepagina."}
-            </p>
+                    <Title order={2} fz={{ base: '1.75rem', sm: '2.25rem' }}>
+                        {title}
+                    </Title>
 
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <button
-                    type="button"
-                    onClick={() => reset()}
-                    className="squircle form-button flex items-center gap-2 bg-purple-500 px-8 py-3.5 font-bold text-white shadow-lg shadow-purple-500/20 transition-all hover:-translate-y-0.5 hover:shadow-purple-500/40"
-                >
-                    <RefreshCcw className="size-4" />
-                    Opnieuw Proberen
-                </button>
+                    <Text c="dimmed" maw={440}>
+                        {error.message || 'Onze servers konden het verzoek niet verwerken. Probeer het opnieuw of ga terug naar de homepagina.'}
+                    </Text>
 
-                <BackButton 
-                    href="/" 
-                    text="Terug naar Home" 
-                    icon={Home} 
-                    className="squircle px-8 py-3.5"
-                />
-            </div>
+                    <Group justify="center" gap="md">
+                        <Button
+                            type="button"
+                            size="md"
+                            onClick={() => reset()}
+                            leftSection={<RefreshCcw size={16} />}
+                        >
+                            Opnieuw Proberen
+                        </Button>
 
-            {error.digest && (
-                <p className="mt-8 font-mono text-xs tracking-widest text-(--text-muted) uppercase opacity-50">
-                    Err-ID: {error.digest}
-                </p>
-            )}
-        </div>
+                        <Button
+                            component={Link}
+                            href="/"
+                            variant="default"
+                            size="md"
+                            leftSection={<Home size={16} />}
+                        >
+                            Terug naar Home
+                        </Button>
+                    </Group>
+
+                    {error.digest && (
+                        <Text size="xs" ff="monospace" c="dimmed" tt="uppercase" opacity={0.6}>
+                            Err-ID: {error.digest}
+                        </Text>
+                    )}
+                </Stack>
+            </Center>
+        </Container>
     );
 }

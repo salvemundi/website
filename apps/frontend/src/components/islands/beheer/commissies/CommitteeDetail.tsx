@@ -11,8 +11,27 @@ import {
     Settings,
     Save,
     ExternalLink,
-    Loader2
 } from 'lucide-react';
+import {
+    ActionIcon,
+    Alert,
+    Avatar,
+    Badge,
+    Box,
+    Button,
+    Card,
+    Center,
+    Divider,
+    Group,
+    Loader,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    Textarea,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
 import type { Committee, CommitteeMember } from '@/server/queries/commissies/beheer-commissies.queries';
 import { type UserBasic } from '@salvemundi/validations';
 import BeheerLedenSearch from '@/components/ui/beheer/BeheerLedenSearch';
@@ -60,196 +79,239 @@ export default function CommitteeDetail({
     onToggleLeader
 }: Props) {
     return (
-        <div className="space-y-8">
-            {/* Header / Info Section */}
-            <div className="relative overflow-hidden rounded-(--beheer-radius) border-t-8 border-(--beheer-accent) bg-(--beheer-card-bg) p-6 shadow-xl ring-1 ring-(--beheer-border) md:p-10">
-                <div className="absolute -top-24 -right-24 size-48 rounded-full bg-(--beheer-accent)/5 blur-3xl" />
-
-                <div className="relative z-10 flex flex-col items-start justify-between gap-8 md:flex-row">
-                    <div className="min-w-0 flex-1">
-                        <div className="mb-5 flex items-center gap-5">
-                            <div className="group flex size-16 items-center justify-center rounded-2xl bg-(--beheer-accent)/10 text-(--beheer-accent) shadow-inner">
-                                <Users className="size-8 transition-transform group-hover:scale-110" />
-                            </div>
-                            <div className="min-w-0">
-                                <h2 className="text-2xl leading-tight font-semibold tracking-tight text-(--beheer-text) md:text-3xl">
+        <Stack gap="lg">
+            <Card
+                withBorder
+                padding="xl"
+                style={{ borderTop: '6px solid var(--mantine-color-accent-filled)' }}
+            >
+                <Stack gap="lg">
+                    <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
+                        <Group gap="md" align="center" style={{ flex: 1, minWidth: 0 }}>
+                            <ThemeIcon size={56} radius="md" variant="light" color="accent">
+                                <Users size={28} />
+                            </ThemeIcon>
+                            <Stack gap={4} style={{ minWidth: 0 }}>
+                                <Title order={2} size="h2">
                                     {selected.name}
-                                </h2>
+                                </Title>
                                 {selected.email && (
-                                    <div className="mt-1.5 flex items-center gap-2">
-                                        <Mail className="size-4 text-(--beheer-accent)" />
-                                        <span className="text-xs font-medium text-(--beheer-text-muted) opacity-60">{selected.email}</span>
-                                    </div>
+                                    <Group gap={6}>
+                                        <Text span c="accent" lh={1}><Mail size={14} /></Text>
+                                        <Text size="xs" c="dimmed">{selected.email}</Text>
+                                    </Group>
                                 )}
-                            </div>
-                        </div>
+                            </Stack>
+                        </Group>
 
-                        {!editingDetail && (
-                            <p className="mb-6 line-clamp-3 text-base leading-relaxed font-medium text-(--beheer-text-muted)">
-                                {selected.short_description || 'Geen beschrijving beschikbaar.'}
-                            </p>
-                        )}
-                    </div>
+                        <Group gap="sm">
+                            <Button
+                                component="a"
+                                href={`/commissies/${slugify(selected.name)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                variant="default"
+                                leftSection={<ExternalLink size={16} />}
+                            >
+                                Website
+                            </Button>
+                            <Button
+                                type="button"
+                                variant={editingDetail ? 'filled' : 'default'}
+                                color={editingDetail ? 'accent' : undefined}
+                                onClick={onToggleEditing}
+                                leftSection={<Settings size={16} />}
+                            >
+                                {editingDetail ? 'Annuleren' : 'Details'}
+                            </Button>
+                        </Group>
+                    </Group>
 
-                    <div className="flex w-full shrink-0 flex-wrap gap-3 md:w-auto">
-                        <a
-                            href={`/commissies/${slugify(selected.name)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-6 py-3 text-xs font-semibold text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent) hover:bg-(--beheer-accent) hover:text-white active:scale-95 md:flex-none"
-                        >
-                            <ExternalLink className="size-4" /> Website
-                        </a>
-                        <button
-                            onClick={onToggleEditing}
-                            className={`beheer-button flex flex-1 items-center justify-center gap-2 rounded-xl border px-6 py-3 text-xs font-semibold shadow-sm transition-all active:scale-95 md:flex-none ${editingDetail ? 'border-(--beheer-accent) bg-(--beheer-accent) text-white' : 'border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text) hover:bg-white dark:hover:bg-white/5'}`}
-                            type="button">
-                            <Settings className={`size-4 ${editingDetail ? 'animate-spin' : ''}`} /> {editingDetail ? 'Annuleren' : 'Details'}
-                        </button>
-                    </div>
-                </div>
+                    {!editingDetail && (
+                        <Text size="md" c="dimmed" lineClamp={3}>
+                            {selected.short_description || 'Geen beschrijving beschikbaar.'}
+                        </Text>
+                    )}
 
-                {editingDetail && (
-                    <div className="relative z-10 mt-10 space-y-8 border-t border-(--beheer-border) pt-10">
-                        <div className="grid grid-cols-1 gap-8">
-                            <div className="space-y-3">
-                                <label className="text-xs font-semibold text-(--beheer-text-muted) opacity-60">Preview tekst</label>
-                                <textarea
-                                    value={editShortDesc}
-                                    onChange={e => onShortDescChange(e.target.value)}
-                                    rows={2}
-                                    autoComplete="off"
-                                    className="beheer-input w-full resize-none rounded-xl border-none bg-(--beheer-card-soft) px-6 py-4 text-sm leading-relaxed font-medium text-(--beheer-text) transition-all placeholder:text-(--beheer-text-muted) focus:ring-(--beheer-accent)/10"
-                                    placeholder="Korte pakkende tekst over de commissie..."
-                                />
-                            </div>
-                            <div className="space-y-3">
-                                <label className="text-xs font-semibold text-(--beheer-text-muted) opacity-60">Volledige beschrijving (Markdown)</label>
-                                <textarea
-                                    value={editDesc}
-                                    onChange={e => onDescChange(e.target.value)}
-                                    rows={12}
-                                    autoComplete="off"
-                                    className="beheer-input w-full rounded-xl border-none bg-(--beheer-card-soft) px-6 py-4 font-mono text-sm leading-relaxed text-(--beheer-text) transition-all placeholder:text-(--beheer-text-muted) focus:ring-(--beheer-accent)/10"
-                                    placeholder="### Onze missie..."
-                                />
-                            </div>
-                        </div>
-                        <button
-                            onClick={onSaveDetail}
-                            disabled={savingDetail}
-                            className="active:scale-0.98 beheer-button flex w-full items-center justify-center gap-3 rounded-2xl bg-(--beheer-accent) py-5 text-sm font-semibold text-white shadow-(--beheer-accent)/20 shadow-xl transition-all hover:opacity-90 disabled:opacity-50"
-                            type="button">
-                            {savingDetail ? <Loader2 className="size-5 animate-spin" /> : <Save className="size-5" />}
-                            Wijzigingen Opslaan
-                        </button>
-                    </div>
-                )}
-            </div>
-
-            {/* Member Management Section */}
-            <div className="overflow-hidden rounded-(--beheer-radius) bg-(--beheer-card-bg) shadow-xl ring-1 ring-(--beheer-border)">
-                <div className="flex flex-col justify-between gap-6 border-b border-(--beheer-border) bg-(--beheer-card-soft)/30 p-6 md:flex-row md:items-center md:gap-8 md:p-10">
-                    <div className="min-w-0 flex-1">
-                        <h3 className="flex items-center gap-2 text-xl font-semibold text-(--beheer-text)">
-                            <Shield className="size-5 text-(--beheer-accent)" />
-                            {"Leden & Azure rechten"}
-                        </h3>
-                        <p className="mt-1 text-xs font-medium text-(--beheer-text-muted) opacity-60">Synchroniseer toegang tot Office groepen</p>
-                    </div>
-
-                    {selected.azure_group_id ? (
-                        <div className="w-full flex-1 md:max-w-md lg:max-w-lg">
-                            <BeheerLedenSearch
-                                onSelect={onAddMember}
-                                disabled={addingMember}
-                                placeholder="Zoek lid op naam om toe te voegen..."
+                    {editingDetail && (
+                        <Stack gap="md">
+                            <Divider />
+                            <Textarea
+                                label="Preview tekst"
+                                value={editShortDesc}
+                                onChange={(e) => onShortDescChange(e.currentTarget.value)}
+                                rows={2}
+                                autoComplete="off"
+                                placeholder="Korte pakkende tekst over de commissie..."
                             />
-                            {addError && (
-                                <p className="mt-3 flex items-center gap-2 px-2 text-xs font-semibold text-red-500">
-                                    <ShieldAlert className="size-3" /> {addError}
-                                </p>
+                            <Textarea
+                                label="Volledige beschrijving (Markdown)"
+                                value={editDesc}
+                                onChange={(e) => onDescChange(e.currentTarget.value)}
+                                rows={12}
+                                autoComplete="off"
+                                styles={{ input: { fontFamily: 'monospace' } }}
+                                placeholder="### Onze missie..."
+                            />
+                            <Button
+                                type="button"
+                                color="accent"
+                                size="md"
+                                fullWidth
+                                loading={savingDetail}
+                                onClick={onSaveDetail}
+                                leftSection={<Save size={18} />}
+                            >
+                                Wijzigingen Opslaan
+                            </Button>
+                        </Stack>
+                    )}
+                </Stack>
+            </Card>
+
+            <Card withBorder padding={0} style={{ overflow: 'hidden' }}>
+                <Stack gap={0}>
+                    <Group justify="space-between" align="center" wrap="wrap" gap="md" p="xl">
+                        <Stack gap={2}>
+                            <Group gap="xs">
+                                <Text span c="accent" lh={1}><Shield size={20} /></Text>
+                                <Title order={3} size="h4">Leden &amp; Azure rechten</Title>
+                            </Group>
+                            <Text size="xs" c="dimmed">Synchroniseer toegang tot Office groepen</Text>
+                        </Stack>
+
+                        <Box w={{ base: '100%', md: 360 }}>
+                            {selected.azure_group_id ? (
+                                <Stack gap="xs">
+                                    <BeheerLedenSearch
+                                        onSelect={onAddMember}
+                                        disabled={addingMember}
+                                        placeholder="Zoek lid op naam om toe te voegen..."
+                                    />
+                                    {addError && (
+                                        <Alert color="error" variant="light" icon={<ShieldAlert size={14} />}>
+                                            <Text size="xs" fw={600}>{addError}</Text>
+                                        </Alert>
+                                    )}
+                                </Stack>
+                            ) : (
+                                <Alert color="accent" variant="light" icon={<ShieldAlert size={16} />}>
+                                    <Text size="xs" fw={600}>Geen Azure-koppeling</Text>
+                                </Alert>
                             )}
-                        </div>
-                    ) : (
-                        <div className="w-full flex-1 md:max-w-md lg:max-w-lg">
-                            <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-(--beheer-card-soft) px-6 py-3 text-xs font-semibold text-amber-600 shadow-sm dark:text-amber-400">
-                                <ShieldAlert className="size-4" /> Geen Azure-koppeling
-                            </div>
-                        </div>
-                    )}
-                </div>
+                        </Box>
+                    </Group>
 
-                <div className={`p-6 transition-opacity duration-300 md:p-10 ${isUpdating ? 'pointer-events-none opacity-50' : 'opacity-100'}`}>
-                    {isUpdating && members.length === 0 ? (
-                        <div className="rounded-(--beheer-radius) border-2 border-dashed border-(--beheer-border) bg-(--beheer-card-soft)/20 py-24 text-center">
-                            <Loader2 className="mx-auto mb-4 size-12 animate-spin text-(--beheer-accent)" />
-                            <p className="text-sm font-semibold text-(--beheer-text-muted) opacity-60">Leden laden...</p>
-                        </div>
-                    ) : members.length === 0 ? (
-                        <div className="rounded-(--beheer-radius) border-2 border-dashed border-(--beheer-border) bg-(--beheer-card-soft)/20 py-24 text-center">
-                            <Users className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-10" />
-                            <p className="text-sm font-semibold text-(--beheer-text-muted) italic opacity-40">Nog geen leden in deze groep</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                            {members.map(member => (
-                                <div
-                                    key={member.entraId}
-                                    className="group hover:scale-1.02 flex items-center justify-between rounded-3xl border border-(--beheer-border) bg-(--beheer-card-bg) p-5 shadow-sm transition-all hover:border-(--beheer-accent)/50 hover:shadow-xl"
-                                >
-                                    <div className="flex min-w-0 items-center gap-4">
-                                        <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-(--beheer-card-soft) text-xs font-semibold text-(--beheer-text-muted) shadow-inner">
-                                            {member.displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
-                                        </div>
-                                        <div className="min-w-0">
-                                            <div className="flex items-center gap-2 truncate text-sm font-semibold text-(--beheer-text)">
-                                                {member.displayName}
-                                                {member.isLeader && (
-                                                    <span className="flex items-center gap-1 rounded-full bg-amber-500 px-2 py-0.5 text-[9px] font-semibold text-white shadow-sm">
-                                                        <Award className="size-2" /> Leider
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="mt-0.5 truncate text-xs font-medium text-(--beheer-text-muted) opacity-60">{member.email}</div>
-                                        </div>
-                                    </div>
+                    <Divider />
 
-                                    <div className="flex items-center gap-1">
-                                        {member.directusMembershipId && (
-                                            <button
-                                                onClick={() => onToggleLeader(member)}
-                                                disabled={!!actionLoading}
-                                                className={`icon-button rounded-xl p-3 shadow-sm transition-all ${member.isLeader ? 'bg-amber-100 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400' : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950/20 dark:hover:text-amber-400'}`}
-                                                title="Rechten status omschakelen"
-                                                type="button">
-                                                {actionLoading === `leader-${member.entraId}` ? <Loader2 className="size-4 animate-spin" /> : <Award className="size-4" />}
-                                            </button>
-                                        )}
-                                        {selected.azure_group_id && (
-                                            <button
-                                                onClick={() => onRemoveMember(member)}
-                                                disabled={!!actionLoading}
-                                                className="icon-button rounded-xl bg-(--beheer-card-soft) p-3 text-(--beheer-text-muted) shadow-sm transition-all hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/20 dark:hover:text-red-400"
-                                                title="Verwijderen uit Azure groep"
-                                                type="button">
-                                                {actionLoading === `remove-${member.entraId}` ? <Loader2 className="size-4 animate-spin" /> : <UserMinus className="size-4" />}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                    <Box
+                        p="xl"
+                        style={{
+                            opacity: isUpdating ? 0.5 : 1,
+                            pointerEvents: isUpdating ? 'none' : 'auto',
+                            transition: 'opacity 300ms ease',
+                        }}
+                    >
+                        {isUpdating && members.length === 0 ? (
+                            <Center py="xl">
+                                <Stack align="center" gap="xs">
+                                    <Loader color="accent" />
+                                    <Text size="sm" c="dimmed">Leden laden...</Text>
+                                </Stack>
+                            </Center>
+                        ) : members.length === 0 ? (
+                            <Paper withBorder p="xl" ta="center" style={{ borderStyle: 'dashed' }}>
+                                <Stack align="center" gap="xs" py="lg">
+                                    <Users size={40} opacity={0.15} />
+                                    <Text size="sm" c="dimmed" fs="italic">Nog geen leden in deze groep</Text>
+                                </Stack>
+                            </Paper>
+                        ) : (
+                            <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+                                {members.map((member) => {
+                                    const initials = member.displayName
+                                        .split(' ')
+                                        .map((n) => n[0])
+                                        .join('')
+                                        .substring(0, 2)
+                                        .toUpperCase();
 
-                <div className="flex items-start gap-3 border-t border-(--beheer-border) bg-(--beheer-card-soft)/20 px-10 py-5">
-                    <Info className="mt-0.5 size-4 shrink-0 text-(--beheer-accent)" />
-                    <p className="text-xs leading-relaxed font-medium text-(--beheer-text-muted) italic">
-                        Let op: Wijzigingen via Azure (Entra ID) service duren circa 2-5 minuten voordat ze volledig verwerkt en zichtbaar zijn in de website cache.
-                    </p>
-                </div>
-            </div>
-        </div>
+                                    return (
+                                        <Paper key={member.entraId} withBorder p="md" radius="lg">
+                                            <Group justify="space-between" align="center" wrap="nowrap" gap="sm">
+                                                <Group gap="md" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
+                                                    <Avatar radius="md" color="brand" size="md">
+                                                        {initials}
+                                                    </Avatar>
+                                                    <Stack gap={2} style={{ minWidth: 0 }}>
+                                                        <Group gap="xs" wrap="nowrap">
+                                                            <Text size="sm" fw={600} truncate>
+                                                                {member.displayName}
+                                                            </Text>
+                                                            {member.isLeader && (
+                                                                <Badge
+                                                                    color="accent"
+                                                                    variant="filled"
+                                                                    size="xs"
+                                                                    leftSection={<Award size={10} />}
+                                                                >
+                                                                    Leider
+                                                                </Badge>
+                                                            )}
+                                                        </Group>
+                                                        <Text size="xs" c="dimmed" truncate>
+                                                            {member.email}
+                                                        </Text>
+                                                    </Stack>
+                                                </Group>
+
+                                                <Group gap="xs" wrap="nowrap">
+                                                    {member.directusMembershipId && (
+                                                        <ActionIcon
+                                                            type="button"
+                                                            variant={member.isLeader ? 'light' : 'default'}
+                                                            color={member.isLeader ? 'accent' : undefined}
+                                                            onClick={() => onToggleLeader(member)}
+                                                            disabled={!!actionLoading}
+                                                            loading={actionLoading === `leader-${member.entraId}`}
+                                                            title="Rechten status omschakelen"
+                                                            aria-label="Rechten status omschakelen"
+                                                        >
+                                                            <Award size={16} />
+                                                        </ActionIcon>
+                                                    )}
+                                                    {selected.azure_group_id && (
+                                                        <ActionIcon
+                                                            type="button"
+                                                            variant="default"
+                                                            color="error"
+                                                            onClick={() => onRemoveMember(member)}
+                                                            disabled={!!actionLoading}
+                                                            loading={actionLoading === `remove-${member.entraId}`}
+                                                            title="Verwijderen uit Azure groep"
+                                                            aria-label="Verwijderen uit Azure groep"
+                                                        >
+                                                            <UserMinus size={16} />
+                                                        </ActionIcon>
+                                                    )}
+                                                </Group>
+                                            </Group>
+                                        </Paper>
+                                    );
+                                })}
+                            </SimpleGrid>
+                        )}
+                    </Box>
+
+                    <Divider />
+
+                    <Alert color="brand" variant="light" icon={<Info size={16} />} radius={0}>
+                        <Text size="xs" fs="italic">
+                            Let op: Wijzigingen via Azure (Entra ID) service duren circa 2-5 minuten voordat ze volledig verwerkt en zichtbaar zijn in de website cache.
+                        </Text>
+                    </Alert>
+                </Stack>
+            </Card>
+        </Stack>
     );
 }

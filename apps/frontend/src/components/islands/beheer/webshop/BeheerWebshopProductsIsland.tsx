@@ -1,9 +1,30 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Package, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, CalendarClock} from 'lucide-react';
-import BeheerModal from '@/components/ui/beheer/BeheerModal';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
+import {
+    Package,
+    Plus,
+    Edit2,
+    Trash2,
+    ToggleLeft,
+    ToggleRight,
+    CalendarClock,
+} from 'lucide-react';
+import {
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Card,
+    Center,
+    Container,
+    Group,
+    Modal,
+    Stack,
+    Table,
+    Text,
+    Title,
+} from '@mantine/core';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import BeheerWebshopDropWindowForm from './BeheerWebshopDropWindowForm';
 import BeheerWebshopProductForm from './BeheerWebshopProductForm';
@@ -12,7 +33,7 @@ import {
     deleteDropWindow,
     saveProduct,
     deleteProduct,
-    toggleProductActive
+    toggleProductActive,
 } from '@/server/actions/beheer/webshop/beheer-webshop-products.actions';
 import { formatDate } from '@/shared/lib/utils/date';
 import { type AdminDropWindow, type AdminProduct } from './webshop-admin-types';
@@ -22,35 +43,61 @@ interface Props {
     initialProducts: AdminProduct[];
 }
 
-const STATUS_LABELS: Record<string, string> = {
-    draft: 'Concept',
-    open: 'Open',
-    closed: 'Gesloten'
-};
+function getDropStatusMeta(status: string | null): { label: string; color?: string } {
+    switch (status) {
+        case 'draft':
+            return { label: 'Concept', color: 'accent' };
+        case 'open':
+            return { label: 'Open', color: 'success' };
+        case 'closed':
+            return { label: 'Gesloten' };
+        case null:
+            return { label: 'Onbekend' };
+        default:
+            return { label: status };
+    }
+}
 
 function StockBadge({ product }: { product: AdminProduct }) {
     if (product.stock_quantity === null) {
-        return <span className="text-(--beheer-text-muted)">Onbeperkt</span>;
+        return (
+            <Text size="sm" c="dimmed">
+                Onbeperkt
+            </Text>
+        );
     }
     if (product.stock_quantity === 0) {
-        return <span className="rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-500">Uitverkocht</span>;
+        return (
+            <Badge size="sm" variant="light" color="error">
+                Uitverkocht
+            </Badge>
+        );
     }
-    return <span>{product.stock_quantity} stuks</span>;
+    return <Text size="sm">{product.stock_quantity} stuks</Text>;
 }
 
-export default function BeheerWebshopProductsIsland({ initialDropWindows, initialProducts }: Props) {
-    const { toast, showToast, hideToast } = useAdminToast();
+export default function BeheerWebshopProductsIsland({
+    initialDropWindows,
+    initialProducts,
+}: Props) {
+    const { showToast } = useAdminToast();
     const [dropWindows, setDropWindows] = useState(initialDropWindows);
     const [products, setProducts] = useState(initialProducts);
     const [isPending, startTransition] = useTransition();
     const [formError, setFormError] = useState<string | null>(null);
 
-    const [dropWindowModal, setDropWindowModal] = useState<{ open: boolean; editing: AdminDropWindow | null }>({ open: false, editing: null });
-    const [productModal, setProductModal] = useState<{ open: boolean; editing: AdminProduct | null }>({ open: false, editing: null });
+    const [dropWindowModal, setDropWindowModal] = useState<{
+        open: boolean;
+        editing: AdminDropWindow | null;
+    }>({ open: false, editing: null });
+    const [productModal, setProductModal] = useState<{
+        open: boolean;
+        editing: AdminProduct | null;
+    }>({ open: false, editing: null });
     const [togglingId, setTogglingId] = useState<number | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
-    const dropWindowById = new Map(dropWindows.map(dw => [dw.id, dw]));
+    const dropWindowById = new Map(dropWindows.map((dw) => [dw.id, dw]));
 
     const handleSaveDropWindow = (formData: FormData) => {
         setFormError(null);
@@ -72,7 +119,7 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
         startTransition(async () => {
             const res = await deleteDropWindow(id);
             if (res.success) {
-                setDropWindows(prev => prev.filter(dw => dw.id !== id));
+                setDropWindows((prev) => prev.filter((dw) => dw.id !== id));
                 showToast('Drop verwijderd', 'success');
             } else {
                 showToast(res.error || 'Verwijderen mislukt', 'error');
@@ -101,7 +148,7 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
         startTransition(async () => {
             const res = await deleteProduct(id);
             if (res.success) {
-                setProducts(prev => prev.filter(p => p.id !== id));
+                setProducts((prev) => prev.filter((p) => p.id !== id));
                 showToast('Product verwijderd', 'success');
             } else {
                 showToast(res.error || 'Verwijderen mislukt', 'error');
@@ -115,8 +162,13 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
         startTransition(async () => {
             const res = await toggleProductActive(product.id, !!product.is_active);
             if (res.success) {
-                setProducts(prev => prev.map(p => p.id === product.id ? { ...p, is_active: !p.is_active } : p));
-                showToast(`Product ${product.is_active ? 'gedeactiveerd' : 'geactiveerd'}`, 'success');
+                setProducts((prev) =>
+                    prev.map((p) => (p.id === product.id ? { ...p, is_active: !p.is_active } : p))
+                );
+                showToast(
+                    `Product ${product.is_active ? 'gedeactiveerd' : 'geactiveerd'}`,
+                    'success'
+                );
             } else {
                 showToast(res.error || 'Bijwerken mislukt', 'error');
             }
@@ -126,200 +178,298 @@ export default function BeheerWebshopProductsIsland({ initialDropWindows, initia
 
     return (
         <>
-            <div className="admin-container space-y-12 py-4 md:py-8">
-                {/* Drop windows */}
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between border-l-4 border-(--beheer-accent) py-1 pl-4">
-                        <h2 className="flex items-center gap-3 text-sm font-semibold text-(--beheer-text)">
-                            Drops
-                            <span className="rounded-full border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 px-2.5 py-0.5 text-xs font-semibold text-(--beheer-accent)">
-                                {dropWindows.length}
-                            </span>
-                        </h2>
-                        <button
-                            onClick={() => setDropWindowModal({ open: true, editing: null })}
-                            className="beheer-button flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:opacity-95 active:scale-95"
-                            type="button">
-                            <Plus className="size-4" />
-                            <span>Nieuwe drop</span>
-                        </button>
-                    </div>
+            <Container size="xl" py="lg">
+                <Stack gap={40}>
+                    <Stack gap="md">
+                        <Group justify="space-between" wrap="wrap" gap="md">
+                            <Group gap="sm">
+                                <Title order={2} size="h4">
+                                    Drops
+                                </Title>
+                                <Badge variant="light" color="brand">
+                                    {dropWindows.length}
+                                </Badge>
+                            </Group>
+                            <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => setDropWindowModal({ open: true, editing: null })}
+                                leftSection={<Plus size={16} />}
+                            >
+                                Nieuwe drop
+                            </Button>
+                        </Group>
 
-                    <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
-                        {dropWindows.length === 0 ? (
-                            <div className="py-16 text-center">
-                                <CalendarClock className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-10" />
-                                <p className="text-sm font-semibold text-(--beheer-text-muted)">Nog geen drops aangemaakt</p>
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead className="border-b border-(--beheer-border) bg-(--beheer-card-soft)">
-                                        <tr>
-                                            <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Naam</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Status</th>
-                                            <th className="hidden px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) sm:table-cell">Sluit op</th>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-(--beheer-text-muted)">Acties</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-(--beheer-border)">
-                                        {dropWindows.map((dw) => (
-                                            <tr key={dw.id}>
-                                                <td className="px-6 py-4 text-sm font-semibold text-(--beheer-text)">{dw.name}</td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${dw.status === 'open' ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500' : dw.status === 'closed' ? 'border-slate-500/20 bg-slate-500/10 text-slate-500' : 'border-amber-500/20 bg-amber-500/10 text-amber-500'}`}>
-                                                        {dw.status ? STATUS_LABELS[dw.status] ?? dw.status : 'Onbekend'}
-                                                    </span>
-                                                </td>
-                                                <td className="hidden px-6 py-4 text-sm text-(--beheer-text-muted) sm:table-cell">
-                                                    {dw.closes_at ? formatDate(new Date(dw.closes_at), 'd MMMM yyyy HH:mm') : '-'}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        <button
-                                                            onClick={() => setDropWindowModal({ open: true, editing: dw })}
-                                                            className="icon-button cursor-pointer rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
-                                                            aria-label="Bewerken"
-                                                            type="button">
-                                                            <Edit2 className="size-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDeleteDropWindow(dw.id)}
-                                                            disabled={deletingId === dw.id}
-                                                            className="icon-button cursor-pointer rounded-lg p-2 text-red-500 transition-all hover:bg-red-500/10 disabled:opacity-50"
-                                                            aria-label="Verwijderen"
-                                                            type="button">
-                                                            <Trash2 className="size-4" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                        <Card p={0} shadow="md" style={{ overflow: 'hidden' }}>
+                            {dropWindows.length === 0 ? (
+                                <Center py={64}>
+                                    <Stack align="center" gap="xs">
+                                        <Text span c="dimmed" lh={1}>
+                                            <CalendarClock size={40} />
+                                        </Text>
+                                        <Text size="sm" fw={600} c="dimmed">
+                                            Nog geen drops aangemaakt
+                                        </Text>
+                                    </Stack>
+                                </Center>
+                            ) : (
+                                <Table.ScrollContainer minWidth={500}>
+                                    <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
+                                        <Table.Thead>
+                                            <Table.Tr>
+                                                <Table.Th>Naam</Table.Th>
+                                                <Table.Th>Status</Table.Th>
+                                                <Table.Th visibleFrom="sm">Sluit op</Table.Th>
+                                                <Table.Th ta="right">Acties</Table.Th>
+                                            </Table.Tr>
+                                        </Table.Thead>
+                                        <Table.Tbody>
+                                            {dropWindows.map((dw) => {
+                                                const statusMeta = getDropStatusMeta(dw.status);
+                                                return (
+                                                    <Table.Tr key={dw.id}>
+                                                        <Table.Td>
+                                                            <Text size="sm" fw={600}>
+                                                                {dw.name}
+                                                            </Text>
+                                                        </Table.Td>
+                                                        <Table.Td>
+                                                            <Badge
+                                                                size="sm"
+                                                                variant={statusMeta.color ? 'light' : 'default'}
+                                                                color={statusMeta.color}
+                                                            >
+                                                                {statusMeta.label}
+                                                            </Badge>
+                                                        </Table.Td>
+                                                        <Table.Td visibleFrom="sm">
+                                                            <Text size="sm" c="dimmed">
+                                                                {dw.closes_at
+                                                                    ? formatDate(
+                                                                          new Date(dw.closes_at),
+                                                                          'd MMMM yyyy HH:mm'
+                                                                      )
+                                                                    : '-'}
+                                                            </Text>
+                                                        </Table.Td>
+                                                        <Table.Td>
+                                                            <Group justify="flex-end" gap="xs">
+                                                                <ActionIcon
+                                                                    type="button"
+                                                                    variant="subtle"
+                                                                    color="brand"
+                                                                    onClick={() =>
+                                                                        setDropWindowModal({
+                                                                            open: true,
+                                                                            editing: dw,
+                                                                        })
+                                                                    }
+                                                                    aria-label="Bewerken"
+                                                                >
+                                                                    <Edit2 size={16} />
+                                                                </ActionIcon>
+                                                                <ActionIcon
+                                                                    type="button"
+                                                                    variant="subtle"
+                                                                    color="error"
+                                                                    onClick={() => handleDeleteDropWindow(dw.id)}
+                                                                    disabled={deletingId === dw.id}
+                                                                    aria-label="Verwijderen"
+                                                                >
+                                                                    <Trash2 size={16} />
+                                                                </ActionIcon>
+                                                            </Group>
+                                                        </Table.Td>
+                                                    </Table.Tr>
+                                                );
+                                            })}
+                                        </Table.Tbody>
+                                    </Table>
+                                </Table.ScrollContainer>
+                            )}
+                        </Card>
+                    </Stack>
 
-                {/* Products */}
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between border-l-4 border-(--beheer-accent) py-1 pl-4">
-                        <h2 className="flex items-center gap-3 text-sm font-semibold text-(--beheer-text)">
-                            Producten
-                            <span className="rounded-full border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 px-2.5 py-0.5 text-xs font-semibold text-(--beheer-accent)">
-                                {products.length}
-                            </span>
-                        </h2>
-                        <button
-                            onClick={() => setProductModal({ open: true, editing: null })}
-                            className="beheer-button flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:opacity-95 active:scale-95"
-                            type="button">
-                            <Plus className="size-4" />
-                            <span>Nieuw product</span>
-                        </button>
-                    </div>
+                    <Stack gap="md">
+                        <Group justify="space-between" wrap="wrap" gap="md">
+                            <Group gap="sm">
+                                <Title order={2} size="h4">
+                                    Producten
+                                </Title>
+                                <Badge variant="light" color="brand">
+                                    {products.length}
+                                </Badge>
+                            </Group>
+                            <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => setProductModal({ open: true, editing: null })}
+                                leftSection={<Plus size={16} />}
+                            >
+                                Nieuw product
+                            </Button>
+                        </Group>
 
-                    <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
-                        {products.length === 0 ? (
-                            <div className="py-16 text-center">
-                                <Package className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-10" />
-                                <p className="text-sm font-semibold text-(--beheer-text-muted)">Nog geen producten aangemaakt</p>
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead className="border-b border-(--beheer-border) bg-(--beheer-card-soft)">
-                                        <tr>
-                                            <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Naam</th>
-                                            <th className="hidden px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) sm:table-cell">Type</th>
-                                            <th className="hidden px-6 py-4 text-xs font-semibold text-(--beheer-text-muted) lg:table-cell">Drop</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Prijs</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-(--beheer-text-muted)">Voorraad</th>
-                                            <th className="px-6 py-4 text-center text-xs font-semibold text-(--beheer-text-muted)">Actief</th>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-(--beheer-text-muted)">Acties</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-(--beheer-border)">
-                                        {products.map((product) => (
-                                            <tr key={product.id}>
-                                                <td className="px-6 py-4 text-sm font-semibold text-(--beheer-text)">{product.name}</td>
-                                                <td className="hidden px-6 py-4 text-sm text-(--beheer-text-muted) capitalize sm:table-cell">{product.type}</td>
-                                                <td className="hidden px-6 py-4 text-sm text-(--beheer-text-muted) lg:table-cell">
-                                                    {product.drop_window_id ? dropWindowById.get(product.drop_window_id)?.name || '-' : '-'}
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-(--beheer-text-muted)">€{Number(product.price).toFixed(2)}</td>
-                                                <td className="px-6 py-4 text-sm text-(--beheer-text-muted)"><StockBadge product={product} /></td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <button
-                                                        onClick={() => handleToggleActive(product)}
-                                                        disabled={togglingId === product.id}
-                                                        className="icon-button cursor-pointer text-(--beheer-text-muted) transition-all hover:text-(--beheer-accent) disabled:opacity-50"
-                                                        type="button">
-                                                        {product.is_active ? <ToggleRight className="mx-auto size-6 text-emerald-500" /> : <ToggleLeft className="mx-auto size-6" />}
-                                                    </button>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        <button
-                                                            onClick={() => setProductModal({ open: true, editing: product })}
-                                                            className="icon-button cursor-pointer rounded-lg p-2 text-(--beheer-text-muted) transition-all hover:bg-(--beheer-accent)/10 hover:text-(--beheer-accent)"
-                                                            aria-label="Bewerken"
-                                                            type="button">
-                                                            <Edit2 className="size-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDeleteProduct(product.id)}
-                                                            disabled={deletingId === product.id}
-                                                            className="icon-button cursor-pointer rounded-lg p-2 text-red-500 transition-all hover:bg-red-500/10 disabled:opacity-50"
-                                                            aria-label="Verwijderen"
-                                                            type="button">
-                                                            <Trash2 className="size-4" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
+                        <Card p={0} shadow="md" style={{ overflow: 'hidden' }}>
+                            {products.length === 0 ? (
+                                <Center py={64}>
+                                    <Stack align="center" gap="xs">
+                                        <Text span c="dimmed" lh={1}>
+                                            <Package size={40} />
+                                        </Text>
+                                        <Text size="sm" fw={600} c="dimmed">
+                                            Nog geen producten aangemaakt
+                                        </Text>
+                                    </Stack>
+                                </Center>
+                            ) : (
+                                <Table.ScrollContainer minWidth={650}>
+                                    <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
+                                        <Table.Thead>
+                                            <Table.Tr>
+                                                <Table.Th>Naam</Table.Th>
+                                                <Table.Th visibleFrom="sm">Type</Table.Th>
+                                                <Table.Th visibleFrom="lg">Drop</Table.Th>
+                                                <Table.Th>Prijs</Table.Th>
+                                                <Table.Th>Voorraad</Table.Th>
+                                                <Table.Th ta="center">Actief</Table.Th>
+                                                <Table.Th ta="right">Acties</Table.Th>
+                                            </Table.Tr>
+                                        </Table.Thead>
+                                        <Table.Tbody>
+                                            {products.map((product) => (
+                                                <Table.Tr key={product.id}>
+                                                    <Table.Td>
+                                                        <Text size="sm" fw={600}>
+                                                            {product.name}
+                                                        </Text>
+                                                    </Table.Td>
+                                                    <Table.Td visibleFrom="sm">
+                                                        <Text size="sm" c="dimmed" tt="capitalize">
+                                                            {product.type}
+                                                        </Text>
+                                                    </Table.Td>
+                                                    <Table.Td visibleFrom="lg">
+                                                        <Text size="sm" c="dimmed">
+                                                            {product.drop_window_id
+                                                                ? dropWindowById.get(product.drop_window_id)
+                                                                      ?.name || '-'
+                                                                : '-'}
+                                                        </Text>
+                                                    </Table.Td>
+                                                    <Table.Td>
+                                                        <Text size="sm" c="dimmed">
+                                                            €{Number(product.price).toFixed(2)}
+                                                        </Text>
+                                                    </Table.Td>
+                                                    <Table.Td>
+                                                        <StockBadge product={product} />
+                                                    </Table.Td>
+                                                    <Table.Td>
+                                                        <Box ta="center">
+                                                            <ActionIcon
+                                                                type="button"
+                                                                variant="subtle"
+                                                                color={product.is_active ? 'success' : 'brand'}
+                                                                onClick={() => handleToggleActive(product)}
+                                                                disabled={togglingId === product.id}
+                                                                aria-label={
+                                                                    product.is_active
+                                                                        ? 'Product deactiveren'
+                                                                        : 'Product activeren'
+                                                                }
+                                                            >
+                                                                {product.is_active ? (
+                                                                    <ToggleRight size={22} />
+                                                                ) : (
+                                                                    <ToggleLeft size={22} />
+                                                                )}
+                                                            </ActionIcon>
+                                                        </Box>
+                                                    </Table.Td>
+                                                    <Table.Td>
+                                                        <Group justify="flex-end" gap="xs">
+                                                            <ActionIcon
+                                                                type="button"
+                                                                variant="subtle"
+                                                                color="brand"
+                                                                onClick={() =>
+                                                                    setProductModal({
+                                                                        open: true,
+                                                                        editing: product,
+                                                                    })
+                                                                }
+                                                                aria-label="Bewerken"
+                                                            >
+                                                                <Edit2 size={16} />
+                                                            </ActionIcon>
+                                                            <ActionIcon
+                                                                type="button"
+                                                                variant="subtle"
+                                                                color="error"
+                                                                onClick={() => handleDeleteProduct(product.id)}
+                                                                disabled={deletingId === product.id}
+                                                                aria-label="Verwijderen"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </ActionIcon>
+                                                        </Group>
+                                                    </Table.Td>
+                                                </Table.Tr>
+                                            ))}
+                                        </Table.Tbody>
+                                    </Table>
+                                </Table.ScrollContainer>
+                            )}
+                        </Card>
+                    </Stack>
+                </Stack>
+            </Container>
 
-            <BeheerModal
-                isOpen={dropWindowModal.open}
-                onClose={() => { setDropWindowModal({ open: false, editing: null }); setFormError(null); }}
+            <Modal
+                opened={dropWindowModal.open}
+                onClose={() => {
+                    setDropWindowModal({ open: false, editing: null });
+                    setFormError(null);
+                }}
                 title={dropWindowModal.editing ? 'Drop Bewerken' : 'Nieuwe Drop Aanmaken'}
-                maxWidth="lg"
+                size="lg"
+                centered
             >
                 <BeheerWebshopDropWindowForm
                     dropWindow={dropWindowModal.editing}
                     onSave={handleSaveDropWindow}
-                    onCancel={() => { setDropWindowModal({ open: false, editing: null }); setFormError(null); }}
+                    onCancel={() => {
+                        setDropWindowModal({ open: false, editing: null });
+                        setFormError(null);
+                    }}
                     isPending={isPending}
                     error={formError}
                 />
-            </BeheerModal>
+            </Modal>
 
-            <BeheerModal
-                isOpen={productModal.open}
-                onClose={() => { setProductModal({ open: false, editing: null }); setFormError(null); }}
+            <Modal
+                opened={productModal.open}
+                onClose={() => {
+                    setProductModal({ open: false, editing: null });
+                    setFormError(null);
+                }}
                 title={productModal.editing ? 'Product Bewerken' : 'Nieuw Product Aanmaken'}
-                maxWidth="4xl"
+                size="xl"
+                centered
             >
                 <BeheerWebshopProductForm
                     product={productModal.editing}
                     dropWindows={dropWindows}
                     onSave={handleSaveProduct}
-                    onCancel={() => { setProductModal({ open: false, editing: null }); setFormError(null); }}
+                    onCancel={() => {
+                        setProductModal({ open: false, editing: null });
+                        setFormError(null);
+                    }}
                     isPending={isPending}
                     error={formError}
                 />
-            </BeheerModal>
-
-            <BeheerToast toast={toast} onClose={hideToast} />
+            </Modal>
         </>
     );
 }

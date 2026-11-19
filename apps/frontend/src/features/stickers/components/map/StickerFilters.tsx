@@ -1,6 +1,7 @@
 'use client';
 
 import { Search } from 'lucide-react';
+import { Card, Group, Stack, Text, TextInput } from '@mantine/core';
 
 interface StickerFiltersProps {
     filterCountry: string;
@@ -13,32 +14,32 @@ export default function StickerFilters({
     filterCountry,
     setFilterCountry,
     filterCity,
-    setFilterCity
+    setFilterCity,
 }: StickerFiltersProps) {
     return (
-        <div className="pointer-events-auto rounded-2xl border border-white/10 bg-(--bg-card)/90 p-4 shadow-2xl backdrop-blur-md">
-            <div className="mb-3 flex items-center gap-2">
-                <Search className="size-4 text-(--theme-purple)" />
-                <h3 className="text-xs font-black tracking-widest text-(--text-main) uppercase">Filteren</h3>
-            </div>
-            <div className="space-y-3">
-                <input
-                    type="text"
+        <Card p="md" radius="lg" shadow="xl" style={{ pointerEvents: 'auto' }}>
+            <Stack gap="sm">
+                <Group gap="xs">
+                    <Text span c="brand" lh={1}>
+                        <Search size={16} />
+                    </Text>
+                    <Text size="xs" fw={900} tt="uppercase" style={{ letterSpacing: '0.1em' }}>
+                        Filteren
+                    </Text>
+                </Group>
+                <TextInput
+                    size="xs"
                     placeholder="Land..."
                     value={filterCountry}
-                    onChange={(e) => setFilterCountry(e.target.value)}
-                    suppressHydrationWarning
-                    className="form-input w-full rounded-lg border border-(--border-color)/30 bg-(--bg-main)/50 px-3 py-2 text-xs transition-all outline-none focus:ring-2 focus:ring-(--theme-purple)/50"
+                    onChange={(e) => setFilterCountry(e.currentTarget.value)}
                 />
-                <input
-                    type="text"
+                <TextInput
+                    size="xs"
                     placeholder="Stad..."
                     value={filterCity}
-                    onChange={(e) => setFilterCity(e.target.value)}
-                    suppressHydrationWarning
-                    className="form-input w-full rounded-lg border border-(--border-color)/30 bg-(--bg-main)/50 px-3 py-2 text-xs transition-all outline-none focus:ring-2 focus:ring-(--theme-purple)/50"
+                    onChange={(e) => setFilterCity(e.currentTarget.value)}
                 />
-            </div>
-        </div>
+            </Stack>
+        </Card>
     );
 }

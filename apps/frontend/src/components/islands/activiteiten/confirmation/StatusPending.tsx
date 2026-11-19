@@ -1,6 +1,9 @@
 'use client';
 
-import { RefreshCw, Loader2, CreditCard } from 'lucide-react';
+import Link from 'next/link';
+import { RefreshCw, CreditCard } from 'lucide-react';
+import { Button, Group, Loader, Stack, Text, ThemeIcon, Title } from '@mantine/core';
+import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { type SignupData } from '../ConfirmationIsland';
 
 interface StatusPendingProps {
@@ -11,12 +14,13 @@ interface StatusPendingProps {
 
 export default function StatusPending({ signupData, initialId, isLoggedIn }: StatusPendingProps) {
     const isTimeout = signupData?.errorType === 'timeout';
+    const { showToast } = useAdminToast();
 
     const handleRetry = async () => {
         try {
             const signupId = signupData?.id || initialId;
             if (!signupId) {
-                alert("Geen aanmeldings-ID gevonden.");
+                showToast('Geen aanmeldings-ID gevonden.', 'error');
                 return;
             }
             const { retryActivityPayment } = await import('@/server/actions/events/activiteiten/activiteiten-status.actions');
@@ -24,49 +28,59 @@ export default function StatusPending({ signupData, initialId, isLoggedIn }: Sta
             if (result.success && result.checkoutUrl) {
                 window.location.href = result.checkoutUrl;
             } else {
-                alert(result.error || "Herbetaling mislukt.");
+                showToast(result.error || 'Herbetaling mislukt.', 'error');
             }
         } catch {
-            alert("Er is een fout opgetreden bij het herstarten van de betaling.");
+            showToast('Er is een fout opgetreden bij het herstarten van de betaling.', 'error');
         }
     };
 
     return (
-        <div className="animate-in zoom-in-95 space-y-8 py-20 text-center duration-500">
-            <div className="mx-auto flex size-24 items-center justify-center rounded-full bg-orange-500/10 ring-1 ring-orange-500/20">
-                {isTimeout ? <RefreshCw className="animate-spin-slow size-12 text-orange-500" /> : <Loader2 className="size-12 animate-spin text-orange-500" />}
-            </div>
-            <div className="space-y-2">
-                <h2 className="text-4xl font-semibold tracking-tighter text-(--text-main) italic">
-                    {isTimeout ? 'Status' : 'Betaling'} <span className="text-orange-500">{isTimeout ? 'onduidelijk' : 'open'}</span>
-                </h2>
-                <p className="mx-auto max-w-md text-lg font-medium text-(--text-muted)">
+        <Stack align="center" gap="xl" py="xl" ta="center">
+            <ThemeIcon size={96} radius="xl" variant="light" color="accent">
+                {isTimeout ? <RefreshCw size={44} /> : <Loader size="lg" color="accent" />}
+            </ThemeIcon>
+
+            <Stack gap="xs" align="center">
+                <Title order={2} fz={{ base: '2rem', md: '2.5rem' }}>
+                    {isTimeout ? 'Status' : 'Betaling'} <Text span c="accent" inherit>{isTimeout ? 'onduidelijk' : 'open'}</Text>
+                </Title>
+                <Text size="lg" c="dimmed" maw={460}>
                     {isTimeout
                         ? 'Het duurt langer dan normaal om de status te verifiëren. Check je bank-app of wacht een momentje op de mail.'
                         : 'Je betaling staat nog op open. Zodra we de bevestiging van de bank hebben, sturen we je ticket per e-mail.'}
-                </p>
-            </div>
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                <button
+                </Text>
+            </Stack>
+
+            <Group justify="center" gap="md" wrap="wrap">
+                <Button
+                    type="button"
+                    variant="default"
+                    size="lg"
                     onClick={() => window.location.reload()}
-                    className="form-button inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-(--border-color) bg-(--bg-soft) px-10 font-semibold text-(--text-main) transition-all hover:bg-(--bg-soft)/80"
-                    type="button">
-                    <RefreshCw className="size-4" />
+                    leftSection={<RefreshCw size={16} />}
+                >
                     Check opnieuw
-                </button>
-                <button
+                </Button>
+                <Button
+                    type="button"
+                    size="lg"
                     onClick={() => { void handleRetry(); }}
-                    className="form-button inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-(--theme-purple) px-10 font-semibold text-white shadow-(--theme-purple)/20 shadow-xl transition-all hover:scale-105"
-                    type="button">
-                    <CreditCard className="size-4" />
+                    leftSection={<CreditCard size={16} />}
+                >
                     Betaal nu
-                </button>
+                </Button>
                 {isLoggedIn && (
-                    <a href="/profiel/tickets" className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-(--border-color) bg-(--bg-card) px-10 font-semibold text-(--text-main) transition-all hover:bg-(--bg-soft)">
+                    <Button
+                        component={Link}
+                        href="/profiel/tickets"
+                        variant="default"
+                        size="lg"
+                    >
                         Mijn tickets
-                    </a>
+                    </Button>
                 )}
-            </div>
-        </div>
+            </Group>
+        </Stack>
     );
 }

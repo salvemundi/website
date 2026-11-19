@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
+import Link from '@/components/ui/Link';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Group, Stack, Title } from '@mantine/core';
 import { notFound } from 'next/navigation';
 import LedenDetailIsland, { type Member, type CommitteeMembership, type Signup } from '@/components/islands/beheer/leden/LedenDetailIsland';
-import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
 import {
     type CommitteeMember,
     type EventSignup,
@@ -184,23 +186,39 @@ export default async function LidDetailPage({ params }: { params: Promise<{ slug
     }
 
     return (
-        <BeheerPageShell
-            title="Lid Detail"
-            backHref="/beheer/leden"
-        >
-            <LedenDetailIsland
-                member={memberData as unknown as Member}
-                initialMemberships={userCommittees as unknown as CommitteeMembership[]}
-                signups={signups as unknown as Signup[]}
-                transactions={transactions}
-                allCommittees={allCommittees.map(c => ({
-                    id: String(c.id),
-                    name: c.name,
-                    is_visible: !!c.is_visible,
-                    azure_group_id: c.azure_group_id
-                }))}
-                hasAccess={true}
-            />
-        </BeheerPageShell>
+        <Container size="xl" py="lg">
+            <Stack gap="lg">
+                <Group justify="space-between" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href="/beheer/leden"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                        <Title order={1} size="h2" c="brand">
+                            Lid Detail
+                        </Title>
+                    </Group>
+                </Group>
+
+                <LedenDetailIsland
+                    member={memberData as unknown as Member}
+                    initialMemberships={userCommittees as unknown as CommitteeMembership[]}
+                    signups={signups as unknown as Signup[]}
+                    transactions={transactions}
+                    allCommittees={allCommittees.map(c => ({
+                        id: String(c.id),
+                        name: c.name,
+                        is_visible: !!c.is_visible,
+                        azure_group_id: c.azure_group_id
+                    }))}
+                    hasAccess={true}
+                />
+            </Stack>
+        </Container>
     );
 }

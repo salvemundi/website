@@ -1,19 +1,17 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-
-import { Eye, EyeOff, LayoutGrid, List, Calendar as CalendarIcon } from "lucide-react";
-
-import CalendarView from "./CalendarView";
-import DayDetails from "./DayDetails";
-import ActiviteitList from "./ActiviteitList";
-import CalendarExportButton from "./CalendarExportButton";
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Eye, EyeOff, LayoutGrid, List, Calendar as CalendarIcon } from 'lucide-react';
+import { Box, Button, Group, Paper, Stack } from '@mantine/core';
+import CalendarView from './CalendarView';
+import DayDetails from './DayDetails';
+import ActiviteitList from './ActiviteitList';
+import CalendarExportButton from './CalendarExportButton';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
-import { slugify } from "@/shared/lib/utils/slug";
-import { getActivityUrl } from "@/shared/lib/utils/activity";
-import { isEventPast } from "@/shared/lib/utils/date";
-import { cn } from "@/lib/utils/cn";
+import { slugify } from '@/shared/lib/utils/slug';
+import { getActivityUrl } from '@/shared/lib/utils/activity';
+import { isEventPast } from '@/shared/lib/utils/date';
 
 interface ActivitiesProviderIslandProps {
     events?: (Activiteit & { is_signed_up?: boolean })[];
@@ -121,101 +119,69 @@ export default function ActivitiesProviderIsland({
     }, [searchParams, router, events]);
 
     return (
-        <div className="relative flex w-full flex-col">
-            <div className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                {/* View Mode Switcher */}
-                <div 
-                    role="tablist" 
-                    aria-label="Weergavemodus" 
-                    className="flex w-full rounded-xl border border-border-color/30 bg-bg-card p-1 shadow-xs sm:w-auto sm:rounded-2xl"
-                >
-                    <button
-                        type="button"
-                        role="tab"
-                        aria-selected={viewMode === 'list'}
-                        onClick={() => setViewMode('list')}
-                        className={cn(
-                            "tab-button flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold transition-all sm:min-h-0 sm:flex-initial sm:rounded-xl sm:py-2",
-                            viewMode === 'list'
-                                ? "bg-(--theme-purple) text-white shadow-sm"
-                                : "text-(--theme-purple) hover:bg-(--theme-purple)/5"
-                        )}
-                    >
-                        <List className="size-4 shrink-0" />
-                        <span>Lijst</span>
-                    </button>
-                    <button
-                        type="button"
-                        role="tab"
-                        aria-selected={viewMode === 'grid'}
-                        onClick={() => setViewMode('grid')}
-                        className={cn(
-                            "tab-button flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold transition-all sm:min-h-0 sm:flex-initial sm:rounded-xl sm:py-2",
-                            viewMode === 'grid'
-                                ? "bg-(--theme-purple) text-white shadow-sm"
-                                : "text-(--theme-purple) hover:bg-(--theme-purple)/5"
-                        )}
-                    >
-                        <LayoutGrid className="size-4 shrink-0" />
-                        <span>Kaarten</span>
-                    </button>
-                    <button
-                        type="button"
-                        role="tab"
-                        aria-selected={viewMode === 'calendar'}
-                        onClick={() => setViewMode('calendar')}
-                        className={cn(
-                            "tab-button hidden items-center justify-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all sm:rounded-xl lg:flex",
-                            viewMode === 'calendar'
-                                ? "bg-(--theme-purple) text-white shadow-sm"
-                                : "text-(--theme-purple) hover:bg-(--theme-purple)/5"
-                        )}
-                    >
-                        <CalendarIcon className="size-4 shrink-0" />
-                        <span>Kalender</span>
-                    </button>
-                </div>
+        <Stack gap="lg" w="100%">
+            <Group justify="space-between" align="center" wrap="wrap" gap="md">
+                <Paper p={4} radius="lg" withBorder w={{ base: '100%', sm: 'auto' }}>
+                    <Group gap={4} role="tablist" aria-label="Weergavemodus" grow>
+                        <Button
+                            type="button"
+                            role="tab"
+                            aria-selected={viewMode === 'list'}
+                            size="xs"
+                            variant={viewMode === 'list' ? 'filled' : 'subtle'}
+                            onClick={() => setViewMode('list')}
+                            leftSection={<List size={16} />}
+                        >
+                            Lijst
+                        </Button>
+                        <Button
+                            type="button"
+                            role="tab"
+                            aria-selected={viewMode === 'grid'}
+                            size="xs"
+                            variant={viewMode === 'grid' ? 'filled' : 'subtle'}
+                            onClick={() => setViewMode('grid')}
+                            leftSection={<LayoutGrid size={16} />}
+                        >
+                            Kaarten
+                        </Button>
+                        <Button
+                            type="button"
+                            role="tab"
+                            aria-selected={viewMode === 'calendar'}
+                            size="xs"
+                            visibleFrom="lg"
+                            variant={viewMode === 'calendar' ? 'filled' : 'subtle'}
+                            onClick={() => setViewMode('calendar')}
+                            leftSection={<CalendarIcon size={16} />}
+                        >
+                            Kalender
+                        </Button>
+                    </Group>
+                </Paper>
 
-                {/* Actions: Agenda koppelen & Afgelopen activiteiten */}
-                <div className="flex flex-wrap items-center gap-2.5 sm:flex-nowrap sm:gap-3">
-                    <CalendarExportButton 
-                        calendarToken={calendarToken} 
+                <Group gap="sm" wrap="wrap" w={{ base: '100%', sm: 'auto' }}>
+                    <CalendarExportButton
+                        calendarToken={calendarToken}
                         isLoggedIn={isLoggedIn}
-                        buttonClassName="tab-button w-full sm:w-auto group relative inline-flex items-center justify-center gap-2.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border transition-all active:scale-95 text-[11px] sm:text-[10px] font-black uppercase tracking-widest min-h-[44px] sm:min-h-0 bg-bg-card text-(--theme-purple) border-border-color/30 hover:border-(--theme-purple)/30 hover:bg-(--theme-purple)/5 shadow-xs"
                     />
 
-                    <button
+                    <Button
                         type="button"
+                        size="sm"
+                        variant={showPastActivities ? 'filled' : 'default'}
                         onClick={toggleShowPastActivities}
-                        className={cn(
-                            "tab-button group relative inline-flex min-h-11 w-full items-center justify-center gap-3 rounded-xl border px-4 py-2.5 text-[11px] font-black tracking-widest uppercase transition-all active:scale-95 sm:min-h-0 sm:w-auto sm:rounded-2xl sm:px-5 sm:py-3 sm:text-[10px]",
-                            showPastActivities
-                                ? "border-(--theme-purple) bg-(--theme-purple) text-white shadow-md"
-                                : "border-border-color/30 bg-bg-card text-(--theme-purple) shadow-xs hover:border-(--theme-purple)/30 hover:bg-(--theme-purple)/5"
-                        )}
+                        rightSection={showPastActivities ? <EyeOff size={14} /> : <Eye size={14} />}
                     >
-                        <span className="relative whitespace-nowrap" aria-live="polite">
-                            <span className="pointer-events-none invisible select-none" aria-hidden="true">Verberg afgelopen</span>
-                            <span className="absolute inset-0 flex items-center justify-center">
-                                {showPastActivities ? 'Verberg afgelopen' : 'Toon afgelopen'}
-                            </span>
-                        </span>
-                        <span className={cn(
-                            "flex size-5 shrink-0 items-center justify-center rounded-full transition-colors",
-                            showPastActivities
-                                ? "bg-white/20 text-white"
-                                : "bg-(--theme-purple)/10 text-(--theme-purple) group-hover:bg-(--theme-purple) group-hover:text-white"
-                        )}>
-                            {showPastActivities ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
-                        </span>
-                    </button>
-                </div>
-            </div>
+                        {showPastActivities ? 'Verberg afgelopen' : 'Toon afgelopen'}
+                    </Button>
+                </Group>
+            </Group>
 
-            <div className="w-full space-y-6">
+            <Box w="100%">
                 {viewMode === 'calendar' && (
                     <>
-                        <div className="hidden lg:block">
+                        <Box visibleFrom="lg">
                             <CalendarView
                                 currentDate={currentDate}
                                 events={filteredEvents}
@@ -234,13 +200,13 @@ export default function ActivitiesProviderIsland({
                                 }}
                                 onGoToDate={(d: Date) => setCurrentDate(d)}
                             />
-                        </div>
-                        <div className="lg:hidden">
+                        </Box>
+                        <Box hiddenFrom="lg">
                             <ActiviteitList
                                 events={filteredEvents}
                                 onEventClick={handleShowDetails}
                             />
-                        </div>
+                        </Box>
                     </>
                 )}
 
@@ -260,7 +226,7 @@ export default function ActivitiesProviderIsland({
                         serverTime={serverTime}
                     />
                 )}
-            </div>
+            </Box>
 
             {selectedDay && (
                 <DayDetails
@@ -270,6 +236,6 @@ export default function ActivitiesProviderIsland({
                     onEventClick={handleShowDetails}
                 />
             )}
-        </div>
+        </Stack>
     );
 }

@@ -1,8 +1,10 @@
-import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
+import type { Metadata } from 'next';
+import Link from '@/components/ui/Link';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Group, Stack, Title } from '@mantine/core';
 import { getCameraLoansDb, getCameraPhotographersDb, getCameraRequestsDb } from '@/server/queries/camera/beheer-camera.queries';
 import BeheerCameraIsland from '@/components/islands/beheer/camera/BeheerCameraIsland';
 import { connection } from 'next/server';
-import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: 'Camera Beheer | Salve Mundi',
@@ -18,8 +20,27 @@ export default async function BeheerCameraPage() {
     ]);
 
     return (
-        <BeheerPageShell title="Camera Beheer" backHref="/beheer">
-            <BeheerCameraIsland requests={requests} photographers={photographers} loans={loans} />
-        </BeheerPageShell>
+        <Container size="xl" py="lg">
+            <Stack gap="lg">
+                <Group justify="space-between" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href="/beheer"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                        <Title order={1} size="h2" c="brand">
+                            Camera Beheer
+                        </Title>
+                    </Group>
+                </Group>
+
+                <BeheerCameraIsland requests={requests} photographers={photographers} loans={loans} />
+            </Stack>
+        </Container>
     );
 }

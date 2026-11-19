@@ -3,72 +3,112 @@
 import { useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Pizza, Plus, Clock, Users, ChevronRight, BarChart3 } from 'lucide-react';
+import {
+    Anchor,
+    Badge,
+    Box,
+    Button,
+    Group,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    Textarea,
+    TextInput,
+} from '@mantine/core';
+import { DateTimePicker } from '@mantine/dates';
 import { createPizzaRoundSchema, type CreatePizzaRoundInput, type PizzaRoundSummary } from '@salvemundi/validations';
 import { Tile } from '@/components/islands/account/profile/ProfielUI';
-import { FormField } from '@/shared/ui/FormField';
-import { Input } from '@/shared/ui/Input';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { formatDate } from '@/shared/lib/utils/date';
 import { createPizzaRound } from '@/server/actions/public/pizza.actions';
-import { badgeBase, formatEuro, STATUS_CLASS, STATUS_LABEL } from './pizza-utils';
+import { formatEuro, STATUS_LABEL } from './pizza-utils';
 
 interface Props {
     open: PizzaRoundSummary[];
     mine: PizzaRoundSummary[];
 }
 
+function getStatusColor(status: string): string {
+    switch (status) {
+        case 'open':
+            return 'success';
+        case 'closed':
+            return 'accent';
+        default:
+            return 'brand';
+    }
+}
+
 function RoundList({ rounds, empty }: { rounds: PizzaRoundSummary[]; empty: string }) {
     if (rounds.length === 0) {
         return (
-            <div className="squircle-lg border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center shadow-inner dark:border-white/10 dark:bg-black/10">
-                <p className="text-sm font-bold text-(--text-muted)">{empty}</p>
-            </div>
+            <Paper p="xl" radius="lg" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
+                <Text size="sm" fw={700} c="dimmed">
+                    {empty}
+                </Text>
+            </Paper>
         );
     }
     return (
-        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
             {rounds.map((r) => (
-                <li key={r.id}>
-                    <Link
-                        href={`/pizza/${r.id}`}
-                        className="group squircle flex w-full items-center gap-4 border border-licht-paars/20 bg-licht-paars/10 p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-purple-300 hover:shadow-lg focus:ring-2 focus:ring-purple-300 focus:outline-none dark:border-white/10 dark:bg-white/5"
-                    >
-                        <div className="min-w-0 flex-1 space-y-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <span className="truncate text-sm font-black text-purple-700 dark:text-white">{r.title}</span>
-                                <span className={`${badgeBase} ${STATUS_CLASS[r.status]}`}>{STATUS_LABEL[r.status]}</span>
-                            </div>
-                            <p className="text-xs text-(--text-muted)">Door {r.creatorName}</p>
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-(--text-main)">
-                                <span className="inline-flex items-center gap-1.5">
-                                    <Clock className="size-3.5 text-purple-500" />
-                                    {formatDate(r.closesAt, 'd MMMM yyyy HH:mm')}
-                                </span>
-                                <span className="inline-flex items-center gap-1.5">
-                                    <Users className="size-3.5 text-purple-500" />
-                                    {r.orderCount} {r.orderCount === 1 ? 'bestelling' : 'bestellingen'} · {formatEuro(r.totalAmount)}
-                                </span>
-                            </div>
-                        </div>
-                        <ChevronRight className="size-4 shrink-0 text-purple-700 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100 dark:text-purple-300" />
-                    </Link>
-                </li>
+                <Anchor key={r.id} component={Link} href={`/pizza/${r.id}`} underline="never">
+                    <Paper p="md" withBorder h="100%">
+                        <Group justify="space-between" wrap="nowrap" gap="md">
+                            <Stack gap={4} style={{ minWidth: 0, flex: 1 }}>
+                                <Group gap="xs" wrap="wrap">
+                                    <Text size="sm" fw={900} truncate>
+                                        {r.title}
+                                    </Text>
+                                    <Badge size="xs" variant="light" color={getStatusColor(r.status)}>
+                                        {STATUS_LABEL[r.status]}
+                                    </Badge>
+                                </Group>
+                                <Text size="xs" c="dimmed">
+                                    Door {r.creatorName}
+                                </Text>
+                                <Group gap="md" wrap="wrap">
+                                    <Group gap={4}>
+                                        <Text span c="brand" lh={1}>
+                                            <Clock size={14} />
+                                        </Text>
+                                        <Text size="xs" fw={700}>
+                                            {formatDate(r.closesAt, 'd MMMM yyyy HH:mm')}
+                                        </Text>
+                                    </Group>
+                                    <Group gap={4}>
+                                        <Text span c="brand" lh={1}>
+                                            <Users size={14} />
+                                        </Text>
+                                        <Text size="xs" fw={700}>
+                                            {r.orderCount} {r.orderCount === 1 ? 'bestelling' : 'bestellingen'} · {formatEuro(r.totalAmount)}
+                                        </Text>
+                                    </Group>
+                                </Group>
+                            </Stack>
+                            <Text span c="brand" lh={1}>
+                                <ChevronRight size={16} />
+                            </Text>
+                        </Group>
+                    </Paper>
+                </Anchor>
             ))}
-        </ul>
+        </SimpleGrid>
     );
 }
 
 export function PizzaOverviewIsland({ open, mine }: Props) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const {
         register,
+        control,
         handleSubmit,
         reset,
         formState: { errors },
@@ -91,52 +131,88 @@ export function PizzaOverviewIsland({ open, mine }: Props) {
     };
 
     return (
-        <div className="space-y-8">
-            <Link
-                href="/pizza/statistieken"
-                className="form-button inline-flex"
-            >
-                <BarChart3 className="size-4" />
-                Mijn statistieken
-            </Link>
+        <Stack gap="xl">
+            <Box>
+                <Button
+                    component={Link}
+                    href="/pizza/statistieken"
+                    leftSection={<BarChart3 size={16} />}
+                >
+                    Mijn statistieken
+                </Button>
+            </Box>
 
-            <Tile title="Open rondes" icon={<Pizza className="size-6" />}>
+            <Tile title="Open rondes" icon={<Pizza size={22} />}>
                 <RoundList rounds={open} empty="Er zijn nu geen open pizza-rondes." />
             </Tile>
 
-            <Tile title="Mijn rondes" icon={<Users className="size-6" />}>
+            <Tile title="Mijn rondes" icon={<Users size={22} />}>
                 <RoundList rounds={mine} empty="Je hebt nog geen rondes gestart of meebesteld." />
             </Tile>
 
-            <Tile title="Nieuwe ronde" icon={<Plus className="size-6" />}>
-                <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="grid grid-cols-1 gap-4 md:grid-cols-2" noValidate>
-                    <FormField label="Titel" required error={errors.title?.message}>
-                        <Input {...register('title')} placeholder="Bijv. Pizza na de borrel" maxLength={100} />
-                    </FormField>
-                    <FormField label="Sluitingstijd" required error={errors.closes_at?.message}>
-                        <Input type="datetime-local" {...register('closes_at')} />
-                    </FormField>
-                    <FormField label="Opmerking" error={errors.note?.message} className="md:col-span-2">
-                        <textarea
-                            {...register('note')}
-                            rows={3}
-                            maxLength={500}
-                            placeholder="Bijv. bestellen bij Domino's, ophalen om 19:00"
-                            className="form-input"
+            <Tile title="Nieuwe ronde" icon={<Plus size={22} />}>
+                <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
+                    <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+                        <TextInput
+                            label="Titel"
+                            required
+                            placeholder="Bijv. Pizza na de borrel"
+                            maxLength={100}
+                            error={errors.title?.message}
+                            {...register('title')}
                         />
-                    </FormField>
-                    <FormField label="Betaallink (optioneel, https)" error={errors.paymentLink?.message} className="md:col-span-2">
-                        <Input type="url" {...register('paymentLink')} placeholder="https://..." maxLength={500} />
-                    </FormField>
-                    <div className="md:col-span-2">
-                        <button type="submit" disabled={isPending} className="form-button w-full sm:w-auto">
-                            <Plus className="size-4" />
-                            {isPending ? 'Aanmaken...' : 'Ronde starten'}
-                        </button>
-                    </div>
+
+                        <Controller
+                            name="closes_at"
+                            control={control}
+                            render={({ field }) => (
+                                <DateTimePicker
+                                    label="Sluitingstijd"
+                                    required
+                                    valueFormat="DD-MM-YYYY HH:mm"
+                                    placeholder="Kies datum en tijd"
+                                    value={typeof field.value === 'string' || field.value instanceof Date ? field.value : null}
+                                    onChange={(val) => field.onChange(val ?? '')}
+                                    error={errors.closes_at?.message}
+                                />
+                            )}
+                        />
+
+                        <Box style={{ gridColumn: '1 / -1' }}>
+                            <Textarea
+                                label="Opmerking"
+                                rows={3}
+                                maxLength={500}
+                                placeholder="Bijv. bestellen bij Domino's, ophalen om 19:00"
+                                error={errors.note?.message}
+                                {...register('note')}
+                            />
+                        </Box>
+
+                        <Box style={{ gridColumn: '1 / -1' }}>
+                            <TextInput
+                                type="url"
+                                label="Betaallink (optioneel, https)"
+                                placeholder="https://..."
+                                maxLength={500}
+                                error={errors.paymentLink?.message}
+                                {...register('paymentLink')}
+                            />
+                        </Box>
+
+                        <Box style={{ gridColumn: '1 / -1' }}>
+                            <Button
+                                type="submit"
+                                loading={isPending}
+                                leftSection={<Plus size={16} />}
+                                w={{ base: '100%', sm: 'auto' }}
+                            >
+                                {isPending ? 'Aanmaken...' : 'Ronde starten'}
+                            </Button>
+                        </Box>
+                    </SimpleGrid>
                 </form>
             </Tile>
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+        </Stack>
     );
 }

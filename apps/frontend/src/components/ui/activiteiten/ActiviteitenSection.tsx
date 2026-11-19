@@ -1,10 +1,9 @@
-import Link from 'next/link';
+import Link from '@/components/ui/Link';
 import { ChevronRight, Calendar } from 'lucide-react';
+import { Button, Card, Center, Container, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { ActiviteitCard } from './ActiviteitCard';
 import { getActivityUrl } from '@/shared/lib/utils/activity';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 
 interface ActiviteitenSectionProps {
     activities?: Activiteit[];
@@ -15,56 +14,49 @@ export function ActiviteitenSection({ activities = [], count = 4 }: Activiteiten
     const displayActivities = activities.slice(0, count);
     const hasActivities = displayActivities.length > 0;
 
-    const gridLayoutClass = !hasActivities
-        ? 'grid-cols-1'
-        : displayActivities.length === 1
-            ? 'grid-cols-1 max-w-md mx-auto w-full'
-            : displayActivities.length === 2
-                ? 'grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto w-full'
-                : displayActivities.length === 3
-                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto w-full'
-                    : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full';
-
     return (
-        <section id="kalender">
-            <div className="mb-8 text-center">
-                <h2>Aankomende activiteiten</h2>
-                <p className="mx-auto mt-2 max-w-xl text-muted-foreground">
-                    Van legendarische borrels tot verrijkende workshops en onvergetelijke studiereizen. Er is altijd een plek voor jou!
-                </p>
-            </div>
+        <Container component="section" id="kalender">
+            <Stack gap="xl">
+                <Stack gap="xs" align="center">
+                    <Title order={2} ta="center" fz={{ base: '2rem', md: '3rem' }}>
+                        Aankomende activiteiten
+                    </Title>
+                    <Text c="dimmed" ta="center" maw={560}>
+                        Van legendarische borrels tot verrijkende workshops en onvergetelijke studiereizen. Er is altijd een plek voor jou!
+                    </Text>
+                </Stack>
 
-            <div className={`grid gap-6 ${gridLayoutClass}`}>
                 {!hasActivities ? (
-                    <Card className="col-span-full flex min-h-80 flex-col items-center justify-center p-12 text-center">
-                        <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-primary/15 text-primary">
-                            <Calendar className="size-8" />
-                        </div>
-                        <p className="text-lg font-bold text-foreground italic">
-                            Geen activiteiten gevonden.
-                        </p>
+                    <Card p="xl">
+                        <Stack align="center" gap="md" py="xl">
+                            <ThemeIcon size={64} radius="xl" variant="light">
+                                <Calendar size={32} />
+                            </ThemeIcon>
+                            <Text size="lg" fw={700} fs="italic">
+                                Geen activiteiten gevonden.
+                            </Text>
+                        </Stack>
                     </Card>
                 ) : (
-                    displayActivities.map((activity) => (
-                        <ActiviteitCard
-                            key={activity.id}
-                            activity={activity}
-                            href={getActivityUrl({ name: activity.name || '', custom_url: activity.custom_url })}
-                        />
-                    ))
+                    <SimpleGrid cols={{ base: 1, sm: 2, lg: Math.min(displayActivities.length, 4) }} spacing="lg">
+                        {displayActivities.map((activity) => (
+                            <ActiviteitCard
+                                key={activity.id}
+                                activity={activity}
+                                href={getActivityUrl({ name: activity.name || '', custom_url: activity.custom_url })}
+                            />
+                        ))}
+                    </SimpleGrid>
                 )}
-            </div>
 
-            {hasActivities && (
-                <div className="mt-8 flex justify-center">
-                    <Button asChild size="lg">
-                        <Link href="/activiteiten">
+                {hasActivities && (
+                    <Center>
+                        <Button component={Link} href="/activiteiten" size="lg" rightSection={<ChevronRight size={18} />}>
                             Alle activiteiten
-                            <ChevronRight />
-                        </Link>
-                    </Button>
-                </div>
-            )}
-        </section>
+                        </Button>
+                    </Center>
+                )}
+            </Stack>
+        </Container>
     );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
+import { Container, Paper, Stack, Text, Title } from '@mantine/core';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { deleteSticker, updateSticker } from '@/server/actions/beheer/stickers/beheer-stickers.actions';
 import StickersTable from '@/components/admin/stickers/StickersTable';
@@ -18,7 +18,7 @@ interface StickerManagementIslandProps {
 export default function StickerManagementIsland({
     initialStickers
 }: StickerManagementIslandProps) {
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [stickers, setStickers] = useState(initialStickers);
 
     const handleDelete = async (id: number) => {
@@ -44,28 +44,26 @@ export default function StickerManagementIsland({
     };
 
     return (
-        <div className="container mx-auto max-w-7xl px-4 py-8">
-            <div>
-                {stickers.length > 0 ? (
-                    <StickersTable
-                        stickers={stickers}
-                        onDelete={(id) => {
-                            void handleDelete(id);
-                        }}
-                        onApprove={(id) => {
-                            void handleApprove(id);
-                        }}
-                    />
-                ) : (
-                    <div className="rounded-(--beheer-radius) border border-dashed border-(--beheer-border) bg-(--beheer-card-bg) py-32 text-center">
-                        <AlertCircle className="mx-auto mb-4 size-16 text-(--beheer-text-muted) opacity-20" />
-                        <h2 className="text-xl font-semibold tracking-tight text-(--beheer-text)">Geen stickers gevonden</h2>
-                        <p className="mt-2 text-sm font-semibold text-(--beheer-text-muted)">Er zijn nog geen stickers geregistreerd.</p>
-                    </div>
-                )}
-            </div>
-
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+        <Container size="xl" py="xl">
+            {stickers.length > 0 ? (
+                <StickersTable
+                    stickers={stickers}
+                    onDelete={(id) => {
+                        void handleDelete(id);
+                    }}
+                    onApprove={(id) => {
+                        void handleApprove(id);
+                    }}
+                />
+            ) : (
+                <Paper withBorder p="xl" ta="center" style={{ borderStyle: 'dashed' }}>
+                    <Stack align="center" gap="xs" py="xl">
+                        <AlertCircle size={48} opacity={0.25} />
+                        <Title order={2} size="h3">Geen stickers gevonden</Title>
+                        <Text size="sm" c="dimmed">Er zijn nog geen stickers geregistreerd.</Text>
+                    </Stack>
+                </Paper>
+            )}
+        </Container>
     );
 }

@@ -3,16 +3,40 @@
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Pencil, Trash2, Check, X, Mail, ShieldCheck, Clock, Link2 } from 'lucide-react';
-import BeheerToolbar from '@/components/ui/beheer/BeheerToolbar';
-import BeheerModal from '@/components/ui/beheer/BeheerModal';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
+import {
+    Plus,
+    Pencil,
+    Trash2,
+    Check,
+    X,
+    Mail,
+    ShieldCheck,
+    Clock,
+    Link2,
+    ChevronLeft,
+} from 'lucide-react';
+import {
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Card,
+    Container,
+    Group,
+    Modal,
+    Paper,
+    Stack,
+    Tabs,
+    Text,
+    Textarea,
+    Title,
+} from '@mantine/core';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import {
     deleteVacancyAction,
     approveSubmissionAction,
     rejectSubmissionAction,
-    deleteSubmissionAction
+    deleteSubmissionAction,
 } from '@/server/actions/vacancies/vacancies-admin.actions';
 import type { VacancySubmissionDTO } from '@salvemundi/validations';
 
@@ -32,22 +56,33 @@ interface AdminVacanciesIslandProps {
 
 type Tab = 'vacatures' | 'aanmeldingen';
 
-const STATUS_LABELS: Partial<Record<string, { label: string; className: string }>> = {
-    pending_verification: { label: 'Wacht op e-mailverificatie', className: 'bg-(--theme-warning)/15 text-(--theme-warning)' },
-    pending_review: { label: 'Klaar voor beoordeling', className: 'bg-(--theme-purple)/15 text-(--theme-purple)' },
-    approved: { label: 'Goedgekeurd', className: 'bg-(--theme-success)/15 text-(--theme-success)' },
-    rejected: { label: 'Afgewezen', className: 'bg-(--theme-error)/15 text-(--theme-error)' }
-};
+function getSubmissionStatusMeta(status: string): { label: string; color?: string } {
+    switch (status) {
+        case 'pending_verification':
+            return { label: 'Wacht op e-mailverificatie', color: 'accent' };
+        case 'pending_review':
+            return { label: 'Klaar voor beoordeling', color: 'brand' };
+        case 'approved':
+            return { label: 'Goedgekeurd', color: 'success' };
+        case 'rejected':
+            return { label: 'Afgewezen', color: 'error' };
+        default:
+            return { label: status };
+    }
+}
 
 export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVacanciesIslandProps) {
     const router = useRouter();
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [tab, setTab] = useState<Tab>('vacatures');
     const [isPending, startTransition] = useTransition();
     const [rejectTarget, setRejectTarget] = useState<VacancySubmissionDTO | null>(null);
     const [rejectReason, setRejectReason] = useState('');
 
-    const pendingCount = useMemo(() => submissions.filter((s) => s.status === 'pending_review').length, [submissions]);
+    const pendingCount = useMemo(
+        () => submissions.filter((s) => s.status === 'pending_review').length,
+        [submissions]
+    );
 
     const handleDelete = (id: number, title: string) => {
         if (!window.confirm(`Weet je zeker dat je "${title}" wilt verwijderen?`)) return;
@@ -109,210 +144,276 @@ export default function AdminVacanciesIsland({ vacancies, submissions }: AdminVa
     };
 
     return (
-        <div className="w-full">
-            <BeheerToolbar
-                title="Bijbanenbank Beheer"
-                backHref="/beheer"
-                actions={
-                    <div className="flex flex-wrap items-center gap-3">
-                        <button
-                            type="button"
-                            onClick={() => { void handleCopySubmissionLink(); }}
-                            className="squircle form-button flex items-center justify-center gap-1.5 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-xs font-semibold whitespace-nowrap text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 active:scale-95"
-                        >
-                            <Link2 className="size-4" />
-                            Aanmeldlink kopiëren
-                        </button>
-                        <Link
-                            href="/beheer/bijbanenbank/nieuw"
-                            className="squircle flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-theme-purple px-4 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
-                        >
-                            <Plus className="size-4" />
-                            Nieuwe Vacature
-                        </Link>
-                    </div>
-                }
-            />
+        <Box w="100%">
+            <Paper radius={0} shadow="xs" py="md">
+                <Container size="xl" py={0}>
+                    <Group justify="space-between" wrap="wrap" gap="md">
+                        <Group gap="md">
+                            <Button
+                                component={Link}
+                                href="/beheer"
+                                variant="default"
+                                size="sm"
+                                leftSection={<ChevronLeft size={16} />}
+                            >
+                                Terug
+                            </Button>
+                            <Title order={1} size="h3" c="brand">
+                                Bijbanenbank Beheer
+                            </Title>
+                        </Group>
+                        <Group gap="xs" wrap="wrap">
+                            <Button
+                                type="button"
+                                variant="default"
+                                size="sm"
+                                leftSection={<Link2 size={16} />}
+                                onClick={() => {
+                                    void handleCopySubmissionLink();
+                                }}
+                            >
+                                Aanmeldlink kopiëren
+                            </Button>
+                            <Button
+                                component={Link}
+                                href="/beheer/bijbanenbank/nieuw"
+                                size="sm"
+                                leftSection={<Plus size={16} />}
+                            >
+                                Nieuwe Vacature
+                            </Button>
+                        </Group>
+                    </Group>
+                </Container>
+            </Paper>
 
-            <div className="admin-container flex flex-col gap-6 py-4 md:py-8">
-                <div className="flex w-full rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-soft) p-1 shadow-sm lg:w-auto">
-                    <button
-                        type="button"
-                        onClick={() => setTab('vacatures')}
-                        className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all ${tab === 'vacatures' ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
-                    >
-                        Vacatures ({vacancies.length})
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setTab('aanmeldingen')}
-                        className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all ${tab === 'aanmeldingen' ? 'bg-(--beheer-accent) text-white shadow-sm' : 'text-(--beheer-text-muted) hover:text-(--beheer-text)'}`}
-                    >
-                        Aanmeldingen {pendingCount > 0 && `(${pendingCount})`}
-                    </button>
-                </div>
+            <Container size="xl" py="lg">
+                <Tabs
+                    value={tab}
+                    onChange={(val) => setTab((val as Tab | null) ?? 'vacatures')}
+                    variant="pills"
+                >
+                    <Tabs.List mb="lg">
+                        <Tabs.Tab value="vacatures">
+                            Vacatures ({vacancies.length})
+                        </Tabs.Tab>
+                        <Tabs.Tab value="aanmeldingen">
+                            Aanmeldingen {pendingCount > 0 ? `(${pendingCount})` : ''}
+                        </Tabs.Tab>
+                    </Tabs.List>
 
-                {tab === 'vacatures' ? (
-                    <div className="flex flex-col gap-3">
-                        {vacancies.length === 0 ? (
-                            <p className="py-8 text-center text-sm text-(--text-muted)">Nog geen vacatures aangemaakt.</p>
-                        ) : (
-                            vacancies.map((vacancy) => (
-                                <div key={vacancy.id} className="flex items-center justify-between gap-4 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-4">
-                                    <div className="min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase ${vacancy.type === 'internship' ? 'bg-(--theme-purple)' : 'bg-(--theme-success)'}`}>
-                                                {vacancy.type === 'internship' ? 'Stage' : 'Bijbaan'}
-                                            </span>
-                                            {!vacancy.is_visible && (
-                                                <span className="rounded-full bg-(--bg-soft) px-2 py-0.5 text-[10px] font-bold tracking-wider text-(--text-muted) uppercase">Verborgen</span>
-                                            )}
-                                        </div>
-                                        <p className="mt-1 truncate font-bold text-(--beheer-text)">{vacancy.title}</p>
-                                        <p className="text-xs text-(--beheer-text-muted)">{vacancy.company}</p>
-                                    </div>
-                                    <div className="flex shrink-0 items-center gap-2">
-                                        <Link
-                                            href={`/beheer/bijbanenbank/${vacancy.id}/bewerken`}
-                                            className="rounded-lg bg-(--beheer-card-soft) p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-accent)"
-                                            title="Bewerken"
-                                        >
-                                            <Pencil className="size-4" />
-                                        </Link>
-                                        <button
-                                            type="button"
-                                            disabled={isPending}
-                                            onClick={() => handleDelete(vacancy.id, vacancy.title)}
-                                            className="icon-button rounded-lg bg-(--beheer-card-soft) p-2 text-(--beheer-text-muted) transition-colors hover:text-(--theme-error) disabled:opacity-50"
-                                            title="Verwijderen"
-                                        >
-                                            <Trash2 className="size-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                ) : (
-                    <div className="flex flex-col gap-3">
-                        {submissions.length === 0 ? (
-                            <p className="py-8 text-center text-sm text-(--text-muted)">Nog geen aanmeldingen ontvangen.</p>
-                        ) : (
-                            submissions.map((submission) => {
-                                const statusMeta = STATUS_LABELS[submission.status] || {
-                                    label: String(submission.status),
-                                    className: 'bg-(--bg-soft) text-(--text-muted)'
-                                };
-                                return (
-                                    <div key={submission.id} className="flex flex-col gap-3 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-4">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="min-w-0">
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase ${submission.type === 'internship' ? 'bg-(--theme-purple)' : 'bg-(--theme-success)'}`}>
-                                                        {submission.type === 'internship' ? 'Stage' : 'Bijbaan'}
-                                                    </span>
-                                                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${statusMeta.className}`}>
-                                                        {statusMeta.label}
-                                                    </span>
-                                                </div>
-                                                <p className="mt-1 font-bold text-(--beheer-text)">{submission.title}</p>
-                                                <p className="flex items-center gap-1.5 text-xs text-(--beheer-text-muted)">
-                                                    <Mail className="size-3" /> {submission.company} &middot; {submission.contact_email}
-                                                </p>
-                                                {submission.status === 'rejected' && submission.rejection_reason && (
-                                                    <p className="mt-1 text-xs text-(--theme-error)">Reden: {submission.rejection_reason}</p>
-                                                )}
-                                            </div>
-                                            {submission.status === 'pending_review' && (
-                                                <div className="flex shrink-0 items-center gap-2">
-                                                    <button
-                                                        type="button"
-                                                        disabled={isPending}
-                                                        onClick={() => handleApprove(submission)}
-                                                        className="btn-approve flex items-center gap-1.5 rounded-lg bg-(--theme-success) px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
+                    <Tabs.Panel value="vacatures">
+                        <Stack gap="sm">
+                            {vacancies.length === 0 ? (
+                                <Text py="xl" ta="center" size="sm" c="dimmed">
+                                    Nog geen vacatures aangemaakt.
+                                </Text>
+                            ) : (
+                                vacancies.map((vacancy) => (
+                                    <Card key={vacancy.id} p="md" shadow="sm">
+                                        <Group justify="space-between" wrap="nowrap" gap="md">
+                                            <Box miw={0} flex={1}>
+                                                <Group gap="xs" mb={4}>
+                                                    <Badge
+                                                        color={vacancy.type === 'internship' ? 'brand' : 'success'}
+                                                        variant="filled"
+                                                        size="xs"
                                                     >
-                                                        <Check className="size-3.5" /> Goedkeuren
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        disabled={isPending}
-                                                        onClick={() => { setRejectTarget(submission); setRejectReason(''); }}
-                                                        className="btn-reject flex items-center gap-1.5 rounded-lg bg-(--theme-error) px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
-                                                    >
-                                                        <X className="size-3.5" /> Afwijzen
-                                                    </button>
-                                                </div>
-                                            )}
-                                            {submission.status === 'pending_verification' && (
-                                                <div className="flex shrink-0 items-center gap-2">
-                                                    <button
-                                                        type="button"
-                                                        disabled={isPending}
-                                                        onClick={() => handleDeleteSubmission(submission)}
-                                                        className="btn-reject flex items-center gap-1.5 rounded-lg bg-(--theme-error) px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
-                                                        title="Verwijderen voordat het e-mailadres is bevestigd"
-                                                    >
-                                                        <Trash2 className="size-3.5" /> Verwijderen
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-4 text-[11px] font-medium text-(--beheer-text-muted)">
-                                            <span className="flex items-center gap-1">
-                                                <ShieldCheck className="size-3.5" />
-                                                {submission.verified_at ? 'E-mail geverifieerd' : 'Nog niet geverifieerd'}
-                                            </span>
-                                            <span className="flex items-center gap-1">
-                                                <Clock className="size-3.5" />
-                                                Aangemeld op {new Date(submission.created_at).toLocaleDateString('nl-NL')}
-                                            </span>
-                                        </div>
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
-                )}
-            </div>
+                                                        {vacancy.type === 'internship' ? 'Stage' : 'Bijbaan'}
+                                                    </Badge>
+                                                    {!vacancy.is_visible && (
+                                                        <Badge variant="default" size="xs">
+                                                            Verborgen
+                                                        </Badge>
+                                                    )}
+                                                </Group>
+                                                <Text fw={700} truncate>
+                                                    {vacancy.title}
+                                                </Text>
+                                                <Text size="xs" c="dimmed">
+                                                    {vacancy.company}
+                                                </Text>
+                                            </Box>
+                                            <Group gap="xs" wrap="nowrap">
+                                                <ActionIcon
+                                                    component={Link}
+                                                    href={`/beheer/bijbanenbank/${vacancy.id}/bewerken`}
+                                                    variant="default"
+                                                    size="lg"
+                                                    title="Bewerken"
+                                                    aria-label="Bewerken"
+                                                >
+                                                    <Pencil size={16} />
+                                                </ActionIcon>
+                                                <ActionIcon
+                                                    type="button"
+                                                    variant="light"
+                                                    color="error"
+                                                    size="lg"
+                                                    disabled={isPending}
+                                                    onClick={() => handleDelete(vacancy.id, vacancy.title)}
+                                                    title="Verwijderen"
+                                                    aria-label="Verwijderen"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </ActionIcon>
+                                            </Group>
+                                        </Group>
+                                    </Card>
+                                ))
+                            )}
+                        </Stack>
+                    </Tabs.Panel>
 
-            <BeheerModal
+                    <Tabs.Panel value="aanmeldingen">
+                        <Stack gap="sm">
+                            {submissions.length === 0 ? (
+                                <Text py="xl" ta="center" size="sm" c="dimmed">
+                                    Nog geen aanmeldingen ontvangen.
+                                </Text>
+                            ) : (
+                                submissions.map((submission) => {
+                                    const statusMeta = getSubmissionStatusMeta(String(submission.status));
+                                    return (
+                                        <Card key={submission.id} p="md" shadow="sm">
+                                            <Stack gap="xs">
+                                                <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
+                                                    <Box miw={0} flex={1}>
+                                                        <Group gap="xs" mb={4}>
+                                                            <Badge
+                                                                color={submission.type === 'internship' ? 'brand' : 'success'}
+                                                                variant="filled"
+                                                                size="xs"
+                                                            >
+                                                                {submission.type === 'internship' ? 'Stage' : 'Bijbaan'}
+                                                            </Badge>
+                                                            <Badge
+                                                                color={statusMeta.color}
+                                                                variant={statusMeta.color ? 'light' : 'default'}
+                                                                size="xs"
+                                                            >
+                                                                {statusMeta.label}
+                                                            </Badge>
+                                                        </Group>
+                                                        <Text fw={700}>{submission.title}</Text>
+                                                        <Group gap={6} mt={2}>
+                                                            <Mail size={12} />
+                                                            <Text size="xs" c="dimmed">
+                                                                {submission.company} &middot; {submission.contact_email}
+                                                            </Text>
+                                                        </Group>
+                                                        {submission.status === 'rejected' && submission.rejection_reason && (
+                                                            <Text size="xs" c="error" mt={4}>
+                                                                Reden: {submission.rejection_reason}
+                                                            </Text>
+                                                        )}
+                                                    </Box>
+
+                                                    {submission.status === 'pending_review' && (
+                                                        <Group gap="xs">
+                                                            <Button
+                                                                type="button"
+                                                                size="xs"
+                                                                color="success"
+                                                                disabled={isPending}
+                                                                onClick={() => handleApprove(submission)}
+                                                                leftSection={<Check size={14} />}
+                                                            >
+                                                                Goedkeuren
+                                                            </Button>
+                                                            <Button
+                                                                type="button"
+                                                                size="xs"
+                                                                color="error"
+                                                                disabled={isPending}
+                                                                onClick={() => {
+                                                                    setRejectTarget(submission);
+                                                                    setRejectReason('');
+                                                                }}
+                                                                leftSection={<X size={14} />}
+                                                            >
+                                                                Afwijzen
+                                                            </Button>
+                                                        </Group>
+                                                    )}
+
+                                                    {submission.status === 'pending_verification' && (
+                                                        <Button
+                                                            type="button"
+                                                            size="xs"
+                                                            color="error"
+                                                            disabled={isPending}
+                                                            onClick={() => handleDeleteSubmission(submission)}
+                                                            leftSection={<Trash2 size={14} />}
+                                                            title="Verwijderen voordat het e-mailadres is bevestigd"
+                                                        >
+                                                            Verwijderen
+                                                        </Button>
+                                                    )}
+                                                </Group>
+
+                                                <Group gap="md">
+                                                    <Group gap={4}>
+                                                        <ShieldCheck size={14} />
+                                                        <Text size="xs" c="dimmed">
+                                                            {submission.verified_at ? 'E-mail geverifieerd' : 'Nog niet geverifieerd'}
+                                                        </Text>
+                                                    </Group>
+                                                    <Group gap={4}>
+                                                        <Clock size={14} />
+                                                        <Text size="xs" c="dimmed">
+                                                            Aangemeld op {new Date(submission.created_at).toLocaleDateString('nl-NL')}
+                                                        </Text>
+                                                    </Group>
+                                                </Group>
+                                            </Stack>
+                                        </Card>
+                                    );
+                                })
+                            )}
+                        </Stack>
+                    </Tabs.Panel>
+                </Tabs>
+            </Container>
+
+            <Modal
                 title="Aanmelding afwijzen"
-                isOpen={!!rejectTarget}
+                opened={!!rejectTarget}
                 onClose={() => setRejectTarget(null)}
-                maxWidth="md"
+                size="md"
+                centered
             >
-                <div className="space-y-4">
-                    <p className="text-sm text-(--text-muted)">
+                <Stack gap="md">
+                    <Text size="sm" c="dimmed">
                         Geef een reden op voor de afwijzing van &quot;{rejectTarget?.title}&quot;. Deze reden wordt per e-mail naar het bedrijf gestuurd.
-                    </p>
-                    <textarea
+                    </Text>
+                    <Textarea
                         value={rejectReason}
                         onChange={(e) => setRejectReason(e.target.value)}
                         rows={4}
-                        className="form-input w-full"
+                        autosize
+                        minRows={4}
                         placeholder="Bijv. Deze vacature sluit niet aan bij onze doelgroep."
                     />
-                    <div className="flex justify-end gap-2">
-                        <button
+                    <Group justify="flex-end" gap="xs">
+                        <Button
                             type="button"
+                            variant="default"
                             onClick={() => setRejectTarget(null)}
-                            className="btn-cancel rounded-xl px-4 py-2 text-sm font-bold text-(--text-muted) hover:text-(--text-main)"
                         >
                             Annuleren
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="button"
+                            color="error"
                             disabled={isPending || rejectReason.trim().length === 0}
                             onClick={handleReject}
-                            className="btn-reject rounded-xl bg-(--theme-error) px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
                         >
                             Afwijzen
-                        </button>
-                    </div>
-                </div>
-            </BeheerModal>
-
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+                        </Button>
+                    </Group>
+                </Stack>
+            </Modal>
+        </Box>
     );
 }

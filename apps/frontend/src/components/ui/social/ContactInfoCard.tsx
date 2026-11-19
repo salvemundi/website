@@ -1,116 +1,126 @@
 import React from 'react';
 import { MapPin, Building, Mail, Phone, FileText, ChevronRight, MessageCircle } from 'lucide-react';
+import { Anchor, Box, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import DocumentenLijst from '@/components/ui/social/DocumentenLijst';
 import SafeHavenButton from '@/components/islands/social/SafeHavenButton';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import type { Document as WebsiteDocument } from '@salvemundi/validations/schema/website.zod';
-
-
 
 interface ActionItemProps {
     icon: React.ReactNode;
     title: React.ReactNode;
     subtitle?: string;
     href?: string;
-    onClick?: () => void;
     children?: React.ReactNode;
 }
 
-function ActionItem({ icon, title, subtitle, href, onClick, children }: ActionItemProps) {
-    const Component = href ? 'a' : (onClick ? 'button' : 'div');
-    const commonClasses = "flex items-start gap-4 py-1.5 px-2 transition-all duration-300 w-fit text-left group";
-    const interactionClasses = (href || onClick) ? "hover:translate-x-1 cursor-pointer" : "";
-
-    const isInteractive = !!(href || onClick);
-
-    return (
-        <div className="flex flex-col gap-1">
-            <Component
-                {...(href ? { href, target: href.startsWith('http') ? "_blank" : undefined, rel: href.startsWith('http') ? "noopener noreferrer" : undefined } : {})}
-                {...(onClick ? { onClick } : {})}
-                className={`${commonClasses} ${interactionClasses}`}
-            >
-                <div className="mt-1 shrink-0 text-purple-500">
-                    {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'h-5 w-5' })}
-                </div>
-                <div className="min-w-0 flex-1">
-                    <h4 className={`text-lg leading-tight font-semibold text-(--text-main) transition-colors ${isInteractive ? "group-hover:text-purple-600" : ""}`}>
-                        {title}
-                    </h4>
-                    {subtitle && (
-                        <p className="mt-0.5 text-base text-(--text-muted)">
-                            {subtitle}
-                        </p>
-                    )}
-                </div>
-                {(href || onClick) && (
-                    <ChevronRight className="size-4 -translate-x-2 text-purple-300 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+function ActionItem({ icon, title, subtitle, href, children }: ActionItemProps) {
+    const content = (
+        <Group align="flex-start" gap="md" wrap="nowrap" py={6} px="xs">
+            <Text span c="brand" lh={1} mt={3} style={{ flexShrink: 0 }}>
+                {icon}
+            </Text>
+            <Stack gap={2} flex={1} miw={0}>
+                <Text size="lg" fw={600} lh={1.3}>
+                    {title}
+                </Text>
+                {subtitle && (
+                    <Text size="md" c="dimmed">
+                        {subtitle}
+                    </Text>
                 )}
-            </Component>
-            {children && <div className="ml-11">{children}</div>}
-        </div>
+            </Stack>
+            {href && (
+                <Text span c="brand" lh={1} mt={4} opacity={0.6}>
+                    <ChevronRight size={16} />
+                </Text>
+            )}
+        </Group>
     );
-}
 
-export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten: WebsiteDocument[], isLoggedIn: boolean }) {
     return (
-        <div className="@container w-full">
-            <div className="grid grid-cols-1 gap-10 @[700px]:grid-cols-2">
-                <div className="flex flex-col gap-6">
-                    <h2 className="px-2 text-2xl font-black text-theme-purple">Informatie</h2>
-
-                    <div className="flex flex-col gap-2">
-                        <ActionItem
-                            icon={<MapPin />}
-                            title="Rachelsmolen 1, Eindhoven"
-                            subtitle="Gebouw R10, Lokaal 2.17"
-                        />
-
-                        <ActionItem
-                            icon={<Building />}
-                            title="KvK nummer 70280606"
-                        />
-                    </div>
-
-
-                    <div className="px-2 pt-2">
-                        <h3 className="mb-3 flex items-center gap-3 text-lg font-semibold text-(--text-main)">
-                            <FileText className="size-5 text-purple-500" />
-                            Documenten
-                        </h3>
-                        <DocumentenLijst documenten={documenten} />
-                    </div>
-                </div>
-
-                {/* Rechterkolom: Contactopties */}
-                <div className="flex flex-col gap-6">
-                    <h2 className="px-2 text-2xl font-black text-theme-purple">Contact</h2>
-
-                    <div className="flex flex-col gap-2">
-                        <ActionItem
-                            icon={<Mail />}
-                            title={<ObfuscatedEmail email="info@salvemundi.nl" showIcon={false} />}
-                        />
-
-                        <ActionItem
-                            icon={<Phone />}
-                            title="+31 6 24827777"
-                            href="tel:+31624827777"
-                        />
-
-                        {isLoggedIn && (
-                            <ActionItem
-                                icon={<MessageCircle />}
-                                title="WhatsApp"
-                                href="https://wa.me/31624827777"
-                            />
-                        )}
-                    </div>
-
-                    <SafeHavenButton />
-                </div>
-            </div>
-        </div>
+        <Stack gap={4}>
+            {href ? (
+                <Anchor
+                    href={href}
+                    target={href.startsWith('http') ? '_blank' : undefined}
+                    rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                    underline="never"
+                    c="inherit"
+                    w="fit-content"
+                >
+                    {content}
+                </Anchor>
+            ) : (
+                <Box w="fit-content">{content}</Box>
+            )}
+            {children && <Box pl={44}>{children}</Box>}
+        </Stack>
     );
 }
 
+export default function ContactInfoCard({ documenten, isLoggedIn }: { documenten: WebsiteDocument[]; isLoggedIn: boolean }) {
+    return (
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl" w="100%">
+            <Stack gap="lg">
+                <Title order={2} size="h3" c="brand" px="xs">
+                    Informatie
+                </Title>
+
+                <Stack gap="xs">
+                    <ActionItem
+                        icon={<MapPin size={20} />}
+                        title="Rachelsmolen 1, Eindhoven"
+                        subtitle="Gebouw R10, Lokaal 2.17"
+                    />
+
+                    <ActionItem
+                        icon={<Building size={20} />}
+                        title="KvK nummer 70280606"
+                    />
+                </Stack>
+
+                <Box px="xs" pt="xs">
+                    <Group gap="xs" mb="xs">
+                        <Text span c="brand" lh={1}>
+                            <FileText size={20} />
+                        </Text>
+                        <Title order={3} size="h5">
+                            Documenten
+                        </Title>
+                    </Group>
+                    <DocumentenLijst documenten={documenten} />
+                </Box>
+            </Stack>
+
+            <Stack gap="lg">
+                <Title order={2} size="h3" c="brand" px="xs">
+                    Contact
+                </Title>
+
+                <Stack gap="xs">
+                    <ActionItem
+                        icon={<Mail size={20} />}
+                        title={<ObfuscatedEmail email="info@salvemundi.nl" showIcon={false} />}
+                    />
+
+                    <ActionItem
+                        icon={<Phone size={20} />}
+                        title="+31 6 24827777"
+                        href="tel:+31624827777"
+                    />
+
+                    {isLoggedIn && (
+                        <ActionItem
+                            icon={<MessageCircle size={20} />}
+                            title="WhatsApp"
+                            href="https://wa.me/31624827777"
+                        />
+                    )}
+                </Stack>
+
+                <SafeHavenButton />
+            </Stack>
+        </SimpleGrid>
+    );
+}

@@ -4,6 +4,25 @@ import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Clock, MapPin, Calendar, CalendarDays, ChevronDown, PartyPopper, ImageOff, X, ZoomIn, Sunrise } from 'lucide-react';
+import {
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Card,
+    Collapse,
+    Divider,
+    Group,
+    Modal,
+    Paper,
+    ScrollArea,
+    SimpleGrid,
+    Stack,
+    Text,
+    ThemeIcon,
+    Title,
+    UnstyledButton,
+} from '@mantine/core';
 import type { IntroPlanningItem } from '@salvemundi/validations/schema/intro.zod';
 import { toLocalISOString } from '@/lib/utils/date-utils';
 import { formatDate } from '@/shared/lib/utils/date';
@@ -11,10 +30,9 @@ import CalendarExportButton from '@/components/islands/activiteiten/CalendarExpo
 
 const TOMORROW_OVERVIEW_HOUR = 22;
 
-// Desktop week-calendar grid layout constants.
-const HOUR_HEIGHT = 64; // px per hour row
+const HOUR_HEIGHT = 64;
 const PX_PER_MINUTE = HOUR_HEIGHT / 60;
-const DEFAULT_DURATION_MINUTES = 45; // fallback block size for items without an end time
+const DEFAULT_DURATION_MINUTES = 45;
 const MIN_ITEM_HEIGHT = 30;
 
 interface Props {
@@ -43,9 +61,6 @@ function formatTimeRange(item: IntroPlanningItem): string {
     return `${start} - ${item.time_end.slice(0, 5)}`;
 }
 
-// Minimal inline formatting for activity descriptions: **bold**, __underline__,
-// *italic*, and line breaks. Built as plain React nodes (never innerHTML) so
-// there's no HTML-injection surface even though the text comes from admins.
 const INLINE_FORMAT_PATTERN = /(\*\*.+?\*\*|__.+?__|\*.+?\*)/g;
 
 function renderInlineFormatting(line: string): React.ReactNode[] {
@@ -97,9 +112,6 @@ interface DayLayoutItem {
     cols: number;
 }
 
-// Greedy interval-graph column packing (the standard calendar-week layout
-// algorithm): items are placed in the first column whose previous item has
-// already ended, so overlapping items fan out side by side instead of stacking.
 function layoutDay(items: IntroPlanningItem[], startHour: number): DayLayoutItem[] {
     const withTimes = items
         .map(item => {
@@ -140,42 +152,75 @@ function ActivityCard({
     label: string;
     item: IntroPlanningItem | null;
     accent: 'live' | 'next';
-    icon: React.ComponentType<{ className?: string }>;
+    icon: React.ComponentType<{ size?: number }>;
 }) {
-    return (
-        <div
-            className={[
-                'squircle-lg p-5 sm:p-6 border shadow-lg',
-                accent === 'live'
-                    ? 'bg-linear-to-br from-purple-600 to-purple-800 border-purple-500/40 text-white'
-                    : 'bg-bg-card border-border-color dark:border-white/10'
-            ].join(' ')}
-        >
-            <div className="flex items-center gap-2">
-                <span className={`flex items-center gap-1.5 text-[11px] font-black tracking-wider uppercase ${accent === 'live' ? 'text-white/80' : 'text-purple-500'}`}>
-                    {accent === 'live' && <span className="relative flex size-2"><span className="absolute inline-flex size-full animate-ping rounded-full bg-white/70" /><span className="relative inline-flex size-2 rounded-full bg-white" /></span>}
-                    {label}
-                </span>
-            </div>
+    const isLive = accent === 'live';
 
-            {item ? (
-                <div className="mt-3">
-                    <h3 className={`text-xl leading-tight font-black sm:text-2xl ${accent === 'live' ? 'text-white' : 'text-text-main'}`}>{item.title}</h3>
-                    <div className={`mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm font-semibold ${accent === 'live' ? 'text-white/90' : 'text-text-muted'}`}>
-                        <span className="flex items-center gap-1.5"><Clock className="size-4 shrink-0" />{formatTimeRange(item)}</span>
-                        {item.location && <span className="flex items-center gap-1.5"><MapPin className="size-4 shrink-0" />{item.location}</span>}
-                    </div>
-                    {item.description && (
-                        <p className={`mt-3 text-sm leading-relaxed ${accent === 'live' ? 'text-white/80' : 'text-text-muted'}`}><FormattedText text={item.description} /></p>
+    return (
+        <Card
+            padding="lg"
+            radius="lg"
+            withBorder={!isLive}
+            shadow="lg"
+            style={isLive ? { backgroundColor: 'var(--primary)', color: '#FFFFFF' } : undefined}
+        >
+            <Stack gap="sm">
+                <Group gap="xs">
+                    {isLive && (
+                        <Box
+                            w={8}
+                            h={8}
+                            style={{ borderRadius: '9999px', backgroundColor: '#FFFFFF' }}
+                        />
                     )}
-                </div>
-            ) : (
-                <div className={`mt-3 flex items-center gap-2 text-sm font-semibold ${accent === 'live' ? 'text-white/80' : 'text-text-muted'}`}>
-                    <Icon className="size-4" />
-                    {accent === 'live' ? 'Er is nu geen activiteit bezig' : 'De introweek zit erop, tot volgend jaar!'}
-                </div>
-            )}
-        </div>
+                    <Text
+                        size="xs"
+                        fw={900}
+                        tt="uppercase"
+                        c={isLive ? 'white' : 'brand'}
+                        style={isLive ? { opacity: 0.85 } : undefined}
+                    >
+                        {label}
+                    </Text>
+                </Group>
+
+                {item ? (
+                    <Stack gap="xs">
+                        <Title order={3} size="h3" c={isLive ? 'white' : undefined}>
+                            {item.title}
+                        </Title>
+                        <Group gap="md" wrap="wrap" c={isLive ? 'white' : 'dimmed'} style={isLive ? { opacity: 0.9 } : undefined}>
+                            <Group gap={6}>
+                                <Clock size={16} />
+                                <Text size="sm" fw={600}>
+                                    {formatTimeRange(item)}
+                                </Text>
+                            </Group>
+                            {item.location && (
+                                <Group gap={6}>
+                                    <MapPin size={16} />
+                                    <Text size="sm" fw={600}>
+                                        {item.location}
+                                    </Text>
+                                </Group>
+                            )}
+                        </Group>
+                        {item.description && (
+                            <Text size="sm" c={isLive ? 'white' : 'dimmed'} style={isLive ? { opacity: 0.85 } : undefined}>
+                                <FormattedText text={item.description} />
+                            </Text>
+                        )}
+                    </Stack>
+                ) : (
+                    <Group gap="xs" c={isLive ? 'white' : 'dimmed'} style={isLive ? { opacity: 0.85 } : undefined}>
+                        <Icon size={16} />
+                        <Text size="sm" fw={600}>
+                            {isLive ? 'Er is nu geen activiteit bezig' : 'De introweek zit erop, tot volgend jaar!'}
+                        </Text>
+                    </Group>
+                )}
+            </Stack>
+        </Card>
     );
 }
 
@@ -189,40 +234,13 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
     const [selectedGridItemId, setSelectedGridItemId] = useState<number | null>(null);
+    const [imageHovered, setImageHovered] = useState(false);
 
     useEffect(() => {
         setNow(nowKey());
         const id = setInterval(() => setNow(nowKey()), 30000);
         return () => clearInterval(id);
     }, []);
-
-    useEffect(() => {
-        if (!lightboxOpen) return;
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setLightboxOpen(false);
-        };
-        document.addEventListener('keydown', onKeyDown);
-        const previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        return () => {
-            document.removeEventListener('keydown', onKeyDown);
-            document.body.style.overflow = previousOverflow;
-        };
-    }, [lightboxOpen]);
-
-    useEffect(() => {
-        if (!fullPlanningOpen) return;
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setFullPlanningOpen(false);
-        };
-        document.addEventListener('keydown', onKeyDown);
-        const previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        return () => {
-            document.removeEventListener('keydown', onKeyDown);
-            document.body.style.overflow = previousOverflow;
-        };
-    }, [fullPlanningOpen]);
 
     const sorted = useMemo(
         () => [...planning].sort((a, b) => startKey(a).localeCompare(startKey(b))),
@@ -251,9 +269,6 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
     }, [now, previewTomorrow]);
 
     const tomorrowItems = useMemo(() => {
-        // In preview mode "today" (the real date) is likely outside the intro week,
-        // so there's nothing at real-tomorrow to show — fall back to the schedule's
-        // first day so the preview actually renders something.
         if (previewTomorrow) {
             const firstDate = sorted[0]?.date;
             return firstDate ? sorted.filter(item => item.date === firstDate) : [];
@@ -263,8 +278,6 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
         return sorted.filter(item => item.date === tomorrowDate);
     }, [sorted, now, previewTomorrow]);
 
-    // `sorted` is already ordered by date+time, so a plain Map preserves
-    // chronological day order as it's built without a separate sort step.
     const planningByDate = useMemo(() => {
         const map = new Map<string, IntroPlanningItem[]>();
         for (const item of sorted) {
@@ -277,8 +290,6 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
 
     const planningDates = useMemo(() => Array.from(planningByDate.keys()), [planningByDate]);
 
-    // Shared hour axis for the desktop week-calendar grid, so every day
-    // column and the time gutter line up on the same hour rows.
     const { startHour, endHour } = useMemo(() => {
         if (sorted.length === 0) return { startHour: 8, endHour: 22 };
         let minStart = Infinity;
@@ -315,363 +326,472 @@ export default function IntroPlanningLiveIsland({ planning, planningImageUrl }: 
 
     const toggleExpanded = (id: number) => {
         setExpandedIds(prev => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
-            return next;
+            const nextSet = new Set(prev);
+            if (nextSet.has(id)) nextSet.delete(id);
+            else nextSet.add(id);
+            return nextSet;
         });
     };
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Stack gap="lg">
+            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                 <ActivityCard label="Nu bezig" item={current} accent="live" icon={PartyPopper} />
                 <ActivityCard label="Volgende activiteit" item={next} accent="next" icon={Calendar} />
-            </div>
+            </SimpleGrid>
 
             {showTomorrowOverview && tomorrowItems.length > 0 && (
-                <div className="squircle-lg border border-border-color bg-bg-card p-5 shadow-lg sm:p-8 dark:border-white/10">
-                    <div className="mb-6 flex items-center gap-3">
-                        <div className="squircle flex size-10 shrink-0 items-center justify-center bg-purple-600">
-                            <Sunrise className="size-5 text-white" />
-                        </div>
-                        <div>
-                            <h2 className="text-xl leading-tight font-black text-theme-purple sm:text-2xl">Planning voor morgen</h2>
-                            <p className="text-sm font-medium text-text-muted capitalize">{formatDate(tomorrowItems[0].date, 'EEEE d MMMM')}</p>
-                        </div>
-                    </div>
+                <Card padding="lg" radius="lg" withBorder shadow="lg">
+                    <Stack gap="md">
+                        <Group gap="sm">
+                            <ThemeIcon size={40} radius="md" color="brand">
+                                <Sunrise size={20} />
+                            </ThemeIcon>
+                            <Stack gap={2}>
+                                <Title order={2} size="h3" c="brand">
+                                    Planning voor morgen
+                                </Title>
+                                <Text size="sm" c="dimmed" fw={500} tt="capitalize">
+                                    {formatDate(tomorrowItems[0].date, 'EEEE d MMMM')}
+                                </Text>
+                            </Stack>
+                        </Group>
 
-                    <div className="space-y-3">
-                        {tomorrowItems.map(item => {
-                            const isCurrentOrNext = current?.id === item.id || next?.id === item.id;
-                            return (
-                                <div
-                                    key={item.id}
-                                    className={`squircle border px-3.5 py-3 ${
-                                        isCurrentOrNext
-                                            ? 'border-purple-500/30 bg-purple-500/10'
-                                            : 'bg-bg-main/60 border-border-color dark:border-white/10'
-                                    }`}
-                                >
-                                    <span className={`inline-flex items-center gap-1.5 text-xs font-black tracking-wide uppercase ${isCurrentOrNext ? 'text-purple-500' : 'text-text-muted'}`}>
-                                        <Clock className="size-3.5 shrink-0" />
-                                        {formatTimeRange(item)}
-                                    </span>
-                                    <p className="mt-1.5 leading-snug font-bold text-text-main">{item.title}</p>
-                                    {item.location && (
-                                        <p className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-text-muted"><MapPin className="size-3.5 shrink-0" />{item.location}</p>
-                                    )}
-                                    {item.description && (
-                                        <p className="mt-1.5 text-sm leading-relaxed text-text-muted"><FormattedText text={item.description} /></p>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
+                        <Stack gap="xs">
+                            {tomorrowItems.map(item => {
+                                const isCurrentOrNext = current?.id === item.id || next?.id === item.id;
+                                return (
+                                    <Paper
+                                        key={item.id}
+                                        p="md"
+                                        radius="md"
+                                        withBorder
+                                        style={isCurrentOrNext ? {
+                                            backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)',
+                                            borderColor: 'color-mix(in srgb, var(--primary) 35%, transparent)',
+                                        } : undefined}
+                                    >
+                                        <Stack gap={4}>
+                                            <Group gap={6} c={isCurrentOrNext ? 'brand' : 'dimmed'}>
+                                                <Clock size={14} />
+                                                <Text size="xs" fw={900} tt="uppercase">
+                                                    {formatTimeRange(item)}
+                                                </Text>
+                                            </Group>
+                                            <Text fw={700}>{item.title}</Text>
+                                            {item.location && (
+                                                <Group gap={4} c="dimmed">
+                                                    <MapPin size={14} />
+                                                    <Text size="xs" fw={600}>{item.location}</Text>
+                                                </Group>
+                                            )}
+                                            {item.description && (
+                                                <Text size="sm" c="dimmed">
+                                                    <FormattedText text={item.description} />
+                                                </Text>
+                                            )}
+                                        </Stack>
+                                    </Paper>
+                                );
+                            })}
+                        </Stack>
+                    </Stack>
+                </Card>
             )}
 
-            <div className="squircle-lg border border-border-color bg-bg-card p-5 shadow-lg sm:p-8 dark:border-white/10">
-                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <h2 className="text-xl font-black text-theme-purple sm:text-2xl">Volledige planning</h2>
-                    <div className="flex flex-wrap gap-2">
-                        {planning.length > 0 && (
-                            <button
-                                type="button"
-                                onClick={openFullPlanning}
-                                className="btn-open-timeline squircle hover:scale-1.02 inline-flex items-center justify-center gap-1.5 bg-purple-600 px-3 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:shadow-lg sm:gap-2 sm:px-4 sm:text-sm"
+            <Card padding="lg" radius="lg" withBorder shadow="lg">
+                <Stack gap="lg">
+                    <Group justify="space-between" align="center" wrap="wrap" gap="md">
+                        <Title order={2} size="h3" c="brand">
+                            Volledige planning
+                        </Title>
+                        <Group gap="xs" wrap="wrap">
+                            {planning.length > 0 && (
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    onClick={openFullPlanning}
+                                    leftSection={<CalendarDays size={16} />}
+                                >
+                                    Bekijk tijdlijn
+                                </Button>
+                            )}
+                            <CalendarExportButton
+                                feedPath="/api/intro/planning.ics"
+                                calendarName="Salve Mundi Introductie"
+                                label="Abonneer op agenda"
+                            />
+                        </Group>
+                    </Group>
+
+                    {planningImageUrl ? (
+                        <UnstyledButton
+                            type="button"
+                            onClick={() => setLightboxOpen(true)}
+                            onMouseEnter={() => setImageHovered(true)}
+                            onMouseLeave={() => setImageHovered(false)}
+                            style={{
+                                position: 'relative',
+                                display: 'block',
+                                width: '100%',
+                                overflow: 'hidden',
+                                borderRadius: 'var(--mantine-radius-md)',
+                                cursor: 'zoom-in',
+                            }}
+                        >
+                            <Image
+                                src={planningImageUrl}
+                                alt="Planning introweek"
+                                width={1600}
+                                height={2000}
+                                unoptimized
+                                style={{ width: '100%', height: 'auto', display: 'block' }}
+                            />
+                            <Box
+                                pos="absolute"
+                                inset={0}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    backgroundColor: imageHovered ? 'rgba(0, 0, 0, 0.35)' : 'transparent',
+                                    transition: 'background-color 150ms ease',
+                                }}
                             >
-                                <CalendarDays className="size-4 shrink-0" />
-                                <span className="whitespace-nowrap">Bekijk tijdlijn</span>
-                            </button>
-                        )}
-                        <CalendarExportButton
-                            feedPath="/api/intro/planning.ics"
-                            calendarName="Salve Mundi Introductie"
-                            label="Abonneer op agenda"
-                            buttonClassName="btn-subscribe inline-flex items-center justify-center gap-1.5 sm:gap-2 squircle bg-bg-main border border-border-color dark:border-white/10 text-text-main px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold shadow-sm hover:shadow-md transition-all cursor-pointer"
-                        />
-                    </div>
-                </div>
+                                <Badge
+                                    size="lg"
+                                    radius="md"
+                                    color="darkBase"
+                                    leftSection={<ZoomIn size={16} />}
+                                    style={{
+                                        opacity: imageHovered ? 1 : 0,
+                                        transition: 'opacity 150ms ease',
+                                    }}
+                                >
+                                    Bekijk fullscreen
+                                </Badge>
+                            </Box>
+                        </UnstyledButton>
+                    ) : (
+                        <Paper p="xl" radius="md" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
+                            <Stack align="center" gap="sm">
+                                <Text span c="brand" lh={1}>
+                                    <ImageOff size={32} />
+                                </Text>
+                                <Text size="lg" fw={700} c="dimmed">
+                                    De planning wordt binnenkort bekendgemaakt
+                                </Text>
+                            </Stack>
+                        </Paper>
+                    )}
+                </Stack>
+            </Card>
 
-                {planningImageUrl ? (
-                    <button
-                        type="button"
-                        onClick={() => setLightboxOpen(true)}
-                        className="btn-open-lightbox group sm:squircle relative -mx-9 block cursor-zoom-in overflow-hidden border-0 border-border-color sm:mx-0 sm:border dark:border-white/10"
-                    >
-                        <Image
-                            src={planningImageUrl}
-                            alt="Planning introweek"
-                            width={1600}
-                            height={2000}
-                            unoptimized
-                            className="h-auto w-full"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30">
-                            <span className="squircle inline-flex items-center gap-2 bg-black/60 px-4 py-2.5 text-sm font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
-                                <ZoomIn className="size-4" />
-                                Bekijk fullscreen
-                            </span>
-                        </div>
-                    </button>
-                ) : (
-                    <div className="squircle bg-bg-main/50 border border-dashed border-border-color p-10 text-center">
-                        <ImageOff className="mx-auto mb-4 size-8 text-purple-500" />
-                        <p className="text-lg font-bold text-text-main opacity-60">De planning wordt binnenkort bekendgemaakt</p>
-                    </div>
-                )}
-            </div>
-
-            {fullPlanningOpen && (
-                <div
-                    className="fixed inset-0 z-200 flex items-end justify-center bg-black/70 sm:items-center"
-                    onClick={() => setFullPlanningOpen(false)}
-                >
-                    <div
-                        className="sm:squircle-lg relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-3xl bg-bg-card shadow-2xl sm:max-h-[85vh] sm:max-w-2xl lg:max-w-5xl xl:max-w-6xl"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border-color px-5 py-4 sm:px-6 dark:border-white/10">
-                            <h2 className="text-lg font-black text-theme-purple sm:text-xl">Volledige planning</h2>
-                            <button
-                                type="button"
-                                onClick={() => setFullPlanningOpen(false)}
-                                aria-label="Sluiten"
-                                className="btn-close-timeline squircle bg-bg-main shrink-0 p-2.5 text-text-main transition-colors hover:bg-border-color/40"
-                            >
-                                <X className="size-5" />
-                            </button>
-                        </div>
-
-                        {planningDates.length > 1 && (
-                            <div className="flex shrink-0 items-center gap-2 overflow-x-auto border-b border-border-color px-4 py-3 sm:hidden sm:px-6 dark:border-white/10">
+            <Modal
+                opened={fullPlanningOpen}
+                onClose={() => setFullPlanningOpen(false)}
+                title="Volledige planning"
+                size="90%"
+                centered
+                radius="lg"
+                styles={{ body: { padding: 0 } }}
+            >
+                <Box hiddenFrom="sm">
+                    {planningDates.length > 1 && (
+                        <ScrollArea px="md" py="sm">
+                            <Group gap="xs" wrap="nowrap">
                                 {planningDates.map(date => {
                                     const isToday = date === now.slice(0, 10);
                                     const isSelected = date === selectedDay;
                                     return (
-                                        <button
+                                        <Button
                                             key={date}
                                             type="button"
+                                            size="xs"
+                                            variant={isSelected ? 'filled' : 'default'}
                                             onClick={() => setSelectedDay(date)}
-                                            className={`tab-button squircle shrink-0 px-3.5 py-2 text-xs font-bold whitespace-nowrap capitalize transition-all sm:text-sm ${
-                                                isSelected
-                                                    ? 'bg-purple-600 text-white shadow-md'
-                                                    : 'bg-bg-main border border-border-color text-text-muted hover:text-text-main dark:border-white/10'
-                                            }`}
+                                            style={{ flexShrink: 0, textTransform: 'capitalize' }}
                                         >
                                             {formatDate(date, 'EEE d MMM')}
-                                            {isToday && (
-                                                <span className={`ml-1.5 inline-block size-1.5 rounded-full align-middle ${isSelected ? 'bg-white' : 'bg-purple-500'}`} />
-                                            )}
-                                        </button>
+                                            {isToday && ' •'}
+                                        </Button>
                                     );
                                 })}
-                            </div>
-                        )}
-
-                        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 sm:hidden sm:px-6">
-                            {selectedDay ? (
-                                <>
-                                    <p className="mb-4 text-sm font-bold text-text-muted capitalize">
-                                        {formatDate(selectedDay, 'EEEE d MMMM')}
-                                    </p>
-                                    <div className="space-y-2.5">
-                                        {(planningByDate.get(selectedDay) || []).map(item => {
-                                            const isCurrentOrNext = current?.id === item.id || next?.id === item.id;
-                                            const hasDescription = Boolean(item.description);
-                                            const isExpanded = hasDescription && expandedIds.has(item.id);
-                                            return (
-                                                <button
-                                                    key={item.id}
-                                                    type="button"
-                                                    onClick={() => hasDescription && toggleExpanded(item.id)}
-                                                    aria-expanded={hasDescription ? isExpanded : undefined}
-                                                    className={`btn-timeline-item squircle w-full border px-3.5 py-3 text-left transition-colors ${
-                                                        isCurrentOrNext
-                                                            ? 'border-purple-500/30 bg-purple-500/10'
-                                                            : 'bg-bg-main/60 border-border-color dark:border-white/10'
-                                                    } ${hasDescription ? 'hover:bg-bg-main active:bg-bg-main cursor-pointer' : 'cursor-default'}`}
-                                                >
-                                                    <div className="flex items-start justify-between gap-2">
-                                                        <div className="min-w-0">
-                                                            <span className={`inline-flex items-center gap-1.5 text-xs font-black tracking-wide uppercase ${isCurrentOrNext ? 'text-purple-500' : 'text-text-muted'}`}>
-                                                                <Clock className="size-3.5 shrink-0" />
+                            </Group>
+                        </ScrollArea>
+                    )}
+                    <Divider />
+                    <ScrollArea mah="65vh" p="md">
+                        {selectedDay ? (
+                            <Stack gap="sm">
+                                <Text size="sm" fw={700} c="dimmed" tt="capitalize">
+                                    {formatDate(selectedDay, 'EEEE d MMMM')}
+                                </Text>
+                                {(planningByDate.get(selectedDay) || []).map(item => {
+                                    const isCurrentOrNext = current?.id === item.id || next?.id === item.id;
+                                    const hasDescription = Boolean(item.description);
+                                    const isExpanded = hasDescription && expandedIds.has(item.id);
+                                    return (
+                                        <Paper
+                                            key={item.id}
+                                            p="sm"
+                                            radius="md"
+                                            withBorder
+                                            style={isCurrentOrNext ? {
+                                                backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)',
+                                                borderColor: 'color-mix(in srgb, var(--primary) 35%, transparent)',
+                                            } : undefined}
+                                        >
+                                            <UnstyledButton
+                                                type="button"
+                                                w="100%"
+                                                onClick={() => hasDescription && toggleExpanded(item.id)}
+                                                aria-expanded={hasDescription ? isExpanded : undefined}
+                                                style={{ cursor: hasDescription ? 'pointer' : 'default' }}
+                                            >
+                                                <Group justify="space-between" align="flex-start" wrap="nowrap" gap="xs">
+                                                    <Stack gap={4} style={{ minWidth: 0 }}>
+                                                        <Group gap={6} c={isCurrentOrNext ? 'brand' : 'dimmed'}>
+                                                            <Clock size={14} />
+                                                            <Text size="xs" fw={900} tt="uppercase">
                                                                 {formatTimeRange(item)}
-                                                            </span>
-                                                            <p className="mt-1.5 leading-snug font-bold text-text-main">{item.title}</p>
-                                                            {item.location && (
-                                                                <p className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-text-muted"><MapPin className="size-3.5 shrink-0" />{item.location}</p>
-                                                            )}
-                                                        </div>
-                                                        {hasDescription && (
-                                                            <ChevronDown className={`mt-1 size-4 shrink-0 text-text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                                            </Text>
+                                                        </Group>
+                                                        <Text fw={700}>{item.title}</Text>
+                                                        {item.location && (
+                                                            <Group gap={4} c="dimmed">
+                                                                <MapPin size={14} />
+                                                                <Text size="xs" fw={600}>{item.location}</Text>
+                                                            </Group>
                                                         )}
-                                                    </div>
-                                                    {item.description && (
-                                                        <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${isExpanded ? 'mt-2 grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-                                                            <div className="overflow-hidden">
-                                                                <p className="text-sm leading-relaxed text-text-muted"><FormattedText text={item.description} /></p>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </>
-                            ) : (
-                                <p className="py-10 text-center text-sm text-text-muted">Geen planning beschikbaar.</p>
-                            )}
-                        </div>
-
-                        {/* Desktop: full week as a calendar grid — every day side by side on a shared hour axis. */}
-                        <div className="hidden min-h-0 flex-1 overflow-auto overscroll-contain sm:block">
-                            {planningDates.length > 0 ? (
-                                <>
-                                    <div className="sticky top-0 z-10 flex border-b border-border-color bg-bg-card dark:border-white/10">
-                                        <div className="w-14 shrink-0" />
-                                        {planningDates.map(date => {
-                                            const isToday = date === now.slice(0, 10);
-                                            return (
-                                                <div
-                                                    key={date}
-                                                    className="min-w-36 flex-1 border-l border-border-color px-2 py-2.5 text-center dark:border-white/10"
-                                                >
-                                                    <p className={`text-[11px] font-black tracking-wide uppercase ${isToday ? 'text-purple-500' : 'text-text-muted'}`}>
-                                                        {formatDate(date, 'EEE')}
-                                                    </p>
-                                                    <p className={`text-sm font-black capitalize ${isToday ? 'text-purple-500' : 'text-text-main'}`}>
-                                                        {formatDate(date, 'd MMM')}
-                                                    </p>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-
-                                    <div className="flex p-4 sm:px-6">
-                                        <div className="relative w-14 shrink-0" style={{ height: totalHeight }}>
-                                            {hours.map(hour => (
-                                                <span
-                                                    key={hour}
-                                                    className="absolute right-2 -translate-y-1/2 text-[11px] font-semibold text-text-muted"
-                                                    style={{ top: (hour - startHour) * HOUR_HEIGHT }}
-                                                >
-                                                    {String(hour).padStart(2, '0')}:00
-                                                </span>
-                                            ))}
-                                        </div>
-
-                                        {planningDates.map(date => {
-                                            const dayLayout = layoutDay(planningByDate.get(date) || [], startHour);
-                                            return (
-                                                <div
-                                                    key={date}
-                                                    className="relative min-w-36 flex-1 border-l border-border-color px-1 dark:border-white/10"
-                                                    style={{ height: totalHeight }}
-                                                >
-                                                    {hours.map(hour => (
-                                                        <div
-                                                            key={hour}
-                                                            className="absolute inset-x-0 border-t border-border-color/60 dark:border-white/5"
-                                                            style={{ top: (hour - startHour) * HOUR_HEIGHT }}
+                                                    </Stack>
+                                                    {hasDescription && (
+                                                        <ChevronDown
+                                                            size={16}
+                                                            style={{
+                                                                flexShrink: 0,
+                                                                transform: isExpanded ? 'rotate(180deg)' : undefined,
+                                                                transition: 'transform 150ms ease',
+                                                            }}
                                                         />
-                                                    ))}
-                                                    {dayLayout.map(({ item, top, height, col, cols }) => {
-                                                        const isCurrentOrNext = current?.id === item.id || next?.id === item.id;
-                                                        const isSelected = selectedGridItemId === item.id;
-                                                        return (
-                                                            <button
-                                                                key={item.id}
-                                                                type="button"
-                                                                onClick={() => setSelectedGridItemId(prev => (prev === item.id ? null : item.id))}
-                                                                className={`btn-grid-item absolute cursor-pointer overflow-hidden rounded-lg border border-l-4 py-1 pr-1.5 pl-2 text-left shadow-sm transition-shadow hover:shadow-md hover:brightness-110 ${
-                                                                    isSelected ? 'z-10 ring-2 ring-purple-400' : ''
-                                                                } ${
-                                                                    isCurrentOrNext
-                                                                        ? 'border-purple-500 border-l-purple-200 bg-purple-600 text-white shadow-md'
-                                                                        : 'border-border-color border-l-purple-500 bg-bg-card text-text-main dark:border-white/10'
-                                                                }`}
-                                                                style={{
-                                                                    // 2px inset on top/bottom leaves a visible gap between
-                                                                    // back-to-back items instead of their borders touching.
-                                                                    top: top + 2,
-                                                                    height: Math.max(height - 4, 24),
-                                                                    left: `${(col / cols) * 100}%`,
-                                                                    width: `calc(${100 / cols}% - 3px)`
-                                                                }}
-                                                                title={`${formatTimeRange(item)} — ${item.title}`}
-                                                            >
-                                                                <p className={`text-[10px] leading-tight font-black ${isCurrentOrNext ? 'text-white/80' : 'text-purple-500'}`}>
-                                                                    {item.time_start.slice(0, 5)}
-                                                                </p>
-                                                                <p className="line-clamp-2 text-[11px] leading-snug font-bold">{item.title}</p>
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </>
-                            ) : (
-                                <p className="py-10 text-center text-sm text-text-muted">Geen planning beschikbaar.</p>
-                            )}
-                        </div>
+                                                    )}
+                                                </Group>
+                                            </UnstyledButton>
+                                            {item.description && (
+                                                <Collapse expanded={isExpanded}>
+                                                    <Text size="sm" c="dimmed" pt="xs">
+                                                        <FormattedText text={item.description} />
+                                                    </Text>
+                                                </Collapse>
+                                            )}
+                                        </Paper>
+                                    );
+                                })}
+                            </Stack>
+                        ) : (
+                            <Text ta="center" py="xl" size="sm" c="dimmed">
+                                Geen planning beschikbaar.
+                            </Text>
+                        )}
+                    </ScrollArea>
+                </Box>
 
-                        {selectedGridItem && (
-                            <div className="hidden shrink-0 items-start gap-3 border-t border-border-color bg-bg-card px-5 py-4 sm:flex sm:px-6 dark:border-white/10">
-                                <div className="min-w-0 flex-1">
-                                    <span className="inline-flex items-center gap-1.5 text-xs font-black tracking-wide text-purple-500 uppercase">
-                                        <Clock className="size-3.5 shrink-0" />
-                                        {formatTimeRange(selectedGridItem)}
-                                    </span>
-                                    <h3 className="mt-1 text-base leading-snug font-black text-text-main sm:text-lg">{selectedGridItem.title}</h3>
+                <Box visibleFrom="sm">
+                    <ScrollArea mah="70vh">
+                        {planningDates.length > 0 ? (
+                            <Box>
+                                <Box
+                                    pos="sticky"
+                                    top={0}
+                                    style={{
+                                        zIndex: 10,
+                                        display: 'flex',
+                                        borderBottom: '1px solid var(--mantine-color-default-border)',
+                                        backgroundColor: 'var(--mantine-color-default)',
+                                    }}
+                                >
+                                    <Box w={56} style={{ flexShrink: 0 }} />
+                                    {planningDates.map(date => {
+                                        const isToday = date === now.slice(0, 10);
+                                        return (
+                                            <Box
+                                                key={date}
+                                                miw={144}
+                                                px="xs"
+                                                py="xs"
+                                                ta="center"
+                                                style={{
+                                                    flex: 1,
+                                                    borderLeft: '1px solid color-mix(in srgb, var(--primary) 15%, transparent)',
+                                                }}
+                                            >
+                                                <Text size="xs" fw={900} tt="uppercase" c={isToday ? 'brand' : 'dimmed'}>
+                                                    {formatDate(date, 'EEE')}
+                                                </Text>
+                                                <Text size="sm" fw={900} tt="capitalize" c={isToday ? 'brand' : undefined}>
+                                                    {formatDate(date, 'd MMM')}
+                                                </Text>
+                                            </Box>
+                                        );
+                                    })}
+                                </Box>
+
+                                <Box p="md" style={{ display: 'flex' }}>
+                                    <Box pos="relative" w={56} h={totalHeight} style={{ flexShrink: 0 }}>
+                                        {hours.map(hour => (
+                                            <Text
+                                                key={hour}
+                                                size="xs"
+                                                fw={600}
+                                                c="dimmed"
+                                                pos="absolute"
+                                                right={8}
+                                                style={{
+                                                    top: (hour - startHour) * HOUR_HEIGHT,
+                                                    transform: 'translateY(-50%)',
+                                                }}
+                                            >
+                                                {String(hour).padStart(2, '0')}:00
+                                            </Text>
+                                        ))}
+                                    </Box>
+
+                                    {planningDates.map(date => {
+                                        const dayLayout = layoutDay(planningByDate.get(date) || [], startHour);
+                                        return (
+                                            <Box
+                                                key={date}
+                                                pos="relative"
+                                                miw={144}
+                                                h={totalHeight}
+                                                px={4}
+                                                style={{
+                                                    flex: 1,
+                                                    borderLeft: '1px solid color-mix(in srgb, var(--primary) 15%, transparent)',
+                                                }}
+                                            >
+                                                {hours.map(hour => (
+                                                    <Box
+                                                        key={hour}
+                                                        pos="absolute"
+                                                        left={0}
+                                                        right={0}
+                                                        style={{
+                                                            top: (hour - startHour) * HOUR_HEIGHT,
+                                                            borderTop: '1px solid color-mix(in srgb, var(--primary) 10%, transparent)',
+                                                        }}
+                                                    />
+                                                ))}
+                                                {dayLayout.map(({ item, top, height, col, cols }) => {
+                                                    const isCurrentOrNext = current?.id === item.id || next?.id === item.id;
+                                                    const isSelected = selectedGridItemId === item.id;
+                                                    return (
+                                                        <UnstyledButton
+                                                            key={item.id}
+                                                            type="button"
+                                                            onClick={() => setSelectedGridItemId(prev => (prev === item.id ? null : item.id))}
+                                                            title={`${formatTimeRange(item)} — ${item.title}`}
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: top + 2,
+                                                                height: Math.max(height - 4, 24),
+                                                                left: `${(col / cols) * 100}%`,
+                                                                width: `calc(${100 / cols}% - 3px)`,
+                                                                overflow: 'hidden',
+                                                                borderRadius: 'var(--mantine-radius-sm)',
+                                                                padding: '4px 6px',
+                                                                textAlign: 'left',
+                                                                zIndex: isSelected ? 10 : 1,
+                                                                backgroundColor: isCurrentOrNext ? 'var(--primary)' : 'var(--mantine-color-default)',
+                                                                color: isCurrentOrNext ? '#FFFFFF' : 'var(--mantine-color-text)',
+                                                                border: '1px solid color-mix(in srgb, var(--primary) 25%, transparent)',
+                                                                borderLeft: `4px solid ${isCurrentOrNext ? '#FFFFFF' : 'var(--primary)'}`,
+                                                                boxShadow: isSelected ? '0 0 0 2px var(--accent)' : 'var(--mantine-shadow-xs)',
+                                                            }}
+                                                        >
+                                                            <Text size="10px" fw={900} lh={1.2} c={isCurrentOrNext ? 'white' : 'brand'}>
+                                                                {item.time_start.slice(0, 5)}
+                                                            </Text>
+                                                            <Text size="11px" fw={700} lh={1.25} lineClamp={2}>
+                                                                {item.title}
+                                                            </Text>
+                                                        </UnstyledButton>
+                                                    );
+                                                })}
+                                            </Box>
+                                        );
+                                    })}
+                                </Box>
+                            </Box>
+                        ) : (
+                            <Text ta="center" py="xl" size="sm" c="dimmed">
+                                Geen planning beschikbaar.
+                            </Text>
+                        )}
+                    </ScrollArea>
+
+                    {selectedGridItem && (
+                        <>
+                            <Divider />
+                            <Group justify="space-between" align="flex-start" p="md" wrap="nowrap">
+                                <Stack gap={4} style={{ minWidth: 0, flex: 1 }}>
+                                    <Group gap={6} c="brand">
+                                        <Clock size={14} />
+                                        <Text size="xs" fw={900} tt="uppercase">
+                                            {formatTimeRange(selectedGridItem)}
+                                        </Text>
+                                    </Group>
+                                    <Title order={4} size="h4">
+                                        {selectedGridItem.title}
+                                    </Title>
                                     {selectedGridItem.location && (
-                                        <p className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-text-muted"><MapPin className="size-3.5 shrink-0" />{selectedGridItem.location}</p>
+                                        <Group gap={4} c="dimmed">
+                                            <MapPin size={14} />
+                                            <Text size="xs" fw={600}>{selectedGridItem.location}</Text>
+                                        </Group>
                                     )}
                                     {selectedGridItem.description && (
-                                        <p className="mt-1.5 text-sm leading-relaxed text-text-muted"><FormattedText text={selectedGridItem.description} /></p>
+                                        <Text size="sm" c="dimmed">
+                                            <FormattedText text={selectedGridItem.description} />
+                                        </Text>
                                     )}
-                                </div>
-                                <button
+                                </Stack>
+                                <ActionIcon
                                     type="button"
+                                    variant="default"
+                                    size="md"
                                     onClick={() => setSelectedGridItemId(null)}
                                     aria-label="Sluiten"
-                                    className="btn-close-grid-item squircle bg-bg-main shrink-0 p-2 text-text-main transition-colors hover:bg-border-color/40"
                                 >
-                                    <X className="size-4" />
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
+                                    <X size={16} />
+                                </ActionIcon>
+                            </Group>
+                        </>
+                    )}
+                </Box>
+            </Modal>
 
-            {lightboxOpen && planningImageUrl && (
-                <div
-                    className="fixed inset-0 z-200 flex cursor-zoom-out items-center justify-center bg-black/90 p-4 sm:p-8"
-                    onClick={() => setLightboxOpen(false)}
-                >
-                    <button
-                        type="button"
-                        onClick={() => setLightboxOpen(false)}
-                        aria-label="Sluiten"
-                        className="btn-close-lightbox squircle absolute top-4 right-4 bg-white/10 p-2.5 text-white transition-colors hover:bg-white/20 sm:top-6 sm:right-6"
-                    >
-                        <X className="size-6" />
-                    </button>
-                    <Image
-                        src={planningImageUrl}
-                        alt="Planning introweek"
-                        width={1600}
-                        height={2000}
-                        unoptimized
-                        onClick={(e) => e.stopPropagation()}
-                        className="size-auto max-h-full max-w-full cursor-default object-contain"
-                    />
-                </div>
-            )}
-        </div>
+            <Modal
+                opened={lightboxOpen && Boolean(planningImageUrl)}
+                onClose={() => setLightboxOpen(false)}
+                size="90%"
+                centered
+                radius="lg"
+                padding="xs"
+                aria-label="Planning introweek fullscreen"
+            >
+                {planningImageUrl && (
+                    <Box pos="relative" h="80vh" w="100%">
+                        <Image
+                            src={planningImageUrl}
+                            alt="Planning introweek"
+                            fill
+                            unoptimized
+                            style={{ objectFit: 'contain' }}
+                        />
+                    </Box>
+                )}
+            </Modal>
+        </Stack>
     );
 }

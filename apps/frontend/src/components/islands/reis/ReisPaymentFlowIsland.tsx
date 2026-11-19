@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, ChevronLeft, ChevronRight, CreditCard, Compass, User } from 'lucide-react';
+import { Alert, Badge, Box, Button, Container, Divider, Group, Stack, Text, Title } from '@mantine/core';
 import type { Trip, TripActivity } from '@salvemundi/validations/schema/beheer-trip.zod';
 import type { TripSignup, ReisPaymentEnrichment } from '@salvemundi/validations/schema/trip.zod';
 import { reisPaymentEnrichmentSchema } from '@salvemundi/validations/schema/trip.zod';
@@ -147,7 +148,7 @@ export default function ReisPaymentFlowIsland({
                 const isValidForm = await trigger();
                 if (!isValidForm) {
                     setLoading(false);
-                    const firstErrorEl = document.querySelector('[aria-invalid="true"], .text-red-500');
+                    const firstErrorEl = document.querySelector('[aria-invalid="true"], .mantine-Input-error');
                     if (firstErrorEl) {
                         firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
@@ -180,8 +181,8 @@ export default function ReisPaymentFlowIsland({
                 }
             }
             setStep(step + 1);
-        } catch (error) {
-            safeConsoleError('[ReisPaymentFlowIsland.tsx][ReisPaymentFlowIsland] ', error);
+        } catch (err) {
+            safeConsoleError('[ReisPaymentFlowIsland.tsx][ReisPaymentFlowIsland] ', err);
             setError('Er is een onverwachte fout opgetreden.');
         } finally {
             setLoading(false);
@@ -201,8 +202,8 @@ export default function ReisPaymentFlowIsland({
             }
             setLocalSignup({ ...localSignup, ...formData });
             setStep(2);
-        } catch (error) {
-            safeConsoleError('[ReisPaymentFlowIsland.tsx][ReisPaymentFlowIsland] ', error);
+        } catch (err) {
+            safeConsoleError('[ReisPaymentFlowIsland.tsx][ReisPaymentFlowIsland] ', err);
             setError('Fout bij opslaan gegevens.');
         } finally {
             setLoading(false);
@@ -211,116 +212,112 @@ export default function ReisPaymentFlowIsland({
 
     return (
         <FormProvider {...methods}>
-            <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-                <form 
-                    autoComplete="off" 
-                    onSubmit={(e) => e.preventDefault()}
-                    className="@container flex flex-col gap-10"
-                >
-                    {/* Seamless Header */}
-                    <div className="flex items-center justify-between border-b border-black/5 pb-6 dark:border-white/10">
-                        <div>
-                            <h2 className="flex items-center gap-3 text-2xl font-black tracking-tighter text-text-main italic sm:text-3xl">
-                                {step === 1 && <User className="size-7 text-theme-purple" />}
-                                {step === 2 && <Compass className="size-7 text-theme-purple" />}
-                                {step === 3 && <CreditCard className="size-7 text-theme-purple" />}
-                                {step === 1 && 'Reisgegevens'}
-                                {step === 2 && 'Optionele Activiteiten'}
-                                {step === 3 && 'Betalingssamenvatting'}
-                                {step === 4 && 'Gelukt!'}
-                            </h2>
-                            <p className="mt-1 text-sm text-(--text-muted)">
-                                {step === 1 && `Vul je gegevens aan voor ${trip.name}`}
-                                {step === 2 && 'Kies de extra activiteiten die je wilt doen'}
-                                {step === 3 && 'Controleer je reissom en selecties'}
-                                {step === 4 && 'Je keuzes zijn opgeslagen'}
-                            </p>
-                        </div>
-                        {step <= 3 && (
-                            <div className="rounded-full bg-theme-purple/10 px-3 py-1.5 text-xs font-bold tracking-wider text-theme-purple select-none">
-                                Stap {step} van 3
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Step Body */}
-                    <div className="py-2">
-                        <div className={`animate-in fade-in duration-300 ${step === 1 ? 'block' : 'hidden'}`}>
-                            <EnrichmentForm trip={trip} hideHeader={true} />
-                        </div>
-                        <div className={`animate-in fade-in duration-300 ${step === 2 ? 'block' : 'hidden'}`}>
-                            {paymentType === 'deposit' && (
-                                <div className="animate-in slide-in-from-top-2 mb-6 flex items-center gap-2.5 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-amber-500 duration-300">
-                                    <AlertCircle className="size-4 shrink-0" />
-                                    <p className="text-xs font-medium">Let op: De getoonde prijzen voor de activiteiten zijn op dit moment een schatting en kunnen nog wijzigen.</p>
-                                </div>
-                            )}
-                            <ActivitySelector
-                                activities={allActivities}
-                                selectedSelections={activitySelections}
-                                onChange={setActivitySelections}
-                                hideHeader={true}
-                            />
-                        </div>
-                        <div className={`animate-in fade-in duration-300 ${step === 3 ? 'block' : 'hidden'}`}>
-                            <PaymentSummary pricing={pricing} paymentType={paymentType} hideHeader={true} />
-                        </div>
-                        <div className={`animate-in fade-in duration-300 ${step === 4 ? 'block' : 'hidden'}`}>
-                            <PaymentSuccess trip={trip} />
-                        </div>
-                    </div>
-
-                    {/* Seamless Footer */}
-                    {step <= 3 && (
-                        <div className="flex flex-col items-center justify-between gap-4 border-t border-black/5 pt-6 sm:flex-row dark:border-white/10">
-                            <div className="order-2 w-full sm:order-1 sm:w-auto">
-                                <button
-                                    onClick={step === 1 ? () => router.push('/reis') : () => setStep(step - 1)}
-                                    className="tab-button flex w-full items-center justify-center gap-2 rounded-xl border border-(--border-color) bg-(--bg-card) px-6 py-3 text-sm font-semibold text-(--text-main) transition-all hover:bg-black/5 sm:w-auto dark:hover:bg-white/5"
-                                    type="button">
-                                    <ChevronLeft className="size-4 text-(--text-muted)" /> 
-                                    {step === 1 ? 'Annuleren' : 'Vorige'}
-                                </button>
-                            </div>
-
-                            <div className="order-1 flex w-full flex-col items-end gap-4 sm:order-2 sm:w-auto">
-                                {error && (
-                                    <div className="animate-in slide-in-from-top-2 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-red-500 duration-300">
-                                        <AlertCircle className="size-4 shrink-0" />
-                                        <p className="text-xs">{error}</p>
-                                    </div>
+            <Container size="lg" py="xl">
+                <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
+                    <Stack gap="xl">
+                        <Box>
+                            <Group justify="space-between" align="center" pb="md" wrap="wrap" gap="md">
+                                <Stack gap={4}>
+                                    <Group gap="sm">
+                                        <Text span c="brand" lh={1}>
+                                            {step === 1 && <User size={26} />}
+                                            {step === 2 && <Compass size={26} />}
+                                            {step === 3 && <CreditCard size={26} />}
+                                        </Text>
+                                        <Title order={2} size="h2">
+                                            {step === 1 && 'Reisgegevens'}
+                                            {step === 2 && 'Optionele Activiteiten'}
+                                            {step === 3 && 'Betalingssamenvatting'}
+                                            {step === 4 && 'Gelukt!'}
+                                        </Title>
+                                    </Group>
+                                    <Text size="sm" c="dimmed">
+                                        {step === 1 && `Vul je gegevens aan voor ${trip.name}`}
+                                        {step === 2 && 'Kies de extra activiteiten die je wilt doen'}
+                                        {step === 3 && 'Controleer je reissom en selecties'}
+                                        {step === 4 && 'Je keuzes zijn opgeslagen'}
+                                    </Text>
+                                </Stack>
+                                {step <= 3 && (
+                                    <Badge variant="light" color="brand" size="md">
+                                        Stap {step} van 3
+                                    </Badge>
                                 )}
+                            </Group>
+                            <Divider />
+                        </Box>
 
-                                <button
-                                    onClick={() => void handleNext()}
-                                    disabled={loading}
-                                    className={`form-button flex w-full items-center justify-center gap-2 px-8 py-3 text-sm font-bold text-white shadow-md transition-all sm:w-auto ${
-                                        loading ? 'cursor-not-allowed opacity-50 grayscale' : ''
-                                    }`}
-                                    type="button">
-                                    {loading ? (
-                                        'Verwerken...'
-                                    ) : (
-                                        <>
-                                            {step < 3 ? (
-                                                <>
-                                                    Volgende
-                                                    <ChevronRight className="size-4" />
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <CreditCard className="size-5" />
-                                                    {paymentType === 'deposit' ? 'Aanbetaling voldoen' : 'Restbetaling voldoen'}
-                                                </>
-                                            )}
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                        <Box py="xs">
+                            <Box display={step === 1 ? 'block' : 'none'}>
+                                <EnrichmentForm trip={trip} hideHeader={true} />
+                            </Box>
+                            <Box display={step === 2 ? 'block' : 'none'}>
+                                {paymentType === 'deposit' && (
+                                    <Alert color="accent" variant="light" radius="lg" mb="lg" icon={<AlertCircle size={16} />}>
+                                        Let op: De getoonde prijzen voor de activiteiten zijn op dit moment een schatting en kunnen nog wijzigen.
+                                    </Alert>
+                                )}
+                                <ActivitySelector
+                                    activities={allActivities}
+                                    selectedSelections={activitySelections}
+                                    onChange={setActivitySelections}
+                                    hideHeader={true}
+                                />
+                            </Box>
+                            <Box display={step === 3 ? 'block' : 'none'}>
+                                <PaymentSummary pricing={pricing} paymentType={paymentType} hideHeader={true} />
+                            </Box>
+                            <Box display={step === 4 ? 'block' : 'none'}>
+                                <PaymentSuccess trip={trip} />
+                            </Box>
+                        </Box>
+
+                        {step <= 3 && (
+                            <>
+                                <Divider />
+                                <Group justify="space-between" align="flex-end" wrap="wrap" gap="md">
+                                    <Button
+                                        type="button"
+                                        variant="default"
+                                        size="md"
+                                        onClick={step === 1 ? () => router.push('/reis') : () => setStep(step - 1)}
+                                        leftSection={<ChevronLeft size={16} />}
+                                        w={{ base: '100%', sm: 'auto' }}
+                                    >
+                                        {step === 1 ? 'Annuleren' : 'Vorige'}
+                                    </Button>
+
+                                    <Stack gap="sm" align="flex-end" w={{ base: '100%', sm: 'auto' }}>
+                                        {error && (
+                                            <Alert color="error" variant="light" icon={<AlertCircle size={16} />} w="100%">
+                                                {error}
+                                            </Alert>
+                                        )}
+
+                                        <Button
+                                            type="button"
+                                            size="md"
+                                            onClick={() => void handleNext()}
+                                            loading={loading}
+                                            w={{ base: '100%', sm: 'auto' }}
+                                            leftSection={step === 3 ? <CreditCard size={18} /> : undefined}
+                                            rightSection={step < 3 ? <ChevronRight size={16} /> : undefined}
+                                        >
+                                            {loading
+                                                ? 'Verwerken...'
+                                                : step < 3
+                                                    ? 'Volgende'
+                                                    : paymentType === 'deposit'
+                                                        ? 'Aanbetaling voldoen'
+                                                        : 'Restbetaling voldoen'}
+                                        </Button>
+                                    </Stack>
+                                </Group>
+                            </>
+                        )}
+                    </Stack>
                 </form>
-            </div>
+            </Container>
 
             <NameConfirmModal
                 isOpen={showNameConfirm}

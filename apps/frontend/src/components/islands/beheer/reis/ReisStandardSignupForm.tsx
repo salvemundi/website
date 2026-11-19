@@ -1,6 +1,18 @@
 'use client';
 
 import { FileText, CreditCard, Bus, AlertCircle } from 'lucide-react';
+import {
+    Box,
+    Card,
+    Divider,
+    Group,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
 import type { TripSignup } from '@salvemundi/validations';
 import { parseBoolean } from '@salvemundi/validations';
 import { toISODate, formatShortDate } from '@/lib/utils/date-utils';
@@ -10,7 +22,7 @@ import {
     Textarea,
     Checkbox,
     DateAndLabel,
-    PhoneAndLabel
+    PhoneAndLabel,
 } from './ReisSignupFormFields';
 
 interface StandardSignupFormProps {
@@ -28,127 +40,292 @@ export default function StandardSignupForm({
     isBusTrip,
     minimal = false,
     section = 'all',
-    compact = true
+    compact = true,
 }: StandardSignupFormProps) {
-    return (
-        <div className={`${minimal ? (compact ? 'space-y-6' : 'space-y-12') : 'divide-y divide-(--beheer-border)/20 overflow-hidden rounded-3xl border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl'}`}>
-            {(section === 'all' || section === 'personal' || section === 'personal_basic' || section === 'personal_extended') && (
-                <div className={`${minimal ? '' : 'p-8'}`}>
-                    <div className={`flex items-center gap-4 ${compact ? 'mb-4' : 'mb-8'}`}>
-                        <div className="flex size-10 items-center justify-center rounded-xl bg-(--beheer-accent)/10 text-(--beheer-accent) shadow-sm">
-                            <FileText className="size-5" />
-                        </div>
-                        <div className="space-y-0.5">
-                            <h2 className={`${compact ? 'text-lg' : 'text-xl'} font-semibold tracking-tight text-(--beheer-text)`}>Persoonsgegevens</h2>
-                            <p className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">Basis informatie over de reiziger</p>
-                        </div>
-                    </div>
+    const content = (
+        <Stack gap={compact ? 'lg' : 'xl'}>
+            {(section === 'all' ||
+                section === 'personal' ||
+                section === 'personal_basic' ||
+                section === 'personal_extended') && (
+                <Box p={minimal ? 0 : 'xl'}>
+                    <Group gap="md" mb={compact ? 'md' : 'xl'}>
+                        <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                            <FileText size={20} />
+                        </ThemeIcon>
+                        <Box>
+                            <Title order={2} size={compact ? 'h4' : 'h3'}>
+                                Persoonsgegevens
+                            </Title>
+                            <Text size="xs" c="dimmed">
+                                Basis informatie over de reiziger
+                            </Text>
+                        </Box>
+                    </Group>
 
-                    <div className={`grid grid-cols-1 md:grid-cols-2 ${compact ? 'gap-4' : 'gap-8'}`}>
-                        {(section === 'all' || section === 'personal' || section === 'personal_basic') && (
+                    <SimpleGrid cols={{ base: 1, md: 2 }} spacing={compact ? 'md' : 'lg'}>
+                        {(section === 'all' ||
+                            section === 'personal' ||
+                            section === 'personal_basic') && (
                             <>
-                                <Input label="Voornaam" name="first_name" defaultValue={initialData?.first_name || signup.first_name} required placeholder="Bijv. Jan" />
-                                <Input label="Achternaam" name="last_name" defaultValue={initialData?.last_name || signup.last_name} required placeholder="Bijv. de Vries" />
-                                <Input label="Email Adres" name="email" type="email" defaultValue={initialData?.email || signup.email} required className="md:col-span-2" placeholder="jan@voorbeeld.nl" />
-                                <PhoneAndLabel label="Telefoonnummer" name="phone_number" defaultValue={initialData?.phone_number || signup.phone_number || ''} />
-                                <DateAndLabel label="Geboortedatum" name="date_of_birth" defaultValue={initialData?.date_of_birth || (signup.date_of_birth ? toISODate(signup.date_of_birth) : '')} />
+                                <Input
+                                    label="Voornaam"
+                                    name="first_name"
+                                    defaultValue={initialData?.first_name || signup.first_name}
+                                    required
+                                    placeholder="Bijv. Jan"
+                                />
+                                <Input
+                                    label="Achternaam"
+                                    name="last_name"
+                                    defaultValue={initialData?.last_name || signup.last_name}
+                                    required
+                                    placeholder="Bijv. de Vries"
+                                />
+                                <Box style={{ gridColumn: '1 / -1' }}>
+                                    <Input
+                                        label="Email Adres"
+                                        name="email"
+                                        type="email"
+                                        defaultValue={initialData?.email || signup.email}
+                                        required
+                                        placeholder="jan@voorbeeld.nl"
+                                    />
+                                </Box>
+                                <PhoneAndLabel
+                                    label="Telefoonnummer"
+                                    name="phone_number"
+                                    defaultValue={
+                                        initialData?.phone_number || signup.phone_number || ''
+                                    }
+                                />
+                                <DateAndLabel
+                                    label="Geboortedatum"
+                                    name="date_of_birth"
+                                    defaultValue={
+                                        initialData?.date_of_birth ||
+                                        (signup.date_of_birth ? toISODate(signup.date_of_birth) : '')
+                                    }
+                                />
                             </>
                         )}
-                        {(section === 'all' || section === 'personal' || section === 'personal_extended') && !isBusTrip && (
-                            <>
-                                <Select label="Type ID Bewijs" name="id_document" defaultValue={initialData?.id_document || signup.id_document || ''}>
-                                    <option value="">Niet opgegeven</option>
-                                    <option value="passport">Paspoort</option>
-                                    <option value="id_card">Identiteitskaart (ID)</option>
-                                </Select>
-                                <Input label="Document Nummer" name="document_number" defaultValue={initialData?.document_number || signup.document_number || ''} placeholder="ID of Paspoort nr" />
-                            </>
-                        )}
-                    </div>
+                        {(section === 'all' ||
+                            section === 'personal' ||
+                            section === 'personal_extended') &&
+                            !isBusTrip && (
+                                <>
+                                    <Select
+                                        label="Type ID Bewijs"
+                                        name="id_document"
+                                        defaultValue={
+                                            initialData?.id_document || signup.id_document || ''
+                                        }
+                                    >
+                                        <option value="">Niet opgegeven</option>
+                                        <option value="passport">Paspoort</option>
+                                        <option value="id_card">Identiteitskaart (ID)</option>
+                                    </Select>
+                                    <Input
+                                        label="Document Nummer"
+                                        name="document_number"
+                                        defaultValue={
+                                            initialData?.document_number ||
+                                            signup.document_number ||
+                                            ''
+                                        }
+                                        placeholder="ID of Paspoort nr"
+                                    />
+                                </>
+                            )}
+                    </SimpleGrid>
 
-                    {(section === 'all' || section === 'personal' || section === 'personal_extended') && (
+                    {(section === 'all' ||
+                        section === 'personal' ||
+                        section === 'personal_extended') && (
                         <>
-                            <div className={`${compact ? 'mt-4' : 'mt-8'} grid grid-cols-1 md:grid-cols-2 ${compact ? 'gap-4' : 'gap-8'}`}>
-                                <Textarea label="Allergieën / Dieet" name="allergies" defaultValue={initialData?.allergies || signup.allergies || ''} placeholder="Lijst hier allergieën..." />
-                                <Textarea label="Bijzonderheden" name="special_notes" defaultValue={initialData?.special_notes || signup.special_notes || ''} placeholder="Andere belangrijke informatie..." />
-                            </div>
+                            <SimpleGrid
+                                cols={{ base: 1, md: 2 }}
+                                spacing={compact ? 'md' : 'lg'}
+                                mt={compact ? 'md' : 'lg'}
+                            >
+                                <Textarea
+                                    label="Allergieën / Dieet"
+                                    name="allergies"
+                                    defaultValue={initialData?.allergies || signup.allergies || ''}
+                                    placeholder="Lijst hier allergieën..."
+                                />
+                                <Textarea
+                                    label="Bijzonderheden"
+                                    name="special_notes"
+                                    defaultValue={
+                                        initialData?.special_notes || signup.special_notes || ''
+                                    }
+                                    placeholder="Andere belangrijke informatie..."
+                                />
+                            </SimpleGrid>
 
                             {!isBusTrip && (
-                                <div className={`${compact ? 'mt-4' : 'mt-8'} grid grid-cols-1 md:grid-cols-2 ${compact ? 'gap-4' : 'gap-8'}`}>
-                                    <DateAndLabel label="Vervaldatum Document" name="document_expiry_date" defaultValue={initialData?.document_expiry_date || (signup.document_expiry_date ? toISODate(signup.document_expiry_date) : '')} />
-                                    <div className="flex items-center pt-4">
-                                        <Checkbox label="Extra Koffer" name="extra_luggage" defaultChecked={initialData ? parseBoolean(initialData.extra_luggage) : parseBoolean(signup.extra_luggage)} />
-                                    </div>
-                                </div>
+                                <SimpleGrid
+                                    cols={{ base: 1, md: 2 }}
+                                    spacing={compact ? 'md' : 'lg'}
+                                    mt={compact ? 'md' : 'lg'}
+                                >
+                                    <DateAndLabel
+                                        label="Vervaldatum Document"
+                                        name="document_expiry_date"
+                                        defaultValue={
+                                            initialData?.document_expiry_date ||
+                                            (signup.document_expiry_date
+                                                ? toISODate(signup.document_expiry_date)
+                                                : '')
+                                        }
+                                    />
+                                    <Group align="flex-end" pb={6}>
+                                        <Checkbox
+                                            label="Extra Koffer"
+                                            name="extra_luggage"
+                                            defaultChecked={
+                                                initialData
+                                                    ? parseBoolean(initialData.extra_luggage)
+                                                    : parseBoolean(signup.extra_luggage)
+                                            }
+                                        />
+                                    </Group>
+                                </SimpleGrid>
                             )}
 
-                            <div className={`${compact ? 'mt-4' : 'mt-6'}`}>
+                            <Box mt={compact ? 'md' : 'lg'}>
                                 {isBusTrip ? (
-                                    <Checkbox label="Beschikbaar als chauffeur" name="willing_to_drive" defaultChecked={initialData ? parseBoolean(initialData.willing_to_drive) : parseBoolean(signup.willing_to_drive)} />
+                                    <Checkbox
+                                        label="Beschikbaar als chauffeur"
+                                        name="willing_to_drive"
+                                        defaultChecked={
+                                            initialData
+                                                ? parseBoolean(initialData.willing_to_drive)
+                                                : parseBoolean(signup.willing_to_drive)
+                                        }
+                                    />
                                 ) : (
-                                    <div className="flex items-center gap-3 rounded-xl border border-(--beheer-border)/20 bg-(--bg-main)/30 px-3 py-2 text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">
-                                        <Bus className="size-4 text-(--beheer-accent) opacity-50" />
-                                        <span>Geen chauffeur informatie nodig voor vliegreizen</span>
-                                    </div>
+                                    <Paper withBorder px="sm" py="xs" radius="md">
+                                        <Group gap="xs">
+                                            <Text span c="brand" lh={1}>
+                                                <Bus size={16} />
+                                            </Text>
+                                            <Text size="xs" c="dimmed">
+                                                Geen chauffeur informatie nodig voor vliegreizen
+                                            </Text>
+                                        </Group>
+                                    </Paper>
                                 )}
-                            </div>
+                            </Box>
                         </>
                     )}
-                </div>
+                </Box>
             )}
 
+            {!minimal && section === 'all' && <Divider />}
+
             {(section === 'all' || section === 'admin') && (
-                <div className={`${(minimal && section === 'all') ? (compact ? 'pt-6' : 'pt-8') + ' border-t border-(--beheer-border)/20' : minimal ? '' : 'bg-(--beheer-card-soft)/20 p-8'}`}>
-                    <div className={`flex items-center gap-4 ${compact ? 'mb-4' : 'mb-8'}`}>
-                        <div className="flex size-10 items-center justify-center rounded-xl bg-(--beheer-accent)/10 text-(--beheer-accent) shadow-sm">
-                            <CreditCard className="size-5" />
-                        </div>
-                        <div className="space-y-0.5">
-                            <h2 className={`${compact ? 'text-lg' : 'text-xl'} font-semibold tracking-tight text-(--beheer-text)`}>Beheer & Betaling</h2>
-                            <p className="text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">Status en administratieve afhandeling</p>
-                        </div>
-                    </div>
-                    <div className={`grid grid-cols-1 md:grid-cols-2 ${compact ? 'gap-6' : 'gap-10'}`}>
-                        <div className={`${compact ? 'space-y-4' : 'space-y-6'}`}>
-                            <Select label="Registratie Status" name="status" defaultValue={initialData?.status || signup.status}>
+                <Box p={minimal ? 0 : 'xl'}>
+                    {minimal && section === 'all' && <Divider mb={compact ? 'md' : 'lg'} />}
+                    <Group gap="md" mb={compact ? 'md' : 'xl'}>
+                        <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                            <CreditCard size={20} />
+                        </ThemeIcon>
+                        <Box>
+                            <Title order={2} size={compact ? 'h4' : 'h3'}>
+                                Beheer & Betaling
+                            </Title>
+                            <Text size="xs" c="dimmed">
+                                Status en administratieve afhandeling
+                            </Text>
+                        </Box>
+                    </Group>
+
+                    <SimpleGrid cols={{ base: 1, md: 2 }} spacing={compact ? 'md' : 'xl'}>
+                        <Stack gap={compact ? 'md' : 'lg'}>
+                            <Select
+                                label="Registratie Status"
+                                name="status"
+                                defaultValue={initialData?.status || signup.status}
+                            >
                                 <option value="registered">Geregistreerd (Nieuw)</option>
                                 <option value="confirmed">Bevestigd (Gaat mee)</option>
                                 <option value="waitlist">Wachtlijst</option>
                                 <option value="cancelled">Geannuleerd</option>
                             </Select>
-                            <Select label="Deelnemer Rol" name="role" defaultValue={initialData?.role || signup.role}>
+                            <Select
+                                label="Deelnemer Rol"
+                                name="role"
+                                defaultValue={initialData?.role || signup.role}
+                            >
                                 <option value="participant">Reguliere Reiziger</option>
                                 <option value="crew">Crew / Organisatie</option>
                             </Select>
-                        </div>
+                        </Stack>
 
-                        <div className={`${compact ? 'space-y-4' : 'space-y-6'}`}>
-                            <div className={`${compact ? 'p-4' : 'p-6'} rounded-2xl border border-(--beheer-border)/50 bg-(--bg-main)/50 ${compact ? 'space-y-4' : 'space-y-5'} shadow-inner`}>
-                                <div className="flex items-center justify-between gap-4">
-                                    <Checkbox label="Aanbetaling OK" name="deposit_paid" defaultChecked={initialData ? parseBoolean(initialData.deposit_paid) : parseBoolean(signup.deposit_paid)} />
-                                    {signup.deposit_paid_at && (
-                                        <span className="shrink-0 text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">
-                                            {formatShortDate(new Date(signup.deposit_paid_at))}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="flex items-center justify-between gap-4">
-                                    <Checkbox label="Restbetaling OK" name="full_payment_paid" defaultChecked={initialData ? parseBoolean(initialData.full_payment_paid) : parseBoolean(signup.full_payment_paid)} />
-                                    {signup.full_payment_paid_at && (
-                                        <span className="shrink-0 text-[10px] font-semibold text-(--beheer-text-muted) opacity-60">
-                                            {formatShortDate(new Date(signup.full_payment_paid_at))}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3 px-2 text-[10px] leading-relaxed font-semibold text-(--beheer-text-muted) italic opacity-50">
-                                <AlertCircle className="size-3.5 shrink-0 text-(--beheer-accent) opacity-50" />
-                                <span>Betalingsstatus updates triggeren geen e-mails.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                        <Stack gap={compact ? 'md' : 'lg'}>
+                            <Paper withBorder p={compact ? 'md' : 'lg'} radius="md">
+                                <Stack gap="md">
+                                    <Group justify="space-between" gap="md">
+                                        <Checkbox
+                                            label="Aanbetaling OK"
+                                            name="deposit_paid"
+                                            defaultChecked={
+                                                initialData
+                                                    ? parseBoolean(initialData.deposit_paid)
+                                                    : parseBoolean(signup.deposit_paid)
+                                            }
+                                        />
+                                        {signup.deposit_paid_at && (
+                                            <Text size="xs" c="dimmed">
+                                                {formatShortDate(new Date(signup.deposit_paid_at))}
+                                            </Text>
+                                        )}
+                                    </Group>
+                                    <Group justify="space-between" gap="md">
+                                        <Checkbox
+                                            label="Restbetaling OK"
+                                            name="full_payment_paid"
+                                            defaultChecked={
+                                                initialData
+                                                    ? parseBoolean(initialData.full_payment_paid)
+                                                    : parseBoolean(signup.full_payment_paid)
+                                            }
+                                        />
+                                        {signup.full_payment_paid_at && (
+                                            <Text size="xs" c="dimmed">
+                                                {formatShortDate(
+                                                    new Date(signup.full_payment_paid_at)
+                                                )}
+                                            </Text>
+                                        )}
+                                    </Group>
+                                </Stack>
+                            </Paper>
+
+                            <Group gap="xs" wrap="nowrap">
+                                <Text span c="brand" lh={1}>
+                                    <AlertCircle size={14} />
+                                </Text>
+                                <Text size="xs" c="dimmed" fs="italic">
+                                    Betalingsstatus updates triggeren geen e-mails.
+                                </Text>
+                            </Group>
+                        </Stack>
+                    </SimpleGrid>
+                </Box>
             )}
-        </div>
+        </Stack>
+    );
+
+    if (minimal) {
+        return content;
+    }
+
+    return (
+        <Card p={0} shadow="sm" style={{ overflow: 'hidden' }}>
+            {content}
+        </Card>
     );
 }

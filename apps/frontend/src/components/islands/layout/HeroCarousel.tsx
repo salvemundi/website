@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { Box, Flex } from '@mantine/core';
 
 interface HeroCarouselProps {
     slideUrls: string[];
@@ -56,22 +57,33 @@ export function HeroCarousel({ slideUrls }: HeroCarouselProps) {
     };
 
     return (
-        <div 
-            className="group relative size-full overflow-hidden bg-(--bg-main)"
+        <Box
+            pos="relative"
+            w="100%"
+            h="100%"
+            bg="var(--mantine-color-default)"
+            style={{ overflow: 'hidden' }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
         >
             {/* Sliding container wrapper */}
-            <div 
-                className="flex size-full transition-transform duration-500 ease-in-out"
-                style={{ transform: `translate3d(-${currentIndex * 100}%, 0, 0)` }}
+            <Flex
+                w="100%"
+                h="100%"
+                style={{
+                    transition: 'transform 500ms ease-in-out',
+                    transform: `translate3d(-${currentIndex * 100}%, 0, 0)`,
+                }}
             >
                 {slideUrls.map((src, index) => {
                     return (
-                        <div
+                        <Box
                             key={index}
-                            className="relative size-full shrink-0"
+                            pos="relative"
+                            w="100%"
+                            h="100%"
+                            style={{ flexShrink: 0 }}
                         >
                             <Image
                                 src={src}
@@ -82,10 +94,10 @@ export function HeroCarousel({ slideUrls }: HeroCarouselProps) {
                                 sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 600px"
                                 className="object-cover object-center"
                             />
-                        </div>
+                        </Box>
                     );
                 })}
-            </div>
-        </div>
+            </Flex>
+        </Box>
     );
 }

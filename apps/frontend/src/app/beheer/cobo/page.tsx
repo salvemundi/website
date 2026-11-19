@@ -1,4 +1,7 @@
-import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
+import type { Metadata } from 'next';
+import Link from '@/components/ui/Link';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Group, Stack, Title } from '@mantine/core';
 import { getCoboBeheerSettings } from '@/server/actions/beheer/cobo/beheer-cobo.actions';
 import {
     getCoboEventsDb,
@@ -11,7 +14,6 @@ import CoboEventSwitcher from '@/components/islands/beheer/cobo/CoboEventSwitche
 import CoboVisibilityToggle from '@/components/islands/beheer/cobo/CoboVisibilityToggle';
 import { connection } from 'next/server';
 import { cookies } from 'next/headers';
-import type { Metadata } from 'next';
 import type { CoboEvent } from '@salvemundi/validations';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -48,30 +50,45 @@ export default async function AdminCoboPage() {
     const pageTitle = activeEvent?.title ? `CoBo Beheer: ${activeEvent.title}` : 'CoBo Beheer';
 
     return (
-        <BeheerPageShell
-            title={pageTitle}
-            backHref="/beheer"
-            actions={
-                <div className="flex w-full flex-wrap items-stretch gap-2 sm:items-center md:w-auto">
-                    <CoboEventSwitcher
-                        events={events}
-                        activeEvent={activeEvent ?? null}
-                    />
-                    <CoboVisibilityToggle
-                        initialVisible={settings.show}
-                        canToggle={settings.canToggleVisibility}
-                    />
-                </div>
-            }
-        >
-            <CoboManagementIsland
-                events={events}
-                activeEvent={activeEvent ?? null}
-                initialPreferences={boardPreferences}
-                initialGuestBoards={guestBoards}
-                initialTab={initialTab}
-                initialQueueSubtab={initialQueueSubtab}
-            />
-        </BeheerPageShell>
+        <Container size="xl" py="lg">
+            <Stack gap="lg">
+                <Group justify="space-between" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href="/beheer"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                        <Title order={1} size="h2" c="brand">
+                            {pageTitle}
+                        </Title>
+                    </Group>
+
+                    <Group gap="xs" wrap="wrap">
+                        <CoboEventSwitcher
+                            events={events}
+                            activeEvent={activeEvent ?? null}
+                        />
+                        <CoboVisibilityToggle
+                            initialVisible={settings.show}
+                            canToggle={settings.canToggleVisibility}
+                        />
+                    </Group>
+                </Group>
+
+                <CoboManagementIsland
+                    events={events}
+                    activeEvent={activeEvent ?? null}
+                    initialPreferences={boardPreferences}
+                    initialGuestBoards={guestBoards}
+                    initialTab={initialTab}
+                    initialQueueSubtab={initialQueueSubtab}
+                />
+            </Stack>
+        </Container>
     );
 }

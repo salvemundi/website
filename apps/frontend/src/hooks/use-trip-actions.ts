@@ -3,7 +3,7 @@ import type { Trip, TripSignup } from '@salvemundi/validations';
 import { updateSignupStatus, deleteTripSignup, updateTripSignup, updateSignupActivities } from '@/server/actions/beheer/reis/beheer-reis-signups.actions';
 import { sendPaymentEmail } from '@/server/actions/beheer/reis/beheer-reis-mail.actions';
 
-import { type ToastType } from '@/components/ui/beheer/BeheerToast';
+import { type ToastType } from '@/hooks/use-beheer-toast';
 
 type OptimisticAction =
     | { type: 'update_status'; id: number; status: TripSignup['status'] }

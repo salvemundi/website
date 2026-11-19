@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ReactNode } from 'react';
 import { Bold, Italic, Heading2, List, Link as LinkIcon, Eye, Pencil } from 'lucide-react';
+import { ActionIcon, Box, Center, Group, Paper, SegmentedControl, Text, Textarea } from '@mantine/core';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
 
 interface MarkdownEditorProps {
@@ -21,11 +22,11 @@ interface ToolbarAction {
 }
 
 const TOOLBAR_ACTIONS: ToolbarAction[] = [
-    { label: 'Vet', icon: <Bold className="size-4" />, before: '**', after: '**' },
-    { label: 'Cursief', icon: <Italic className="size-4" />, before: '*', after: '*' },
-    { label: 'Kop', icon: <Heading2 className="size-4" />, before: '## ', after: '', block: true },
-    { label: 'Lijst', icon: <List className="size-4" />, before: '- ', after: '', block: true },
-    { label: 'Link', icon: <LinkIcon className="size-4" />, before: '[', after: '](https://)' }
+    { label: 'Vet', icon: <Bold size={16} />, before: '**', after: '**' },
+    { label: 'Cursief', icon: <Italic size={16} />, before: '*', after: '*' },
+    { label: 'Kop', icon: <Heading2 size={16} />, before: '## ', after: '', block: true },
+    { label: 'Lijst', icon: <List size={16} />, before: '- ', after: '', block: true },
+    { label: 'Link', icon: <LinkIcon size={16} />, before: '[', after: '](https://)' },
 ];
 
 export function MarkdownEditor({ id, value, onChange, placeholder, rows = 10 }: MarkdownEditorProps) {
@@ -61,59 +62,91 @@ export function MarkdownEditor({ id, value, onChange, placeholder, rows = 10 }: 
     };
 
     return (
-        <div className="overflow-hidden rounded-xl border border-(--border-color) bg-(--bg-main)/50">
-            <div className="flex items-center justify-between gap-2 border-b border-(--border-color) bg-(--bg-soft) px-2 py-1.5">
-                <div className="flex items-center gap-1">
+        <Paper
+            radius="md"
+            style={{
+                overflow: 'hidden',
+                border: '1px solid var(--border)',
+                backgroundColor: 'var(--mantine-color-body)',
+            }}
+        >
+            <Group
+                justify="space-between"
+                gap="xs"
+                px="xs"
+                py={6}
+                bg="var(--mantine-color-default)"
+                style={{ borderBottom: '1px solid var(--border)' }}
+            >
+                <Group gap={4}>
                     {TOOLBAR_ACTIONS.map((action) => (
-                        <button
+                        <ActionIcon
                             key={action.label}
                             type="button"
+                            variant="subtle"
+                            color="brand"
+                            size="sm"
                             onClick={() => applyAction(action)}
                             disabled={mode === 'preview'}
                             title={action.label}
-                            className="icon-button rounded-lg p-1.5 text-(--text-muted) transition-colors hover:bg-(--bg-card) hover:text-(--theme-purple) disabled:cursor-not-allowed disabled:opacity-30"
+                            aria-label={action.label}
                         >
                             {action.icon}
-                        </button>
+                        </ActionIcon>
                     ))}
-                </div>
-                <div className="flex items-center gap-1 rounded-lg border border-(--border-color) bg-(--bg-card) p-0.5">
-                    <button
-                        type="button"
-                        onClick={() => setMode('edit')}
-                        className={`tab-button flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition-colors ${mode === 'edit' ? 'bg-(--theme-purple) text-white' : 'text-(--text-muted)'}`}
-                    >
-                        <Pencil className="size-3.5" /> Bewerken
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setMode('preview')}
-                        className={`tab-button flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition-colors ${mode === 'preview' ? 'bg-(--theme-purple) text-white' : 'text-(--text-muted)'}`}
-                    >
-                        <Eye className="size-3.5" /> Voorbeeld
-                    </button>
-                </div>
-            </div>
+                </Group>
+
+                <SegmentedControl
+                    size="xs"
+                    color="brand"
+                    value={mode}
+                    onChange={(val) => setMode(val as 'edit' | 'preview')}
+                    data={[
+                        {
+                            value: 'edit',
+                            label: (
+                                <Center style={{ gap: 6 }}>
+                                    <Pencil size={13} />
+                                    <Text span inherit>Bewerken</Text>
+                                </Center>
+                            ),
+                        },
+                        {
+                            value: 'preview',
+                            label: (
+                                <Center style={{ gap: 6 }}>
+                                    <Eye size={13} />
+                                    <Text span inherit>Voorbeeld</Text>
+                                </Center>
+                            ),
+                        },
+                    ]}
+                />
+            </Group>
 
             {mode === 'edit' ? (
-                <textarea
+                <Textarea
                     ref={textareaRef}
                     id={id}
                     value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    rows={rows}
+                    onChange={(e) => onChange(e.currentTarget.value)}
+                    minRows={rows}
+                    autosize
+                    variant="unstyled"
+                    p="md"
                     placeholder={placeholder}
-                    className="w-full resize-y border-none bg-transparent p-4 text-sm text-(--text-main) outline-none"
                 />
             ) : (
-                <div className="overflow-y-auto p-4" style={{ minHeight: `${rows * 1.5}rem` }}>
+                <Box p="md" mih={rows * 24} style={{ overflowY: 'auto' }}>
                     {value ? (
                         <SafeMarkdown content={value} />
                     ) : (
-                        <p className="text-sm text-(--text-muted) italic">Nog geen inhoud om weer te geven.</p>
+                        <Text size="sm" c="dimmed" fs="italic">
+                            Nog geen inhoud om weer te geven.
+                        </Text>
                     )}
-                </div>
+                </Box>
             )}
-        </div>
+        </Paper>
     );
 }

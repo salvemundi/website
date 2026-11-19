@@ -1,6 +1,7 @@
 'use client';
 
-import { Pen, Trash, Calendar, Users, Euro, Loader2 } from 'lucide-react';
+import { Pen, Trash, Calendar, Users, Euro } from 'lucide-react';
+import { Badge, Box, Button, Card, Divider, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import type { Trip } from '@salvemundi/validations';
 import { FallbackLogo } from '@/components/ui/media/FallbackLogo';
 import MediaAsset from '@/components/ui/media/MediaAsset';
@@ -27,21 +28,51 @@ export default function ReisCard({ trip, onEdit, onDelete, isDeleting }: ReisCar
         maximumFractionDigits: 2
     }).format(Number(trip.base_price || 0));
 
+    const isOpen = trip.registration_open || (trip.registration_start_date && new Date(trip.registration_start_date) <= new Date());
+
     return (
-        <div className="group flex flex-col overflow-hidden rounded-2xl bg-(--bg-card) shadow-(--shadow-card) ring-1 ring-(--border-color) transition-all hover:-translate-y-1 hover:shadow-2xl">
-            <div className="relative flex h-48 items-center justify-center overflow-hidden bg-(--beheer-border)/5 dark:bg-black/20">                {(() => {
-                const isOpen = trip.registration_open || (trip.registration_start_date && new Date(trip.registration_start_date) <= new Date());
-                return (
-                    <div className={`absolute top-4 left-4 z-10 rounded-xl px-3 py-1.5 text-[10px] font-black tracking-widest uppercase italic shadow-lg backdrop-blur-md ${isOpen ? 'bg-(--beheer-active) text-white shadow-(--beheer-active)/20' : 'bg-(--beheer-inactive) text-white shadow-(--beheer-inactive)/20'
-                        }`}>
-                        {isOpen ? 'Open' : 'Gesloten'}
-                    </div>
-                );
-            })()}
+        <Card
+            withBorder
+            radius="lg"
+            padding={0}
+            h="100%"
+            style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+        >
+            <Box
+                pos="relative"
+                h={192}
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    backgroundColor: 'var(--mantine-color-default-hover)',
+                }}
+            >
+                <Badge
+                    pos="absolute"
+                    top={12}
+                    left={12}
+                    color={isOpen ? 'success' : 'error'}
+                    variant="filled"
+                    size="sm"
+                    style={{ zIndex: 10 }}
+                >
+                    {isOpen ? 'Open' : 'Gesloten'}
+                </Badge>
+
                 {trip.is_bus_trip && (
-                    <div className="absolute top-4 right-4 z-10 rounded-xl bg-blue-500 px-3 py-1.5 text-[10px] font-black tracking-widest text-white uppercase italic shadow-lg shadow-blue-500/20 backdrop-blur-md">
+                    <Badge
+                        pos="absolute"
+                        top={12}
+                        right={12}
+                        color="brand"
+                        variant="filled"
+                        size="sm"
+                        style={{ zIndex: 10 }}
+                    >
                         Busreis
-                    </div>
+                    </Badge>
                 )}
 
                 {trip.image ? (
@@ -53,46 +84,65 @@ export default function ReisCard({ trip, onEdit, onDelete, isDeleting }: ReisCar
                         objectFit="contain"
                     />
                 ) : (
-                    <FallbackLogo className="object-contain p-8 opacity-40" />
+                    <Box pos="relative" w="100%" h="100%" p="xl" style={{ opacity: 0.4 }}>
+                        <FallbackLogo />
+                    </Box>
                 )}
-            </div>
+            </Box>
 
-            <div className="flex flex-1 flex-col p-6">
-                <h3 className="mb-2 line-clamp-1 text-xl font-black tracking-tight text-(--beheer-text) transition-colors group-hover:text-(--beheer-accent)">{trip.name}</h3>
+            <Stack p="lg" gap="md" style={{ flex: 1 }}>
+                <Title order={3} size="h4" lineClamp={1}>
+                    {trip.name}
+                </Title>
 
-                <div className="mb-6 flex-1 space-y-3">
-                    <div className="flex items-center gap-3 text-(--text-muted)">
-                        <Calendar className="size-4" />
-                        <span className="text-xs font-bold">{dateRange}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-(--text-muted)">
-                        <Users className="size-4" />
-                        <span className="text-xs font-bold">{trip.max_participants} plekken totaal</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-(--beheer-accent)">
-                        <Euro className="size-4" />
-                        <span className="text-sm font-black italic">{formattedPrice}</span>
-                    </div>
-                </div>
+                <Stack gap="xs" style={{ flex: 1 }}>
+                    <Group gap="sm" wrap="nowrap">
+                        <Calendar size={16} opacity={0.7} />
+                        <Text size="xs" fw={600} c="dimmed">
+                            {dateRange}
+                        </Text>
+                    </Group>
+                    <Group gap="sm" wrap="nowrap">
+                        <Users size={16} opacity={0.7} />
+                        <Text size="xs" fw={600} c="dimmed">
+                            {trip.max_participants} plekken totaal
+                        </Text>
+                    </Group>
+                    <Group gap="sm" wrap="nowrap">
+                        <Text span c="accent" lh={1}>
+                            <Euro size={16} />
+                        </Text>
+                        <Text size="sm" fw={800} c="accent" fs="italic">
+                            {formattedPrice}
+                        </Text>
+                    </Group>
+                </Stack>
 
-                <div className="grid grid-cols-2 gap-3 border-t border-(--beheer-border)/50 pt-4">
-                    <button
+                <Divider />
+
+                <SimpleGrid cols={2} spacing="sm">
+                    <Button
+                        type="button"
+                        variant="default"
+                        size="xs"
                         onClick={onEdit}
-                        className="beheer-button flex items-center justify-center gap-2 rounded-xl bg-(--bg-main) px-4 py-3 text-[10px] font-black tracking-widest text-(--beheer-text) uppercase ring-1 ring-(--beheer-border)/50 transition-all hover:bg-(--beheer-border)/10"
-                        type="button">
-                        <Pen className="size-3.5" />
+                        leftSection={<Pen size={14} />}
+                    >
                         Bewerken
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="light"
+                        color="error"
+                        size="xs"
                         onClick={onDelete}
-                        disabled={isDeleting}
-                        className="beheer-button flex items-center justify-center gap-2 rounded-xl bg-(--beheer-inactive)/5 px-4 py-3 text-[10px] font-black tracking-widest text-(--beheer-inactive) uppercase ring-1 ring-(--beheer-inactive)/20 transition-all hover:bg-(--beheer-inactive)/10"
-                        type="button">
-                        {isDeleting ? <Loader2 className="size-3.5 animate-spin" /> : <Trash className="size-3.5" />}
+                        loading={isDeleting}
+                        leftSection={<Trash size={14} />}
+                    >
                         Wissen
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </SimpleGrid>
+            </Stack>
+        </Card>
     );
 }

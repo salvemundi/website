@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Flex } from '@mantine/core';
 import { cn } from '@/lib/utils/cn';
 import { authClient } from '@/lib/auth';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -90,9 +91,9 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
                 paddingTop: 'env(safe-area-inset-top, 0px)'
             }}
         >
-            <div className="flex min-h-20 w-full flex-1 items-center">
+            <Flex mih={80} w="100%" flex={1} align="center">
                 {children}
-            </div>
+            </Flex>
             {mobileMenu}
         </header>
     );

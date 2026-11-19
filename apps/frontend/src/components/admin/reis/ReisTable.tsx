@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertCircle } from 'lucide-react';
+import { Center, Paper, SimpleGrid, Stack, Text } from '@mantine/core';
 import type { TripSignup, TripSignupActivity } from '@salvemundi/validations/schema/trip.zod';
 import ReisTableRow from './ReisTableRow';
 
@@ -36,38 +37,41 @@ export default function ReisTable({
     isBusTrip = false
 }: ReisTableProps) {
     return (
-        <div className="flex flex-col gap-3">
+        <Stack gap="sm">
             {filteredSignups.length === 0 ? (
-                <div className="rounded-3xl border border-(--beheer-border)/40 bg-(--beheer-card-bg)/50 p-20 text-center">
-                    <AlertCircle className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-20" />
-                    <p className="text-[10px] font-semibold text-(--beheer-text-muted)">Geen aanmeldingen gevonden</p>
-                </div>
+                <Paper withBorder radius="lg" p="xl">
+                    <Center py="xl">
+                        <Stack align="center" gap="sm">
+                            <AlertCircle size={48} opacity={0.25} />
+                            <Text size="xs" fw={600} c="dimmed">
+                                Geen aanmeldingen gevonden
+                            </Text>
+                        </Stack>
+                    </Center>
+                </Paper>
             ) : (
-                <>
-                    {/* Cards Grid */}
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                        {filteredSignups.map(signup => (
-                            <ReisTableRow
-                                key={signup.id}
-                                signup={signup}
-                                isSelected={selectedSignupId === signup.id}
-                                onSelect={onOpenSignup}
-                                statusBadge={getStatusBadge(signup.status)}
-                                paymentStatus={getPaymentStatus(signup)}
-                                isStatusLoading={actionStates.status.has(signup.id)}
-                                isDeleteLoading={actionStates.delete.has(signup.id)}
-                                sendingEmailType={sendingEmailTo?.signupId === signup.id ? sendingEmailTo.type : null}
-                                onStatusChange={onStatusChange}
-                                onDelete={onDelete}
-                                onResendEmail={onResendEmail}
-                                activities={signupActivitiesMap[signup.id] || []}
-                                allowFinalPayments={allowFinalPayments}
-                                isBusTrip={isBusTrip}
-                            />
-                        ))}
-                    </div>
-                </>
+                <SimpleGrid cols={{ base: 1, md: 2, xl: 3 }} spacing="md">
+                    {filteredSignups.map(signup => (
+                        <ReisTableRow
+                            key={signup.id}
+                            signup={signup}
+                            isSelected={selectedSignupId === signup.id}
+                            onSelect={onOpenSignup}
+                            statusBadge={getStatusBadge(signup.status)}
+                            paymentStatus={getPaymentStatus(signup)}
+                            isStatusLoading={actionStates.status.has(signup.id)}
+                            isDeleteLoading={actionStates.delete.has(signup.id)}
+                            sendingEmailType={sendingEmailTo?.signupId === signup.id ? sendingEmailTo.type : null}
+                            onStatusChange={onStatusChange}
+                            onDelete={onDelete}
+                            onResendEmail={onResendEmail}
+                            activities={signupActivitiesMap[signup.id] || []}
+                            allowFinalPayments={allowFinalPayments}
+                            isBusTrip={isBusTrip}
+                        />
+                    ))}
+                </SimpleGrid>
             )}
-        </div>
+        </Stack>
     );
 }

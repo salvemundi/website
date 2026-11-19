@@ -1,28 +1,39 @@
 'use client';
 
-import type { EnrichedUser } from '@/types/auth';
-import { z } from 'zod';
-import { stickerPublicSchema } from "@salvemundi/validations";
 import dynamic from 'next/dynamic';
+import { Center, Loader, Stack, Text } from '@mantine/core';
+import type { StickerPublic } from '@salvemundi/validations';
+import type { EnrichedUser } from '@/types/auth';
 
 const StickerMapIsland = dynamic(
     () => import('./StickerMapIsland'),
     {
         ssr: false,
         loading: () => (
-            <div className="flex h-150 w-full animate-pulse items-center justify-center rounded-2xl border border-purple-500/10 bg-purple-950/5">
-                <span className="text-sm font-semibold tracking-wide text-(--text-muted) uppercase">Kaart aan het laden...</span>
-            </div>
-        )
+            <Center
+                h="100%"
+                mih={400}
+                w="100%"
+                bg="var(--mantine-color-default)"
+                style={{
+                    borderRadius: 'var(--mantine-radius-lg)',
+                    border: '1px solid var(--border)',
+                }}
+            >
+                <Stack align="center" gap="sm">
+                    <Loader color="brand" size="md" />
+                    <Text size="sm" fw={600} c="dimmed" tt="uppercase">
+                        Kaart aan het laden...
+                    </Text>
+                </Stack>
+            </Center>
+        ),
     }
 );
 
-type Sticker = z.infer<typeof stickerPublicSchema>;
-
 interface StickerMapBridgeProps {
-    initialStickers: Sticker[];
+    initialStickers: StickerPublic[];
     user: EnrichedUser | null;
-    className?: string;
 }
 
 export default function StickerMapBridge(props: StickerMapBridgeProps) {

@@ -13,7 +13,6 @@ export default function BeheerError({
             error={error} 
             reset={reset} 
             title="Beheerderspaneel Fout" 
-            className="p-4 sm:p-6 lg:p-8"
         />
     );
 }

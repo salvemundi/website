@@ -1,17 +1,33 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail, Building2, MapPin, Briefcase, CheckCircle2, Image as ImageIcon, FileText, X, Send, ShieldCheck, Users, Info } from 'lucide-react';
-import { FormField } from '@/shared/ui/FormField';
-import { Input } from '@/shared/ui/Input';
+import {
+    ActionIcon,
+    Alert,
+    Badge,
+    Box,
+    Button,
+    Card,
+    Checkbox,
+    Divider,
+    FileButton,
+    Group,
+    InputWrapper,
+    Select,
+    SimpleGrid,
+    Stack,
+    Text,
+    TextInput,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
 import { TagInput } from '@/shared/ui/TagInput';
 import { MarkdownEditor } from '@/shared/ui/MarkdownEditor';
-import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { submitVacancy } from '@/server/actions/vacancies/vacancies-submission.actions';
 import {
     vacancySubmissionSchema,
@@ -20,42 +36,38 @@ import {
 } from '@salvemundi/validations';
 
 const PROCESS_STEPS = [
-    { icon: <Send className="size-4" />, text: 'Je vult dit formulier in en verstuurt je aanmelding.' },
-    { icon: <Mail className="size-4" />, text: 'Je ontvangt direct een e-mail met een link om je e-mailadres te bevestigen.' },
-    { icon: <ShieldCheck className="size-4" />, text: 'Na bevestiging beoordeelt het bestuur van Salve Mundi je aanmelding.' },
-    { icon: <Users className="size-4" />, text: 'Na goedkeuring is je vacature zichtbaar voor ingelogde leden van Salve Mundi — niet voor externe bezoekers van de website.' }
+    { icon: <Send size={16} />, text: 'Je vult dit formulier in en verstuurt je aanmelding.' },
+    { icon: <Mail size={16} />, text: 'Je ontvangt direct een e-mail met een link om je e-mailadres te bevestigen.' },
+    { icon: <ShieldCheck size={16} />, text: 'Na bevestiging beoordeelt het bestuur van Salve Mundi je aanmelding.' },
+    { icon: <Users size={16} />, text: 'Na goedkeuring is je vacature zichtbaar voor ingelogde leden van Salve Mundi — niet voor externe bezoekers van de website.' }
 ];
 
 function ProcessExplanation() {
     return (
-        <div className="mb-6 space-y-4 rounded-2xl border border-(--border-color) bg-(--bg-soft) p-6">
-            <h2 className="flex items-center gap-2 text-sm font-bold text-(--text-main)">
-                <Info className="size-4 text-(--theme-purple)" />
-                Hoe werkt het?
-            </h2>
-            <ol className="space-y-3">
+        <Alert color="brand" variant="light" radius="lg" mb="lg" title="Hoe werkt het?" icon={<Info size={18} />}>
+            <Stack gap="xs" mt="xs">
                 {PROCESS_STEPS.map((step, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                        <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-(--theme-purple) text-xs font-bold text-white">
+                    <Group key={i} align="flex-start" wrap="nowrap" gap="sm">
+                        <Badge size="sm" circle color="brand" mt={2} style={{ flexShrink: 0 }}>
                             {i + 1}
-                        </span>
-                        <p className="text-sm leading-relaxed text-(--text-muted)">{step.text}</p>
-                    </li>
+                        </Badge>
+                        <Text size="sm" c="dimmed">
+                            {step.text}
+                        </Text>
+                    </Group>
                 ))}
-            </ol>
-        </div>
+            </Stack>
+        </Alert>
     );
 }
 
 export default function VacancySubmissionFormIsland() {
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
     const [submitted, setSubmitted] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [documentFile, setDocumentFile] = useState<File | null>(null);
-    const imageInputRef = useRef<HTMLInputElement>(null);
-    const documentInputRef = useRef<HTMLInputElement>(null);
 
     const {
         register,
@@ -84,7 +96,6 @@ export default function VacancySubmissionFormIsland() {
     });
 
     const type = watch('type');
-    const selectedDirections = watch('directions');
 
     const handleImageChange = (file: File | null) => {
         setImageFile(file);
@@ -124,210 +135,312 @@ export default function VacancySubmissionFormIsland() {
 
     if (submitted) {
         return (
-            <StandardFormCard title="Bedankt voor je aanmelding" icon={<CheckCircle2 className="size-8" />}>
-                <p className="leading-relaxed text-(--text-main)">
-                    We hebben je een e-mail gestuurd met een link om je e-mailadres te bevestigen. Zodra je dit
-                    hebt gedaan, beoordeelt het bestuur van Salve Mundi je aanmelding. Na goedkeuring is je
-                    vacature zichtbaar voor ingelogde leden van Salve Mundi — niet voor externe bezoekers van de
-                    website.
-                </p>
-            </StandardFormCard>
+            <Card padding="xl" radius="xl" shadow="xl" withBorder>
+                <Stack gap="md">
+                    <Group gap="sm">
+                        <ThemeIcon size="lg" radius="md" variant="light" color="success">
+                            <CheckCircle2 size={22} />
+                        </ThemeIcon>
+                        <Title order={2} size="h2" c="brand">
+                            Bedankt voor je aanmelding
+                        </Title>
+                    </Group>
+                    <Text>
+                        We hebben je een e-mail gestuurd met een link om je e-mailadres te bevestigen. Zodra je dit
+                        hebt gedaan, beoordeelt het bestuur van Salve Mundi je aanmelding. Na goedkeuring is je
+                        vacature zichtbaar voor ingelogde leden van Salve Mundi — niet voor externe bezoekers van de
+                        website.
+                    </Text>
+                </Stack>
+            </Card>
         );
     }
 
     return (
-        <>
+        <Stack gap="lg">
             <ProcessExplanation />
-            <StandardFormCard
-                title="Vacature aanmelden"
-                icon={<Briefcase className="size-8" />}
-                description="Meld een stage of bijbaan aan voor leden van Salve Mundi."
-            >
-            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-6" autoComplete="off">
-                <FormField id="field-type" label="Type vacature" required error={errors.type?.message}>
-                    <select {...register('type')} id="field-type" className="form-input" suppressHydrationWarning>
-                        <option value="parttime">Bijbaan (parttime)</option>
-                        <option value="internship">Stage</option>
-                    </select>
-                </FormField>
+            <Card padding="xl" radius="xl" shadow="xl" withBorder>
+                <Stack gap="lg">
+                    <Stack gap="xs">
+                        <Group gap="sm">
+                            <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                                <Briefcase size={20} />
+                            </ThemeIcon>
+                            <Title order={2} size="h2" c="brand">
+                                Vacature aanmelden
+                            </Title>
+                        </Group>
+                        <Text size="sm" c="dimmed">
+                            Meld een stage of bijbaan aan voor leden van Salve Mundi.
+                        </Text>
+                    </Stack>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <FormField id="field-title" label="Functietitel" required error={errors.title?.message}>
-                        <Input {...register('title')} id="field-title" placeholder="Bijv. Frontend Developer" />
-                    </FormField>
-                    <FormField id="field-company" label="Bedrijfsnaam" required error={errors.company?.message}>
-                        <div className="relative">
-                            <Building2 className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
-                            <Input {...register('company')} id="field-company" placeholder="Bedrijfsnaam" className="pl-10" />
-                        </div>
-                    </FormField>
-                </div>
-
-                <FormField id="field-description" label="Omschrijving" required error={errors.description?.message}>
-                    <Controller
-                        control={control}
-                        name="description"
-                        render={({ field }) => (
-                            <MarkdownEditor
-                                id="field-description"
-                                value={field.value}
-                                onChange={field.onChange}
-                                rows={10}
-                                placeholder="Omschrijf de functie, verantwoordelijkheden en wat jullie zoeken in een kandidaat..."
-                            />
-                        )}
-                    />
-                    <p className="mt-1 text-xs text-(--text-muted)">
-                        Gebruik de knoppen voor opmaak, of klik op &quot;Voorbeeld&quot; om te zien hoe je omschrijving straks op de Bijbanenbank wordt weergegeven.
-                    </p>
-                </FormField>
-
-                <FormField id="field-skills" label="Gewenste vaardigheden" error={errors.skills?.message}>
-                    <Controller
-                        control={control}
-                        name="skills"
-                        render={({ field }) => (
-                            <TagInput
-                                id="field-skills"
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Typ een vaardigheid en druk op enter (bijv. React, Communicatief)"
-                            />
-                        )}
-                    />
-                </FormField>
-
-                <FormField id="field-location" label="Locatie" required error={errors.location?.message}>
-                    <div className="relative">
-                        <MapPin className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
-                        <Input {...register('location')} id="field-location" placeholder="Bijv. Eindhoven" className="pl-10" />
-                    </div>
-                </FormField>
-
-                {type === 'internship' && (
-                    <FormField id="field-directions" label="ICT-richting(en)" required error={errors.directions?.message}>
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                            {ICT_DIRECTIONS.map((option) => (
-                                <label key={option} className="flex cursor-pointer items-center gap-2 rounded-xl bg-(--bg-soft) px-3 py-2 text-sm font-medium text-(--text-main)">
-                                    <input
-                                        type="checkbox"
-                                        value={option}
-                                        checked={selectedDirections.includes(option)}
-                                        {...register('directions')}
-                                        className="size-4 accent-(--theme-purple)"
+                    <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} autoComplete="off">
+                        <Stack gap="lg">
+                            <Controller
+                                name="type"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select
+                                        id="field-type"
+                                        label="Type vacature"
+                                        required
+                                        data={[
+                                            { value: 'parttime', label: 'Bijbaan (parttime)' },
+                                            { value: 'internship', label: 'Stage' },
+                                        ]}
+                                        value={field.value}
+                                        onChange={(val) => field.onChange((val ?? 'parttime') as VacancySubmissionForm['type'])}
+                                        allowDeselect={false}
+                                        error={errors.type?.message}
                                     />
-                                    {option}
-                                </label>
-                            ))}
-                        </div>
-                    </FormField>
-                )}
-
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <FormField id="field-salary" label="Salaris / vergoeding" error={errors.salary?.message}>
-                        <Input {...register('salary')} id="field-salary" placeholder="Bijv. €12,50 per uur" />
-                    </FormField>
-                    <FormField id="field-employment-type" label="Dienstverband/stage type" error={errors.employment_type?.message}>
-                        <Input {...register('employment_type')} id="field-employment-type" placeholder="Bijv. Fulltime" />
-                    </FormField>
-                    <FormField id="field-working-hours" label="Werktijden" error={errors.working_hours?.message}>
-                        <Input {...register('working_hours')} id="field-working-hours" placeholder="Bijv. 16-24 uur/week" />
-                    </FormField>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <FormField id="field-image" label="Afbeelding (optioneel)">
-                        <div className="flex items-center gap-3">
-                            {imagePreview && (
-                                <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-(--bg-soft)">
-                                    <MediaAsset asset={imagePreview} alt="Voorbeeld" fill objectFit="cover" unoptimized />
-                                </div>
-                            )}
-                            <button
-                                type="button"
-                                onClick={() => imageInputRef.current?.click()}
-                                className="btn-upload flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--bg-soft) px-4 py-2.5 text-sm font-bold text-(--text-muted) transition-colors hover:text-(--theme-purple)"
-                            >
-                                <ImageIcon className="size-4" />
-                                {imageFile ? imageFile.name : 'Kies afbeelding'}
-                            </button>
-                            <input
-                                ref={imageInputRef}
-                                type="file"
-                                accept="image/jpeg,image/jpg,image/png,image/webp"
-                                onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
-                                className="hidden"
+                                )}
                             />
-                        </div>
-                    </FormField>
 
-                    <FormField id="field-document" label="Stageopdracht (PDF/Word, optioneel)">
-                        <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={() => documentInputRef.current?.click()}
-                                className="btn-upload flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--bg-soft) px-4 py-2.5 text-sm font-bold text-(--text-muted) transition-colors hover:text-(--theme-purple)"
+                            <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+                                <TextInput
+                                    id="field-title"
+                                    label="Functietitel"
+                                    required
+                                    placeholder="Bijv. Frontend Developer"
+                                    error={errors.title?.message}
+                                    {...register('title')}
+                                />
+                                <TextInput
+                                    id="field-company"
+                                    label="Bedrijfsnaam"
+                                    required
+                                    placeholder="Bedrijfsnaam"
+                                    leftSection={<Building2 size={16} />}
+                                    error={errors.company?.message}
+                                    {...register('company')}
+                                />
+                            </SimpleGrid>
+
+                            <InputWrapper
+                                id="field-description"
+                                label="Omschrijving"
+                                required
+                                description='Gebruik de knoppen voor opmaak, of klik op "Voorbeeld" om te zien hoe je omschrijving straks op de Bijbanenbank wordt weergegeven.'
+                                error={errors.description?.message}
                             >
-                                <FileText className="size-4" />
-                                {documentFile ? documentFile.name : 'Kies bestand'}
-                            </button>
-                            <input
-                                ref={documentInputRef}
-                                type="file"
-                                accept="application/pdf,.doc,.docx"
-                                onChange={(e) => setDocumentFile(e.target.files?.[0] || null)}
-                                className="hidden"
+                                <Controller
+                                    control={control}
+                                    name="description"
+                                    render={({ field }) => (
+                                        <MarkdownEditor
+                                            id="field-description"
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            rows={10}
+                                            placeholder="Omschrijf de functie, verantwoordelijkheden en wat jullie zoeken in een kandidaat..."
+                                        />
+                                    )}
+                                />
+                            </InputWrapper>
+
+                            <InputWrapper
+                                id="field-skills"
+                                label="Gewenste vaardigheden"
+                                error={errors.skills?.message}
+                            >
+                                <Controller
+                                    control={control}
+                                    name="skills"
+                                    render={({ field }) => (
+                                        <TagInput
+                                            id="field-skills"
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            placeholder="Typ een vaardigheid en druk op enter (bijv. React, Communicatief)"
+                                        />
+                                    )}
+                                />
+                            </InputWrapper>
+
+                            <TextInput
+                                id="field-location"
+                                label="Locatie"
+                                required
+                                placeholder="Bijv. Eindhoven"
+                                leftSection={<MapPin size={16} />}
+                                error={errors.location?.message}
+                                {...register('location')}
                             />
-                            {documentFile && (
-                                <button type="button" onClick={() => setDocumentFile(null)} className="icon-button rounded-lg bg-(--bg-soft) p-2 text-(--text-muted) hover:text-(--theme-error)" aria-label="Verwijder document">
-                                    <X className="size-4" />
-                                </button>
+
+                            {type === 'internship' && (
+                                <Controller
+                                    name="directions"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Checkbox.Group
+                                            id="field-directions"
+                                            label="ICT-richting(en)"
+                                            withAsterisk
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            error={errors.directions?.message}
+                                        >
+                                            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs" mt="xs">
+                                                {ICT_DIRECTIONS.map((option) => (
+                                                    <Checkbox key={option} value={option} label={option} />
+                                                ))}
+                                            </SimpleGrid>
+                                        </Checkbox.Group>
+                                    )}
+                                />
                             )}
-                        </div>
-                    </FormField>
-                </div>
 
-                <div className="border-t border-(--border-color) pt-6">
-                    <h3 className="mb-4 text-sm font-bold text-(--text-main)">Contactgegevens</h3>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                        <FormField id="field-contact-email" label="E-mailadres" required error={errors.contact_email?.message}>
-                            <div className="relative">
-                                <Mail className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
-                                <Input {...register('contact_email')} id="field-contact-email" type="email" placeholder="contact@bedrijf.nl" className="pl-10" />
-                            </div>
-                        </FormField>
-                        <FormField id="field-contact-phone" label="Telefoonnummer" error={errors.contact_phone?.message}>
-                            <Input {...register('contact_phone')} id="field-contact-phone" placeholder="+31612345678" />
-                        </FormField>
-                        <FormField id="field-contact-website" label="Website" error={errors.contact_website?.message}>
-                            <Input {...register('contact_website')} id="field-contact-website" placeholder="https://bedrijf.nl" />
-                        </FormField>
-                    </div>
-                </div>
+                            <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
+                                <TextInput
+                                    id="field-salary"
+                                    label="Salaris / vergoeding"
+                                    placeholder="Bijv. €12,50 per uur"
+                                    error={errors.salary?.message}
+                                    {...register('salary')}
+                                />
+                                <TextInput
+                                    id="field-employment-type"
+                                    label="Dienstverband/stage type"
+                                    placeholder="Bijv. Fulltime"
+                                    error={errors.employment_type?.message}
+                                    {...register('employment_type')}
+                                />
+                                <TextInput
+                                    id="field-working-hours"
+                                    label="Werktijden"
+                                    placeholder="Bijv. 16-24 uur/week"
+                                    error={errors.working_hours?.message}
+                                    {...register('working_hours')}
+                                />
+                            </SimpleGrid>
 
-                <button
-                    type="submit"
-                    disabled={isPending}
-                    className="enabled:active:scale-0.98 form-button flex w-full items-center justify-center gap-2 rounded-xl bg-theme-purple py-4 text-lg font-black text-white shadow-lg shadow-purple-500/20 transition-all enabled:hover:bg-purple-600 disabled:opacity-50 sm:rounded-2xl"
-                >
-                    {isPending ? (
-                        <>
-                            <div className="size-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                            Versturen...
-                        </>
-                    ) : (
-                        'Vacature aanmelden'
-                    )}
-                </button>
+                            <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+                                <InputWrapper id="field-image" label="Afbeelding (optioneel)">
+                                    <Group gap="sm" wrap="nowrap" mt={4}>
+                                        {imagePreview && (
+                                            <Box
+                                                pos="relative"
+                                                w={64}
+                                                h={64}
+                                                style={{
+                                                    flexShrink: 0,
+                                                    borderRadius: 'var(--mantine-radius-md)',
+                                                    overflow: 'hidden',
+                                                }}
+                                            >
+                                                <MediaAsset asset={imagePreview} alt="Voorbeeld" fill objectFit="cover" unoptimized />
+                                            </Box>
+                                        )}
+                                        <FileButton
+                                            onChange={handleImageChange}
+                                            accept="image/jpeg,image/jpg,image/png,image/webp"
+                                        >
+                                            {(props) => (
+                                                <Button
+                                                    {...props}
+                                                    type="button"
+                                                    variant="default"
+                                                    style={{ flex: 1 }}
+                                                    leftSection={<ImageIcon size={16} />}
+                                                >
+                                                    {imageFile ? imageFile.name : 'Kies afbeelding'}
+                                                </Button>
+                                            )}
+                                        </FileButton>
+                                    </Group>
+                                </InputWrapper>
 
-                {/* Honeypot at bottom to avoid breaking browser autofill sections */}
-                <div className="pointer-events-none absolute top-0 left-0 -z-10 size-0 overflow-hidden opacity-0" aria-hidden="true">
-                    <label htmlFor="hp_confirm">Website</label>
-                    <input {...register('hp_confirm')} id="hp_confirm" tabIndex={-1} autoComplete="off" className="hidden" suppressHydrationWarning />
-                </div>
-            </form>
-                <BeheerToast toast={toast} onClose={hideToast} />
-            </StandardFormCard>
-        </>
+                                <InputWrapper id="field-document" label="Stageopdracht (PDF/Word, optioneel)">
+                                    <Group gap="xs" wrap="nowrap" mt={4}>
+                                        <FileButton
+                                            onChange={setDocumentFile}
+                                            accept="application/pdf,.doc,.docx"
+                                        >
+                                            {(props) => (
+                                                <Button
+                                                    {...props}
+                                                    type="button"
+                                                    variant="default"
+                                                    style={{ flex: 1 }}
+                                                    leftSection={<FileText size={16} />}
+                                                >
+                                                    {documentFile ? documentFile.name : 'Kies bestand'}
+                                                </Button>
+                                            )}
+                                        </FileButton>
+                                        {documentFile && (
+                                            <ActionIcon
+                                                type="button"
+                                                variant="default"
+                                                color="error"
+                                                size="lg"
+                                                onClick={() => setDocumentFile(null)}
+                                                aria-label="Verwijder document"
+                                            >
+                                                <X size={16} />
+                                            </ActionIcon>
+                                        )}
+                                    </Group>
+                                </InputWrapper>
+                            </SimpleGrid>
+
+                            <Divider />
+
+                            <Stack gap="sm">
+                                <Title order={3} size="h6">Contactgegevens</Title>
+                                <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
+                                    <TextInput
+                                        id="field-contact-email"
+                                        type="email"
+                                        label="E-mailadres"
+                                        required
+                                        placeholder="contact@bedrijf.nl"
+                                        leftSection={<Mail size={16} />}
+                                        error={errors.contact_email?.message}
+                                        {...register('contact_email')}
+                                    />
+                                    <TextInput
+                                        id="field-contact-phone"
+                                        label="Telefoonnummer"
+                                        placeholder="+31612345678"
+                                        error={errors.contact_phone?.message}
+                                        {...register('contact_phone')}
+                                    />
+                                    <TextInput
+                                        id="field-contact-website"
+                                        label="Website"
+                                        placeholder="https://bedrijf.nl"
+                                        error={errors.contact_website?.message}
+                                        {...register('contact_website')}
+                                    />
+                                </SimpleGrid>
+                            </Stack>
+
+                            <Button type="submit" fullWidth size="lg" loading={isPending}>
+                                {isPending ? 'Versturen...' : 'Vacature aanmelden'}
+                            </Button>
+
+                            <Box
+                                aria-hidden="true"
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: 0,
+                                    height: 0,
+                                    overflow: 'hidden',
+                                    opacity: 0,
+                                    pointerEvents: 'none',
+                                }}
+                            >
+                                <label htmlFor="hp_confirm">Website</label>
+                                <input {...register('hp_confirm')} id="hp_confirm" tabIndex={-1} autoComplete="off" style={{ display: 'none' }} suppressHydrationWarning />
+                            </Box>
+                        </Stack>
+                    </form>
+                </Stack>
+            </Card>
+        </Stack>
     );
 }

@@ -1,23 +1,27 @@
 import { FileText, Download } from 'lucide-react';
+import { Button } from '@mantine/core';
 
 interface DocumentAssetProps {
     id: string;
     label?: string;
-    className?: string;
 }
 
-export default function DocumentAsset({ id, label = 'Download document', className = '' }: DocumentAssetProps) {
+export default function DocumentAsset({ id, label = 'Download document' }: DocumentAssetProps) {
     return (
-        <a
+        <Button
+            component="a"
             href={`/api/assets/${id}`}
             target="_blank"
             rel="noopener noreferrer"
             download
-            className={`form-button inline-flex items-center gap-2 rounded-xl bg-(--bg-soft) px-4 py-2.5 text-sm font-bold text-(--theme-purple) transition-colors hover:bg-(--theme-purple)/10 ${className}`}
+            variant="light"
+            color="brand"
+            size="sm"
+            leftSection={<FileText size={16} />}
+            rightSection={<Download size={14} />}
+            style={{ flexShrink: 0 }}
         >
-            <FileText className="size-4" />
             {label}
-            <Download className="size-3.5 opacity-60" />
-        </a>
+        </Button>
     );
 }

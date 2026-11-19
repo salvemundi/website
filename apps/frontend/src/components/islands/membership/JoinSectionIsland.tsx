@@ -2,10 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { authClient } from '@/lib/auth';
+import { Button, Card, Container, Group, Stack, Text, Title } from '@mantine/core';
+import { useAuth } from '@/features/auth/providers/auth-provider';
 import type { EnrichedUser } from '@/types/auth';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 
 interface JoinSectionIslandProps {
     serverUser?: EnrichedUser | null;
@@ -14,8 +13,8 @@ interface JoinSectionIslandProps {
 export const JoinSectionIsland: React.FC<JoinSectionIslandProps> = ({
     serverUser = null
 }) => {
-    const { data: session } = authClient.useSession();
-    const user = (session?.user as unknown as EnrichedUser | null | undefined) ?? serverUser;
+    const { user: clientUser } = useAuth();
+    const user = clientUser ?? serverUser;
 
     if (user?.membership_status === 'active') return null;
 
@@ -28,25 +27,25 @@ export const JoinSectionIsland: React.FC<JoinSectionIslandProps> = ({
         : 'Sluit je aan bij onze community van studenten en maak het meeste van je studententijd. Voor slechts €20 per jaar krijg je toegang tot alle activiteiten met korting!';
 
     return (
-        <section>
-            <Card className="mx-auto max-w-3xl text-center">
-                <CardContent className="space-y-6 p-8">
-                    <h2>{title}</h2>
-                    <p className="mx-auto max-w-2xl text-lg text-muted-foreground">{description}</p>
-                    <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                        <Button asChild size="lg">
-                            <Link href="/lidmaatschap">
-                                {buttonText}
-                            </Link>
+        <Container component="section" size="md">
+            <Card padding="xl">
+                <Stack align="center" gap="lg">
+                    <Title order={2} ta="center" fz={{ base: '1.75rem', md: '2.5rem' }}>
+                        {title}
+                    </Title>
+                    <Text size="lg" c="dimmed" ta="center" maw={600}>
+                        {description}
+                    </Text>
+                    <Group justify="center" gap="md">
+                        <Button component={Link} href="/lidmaatschap" size="lg">
+                            {buttonText}
                         </Button>
-                        <Button asChild variant="secondary" size="lg">
-                            <Link href="/contact">
-                                Neem contact op
-                            </Link>
+                        <Button component={Link} href="/contact" variant="default" size="lg">
+                            Neem contact op
                         </Button>
-                    </div>
-                </CardContent>
+                    </Group>
+                </Stack>
             </Card>
-        </section>
+        </Container>
     );
 };

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import BeheerUnauthorized from '@/components/ui/beheer/BeheerUnauthorized';
-import { Settings2, Plane, LayoutDashboard } from 'lucide-react';
-import Link from 'next/link';
-import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
+import { Settings2, Plane, LayoutDashboard, ChevronLeft } from 'lucide-react';
+import Link from '@/components/ui/Link';
+import { Button, Card, Center, Container, Divider, Group, Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import BeheerReisSwitcher from '@/components/ui/beheer/BeheerReisSwitcher';
 import BeheerReisTableIsland from '@/components/islands/beheer/reis/BeheerReisTableIsland';
 import ReisVisibilityToggle from '@/components/islands/beheer/reis/ReisVisibilityToggle';
@@ -106,9 +106,28 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
 
     if (data.noTrips) {
         return (
-            <BeheerPageShell title="Reis Beheer" backHref="/beheer">
-                <NoTripsView />
-            </BeheerPageShell>
+            <Container size="xl" py="lg">
+                <Stack gap="lg">
+                    <Group justify="space-between" wrap="wrap" gap="md">
+                        <Group gap="md" wrap="wrap">
+                            <Button
+                                component={Link}
+                                href="/beheer"
+                                variant="default"
+                                size="sm"
+                                leftSection={<ChevronLeft size={16} />}
+                            >
+                                Terug
+                            </Button>
+                            <Title order={1} size="h2" c="brand">
+                                Reis Beheer
+                            </Title>
+                        </Group>
+                    </Group>
+
+                    <NoTripsView />
+                </Stack>
+            </Container>
         );
     }
 
@@ -125,83 +144,106 @@ export default async function AdminReisPage({ searchParams }: AdminReisPageProps
     } = data;
 
     return (
-        <BeheerPageShell
-            title={activeTrip.name ?? 'Reis'}
-            backHref="/beheer"
-            actions={
-                <>
-                    <div className="flex flex-col items-start gap-4 md:flex-row md:items-center">
-                        <div className="hidden items-center gap-4 rounded-2xl border border-(--beheer-border) bg-(--beheer-card-bg) px-5 py-2.5 shadow-sm xl:flex">
-                            <StatItem label="Aanmeldingen" value={stats.total} color="text-(--beheer-text)" />
-                            <Divider />
-                            <StatItem label="Bevestigd" value={stats.confirmed} color="text-emerald-600 dark:text-emerald-400" />
-                            <Divider />
-                            <StatItem label="Wachtlijst" value={stats.waitlist} color="text-amber-600 dark:text-amber-400" />
-                            <Divider />
-                            <StatItem label="Aanbetaling" value={stats.depositPaid} color="text-blue-600 dark:text-blue-400" />
-                            <Divider />
-                            <StatItem label="Restbetaling" value={stats.fullPaid} color="text-purple-600 dark:text-purple-400" />
-                        </div>
-                        <div className="flex w-full flex-wrap items-stretch gap-2 sm:items-center md:w-auto">
+        <Container size="xl" py="lg">
+            <Stack gap="lg">
+                <Group justify="space-between" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href="/beheer"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                        <Title order={1} size="h2" c="brand">
+                            {activeTrip.name ?? 'Reis'}
+                        </Title>
+                    </Group>
+
+                    <Group gap="md" wrap="wrap">
+                        <Paper withBorder px="md" py="xs" radius="lg" visibleFrom="xl">
+                            <Group gap="md" wrap="nowrap">
+                                <StatItem label="Aanmeldingen" value={stats.total} />
+                                <Divider orientation="vertical" />
+                                <StatItem label="Bevestigd" value={stats.confirmed} color="success" />
+                                <Divider orientation="vertical" />
+                                <StatItem label="Wachtlijst" value={stats.waitlist} color="accent" />
+                                <Divider orientation="vertical" />
+                                <StatItem label="Aanbetaling" value={stats.depositPaid} color="brand" />
+                                <Divider orientation="vertical" />
+                                <StatItem label="Restbetaling" value={stats.fullPaid} color="brand" />
+                            </Group>
+                        </Paper>
+
+                        <Group gap="xs" wrap="wrap">
                             <BeheerReisSwitcher
                                 trips={trips}
                                 activeTripId={activeTripId as number}
                             />
-                            <Link
+                            <Button
+                                component={Link}
                                 href="/beheer/reis/instellingen"
-                                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-xs font-semibold text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 hover:bg-(--beheer-accent)/5 sm:flex-none"
+                                variant="default"
+                                size="sm"
+                                leftSection={<Settings2 size={14} />}
                             >
-                                <Settings2 className="size-3.5 text-(--beheer-accent)" />
-                                <span className="hidden sm:inline">Instellingen</span>
-                            </Link>
+                                Instellingen
+                            </Button>
                             <ReisVisibilityToggle initialVisible={reisSettings.show} canToggle={canToggleVisibility} />
-                        </div>
-                    </div>
-                </>
-            }
-        >
-            <div className="pb-8">
+                        </Group>
+                    </Group>
+                </Group>
+
                 <BeheerReisTableIsland
                     trip={activeTrip}
                     initialSignups={signups}
                     initialSignupActivities={activitiesMap}
                     allTripActivities={allTripActivities}
                 />
-            </div>
-        </BeheerPageShell>
+            </Stack>
+        </Container>
     );
 }
 
-function StatItem({ label, value, color }: { label: string; value: number; color: string }) {
+function StatItem({ label, value, color }: { label: string; value: number; color?: string }) {
     return (
-        <div className="flex flex-col items-center px-1">
-            <span className="mb-1 text-[10px] font-bold tracking-wider text-(--beheer-text-muted) uppercase">{label}</span>
-            <span className={`text-sm font-semibold tabular-nums ${color}`}>{value}</span>
-        </div>
+        <Stack gap={2} align="center" px={4}>
+            <Text size="xs" c="dimmed" fw={700} tt="uppercase" lh={1}>
+                {label}
+            </Text>
+            <Text size="sm" fw={700} lh={1} c={color} style={{ fontVariantNumeric: 'tabular-nums' }}>
+                {value}
+            </Text>
+        </Stack>
     );
-}
-
-function Divider() {
-    return <div className="h-7 w-px bg-(--beheer-border)/40" />;
 }
 
 function NoTripsView() {
     return (
-        <div className="mx-auto max-w-2xl py-20 text-center">
-            <div className="rounded-3xl border border-(--beheer-border) bg-(--beheer-card-bg) p-12 shadow-xl">
-                <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl border border-purple-500/10 bg-purple-500/5 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
-                    <Plane className="size-10 rotate-45 text-purple-500 dark:text-purple-400" />
-                </div>
-                <h2 className="mb-2 text-2xl font-bold text-purple-700 dark:text-purple-300">Geen reizen gevonden</h2>
-                <p className="mb-8 text-sm font-medium text-(--beheer-text-muted)">Er zijn momenteel geen actieve of geplande reizen in het systeem.</p>
-                <Link
-                    href="/beheer/reis/instellingen"
-                    className="beheer-button inline-flex items-center gap-2 rounded-xl border border-white/10 bg-(--beheer-accent) px-8 py-3 text-xs font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
-                >
-                    <LayoutDashboard className="size-4" />
-                    <span>Nieuwe reis aanmaken</span>
-                </Link>
-            </div>
-        </div>
+        <Center py="xl">
+            <Card withBorder radius="lg" padding="xl" maw={560} w="100%" ta="center">
+                <Stack align="center" gap="md" py="lg">
+                    <ThemeIcon size={64} radius="lg" variant="light" color="brand">
+                        <Plane size={32} />
+                    </ThemeIcon>
+                    <Title order={2} size="h3" c="brand">
+                        Geen reizen gevonden
+                    </Title>
+                    <Text size="sm" c="dimmed">
+                        Er zijn momenteel geen actieve of geplande reizen in het systeem.
+                    </Text>
+                    <Button
+                        component={Link}
+                        href="/beheer/reis/instellingen"
+                        color="accent"
+                        leftSection={<LayoutDashboard size={16} />}
+                    >
+                        Nieuwe reis aanmaken
+                    </Button>
+                </Stack>
+            </Card>
+        </Center>
     );
 }

@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useMemo, useTransition } from 'react';
+import { Stack } from '@mantine/core';
 import { downloadCSV } from '@/lib/utils/export';
 import { sendMembershipReminderAction } from '@/server/actions/beheer/leden/beheer-leden-membership.actions';
 import LedenFilters from './LedenFilters';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import LedenTable from './LedenTable';
 import { type BeheerMember } from '@salvemundi/validations';
@@ -25,7 +25,7 @@ const formatDate = (dateString: string | null | undefined) => {
         return new Intl.DateTimeFormat('nl-NL', {
             day: '2-digit',
             month: '2-digit',
-            year: 'numeric'
+            year: 'numeric',
         }).format(d);
     } catch (error) {
         safeConsoleError('[LedenOverzichtIsland.tsx][formatDate] ', error);
@@ -34,9 +34,9 @@ const formatDate = (dateString: string | null | undefined) => {
 };
 
 export default function LedenOverzichtIsland({
-    initialMembers = []
+    initialMembers = [],
 }: LedenOverzichtIslandProps) {
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [isPending] = useTransition();
     const [searchQuery, setSearchQuery] = useState('');
     const [isSendingReminder, setIsSendingReminder] = useState(false);
@@ -45,7 +45,7 @@ export default function LedenOverzichtIsland({
     const members = initialMembers;
 
     const filteredMembers = useMemo(() => {
-        return members.filter(m => {
+        return members.filter((m) => {
             const active = isMembershipActive(m);
             const matchesTab = activeTab === 'active' ? active : !active;
 
@@ -67,7 +67,12 @@ export default function LedenOverzichtIsland({
             try {
                 const res = await sendMembershipReminderAction(30);
                 if (res.success) {
-                    showToast(res.count === 0 ? 'Geen leden gevonden.' : `Herinnering verstuurd naar ${res.count} leden!`, 'success');
+                    showToast(
+                        res.count === 0
+                            ? 'Geen leden gevonden.'
+                            : `Herinnering verstuurd naar ${res.count} leden!`,
+                        'success'
+                    );
                 } else {
                     showToast(res.error || 'Fout bij versturen', 'error');
                 }
@@ -82,17 +87,17 @@ export default function LedenOverzichtIsland({
 
     const exportToCSV = () => {
         const dateStr = new Date().toISOString().split('T')[0];
-        const data = filteredMembers.map(m => ({
+        const data = filteredMembers.map((m) => ({
             Naam: `${m.first_name} ${m.last_name}`,
             Email: m.email,
             'Lidmaatschap Tot': formatDate(m.membership_expiry),
-            Status: isMembershipActive(m) ? 'Actief' : 'Niet Actief'
+            Status: isMembershipActive(m) ? 'Actief' : 'Niet Actief',
         }));
         downloadCSV(data, `Leden_${dateStr}.csv`);
     };
 
     return (
-        <>
+        <Stack gap="lg" w="100%">
             <LedenFilters
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
@@ -104,15 +109,11 @@ export default function LedenOverzichtIsland({
                 isSendingReminder={isSendingReminder}
             />
 
-            <div className="w-full">
-                <LedenTable
-                    members={filteredMembers}
-                    formatDate={formatDate}
-                    isMembershipActive={isMembershipActive}
-                />
-            </div>
-
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </>
+            <LedenTable
+                members={filteredMembers}
+                formatDate={formatDate}
+                isMembershipActive={isMembershipActive}
+            />
+        </Stack>
     );
 }

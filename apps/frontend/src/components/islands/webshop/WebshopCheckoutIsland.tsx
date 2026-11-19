@@ -5,8 +5,24 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AlertCircle, Check, ChevronLeft, ChevronRight, CreditCard, Minus, Plus, ShoppingBag, User } from 'lucide-react';
-import { FormField } from '@/shared/ui/FormField';
-import { Input } from '@/shared/ui/Input';
+import {
+    ActionIcon,
+    Alert,
+    Badge,
+    Box,
+    Button,
+    Checkbox,
+    Divider,
+    Group,
+    InputWrapper,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    Textarea,
+    TextInput,
+    Title,
+} from '@mantine/core';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { toInternationalPhoneNumber } from '@/shared/lib/countries';
 import MediaAsset from '@/components/ui/media/MediaAsset';
@@ -29,7 +45,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
     const checkoutSchema = useMemo(() => {
         return webshopPreorderFormSchema.superRefine((data, ctx) => {
             (product.custom_fields ?? []).forEach((def, index) => {
-                const value = (data.lines[0]?.custom_field_answers?.[index] ?? '').trim();
+                const value = (data.lines[0]?.custom_field_answers?.at(index) ?? '').trim();
                 if (!value) {
                     ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${def.label} is verplicht.`, path: ['lines', 0, 'custom_field_answers', index] });
                 } else if (value.length > def.max_length) {
@@ -147,234 +163,294 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
     };
 
     return (
-        <form onSubmit={(e) => e.preventDefault()} className="@container flex flex-col gap-8">
-            <input type="hidden" {...register('drop_window_id', { valueAsNumber: true })} />
-            <input type="hidden" {...register('lines.0.product_id', { valueAsNumber: true })} />
-            <input {...register('website')} type="text" className="hidden" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
+        <form onSubmit={(e) => e.preventDefault()}>
+            <Stack gap="xl">
+                <input type="hidden" {...register('drop_window_id', { valueAsNumber: true })} />
+                <input type="hidden" {...register('lines.0.product_id', { valueAsNumber: true })} />
+                <input {...register('website')} type="text" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" suppressHydrationWarning />
 
-            <div className="flex items-center gap-4 rounded-2xl bg-(--bg-soft) p-4">
-                <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-(--bg-card)">
-                    {cover ? (
-                        <MediaAsset asset={{ id: cover.asset, type: cover.asset_type }} alt={product.name} fill objectFit="cover" sizes="64px" />
-                    ) : (
-                        <div className="flex size-full items-center justify-center">
-                            <ShoppingBag className="size-6 text-(--theme-purple)/20" />
-                        </div>
-                    )}
-                </div>
-                <div>
-                    <p className="font-bold text-(--theme-purple)/90">{product.name}</p>
-                    <p className="text-sm text-(--text-muted)">€{unitPrice.toFixed(2)} per stuk</p>
-                </div>
-            </div>
-
-            <div className="flex items-center justify-between border-b border-(--border-color) pb-4">
-                <div>
-                    <h2 className="flex items-center gap-3 text-xl font-black tracking-tighter text-(--theme-purple) italic sm:text-2xl">
-                        {step === 1 && <ShoppingBag className="size-6" />}
-                        {step === 2 && <User className="size-6" />}
-                        {step === 3 && <CreditCard className="size-6" />}
-                        {step === 1 && 'Kies je maat en aantal'}
-                        {step === 2 && 'Jouw gegevens'}
-                        {step === 3 && 'Samenvatting'}
-                    </h2>
-                </div>
-                <div className="rounded-full bg-(--theme-purple)/10 px-3 py-1.5 text-xs font-bold tracking-wider text-(--theme-purple) select-none">
-                    Stap {step} van 3
-                </div>
-            </div>
-
-<div className="animate-in fade-in duration-300" hidden={step !== 1}>
-                <div className="space-y-6">
-                    {product.type === 'clothing' && (
-                        <>
-                            {availableSizes.length > 0 && (
-                                <FormField label={`Maat${selectedSize ? ` — gekozen: ${selectedSize}` : ''}`} required error={sizeError}>
-                                    <div className="flex flex-wrap gap-2">
-                                        {availableSizes.map((size) => {
-                                            const isSelected = selectedSize === size;
-                                            return (
-                                                <button
-                                                    key={size}
-                                                    type="button"
-                                                    aria-pressed={isSelected}
-                                                    onClick={() => handleSelectSize(size)}
-                                                    className={`tab-button hover:scale-1.02 active:scale-0.98 flex cursor-pointer items-center gap-1.5 rounded-full border-2 px-4 py-2 text-sm font-bold transition-all ${
-                                                        isSelected
-                                                            ? 'scale-105 border-(--theme-purple) bg-(--theme-purple) text-white shadow-md'
-                                                            : 'border-(--border-color) bg-transparent text-(--text-muted) hover:border-(--theme-purple) hover:text-(--theme-purple)'
-                                                    }`}
-                                                >
-                                                    {isSelected && <Check className="size-3.5" />}
-                                                    {size}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </FormField>
-                            )}
-
-                            {availableColors.length > 0 && (
-                                <FormField label={`Kleur${selectedColor ? ` — gekozen: ${selectedColor}` : ''}`} required error={colorError}>
-                                    <div className="flex flex-wrap gap-2">
-                                        {availableColors.map((color) => {
-                                            const isSelected = selectedColor === color;
-                                            return (
-                                                <button
-                                                    key={color}
-                                                    type="button"
-                                                    aria-pressed={isSelected}
-                                                    onClick={() => handleSelectColor(color)}
-                                                    className={`tab-button hover:scale-1.02 active:scale-0.98 flex cursor-pointer items-center gap-1.5 rounded-full border-2 px-4 py-2 text-sm font-bold transition-all ${
-                                                        isSelected
-                                                            ? 'scale-105 border-(--theme-purple) bg-(--theme-purple) text-white shadow-md'
-                                                            : 'border-(--border-color) bg-transparent text-(--text-muted) hover:border-(--theme-purple) hover:text-(--theme-purple)'
-                                                    }`}
-                                                >
-                                                    {isSelected && <Check className="size-3.5" />}
-                                                    {color}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </FormField>
-                            )}
-                        </>
-                    )}
-
-                    {customFieldDefs.map((def, index) => (
-                        <FormField
-                            key={index}
-                            label={`${def.label} (max. ${def.max_length} tekens)`}
-                            required
-                            error={errors.lines?.[0]?.custom_field_answers?.[index]?.message}
+                <Paper p="md" radius="lg" withBorder>
+                    <Group gap="md" wrap="nowrap">
+                        <Box
+                            pos="relative"
+                            w={64}
+                            h={64}
+                            style={{
+                                flexShrink: 0,
+                                borderRadius: 'var(--mantine-radius-md)',
+                                overflow: 'hidden',
+                                backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
+                            }}
                         >
-                            <Input {...register(`lines.0.custom_field_answers.${index}`)} maxLength={def.max_length} placeholder={def.label} />
-                        </FormField>
-                    ))}
+                            {cover ? (
+                                <MediaAsset asset={{ id: cover.asset, type: cover.asset_type }} alt={product.name} fill objectFit="cover" sizes="64px" />
+                            ) : (
+                                <Box h="100%" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Text span c="brand" opacity={0.3} lh={1}>
+                                        <ShoppingBag size={24} />
+                                    </Text>
+                                </Box>
+                            )}
+                        </Box>
+                        <Stack gap={2}>
+                            <Text fw={700} c="brand">{product.name}</Text>
+                            <Text size="sm" c="dimmed">€{unitPrice.toFixed(2)} per stuk</Text>
+                        </Stack>
+                    </Group>
+                </Paper>
 
-                    <FormField label="Aantal" required>
-                        <div className="flex items-center gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setValue('lines.0.quantity', Math.max(1, quantity - 1), { shouldValidate: true })}
-                                className="form-button rounded-full bg-(--bg-soft) p-2 text-(--theme-purple) transition-all hover:scale-105 disabled:opacity-30"
-                                disabled={quantity <= 1}
-                                aria-label="Verminder aantal"
-                            >
-                                <Minus className="size-4" />
-                            </button>
-                            <output aria-label="Huidig aantal" className="min-w-10 text-center text-lg font-bold">{quantity}</output>
-                            <button
-                                type="button"
-                                onClick={() => setValue('lines.0.quantity', Math.min(maxQuantity, quantity + 1), { shouldValidate: true })}
-                                className="form-button rounded-full bg-(--bg-soft) p-2 text-(--theme-purple) transition-all hover:scale-105 disabled:opacity-30"
-                                disabled={quantity >= maxQuantity}
-                                aria-label="Verhoog aantal"
-                            >
-                                <Plus className="size-4" />
-                            </button>
-                        </div>
-                    </FormField>
-                </div>
-            </div>
+                <Box>
+                    <Group justify="space-between" align="center" pb="md">
+                        <Group gap="sm">
+                            <Text span c="brand" lh={1}>
+                                {step === 1 && <ShoppingBag size={24} />}
+                                {step === 2 && <User size={24} />}
+                                {step === 3 && <CreditCard size={24} />}
+                            </Text>
+                            <Title order={2} size="h3" c="brand">
+                                {step === 1 && 'Kies je maat en aantal'}
+                                {step === 2 && 'Jouw gegevens'}
+                                {step === 3 && 'Samenvatting'}
+                            </Title>
+                        </Group>
+                        <Badge variant="light" color="brand" size="md">
+                            Stap {step} van 3
+                        </Badge>
+                    </Group>
+                    <Divider />
+                </Box>
 
-            <div className="animate-in fade-in duration-300" hidden={step !== 2}>
-                <div className="grid grid-cols-1 gap-x-6 gap-y-5 @md:grid-cols-2">
-                    <FormField label="Voornaam" required error={errors.first_name?.message}>
-                        <Input {...register('first_name')} placeholder="Voornaam" />
-                    </FormField>
-                    <FormField label="Achternaam" required error={errors.last_name?.message}>
-                        <Input {...register('last_name')} placeholder="Achternaam" />
-                    </FormField>
-                    <FormField label="E-mailadres" required error={errors.email?.message}>
-                        <Input {...register('email')} type="email" placeholder="naam@voorbeeld.nl" />
-                    </FormField>
-                    <FormField label="Telefoonnummer" required error={errors.phone_number?.message}>
-                        <Controller
-                            name="phone_number"
-                            control={control}
-                            render={({ field }) => <PhoneInput {...field} />}
-                        />
-                    </FormField>
-                    <div className="@md:col-span-2">
-                        <FormField label="Opmerking voor afhalen (optioneel)" error={errors.pickup_notes?.message}>
-                            <textarea {...register('pickup_notes')} className="form-input" rows={3} placeholder="Bijv. een voorkeur voor afhaalmoment" />
-                        </FormField>
-                    </div>
+                <Box display={step === 1 ? 'block' : 'none'}>
+                    <Stack gap="lg">
+                        {product.type === 'clothing' && (
+                            <>
+                                {availableSizes.length > 0 && (
+                                    <InputWrapper
+                                        label={`Maat${selectedSize ? ` — gekozen: ${selectedSize}` : ''}`}
+                                        required
+                                        error={sizeError}
+                                    >
+                                        <Group gap="xs" mt="xs" wrap="wrap">
+                                            {availableSizes.map((size) => {
+                                                const isSelected = selectedSize === size;
+                                                return (
+                                                    <Button
+                                                        key={size}
+                                                        type="button"
+                                                        aria-pressed={isSelected}
+                                                        size="sm"
+                                                        variant={isSelected ? 'filled' : 'outline'}
+                                                        onClick={() => handleSelectSize(size)}
+                                                        leftSection={isSelected ? <Check size={14} /> : undefined}
+                                                    >
+                                                        {size}
+                                                    </Button>
+                                                );
+                                            })}
+                                        </Group>
+                                    </InputWrapper>
+                                )}
 
-                    <div className="@md:col-span-2">
-                        <label htmlFor="terms_accepted" className="group mt-2 flex cursor-pointer items-start gap-3 text-(--text-main)">
-                            <input
-                                {...register('terms_accepted')}
-                                id="terms_accepted"
-                                type="checkbox"
-                                className="mt-1 size-5 rounded border-theme-purple/20 accent-theme-purple transition-all group-hover:scale-110"
-                            />
-                            <span className="text-sm leading-snug">
-                                Ik ga akkoord met de voorwaarden voor preorders: ik betaal nu de volledige prijs,
-                                en ik haal mijn bestelling op tijdens een afgesproken afhaalmoment.
-                            </span>
-                        </label>
-                        {errors.terms_accepted && <p className="mt-1 text-xs font-semibold text-red-500">{errors.terms_accepted.message}</p>}
-                    </div>
-                </div>
-            </div>
-
-            <div className="animate-in fade-in duration-300" hidden={step !== 3}>
-                <div className="space-y-3">
-                    <div className="flex items-center justify-between border-b border-(--border-color) py-2">
-                        <span className="text-(--text-muted)">{product.name} &times; {quantity}</span>
-                        <span className="font-bold text-(--theme-purple)/90">€{subtotal.toFixed(2)}</span>
-                    </div>
-                    {customFieldDefs.map((def, index) => (
-                        <div key={index} className="flex items-center justify-between text-sm text-(--text-muted)">
-                            <span>{def.label}</span>
-                            <span className="font-semibold">{line.custom_field_answers?.[index]}</span>
-                        </div>
-                    ))}
-                    <div className="flex items-center justify-between text-(--text-muted)">
-                        <span>Te betalen</span>
-                        <span className="font-bold text-(--theme-purple)">€{subtotal.toFixed(2)}</span>
-                    </div>
-                    <p className="pt-2 text-xs text-(--text-muted)">
-                        Je betaalt nu de volledige prijs. Je ontvangt bericht zodra je bestelling klaarstaat om af te halen.
-                    </p>
-                </div>
-            </div>
-
-            <div className="flex flex-col items-center justify-between gap-4 border-t border-(--border-color) pt-6 sm:flex-row">
-                <button
-                    type="button"
-                    onClick={() => setStep(Math.max(1, step - 1))}
-                    className="form-button flex w-full items-center justify-center gap-2 rounded-xl px-8 py-3 text-sm font-bold text-(--text-muted) transition-all hover:text-(--text-main) sm:w-auto"
-                >
-                    <ChevronLeft className="size-4" />
-                    Vorige
-                </button>
-
-                <div className="flex w-full flex-col items-end gap-3 sm:w-auto">
-                    {error && (
-                        <div className="flex w-full items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-red-500">
-                            <AlertCircle className="size-4 shrink-0" />
-                            <p className="text-xs">{error}</p>
-                        </div>
-                    )}
-
-                    <button
-                        type="button"
-                        onClick={() => void (step < 3 ? handleNext() : handleSubmit(onSubmit)())}
-                        disabled={loading}
-                        className={`form-button flex w-full items-center justify-center gap-2 px-10 sm:w-auto ${loading ? 'cursor-not-allowed opacity-50 grayscale' : ''}`}
-                    >
-                        {loading ? 'Verwerken...' : step < 3 ? (
-                            <>Volgende <ChevronRight className="size-4" /></>
-                        ) : (
-                            <><CreditCard className="size-5" /> Bestelling betalen</>
+                                {availableColors.length > 0 && (
+                                    <InputWrapper
+                                        label={`Kleur${selectedColor ? ` — gekozen: ${selectedColor}` : ''}`}
+                                        required
+                                        error={colorError}
+                                    >
+                                        <Group gap="xs" mt="xs" wrap="wrap">
+                                            {availableColors.map((color) => {
+                                                const isSelected = selectedColor === color;
+                                                return (
+                                                    <Button
+                                                        key={color}
+                                                        type="button"
+                                                        aria-pressed={isSelected}
+                                                        size="sm"
+                                                        variant={isSelected ? 'filled' : 'outline'}
+                                                        onClick={() => handleSelectColor(color)}
+                                                        leftSection={isSelected ? <Check size={14} /> : undefined}
+                                                    >
+                                                        {color}
+                                                    </Button>
+                                                );
+                                            })}
+                                        </Group>
+                                    </InputWrapper>
+                                )}
+                            </>
                         )}
-                    </button>
-                </div>
-            </div>
+
+                        {customFieldDefs.map((def, index) => (
+                            <Controller
+                                key={index}
+                                name={`lines.0.custom_field_answers.${index}`}
+                                control={control}
+                                render={({ field: answerField, fieldState }) => (
+                                    <TextInput
+                                        label={`${def.label} (max. ${def.max_length} tekens)`}
+                                        required
+                                        maxLength={def.max_length}
+                                        placeholder={def.label}
+                                        value={answerField.value}
+                                        onChange={answerField.onChange}
+                                        onBlur={answerField.onBlur}
+                                        error={fieldState.error?.message}
+                                    />
+                                )}
+                            />
+                        ))}
+
+                        <InputWrapper label="Aantal" required>
+                            <Group gap="sm" mt="xs">
+                                <ActionIcon
+                                    type="button"
+                                    variant="light"
+                                    color="brand"
+                                    size="lg"
+                                    onClick={() => setValue('lines.0.quantity', Math.max(1, quantity - 1), { shouldValidate: true })}
+                                    disabled={quantity <= 1}
+                                    aria-label="Verminder aantal"
+                                >
+                                    <Minus size={16} />
+                                </ActionIcon>
+                                <Text component="output" aria-label="Huidig aantal" size="lg" fw={700} miw={40} ta="center">
+                                    {quantity}
+                                </Text>
+                                <ActionIcon
+                                    type="button"
+                                    variant="light"
+                                    color="brand"
+                                    size="lg"
+                                    onClick={() => setValue('lines.0.quantity', Math.min(maxQuantity, quantity + 1), { shouldValidate: true })}
+                                    disabled={quantity >= maxQuantity}
+                                    aria-label="Verhoog aantal"
+                                >
+                                    <Plus size={16} />
+                                </ActionIcon>
+                            </Group>
+                        </InputWrapper>
+                    </Stack>
+                </Box>
+
+                <Box display={step === 2 ? 'block' : 'none'}>
+                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                        <TextInput
+                            label="Voornaam"
+                            required
+                            placeholder="Voornaam"
+                            error={errors.first_name?.message}
+                            {...register('first_name')}
+                        />
+                        <TextInput
+                            label="Achternaam"
+                            required
+                            placeholder="Achternaam"
+                            error={errors.last_name?.message}
+                            {...register('last_name')}
+                        />
+                        <TextInput
+                            type="email"
+                            label="E-mailadres"
+                            required
+                            placeholder="naam@voorbeeld.nl"
+                            error={errors.email?.message}
+                            {...register('email')}
+                        />
+                        <InputWrapper
+                            label="Telefoonnummer"
+                            required
+                            error={errors.phone_number?.message}
+                        >
+                            <Controller
+                                name="phone_number"
+                                control={control}
+                                render={({ field }) => <PhoneInput {...field} error={!!errors.phone_number} />}
+                            />
+                        </InputWrapper>
+                        <Box style={{ gridColumn: '1 / -1' }}>
+                            <Textarea
+                                label="Opmerking voor afhalen (optioneel)"
+                                rows={3}
+                                placeholder="Bijv. een voorkeur voor afhaalmoment"
+                                error={errors.pickup_notes?.message}
+                                {...register('pickup_notes')}
+                            />
+                        </Box>
+                        <Box style={{ gridColumn: '1 / -1' }}>
+                            <Controller
+                                name="terms_accepted"
+                                control={control}
+                                render={({ field }) => (
+                                    <Checkbox
+                                        id="terms_accepted"
+                                        checked={field.value}
+                                        onChange={(e) => field.onChange(e.currentTarget.checked)}
+                                        error={errors.terms_accepted?.message}
+                                        label="Ik ga akkoord met de voorwaarden voor preorders: ik betaal nu de volledige prijs, en ik haal mijn bestelling op tijdens een afgesproken afhaalmoment."
+                                    />
+                                )}
+                            />
+                        </Box>
+                    </SimpleGrid>
+                </Box>
+
+                <Box display={step === 3 ? 'block' : 'none'}>
+                    <Stack gap="sm">
+                        <Group justify="space-between" py="xs">
+                            <Text c="dimmed">{product.name} &times; {quantity}</Text>
+                            <Text fw={700} c="brand">€{subtotal.toFixed(2)}</Text>
+                        </Group>
+                        <Divider />
+                        {customFieldDefs.map((def, index) => (
+                            <Group key={index} justify="space-between">
+                                <Text size="sm" c="dimmed">{def.label}</Text>
+                                <Text size="sm" fw={600} c="dimmed">{line.custom_field_answers?.at(index)}</Text>
+                            </Group>
+                        ))}
+                        <Group justify="space-between" pt="xs">
+                            <Text c="dimmed">Te betalen</Text>
+                            <Text fw={700} c="brand">€{subtotal.toFixed(2)}</Text>
+                        </Group>
+                        <Text size="xs" c="dimmed" pt="xs">
+                            Je betaalt nu de volledige prijs. Je ontvangt bericht zodra je bestelling klaarstaat om af te halen.
+                        </Text>
+                    </Stack>
+                </Box>
+
+                <Divider />
+
+                <Group justify="space-between" align="flex-end" wrap="wrap" gap="md">
+                    <Button
+                        type="button"
+                        variant="default"
+                        onClick={() => setStep(Math.max(1, step - 1))}
+                        leftSection={<ChevronLeft size={16} />}
+                        w={{ base: '100%', sm: 'auto' }}
+                    >
+                        Vorige
+                    </Button>
+
+                    <Stack gap="xs" align="flex-end" w={{ base: '100%', sm: 'auto' }}>
+                        {error && (
+                            <Alert color="error" variant="light" icon={<AlertCircle size={16} />} w="100%">
+                                {error}
+                            </Alert>
+                        )}
+
+                        <Button
+                            type="button"
+                            onClick={() => void (step < 3 ? handleNext() : handleSubmit(onSubmit)())}
+                            loading={loading}
+                            size="md"
+                            w={{ base: '100%', sm: 'auto' }}
+                            leftSection={step === 3 ? <CreditCard size={18} /> : undefined}
+                            rightSection={step < 3 ? <ChevronRight size={16} /> : undefined}
+                        >
+                            {loading ? 'Verwerken...' : step < 3 ? 'Volgende' : 'Bestelling betalen'}
+                        </Button>
+                    </Stack>
+                </Group>
+            </Stack>
         </form>
     );
 }

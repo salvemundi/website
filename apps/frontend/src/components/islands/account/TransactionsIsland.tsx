@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { CreditCard, Clock, Tag } from 'lucide-react';
+import { Badge, Group, Paper, ScrollArea, Stack, Table, Text } from '@mantine/core';
 import type { Transaction } from '@salvemundi/validations/schema/profiel.zod';
 import { Tile } from './profile/ProfielUI';
 
@@ -38,58 +39,87 @@ export const TransactionsIsland: React.FC<TransactionsIslandProps> = ({ transact
     return (
         <Tile
             title="Mijn Betalingen"
-            icon={<CreditCard className="size-6" />}
-            className="w-full"
+            icon={<CreditCard size={22} />}
         >
             {paidTransactions.length === 0 ? (
-                <div className="squircle-lg border-2 border-dashed border-slate-300 bg-slate-50 p-12 text-center shadow-inner dark:border-white/10 dark:bg-black/10">
-                    <p className="mb-2 text-lg font-bold text-(--text-main)">Geen betaalde transacties gevonden.</p>
-                    <p className="text-sm text-(--text-muted)">Zodra je een betaling afrondt, verschijnt deze hier.</p>
-                </div>
+                <Paper
+                    p="xl"
+                    radius="lg"
+                    withBorder
+                    ta="center"
+                    style={{ borderStyle: 'dashed' }}
+                >
+                    <Stack gap="xs" align="center">
+                        <Text size="lg" fw={700}>
+                            Geen betaalde transacties gevonden.
+                        </Text>
+                        <Text size="sm" c="dimmed">
+                            Zodra je een betaling afrondt, verschijnt deze hier.
+                        </Text>
+                    </Stack>
+                </Paper>
             ) : (
-                <div className="-mx-6 overflow-x-auto sm:mx-0">
-                    <table className="w-full border-separate border-spacing-0">
-                        <thead>
-                            <tr className="border-b border-slate-200 dark:border-white/5">
-                                <th className="px-6 py-4 text-left text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Datum</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Product</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Type</th>
-                                <th className="px-6 py-4 text-right text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Bedrag</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+                <ScrollArea>
+                    <Table verticalSpacing="md" horizontalSpacing="md" highlightOnHover>
+                        <Table.Thead>
+                            <Table.Tr>
+                                <Table.Th>
+                                    <Text size="xs" fw={900} tt="uppercase" c="brand">Datum</Text>
+                                </Table.Th>
+                                <Table.Th>
+                                    <Text size="xs" fw={900} tt="uppercase" c="brand">Product</Text>
+                                </Table.Th>
+                                <Table.Th>
+                                    <Text size="xs" fw={900} tt="uppercase" c="brand">Type</Text>
+                                </Table.Th>
+                                <Table.Th ta="right">
+                                    <Text size="xs" fw={900} tt="uppercase" c="brand">Bedrag</Text>
+                                </Table.Th>
+                            </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
                             {paidTransactions.map((transaction) => (
-                                <tr key={transaction.id} className="group transition-all hover:bg-slate-50 dark:hover:bg-white/5">
-                                    <td className="p-6 whitespace-nowrap">
-                                        <div className="flex items-center gap-2 text-sm font-bold text-(--text-main)">
-                                            <Clock className="size-4 text-purple-500 opacity-40" />
-                                            {formatDate(new Date(transaction.created_at || transaction.date_created || new Date()))}
-                                        </div>
-                                    </td>
-                                    <td className="p-6 transition-transform group-hover:translate-x-1">
-                                        <div className="text-sm leading-tight font-black text-purple-700 dark:text-white">
-                                            {transaction.product_name || transaction.description || 'Betaling'}
-                                        </div>
-                                        {transaction.coupon_code && (
-                                            <div className="mt-1 flex items-center gap-1.5 text-[9px] font-black tracking-widest text-purple-500 uppercase opacity-70">
-                                                <Tag className="size-3" />
-                                                {transaction.coupon_code}
-                                            </div>
-                                        )}
-                                    </td>
-                                    <td className="p-6 whitespace-nowrap">
-                                        <span className="inline-flex rounded-full border border-purple-200 bg-purple-100 px-3 py-1 text-[9px] font-black tracking-widest text-purple-700 uppercase shadow-sm dark:border-purple-500/20 dark:bg-purple-500/10 dark:text-purple-300">
+                                <Table.Tr key={transaction.id}>
+                                    <Table.Td style={{ whiteSpace: 'nowrap' }}>
+                                        <Group gap="xs" wrap="nowrap">
+                                            <Text span c="brand" lh={1}>
+                                                <Clock size={16} />
+                                            </Text>
+                                            <Text size="sm" fw={700}>
+                                                {formatDate(new Date(transaction.created_at || transaction.date_created || new Date()))}
+                                            </Text>
+                                        </Group>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <Stack gap={4}>
+                                            <Text size="sm" fw={900}>
+                                                {transaction.product_name || transaction.description || 'Betaling'}
+                                            </Text>
+                                            {transaction.coupon_code && (
+                                                <Group gap={4} c="brand">
+                                                    <Tag size={12} />
+                                                    <Text size="xs" fw={700} tt="uppercase">
+                                                        {transaction.coupon_code}
+                                                    </Text>
+                                                </Group>
+                                            )}
+                                        </Stack>
+                                    </Table.Td>
+                                    <Table.Td style={{ whiteSpace: 'nowrap' }}>
+                                        <Badge variant="light" color="brand" size="sm">
                                             {getInferredTransactionType(transaction)}
-                                        </span>
-                                    </td>
-                                    <td className="p-6 text-right text-sm font-black whitespace-nowrap text-(--text-main)">
-                                        {formatAmount(transaction.amount)}
-                                    </td>
-                                </tr>
+                                        </Badge>
+                                    </Table.Td>
+                                    <Table.Td ta="right" style={{ whiteSpace: 'nowrap' }}>
+                                        <Text size="sm" fw={900}>
+                                            {formatAmount(transaction.amount)}
+                                        </Text>
+                                    </Table.Td>
+                                </Table.Tr>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
+                        </Table.Tbody>
+                    </Table>
+                </ScrollArea>
             )}
         </Tile>
     );

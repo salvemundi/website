@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { Center, Container, VisuallyHidden } from '@mantine/core';
 import ConfirmationIsland from '@/components/islands/membership/ConfirmationIsland';
 import { getTransactionStatusAction } from '@/server/actions/profile/membership.actions';
 
@@ -21,16 +22,16 @@ export default async function LidmaatschapConfirmationPage({ searchParams }: Pag
     const initialStatusRes = await getTransactionStatusAction(identifier);
 
     return (
-        <div className="flex min-h-[60vh] w-full items-center justify-center pt-8 pb-16 sm:pt-12 sm:pb-24 lg:pt-16 lg:pb-32">
-            <h1 className="sr-only">Lidmaatschap Bevestiging</h1>
-            <div className="container mx-auto flex max-w-4xl justify-center px-4">
-                <ConfirmationIsland 
+        <Container size="md" py="xl">
+            <VisuallyHidden component="h1">Lidmaatschap Bevestiging</VisuallyHidden>
+            <Center mih="60vh">
+                <ConfirmationIsland
                     transactionId={identifier}
                     type={type || null}
                     initialStatus={initialStatusRes.status as 'paid' | 'open' | 'failed' | 'error'}
                     initialUserId={initialStatusRes.user_id}
                 />
-            </div>
-        </div>
+            </Center>
+        </Container>
     );
 }

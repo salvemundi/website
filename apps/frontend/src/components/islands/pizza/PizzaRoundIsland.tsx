@@ -2,10 +2,27 @@
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Pizza, Link2, Clock, Pencil, Trash2, Check, Copy, Lock, Banknote, ClipboardList, Receipt, History, Star, ExternalLink, CreditCard } from 'lucide-react';
+import {
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Checkbox,
+    Group,
+    NumberInput,
+    Paper,
+    ScrollArea,
+    SimpleGrid,
+    Stack,
+    Table,
+    Text,
+    TextInput,
+    VisuallyHidden,
+} from '@mantine/core';
 import {
     placePizzaOrderSchema,
     type PlacePizzaOrderInput,
@@ -14,9 +31,6 @@ import {
     type PizzaFavorites,
 } from '@salvemundi/validations';
 import { Tile } from '@/components/islands/account/profile/ProfielUI';
-import { FormField } from '@/shared/ui/FormField';
-import { Input } from '@/shared/ui/Input';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { formatDate } from '@/shared/lib/utils/date';
 import {
@@ -29,11 +43,22 @@ import {
     markPizzaRoundPaid,
     setPizzaPaymentLink,
 } from '@/server/actions/public/pizza.actions';
-import { badgeBase, formatEuro, STATUS_CLASS, STATUS_LABEL } from './pizza-utils';
+import { formatEuro, STATUS_LABEL } from './pizza-utils';
 
 type ActionResult = { success: boolean; error?: string };
 
 const REFRESH_MS = 10_000;
+
+function getStatusColor(status: string): string {
+    switch (status) {
+        case 'open':
+            return 'success';
+        case 'closed':
+            return 'accent';
+        default:
+            return 'brand';
+    }
+}
 
 function countdown(closesAt: string, now: number | null): string {
     if (now === null) return 'Open';
@@ -55,7 +80,7 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
     const { round, orders, isCreator } = detail;
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [now, setNow] = useState<number | null>(null);
     const [editing, setEditing] = useState<PizzaOrderView | null>(null);
 
@@ -63,6 +88,7 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
 
     const {
         register,
+        control,
         handleSubmit,
         reset,
         setValue,
@@ -178,378 +204,521 @@ export function PizzaRoundIsland({ detail, favorites = EMPTY_FAVORITES }: { deta
     };
 
     return (
-        <div className="space-y-8">
+        <Stack gap="xl">
             <Tile
                 title={round.title}
-                icon={<Pizza className="size-6" />}
+                icon={<Pizza size={22} />}
                 actions={
-                    <button
+                    <Button
                         type="button"
                         onClick={() => void copyText(window.location.href, 'Link gekopieerd')}
-                        className="form-button"
+                        leftSection={<Link2 size={16} />}
                     >
-                        <Link2 className="size-4" />
                         Deellink kopiëren
-                    </button>
+                    </Button>
                 }
             >
-                <div className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <span className={`${badgeBase} ${STATUS_CLASS[round.status]}`}>{STATUS_LABEL[round.status]}</span>
-                        <span className="inline-flex items-center gap-1.5 text-sm font-bold">
-                            <Clock className="size-4 text-purple-500" />
-                            {isOpen ? countdown(round.closesAt, now) : `Gesloten`} · {formatDate(round.closesAt, 'd MMMM yyyy HH:mm')}
-                        </span>
-                    </div>
-                    <p className="text-sm text-(--text-muted)">Aangemaakt door {round.creatorName}</p>
-                    {round.note && <p className="text-sm whitespace-pre-line">{round.note}</p>}
-                </div>
+                <Stack gap="xs">
+                    <Group gap="sm" wrap="wrap">
+                        <Badge variant="light" color={getStatusColor(round.status)}>
+                            {STATUS_LABEL[round.status]}
+                        </Badge>
+                        <Group gap={6}>
+                            <Text span c="brand" lh={1}>
+                                <Clock size={16} />
+                            </Text>
+                            <Text size="sm" fw={700}>
+                                {isOpen ? countdown(round.closesAt, now) : 'Gesloten'} · {formatDate(round.closesAt, 'd MMMM yyyy HH:mm')}
+                            </Text>
+                        </Group>
+                    </Group>
+                    <Text size="sm" c="dimmed">
+                        Aangemaakt door {round.creatorName}
+                    </Text>
+                    {round.note && (
+                        <Text size="sm" style={{ whiteSpace: 'pre-line' }}>
+                            {round.note}
+                        </Text>
+                    )}
+                </Stack>
             </Tile>
 
             {myOrders.length > 0 && !isCreator && (
-                <Tile title="Jouw betaling" icon={<CreditCard className="size-6" />}>
-                    <div className="space-y-4">
-                        <p className="text-sm font-bold text-(--text-main)" aria-live="polite">
+                <Tile title="Jouw betaling" icon={<CreditCard size={22} />}>
+                    <Stack gap="md">
+                        <Text size="sm" fw={700} aria-live="polite">
                             Jouw totaal: {formatEuro(myTotal)}, status:{' '}
                             {myUnpaid === 0 ? 'betaald' : `nog te betalen aan ${round.creatorName}`}
                             {myUnpaid > 0 && myUnpaid !== myTotal ? ` (nog ${formatEuro(myUnpaid)})` : ''}
-                        </p>
+                        </Text>
                         {safeLink && myUnpaid > 0 && (
-                            <div className="squircle border border-purple-200 bg-licht-paars/10 p-4 dark:border-white/10 dark:bg-white/5">
-                                <p className="mb-3 text-sm font-black text-purple-700 dark:text-white">
-                                    Betalen aan {round.creatorName}: {formatEuro(myUnpaid)}
-                                </p>
-                                <a href={safeLink} target="_blank" rel="noopener noreferrer" className="form-button inline-flex">
-                                    <ExternalLink className="size-4" />
-                                    Betalen
-                                </a>
-                            </div>
+                            <Paper
+                                p="md"
+                                radius="md"
+                                withBorder
+                                style={{
+                                    backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)',
+                                    borderColor: 'color-mix(in srgb, var(--primary) 25%, transparent)',
+                                }}
+                            >
+                                <Stack gap="sm" align="flex-start">
+                                    <Text size="sm" fw={900} c="brand">
+                                        Betalen aan {round.creatorName}: {formatEuro(myUnpaid)}
+                                    </Text>
+                                    <Button
+                                        component="a"
+                                        href={safeLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        leftSection={<ExternalLink size={16} />}
+                                    >
+                                        Betalen
+                                    </Button>
+                                </Stack>
+                            </Paper>
                         )}
-                    </div>
+                    </Stack>
                 </Tile>
             )}
 
             {isCreator && (
-                <Tile title="Betaallink" icon={<CreditCard className="size-6" />}>
-                    <div className="space-y-3">
+                <Tile title="Betaallink" icon={<CreditCard size={22} />}>
+                    <Stack gap="sm">
                         {safeLink && !editingLink ? (
-                            <p className="text-sm break-all text-(--text-main)">{safeLink}</p>
+                            <Text size="sm" style={{ wordBreak: 'break-all' }}>
+                                {safeLink}
+                            </Text>
                         ) : (
-                            !editingLink && <p className="text-sm text-(--text-muted)">Nog geen betaallink ingesteld.</p>
+                            !editingLink && (
+                                <Text size="sm" c="dimmed">
+                                    Nog geen betaallink ingesteld.
+                                </Text>
+                            )
                         )}
                         {editingLink ? (
-                            <div className="space-y-3">
-                                <FormField label="Betaallink (optioneel, https)">
-                                    <Input
-                                        type="url"
-                                        value={linkDraft}
-                                        onChange={(e) => setLinkDraft(e.target.value)}
-                                        placeholder="https://..."
-                                        maxLength={500}
-                                    />
-                                </FormField>
-                                <div className="flex flex-wrap gap-3">
-                                    <button
+                            <Stack gap="sm">
+                                <TextInput
+                                    type="url"
+                                    label="Betaallink (optioneel, https)"
+                                    value={linkDraft}
+                                    onChange={(e) => setLinkDraft(e.currentTarget.value)}
+                                    placeholder="https://..."
+                                    maxLength={500}
+                                />
+                                <Group gap="sm" wrap="wrap">
+                                    <Button
                                         type="button"
-                                        disabled={isPending}
+                                        loading={isPending}
                                         onClick={() => saveLink(linkDraft.trim() || null)}
-                                        className="form-button"
+                                        leftSection={<Check size={16} />}
                                     >
-                                        <Check className="size-4" />
                                         Opslaan
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         type="button"
+                                        variant="default"
                                         onClick={() => {
                                             setEditingLink(false);
                                             setLinkDraft(round.paymentLink ?? '');
                                         }}
-                                        className="form-button bg-(--bg-soft)! text-(--text-main)! shadow-none"
                                     >
                                         Annuleren
-                                    </button>
-                                </div>
-                            </div>
+                                    </Button>
+                                </Group>
+                            </Stack>
                         ) : (
-                            <div className="flex flex-wrap gap-3">
-                                <button type="button" onClick={() => setEditingLink(true)} className="form-button">
-                                    <Pencil className="size-4" />
+                            <Group gap="sm" wrap="wrap">
+                                <Button
+                                    type="button"
+                                    onClick={() => setEditingLink(true)}
+                                    leftSection={<Pencil size={16} />}
+                                >
                                     {round.paymentLink ? 'Aanpassen' : 'Link toevoegen'}
-                                </button>
+                                </Button>
                                 {round.paymentLink && (
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="default"
                                         disabled={isPending}
                                         onClick={() => saveLink(null)}
-                                        className="form-button bg-(--bg-soft)! text-(--text-main)! shadow-none"
+                                        leftSection={<Trash2 size={16} />}
                                     >
-                                        <Trash2 className="size-4" />
                                         Verwijderen
-                                    </button>
+                                    </Button>
                                 )}
-                            </div>
+                            </Group>
                         )}
-                    </div>
+                    </Stack>
                 </Tile>
             )}
 
             {isOpen && (
-                <Tile title={editing ? 'Bestelling bewerken' : 'Mijn bestelling'} icon={<Pizza className="size-6" />}>
-                    <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="grid grid-cols-1 gap-4 md:grid-cols-3" noValidate>
-                        {showFavorites && (
-                            <div className="space-y-2 md:col-span-3">
-                                {favorites.lastOrder && (
-                                    <button
-                                        type="button"
-                                        onClick={() => favorites.lastOrder && fillForm(favorites.lastOrder)}
-                                        className="form-button bg-(--bg-soft)! text-(--text-main)! shadow-none"
-                                    >
-                                        <History className="size-4" />
-                                        Zelfde als vorige keer
-                                    </button>
-                                )}
-                                {favorites.favorites.length > 0 && (
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <Star className="size-4 text-purple-500" aria-hidden="true" />
-                                        {favorites.favorites.map((f) => (
-                                            <button
-                                                key={`${f.itemName}|${f.size ?? ''}|${f.note ?? ''}|${f.price}`}
+                <Tile title={editing ? 'Bestelling bewerken' : 'Mijn bestelling'} icon={<Pizza size={22} />}>
+                    <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
+                        <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
+                            {showFavorites && (
+                                <Stack gap="xs" style={{ gridColumn: '1 / -1' }}>
+                                    {favorites.lastOrder && (
+                                        <Box>
+                                            <Button
                                                 type="button"
-                                                onClick={() => fillForm(f)}
-                                                className={`icon-button ${badgeBase} ${STATUS_CLASS.paid} cursor-pointer hover:opacity-80`}
+                                                variant="default"
+                                                size="sm"
+                                                onClick={() => favorites.lastOrder && fillForm(favorites.lastOrder)}
+                                                leftSection={<History size={16} />}
                                             >
-                                                {f.itemName}{f.size ? ` (${f.size})` : ''} · {formatEuro(f.price)}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                        <FormField label="Pizza" required error={errors.item_name?.message} className="md:col-span-2">
-                            <Input {...register('item_name')} placeholder="Bijv. Margherita" maxLength={100} />
-                        </FormField>
-                        <FormField label="Maat" error={errors.size?.message}>
-                            <Input {...register('size')} placeholder="Bijv. M" maxLength={20} />
-                        </FormField>
-                        <FormField label="Prijs (€)" required error={errors.price?.message}>
-                            <Input type="number" step="0.01" min="0" inputMode="decimal" {...register('price')} placeholder="0,00" />
-                        </FormField>
-                        <FormField label="Opmerking" error={errors.note?.message} className="md:col-span-2">
-                            <Input {...register('note')} placeholder="Bijv. zonder ui" maxLength={200} />
-                        </FormField>
-                        <div className="space-y-2 md:col-span-3">
-                            <label className="flex cursor-pointer items-center gap-2 rounded-xl bg-(--bg-soft) p-3 text-sm font-medium text-(--text-main)">
-                                <input
-                                    type="checkbox"
-                                    {...register('payConfirmed')}
-                                    aria-invalid={errors.payConfirmed ? true : undefined}
-                                    aria-describedby={errors.payConfirmed ? 'pay-confirmed-error' : undefined}
-                                    className="size-4 accent-(--theme-purple)"
+                                                Zelfde als vorige keer
+                                            </Button>
+                                        </Box>
+                                    )}
+                                    {favorites.favorites.length > 0 && (
+                                        <Group gap="xs" wrap="wrap" align="center">
+                                            <Text span c="brand" lh={1}>
+                                                <Star size={16} aria-hidden="true" />
+                                            </Text>
+                                            {favorites.favorites.map((f) => (
+                                                <Button
+                                                    key={`${f.itemName}|${f.size ?? ''}|${f.note ?? ''}|${f.price}`}
+                                                    type="button"
+                                                    variant="light"
+                                                    color="brand"
+                                                    size="compact-xs"
+                                                    onClick={() => fillForm(f)}
+                                                >
+                                                    {f.itemName}{f.size ? ` (${f.size})` : ''} · {formatEuro(f.price)}
+                                                </Button>
+                                            ))}
+                                        </Group>
+                                    )}
+                                </Stack>
+                            )}
+
+                            <Box style={{ gridColumn: 'span 2' }} visibleFrom="md">
+                                <TextInput
+                                    label="Pizza"
+                                    required
+                                    placeholder="Bijv. Margherita"
+                                    maxLength={100}
+                                    error={errors.item_name?.message}
+                                    {...register('item_name')}
                                 />
-                                Ik betaal {round.creatorName} mijn deel terug
-                            </label>
-                            {errors.payConfirmed?.message && (
-                                <p id="pay-confirmed-error" role="alert" className="text-theme-error text-xs font-bold">{errors.payConfirmed.message}</p>
-                            )}
-                        </div>
-                        <div className="flex flex-wrap gap-3 md:col-span-3">
-                            <button type="submit" disabled={isPending} className="form-button">
-                                <Check className="size-4" />
-                                {editing ? 'Opslaan' : 'Bestelling plaatsen'}
-                            </button>
-                            {editing && (
-                                <button
-                                    type="button"
-                                    onClick={resetForm}
-                                    className="form-button bg-(--bg-soft)! text-(--text-main)! shadow-none"
+                            </Box>
+                            <Box hiddenFrom="md">
+                                <TextInput
+                                    label="Pizza"
+                                    required
+                                    placeholder="Bijv. Margherita"
+                                    maxLength={100}
+                                    error={errors.item_name?.message}
+                                    {...register('item_name')}
+                                />
+                            </Box>
+
+                            <TextInput
+                                label="Maat"
+                                placeholder="Bijv. M"
+                                maxLength={20}
+                                error={errors.size?.message}
+                                {...register('size')}
+                            />
+
+                            <Controller
+                                name="price"
+                                control={control}
+                                render={({ field }) => (
+                                    <NumberInput
+                                        label="Prijs (€)"
+                                        required
+                                        min={0}
+                                        max={100}
+                                        step={0.5}
+                                        decimalScale={2}
+                                        placeholder="0,00"
+                                        value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : ''}
+                                        onChange={(val) => field.onChange(val === '' ? undefined : val)}
+                                        error={errors.price?.message}
+                                    />
+                                )}
+                            />
+
+                            <Box style={{ gridColumn: 'span 2' }} visibleFrom="md">
+                                <TextInput
+                                    label="Opmerking"
+                                    placeholder="Bijv. zonder ui"
+                                    maxLength={200}
+                                    error={errors.note?.message}
+                                    {...register('note')}
+                                />
+                            </Box>
+                            <Box hiddenFrom="md">
+                                <TextInput
+                                    label="Opmerking"
+                                    placeholder="Bijv. zonder ui"
+                                    maxLength={200}
+                                    error={errors.note?.message}
+                                    {...register('note')}
+                                />
+                            </Box>
+
+                            <Box style={{ gridColumn: '1 / -1' }}>
+                                <Controller
+                                    name="payConfirmed"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Checkbox
+                                            label={`Ik betaal ${round.creatorName} mijn deel terug`}
+                                            checked={Boolean(field.value)}
+                                            onChange={(e) => field.onChange(e.currentTarget.checked)}
+                                            error={errors.payConfirmed?.message}
+                                        />
+                                    )}
+                                />
+                            </Box>
+
+                            <Group gap="sm" wrap="wrap" style={{ gridColumn: '1 / -1' }}>
+                                <Button
+                                    type="submit"
+                                    loading={isPending}
+                                    leftSection={<Check size={16} />}
                                 >
-                                    Annuleren
-                                </button>
-                            )}
-                        </div>
+                                    {editing ? 'Opslaan' : 'Bestelling plaatsen'}
+                                </Button>
+                                {editing && (
+                                    <Button type="button" variant="default" onClick={resetForm}>
+                                        Annuleren
+                                    </Button>
+                                )}
+                            </Group>
+                        </SimpleGrid>
                     </form>
                 </Tile>
             )}
 
-            <Tile title="Bestellingen" icon={<ClipboardList className="size-6" />}>
+            <Tile title="Bestellingen" icon={<ClipboardList size={22} />}>
                 {orders.length === 0 ? (
-                    <div className="squircle-lg border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center shadow-inner dark:border-white/10 dark:bg-black/10">
-                        <p className="text-sm font-bold text-(--text-muted)">Nog geen bestellingen.</p>
-                    </div>
+                    <Paper p="xl" radius="lg" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
+                        <Text size="sm" fw={700} c="dimmed">
+                            Nog geen bestellingen.
+                        </Text>
+                    </Paper>
                 ) : (
-                    <div className="-mx-6 overflow-x-auto sm:mx-0">
-                        <table className="w-full border-separate border-spacing-0">
-                            <thead>
-                                <tr className="border-b border-slate-200 dark:border-white/5">
-                                    <th className="px-4 py-3 text-left text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Naam</th>
-                                    <th className="px-4 py-3 text-left text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Pizza</th>
-                                    <th className="px-4 py-3 text-right text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Prijs</th>
-                                    <th className="px-4 py-3"><span className="sr-only">Acties</span></th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+                    <ScrollArea>
+                        <Table verticalSpacing="sm" horizontalSpacing="md" highlightOnHover>
+                            <Table.Thead>
+                                <Table.Tr>
+                                    <Table.Th>
+                                        <Text size="xs" fw={900} tt="uppercase" c="brand">Naam</Text>
+                                    </Table.Th>
+                                    <Table.Th>
+                                        <Text size="xs" fw={900} tt="uppercase" c="brand">Pizza</Text>
+                                    </Table.Th>
+                                    <Table.Th ta="right">
+                                        <Text size="xs" fw={900} tt="uppercase" c="brand">Prijs</Text>
+                                    </Table.Th>
+                                    <Table.Th>
+                                        <VisuallyHidden>Acties</VisuallyHidden>
+                                    </Table.Th>
+                                </Table.Tr>
+                            </Table.Thead>
+                            <Table.Tbody>
                                 {orders.map((o) => (
-                                    <tr key={o.id} className="transition-all hover:bg-slate-50 dark:hover:bg-white/5">
-                                        <td className="p-4 text-sm font-bold whitespace-nowrap text-(--text-main)">
-                                            {o.userName}
-                                            {o.isMine && <span className="ml-2 text-[10px] font-black text-purple-500 uppercase">jij</span>}
-                                        </td>
-                                        <td className="p-4 text-sm text-(--text-main)">
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <span className="font-black text-purple-700 dark:text-white">
-                                                    {o.itemName}{o.size ? ` (${o.size})` : ''}
-                                                </span>
-                                                {o.addedToOrderAt && (
-                                                    <span className={`${badgeBase} ${STATUS_CLASS.open}`}>Toegevoegd</span>
+                                    <Table.Tr key={o.id}>
+                                        <Table.Td style={{ whiteSpace: 'nowrap' }}>
+                                            <Group gap="xs" wrap="nowrap">
+                                                <Text size="sm" fw={700}>
+                                                    {o.userName}
+                                                </Text>
+                                                {o.isMine && (
+                                                    <Badge size="xs" variant="light" color="brand">
+                                                        jij
+                                                    </Badge>
                                                 )}
-                                                <span className={`${badgeBase} ${o.paidAt ? STATUS_CLASS.paid : STATUS_CLASS.closed}`}>
-                                                    {o.paidAt ? 'Betaald' : 'Nog te betalen'}
-                                                </span>
-                                            </div>
-                                            {o.note && <p className="mt-0.5 text-xs text-(--text-muted)">{o.note}</p>}
-                                        </td>
-                                        <td className="p-4 text-right text-sm font-black whitespace-nowrap text-(--text-main)">
-                                            {formatEuro(o.price)}
-                                        </td>
-                                        <td className="p-4 text-right whitespace-nowrap">
+                                            </Group>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Stack gap={2}>
+                                                <Group gap="xs" wrap="wrap">
+                                                    <Text size="sm" fw={900} c="brand">
+                                                        {o.itemName}{o.size ? ` (${o.size})` : ''}
+                                                    </Text>
+                                                    {o.addedToOrderAt && (
+                                                        <Badge size="xs" variant="light" color="success">
+                                                            Toegevoegd
+                                                        </Badge>
+                                                    )}
+                                                    <Badge size="xs" variant="light" color={o.paidAt ? 'brand' : 'accent'}>
+                                                        {o.paidAt ? 'Betaald' : 'Nog te betalen'}
+                                                    </Badge>
+                                                </Group>
+                                                {o.note && (
+                                                    <Text size="xs" c="dimmed">
+                                                        {o.note}
+                                                    </Text>
+                                                )}
+                                            </Stack>
+                                        </Table.Td>
+                                        <Table.Td ta="right" style={{ whiteSpace: 'nowrap' }}>
+                                            <Text size="sm" fw={900}>
+                                                {formatEuro(o.price)}
+                                            </Text>
+                                        </Table.Td>
+                                        <Table.Td ta="right" style={{ whiteSpace: 'nowrap' }}>
                                             {o.isMine && isOpen && !o.addedToOrderAt && !o.paidAt && (
-                                                <div className="flex justify-end gap-2">
-                                                    <button
+                                                <Group justify="flex-end" gap="xs" wrap="nowrap">
+                                                    <ActionIcon
                                                         type="button"
+                                                        variant="subtle"
+                                                        color="brand"
                                                         onClick={() => startEdit(o)}
                                                         aria-label={`Bewerk bestelling ${o.itemName}`}
-                                                        className="icon-button rounded-lg bg-(--bg-soft) p-2 text-(--text-muted) hover:text-(--theme-purple)"
                                                     >
-                                                        <Pencil className="size-4" />
-                                                    </button>
-                                                    <button
+                                                        <Pencil size={16} />
+                                                    </ActionIcon>
+                                                    <ActionIcon
                                                         type="button"
+                                                        variant="subtle"
+                                                        color="error"
                                                         disabled={isPending}
                                                         onClick={() => confirmDelete(o)}
                                                         aria-label={`Verwijder bestelling ${o.itemName}`}
-                                                        className="icon-button rounded-lg bg-(--bg-soft) p-2 text-(--text-muted) hover:text-(--theme-error)"
                                                     >
-                                                        <Trash2 className="size-4" />
-                                                    </button>
-                                                </div>
+                                                        <Trash2 size={16} />
+                                                    </ActionIcon>
+                                                </Group>
                                             )}
-                                        </td>
-                                    </tr>
+                                        </Table.Td>
+                                    </Table.Tr>
                                 ))}
-                            </tbody>
-                            <tfoot>
-                                <tr className="border-t border-slate-200 dark:border-white/5">
-                                    <td colSpan={2} className="p-4 text-sm font-black text-(--text-main)">Totaal</td>
-                                    <td className="p-4 text-right text-sm font-black whitespace-nowrap text-purple-700 dark:text-white">{formatEuro(total)}</td>
-                                    <td />
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+                            </Table.Tbody>
+                            <Table.Tfoot>
+                                <Table.Tr>
+                                    <Table.Td colSpan={2}>
+                                        <Text size="sm" fw={900}>Totaal</Text>
+                                    </Table.Td>
+                                    <Table.Td ta="right" style={{ whiteSpace: 'nowrap' }}>
+                                        <Text size="sm" fw={900} c="brand">{formatEuro(total)}</Text>
+                                    </Table.Td>
+                                    <Table.Td />
+                                </Table.Tr>
+                            </Table.Tfoot>
+                        </Table>
+                    </ScrollArea>
                 )}
             </Tile>
 
             {isCreator && (
-                <Tile title="Afrekenen" icon={<Receipt className="size-6" />}>
-                    <div className="space-y-6">
-                        <p className="text-sm font-bold text-(--text-main)" aria-live="polite">
+                <Tile title="Afrekenen" icon={<Receipt size={22} />}>
+                    <Stack gap="lg">
+                        <Text size="sm" fw={700} aria-live="polite">
                             {addedCount} van {orders.length} pizza&apos;s toegevoegd
-                        </p>
+                        </Text>
 
                         {orders.length > 0 && (
-                            <div className="-mx-6 overflow-x-auto sm:mx-0">
-                                <table className="w-full border-separate border-spacing-0">
-                                    <thead>
-                                        <tr className="border-b border-slate-200 dark:border-white/5">
-                                            <th className="px-4 py-3 text-left text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Bestelling</th>
-                                            <th className="px-4 py-3 text-center text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">Betaald</th>
-                                            <th className="px-4 py-3 text-center text-[10px] font-black tracking-widest text-purple-500 uppercase opacity-60">In bestelling</th>
-                                            <th className="px-4 py-3"><span className="sr-only">Acties</span></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+                            <ScrollArea>
+                                <Table verticalSpacing="sm" horizontalSpacing="md">
+                                    <Table.Thead>
+                                        <Table.Tr>
+                                            <Table.Th>
+                                                <Text size="xs" fw={900} tt="uppercase" c="brand">Bestelling</Text>
+                                            </Table.Th>
+                                            <Table.Th ta="center">
+                                                <Text size="xs" fw={900} tt="uppercase" c="brand">Betaald</Text>
+                                            </Table.Th>
+                                            <Table.Th ta="center">
+                                                <Text size="xs" fw={900} tt="uppercase" c="brand">In bestelling</Text>
+                                            </Table.Th>
+                                            <Table.Th>
+                                                <VisuallyHidden>Acties</VisuallyHidden>
+                                            </Table.Th>
+                                        </Table.Tr>
+                                    </Table.Thead>
+                                    <Table.Tbody>
                                         {orders.map((o) => (
-                                            <tr key={o.id}>
-                                                <td className="px-4 py-3 text-sm text-(--text-main)">
-                                                    <span className="font-bold">{o.userName}</span>
-                                                    <span className="text-(--text-muted)"> · {o.itemName}{o.size ? ` (${o.size})` : ''} · {formatEuro(o.price)}</span>
-                                                </td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={!!o.paidAt}
-                                                        disabled={isPending}
-                                                        onChange={(e) => run(() => setOrderPaid(o.id, e.target.checked), 'Betaalstatus bijgewerkt')}
-                                                        aria-label={`Betaald: ${o.userName}`}
-                                                        className="size-5 cursor-pointer accent-(--theme-purple)"
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={!!o.addedToOrderAt}
-                                                        disabled={isPending}
-                                                        onChange={(e) => run(() => setOrderAdded(o.id, e.target.checked), 'Bestelstatus bijgewerkt')}
-                                                        aria-label={`In bestelling: ${o.userName}`}
-                                                        className="size-5 cursor-pointer accent-(--theme-purple)"
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-3 text-right">
+                                            <Table.Tr key={o.id}>
+                                                <Table.Td>
+                                                    <Text size="sm">
+                                                        <Text span fw={700}>{o.userName}</Text>
+                                                        <Text span c="dimmed"> · {o.itemName}{o.size ? ` (${o.size})` : ''} · {formatEuro(o.price)}</Text>
+                                                    </Text>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Group justify="center">
+                                                        <Checkbox
+                                                            checked={!!o.paidAt}
+                                                            disabled={isPending}
+                                                            onChange={(e) => run(() => setOrderPaid(o.id, e.currentTarget.checked), 'Betaalstatus bijgewerkt')}
+                                                            aria-label={`Betaald: ${o.userName}`}
+                                                        />
+                                                    </Group>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Group justify="center">
+                                                        <Checkbox
+                                                            checked={!!o.addedToOrderAt}
+                                                            disabled={isPending}
+                                                            onChange={(e) => run(() => setOrderAdded(o.id, e.currentTarget.checked), 'Bestelstatus bijgewerkt')}
+                                                            aria-label={`In bestelling: ${o.userName}`}
+                                                        />
+                                                    </Group>
+                                                </Table.Td>
+                                                <Table.Td ta="right">
                                                     {!o.isMine && round.status !== 'paid' && !o.paidAt && (
-                                                        <button
+                                                        <ActionIcon
                                                             type="button"
+                                                            variant="subtle"
+                                                            color="error"
                                                             disabled={isPending}
                                                             onClick={() => confirmDelete(o)}
                                                             aria-label={`Verwijder bestelling van ${o.userName}`}
-                                                            className="icon-button rounded-lg bg-(--bg-soft) p-2 text-(--text-muted) hover:text-(--theme-error)"
                                                         >
-                                                            <Trash2 className="size-4" />
-                                                        </button>
+                                                            <Trash2 size={16} />
+                                                        </ActionIcon>
                                                     )}
-                                                </td>
-                                            </tr>
+                                                </Table.Td>
+                                            </Table.Tr>
                                         ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                    </Table.Tbody>
+                                </Table>
+                            </ScrollArea>
                         )}
 
-                        <div className="flex flex-wrap gap-3">
-                            <button type="button" onClick={copyOrder} disabled={orders.length === 0} className="form-button">
-                                <Copy className="size-4" />
+                        <Group gap="sm" wrap="wrap">
+                            <Button
+                                type="button"
+                                onClick={copyOrder}
+                                disabled={orders.length === 0}
+                                leftSection={<Copy size={16} />}
+                            >
                                 Bestelling kopiëren
-                            </button>
+                            </Button>
                             {isOpen && (
-                                <button
+                                <Button
                                     type="button"
                                     disabled={isPending}
+                                    leftSection={<Lock size={16} />}
                                     onClick={() => {
                                         if (window.confirm('Ronde sluiten? Er kunnen daarna geen bestellingen meer bij.')) {
                                             run(() => closePizzaRound(round.id), 'Ronde gesloten');
                                         }
                                     }}
-                                    className="form-button"
                                 >
-                                    <Lock className="size-4" />
                                     Ronde sluiten
-                                </button>
+                                </Button>
                             )}
                             {!isOpen && round.status !== 'paid' && (
-                                <button
+                                <Button
                                     type="button"
                                     disabled={isPending}
+                                    leftSection={<Banknote size={16} />}
                                     onClick={() => run(() => markPizzaRoundPaid(round.id), 'Ronde gemarkeerd als volledig betaald')}
-                                    className="form-button"
                                 >
-                                    <Banknote className="size-4" />
                                     Markeer als volledig betaald
-                                </button>
+                                </Button>
                             )}
-                        </div>
-                    </div>
+                        </Group>
+                    </Stack>
                 </Tile>
             )}
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+        </Stack>
     );
 }

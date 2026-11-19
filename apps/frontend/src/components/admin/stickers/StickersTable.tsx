@@ -10,11 +10,23 @@ import {
     MapPin,
     Globe,
     Image as ImageIcon,
-    X,
     CheckCircle
 } from 'lucide-react';
+import {
+    ActionIcon,
+    Badge,
+    Box,
+    Center,
+    Group,
+    Modal,
+    Paper,
+    Stack,
+    Table,
+    Text,
+    TextInput,
+    UnstyledButton,
+} from '@mantine/core';
 import { formatDate } from '@/shared/lib/utils/date';
-
 import { type StickerPublic } from '@salvemundi/validations';
 
 type AdminSticker = Omit<StickerPublic, 'user_updated' | 'date_updated'>;
@@ -47,157 +59,185 @@ export default function StickersTable({ stickers, onDelete, onApprove }: Sticker
     });
 
     return (
-        <div className="space-y-6">
-            <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
-                <div className="flex items-center gap-3 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-3 shadow-sm transition-all focus-within:border-(--beheer-accent) focus-within:ring-2 focus-within:ring-(--beheer-accent)/20">
-                    <Search className="size-4 shrink-0 text-(--beheer-text-muted)" />
-                    <input
-                        type="text"
-                        placeholder="Zoek op locatie, stad, land of gebruiker..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        suppressHydrationWarning
-                        className="beheer-input w-full border-none bg-transparent p-0 text-xs font-semibold text-(--beheer-text) placeholder:text-(--beheer-text-muted)/40 focus:outline-none"
-                    />
-                </div>
-            </div>
+        <Stack gap="lg">
+            <Paper withBorder radius="lg" p="md">
+                <TextInput
+                    placeholder="Zoek op locatie, stad, land of gebruiker..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                    leftSection={<Search size={16} />}
+                />
+            </Paper>
 
-            <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm">
-                <div className="custom-scrollbar overflow-x-auto">
-                    <table className="w-full min-w-200 border-collapse text-left">
-                        <thead>
-                            <tr className="border-b border-(--beheer-border) bg-(--beheer-card-soft) text-xs font-semibold text-(--beheer-text-muted)">
-                                <th className="px-6 py-4">Locatie & Gebruiker</th>
-                                <th className="px-6 py-4">Stad / Land</th>
-                                <th className="px-6 py-4">Datum</th>
-                                <th className="px-6 py-4 text-center">Foto</th>
-                                <th className="px-6 py-4 text-right">Acties</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-(--beheer-border)/10">
+            <Paper withBorder radius="lg" style={{ overflow: 'hidden' }}>
+                <Table.ScrollContainer minWidth={800}>
+                    <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
+                        <Table.Thead>
+                            <Table.Tr>
+                                <Table.Th>Locatie &amp; Gebruiker</Table.Th>
+                                <Table.Th>Stad / Land</Table.Th>
+                                <Table.Th>Datum</Table.Th>
+                                <Table.Th ta="center">Foto</Table.Th>
+                                <Table.Th ta="right">Acties</Table.Th>
+                            </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
                             {filteredStickers.map((sticker) => (
-                                <tr key={sticker.id} className="group transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-700/20">
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col gap-1">
-                                            <div className="flex items-center gap-2">
-                                                <span className="leading-tight font-semibold text-(--beheer-text) transition-colors group-hover:text-(--beheer-accent)">
+                                <Table.Tr key={sticker.id}>
+                                    <Table.Td>
+                                        <Stack gap={4}>
+                                            <Group gap="xs" wrap="wrap">
+                                                <Text size="sm" fw={600}>
                                                     {sticker.location_name || 'Onbekende Locatie'}
-                                                </span>
+                                                </Text>
                                                 {sticker.status === 'published' ? (
-                                                    <span className="rounded-md border border-green-500/20 bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-green-600 dark:text-green-400">
+                                                    <Badge color="success" variant="light" size="sm">
                                                         Live
-                                                    </span>
+                                                    </Badge>
                                                 ) : (
-                                                    <span className="rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                                                    <Badge color="accent" variant="light" size="sm">
                                                         Draft
-                                                    </span>
+                                                    </Badge>
                                                 )}
-                                            </div>
-                                            <div className="flex items-center gap-1.5 text-xs font-medium text-(--beheer-text-muted)">
-                                                <User className="size-3.5 opacity-60" />
-                                                <span>
+                                            </Group>
+                                            <Group gap={6} wrap="nowrap">
+                                                <User size={14} opacity={0.6} />
+                                                <Text size="xs" c="dimmed">
                                                     Geüpload door:{' '}
                                                     {sticker.user_created
                                                         ? `${sticker.user_created.first_name || ''} ${sticker.user_created.last_name || ''}`
                                                         : 'Systeem'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col gap-1">
-                                            <span className="flex items-center gap-1.5 text-sm leading-none font-semibold text-(--beheer-text)">
-                                                <MapPin className="size-3.5 text-red-500/80" />
-                                                {sticker.city || 'Onbekende stad'}
-                                            </span>
-                                            <span className="flex items-center gap-1.5 text-xs leading-none font-medium text-(--beheer-text-muted)">
-                                                <Globe className="size-3.5 text-blue-500/80" />
-                                                {sticker.country || 'Onbekend land'}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm font-medium text-(--beheer-text-muted)">
-                                        <span suppressHydrationWarning>
+                                                </Text>
+                                            </Group>
+                                        </Stack>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <Stack gap={4}>
+                                            <Group gap={6} wrap="nowrap">
+                                                <Text span c="error" lh={1}>
+                                                    <MapPin size={14} />
+                                                </Text>
+                                                <Text size="sm" fw={600}>
+                                                    {sticker.city || 'Onbekende stad'}
+                                                </Text>
+                                            </Group>
+                                            <Group gap={6} wrap="nowrap">
+                                                <Text span c="brand" lh={1}>
+                                                    <Globe size={14} />
+                                                </Text>
+                                                <Text size="xs" c="dimmed">
+                                                    {sticker.country || 'Onbekend land'}
+                                                </Text>
+                                            </Group>
+                                        </Stack>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <Text size="sm" c="dimmed" suppressHydrationWarning>
                                             {formatDate(sticker.date_created, 'dd MMM yyyy', '-')}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <div
-                                            className="mx-auto flex size-12 cursor-pointer items-center justify-center overflow-hidden rounded-(--beheer-radius) border border-dashed border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text-muted) transition-colors hover:border-(--beheer-accent)"
-                                            onClick={() => sticker.image && setSelectedImage(`${ASSET_URL}/${sticker.image}`)}
-                                        >
-                                            {!sticker.image ? (
-                                                <ImageIcon className="size-4 opacity-30" />
-                                            ) : (
-                                                <MediaAsset
-                                                    asset={getImageUrl(sticker.image, { width: 100, height: 100, fit: 'cover' }) || ''}
-                                                    alt="Sticker"
-                                                    width={48}
-                                                    height={48}
-                                                    className="size-full rounded-(--beheer-radius) object-cover"
-                                                />
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex justify-end gap-2">
+                                        </Text>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <Center>
+                                            <UnstyledButton
+                                                type="button"
+                                                onClick={() => sticker.image && setSelectedImage(`${ASSET_URL}/${sticker.image}`)}
+                                                disabled={!sticker.image}
+                                                aria-label="Sticker foto bekijken"
+                                            >
+                                                <Paper
+                                                    withBorder
+                                                    radius="md"
+                                                    w={48}
+                                                    h={48}
+                                                    style={{
+                                                        overflow: 'hidden',
+                                                        borderStyle: sticker.image ? 'solid' : 'dashed',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        cursor: sticker.image ? 'pointer' : 'default',
+                                                    }}
+                                                >
+                                                    {!sticker.image ? (
+                                                        <ImageIcon size={16} opacity={0.3} />
+                                                    ) : (
+                                                        <Box pos="relative" w={48} h={48}>
+                                                            <MediaAsset
+                                                                asset={getImageUrl(sticker.image, { width: 100, height: 100, fit: 'cover' }) || ''}
+                                                                alt="Sticker"
+                                                                fill
+                                                                sizes="48px"
+                                                                objectFit="cover"
+                                                            />
+                                                        </Box>
+                                                    )}
+                                                </Paper>
+                                            </UnstyledButton>
+                                        </Center>
+                                    </Table.Td>
+                                    <Table.Td ta="right">
+                                        <Group justify="flex-end" gap="xs">
                                             {sticker.status !== 'published' && (
-                                                <button
+                                                <ActionIcon
+                                                    type="button"
+                                                    variant="light"
+                                                    color="success"
+                                                    size="lg"
                                                     onClick={() => onApprove(sticker.id)}
-                                                    className="icon-button rounded-lg bg-green-500/10 p-2 text-green-600 shadow-sm transition-all hover:bg-green-600 hover:text-white dark:text-green-400"
                                                     title="Publiceren"
-                                                    type="button">
-                                                    <CheckCircle className="size-4" />
-                                                </button>
+                                                    aria-label="Publiceren"
+                                                >
+                                                    <CheckCircle size={16} />
+                                                </ActionIcon>
                                             )}
-                                            <button
+                                            <ActionIcon
+                                                type="button"
+                                                variant="light"
+                                                color="error"
+                                                size="lg"
                                                 onClick={() => onDelete(sticker.id)}
-                                                className="icon-button rounded-lg bg-red-500/10 p-2 text-red-600 shadow-sm transition-all hover:bg-red-500 hover:text-white dark:text-red-400"
                                                 title="Verwijderen"
-                                                type="button">
-                                                <Trash className="size-4" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                                aria-label="Verwijderen"
+                                            >
+                                                <Trash size={16} />
+                                            </ActionIcon>
+                                        </Group>
+                                    </Table.Td>
+                                </Table.Tr>
                             ))}
                             {filteredStickers.length === 0 && (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-16 text-center text-sm font-semibold text-(--beheer-text-muted) italic">
-                                        Geen stickers gevonden voor dit filter.
-                                    </td>
-                                </tr>
+                                <Table.Tr>
+                                    <Table.Td colSpan={5} ta="center" py="xl">
+                                        <Text size="sm" fw={600} c="dimmed" fs="italic">
+                                            Geen stickers gevonden voor dit filter.
+                                        </Text>
+                                    </Table.Td>
+                                </Table.Tr>
                             )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        </Table.Tbody>
+                    </Table>
+                </Table.ScrollContainer>
+            </Paper>
 
-            {selectedImage && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
-                    onClick={() => setSelectedImage(null)}
-                >
-                    <div className="animate-in zoom-in-95 relative max-h-[90vh] max-w-4xl duration-300">
-                        <div className="relative size-full min-h-[50vh] min-w-[50vw]">
-                            <MediaAsset
-                                asset={selectedImage}
-                                alt="Sticker Full"
-                                fill
-                                className="rounded-(--beheer-radius) border border-(--beheer-border) object-contain shadow-2xl"
-                            />
-                        </div>
-                        <button
-                            className="absolute -top-4 -right-4 icon-button rounded-full border border-(--beheer-border) bg-(--beheer-card-bg) p-2 text-(--beheer-text) shadow-lg transition-colors hover:text-(--beheer-accent)"
-                            onClick={() => setSelectedImage(null)}
-                            type="button">
-                            <X className="size-5" />
-                            <span className="sr-only">Sluiten</span>
-                        </button>
-                    </div>
-                </div>
-            )}
-        </div>
+            <Modal
+                opened={Boolean(selectedImage)}
+                onClose={() => setSelectedImage(null)}
+                title="Sticker Foto"
+                size="xl"
+                centered
+            >
+                {selectedImage && (
+                    <Box pos="relative" mih="50vh" w="100%">
+                        <MediaAsset
+                            asset={selectedImage}
+                            alt="Sticker Full"
+                            fill
+                            objectFit="contain"
+                        />
+                    </Box>
+                )}
+            </Modal>
+        </Stack>
     );
 }
 

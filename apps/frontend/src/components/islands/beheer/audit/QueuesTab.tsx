@@ -1,6 +1,21 @@
 'use client';
 
-import { CheckCircle, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
+import { CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import {
+    Badge,
+    Button,
+    Center,
+    Divider,
+    Group,
+    Loader,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Table,
+    Text,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
 import type { QueueInfo } from '@salvemundi/validations';
 
 interface QueueTask {
@@ -20,122 +35,137 @@ interface QueuesTabProps {
 export default function QueuesTab({ queueData, isLoading = false, error, onRefresh }: QueuesTabProps) {
     if (isLoading && !queueData) {
         return (
-            <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-12 text-center shadow-xl">
-                <Loader2 className="mx-auto mb-4 size-8 animate-spin text-(--beheer-accent)" />
-                <h3 className="text-base font-bold tracking-tight text-(--beheer-text)">
-                    Wachtrijstatus ophalen...
-                </h3>
-                <p className="mx-auto mt-2 max-w-md text-xs font-medium text-(--beheer-text-muted)">
-                    De actuele gegevens worden opgehaald van de Azure Management Service.
-                </p>
-            </div>
+            <Paper withBorder radius="lg" p="xl">
+                <Center py="xl">
+                    <Stack align="center" gap="sm" ta="center">
+                        <Loader color="brand" size="md" />
+                        <Title order={4}>Wachtrijstatus ophalen...</Title>
+                        <Text size="xs" c="dimmed" maw={420}>
+                            De actuele gegevens worden opgehaald van de Azure Management Service.
+                        </Text>
+                    </Stack>
+                </Center>
+            </Paper>
         );
     }
 
     if (!queueData) {
         return (
-            <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-8 text-center shadow-xl">
-                <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-500">
-                    <AlertCircle className="size-6" />
-                </div>
-                <h3 className="text-base font-bold tracking-tight text-(--beheer-text)">
-                    Wachtrijmonitoring niet beschikbaar
-                </h3>
-                <p className="mx-auto mt-2 max-w-md text-xs font-medium text-(--beheer-text-muted)">
-                    {error || "De Azure Management Service is momenteel offline of niet bereikbaar vanaf deze omgeving. Zorg dat de service draait of verbind met de VPN als je lokaal ontwikkelt."}
-                </p>
-                {onRefresh && (
-                    <div className="mt-6">
-                        <button
-                            type="button"
-                            onClick={onRefresh}
-                            disabled={isLoading}
-                            className="form-button inline-flex items-center gap-2 rounded-xl bg-(--beheer-accent) px-4 py-2 text-xs font-semibold text-white shadow-sm hover:opacity-90 disabled:opacity-50"
-                        >
-                            <RefreshCw className={`size-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-                            Opnieuw proberen
-                        </button>
-                    </div>
-                )}
-            </div>
+            <Paper withBorder radius="lg" p="xl">
+                <Center py="md">
+                    <Stack align="center" gap="md" ta="center">
+                        <ThemeIcon size={48} radius="md" variant="light" color="accent">
+                            <AlertCircle size={24} />
+                        </ThemeIcon>
+                        <Stack gap={4} align="center">
+                            <Title order={4}>Wachtrijmonitoring niet beschikbaar</Title>
+                            <Text size="xs" c="dimmed" maw={440}>
+                                {error || "De Azure Management Service is momenteel offline of niet bereikbaar vanaf deze omgeving. Zorg dat de service draait of verbind met de VPN als je lokaal ontwikkelt."}
+                            </Text>
+                        </Stack>
+                        {onRefresh && (
+                            <Button
+                                type="button"
+                                color="brand"
+                                size="xs"
+                                leftSection={<RefreshCw size={14} />}
+                                loading={isLoading}
+                                onClick={onRefresh}
+                            >
+                                Opnieuw proberen
+                            </Button>
+                        )}
+                    </Stack>
+                </Center>
+            </Paper>
         );
     }
 
     return (
-        <div className="space-y-4">
+        <Stack gap="md">
             {onRefresh && (
-                <div className="flex justify-end">
-                    <button
+                <Group justify="flex-end">
+                    <Button
                         type="button"
+                        variant="default"
+                        size="xs"
+                        leftSection={<RefreshCw size={14} />}
+                        loading={isLoading}
                         onClick={onRefresh}
-                        disabled={isLoading}
-                        className="beheer-button inline-flex items-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-3 py-1.5 text-xs font-semibold text-(--beheer-text) hover:bg-(--beheer-card-bg) disabled:opacity-50"
                     >
-                        <RefreshCw className={`size-3.5 ${isLoading ? 'animate-spin' : ''}`} />
                         Vernieuwen
-                    </button>
-                </div>
+                    </Button>
+                </Group>
             )}
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                {(['new_users', 'sync_existing'] as const).map(qKey => {
+
+            <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+                {(['new_users', 'sync_existing'] as const).map((qKey) => {
                     const q = qKey === 'new_users' ? queueData.new_users : queueData.sync_existing;
                     return (
-                        <div key={qKey} className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl">
-                            <div className="flex items-center justify-between border-b border-(--beheer-border)/50 bg-(--beheer-card-soft)/30 p-6">
-                                <div>
-                                    <h3 className="text-base font-semibold tracking-tight text-(--beheer-text)">
+                        <Paper key={qKey} withBorder radius="lg" style={{ overflow: 'hidden' }}>
+                            <Group justify="space-between" align="center" p="lg">
+                                <Stack gap={2}>
+                                    <Title order={4}>
                                         {qKey === 'new_users' ? 'Nieuwe Leden Wachtrij' : 'Sync Wachtrij'}
-                                    </h3>
-                                    <p className="mt-1 text-xs font-medium text-(--beheer-text-muted) opacity-50">
+                                    </Title>
+                                    <Text size="xs" c="dimmed">
                                         Redis: {qKey === 'new_users' ? 'v7:queue:provision:new_user' : 'v7:queue:provision:sync_existing'}
-                                    </p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <span className="rounded-full bg-(--beheer-accent)/10 px-3 py-1 text-sm font-semibold text-(--beheer-accent)">
-                                        {q?.count || 0}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="p-0">
-                                {!q?.samples || q.samples.length === 0 ? (
-                                    <div className="p-12 text-center">
-                                        <CheckCircle className="mx-auto mb-4 size-10 text-(--beheer-active) opacity-20" />
-                                        <p className="text-xs font-medium text-(--beheer-text-muted)">Geen actieve taken</p>
-                                    </div>
-                                ) : (
-                                    <table className="w-full text-left text-xs">
-                                        <thead>
-                                            <tr className="border-b border-(--beheer-border)/50 bg-(--beheer-card-soft)/50 font-semibold tracking-tight text-(--beheer-text-muted)">
-                                                <th className="p-3">Target</th>
-                                                <th className="p-3 text-center">Retries</th>
-                                                <th className="p-3 text-right">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-(--beheer-border)/10">
-                                            {(q.samples as QueueTask[]).map((task, idx: number) => (
-                                                <tr key={idx} className="hover:bg-(--beheer-accent)/5">
-                                                    <td className="p-3 font-bold text-(--beheer-text)">
+                                    </Text>
+                                </Stack>
+                                <Badge color="brand" variant="light" size="lg">
+                                    {q?.count || 0}
+                                </Badge>
+                            </Group>
+
+                            <Divider />
+
+                            {!q?.samples || q.samples.length === 0 ? (
+                                <Center py="xl">
+                                    <Stack align="center" gap="xs" py="md">
+                                        <Text span c="success" style={{ opacity: 0.25 }} lh={1}>
+                                            <CheckCircle size={40} />
+                                        </Text>
+                                        <Text size="xs" c="dimmed" fw={500}>
+                                            Geen actieve taken
+                                        </Text>
+                                    </Stack>
+                                </Center>
+                            ) : (
+                                <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="md">
+                                    <Table.Thead>
+                                        <Table.Tr>
+                                            <Table.Th>Target</Table.Th>
+                                            <Table.Th ta="center">Retries</Table.Th>
+                                            <Table.Th ta="right">Status</Table.Th>
+                                        </Table.Tr>
+                                    </Table.Thead>
+                                    <Table.Tbody>
+                                        {(q.samples as QueueTask[]).map((task, idx) => (
+                                            <Table.Tr key={task.userId ?? task.email ?? idx}>
+                                                <Table.Td>
+                                                    <Text size="xs" fw={600}>
                                                         {task.email || task.userId || 'Onbekend'}
-                                                    </td>
-                                                    <td className="p-3 text-center font-semibold">
+                                                    </Text>
+                                                </Table.Td>
+                                                <Table.Td ta="center">
+                                                    <Text size="xs" fw={600}>
                                                         {task.retries} / {task.maxRetries}
-                                                    </td>
-                                                    <td className="p-3 text-right">
-                                                        <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-500">
-                                                            Wachtend
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                )}
-                            </div>
-                        </div>
+                                                    </Text>
+                                                </Table.Td>
+                                                <Table.Td ta="right">
+                                                    <Badge color="accent" variant="light" size="xs">
+                                                        Wachtend
+                                                    </Badge>
+                                                </Table.Td>
+                                            </Table.Tr>
+                                        ))}
+                                    </Table.Tbody>
+                                </Table>
+                            )}
+                        </Paper>
                     );
                 })}
-            </div>
-        </div>
+            </SimpleGrid>
+        </Stack>
     );
 }
-

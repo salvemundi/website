@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { getKroegentochtWhatsAppLink } from "@/server/actions/events/kroegentocht/kroegentocht-public.actions";
-import { MessageCircle, ArrowRight, X } from "lucide-react";
+import React, { useEffect, useState } from 'react';
+import { getKroegentochtWhatsAppLink } from '@/server/actions/events/kroegentocht/kroegentocht-public.actions';
+import { MessageCircle, ArrowRight } from 'lucide-react';
+import { Button, Modal, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 
 interface KroegentochtWhatsAppPopupProps {
     signupId?: number;
@@ -27,35 +28,41 @@ export function KroegentochtWhatsAppPopup({ signupId, token }: KroegentochtWhats
     if (!isOpen || !communityUrl) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md">
-            <div className="relative mx-4 w-full max-w-md rounded-3xl border border-white/15 bg-white/10 p-8 text-white shadow-2xl backdrop-blur-2xl">
-                <button
-                    onClick={() => setIsOpen(false)}
-                    className="absolute top-4 right-4 icon-button text-white/60 transition-colors hover:text-white"
-                    aria-label="Sluiten"
-                    type="button">
-                    <X className="size-5" />
-                </button>
+        <Modal
+            opened={isOpen}
+            onClose={() => setIsOpen(false)}
+            centered
+            radius="xl"
+            size="sm"
+            withCloseButton
+            aria-label="Join de WhatsApp Community"
+        >
+            <Stack gap="md">
+                <ThemeIcon size={48} radius="md" variant="light" color="brand">
+                    <MessageCircle size={24} />
+                </ThemeIcon>
 
-                <div className="mb-6 flex size-12 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/20 text-emerald-400">
-                    <MessageCircle className="size-6" />
-                </div>
+                <Stack gap="xs">
+                    <Title order={3} size="h4">
+                        Join de WhatsApp Community!
+                    </Title>
+                    <Text size="sm" c="dimmed">
+                        Je betaling is succesvol ontvangen! Voeg jezelf direct toe aan de officiële Salve Mundi Kroegentocht community om op de hoogte te blijven van routes, tijden en groepsindelingen.
+                    </Text>
+                </Stack>
 
-                <h3 className="mb-2 text-xl font-semibold">Join de WhatsApp Community!</h3>
-                <p className="mb-6 text-sm leading-relaxed text-white/70">
-                    Je betaling is succesvol ontvangen! Voeg jezelf direct toe aan de officiële Salve Mundi Kroegentocht community om op de hoogte te blijven van routes, tijden en groepsindelingen.
-                </p>
-
-                <a
+                <Button
+                    component="a"
                     href={communityUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3.5 font-medium text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600 hover:shadow-emerald-500/30"
+                    fullWidth
+                    size="md"
+                    rightSection={<ArrowRight size={16} />}
                 >
                     Deelnemen aan community
-                    <ArrowRight className="size-4" />
-                </a>
-            </div>
-        </div>
+                </Button>
+            </Stack>
+        </Modal>
     );
 }

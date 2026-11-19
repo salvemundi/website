@@ -2,10 +2,8 @@
 
 import React from 'react';
 import { useAuth, useAuthActions } from '@/features/auth/providers/auth-provider';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { formatActivityDateTime } from '@/shared/lib/activity-utils';
-import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import { isDeadlinePassed } from '@/shared/lib/utils/date';
 
 import ActiviteitGridCard from './card/ActiviteitGridCard';
@@ -62,7 +60,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     onlyMembers = false,
     serverTime
 }) => {
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const { isAuthenticated, user } = useAuth();
     const { login: loginWithMicrosoft } = useAuthActions();
 
@@ -76,8 +74,7 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
     const handleSignupClick = (e: React.MouseEvent) => {
         e.stopPropagation();
 
-        const userData = user as unknown as MembershipUserData | undefined;
-        if (onlyMembers && userData?.membership_status !== 'active') {
+        if (onlyMembers && user?.membership_status !== 'active') {
             if (!isAuthenticated) {
                 const returnTo = window.location.pathname + window.location.search;
                 localStorage.setItem('auth_return_to', returnTo);
@@ -117,51 +114,46 @@ const ActiviteitCard: React.FC<ActiviteitCardProps> = ({
         variant
     );
 
-    return (
-        <>
-            {isListVariant ? (
-                <ActiviteitListCard
-                    title={title}
-                    image={image ?? null}
-                    displayDate={displayDate}
-                    timeRange={timeRange}
-                    location={location ?? null}
-                    description={description}
-                    short_description={short_description}
-                    safePrice={safePrice}
-                    committeeLabel={committeeLabel}
-                    onlyMembers={onlyMembers}
-                    isPast={isPast}
-                    cannotSignUp={cannotSignUp}
-                    alreadySignedUp={alreadySignedUp}
-                    isDeadlinePassed={deadlinePassed}
-                    isFull={isFullActivity}
-                    contact={contact}
-                    handleSignupClick={handleSignupClick}
-                    onShowDetails={onShowDetails}
-                />
-            ) : (
-                <ActiviteitGridCard
-                    title={title}
-                    image={image ?? null}
-                    displayDate={displayDate}
-                    timeRange={timeRange}
-                    description={description}
-                    short_description={short_description}
-                    safePrice={safePrice}
-                    committeeLabel={committeeLabel}
-                    onlyMembers={onlyMembers}
-                    isPast={isPast}
-                    cannotSignUp={cannotSignUp}
-                    alreadySignedUp={alreadySignedUp}
-                    isDeadlinePassed={deadlinePassed}
-                    isFull={isFullActivity}
-                    handleSignupClick={handleSignupClick}
-                    onShowDetails={onShowDetails}
-                />
-            )}
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </>
+    return isListVariant ? (
+        <ActiviteitListCard
+            title={title}
+            image={image ?? null}
+            displayDate={displayDate}
+            timeRange={timeRange}
+            location={location ?? null}
+            description={description}
+            short_description={short_description}
+            safePrice={safePrice}
+            committeeLabel={committeeLabel}
+            onlyMembers={onlyMembers}
+            isPast={isPast}
+            cannotSignUp={cannotSignUp}
+            alreadySignedUp={alreadySignedUp}
+            isDeadlinePassed={deadlinePassed}
+            isFull={isFullActivity}
+            contact={contact}
+            handleSignupClick={handleSignupClick}
+            onShowDetails={onShowDetails}
+        />
+    ) : (
+        <ActiviteitGridCard
+            title={title}
+            image={image ?? null}
+            displayDate={displayDate}
+            timeRange={timeRange}
+            description={description}
+            short_description={short_description}
+            safePrice={safePrice}
+            committeeLabel={committeeLabel}
+            onlyMembers={onlyMembers}
+            isPast={isPast}
+            cannotSignUp={cannotSignUp}
+            alreadySignedUp={alreadySignedUp}
+            isDeadlinePassed={deadlinePassed}
+            isFull={isFullActivity}
+            handleSignupClick={handleSignupClick}
+            onShowDetails={onShowDetails}
+        />
     );
 };
 

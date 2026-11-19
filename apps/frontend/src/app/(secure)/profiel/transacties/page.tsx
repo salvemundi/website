@@ -1,14 +1,16 @@
+import Link from '@/components/ui/Link';
+import { redirect } from 'next/navigation';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Group, Stack } from '@mantine/core';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { TransactionsIsland } from '@/components/islands/account/TransactionsIsland';
 import { getUserTransactions } from '@/server/actions/profile/profiel.actions';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
-import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata = {
     title: 'Transacties | SV Salve Mundi',
-    description: 'Bekijk je eerdere betalingen bij Salve Mundi.' };
-
-import { redirect } from 'next/navigation';
+    description: 'Bekijk je eerdere betalingen bij Salve Mundi.'
+};
 
 export default async function TransactiesPage() {
     const session = await getEnrichedSession();
@@ -21,12 +23,22 @@ export default async function TransactiesPage() {
 
     return (
         <PublicPageShell title="Transacties">
-            <div className="container mx-auto max-w-7xl px-4 pt-8">
-                <BackButton href="/profiel" />
-            </div>
-            <div className="container mx-auto max-w-7xl px-4 py-8">
-                <TransactionsIsland transactions={transactions} />
-            </div>
+            <Container size="xl" py="xl">
+                <Stack gap="xl">
+                    <Group>
+                        <Button
+                            component={Link}
+                            href="/profiel"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                    </Group>
+                    <TransactionsIsland transactions={transactions} />
+                </Stack>
+            </Container>
         </PublicPageShell>
     );
 }

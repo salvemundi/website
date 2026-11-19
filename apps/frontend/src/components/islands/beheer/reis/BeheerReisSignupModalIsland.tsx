@@ -1,9 +1,22 @@
 'use client';
 
 import React from 'react';
-import { createPortal } from 'react-dom';
 import type { Trip, TripSignup, TripActivity } from '@salvemundi/validations';
-import { Users, Pen, Trash, X, Save, Loader2, Ticket } from 'lucide-react';
+import { Users, Pen, Trash, Save, Ticket } from 'lucide-react';
+import {
+    ActionIcon,
+    Box,
+    Button,
+    Divider,
+    Grid,
+    Group,
+    Loader,
+    Modal,
+    Stack,
+    Text,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
 import ReisSignupForm from './ReisSignupForm';
 import ReisSignupActivities from './ReisSignupActivities';
 import ReisSignupView from './ReisSignupView';
@@ -41,158 +54,189 @@ export default function BeheerReisSignupModalIsland({
     onDelete,
     onSave,
     onToggleActivity,
-    onResendEmail
+    onResendEmail,
 }: AdminReisSignupModalIslandProps) {
-    if (!isOpen || !selectedSignup) return null;
+    if (!selectedSignup) return null;
 
-    return createPortal(
-        <div className="custom-scrollbar animate-in fade-in fixed inset-0 isolate z-100000 flex items-start justify-center overflow-y-auto p-4 duration-300 sm:p-6">
-            <div
-                className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl"
-                onClick={onClose}
-            />
-
-            <div
-                className="animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 relative z-10 my-auto flex max-h-[90vh] w-full flex-col rounded-[2.5rem] border border-(--beheer-border) bg-(--beheer-card-bg) shadow-(--shadow-card-elevated) ring-1 ring-white/10 duration-300 ease-out"
-                style={{ maxWidth: isEditing ? '1200px' : '700px' }}
-            >
-                <div className="relative flex shrink-0 items-center justify-between border-b border-(--beheer-border) bg-(--beheer-card-soft)/80 px-8 py-6">
-                    <div className="absolute inset-x-0 -bottom-px h-px bg-linear-to-r from-transparent via-(--beheer-accent)/30 to-transparent" />
-                    <h2 className="flex items-center gap-3 text-[10px] font-semibold text-(--beheer-text)">
-                        <div className="rounded-2xl bg-(--beheer-accent) p-2.5 text-white shadow-(--shadow-glow)">
-                            {isEditing ? <Pen className="size-4" /> : <Users className="size-4" />}
-                        </div>
-                        {isEditing ? 'Deelnemer Bewerken' : 'Deelnemer Details'}
-                    </h2>
-                    <div className="flex items-center gap-2">
-                        <button
+    return (
+        <Modal.Root
+            opened={isOpen}
+            onClose={onClose}
+            size={isEditing ? '80rem' : 'lg'}
+            centered
+        >
+            <Modal.Overlay />
+            <Modal.Content radius="xl">
+                <Modal.Header>
+                    <Modal.Title>
+                        <Group gap="sm">
+                            <ThemeIcon size={36} radius="md" color="brand" variant="filled">
+                                {isEditing ? <Pen size={16} /> : <Users size={16} />}
+                            </ThemeIcon>
+                            <Text fw={700} size="sm">
+                                {isEditing ? 'Deelnemer Bewerken' : 'Deelnemer Details'}
+                            </Text>
+                        </Group>
+                    </Modal.Title>
+                    <Group gap="xs" ml="auto">
+                        <ActionIcon
+                            type="button"
+                            variant="subtle"
+                            color="error"
+                            size="lg"
                             onClick={onDelete}
                             disabled={isPending}
                             title="Verwijder Deelnemer"
-                            className="icon-button rounded-full border border-transparent p-2.5 text-red-500/60 transition-all hover:border-red-500/20 hover:bg-red-500/5 hover:text-red-500 focus:outline-none active:scale-90"
-                            type="button">
-                            {isPending ? <Loader2 className="size-5 animate-spin" /> : <Trash className="size-5" />}
-                        </button>
-                        <div className="mx-1 h-6 w-px bg-(--beheer-border)/20" />
-                        <button
+                            aria-label="Verwijder Deelnemer"
+                        >
+                            {isPending ? <Loader size={16} /> : <Trash size={18} />}
+                        </ActionIcon>
+                        <Divider orientation="vertical" />
+                        <ActionIcon
+                            type="button"
+                            variant={isEditing ? 'filled' : 'subtle'}
+                            color="brand"
+                            size="lg"
                             onClick={onToggleEdit}
-                            title={isEditing ? "Terug naar weergave" : "Bewerken"}
-                            className={`icon-button rounded-full border p-2.5 transition-all focus:outline-none active:scale-90 ${isEditing ? 'border-(--beheer-accent) bg-(--beheer-accent) text-white shadow-glow' : 'border-transparent text-(--beheer-text-muted) hover:border-(--beheer-border) hover:text-(--beheer-accent)'}`}
-                            type="button">
-                            <Pen className="size-5" />
-                        </button>
-                        <button
-                            onClick={onClose}
-                            className="icon-button rounded-full border border-transparent p-2.5 text-(--beheer-text-muted) transition-all hover:border-(--beheer-border) hover:bg-(--beheer-card-bg) hover:text-(--beheer-text) focus:outline-none active:scale-90"
-                            type="button">
-                            <X className="size-5" />
-                        </button>
-                    </div>
-                </div>
+                            title={isEditing ? 'Terug naar weergave' : 'Bewerken'}
+                            aria-label={isEditing ? 'Terug naar weergave' : 'Bewerken'}
+                        >
+                            <Pen size={18} />
+                        </ActionIcon>
+                        <Modal.CloseButton />
+                    </Group>
+                </Modal.Header>
 
-                {isEditing ? (
-                    <div className="custom-scrollbar flex-1 overflow-y-auto p-6">
-                        <form ref={formRef} action={onSave} className="flex h-full flex-col">
-                            <input type="hidden" name="id" value={selectedSignup.id} />
+                <Modal.Body>
+                    <Stack gap="lg">
+                        {isEditing ? (
+                            <form ref={formRef} action={onSave}>
+                                <input type="hidden" name="id" value={selectedSignup.id} />
 
-                            <div className="grid grid-cols-1 items-start gap-8 md:grid-cols-2 xl:grid-cols-3 xl:gap-12">
-                                <div className="space-y-4">
-                                    <ReisSignupForm
-                                        signup={selectedSignup}
-                                        isBusTrip={!!trip.is_bus_trip}
-                                        minimal={true}
-                                        section="personal_basic"
-                                        cockpit={true}
-                                    />
-                                </div>
-
-                                <div className="space-y-6">
-                                    <ReisSignupForm
-                                        signup={selectedSignup}
-                                        isBusTrip={!!trip.is_bus_trip}
-                                        minimal={true}
-                                        section="personal_extended"
-                                        cockpit={true}
-                                    />
-                                </div>
-
-                                <div className="space-y-6">
-                                    <ReisSignupForm
-                                        signup={selectedSignup}
-                                        isBusTrip={!!trip.is_bus_trip}
-                                        minimal={true}
-                                        section="admin"
-                                        cockpit={true}
-                                    />
-
-                                    <div className="border-t border-(--beheer-border)/10 pt-4">
-                                        <div className="mb-3 flex items-center gap-2 opacity-50">
-                                            <Ticket className="size-3 text-(--beheer-accent)" />
-                                            <h3 className="text-[10px] font-semibold text-(--beheer-text)">Activiteiten</h3>
-                                        </div>
-                                        <ReisSignupActivities
-                                            allActivities={allTripActivities}
-                                            selectedActivities={selectedActivities}
-                                            onToggleActivity={onToggleActivity}
-                                            onUpdate={() => { }}
-                                            isUpdating={false}
-                                            hideButton={true}
-                                            minimal={true}
+                                <Grid gap="xl" align="flex-start">
+                                    <Grid.Col span={{ base: 12, md: 6, xl: 4 }}>
+                                        <ReisSignupForm
+                                            signup={selectedSignup}
+                                            isBusTrip={!!trip.is_bus_trip}
+                                            minimal
+                                            section="personal_basic"
+                                            cockpit
                                         />
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                ) : (
-                    <div className="custom-scrollbar flex-1 overflow-y-auto p-6">
-                        <ReisSignupView signup={selectedSignup} isBusTrip={!!trip.is_bus_trip} />
-                    </div>
-                )}
+                                    </Grid.Col>
 
-                <div className="flex shrink-0 items-center justify-between gap-4 rounded-b-[2.5rem] border-t border-(--beheer-border)/10 bg-(--beheer-card-soft)/90 px-8 py-5 backdrop-blur-md">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="beheer-button px-6 py-2.5 text-[10px] font-semibold text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)"
-                    >
-                        {isEditing ? 'Annuleren' : 'Sluiten'}
-                    </button>
+                                    <Grid.Col span={{ base: 12, md: 6, xl: 4 }}>
+                                        <ReisSignupForm
+                                            signup={selectedSignup}
+                                            isBusTrip={!!trip.is_bus_trip}
+                                            minimal
+                                            section="personal_extended"
+                                            cockpit
+                                        />
+                                    </Grid.Col>
 
-                    {isEditing ? (
-                        <button
-                            onClick={() => {
-                                if (formRef.current) formRef.current.requestSubmit();
-                            }}
-                            disabled={isPending}
-                            className="hover:scale-1.02 beheer-button flex items-center gap-3 rounded-2xl bg-(--beheer-accent) px-10 py-3 text-[10px] font-semibold text-white shadow-(--beheer-accent)/20 shadow-lg transition-all active:scale-95"
-                            type="button">
-                            {isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-                            <span>Gegevens Opslaan</span>
-                        </button>
-                    ) : (
-                        <div className="flex gap-3">
-                            <button
-                                type="button"
-                                onClick={() => onResendEmail(selectedSignup.id, 'deposit')}
-                                disabled={selectedSignup.deposit_paid || (sendingEmailTo?.signupId === selectedSignup.id && sendingEmailTo.type === 'deposit')}
-                                className={`beheer-button rounded-xl border px-5 py-2.5 text-[9px] font-semibold transition-all ${selectedSignup.deposit_email_sent ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500' : 'hover:scale-1.02 border-white/10 bg-(--beheer-accent) text-white shadow-(--beheer-accent)/20 shadow-lg'} disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-30 disabled:grayscale`}
-                            >
-                                Aanbetaling Mail
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => onResendEmail(selectedSignup.id, 'final')}
-                                disabled={selectedSignup.full_payment_paid || !trip.allow_final_payments || (sendingEmailTo?.signupId === selectedSignup.id && sendingEmailTo.type === 'final')}
-                                className={`beheer-button rounded-xl border px-5 py-2.5 text-[9px] font-semibold transition-all ${selectedSignup.final_email_sent ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500' : 'hover:scale-1.02 border-white/10 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-30 disabled:grayscale'}`}
-                            >
-                                Restbetaling Mail
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>,
-        document.body
+                                    <Grid.Col span={{ base: 12, xl: 4 }}>
+                                        <Stack gap="lg">
+                                            <ReisSignupForm
+                                                signup={selectedSignup}
+                                                isBusTrip={!!trip.is_bus_trip}
+                                                minimal
+                                                section="admin"
+                                                cockpit
+                                            />
+
+                                            <Divider />
+
+                                            <Box>
+                                                <Group gap="xs" mb="sm">
+                                                    <Text span c="brand" lh={1}>
+                                                        <Ticket size={14} />
+                                                    </Text>
+                                                    <Title order={3} size="h6">
+                                                        Activiteiten
+                                                    </Title>
+                                                </Group>
+                                                <ReisSignupActivities
+                                                    allActivities={allTripActivities}
+                                                    selectedActivities={selectedActivities}
+                                                    onToggleActivity={onToggleActivity}
+                                                    onUpdate={() => {}}
+                                                    isUpdating={false}
+                                                    hideButton
+                                                    minimal
+                                                />
+                                            </Box>
+                                        </Stack>
+                                    </Grid.Col>
+                                </Grid>
+                            </form>
+                        ) : (
+                            <ReisSignupView
+                                signup={selectedSignup}
+                                isBusTrip={!!trip.is_bus_trip}
+                            />
+                        )}
+
+                        <Divider />
+
+                        <Group justify="space-between" wrap="wrap" gap="sm">
+                            <Button type="button" variant="default" onClick={onClose}>
+                                {isEditing ? 'Annuleren' : 'Sluiten'}
+                            </Button>
+
+                            {isEditing ? (
+                                <Button
+                                    type="button"
+                                    onClick={() => {
+                                        if (formRef.current) formRef.current.requestSubmit();
+                                    }}
+                                    loading={isPending}
+                                    leftSection={<Save size={16} />}
+                                >
+                                    Gegevens Opslaan
+                                </Button>
+                            ) : (
+                                <Group gap="sm">
+                                    <Button
+                                        type="button"
+                                        size="xs"
+                                        variant={
+                                            selectedSignup.deposit_email_sent ? 'light' : 'filled'
+                                        }
+                                        color={
+                                            selectedSignup.deposit_email_sent ? 'success' : 'brand'
+                                        }
+                                        onClick={() => onResendEmail(selectedSignup.id, 'deposit')}
+                                        disabled={
+                                            !!selectedSignup.deposit_paid ||
+                                            (sendingEmailTo?.signupId === selectedSignup.id &&
+                                                sendingEmailTo.type === 'deposit')
+                                        }
+                                    >
+                                        Aanbetaling Mail
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        size="xs"
+                                        variant={
+                                            selectedSignup.final_email_sent ? 'light' : 'filled'
+                                        }
+                                        color="success"
+                                        onClick={() => onResendEmail(selectedSignup.id, 'final')}
+                                        disabled={
+                                            !!selectedSignup.full_payment_paid ||
+                                            !trip.allow_final_payments ||
+                                            (sendingEmailTo?.signupId === selectedSignup.id &&
+                                                sendingEmailTo.type === 'final')
+                                        }
+                                    >
+                                        Restbetaling Mail
+                                    </Button>
+                                </Group>
+                            )}
+                        </Group>
+                    </Stack>
+                </Modal.Body>
+            </Modal.Content>
+        </Modal.Root>
     );
 }

@@ -1,14 +1,12 @@
 import { notFound } from 'next/navigation';
-import ConfirmationIsland from '@/components/islands/activiteiten/ConfirmationIsland';
+import { Container, VisuallyHidden } from '@mantine/core';
+import ConfirmationIsland, { type SignupData } from '@/components/islands/activiteiten/ConfirmationIsland';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { getSignupStatus } from '@/server/actions/events/activiteiten/activiteiten-status.actions';
 
 interface PageProps {
     searchParams: Promise<{ id?: string; transaction_id?: string; t?: string }>;
 }
-
-import { getSignupStatus } from '@/server/actions/events/activiteiten/activiteiten-status.actions';
-import { type SignupData } from '@/components/islands/activiteiten/ConfirmationIsland';
-
 
 export default async function ActiviteitenConfirmationPage({ searchParams }: PageProps) {
     const { id, transaction_id, t } = await searchParams;
@@ -21,18 +19,15 @@ export default async function ActiviteitenConfirmationPage({ searchParams }: Pag
     const initialStatusRes = await getSignupStatus(id, transaction_id || t);
 
     return (
-        <div className="w-full pt-8 pb-16 sm:pt-12 sm:pb-24 lg:pt-16 lg:pb-32">
-            <h1 className="sr-only">Bevestiging</h1>
-            <div className="container mx-auto max-w-7xl px-4">
-                <ConfirmationIsland 
-                    initialId={id} 
-                    initialTransactionId={transaction_id || t} 
-                    isLoggedIn={!!session?.user} 
-                    initialStatus={initialStatusRes.status}
-                    initialData={initialStatusRes.signup as SignupData}
-                />
-            </div>
-        </div>
+        <Container size="xl" py="xl">
+            <VisuallyHidden component="h1">Bevestiging</VisuallyHidden>
+            <ConfirmationIsland
+                initialId={id}
+                initialTransactionId={transaction_id || t}
+                isLoggedIn={!!session?.user}
+                initialStatus={initialStatusRes.status}
+                initialData={initialStatusRes.signup as SignupData}
+            />
+        </Container>
     );
 }
-

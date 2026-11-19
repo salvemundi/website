@@ -4,7 +4,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { triggerFullSyncAction, triggerUserSyncAction } from '@/server/actions/infrastructure/azure-sync/sync-tasks.actions';
 import { getSyncStatusAction, stopSyncAction, resetSyncStatusAction } from '@/server/actions/infrastructure/azure-sync/sync-monitoring.actions';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { safeConsoleError } from '@/server/utils/logger';
 
 export interface SyncStatus {
@@ -58,8 +57,8 @@ interface SyncContextType {
 
 const SyncContext = createContext<SyncContextType | undefined>(undefined);
 
-export function SyncProvider({ children, initialStatus }: { children: ReactNode, initialStatus: SyncStatus | null }) {
-    const { toast, showToast, hideToast } = useAdminToast();
+export function SyncProvider({ children, initialStatus }: { children: ReactNode; initialStatus: SyncStatus | null }) {
+    const { showToast } = useAdminToast();
 
     const [status, setStatus] = useState<SyncStatus | null>(initialStatus);
     const [isStartingSync, setIsStartingSync] = useState(false);
@@ -126,7 +125,6 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
 
     const handleFullSync = async () => {
         setIsStartingSync(true);
-        // Optimistically clear current status to indicate restart to the user
         setStatus(prev => prev ? {
             ...prev,
             status: 'starting',
@@ -243,7 +241,6 @@ export function SyncProvider({ children, initialStatus }: { children: ReactNode,
             handleFullSync, handleStopSync, handleResetSync, handleUserSync
         }}>
             {children}
-            <BeheerToast toast={toast} onClose={hideToast} />
         </SyncContext.Provider>
     );
 }

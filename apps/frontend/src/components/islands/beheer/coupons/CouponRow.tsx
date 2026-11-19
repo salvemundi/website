@@ -1,19 +1,29 @@
 'use client';
 
-import { 
-    Ticket, 
-    Percent, 
-    CheckCircle, 
-    XCircle, 
-    Trash, 
-    Loader2, 
-    ToggleLeft, 
-    ToggleRight 
+import {
+    Ticket,
+    Percent,
+    CheckCircle,
+    XCircle,
+    Trash,
+    ToggleLeft,
+    ToggleRight
 } from 'lucide-react';
-import { type Coupon } from './coupon-types';
+import {
+    ActionIcon,
+    Badge,
+    Group,
+    Loader,
+    Progress,
+    Stack,
+    Table,
+    Text,
+    ThemeIcon,
+    Tooltip,
+} from '@mantine/core';
+import { type Coupon, type CouponStatus } from './coupon-types';
 import { getComputedCouponStatus } from '@/lib/coupons';
 import { formatDate } from '@/shared/lib/utils/date';
-import { cn } from '@/lib/utils/cn';
 
 interface Props {
     coupon: Coupon;
@@ -23,123 +33,170 @@ interface Props {
     isDeleting: boolean;
 }
 
-export default function CouponRow({ 
-    coupon, 
-    onToggle, 
-    onDelete, 
-    isToggling, 
-    isDeleting 
+function getStatusBadgeProps(statusType: CouponStatus): { color?: string; variant: 'light' | 'outline' | 'default' } {
+    switch (statusType) {
+        case 'active':
+            return { color: 'success', variant: 'light' };
+        case 'pending':
+            return { color: 'accent', variant: 'light' };
+        case 'maxed':
+            return { color: 'accent', variant: 'outline' };
+        case 'expired':
+            return { color: 'error', variant: 'light' };
+        case 'inactive':
+            return { variant: 'default' };
+    }
+}
+
+export default function CouponRow({
+    coupon,
+    onToggle,
+    onDelete,
+    isToggling,
+    isDeleting
 }: Props) {
     const status = getComputedCouponStatus(coupon);
     const isExpiredOrMaxed = status.type === 'expired' || status.type === 'maxed' || status.type === 'inactive';
-    
+    const badgeProps = getStatusBadgeProps(status.type);
+
     const formatCurrency = (val: number) =>
         new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(val);
 
     return (
-        <tr className={cn(
-            "group border-b border-(--beheer-border) opacity-100 transition-colors last:border-0 hover:bg-(--beheer-card-soft)/50",
-            coupon.isOptimistic && "pointer-events-none opacity-60"
-        )}>
-            {/* Code */}
-            <td className="px-8 py-6 whitespace-nowrap">
-                <div className="flex items-center gap-4">
-                    <div className={`rounded-xl p-3 transition-colors ${isExpiredOrMaxed ? 'bg-(--beheer-card-soft) text-slate-400 opacity-50' : 'bg-(--beheer-accent)/10 text-(--beheer-accent) shadow-sm'}`}>
-                        <Ticket className="size-4" />
-                    </div>
-                    <span className={`font-mono text-sm font-semibold tracking-tight ${isExpiredOrMaxed ? 'text-(--beheer-text-muted) opacity-60' : 'text-(--beheer-text)'}`}>
+        <Table.Tr
+            style={coupon.isOptimistic ? { opacity: 0.6, pointerEvents: 'none' } : undefined}
+        >
+            <Table.Td>
+                <Group gap="sm" wrap="nowrap">
+                    <ThemeIcon
+                        variant="light"
+                        color={isExpiredOrMaxed ? 'brand' : 'accent'}
+                        size="lg"
+                        radius="md"
+                        style={isExpiredOrMaxed ? { opacity: 0.5 } : undefined}
+                    >
+                        <Ticket size={16} />
+                    </ThemeIcon>
+                    <Text
+                        ff="monospace"
+                        size="sm"
+                        fw={600}
+                        c={isExpiredOrMaxed ? 'dimmed' : undefined}
+                    >
                         {coupon.coupon_code}
-                    </span>
-                </div>
-            </td>
+                    </Text>
+                </Group>
+            </Table.Td>
 
-            {/* Discount */}
-            <td className="px-8 py-6 whitespace-nowrap">
-                <div className={`flex items-center gap-2 text-sm font-semibold ${isExpiredOrMaxed ? 'text-(--beheer-text-muted) opacity-50' : 'text-(--beheer-accent)'}`}>
+            <Table.Td>
+                <Group gap={4} wrap="nowrap">
                     {coupon.discount_type === 'percentage' ? (
-                        <><Percent className="size-3.5" />{coupon.discount_value}%</>
+                        <Group gap={4} wrap="nowrap">
+                            <Text span c={isExpiredOrMaxed ? 'dimmed' : 'accent'} lh={1}>
+                                <Percent size={14} />
+                            </Text>
+                            <Text size="sm" fw={600} c={isExpiredOrMaxed ? 'dimmed' : 'accent'}>
+                                {coupon.discount_value}%
+                            </Text>
+                        </Group>
                     ) : (
-                        formatCurrency(coupon.discount_value)
+                        <Text size="sm" fw={600} c={isExpiredOrMaxed ? 'dimmed' : 'accent'}>
+                            {formatCurrency(coupon.discount_value)}
+                        </Text>
                     )}
-                </div>
-            </td>
+                </Group>
+            </Table.Td>
 
-            {/* Usage */}
-            <td className="hidden px-8 py-6 whitespace-nowrap sm:table-cell">
-                <div className={`flex flex-col gap-2.5 ${isExpiredOrMaxed ? 'opacity-40' : ''}`}>
-                    <span className="text-xs font-semibold text-(--beheer-text)">
-                        {coupon.usage_count} <span className="text-(--beheer-text-muted)">/ {coupon.usage_limit ?? '∞'}</span>
-                    </span>
+            <Table.Td visibleFrom="sm">
+                <Stack gap={6} style={isExpiredOrMaxed ? { opacity: 0.5 } : undefined}>
+                    <Text size="xs" fw={600}>
+                        {coupon.usage_count}{' '}
+                        <Text span c="dimmed">/ {coupon.usage_limit ?? '∞'}</Text>
+                    </Text>
                     {coupon.usage_limit !== null && (
-                        <div className="h-1.5 w-24 overflow-hidden rounded-full bg-(--beheer-border) shadow-inner">
-                            <div
-                                className={`h-full rounded-full transition-all duration-700 ${isExpiredOrMaxed ? 'bg-slate-500' : 'bg-(--beheer-accent)'}`}
-                                style={{ width: `${Math.min((coupon.usage_count / coupon.usage_limit) * 100, 100)}%` }}
-                            />
-                        </div>
+                        <Progress
+                            value={Math.min((coupon.usage_count / coupon.usage_limit) * 100, 100)}
+                            color={isExpiredOrMaxed ? 'brand' : 'accent'}
+                            size="sm"
+                            w={96}
+                            radius="xl"
+                        />
                     )}
-                </div>
-            </td>
+                </Stack>
+            </Table.Td>
 
-            {/* Validity */}
-            <td className="hidden px-8 py-6 whitespace-nowrap lg:table-cell">
-                <div className="flex flex-col gap-1.5 text-xs font-semibold text-(--beheer-text-muted)">
+            <Table.Td visibleFrom="lg">
+                <Stack gap={4}>
                     {coupon.valid_from && (
-                        <span className="flex items-center gap-2 opacity-70"><div className="size-1 rounded-full bg-emerald-500" /> Van: {formatDate(coupon.valid_from)}</span>
+                        <Text size="xs" c="dimmed" fw={600}>
+                            Van: {formatDate(coupon.valid_from)}
+                        </Text>
                     )}
                     {coupon.valid_until ? (
-                        <span className={`flex items-center gap-2 ${status.type === 'expired' ? 'text-red-500' : 'opacity-70'}`}>
-                            <div className={`size-1 rounded-full ${status.type === 'expired' ? 'bg-red-500' : 'bg-amber-500'}`} /> Tot: {formatDate(coupon.valid_until)}
-                        </span>
+                        <Text
+                            size="xs"
+                            fw={600}
+                            c={status.type === 'expired' ? 'error' : 'dimmed'}
+                        >
+                            Tot: {formatDate(coupon.valid_until)}
+                        </Text>
                     ) : (
-                        <span className="flex items-center gap-2 italic opacity-30"><div className="size-1 rounded-full bg-(--beheer-border)" /> Geen limiet</span>
+                        <Text size="xs" c="dimmed" fs="italic">
+                            Geen limiet
+                        </Text>
                     )}
-                </div>
-            </td>
+                </Stack>
+            </Table.Td>
 
-            {/* Status */}
-            <td className="px-8 py-6 text-center whitespace-nowrap">
-                <span className={`inline-flex transform items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm transition-transform group-hover:scale-105 ${status.color}`} title={status.description}>
-                    {(status.type === 'active' || status.type === 'pending')
-                        ? <CheckCircle className="size-3" />
-                        : <XCircle className="size-3" />}
-                    {status.label}
-                </span>
-            </td>
+            <Table.Td ta="center">
+                <Tooltip label={status.description}>
+                    <Badge
+                        color={badgeProps.color}
+                        variant={badgeProps.variant}
+                        size="md"
+                        leftSection={
+                            (status.type === 'active' || status.type === 'pending')
+                                ? <CheckCircle size={12} />
+                                : <XCircle size={12} />
+                        }
+                    >
+                        {status.label}
+                    </Badge>
+                </Tooltip>
+            </Table.Td>
 
-            {/* Actions */}
-            <td className="px-8 py-6 text-right whitespace-nowrap">
-                <div className="flex items-center justify-end gap-1 opacity-20 transition-all group-hover:opacity-100">
+            <Table.Td ta="right">
+                <Group justify="flex-end" gap="xs" wrap="nowrap">
                     {coupon.isOptimistic ? (
-                        <div className="p-3">
-                            <Loader2 className="size-5 animate-spin text-(--beheer-accent)" />
-                        </div>
+                        <Loader size="sm" color="accent" />
                     ) : (
                         <>
-                            <button
+                            <ActionIcon
+                                type="button"
+                                variant="subtle"
+                                color={coupon.is_active ? 'success' : 'brand'}
                                 onClick={() => onToggle(coupon)}
-                                disabled={isToggling}
+                                loading={isToggling}
                                 title={coupon.is_active ? 'Deactiveren' : 'Activeren'}
-                                className={`icon-button cursor-pointer rounded-xl p-3 transition-all ${coupon.is_active ? 'text-emerald-500 hover:bg-emerald-500/10' : 'text-slate-400 hover:bg-slate-500/10'}`}
-                                type="button">
-                                {isToggling
-                                    ? <Loader2 className="size-5 animate-spin" />
-                                    : coupon.is_active
-                                        ? <ToggleRight className="size-6" />
-                                        : <ToggleLeft className="size-6" />}
-                            </button>
-                            <button
+                                aria-label={coupon.is_active ? 'Deactiveren' : 'Activeren'}
+                            >
+                                {coupon.is_active ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                            </ActionIcon>
+                            <ActionIcon
+                                type="button"
+                                variant="subtle"
+                                color="error"
                                 onClick={() => onDelete(coupon.id)}
-                                disabled={isDeleting}
+                                loading={isDeleting}
                                 title="Verwijderen"
-                                className="icon-button cursor-pointer rounded-xl p-3 text-(--beheer-text-muted) transition-all hover:bg-red-500/10 hover:text-red-500"
-                                type="button">
-                                {isDeleting ? <Loader2 className="size-5 animate-spin" /> : <Trash className="size-5" />}
-                            </button>
+                                aria-label="Verwijderen"
+                            >
+                                <Trash size={16} />
+                            </ActionIcon>
                         </>
                     )}
-                </div>
-            </td>
-        </tr>
+                </Group>
+            </Table.Td>
+        </Table.Tr>
     );
 }

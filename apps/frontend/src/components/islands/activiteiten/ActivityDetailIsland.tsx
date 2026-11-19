@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { MapPin, User, Mail, CalendarClock } from 'lucide-react';
+import { Badge, Box, Card, Container, Divider, Grid, GridCol, Group, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 import { type Activiteit } from '@salvemundi/validations/schema/activity.zod';
@@ -31,9 +32,9 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
     );
 
     return (
-        <div className="flex min-h-screen w-full flex-col">
+        <Box w="100%" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             {activity?.afbeelding_id ? (
-                <div className="relative h-[45vh] min-h-100 w-full overflow-hidden bg-bg-soft">
+                <Box pos="relative" h="45vh" mih={400} w="100%" style={{ overflow: 'hidden' }}>
                     <MediaAsset
                         asset={activity.afbeelding_id}
                         alt={activity.name}
@@ -41,110 +42,130 @@ export default function ActivityDetailIsland({ activity, isLoggedIn = false, chi
                         priority
                         className="object-cover"
                     />
-                    <div className="from-bg-main via-bg-main/40 absolute inset-0 bg-linear-to-t to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 mx-auto max-w-7xl px-4 pb-12">
-                        <div className="max-w-3xl space-y-4">
-                            <span className="mb-4 inline-block rounded-full border border-white/10 bg-theme-purple px-4 py-1.5 text-[11px] font-black tracking-widest text-white uppercase shadow-xl">
-                                {activity.committee_name || 'Algemene Activiteit'}
-                            </span>
-                            <h1 className="text-4xl leading-tight font-black tracking-tight text-text-main drop-shadow-sm md:text-7xl">
+                    <Box
+                        pos="absolute"
+                        inset={0}
+                        style={{
+                            background: 'linear-gradient(to top, var(--mantine-color-body), color-mix(in srgb, var(--mantine-color-body) 40%, transparent), transparent)',
+                        }}
+                    />
+                    <Container size="xl" pos="absolute" bottom={0} left={0} right={0} pb="xl">
+                        <Stack gap="sm" maw={768}>
+                            <Box>
+                                <Badge color="brand" size="lg">
+                                    {activity.committee_name || 'Algemene Activiteit'}
+                                </Badge>
+                            </Box>
+                            <Title order={1} fz={{ base: '2.25rem', md: '4.5rem' }} lh={1.08}>
                                 {activity.name}
-                            </h1>
-                        </div>
-                    </div>
-                </div>
+                            </Title>
+                        </Stack>
+                    </Container>
+                </Box>
             ) : (
-                <div className="mx-auto max-w-7xl px-4 pt-20 pb-10">
-                    <span className="mb-4 inline-block rounded-full border border-white/10 bg-theme-purple px-4 py-1.5 text-[11px] font-black tracking-widest text-white uppercase shadow-xl">
-                        {activity?.committee_name || 'Algemene Activiteit'}
-                    </span>
-                    <h1 className="text-4xl leading-tight font-black tracking-tight text-text-main md:text-7xl">
-                        {activity?.name}
-                    </h1>
-                </div>
+                <Container size="xl" w="100%" pt="xl" pb="md">
+                    <Stack gap="sm">
+                        <Box>
+                            <Badge color="brand" size="lg">
+                                {activity?.committee_name || 'Algemene Activiteit'}
+                            </Badge>
+                        </Box>
+                        <Title order={1} fz={{ base: '2.25rem', md: '4.5rem' }} lh={1.08}>
+                            {activity?.name}
+                        </Title>
+                    </Stack>
+                </Container>
             )}
 
-            <main className="mx-auto w-full max-w-7xl px-4 py-8 md:py-12">
-                <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2">
-                    <div className="order-1 flex flex-col gap-6 lg:order-1">
-                        {children}
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div className="squircle flex flex-col justify-center border border-border-color bg-bg-card p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30">
-                                <div className="mb-1.5 flex items-center gap-2">
-                                    <CalendarClock className="size-4 text-theme-purple" />
-                                    <p className="text-[10px] font-black tracking-[0.2em] text-text-muted uppercase">Datum & Tijd</p>
-                                </div>
-                                <p className="text-base leading-snug font-bold text-text-main">
-                                    {displayDate}
-                                </p>
-                                {timeRange && (
-                                    <p className="mt-0.5 text-sm font-semibold text-theme-purple">
-                                        {timeRange}
-                                    </p>
+            <Container component="main" size="xl" w="100%" py="xl">
+                <Grid gap="xl" align="stretch">
+                    <GridCol span={{ base: 12, lg: 6 }}>
+                        <Stack gap="lg">
+                            {children}
+                            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                                <Paper p="md" radius="lg" withBorder shadow="sm">
+                                    <Stack gap={4}>
+                                        <Group gap="xs">
+                                            <Text span c="brand" lh={1}><CalendarClock size={16} /></Text>
+                                            <Text size="xs" fw={900} tt="uppercase" c="dimmed">Datum &amp; Tijd</Text>
+                                        </Group>
+                                        <Text size="md" fw={700}>{displayDate}</Text>
+                                        {timeRange && (
+                                            <Text size="sm" fw={600} c="brand">{timeRange}</Text>
+                                        )}
+                                    </Stack>
+                                </Paper>
+
+                                {activity?.location && (
+                                    <Paper p="md" radius="lg" withBorder shadow="sm">
+                                        <Stack gap={4}>
+                                            <Group gap="xs">
+                                                <Text span c="brand" lh={1}><MapPin size={16} /></Text>
+                                                <Text size="xs" fw={900} tt="uppercase" c="dimmed">Locatie</Text>
+                                            </Group>
+                                            <Text size="md" fw={700} style={{ wordBreak: 'break-word' }}>
+                                                {activity.location}
+                                            </Text>
+                                        </Stack>
+                                    </Paper>
                                 )}
-                            </div>
 
-                            {activity?.location && (
-                                <div className="squircle flex flex-col justify-center border border-border-color bg-bg-card p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30">
-                                    <div className="mb-1.5 flex items-center gap-2">
-                                        <MapPin className="size-4 text-theme-purple" />
-                                        <p className="text-[10px] font-black tracking-[0.2em] text-text-muted uppercase">Locatie</p>
-                                    </div>
-                                    <p className="text-base leading-snug font-bold wrap-break-word text-text-main">
-                                        {activity.location}
-                                    </p>
-                                </div>
-                            )}
+                                <Paper p="md" radius="lg" withBorder shadow="sm">
+                                    <Stack gap={4}>
+                                        <Group gap="xs">
+                                            <Text span c="brand" lh={1}><User size={16} /></Text>
+                                            <Text size="xs" fw={900} tt="uppercase" c="dimmed">Organisatie</Text>
+                                        </Group>
+                                        <Text size="md" fw={700} style={{ wordBreak: 'break-word' }}>
+                                            {activity?.committee_name || 'Bestuur'}
+                                        </Text>
+                                    </Stack>
+                                </Paper>
 
-                            <div className="squircle flex flex-col justify-center border border-border-color bg-bg-card p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30">
-                                <div className="mb-1.5 flex items-center gap-2">
-                                    <User className="size-4 text-theme-purple" />
-                                    <p className="text-[10px] font-black tracking-[0.2em] text-text-muted uppercase">Organisatie</p>
-                                </div>
-                                <p className="text-base leading-snug font-bold wrap-break-word text-text-main">
-                                    {activity?.committee_name || 'Bestuur'}
-                                </p>
-                            </div>
+                                <Paper p="md" radius="lg" withBorder shadow="sm">
+                                    <Stack gap={4}>
+                                        <Group gap="xs">
+                                            <Text span c="brand" lh={1}><Mail size={16} /></Text>
+                                            <Text size="xs" fw={900} tt="uppercase" c="dimmed">Contact</Text>
+                                        </Group>
+                                        <Text size="sm" fw={700} c="brand" component="div">
+                                            <ObfuscatedEmail email={committeeEmail || 'bestuur@salvemundi.nl'} showIcon={false} />
+                                        </Text>
+                                    </Stack>
+                                </Paper>
+                            </SimpleGrid>
+                        </Stack>
+                    </GridCol>
 
-                            <div className="squircle flex flex-col justify-center border border-border-color bg-bg-card p-5 shadow-lg shadow-theme-purple/5 transition-all hover:border-theme-purple/30">
-                                <div className="mb-1.5 flex items-center gap-2">
-                                    <Mail className="size-4 text-theme-purple" />
-                                    <p className="text-[10px] font-black tracking-[0.2em] text-text-muted uppercase">Contact</p>
-                                </div>
-                                <div className="text-sm leading-snug font-bold text-theme-purple">
-                                    <ObfuscatedEmail email={committeeEmail || 'bestuur@salvemundi.nl'} showIcon={false} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <GridCol span={{ base: 12, lg: 6 }}>
+                        <Card padding="xl" radius="xl" withBorder shadow="lg" h="100%">
+                            <Stack gap="lg">
+                                <Group gap="sm">
+                                    <Box w={8} h={32} style={{ borderRadius: '9999px', backgroundColor: 'var(--primary)' }} />
+                                    <Title order={2} size="h3" tt="uppercase" c="brand">
+                                        Over deze activiteit
+                                    </Title>
+                                </Group>
 
-                    <div className="order-2 h-full lg:order-2">
-                        <div className="squircle-lg h-full border border-border-color bg-bg-card p-8 shadow-xl shadow-theme-purple/5">
-                            <div className="mb-8 flex items-center gap-3">
-                                <div className="h-8 w-2 rounded-full bg-theme-purple shadow-[0_0_15px_var(--theme-purple)]" />
-                                <h2 className="text-2xl font-black tracking-widest text-theme-purple uppercase">
-                                    Over deze activiteit
-                                </h2>
-                            </div>
-                            <div className="prose max-w-none leading-relaxed font-medium text-text-main prose-purple">
                                 <SafeMarkdown content={activity?.description || 'Geen beschrijving beschikbaar.'} />
+
                                 {isLoggedIn && activity?.description_logged_in && (
                                     <>
-                                        <hr className="my-8 border-border-color/50" />
-                                        <div className="mb-6 flex items-center gap-3">
-                                            <div className="h-6 w-1.5 rounded-full bg-text-muted shadow-[0_0_10px_var(--color-text-muted)]" />
-                                            <h3 className="text-xl font-black tracking-widest text-text-muted/90 uppercase">
+                                        <Divider my="sm" />
+                                        <Group gap="sm">
+                                            <Box w={6} h={24} style={{ borderRadius: '9999px', backgroundColor: 'var(--mantine-color-dimmed)' }} />
+                                            <Title order={3} size="h4" tt="uppercase" c="dimmed">
                                                 Extra Informatie (alleen ingelogd)
-                                            </h3>
-                                        </div>
+                                            </Title>
+                                        </Group>
                                         <SafeMarkdown content={activity.description_logged_in} />
                                     </>
                                 )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
+                            </Stack>
+                        </Card>
+                    </GridCol>
+                </Grid>
+            </Container>
+        </Box>
     );
 }

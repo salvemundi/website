@@ -3,7 +3,24 @@
 import { useState } from 'react';
 import { Plus, X, Save, Edit, Trash, ChevronDown, Users2, UserPlus, ClipboardCheck, User } from 'lucide-react';
 import Link from 'next/link';
-import { ActionButton, EmptyState, Field, inputClass, Button } from './IntroTabComponents';
+import {
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Card,
+    Collapse,
+    Divider,
+    Group,
+    Select,
+    SimpleGrid,
+    Stack,
+    Text,
+    TextInput,
+    Title,
+    UnstyledButton,
+} from '@mantine/core';
+import { ActionButton, EmptyState } from './IntroTabComponents';
 import type { IntroGroupWithDetails, IntroGroup } from '@salvemundi/validations/schema/intro.zod';
 
 interface ApprovedOuder {
@@ -62,79 +79,113 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
         setCreating(false);
     };
 
-    // An ouder leads at most one groepje, so once assigned anywhere they should
-    // disappear from every other groepje's picker, not just this one's.
     const allLeaderIds = new Set(groups.flatMap(g => g.leaders.map(l => l.user_id)));
     const availableOuders = () => approvedOuders.filter(o => !allLeaderIds.has(o.user_id));
 
     return (
-        <div>
-            <div className="mb-8 flex items-center justify-between">
-                {!creating && (
-                    <Button onClick={() => setCreating(true)} icon={Plus}>
+        <Stack gap="lg">
+            {!creating && (
+                <Group>
+                    <Button
+                        type="button"
+                        color="accent"
+                        onClick={() => setCreating(true)}
+                        leftSection={<Plus size={16} />}
+                    >
                         Nieuw Groepje
                     </Button>
-                )}
-            </div>
+                </Group>
+            )}
 
             {creating && (
-                <div className="mb-8 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-2xl">
-                    <div className="mb-8 flex items-center justify-between">
-                        <h3 className="text-xs font-semibold text-(--beheer-text-muted)">Nieuw Groepje</h3>
-                        <button
-                            onClick={() => setCreating(false)}
-                            className="icon-button p-2 text-(--beheer-text-muted) transition-colors hover:text-(--beheer-text)"
-                            type="button">
-                            <X className="size-5" />
-                        </button>
-                    </div>
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <Field label="Naam *">
-                            <input type="text" value={newName} onChange={e => setNewName(e.target.value)} className={`beheer-input ${inputClass}`} placeholder="Bv. Groepje 1" />
-                        </Field>
-                        <Field label="Notities">
-                            <input type="text" value={newNotes} onChange={e => setNewNotes(e.target.value)} className={`beheer-input ${inputClass}`} placeholder="Optioneel" />
-                        </Field>
-                    </div>
-                    <div className="mt-10 flex gap-3 border-t border-(--beheer-border)/50 pt-10">
-                        <Button onClick={() => { void handleCreate(); }} loading={saving} icon={Save} disabled={!newName.trim()}>
-                            Opslaan
-                        </Button>
-                        <Button onClick={() => setCreating(false)} variant="ghost" icon={X}>
-                            Annuleren
-                        </Button>
-                    </div>
-                </div>
+                <Card withBorder padding="xl" radius="lg">
+                    <Stack gap="lg">
+                        <Group justify="space-between" align="center">
+                            <Title order={3} size="xs" c="dimmed" fw={700} tt="uppercase">
+                                Nieuw Groepje
+                            </Title>
+                            <ActionIcon type="button" variant="subtle" onClick={() => setCreating(false)} aria-label="Sluiten">
+                                <X size={18} />
+                            </ActionIcon>
+                        </Group>
+                        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+                            <TextInput
+                                label="Naam"
+                                required
+                                value={newName}
+                                onChange={(e) => setNewName(e.currentTarget.value)}
+                                placeholder="Bv. Groepje 1"
+                            />
+                            <TextInput
+                                label="Notities"
+                                value={newNotes}
+                                onChange={(e) => setNewNotes(e.currentTarget.value)}
+                                placeholder="Optioneel"
+                            />
+                        </SimpleGrid>
+                        <Divider />
+                        <Group gap="sm">
+                            <Button
+                                type="button"
+                                color="accent"
+                                onClick={() => { void handleCreate(); }}
+                                loading={saving}
+                                disabled={!newName.trim()}
+                                leftSection={<Save size={16} />}
+                            >
+                                Opslaan
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="subtle"
+                                onClick={() => setCreating(false)}
+                                leftSection={<X size={16} />}
+                            >
+                                Annuleren
+                            </Button>
+                        </Group>
+                    </Stack>
+                </Card>
             )}
 
             {groups.length === 0 ? (
                 <EmptyState icon={Users2} text="Nog geen groepjes aangemaakt" />
             ) : (
-                <div className="grid gap-4">
+                <Stack gap="md">
                     {groups.map(group => {
                         const isExpanded = expandedIds.includes(group.id);
                         return (
-                            <div key={group.id} className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm transition-all hover:border-(--beheer-accent)/30">
-                                <div
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={() => toggleExpand(group.id)}
-                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleExpand(group.id); } }}
-                                    className="flex w-full cursor-pointer items-center gap-3 px-5 py-4 text-left"
-                                >
-                                    <div className="min-w-0 flex-1">
-                                        <p className="truncate text-sm font-semibold text-(--beheer-text)">{group.name}</p>
-                                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-(--beheer-text-muted)">
-                                            <span className="flex items-center gap-1">
-                                                <User className="size-3" /> {group.member_count} {group.member_count === 1 ? 'lid' : 'leden'}
-                                            </span>
-                                            <span className="opacity-80">
-                                                {group.leaders.length === 0 ? 'Geen ouders' : group.leaders.map(l => `${l.first_name} ${l.last_name}`.trim()).join(', ')}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="flex shrink-0 items-center gap-1.5">
-                                        <ActionButton icon={Edit} onClick={(e) => { e.stopPropagation(); startEdit(group); }} title="Bewerken" />
+                            <Card key={group.id} withBorder padding={0} radius="lg" style={{ overflow: 'hidden' }}>
+                                <Group justify="space-between" align="center" px="lg" py="md" wrap="nowrap" gap="sm">
+                                    <UnstyledButton
+                                        type="button"
+                                        onClick={() => toggleExpand(group.id)}
+                                        style={{ flex: 1, minWidth: 0, textAlign: 'left' }}
+                                    >
+                                        <Stack gap={4}>
+                                            <Text size="sm" fw={600} truncate>{group.name}</Text>
+                                            <Group gap="md" wrap="wrap">
+                                                <Group gap={4}>
+                                                    <User size={12} />
+                                                    <Text size="xs" c="dimmed">
+                                                        {group.member_count} {group.member_count === 1 ? 'lid' : 'leden'}
+                                                    </Text>
+                                                </Group>
+                                                <Text size="xs" c="dimmed">
+                                                    {group.leaders.length === 0
+                                                        ? 'Geen ouders'
+                                                        : group.leaders.map(l => `${l.first_name} ${l.last_name}`.trim()).join(', ')}
+                                                </Text>
+                                            </Group>
+                                        </Stack>
+                                    </UnstyledButton>
+
+                                    <Group gap="xs" wrap="nowrap">
+                                        <ActionButton
+                                            icon={Edit}
+                                            onClick={(e) => { e.stopPropagation(); startEdit(group); }}
+                                            title="Bewerken"
+                                        />
                                         <ActionButton
                                             icon={Trash}
                                             onClick={(e) => {
@@ -147,94 +198,159 @@ export default function IntroGroupsTab({ groups, approvedOuders, onCreate, onUpd
                                             disabled={deletingId === group.id}
                                             title="Verwijderen"
                                         />
-                                        <ChevronDown className="size-4 shrink-0 text-(--beheer-text-muted) transition-transform duration-300" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-                                    </div>
-                                </div>
+                                        <ActionIcon
+                                            type="button"
+                                            variant="subtle"
+                                            onClick={() => toggleExpand(group.id)}
+                                            aria-label={isExpanded ? 'Inklappen' : 'Uitklappen'}
+                                        >
+                                            <ChevronDown
+                                                size={16}
+                                                style={{
+                                                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                                                    transition: 'transform 200ms ease',
+                                                }}
+                                            />
+                                        </ActionIcon>
+                                    </Group>
+                                </Group>
 
-                                {isExpanded && (
-                                    <div className="border-t border-(--beheer-border)/50 bg-(--beheer-card-soft)/30 px-5 py-6">
-                                        {editingId === group.id ? (
-                                            <div className="mb-6 space-y-5">
-                                                <div className="flex flex-wrap items-center justify-between gap-3">
-                                                    <p className="text-xs font-semibold text-(--beheer-accent)">Groepje Bewerken</p>
-                                                    <div className="flex gap-2">
-                                                        <Button onClick={() => { void handleSaveEdit(group.id); }} variant="success" icon={Save}>Opslaan</Button>
-                                                        <Button onClick={() => setEditingId(null)} variant="ghost" icon={X}>Annuleren</Button>
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                                    <div className="flex flex-col gap-2">
-                                                        <span className="text-[9px] opacity-50">Naam</span>
-                                                        <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
-                                                    </div>
-                                                    <div className="flex flex-col gap-2">
-                                                        <span className="text-[9px] opacity-50">Notities</span>
-                                                        <input type="text" value={editNotes} onChange={e => setEditNotes(e.target.value)} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-                                                <p className="text-xs font-semibold text-(--beheer-accent)">Toegewezen ouders</p>
-                                                <Link
-                                                    href={`/profiel/intro-attendance?group=${group.id}`}
-                                                    className="beheer-button flex items-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-xs font-semibold text-(--beheer-text) transition-colors hover:bg-(--beheer-card-soft)"
-                                                >
-                                                    <ClipboardCheck className="size-3.5" />
-                                                    Bekijk aanwezigheid
-                                                </Link>
-                                            </div>
-                                        )}
-
-                                        <div className="mb-6 flex flex-wrap gap-3">
-                                            {group.leaders.length === 0 && (
-                                                <p className="text-xs text-(--beheer-text-muted) opacity-60">Nog geen ouders toegewezen</p>
+                                <Collapse expanded={isExpanded}>
+                                    <Divider />
+                                    <Box p="lg">
+                                        <Stack gap="md">
+                                            {editingId === group.id ? (
+                                                <Stack gap="md">
+                                                    <Group justify="space-between" align="center" wrap="wrap" gap="sm">
+                                                        <Text size="xs" fw={600} c="accent">Groepje Bewerken</Text>
+                                                        <Group gap="xs">
+                                                            <Button
+                                                                type="button"
+                                                                color="success"
+                                                                size="xs"
+                                                                onClick={() => { void handleSaveEdit(group.id); }}
+                                                                leftSection={<Save size={14} />}
+                                                            >
+                                                                Opslaan
+                                                            </Button>
+                                                            <Button
+                                                                type="button"
+                                                                variant="subtle"
+                                                                size="xs"
+                                                                onClick={() => setEditingId(null)}
+                                                                leftSection={<X size={14} />}
+                                                            >
+                                                                Annuleren
+                                                            </Button>
+                                                        </Group>
+                                                    </Group>
+                                                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                                                        <TextInput
+                                                            label="Naam"
+                                                            size="xs"
+                                                            value={editName}
+                                                            onChange={(e) => setEditName(e.currentTarget.value)}
+                                                        />
+                                                        <TextInput
+                                                            label="Notities"
+                                                            size="xs"
+                                                            value={editNotes}
+                                                            onChange={(e) => setEditNotes(e.currentTarget.value)}
+                                                        />
+                                                    </SimpleGrid>
+                                                </Stack>
+                                            ) : (
+                                                <Group justify="space-between" align="center" wrap="wrap" gap="sm">
+                                                    <Text size="xs" fw={600} c="accent">Toegewezen ouders</Text>
+                                                    <Button
+                                                        component={Link}
+                                                        href={`/profiel/intro-attendance?group=${group.id}`}
+                                                        variant="default"
+                                                        size="xs"
+                                                        leftSection={<ClipboardCheck size={14} />}
+                                                    >
+                                                        Bekijk aanwezigheid
+                                                    </Button>
+                                                </Group>
                                             )}
-                                            {group.leaders.map(leader => (
-                                                <div key={leader.user_id} className="flex items-center gap-2 rounded-full border border-(--beheer-border) bg-(--beheer-card-bg) py-1.5 pr-2 pl-4">
-                                                    <span className="text-xs font-semibold text-(--beheer-text)">{leader.first_name} {leader.last_name}</span>
-                                                    <button
-                                                        onClick={() => { void onRemoveLeader(group.id, leader.user_id); }}
-                                                        className="icon-button rounded-full p-1 text-(--beheer-text-muted) transition-colors hover:bg-red-500/10 hover:text-red-500"
-                                                        title="Verwijderen"
-                                                        type="button">
-                                                        <X className="size-3" />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
 
-                                        {pickerGroupId === group.id ? (
-                                            <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                                                <select
-                                                    className="beheer-input w-full rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent) sm:w-auto"
-                                                    defaultValue=""
-                                                    onChange={(e) => {
-                                                        if (e.target.value) {
-                                                            void onAddLeader(group.id, e.target.value);
-                                                            setPickerGroupId(null);
+                                            <Group gap="xs" wrap="wrap">
+                                                {group.leaders.length === 0 && (
+                                                    <Text size="xs" c="dimmed">Nog geen ouders toegewezen</Text>
+                                                )}
+                                                {group.leaders.map(leader => (
+                                                    <Badge
+                                                        key={leader.user_id}
+                                                        variant="default"
+                                                        size="lg"
+                                                        rightSection={
+                                                            <ActionIcon
+                                                                type="button"
+                                                                size="xs"
+                                                                variant="transparent"
+                                                                color="error"
+                                                                onClick={() => { void onRemoveLeader(group.id, leader.user_id); }}
+                                                                title="Verwijderen"
+                                                                aria-label="Verwijderen"
+                                                            >
+                                                                <X size={12} />
+                                                            </ActionIcon>
                                                         }
-                                                    }}
-                                                >
-                                                    <option value="" disabled>Kies een goedgekeurde ouder...</option>
-                                                    {availableOuders().map(o => (
-                                                        <option key={o.user_id} value={o.user_id}>{o.first_name} {o.last_name} ({o.email})</option>
-                                                    ))}
-                                                </select>
-                                                <Button onClick={() => setPickerGroupId(null)} variant="ghost" icon={X}>Annuleren</Button>
-                                            </div>
-                                        ) : (
-                                            <Button onClick={() => setPickerGroupId(group.id)} variant="secondary" icon={UserPlus}>
-                                                Ouder toevoegen
-                                            </Button>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
+                                                    >
+                                                        {leader.first_name} {leader.last_name}
+                                                    </Badge>
+                                                ))}
+                                            </Group>
+
+                                            {pickerGroupId === group.id ? (
+                                                <Group gap="xs" wrap="wrap">
+                                                    <Select
+                                                        placeholder="Kies een goedgekeurde ouder..."
+                                                        searchable
+                                                        value={null}
+                                                        onChange={(val) => {
+                                                            if (val) {
+                                                                void onAddLeader(group.id, val);
+                                                                setPickerGroupId(null);
+                                                            }
+                                                        }}
+                                                        data={availableOuders().map(o => ({
+                                                            value: o.user_id,
+                                                            label: `${o.first_name} ${o.last_name} (${o.email})`,
+                                                        }))}
+                                                        miw={280}
+                                                    />
+                                                    <Button
+                                                        type="button"
+                                                        variant="subtle"
+                                                        size="xs"
+                                                        onClick={() => setPickerGroupId(null)}
+                                                        leftSection={<X size={14} />}
+                                                    >
+                                                        Annuleren
+                                                    </Button>
+                                                </Group>
+                                            ) : (
+                                                <Group>
+                                                    <Button
+                                                        type="button"
+                                                        variant="default"
+                                                        size="xs"
+                                                        onClick={() => setPickerGroupId(group.id)}
+                                                        leftSection={<UserPlus size={14} />}
+                                                    >
+                                                        Ouder toevoegen
+                                                    </Button>
+                                                </Group>
+                                            )}
+                                        </Stack>
+                                    </Box>
+                                </Collapse>
+                            </Card>
                         );
                     })}
-                </div>
+                </Stack>
             )}
-        </div>
+        </Stack>
     );
 }

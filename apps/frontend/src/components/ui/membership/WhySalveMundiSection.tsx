@@ -1,9 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, Container, Group, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 
 interface Pijler {
     name: string;
     description: string;
-    iconClass: string;
+    color: string;
     icon: React.ReactNode;
 }
 
@@ -12,12 +12,12 @@ const pijlers: Pijler[] = [
         name: 'Gezelligheid',
         description:
             'Van gezellig chillen in onze eigen ruimte tot onvergetelijke feesten en weekendjes weg bij Salve Mundi. Bouw vriendschappen die een leven lang meegaan.',
-        iconClass: 'bg-accent/20 text-accent',
+        color: 'accent',
         icon: (
             <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
+                width="22"
+                height="22"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -34,12 +34,12 @@ const pijlers: Pijler[] = [
         name: 'Studie',
         description:
             'Samen sta je sterker. We organiseren bijlessen, workshops en bedrijfsbezoeken om jou te helpen excelleren in je studie en carrière.',
-        iconClass: 'bg-secondary/20 text-secondary',
+        color: 'lightPurple',
         icon: (
             <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
+                width="22"
+                height="22"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -57,12 +57,12 @@ const pijlers: Pijler[] = [
         name: 'Ontwikkeling',
         description:
             'Boost je CV door actief te worden in een van onze commissies. Leer organiseren, besturen en samenwerken in een professionele omgeving.',
-        iconClass: 'bg-success/20 text-success',
+        color: 'success',
         icon: (
             <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
+                width="22"
+                height="22"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -80,28 +80,32 @@ const pijlers: Pijler[] = [
 
 export function WhySalveMundiSection() {
     return (
-        <section>
-            <div className="mb-8 text-center">
-                <h2>Waarom Salve Mundi?</h2>
-            </div>
+        <Container component="section">
+            <Stack gap="xl">
+                <Title order={2} ta="center" fz={{ base: '2rem', md: '3rem' }}>
+                    Waarom Salve Mundi?
+                </Title>
 
-            <div className="grid gap-6 md:grid-cols-3">
-                {pijlers.map((pijler) => (
-                    <Card key={pijler.name}>
-                        <CardHeader className="flex-row items-center gap-3 space-y-0 pb-3">
-                            <div className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${pijler.iconClass}`}>
-                                {pijler.icon}
-                            </div>
-                            <CardTitle>{pijler.name}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="leading-relaxed text-muted-foreground">
-                                {pijler.description}
-                            </p>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-        </section>
+                <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
+                    {pijlers.map((pijler) => (
+                        <Card key={pijler.name}>
+                            <Stack gap="md">
+                                <Group gap="sm">
+                                    <ThemeIcon size="lg" radius="md" variant="light" color={pijler.color}>
+                                        {pijler.icon}
+                                    </ThemeIcon>
+                                    <Title order={3} size="h4">
+                                        {pijler.name}
+                                    </Title>
+                                </Group>
+                                <Text c="dimmed">
+                                    {pijler.description}
+                                </Text>
+                            </Stack>
+                        </Card>
+                    ))}
+                </SimpleGrid>
+            </Stack>
+        </Container>
     );
 }

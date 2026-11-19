@@ -20,7 +20,9 @@ import {
     FileText,
     Gift,
     Shirt,
-    Wine
+    Wine,
+    Briefcase,
+    QrCode
 } from 'lucide-react';
 
 export const IconMap = {
@@ -45,7 +47,9 @@ export const IconMap = {
     FileText,
     Gift,
     Shirt,
-    Wine
+    Wine,
+    Briefcase,
+    QrCode
 } as const;
 
 export type IconName = keyof typeof IconMap;

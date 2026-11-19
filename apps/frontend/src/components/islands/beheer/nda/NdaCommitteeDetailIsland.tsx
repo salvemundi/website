@@ -1,11 +1,49 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload, FileText, Send, Loader2, RefreshCw, CheckCircle2, Eye, Bell, MapPin } from 'lucide-react';
-import type { NdaCommitteeDetail, NdaMemberStatusRow, DerivedNdaStatus } from '@/server/queries/nda/beheer-nda.queries';
-import { uploadNdaTemplate, confirmNdaTemplateReady } from '@/server/actions/beheer/nda/beheer-nda-templates.actions';
-import { sendNdaToCommitteeMembers, resendNdaInvite, recordHistoricalNdaSignature, sendRenewalReminderToMember } from '@/server/actions/beheer/nda/beheer-nda-signatures.actions';
-import { Button, ActionButton } from '@/components/islands/beheer/intro/IntroTabComponents';
+import {
+    Upload,
+    FileText,
+    Send,
+    RefreshCw,
+    CheckCircle2,
+    Eye,
+    Bell,
+    MapPin,
+} from 'lucide-react';
+import {
+    ActionIcon,
+    Alert,
+    Anchor,
+    Badge,
+    Box,
+    Button,
+    Card,
+    FileButton,
+    Group,
+    Loader,
+    Stack,
+    Table,
+    Text,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
+import { DateInput } from '@mantine/dates';
+import type {
+    NdaCommitteeDetail,
+    NdaMemberStatusRow,
+    DerivedNdaStatus,
+} from '@/server/queries/nda/beheer-nda.queries';
+import {
+    uploadNdaTemplate,
+    confirmNdaTemplateReady,
+} from '@/server/actions/beheer/nda/beheer-nda-templates.actions';
+import {
+    sendNdaToCommitteeMembers,
+    resendNdaInvite,
+    recordHistoricalNdaSignature,
+    sendRenewalReminderToMember,
+} from '@/server/actions/beheer/nda/beheer-nda-signatures.actions';
 import NdaSignatureLayoutEditor from '@/components/islands/beheer/nda/NdaSignatureLayoutEditor';
 
 interface Props {
@@ -13,17 +51,35 @@ interface Props {
     isSecretary: boolean;
 }
 
-const statusBadge: Record<DerivedNdaStatus, { label: string; className: string }> = {
-    none: { label: 'Nog niet geregistreerd', className: 'bg-(--beheer-text-muted)/10 text-(--beheer-text-muted)' },
-    pending: { label: 'Verzonden', className: 'bg-amber-500/10 text-amber-500' },
-    signed: { label: 'Getekend', className: 'bg-emerald-500/10 text-emerald-500' },
-    expiring_soon: { label: 'Verloopt binnenkort', className: 'bg-orange-500/10 text-orange-500' },
-    expired: { label: 'Verlopen', className: 'bg-red-500/10 text-red-500' },
-};
+function getStatusBadgeMeta(status: DerivedNdaStatus): { label: string; color?: string } {
+    switch (status) {
+        case 'none':
+            return { label: 'Nog niet geregistreerd' };
+        case 'pending':
+            return { label: 'Verzonden', color: 'accent' };
+        case 'signed':
+            return { label: 'Getekend', color: 'success' };
+        case 'expiring_soon':
+            return { label: 'Verloopt binnenkort', color: 'accent' };
+        case 'expired':
+            return { label: 'Verlopen', color: 'error' };
+    }
+}
 
 function formatDate(iso: string | null): string {
     if (!iso) return '-';
     return new Date(iso).toLocaleDateString('nl-NL');
+}
+
+function parseDutchDate(input: string): string | null {
+    const trimmed = input.trim();
+    const dmy = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(trimmed);
+    if (dmy) {
+        const [, d, m, y] = dmy;
+        return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    }
+    const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    return ymd ? trimmed : null;
 }
 
 export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props) {
@@ -42,10 +98,8 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
     const [reminderError, setReminderError] = useState<string | null>(null);
     const [editingLayout, setEditingLayout] = useState(false);
 
-    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+    const handleUpload = async (file: File | null) => {
         if (!file) return;
-        e.target.value = '';
 
         setUploading(true);
         setUploadError(null);
@@ -79,7 +133,11 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
         setSendResult(null);
         const result = await sendNdaToCommitteeMembers(template.id);
         setSending(false);
-        setSendResult(result.success ? `Verstuurd naar ${result.sentCount} lid/leden.` : (result.error ?? 'Versturen mislukt'));
+        setSendResult(
+            result.success
+                ? `Verstuurd naar ${result.sentCount} lid/leden.`
+                : result.error ?? 'Versturen mislukt'
+        );
         if (result.success) window.location.reload();
     };
 
@@ -111,187 +169,314 @@ export default function NdaCommitteeDetailIsland({ detail, isSecretary }: Props)
     };
 
     return (
-        <div className="space-y-8">
-            <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
-                <h3 className="mb-4 text-xs font-semibold text-(--beheer-text-muted)">NDA-document ({new Date().getFullYear()})</h3>
-                <div className="flex flex-col items-start gap-5 sm:flex-row">
-                    <div className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-(--beheer-card-soft) ring-1 ring-(--beheer-border)">
-                        <FileText className={`size-6 ${template?.document ? 'text-(--beheer-accent)' : 'text-(--beheer-text-muted) opacity-40'}`} />
-                        {uploading && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                                <Loader2 className="size-5 animate-spin text-white" />
-                            </div>
-                        )}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        {(!template || template.status === 'draft') && (
-                            <>
-                                <input type="file" accept="application/pdf,.pdf" onChange={(e) => { void handleUpload(e); }} className="hidden" id="nda-doc-upload" />
-                                <label htmlFor="nda-doc-upload" className="btn-upload-nda inline-flex w-fit cursor-pointer items-center gap-2 rounded-xl border border-(--beheer-accent)/20 bg-(--beheer-accent)/10 px-4 py-2.5 text-sm font-semibold text-(--beheer-accent) transition-all hover:bg-(--beheer-accent)/20">
-                                    <Upload className="size-4" />
-                                    {template?.document ? 'Ander bestand kiezen' : 'NDA-PDF uploaden'}
-                                </label>
-                            </>
-                        )}
-                        {template?.document && (
-                            <a href={`/api/assets/${template.document}`} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-(--beheer-accent) hover:underline">
-                                Geüploade NDA bekijken
-                            </a>
-                        )}
-                        {uploadError && <p className="text-xs font-semibold text-red-500">{uploadError}</p>}
-                        {!template?.document && !uploadError && (
-                            <p className="max-w-sm text-xs text-(--beheer-text-muted) opacity-70">Upload de NDA-PDF zoals ondertekend door de secretaris en voorzitter — het document moet de handtekeningen van beiden al bevatten.</p>
-                        )}
-                    </div>
-                </div>
-            </div>
+        <Stack gap="xl">
+            <Card p="lg" shadow="sm">
+                <Stack gap="md">
+                    <Title order={3} size="h5" c="dimmed">
+                        NDA-document ({new Date().getFullYear()})
+                    </Title>
+                    <Group align="flex-start" gap="lg" wrap="wrap">
+                        <ThemeIcon
+                            size={64}
+                            radius="md"
+                            variant={template?.document ? 'light' : 'default'}
+                            color={template?.document ? 'brand' : undefined}
+                        >
+                            {uploading ? <Loader size="sm" /> : <FileText size={24} />}
+                        </ThemeIcon>
+                        <Stack gap="xs" align="flex-start">
+                            {(!template || template.status === 'draft') && (
+                                <FileButton
+                                    onChange={(file) => {
+                                        void handleUpload(file);
+                                    }}
+                                    accept="application/pdf,.pdf"
+                                >
+                                    {(props) => (
+                                        <Button
+                                            {...props}
+                                            variant="light"
+                                            leftSection={<Upload size={16} />}
+                                            loading={uploading}
+                                        >
+                                            {template?.document ? 'Ander bestand kiezen' : 'NDA-PDF uploaden'}
+                                        </Button>
+                                    )}
+                                </FileButton>
+                            )}
+                            {template?.document && (
+                                <Anchor
+                                    href={`/api/assets/${template.document}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    size="xs"
+                                    fw={600}
+                                >
+                                    Geüploade NDA bekijken
+                                </Anchor>
+                            )}
+                            {uploadError && (
+                                <Alert color="error" variant="light" py="xs">
+                                    {uploadError}
+                                </Alert>
+                            )}
+                            {!template?.document && !uploadError && (
+                                <Text size="xs" c="dimmed" maw={380}>
+                                    Upload de NDA-PDF zoals ondertekend door de secretaris en voorzitter — het document moet de handtekeningen van beiden al bevatten.
+                                </Text>
+                            )}
+                        </Stack>
+                    </Group>
+                </Stack>
+            </Card>
 
             {template?.document && (
-                <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
-                    <div className="mb-4 flex items-center justify-between">
-                        <h3 className="text-xs font-semibold text-(--beheer-text-muted)">Handtekeningplek instellen</h3>
-                        {template.signatureLayout && !editingLayout && (
-                            <button
-                                type="button"
-                                onClick={() => setEditingLayout(true)}
-                                className="btn-edit-nda-layout text-xs font-semibold text-(--beheer-accent) hover:underline"
-                            >
-                                Opnieuw instellen
-                            </button>
+                <Card p="lg" shadow="sm">
+                    <Stack gap="md">
+                        <Group justify="space-between">
+                            <Title order={3} size="h5" c="dimmed">
+                                Handtekeningplek instellen
+                            </Title>
+                            {template.signatureLayout && !editingLayout && (
+                                <Button
+                                    type="button"
+                                    variant="subtle"
+                                    size="xs"
+                                    onClick={() => setEditingLayout(true)}
+                                >
+                                    Opnieuw instellen
+                                </Button>
+                            )}
+                        </Group>
+                        {template.signatureLayout && !editingLayout ? (
+                            <Group gap="xs">
+                                <Text span c="success" lh={1}>
+                                    <MapPin size={16} />
+                                </Text>
+                                <Text size="sm" c="dimmed">
+                                    De plek voor locatie, datum, naam en handtekening van het commissielid is ingesteld.
+                                </Text>
+                            </Group>
+                        ) : (
+                            <NdaSignatureLayoutEditor
+                                templateId={template.id}
+                                documentFileId={template.document}
+                                initialLayout={template.signatureLayout}
+                                onSaved={() => window.location.reload()}
+                            />
                         )}
-                    </div>
-                    {template.signatureLayout && !editingLayout ? (
-                        <p className="flex items-center gap-2 text-sm text-(--beheer-text-muted)">
-                            <MapPin className="size-4 text-emerald-500" />
-                            De plek voor locatie, datum, naam en handtekening van het commissielid is ingesteld.
-                        </p>
-                    ) : (
-                        <NdaSignatureLayoutEditor
-                            templateId={template.id}
-                            documentFileId={template.document}
-                            initialLayout={template.signatureLayout}
-                            onSaved={() => window.location.reload()}
-                        />
-                    )}
-                </div>
+                    </Stack>
+                </Card>
             )}
 
             {template?.status === 'draft' && template.document && template.signatureLayout && (
-                <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
-                    <h3 className="mb-4 text-xs font-semibold text-(--beheer-text-muted)">Bevestigen en klaarzetten</h3>
-                    {isSecretary ? (
-                        <div className="max-w-md space-y-4">
-                            <p className="text-sm text-(--beheer-text-muted)">Controleer of het geüploade document de handtekeningen van de secretaris en de voorzitter bevat, en bevestig dan dat de NDA klaar is om naar de leden verstuurd te worden.</p>
-                            {confirmError && <p className="text-xs font-semibold text-red-500">{confirmError}</p>}
-                            <Button onClick={() => { void handleConfirmReady(); }} loading={confirming} icon={CheckCircle2}>
-                                Bevestigen: klaar om te versturen
-                            </Button>
-                        </div>
-                    ) : (
-                        <p className="text-sm text-(--beheer-text-muted)">Wacht op bevestiging door de aangewezen secretaris.</p>
-                    )}
-                </div>
+                <Card p="lg" shadow="sm">
+                    <Stack gap="md">
+                        <Title order={3} size="h5" c="dimmed">
+                            Bevestigen en klaarzetten
+                        </Title>
+                        {isSecretary ? (
+                            <Stack gap="md" maw={460}>
+                                <Text size="sm" c="dimmed">
+                                    Controleer of het geüploade document de handtekeningen van de secretaris en de voorzitter bevat, en bevestig dan dat de NDA klaar is om naar de leden verstuurd te worden.
+                                </Text>
+                                {confirmError && (
+                                    <Alert color="error" variant="light" py="xs">
+                                        {confirmError}
+                                    </Alert>
+                                )}
+                                <Button
+                                    type="button"
+                                    onClick={() => {
+                                        void handleConfirmReady();
+                                    }}
+                                    loading={confirming}
+                                    leftSection={<CheckCircle2 size={16} />}
+                                    w="fit-content"
+                                >
+                                    Bevestigen: klaar om te versturen
+                                </Button>
+                            </Stack>
+                        ) : (
+                            <Text size="sm" c="dimmed">
+                                Wacht op bevestiging door de aangewezen secretaris.
+                            </Text>
+                        )}
+                    </Stack>
+                </Card>
             )}
 
             {template?.status === 'signed' && (
-                <div className="flex flex-col justify-between gap-4 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm sm:flex-row sm:items-center">
-                    <p className="text-sm text-(--beheer-text-muted)">Bevestigd op {formatDate(template.secretarySignedAt)}. Verstuur nu naar de leden van {committee.name}.</p>
-                    <Button onClick={() => { void handleSendToMembers(); }} loading={sending} icon={Send}>
-                        Verstuur naar alle leden
-                    </Button>
-                </div>
+                <Card p="lg" shadow="sm">
+                    <Group justify="space-between" wrap="wrap" gap="md">
+                        <Text size="sm" c="dimmed">
+                            Bevestigd op {formatDate(template.secretarySignedAt)}. Verstuur nu naar de leden van {committee.name}.
+                        </Text>
+                        <Button
+                            type="button"
+                            onClick={() => {
+                                void handleSendToMembers();
+                            }}
+                            loading={sending}
+                            leftSection={<Send size={16} />}
+                        >
+                            Verstuur naar alle leden
+                        </Button>
+                    </Group>
+                </Card>
             )}
-            {sendResult && <p className="text-sm text-(--beheer-text-muted)">{sendResult}</p>}
-            {reminderError && <p className="text-sm font-semibold text-red-500">{reminderError}</p>}
 
-            <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b border-(--beheer-border) text-left text-xs text-(--beheer-text-muted)">
-                                <th className="p-4 font-semibold">Naam</th>
-                                <th className="p-4 font-semibold">Status</th>
-                                <th className="p-4 font-semibold">Verzonden</th>
-                                <th className="p-4 font-semibold">Getekend</th>
-                                <th className="p-4 font-semibold">Verloopt</th>
-                                <th className="p-4 font-semibold">Actie</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            {sendResult && (
+                <Text size="sm" c="dimmed">
+                    {sendResult}
+                </Text>
+            )}
+            {reminderError && (
+                <Alert color="error" variant="light">
+                    {reminderError}
+                </Alert>
+            )}
+
+            <Card p={0} shadow="sm" style={{ overflow: 'hidden' }}>
+                <Table.ScrollContainer minWidth={720}>
+                    <Table highlightOnHover verticalSpacing="md" horizontalSpacing="md">
+                        <Table.Thead>
+                            <Table.Tr>
+                                <Table.Th>Naam</Table.Th>
+                                <Table.Th>Status</Table.Th>
+                                <Table.Th>Verzonden</Table.Th>
+                                <Table.Th>Getekend</Table.Th>
+                                <Table.Th>Verloopt</Table.Th>
+                                <Table.Th>Actie</Table.Th>
+                            </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
                             {members.map((member: NdaMemberStatusRow) => {
-                                const badge = statusBadge[member.status];
+                                const badge = getStatusBadgeMeta(member.status);
                                 return (
-                                    <tr key={member.userId} className="border-b border-(--beheer-border)/50 last:border-0">
-                                        <td className="p-4">
-                                            <div className="font-semibold text-(--beheer-text)">{member.name}</div>
-                                            <div className="text-xs text-(--beheer-text-muted)">{member.email}</div>
-                                        </td>
-                                        <td className="p-4">
-                                            <span className={`rounded-full px-2 py-1 text-xs font-semibold ${badge.className}`}>{badge.label}</span>
-                                        </td>
-                                        <td className="p-4 text-(--beheer-text-muted)">{formatDate(member.sentAt)}</td>
-                                        <td className="p-4 text-(--beheer-text-muted)">{formatDate(member.signedAt)}</td>
-                                        <td className="p-4 text-(--beheer-text-muted)">{formatDate(member.expiresAt)}</td>
-                                        <td className="p-4">
-                                            {member.status === 'pending' && member.signatureId && (
-                                                <ActionButton
-                                                    icon={RefreshCw}
-                                                    onClick={() => { void handleResend(member.signatureId as number); }}
-                                                    loading={resendingId === member.signatureId}
-                                                    title="Opnieuw versturen"
-                                                />
-                                            )}
-                                            {(member.status === 'signed' || member.status === 'expiring_soon' || member.status === 'expired') && member.signedDocument && (
-                                                <a
-                                                    href={`/api/assets/${member.signedDocument}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-(--beheer-accent) hover:underline"
-                                                >
-                                                    <Eye className="size-3.5" />
-                                                    Bekijken
-                                                </a>
-                                            )}
-                                            {member.status === 'expired' && member.signatureId && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => { void handleSendReminder(member.signatureId as number); }}
-                                                    disabled={reminderId === member.signatureId}
-                                                    className="btn-send-reminder mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-(--beheer-accent) hover:underline disabled:opacity-40"
-                                                >
-                                                    {reminderId === member.signatureId ? <Loader2 className="size-3.5 animate-spin" /> : <Bell className="size-3.5" />}
-                                                    Stuur herinnering
-                                                </button>
-                                            )}
-                                            {member.status === 'none' && (
-                                                <div className="flex items-center gap-2">
-                                                    <input
-                                                        type="date"
-                                                        value={historicalDates.get(member.userId) ?? ''}
-                                                        onChange={(e) => {
-                                                            const val = e.target.value;
-                                                            setHistoricalDates((prev) => new Map(prev).set(member.userId, val));
-                                                        }}
-                                                        className="beheer-input py-1.5 text-xs"
-                                                    />
-                                                    <button
+                                    <Table.Tr key={member.userId}>
+                                        <Table.Td>
+                                            <Box>
+                                                <Text size="sm" fw={600}>
+                                                    {member.name}
+                                                </Text>
+                                                <Text size="xs" c="dimmed">
+                                                    {member.email}
+                                                </Text>
+                                            </Box>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Badge
+                                                size="sm"
+                                                variant={badge.color ? 'light' : 'default'}
+                                                color={badge.color}
+                                            >
+                                                {badge.label}
+                                            </Badge>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Text size="sm" c="dimmed">
+                                                {formatDate(member.sentAt)}
+                                            </Text>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Text size="sm" c="dimmed">
+                                                {formatDate(member.signedAt)}
+                                            </Text>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Text size="sm" c="dimmed">
+                                                {formatDate(member.expiresAt)}
+                                            </Text>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Stack gap="xs" align="flex-start">
+                                                {member.status === 'pending' && member.signatureId && (
+                                                    <ActionIcon
                                                         type="button"
-                                                        disabled={!historicalDates.get(member.userId) || savingHistoricalFor === member.userId}
-                                                        onClick={() => { void handleSaveHistorical(member.userId); }}
-                                                        className="btn-save-historical text-xs font-semibold text-(--beheer-accent) hover:underline disabled:opacity-40"
+                                                        variant="light"
+                                                        color="brand"
+                                                        size="lg"
+                                                        onClick={() => {
+                                                            void handleResend(member.signatureId as number);
+                                                        }}
+                                                        loading={resendingId === member.signatureId}
+                                                        title="Opnieuw versturen"
+                                                        aria-label="Opnieuw versturen"
                                                     >
-                                                        Eerder getekend op
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </td>
-                                    </tr>
+                                                        <RefreshCw size={16} />
+                                                    </ActionIcon>
+                                                )}
+                                                {(member.status === 'signed' ||
+                                                    member.status === 'expiring_soon' ||
+                                                    member.status === 'expired') &&
+                                                    member.signedDocument && (
+                                                        <Anchor
+                                                            href={`/api/assets/${member.signedDocument}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            size="xs"
+                                                            fw={600}
+                                                        >
+                                                            <Group gap={6} wrap="nowrap">
+                                                                <Eye size={14} />
+                                                                <Text span inherit>Bekijken</Text>
+                                                            </Group>
+                                                        </Anchor>
+                                                    )}
+                                                {member.status === 'expired' && member.signatureId && (
+                                                    <Button
+                                                        type="button"
+                                                        variant="subtle"
+                                                        size="xs"
+                                                        px={0}
+                                                        onClick={() => {
+                                                            void handleSendReminder(member.signatureId as number);
+                                                        }}
+                                                        loading={reminderId === member.signatureId}
+                                                        leftSection={<Bell size={14} />}
+                                                    >
+                                                        Stuur herinnering
+                                                    </Button>
+                                                )}
+                                                {member.status === 'none' && (
+                                                    <Group gap="xs" wrap="nowrap">
+                                                        <DateInput
+                                                            value={historicalDates.get(member.userId) ?? null}
+                                                            onChange={(val) => {
+                                                                setHistoricalDates((prev) =>
+                                                                    new Map(prev).set(member.userId, val ?? '')
+                                                                );
+                                                            }}
+                                                            valueFormat="DD-MM-YYYY"
+                                                            dateParser={parseDutchDate}
+                                                            placeholder="dd-mm-jjjj"
+                                                            size="xs"
+                                                            w={140}
+                                                        />
+                                                        <Button
+                                                            type="button"
+                                                            variant="subtle"
+                                                            size="xs"
+                                                            disabled={!historicalDates.get(member.userId)}
+                                                            loading={savingHistoricalFor === member.userId}
+                                                            onClick={() => {
+                                                                void handleSaveHistorical(member.userId);
+                                                            }}
+                                                        >
+                                                            Eerder getekend op
+                                                        </Button>
+                                                    </Group>
+                                                )}
+                                            </Stack>
+                                        </Table.Td>
+                                    </Table.Tr>
                                 );
                             })}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                        </Table.Tbody>
+                    </Table>
+                </Table.ScrollContainer>
+            </Card>
+        </Stack>
     );
 }

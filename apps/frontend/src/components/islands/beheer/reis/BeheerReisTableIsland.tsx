@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Stack } from '@mantine/core';
 import type { Trip, TripActivity, TripSignup, TripSignupActivity } from '@salvemundi/validations';
 import ReisFilters from '@/components/admin/reis/ReisFilters';
 import ReisTable from '@/components/admin/reis/ReisTable';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { downloadCSV } from '@/lib/utils/export';
 import BeheerReisSignupModalIsland from './BeheerReisSignupModalIsland';
@@ -24,9 +24,9 @@ export default function AdminReisTableIsland({
     initialSignups = [],
     initialSignupActivities = {},
     allTripActivities = [],
-    trip
+    trip,
 }: AdminReisTableIslandProps) {
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
 
     const {
         signups,
@@ -36,7 +36,7 @@ export default function AdminReisTableIsland({
         handleStatusChange,
         handleDelete,
         handleResendPaymentEmail,
-        handleSave: handleSaveAction
+        handleSave: handleSaveAction,
     } = useTripActions(initialSignups, trip, showToast);
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -48,35 +48,31 @@ export default function AdminReisTableIsland({
     const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
     const formRef = React.useRef<HTMLFormElement>(null);
 
-    const selectedSignup = selectedSignupId !== null
-        ? signups.find(s => s.id === selectedSignupId) || null
-        : null;
+    const selectedSignup =
+        selectedSignupId !== null ? signups.find((s) => s.id === selectedSignupId) || null : null;
 
-    useEffect(() => { setMounted(true); }, []);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const openSignup = (signup: TripSignup, edit: boolean = false) => {
         setSelectedSignupId(signup.id);
         setIsEditing(edit);
         const activities = initialSignupActivities[signup.id] ?? [];
-        setSelectedActivities(activities.map(a => Number(a.trip_activity_id || 0)));
+        setSelectedActivities(activities.map((a) => Number(a.trip_activity_id || 0)));
     };
 
     const handleToggleActivity = (id: number) => {
-        setSelectedActivities(prev =>
-            prev.includes(id) ? prev.filter(aid => aid !== id) : [...prev, id]
+        setSelectedActivities((prev) =>
+            prev.includes(id) ? prev.filter((aid) => aid !== id) : [...prev, id]
         );
     };
 
     const handleSave = (formData: FormData) => {
         if (!selectedSignup) return;
-        handleSaveAction(
-            selectedSignup.id,
-            formData,
-            selectedActivities,
-            () => {
-                setIsEditing(false);
-            }
-        );
+        handleSaveAction(selectedSignup.id, formData, selectedActivities, () => {
+            setIsEditing(false);
+        });
     };
 
     const handleSaveSync = (formData: FormData) => {
@@ -102,11 +98,12 @@ export default function AdminReisTableIsland({
     };
 
     const filteredSignups = signups
-        .filter(signup => {
+        .filter((signup) => {
             if (searchQuery) {
                 const queryText = searchQuery.toLowerCase();
                 const fullName = `${signup.first_name} ${signup.last_name}`.toLowerCase();
-                if (!fullName.includes(queryText) && !signup.email.toLowerCase().includes(queryText)) return false;
+                if (!fullName.includes(queryText) && !signup.email.toLowerCase().includes(queryText))
+                    return false;
             }
             if (statusFilter !== 'all' && signup.status !== statusFilter) return false;
             if (roleFilter === 'driver') {
@@ -131,35 +128,33 @@ export default function AdminReisTableIsland({
     };
 
     return (
-        <div className="w-full">
-            <div className="flex flex-col gap-8">
-                <ReisFilters
-                    searchQuery={searchQuery}
-                    onSearchChange={setSearchQuery}
-                    statusFilter={statusFilter}
-                    onStatusChange={setStatusFilter}
-                    roleFilter={roleFilter}
-                    onRoleChange={setRoleFilter}
-                    onDownloadCSV={downloadCSVExport}
-                    tripId={trip.id}
-                />
+        <Stack gap="lg" w="100%">
+            <ReisFilters
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                statusFilter={statusFilter}
+                onStatusChange={setStatusFilter}
+                roleFilter={roleFilter}
+                onRoleChange={setRoleFilter}
+                onDownloadCSV={downloadCSVExport}
+                tripId={trip.id}
+            />
 
-                <ReisTable
-                    filteredSignups={filteredSignups}
-                    selectedSignupId={selectedSignup?.id || null}
-                    onOpenSignup={openSignup}
-                    getStatusBadge={getStatusBadge}
-                    getPaymentStatus={getPaymentStatus}
-                    actionStates={actionStates}
-                    sendingEmailTo={sendingEmailTo}
-                    onStatusChange={handleStatusChangeSync}
-                    onDelete={handleDeleteSync}
-                    onResendEmail={handleResendPaymentEmailSync}
-                    signupActivitiesMap={initialSignupActivities}
-                    allowFinalPayments={!!trip.allow_final_payments}
-                    isBusTrip={!!trip.is_bus_trip}
-                />
-            </div>
+            <ReisTable
+                filteredSignups={filteredSignups}
+                selectedSignupId={selectedSignup?.id || null}
+                onOpenSignup={openSignup}
+                getStatusBadge={getStatusBadge}
+                getPaymentStatus={getPaymentStatus}
+                actionStates={actionStates}
+                sendingEmailTo={sendingEmailTo}
+                onStatusChange={handleStatusChangeSync}
+                onDelete={handleDeleteSync}
+                onResendEmail={handleResendPaymentEmailSync}
+                signupActivitiesMap={initialSignupActivities}
+                allowFinalPayments={!!trip.allow_final_payments}
+                isBusTrip={!!trip.is_bus_trip}
+            />
 
             {mounted && (
                 <BeheerReisSignupModalIsland
@@ -172,7 +167,9 @@ export default function AdminReisTableIsland({
                     selectedActivities={selectedActivities}
                     sendingEmailTo={sendingEmailTo}
                     formRef={formRef}
-                    onClose={() => isEditing ? setIsEditing(false) : setSelectedSignupId(null)}
+                    onClose={() =>
+                        isEditing ? setIsEditing(false) : setSelectedSignupId(null)
+                    }
                     onToggleEdit={() => setIsEditing(!isEditing)}
                     onDelete={handleDeleteSelectedSync}
                     onSave={handleSaveSync}
@@ -180,8 +177,6 @@ export default function AdminReisTableIsland({
                     onResendEmail={handleResendPaymentEmailSync}
                 />
             )}
-
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+        </Stack>
     );
 }

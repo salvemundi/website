@@ -102,7 +102,7 @@ function buildLayout(matrix: QrMatrix): Layout | null {
     if (blockOf.length !== total) return null;
 
     order.forEach((idx, n) => {
-        if (n < total * 8) codewordOf[idx] = Math.floor(n / 8);
+        if (n < total * 8) codewordOf.set([Math.floor(n / 8)], idx);
     });
     return { codewordOf, blockOf, blocks, correctable: Math.floor(ecPerBlock / 2) };
 }
@@ -124,15 +124,15 @@ export function forceModules(matrix: QrMatrix, wanted: (string | null)[]): QrMat
         if (cw >= 0) damaged.add(cw);
     }
 
-    const perBlock = new Array<number>(layout.blocks).fill(0);
+    const perBlock = new Map<number, number>();
     for (const cw of damaged) {
         const b = layout.blockOf.at(cw);
-        if (b !== undefined) perBlock[b] = (perBlock.at(b) ?? 0) + 1;
+        if (b !== undefined) perBlock.set(b, (perBlock.get(b) ?? 0) + 1);
     }
-    if (perBlock.some((count) => count > layout.correctable * SAFE_CAPACITY)) return null;
+    if (Array.from(perBlock.values()).some((count) => count > layout.correctable * SAFE_CAPACITY)) return null;
 
-    const data = new Uint8Array(matrix.data);
-    for (const idx of flips) data[idx] = 1;
+    const flipSet = new Set(flips);
+    const data = matrix.data.map((value, idx) => (flipSet.has(idx) ? 1 : value));
     return makeMatrix(matrix.size, matrix.version, data, matrix.reserved);
 }
 
@@ -204,11 +204,11 @@ export function sampleLogoColors(logo: CanvasImageSource, ratio: number, modules
             for (let dy = 0; dy < sample; dy++) {
                 for (let dx = 0; dx < sample; dx++) {
                     const i = ((row * sample + dy) * side + col * sample + dx) * 4;
-                    const a = data[i + 3] / 255;
+                    const a = (data.at(i + 3) ?? 0) / 255;
                     alpha += a;
-                    r += data[i] * a;
-                    g += data[i + 1] * a;
-                    b += data[i + 2] * a;
+                    r += (data.at(i) ?? 0) * a;
+                    g += (data.at(i + 1) ?? 0) * a;
+                    b += (data.at(i + 2) ?? 0) * a;
                 }
             }
             const coverage = alpha / (sample * sample);

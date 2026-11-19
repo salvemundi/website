@@ -14,7 +14,21 @@ import {
     Save,
     X
 } from 'lucide-react';
-import { ActionButton, EmptyState, Button } from './IntroTabComponents';
+import {
+    Badge,
+    Box,
+    Button,
+    Card,
+    Divider,
+    Grid,
+    Group,
+    SimpleGrid,
+    Stack,
+    Table,
+    Text,
+    TextInput,
+} from '@mantine/core';
+import { ActionButton, EmptyState } from './IntroTabComponents';
 import { type IntroSignup as IntroSignupRow } from '@salvemundi/validations/schema/intro.zod';
 import { formatDate } from '@/shared/lib/utils/date';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
@@ -67,207 +81,260 @@ export default function IntroSignupsTab({ signups, onDelete, onUpdate, deletingI
     };
 
     return (
-        <div>
-            <div className="mb-8 flex flex-col gap-3 sm:flex-row">
-                <div className="flex flex-1 items-center gap-3 rounded-(--beheer-radius) bg-(--bg-main)/40 px-4 py-2.5 shadow-inner ring-1 ring-(--beheer-border)/40 backdrop-blur-sm transition-all focus-within:bg-(--bg-main)/80 focus-within:ring-2 focus-within:ring-(--beheer-accent) dark:bg-black/20">
-                    <Search className="size-4 shrink-0 text-(--beheer-text-muted)" />
-                    <input
-                        type="text"
-                        placeholder="Zoek op naam, email of telefoon..."
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="beheer-input w-full border-none bg-transparent p-0 text-sm font-semibold text-(--beheer-text) outline-none placeholder:text-(--beheer-text-muted)/40"
-                    />
-                </div>
-                <div className="flex gap-2">
-                    <Button onClick={handleMailBcc} variant="secondary" icon={Mail}>
-                        Mail BCC
-                    </Button>
-                </div>
-            </div>
+        <Stack gap="lg">
+            <Group gap="sm" wrap="wrap">
+                <TextInput
+                    placeholder="Zoek op naam, email of telefoon..."
+                    value={search}
+                    onChange={(e) => setSearch(e.currentTarget.value)}
+                    leftSection={<Search size={16} />}
+                    style={{ flex: 1, minWidth: 240 }}
+                />
+                <Button
+                    type="button"
+                    variant="default"
+                    onClick={handleMailBcc}
+                    leftSection={<Mail size={16} />}
+                >
+                    Mail BCC
+                </Button>
+            </Group>
 
             {filtered.length === 0 ? (
                 <EmptyState icon={Users} text="Nog geen aanmeldingen binnengekomen" />
             ) : (
-                <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-2xl transition-all">
-                    <table className="w-full text-sm">
-                        <thead className="border-b border-(--beheer-border) bg-(--beheer-card-soft)">
-                            <tr>
-                                <th className="w-20 px-8 py-5 text-left text-xs font-semibold text-(--beheer-text-muted)">Status</th>
-                                <th className="w-1/4 px-8 py-5 text-left text-xs font-semibold text-(--beheer-text-muted)">Naam</th>
-                                <th className="hidden px-8 py-5 text-left text-xs font-semibold text-(--beheer-text-muted) sm:table-cell">Email</th>
-                                <th className="hidden w-48 px-8 py-5 text-left text-xs font-semibold text-(--beheer-text-muted) md:table-cell">Telefoon</th>
-                                <th className="w-48 px-8 py-5 text-right text-xs font-semibold text-(--beheer-text-muted)">Acties</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-(--beheer-border)/10">
-                            {filtered.map(s => {
-                                const isExpanded = expandedRows.includes(s.id);
-                                return (
-                                    <Fragment key={s.id}>
-                                        <tr
-                                            onClick={() => toggleExpand(s.id)}
-                                            className="group cursor-pointer transition-colors hover:bg-(--beheer-accent)/2"
-                                        >
-                                            <td className="px-8 py-5">
-                                                <div className={`size-2.5 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)] transition-all ${s.approved ? 'bg-emerald-500 shadow-emerald-500/40' : 'bg-(--beheer-border) opacity-30'}`} />
-                                            </td>
-                                            <td className="px-8 py-5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="text-sm font-semibold text-(--beheer-text) transition-colors group-hover:text-(--beheer-accent)">
-                                                        {s.first_name} {s.last_name}
-                                                    </div>
-                                                    {s.approved && (
-                                                        <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500">
-                                                            Goedgekeurd
-                                                        </span>
-                                                    )}
-                                                    {s.status === 'approved' && !s.approved && (
-                                                        <span className="rounded-full border border-green-500/20 bg-green-500/10 px-2 py-0.5 text-[10px] font-semibold text-green-500">
-                                                            Lid
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="hidden px-8 py-5 text-xs font-medium text-(--beheer-text-muted) opacity-60 sm:table-cell">
-                                                {s.email || '-'}
-                                            </td>
-                                            <td className="hidden px-8 py-5 text-xs font-medium text-(--beheer-text-muted) md:table-cell">
-                                                {formatPhoneNumber(s.phone_number) || '-'}
-                                            </td>
-                                            <td className="px-12 py-5 text-right">
-                                                <div className="flex items-center justify-end gap-3">
-                                                    <ActionButton
-                                                        icon={Edit}
-                                                        onClick={(e) => startEdit(e, s)}
-                                                        title="Bewerken"
-                                                    />
-                                                    <ActionButton
-                                                        icon={Trash}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            void onDelete(s.id);
+                <Card withBorder padding={0} radius="lg" style={{ overflow: 'hidden' }}>
+                    <Table.ScrollContainer minWidth={600}>
+                        <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
+                            <Table.Thead>
+                                <Table.Tr>
+                                    <Table.Th w={80}>Status</Table.Th>
+                                    <Table.Th>Naam</Table.Th>
+                                    <Table.Th visibleFrom="sm">Email</Table.Th>
+                                    <Table.Th visibleFrom="md" w={180}>Telefoon</Table.Th>
+                                    <Table.Th ta="right" w={160}>Acties</Table.Th>
+                                </Table.Tr>
+                            </Table.Thead>
+                            <Table.Tbody>
+                                {filtered.map(s => {
+                                    const isExpanded = expandedRows.includes(s.id);
+                                    return (
+                                        <Fragment key={s.id}>
+                                            <Table.Tr
+                                                onClick={() => toggleExpand(s.id)}
+                                                style={{ cursor: 'pointer' }}
+                                            >
+                                                <Table.Td>
+                                                    <Box
+                                                        style={{
+                                                            width: 10,
+                                                            height: 10,
+                                                            borderRadius: '50%',
+                                                            backgroundColor: s.approved
+                                                                ? 'var(--mantine-color-success-filled)'
+                                                                : 'var(--mantine-color-dimmed)',
+                                                            opacity: s.approved ? 1 : 0.35,
                                                         }}
-                                                        variant="danger"
-                                                        disabled={deletingId === s.id}
-                                                        title="Verwijderen"
                                                     />
-                                                    <div className="p-2 text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-accent)">
-                                                        <ChevronDown className="size-4 transition-transform duration-300" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {isExpanded && (
-                                            <tr className="bg-(--beheer-card-soft)/30">
-                                                <td colSpan={5} className="px-12 py-10">
-                                                    <div className="grid grid-cols-1 gap-12 text-sm font-medium text-(--beheer-text-muted) lg:grid-cols-3">
-                                                        <div className="space-y-8 lg:col-span-2">
-                                                            {editingId === s.id ? (
-                                                                <div className="space-y-6">
-                                                                    <div className="flex items-center justify-between">
-                                                                        <p className="text-xs font-semibold text-(--beheer-accent)">Deelnemer Bewerken</p>
-                                                                        <div className="flex gap-2">
-                                                                            <Button onClick={() => { void handleSaveEdit(s.id); }} variant="success" icon={Save}>Opslaan</Button>
-                                                                            <Button onClick={() => setEditingId(null)} variant="ghost" icon={X}>Annuleren</Button>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                                                        <div className="flex flex-col gap-2">
-                                                                            <span className="text-[9px] opacity-50">Voornaam</span>
-                                                                            <input type="text" value={editData.first_name || ''} onChange={e => setEditData({ ...editData, first_name: e.target.value })} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
-                                                                        </div>
-                                                                        <div className="flex flex-col gap-2">
-                                                                            <span className="text-[9px] opacity-50">Achternaam</span>
-                                                                            <input type="text" value={editData.last_name || ''} onChange={e => setEditData({ ...editData, last_name: e.target.value })} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
-                                                                        </div>
-                                                                        <div className="flex flex-col gap-2">
-                                                                            <span className="text-[9px] opacity-50">Email</span>
-                                                                            <input type="email" value={editData.email || ''} onChange={e => setEditData({ ...editData, email: e.target.value })} className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)" />
-                                                                        </div>
-                                                                        <div className="flex flex-col gap-2">
-                                                                            <span className="text-[9px] opacity-50">Telefoon</span>
-                                                                            <PhoneInput
-                                                                                value={editData.phone_number || ''}
-                                                                                onChange={(e: ChangeEvent<HTMLInputElement>) => setEditData({ ...editData, phone_number: e.target.value })}
-                                                                                className="beheer-input rounded-lg border border-(--beheer-border) bg-(--beheer-card-bg) px-3 py-2 text-xs font-semibold text-(--beheer-text) outline-none focus:ring-2 focus:ring-(--beheer-accent)"
-                                                                            />
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="space-y-4">
-                                                                    <div className="flex items-center justify-between">
-                                                                        <p className="text-xs font-semibold text-(--beheer-accent)">Extra Informatie</p>
-                                                                        <Button onClick={() => startEdit({ stopPropagation: () => { } } as MouseEvent, s)} variant="ghost" icon={Edit}>
-                                                                            Bewerken
-                                                                        </Button>
-                                                                    </div>
-                                                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                                                        {s.date_of_birth && (
-                                                                            <div className="flex flex-col gap-1">
-                                                                                <span className="opacity-50">Geboortedatum</span>
-                                                                                <span className="text-sm font-semibold text-(--beheer-text)">{formatDate(s.date_of_birth)}</span>
-                                                                            </div>
-                                                                        )}
-                                                                        <div className="flex flex-col gap-1">
-                                                                            <span className="opacity-50">Aangemeld op</span>
-                                                                            <span className="text-sm font-semibold text-(--beheer-text)">{s.created_at ? formatDate(s.created_at) : '-'}</span>
-                                                                        </div>
-                                                                        <div className="flex flex-col gap-1">
-                                                                            <span className="opacity-50">Status</span>
-                                                                            <span className="text-sm font-semibold text-(--beheer-text)">
-                                                                                {s.status === 'approved' ? 'Goedgekeurd' : 'Geregistreerd'}
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div className="space-y-6 lg:border-l lg:border-(--beheer-border)/10 lg:pl-12">
-                                                            <p className="text-xs font-semibold text-(--beheer-accent)">Beheer Acties</p>
-                                                            <div className="flex flex-col gap-3">
-                                                                <Button
-                                                                    onClick={() => {
-                                                                        void onUpdate(s.id, {
-                                                                            approved: !s.approved,
-                                                                            status: !s.approved ? 'approved' : 'registered'
-                                                                        });
-                                                                    }}
-                                                                    variant={s.approved ? 'success' : 'secondary'}
-                                                                    icon={UserCheck}
-                                                                    className="w-full"
-                                                                >
-                                                                    {s.approved ? 'Goedgekeurd' : 'Keur Goed'}
-                                                                </Button>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Group gap="xs" wrap="wrap">
+                                                        <Text size="sm" fw={600}>
+                                                            {s.first_name} {s.last_name}
+                                                        </Text>
+                                                        {s.approved && (
+                                                            <Badge color="success" variant="light" size="xs">
+                                                                Goedgekeurd
+                                                            </Badge>
+                                                        )}
+                                                        {s.status === 'approved' && !s.approved && (
+                                                            <Badge color="brand" variant="light" size="xs">
+                                                                Lid
+                                                            </Badge>
+                                                        )}
+                                                    </Group>
+                                                </Table.Td>
+                                                <Table.Td visibleFrom="sm">
+                                                    <Text size="xs" c="dimmed">{s.email || '-'}</Text>
+                                                </Table.Td>
+                                                <Table.Td visibleFrom="md">
+                                                    <Text size="xs" c="dimmed">
+                                                        {formatPhoneNumber(s.phone_number) || '-'}
+                                                    </Text>
+                                                </Table.Td>
+                                                <Table.Td ta="right">
+                                                    <Group justify="flex-end" gap="xs" wrap="nowrap">
+                                                        <ActionButton
+                                                            icon={Edit}
+                                                            onClick={(e) => startEdit(e, s)}
+                                                            title="Bewerken"
+                                                        />
+                                                        <ActionButton
+                                                            icon={Trash}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                void onDelete(s.id);
+                                                            }}
+                                                            variant="danger"
+                                                            disabled={deletingId === s.id}
+                                                            title="Verwijderen"
+                                                        />
+                                                        <ChevronDown
+                                                            size={16}
+                                                            style={{
+                                                                transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                                                                transition: 'transform 200ms ease',
+                                                            }}
+                                                        />
+                                                    </Group>
+                                                </Table.Td>
+                                            </Table.Tr>
 
-                                                                {s.favorite_gif && (
-                                                                    <Button
-                                                                        onClick={() => {
-                                                                            if (s.favorite_gif) {
-                                                                                window.open(s.favorite_gif, '_blank');
-                                                                            }
-                                                                        }}
-                                                                        variant="secondary"
-                                                                        icon={Eye}
-                                                                        className="w-full"
-                                                                    >
-                                                                        Bekijk GIF
-                                                                    </Button>
+                                            {isExpanded && (
+                                                <Table.Tr>
+                                                    <Table.Td colSpan={5} p="xl">
+                                                        <Grid gap="xl">
+                                                            <Grid.Col span={{ base: 12, lg: 8 }}>
+                                                                {editingId === s.id ? (
+                                                                    <Stack gap="md">
+                                                                        <Group justify="space-between" align="center" wrap="wrap" gap="sm">
+                                                                            <Text size="xs" fw={600} c="accent">Deelnemer Bewerken</Text>
+                                                                            <Group gap="xs">
+                                                                                <Button
+                                                                                    type="button"
+                                                                                    color="success"
+                                                                                    size="xs"
+                                                                                    onClick={() => { void handleSaveEdit(s.id); }}
+                                                                                    leftSection={<Save size={14} />}
+                                                                                >
+                                                                                    Opslaan
+                                                                                </Button>
+                                                                                <Button
+                                                                                    type="button"
+                                                                                    variant="subtle"
+                                                                                    size="xs"
+                                                                                    onClick={() => setEditingId(null)}
+                                                                                    leftSection={<X size={14} />}
+                                                                                >
+                                                                                    Annuleren
+                                                                                </Button>
+                                                                            </Group>
+                                                                        </Group>
+                                                                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                                                                            <TextInput
+                                                                                label="Voornaam"
+                                                                                size="xs"
+                                                                                value={editData.first_name || ''}
+                                                                                onChange={(e) => setEditData({ ...editData, first_name: e.currentTarget.value })}
+                                                                            />
+                                                                            <TextInput
+                                                                                label="Achternaam"
+                                                                                size="xs"
+                                                                                value={editData.last_name || ''}
+                                                                                onChange={(e) => setEditData({ ...editData, last_name: e.currentTarget.value })}
+                                                                            />
+                                                                            <TextInput
+                                                                                label="Email"
+                                                                                type="email"
+                                                                                size="xs"
+                                                                                value={editData.email || ''}
+                                                                                onChange={(e) => setEditData({ ...editData, email: e.currentTarget.value })}
+                                                                            />
+                                                                            <Stack gap={4}>
+                                                                                <Text size="xs" fw={500}>Telefoon</Text>
+                                                                                <PhoneInput
+                                                                                    value={editData.phone_number || ''}
+                                                                                    onChange={(e: ChangeEvent<HTMLInputElement>) => setEditData({ ...editData, phone_number: e.target.value })}
+                                                                                />
+                                                                            </Stack>
+                                                                        </SimpleGrid>
+                                                                    </Stack>
+                                                                ) : (
+                                                                    <Stack gap="md">
+                                                                        <Group justify="space-between" align="center">
+                                                                            <Text size="xs" fw={600} c="accent">Extra Informatie</Text>
+                                                                            <Button
+                                                                                type="button"
+                                                                                variant="subtle"
+                                                                                size="xs"
+                                                                                onClick={() => startEdit({ stopPropagation: () => { } } as MouseEvent, s)}
+                                                                                leftSection={<Edit size={14} />}
+                                                                            >
+                                                                                Bewerken
+                                                                            </Button>
+                                                                        </Group>
+                                                                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                                                                            {s.date_of_birth && (
+                                                                                <Stack gap={2}>
+                                                                                    <Text size="xs" c="dimmed">Geboortedatum</Text>
+                                                                                    <Text size="sm" fw={600}>{formatDate(s.date_of_birth)}</Text>
+                                                                                </Stack>
+                                                                            )}
+                                                                            <Stack gap={2}>
+                                                                                <Text size="xs" c="dimmed">Aangemeld op</Text>
+                                                                                <Text size="sm" fw={600}>
+                                                                                    {s.created_at ? formatDate(s.created_at) : '-'}
+                                                                                </Text>
+                                                                            </Stack>
+                                                                            <Stack gap={2}>
+                                                                                <Text size="xs" c="dimmed">Status</Text>
+                                                                                <Text size="sm" fw={600}>
+                                                                                    {s.status === 'approved' ? 'Goedgekeurd' : 'Geregistreerd'}
+                                                                                </Text>
+                                                                            </Stack>
+                                                                        </SimpleGrid>
+                                                                    </Stack>
                                                                 )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </Fragment>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                                                            </Grid.Col>
+                                                            <Grid.Col span={{ base: 12, lg: 4 }}>
+                                                                <Divider hiddenFrom="lg" mb="md" />
+                                                                <Stack gap="sm">
+                                                                    <Text size="xs" fw={600} c="accent">Beheer Acties</Text>
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant={s.approved ? 'light' : 'default'}
+                                                                        color={s.approved ? 'success' : undefined}
+                                                                        fullWidth
+                                                                        leftSection={<UserCheck size={16} />}
+                                                                        onClick={() => {
+                                                                            void onUpdate(s.id, {
+                                                                                approved: !s.approved,
+                                                                                status: !s.approved ? 'approved' : 'registered'
+                                                                            });
+                                                                        }}
+                                                                    >
+                                                                        {s.approved ? 'Goedgekeurd' : 'Keur Goed'}
+                                                                    </Button>
+
+                                                                    {s.favorite_gif && (
+                                                                        <Button
+                                                                            type="button"
+                                                                            variant="default"
+                                                                            fullWidth
+                                                                            leftSection={<Eye size={16} />}
+                                                                            onClick={() => {
+                                                                                if (s.favorite_gif) {
+                                                                                    window.open(s.favorite_gif, '_blank');
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            Bekijk GIF
+                                                                        </Button>
+                                                                    )}
+                                                                </Stack>
+                                                            </Grid.Col>
+                                                        </Grid>
+                                                    </Table.Td>
+                                                </Table.Tr>
+                                            )}
+                                        </Fragment>
+                                    );
+                                })}
+                            </Table.Tbody>
+                        </Table>
+                    </Table.ScrollContainer>
+                </Card>
             )}
-        </div>
+        </Stack>
     );
 }

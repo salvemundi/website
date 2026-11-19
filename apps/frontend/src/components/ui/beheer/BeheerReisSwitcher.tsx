@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { Select } from '@mantine/core';
 import type { Trip } from '@salvemundi/validations';
-import BeheerSelect from './BeheerSelect';
 
 interface AdminReisSwitcherProps {
     trips: Trip[];
@@ -21,18 +21,22 @@ export default function AdminReisSwitcher({ trips, activeTripId }: AdminReisSwit
     };
 
     const options = trips.map(t => ({
-        value: t.id,
+        value: String(t.id),
         label: t.name || 'Onbekende reis'
     }));
 
     return (
-        <div className="w-full flex-1 sm:w-auto sm:min-w-45 sm:flex-initial">
-            <BeheerSelect
-                value={activeTripId}
-                onChange={handleSwitch}
-                options={options}
-                size="sm"
-            />
-        </div>
+        <Select
+            value={String(activeTripId)}
+            onChange={(val) => {
+                if (val) handleSwitch(Number(val));
+            }}
+            data={options}
+            size="sm"
+            allowDeselect={false}
+            aria-label="Selecteer reis"
+            w={{ base: '100%', sm: 'auto' }}
+            miw={{ sm: 180 }}
+        />
     );
 }

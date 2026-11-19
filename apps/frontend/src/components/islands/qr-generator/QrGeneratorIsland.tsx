@@ -2,9 +2,25 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Check, Copy, Download, RotateCcw } from 'lucide-react';
-import { FormField } from '@/shared/ui/FormField';
-import { Input } from '@/shared/ui/Input';
-import { Switch } from '@/shared/ui/Switch';
+import NextImage from 'next/image';
+import { BRAND_COLORS } from '@/lib/config/theme';
+import {
+    Alert,
+    Button,
+    Card,
+    ColorInput,
+    ColorSwatch,
+    Grid,
+    GridCol,
+    Group,
+    NativeSelect,
+    SimpleGrid,
+    Slider,
+    Stack,
+    Switch,
+    Text,
+    TextInput,
+} from '@mantine/core';
 import { safeConsoleError } from '@/server/utils/logger';
 import { buildMatrix, buildSvg, forceModules, sampleLogoColors } from './qr-render';
 
@@ -26,29 +42,26 @@ const LOGO_SOURCES = {
     paars: '/img/qr/logo-paars.png',
 } as const;
 
-// Huisstijlkleuren uit de Salve Mundi brand guide.
 const BRAND = {
-    donkerPaars: '#5A3761',
-    lichtPaars: '#936695',
-    witPaars: '#F0F1F9',
-    donkerBlauw: '#132A40',
+    donkerPaars: BRAND_COLORS.purple,
+    lichtPaars: BRAND_COLORS.lightPurple,
+    witPaars: BRAND_COLORS.lightBase,
+    donker: BRAND_COLORS.darkBase,
 } as const;
 
-// Lichte modus: donkere code op licht. Donkere modus: lichte code op de donkere huisstijlkleur.
 const COLOR_PRESETS: { label: string; fg: string; bg: string }[] = [
-    { label: 'Lichte modus', fg: BRAND.donkerBlauw, bg: BRAND.witPaars },
-    { label: 'Donkere modus', fg: BRAND.witPaars, bg: BRAND.donkerBlauw },
+    { label: 'Lichte modus', fg: BRAND.donker, bg: BRAND.witPaars },
+    { label: 'Donkere modus', fg: BRAND.witPaars, bg: BRAND.donker },
     { label: 'Donker paars', fg: BRAND.donkerPaars, bg: BRAND.witPaars },
 ];
 
-// Meer modules = meer detail in het logo. Het aantal wordt vanzelf hoger als de tekst dat nodig heeft.
 const DETAIL_OPTIONS: { value: string; label: string; version: number | null }[] = [
     { value: 'laag', label: 'Laag (snel te scannen)', version: null },
     { value: 'midden', label: 'Gemiddeld', version: 10 },
     { value: 'hoog', label: 'Hoog (meeste detail)', version: 14 },
 ];
 
-const DEFAULT_FG: string = BRAND.donkerBlauw;
+const DEFAULT_FG: string = BRAND.donker;
 const DEFAULT_BG: string = BRAND.witPaars;
 const DEFAULT_SIZE = 600;
 const DEFAULT_LOGO_PERCENT = 70;
@@ -78,7 +91,6 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     });
 }
 
-// Alleen de uil (zonder tekst), bijgesneden op de zichtbare pixels.
 async function prepareLogo(src: string): Promise<PreparedLogo> {
     const img = await loadImage(src);
     const srcH = Math.round(img.naturalHeight * OWL_CROP_RATIO);
@@ -145,7 +157,6 @@ export default function QrGeneratorIsland() {
     const value = text.trim();
     const darkBackground = luminance(bgColor) < 0.4;
 
-    // Op een donkere achtergrond krijgt het logo één lichte huisstijlkleur, anders zijn de kleuren uit het logo zelf.
     const logoSource = logoStyle === 'kleur' && !darkBackground ? LOGO_SOURCES.kleur : LOGO_SOURCES.paars;
     const logoRecolor = darkBackground ? BRAND.lichtPaars : null;
 
@@ -160,8 +171,6 @@ export default function QrGeneratorIsland() {
     const minVersion = DETAIL_OPTIONS.find((o) => o.value === detail)?.version ?? null;
     const matrix = useMemo(() => buildMatrix(value, minVersion), [value, minVersion]);
 
-    // De uil wordt als gevulde vorm in de blokjes getekend. De foutcorrectie herstelt de aangepaste blokjes, zolang de uil niet te groot is.
-    // Is de gekozen grootte te veel voor de code, dan nemen we de grootste die nog veilig past.
     const { svg, effectivePercent } = useMemo(() => {
         const base = { margin: margin ? MARGIN_MODULES : 0, size, fg: fgColor, bg: bgColor };
         if (showLogo && preparedLogo) {
@@ -232,146 +241,185 @@ export default function QrGeneratorIsland() {
     }, [renderPng]);
 
     return (
-        <div className="grid gap-6 lg:grid-cols-[1fr_minmax(0,22rem)]">
-            <section className="squircle-lg space-y-5 bg-bg-card p-fluid-md shadow-lg dark:border dark:border-white/10" aria-label="Instellingen">
-                <FormField label="Link of tekst" required>
-                    <Input
-                        value={text}
-                        onChange={(e) => setText(e.target.value)}
-                        placeholder="https://salvemundi.nl"
-                        maxLength={1000}
-                    />
-                </FormField>
+        <Grid gap="lg" align="flex-start">
+            <GridCol span={{ base: 12, lg: 7 }}>
+                <Card>
+                    <Stack gap="lg">
+                        <TextInput
+                            label="Link of tekst"
+                            required
+                            value={text}
+                            onChange={(e) => setText(e.target.value)}
+                            placeholder="https://salvemundi.nl"
+                            maxLength={1000}
+                        />
 
-                <div>
-                    <div className="mb-2 flex items-center justify-between gap-3">
-                        <span className="text-sm font-bold text-text-main">Huisstijlkleuren</span>
-                        <button type="button" onClick={resetToDefaults} className="form-button inline-flex items-center gap-1.5 rounded-xl bg-bg-soft px-3 py-1.5 text-xs font-bold text-text-main transition hover:bg-black/5 dark:hover:bg-white/10">
-                            <RotateCcw className="size-3.5" /> Standaard Salve Mundi
-                        </button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        {COLOR_PRESETS.map((preset) => {
-                            const active = preset.fg.toLowerCase() === fgColor.toLowerCase() && preset.bg.toLowerCase() === bgColor.toLowerCase();
-                            return (
-                                <button
-                                    key={preset.label}
+                        <Stack gap="xs">
+                            <Group justify="space-between">
+                                <Text size="sm" fw={700}>Huisstijlkleuren</Text>
+                                <Button
                                     type="button"
-                                    onClick={() => applyPreset(preset)}
-                                    aria-pressed={active}
-                                    className={`form-button inline-flex items-center gap-2 rounded-xl border-2 px-3 py-2 text-xs font-bold text-text-main transition ${active ? 'border-theme-purple bg-theme-purple/10' : 'border-transparent bg-bg-soft hover:bg-black/5 dark:hover:bg-white/10'}`}
+                                    variant="default"
+                                    size="xs"
+                                    onClick={resetToDefaults}
+                                    leftSection={<RotateCcw size={14} />}
                                 >
-                                    <span className="relative inline-block size-6 overflow-hidden rounded-full border border-black/10" style={{ backgroundColor: preset.bg }} aria-hidden="true">
-                                        <span className="absolute inset-1.5 rounded-full" style={{ backgroundColor: preset.fg }} />
-                                    </span>
-                                    {preset.label}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
+                                    Standaard Salve Mundi
+                                </Button>
+                            </Group>
+                            <Group gap="xs" wrap="wrap">
+                                {COLOR_PRESETS.map((preset) => {
+                                    const active =
+                                        preset.fg.toLowerCase() === fgColor.toLowerCase() &&
+                                        preset.bg.toLowerCase() === bgColor.toLowerCase();
+                                    return (
+                                        <Button
+                                            key={preset.label}
+                                            type="button"
+                                            variant={active ? 'filled' : 'default'}
+                                            size="xs"
+                                            onClick={() => applyPreset(preset)}
+                                            aria-pressed={active}
+                                            leftSection={<ColorSwatch color={preset.fg} size={14} />}
+                                        >
+                                            {preset.label}
+                                        </Button>
+                                    );
+                                })}
+                            </Group>
+                        </Stack>
 
-                <div className="grid gap-5 sm:grid-cols-2">
-                    <FormField label="Kleur van de code">
-                        <div className="flex items-center gap-3">
-                            {/* eslint-disable-next-line no-restricted-syntax -- kleurkiezer, form-input is voor tekstvelden */}
-                            <input type="color" value={fgColor} onChange={(e) => setFgColor(e.target.value)} aria-label="Kleur van de code kiezen" className="size-12 shrink-0 cursor-pointer rounded-xl border-none bg-transparent p-0" />
-                            <span className="font-mono text-sm text-text-muted">{fgColor.toUpperCase()}</span>
-                        </div>
-                    </FormField>
-                    <FormField label="Achtergrondkleur">
-                        <div className="flex items-center gap-3">
-                            {/* eslint-disable-next-line no-restricted-syntax -- kleurkiezer, form-input is voor tekstvelden */}
-                            <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} aria-label="Achtergrondkleur kiezen" className="size-12 shrink-0 cursor-pointer rounded-xl border-none bg-transparent p-0" />
-                            <span className="font-mono text-sm text-text-muted">{bgColor.toUpperCase()}</span>
-                        </div>
-                    </FormField>
-                </div>
+                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                            <ColorInput
+                                label="Kleur van de code"
+                                value={fgColor}
+                                onChange={setFgColor}
+                                swatches={[BRAND.donker, BRAND.donkerPaars, BRAND.lichtPaars, BRAND.witPaars]}
+                            />
+                            <ColorInput
+                                label="Achtergrondkleur"
+                                value={bgColor}
+                                onChange={setBgColor}
+                                swatches={[BRAND.witPaars, BRAND.donker, BRAND.donkerPaars, '#FFFFFF']}
+                            />
+                        </SimpleGrid>
 
-                <div>
-                    <label htmlFor="qr-size" className="mb-2 block text-sm font-bold text-text-main">Grootte: {size} × {size} px</label>
-                    {/* eslint-disable-next-line no-restricted-syntax -- schuifregelaar, form-input is voor tekstvelden */}
-                    <input id="qr-size" type="range" min={300} max={1600} step={20} value={size} onChange={(e) => setSize(Number(e.target.value))} className="w-full accent-(--color-theme-purple,#a4539b)" />
-                </div>
+                        <Stack gap="xs">
+                            <Text size="sm" fw={700}>Grootte: {size} × {size} px</Text>
+                            <Slider
+                                min={300}
+                                max={1600}
+                                step={20}
+                                value={size}
+                                onChange={setSize}
+                                aria-label="Grootte van de QR-code"
+                            />
+                        </Stack>
 
-                <div>
-                    <label htmlFor="qr-detail" className="mb-2 block text-sm font-bold text-text-main">Detail van het logo</label>
-                    <select id="qr-detail" value={detail} onChange={(e) => setDetail(e.target.value)} className="form-input">
-                        {DETAIL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                    <p className="mt-1 text-xs text-text-muted">Meer detail maakt de uil scherper, maar de blokjes worden kleiner. Scan de code altijd even na.</p>
-                </div>
+                        <NativeSelect
+                            label="Detail van het logo"
+                            description="Meer detail maakt de uil scherper, maar de blokjes worden kleiner. Scan de code altijd even na."
+                            value={detail}
+                            onChange={(e) => setDetail(e.target.value)}
+                            data={DETAIL_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+                        />
 
-                <div className="flex items-center justify-between gap-4">
-                    <span className="text-sm font-bold text-text-main">Rand rondom de code</span>
-                    <Switch checked={margin} onChange={setMargin} ariaLabel="Rand rondom de code" />
-                </div>
+                        <Group justify="space-between">
+                            <Text size="sm" fw={700}>Rand rondom de code</Text>
+                            <Switch checked={margin} onChange={(e) => setMargin(e.currentTarget.checked)} aria-label="Rand rondom de code" />
+                        </Group>
 
-                <div className="flex items-center justify-between gap-4">
-                    <span className="text-sm font-bold text-text-main">Salve Mundi uil in de code</span>
-                    <Switch checked={showLogo} onChange={setShowLogo} ariaLabel="Uil in de code" />
-                </div>
+                        <Group justify="space-between">
+                            <Text size="sm" fw={700}>Salve Mundi uil in de code</Text>
+                            <Switch checked={showLogo} onChange={(e) => setShowLogo(e.currentTarget.checked)} aria-label="Uil in de code" />
+                        </Group>
 
-                {showLogo && (
-                    <>
-                        <div>
-                            <label htmlFor="qr-logo-style" className="mb-2 block text-sm font-bold text-text-main">Kleur van de uil</label>
-                            <select id="qr-logo-style" value={logoStyle} onChange={(e) => setLogoStyle(e.target.value as LogoStyle)} disabled={darkBackground} className="form-input">
-                                <option value="kleur">Kleur (twee tinten paars)</option>
-                                <option value="eenkleurig">Eenkleurig paars</option>
-                            </select>
-                            {darkBackground && <p className="mt-1 text-xs text-text-muted">Op een donkere achtergrond gebruikt de uil automatisch licht paars.</p>}
-                        </div>
-                        <div>
-                            <label htmlFor="qr-logo-size" className="mb-2 block text-sm font-bold text-text-main">Grootte van de uil: {logoPercent}%</label>
-                            {/* eslint-disable-next-line no-restricted-syntax -- schuifregelaar, form-input is voor tekstvelden */}
-                            <input id="qr-logo-size" type="range" min={MIN_LOGO_PERCENT} max={MAX_LOGO_PERCENT} value={logoPercent} onChange={(e) => setLogoPercent(Number(e.target.value))} className="w-full accent-(--color-theme-purple,#a4539b)" />
-                            <p className="mt-1 text-xs text-text-muted">
-                                {effectivePercent !== null && effectivePercent < logoPercent
-                                    ? `De uil is verkleind naar ${effectivePercent}%: groter past niet meer binnen de foutcorrectie. Kies meer detail of een kortere tekst voor een grotere uil.`
-                                    : 'De foutcorrectie staat altijd op het hoogste niveau. De uil bestaat uit blokjes van de code zelf, die door de foutcorrectie worden hersteld.'}
-                            </p>
-                        </div>
-                    </>
-                )}
+                        {showLogo && (
+                            <>
+                                <NativeSelect
+                                    label="Kleur van de uil"
+                                    description={darkBackground ? 'Op een donkere achtergrond gebruikt de uil automatisch licht paars.' : undefined}
+                                    value={logoStyle}
+                                    onChange={(e) => setLogoStyle(e.target.value as LogoStyle)}
+                                    disabled={darkBackground}
+                                    data={[
+                                        { value: 'kleur', label: 'Kleur (twee tinten paars)' },
+                                        { value: 'eenkleurig', label: 'Eenkleurig paars' },
+                                    ]}
+                                />
 
-                {/* Vaste hoogte, zodat de pagina niet verspringt als de melding verschijnt of verdwijnt. */}
-                <div className="min-h-16" role="status" aria-live="polite">
-                    {lowContrast && (
-                        <p className="rounded-xl bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
-                            Het contrast tussen de code en de achtergrond is te laag, de code kan dan niet gescand worden.
-                        </p>
-                    )}
-                    {inverted && (
-                        <p className="rounded-xl bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
-                            Licht op donker wordt niet door alle QR-scanners herkend. Test de code met een telefoon voordat je hem gebruikt.
-                        </p>
-                    )}
-                </div>
-            </section>
+                                <Stack gap="xs">
+                                    <Text size="sm" fw={700}>Grootte van de uil: {logoPercent}%</Text>
+                                    <Slider
+                                        min={MIN_LOGO_PERCENT}
+                                        max={MAX_LOGO_PERCENT}
+                                        value={logoPercent}
+                                        onChange={setLogoPercent}
+                                        aria-label="Grootte van de uil"
+                                    />
+                                    <Text size="xs" c="dimmed">
+                                        {effectivePercent !== null && effectivePercent < logoPercent
+                                            ? `De uil is verkleind naar ${effectivePercent}%: groter past niet meer binnen de foutcorrectie. Kies meer detail of een kortere tekst voor een grotere uil.`
+                                            : 'De foutcorrectie staat altijd op het hoogste niveau. De uil bestaat uit blokjes van de code zelf, die door de foutcorrectie worden hersteld.'}
+                                    </Text>
+                                </Stack>
+                            </>
+                        )}
 
-            <section className="squircle-lg flex flex-col items-center gap-4 bg-bg-card p-fluid-md shadow-lg lg:sticky lg:top-24 lg:self-start dark:border dark:border-white/10" aria-label="Voorbeeld">
-                {value ? (
-                    <>
-                        {/* eslint-disable-next-line @next/next/no-img-element -- gegenereerde SVG als data-URI, next/image is hier niet geschikt */}
-                        <img src={svgUri} alt={`QR-code voor ${value}`} className="h-auto w-full max-w-80 rounded-xl" width={size} height={size} />
-                        <div className="flex w-full flex-wrap justify-center gap-2">
-                            <button type="button" onClick={downloadPng} className="form-button inline-flex items-center gap-2 rounded-xl bg-theme-purple px-4 py-2.5 text-sm font-bold text-white transition hover:opacity-90">
-                                <Download className="size-4" /> PNG
-                            </button>
-                            <button type="button" onClick={downloadSvg} className="form-button inline-flex items-center gap-2 rounded-xl bg-theme-purple px-4 py-2.5 text-sm font-bold text-white transition hover:opacity-90">
-                                <Download className="size-4" /> SVG
-                            </button>
-                            <button type="button" onClick={copyImage} className="form-button inline-flex items-center gap-2 rounded-xl bg-bg-soft px-4 py-2.5 text-sm font-bold text-text-main transition hover:bg-black/5 dark:hover:bg-white/10">
-                                {copied ? <Check className="size-4" /> : <Copy className="size-4" />} {copied ? 'Gekopieerd' : 'Kopieer'}
-                            </button>
-                        </div>
-                        {error && <p className="text-theme-error text-center text-sm" role="alert">{error}</p>}
-                    </>
-                ) : (
-                    <p className="py-16 text-center text-text-muted">Vul een link of tekst in om een QR-code te maken.</p>
-                )}
-            </section>
-        </div>
+                        {lowContrast && (
+                            <Alert color="accent">
+                                Het contrast tussen de code en de achtergrond is te laag, de code kan dan niet gescand worden.
+                            </Alert>
+                        )}
+                        {inverted && (
+                            <Alert color="accent">
+                                Licht op donker wordt niet door alle QR-scanners herkend. Test de code met een telefoon voordat je hem gebruikt.
+                            </Alert>
+                        )}
+                    </Stack>
+                </Card>
+            </GridCol>
+
+            <GridCol span={{ base: 12, lg: 5 }}>
+                <Card pos="sticky" top={96}>
+                    <Stack align="center" gap="md">
+                        {value ? (
+                            <>
+                                <NextImage
+                                    src={svgUri}
+                                    alt={`QR-code voor ${value}`}
+                                    width={320}
+                                    height={320}
+                                    unoptimized
+                                    style={{ width: '100%', maxWidth: 320, height: 'auto', borderRadius: 'var(--mantine-radius-md)' }}
+                                />
+                                <Group justify="center" gap="xs" wrap="wrap">
+                                    <Button type="button" size="sm" onClick={downloadPng} leftSection={<Download size={16} />}>
+                                        PNG
+                                    </Button>
+                                    <Button type="button" size="sm" onClick={downloadSvg} leftSection={<Download size={16} />}>
+                                        SVG
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="default"
+                                        size="sm"
+                                        onClick={copyImage}
+                                        leftSection={copied ? <Check size={16} /> : <Copy size={16} />}
+                                    >
+                                        {copied ? 'Gekopieerd' : 'Kopieer'}
+                                    </Button>
+                                </Group>
+                                {error && <Alert color="error">{error}</Alert>}
+                            </>
+                        ) : (
+                            <Text c="dimmed" ta="center" py="xl">
+                                Vul een link of tekst in om een QR-code te maken.
+                            </Text>
+                        )}
+                    </Stack>
+                </Card>
+            </GridCol>
+        </Grid>
     );
 }

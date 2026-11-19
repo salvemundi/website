@@ -32,7 +32,6 @@ async function HomeContent() {
 
     let session: Awaited<ReturnType<typeof getEnrichedSession>> | null = null;
     let banners: Awaited<ReturnType<typeof getHeroBanners>> = [];
-    let heroActivities: Awaited<ReturnType<typeof getUpcomingActiviteiten>> = [];
     let activities: Awaited<ReturnType<typeof getUpcomingActiviteiten>> = [];
     let sponsors: Awaited<ReturnType<typeof getSponsors>> = [];
 
@@ -42,9 +41,8 @@ async function HomeContent() {
             return null;
         });
 
-        [banners, heroActivities, activities, sponsors] = await Promise.all([
+        [banners, activities, sponsors] = await Promise.all([
             getHeroBanners(),
-            getUpcomingActiviteiten(1),
             getUpcomingActiviteiten(4),
             getSponsors(),
         ]);
@@ -65,7 +63,7 @@ async function HomeContent() {
 
     return (
         <>
-            <HeroIsland banners={banners} activiteiten={heroActivities} initialSession={session} />
+            <HeroIsland banners={banners} activiteiten={activities} initialSession={session} />
             <ActiviteitenSection activities={activities} />
             <WhySalveMundiSection />
             <JoinSectionIsland serverUser={user} />
