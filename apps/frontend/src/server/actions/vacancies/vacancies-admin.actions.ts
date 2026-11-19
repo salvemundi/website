@@ -1,374 +1,318 @@
 'use server';
 
-import { eq, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
-import { db, schema } from '@salvemundi/db';
+import { z } from 'zod';
 import { vacancyAdminSchema, type VacancyAdminForm, type VacancySubmissionDTO } from '@salvemundi/validations';
-import { enforceFeatureAccess } from '@/server/actions/beheer/beheer-utils.actions';
+import {
+    withAdminAction,
+    withAdminQueryAction,
+    type ActionFieldErrors,
+} from '@/server/actions/action-wrapper';
 import { logAuditAction } from '@/server/actions/infrastructure/audit.actions';
-import { safeConsoleError } from '@/server/utils/logger';
-import { uploadToDirectus, uploadDocumentToDirectus } from '@/server/utils/media';
-import { sendVacancyMail } from './vacancy-mail.utils';
-import { parseJsonArray } from './vacancy-form.utils';
+import type { AdminVacancyDetailDTO, AdminVacancyListItemDTO } from '@/server/dto/vacancy.dto';
+import { extractBaseVacancyFormFields, extractVacancyAttachments } from './vacancy-form.utils';
+import { createVacancyService } from './vacancy-service.utils';
 
-function revalidateVacancyPaths() {
+export type CreateVacancyResult =
+    | { success: true; id: number }
+    | { success: false; error: string; fieldErrors?: ActionFieldErrors };
+
+export type UpdateVacancyResult =
+    | { success: true }
+    | { success: false; error: string; fieldErrors?: ActionFieldErrors };
+
+export type DeleteVacancyResult =
+    | { success: true }
+    | { success: false; error: string };
+
+export type ApproveSubmissionResult =
+    | { success: true; vacancyId: number }
+    | { success: false; error: string };
+
+export type RejectSubmissionResult =
+    | { success: true }
+    | { success: false; error: string };
+
+export type DeleteSubmissionResult =
+    | { success: true }
+    | { success: false; error: string };
+
+function revalidateVacancyPaths(): void {
     revalidatePath('/beheer/bijbanenbank');
     revalidatePath('/bijbanenbank');
 }
 
-async function resolveDirectionIds(names: string[]): Promise<number[]> {
-    if (names.length === 0) return [];
-    const rows = await db.select({ id: schema.vacancy_ict_directions.id })
-        .from(schema.vacancy_ict_directions)
-        .where(inArray(schema.vacancy_ict_directions.name, names));
-    return rows.map((r) => r.id);
-}
+const positiveIdSchema = z.number().int().positive();
 
-function parseVacancyFormData(formData: FormData) {
-    return vacancyAdminSchema.safeParse({
-        title: formData.get('title'),
-        company: formData.get('company'),
-        description: formData.get('description'),
-        type: formData.get('type'),
-        contact_email: formData.get('contact_email'),
-        contact_phone: formData.get('contact_phone'),
-        contact_website: formData.get('contact_website'),
-        location: formData.get('location'),
-        salary: formData.get('salary'),
-        employment_type: formData.get('employment_type'),
-        working_hours: formData.get('working_hours'),
-        directions: parseJsonArray(formData.get('directions')),
-        skills: parseJsonArray(formData.get('skills')),
-        is_visible: formData.get('is_visible') === 'true'
-    });
-}
+const createVacancyInputSchema = z.object({
+    fields: vacancyAdminSchema,
+    imageFile: z.custom<File | null>((value) => value === null || value instanceof File),
+    documentFile: z.custom<File | null>((value) => value === null || value instanceof File),
+});
 
-export async function getAdminVacancies() {
-    await enforceFeatureAccess('vacatures');
-    try {
-        return await db.query.vacancies.findMany({
-            orderBy: (v, { desc }) => [desc(v.published_at)],
-            with: { vacancy_direction_links: { with: { vacancy_ict_direction: true } } }
-        });
-    } catch (error) {
-        safeConsoleError('[vacancies-admin.actions.ts][getAdminVacancies] ', error);
-        return [];
-    }
-}
+const updateVacancyInputSchema = z.object({
+    id: positiveIdSchema,
+    fields: vacancyAdminSchema,
+    imageFile: z.custom<File | null>((value) => value === null || value instanceof File),
+    documentFile: z.custom<File | null>((value) => value === null || value instanceof File),
+    removeImage: z.boolean(),
+    removeDocument: z.boolean(),
+});
 
-export async function getAdminVacancyById(id: number) {
-    await enforceFeatureAccess('vacatures');
-    const row = await db.query.vacancies.findFirst({
-        where: eq(schema.vacancies.id, id),
-        with: { vacancy_direction_links: { with: { vacancy_ict_direction: true } } }
-    });
-    if (!row) return null;
+const rejectSubmissionInputSchema = z.object({
+    submissionId: positiveIdSchema,
+    reason: z.string().trim().min(1, 'Geef een reden op voor afwijzing.').max(1000),
+});
 
+function buildAdminFieldsCandidate(formData: FormData) {
     return {
-        id: row.id,
-        title: row.title ?? '',
-        company: row.company ?? '',
-        description: row.description ?? '',
-        type: (row.type ?? 'parttime') as VacancyAdminForm['type'],
-        contact_email: row.contact_email ?? '',
-        contact_phone: row.contact_phone ?? '',
-        contact_website: row.contact_website ?? '',
-        location: row.location ?? '',
-        salary: row.salary ?? '',
-        employment_type: row.employment_type ?? '',
-        working_hours: row.working_hours ?? '',
-        is_visible: row.is_visible ?? false,
-        directions: row.vacancy_direction_links
-            .map((l) => l.vacancy_ict_direction?.name)
-            .filter((n): n is string => Boolean(n)),
-        skills: Array.isArray(row.skills) ? row.skills as string[] : [],
-        image: row.image,
-        document: row.document
+        ...extractBaseVacancyFormFields(formData),
+        is_visible: formData.get('is_visible') === 'true',
     };
 }
 
-export async function getPendingSubmissions(): Promise<VacancySubmissionDTO[]> {
-    await enforceFeatureAccess('vacatures');
-    try {
-        const rows = await db.query.vacancy_submissions.findMany({
-            orderBy: (s, { desc }) => [desc(s.created_at)],
-            with: { vacancy_submission_direction_links: { with: { vacancy_ict_direction: true } } }
+const executeGetAdminVacancies = withAdminQueryAction<void, void, AdminVacancyListItemDTO[]>({
+    actionName: 'vacancies-admin.actions.ts][getAdminVacancies',
+    feature: 'vacatures',
+    fallbackValue: [],
+    handler: async () => createVacancyService().getAdminVacancies(),
+});
+
+const executeGetAdminVacancyById = withAdminQueryAction<number, number, AdminVacancyDetailDTO | null>({
+    actionName: 'vacancies-admin.actions.ts][getAdminVacancyById',
+    feature: 'vacatures',
+    schema: positiveIdSchema,
+    fallbackValue: null,
+    handler: async (id) => createVacancyService().getAdminVacancyById(id),
+});
+
+const executeGetPendingSubmissions = withAdminQueryAction<void, void, VacancySubmissionDTO[]>({
+    actionName: 'vacancies-admin.actions.ts][getPendingSubmissions',
+    feature: 'vacatures',
+    fallbackValue: [],
+    handler: async () => createVacancyService().getPendingSubmissions(),
+});
+
+const executeCreateVacancy = withAdminAction<
+    FormData,
+    { fields: VacancyAdminForm; imageFile: File | null; documentFile: File | null },
+    CreateVacancyResult
+>({
+    actionName: 'vacancies-admin.actions.ts][createVacancyAction',
+    feature: 'vacatures',
+    schema: createVacancyInputSchema,
+    mapInput: (formData) => {
+        const attachments = extractVacancyAttachments(formData);
+        return {
+            fields: buildAdminFieldsCandidate(formData),
+            imageFile: attachments.imageFile,
+            documentFile: attachments.documentFile,
+        };
+    },
+    validationErrorMessage: 'Ongeldige invoer.',
+    fallbackErrorMessage: 'Aanmaken van de vacature is mislukt.',
+    handler: async (input, ctx) => {
+        const outcome = await createVacancyService().createVacancy({
+            data: input.fields,
+            imageFile: input.imageFile,
+            documentFile: input.documentFile,
+            createdBy: ctx.userId,
         });
 
-        return rows.map((row) => ({
-            id: row.id,
-            title: row.title ?? '',
-            company: row.company ?? '',
-            description: row.description ?? '',
-            type: row.type as VacancySubmissionDTO['type'],
-            contact_email: row.contact_email ?? '',
-            contact_phone: row.contact_phone,
-            contact_website: row.contact_website,
-            location: row.location ?? '',
-            salary: row.salary,
-            employment_type: row.employment_type,
-            working_hours: row.working_hours,
-            directions: row.vacancy_submission_direction_links
-                .map((l) => l.vacancy_ict_direction?.name)
-                .filter((n): n is string => Boolean(n)),
-            skills: Array.isArray(row.skills) ? row.skills as string[] : [],
-            image: row.image,
-            document: row.document,
-            status: row.status as VacancySubmissionDTO['status'],
-            rejection_reason: row.rejection_reason,
-            reviewed_by: row.reviewed_by,
-            reviewed_at: row.reviewed_at,
-            approved_vacancy_id: row.approved_vacancy_id,
-            verified_at: row.verified_at,
-            created_at: row.created_at ?? ''
-        }));
-    } catch (error) {
-        safeConsoleError('[vacancies-admin.actions.ts][getPendingSubmissions] ', error);
-        return [];
-    }
-}
-
-export async function createVacancyAction(formData: FormData) {
-    const { user } = await enforceFeatureAccess('vacatures');
-
-    const parsed = parseVacancyFormData(formData);
-    if (!parsed.success) {
-        return { success: false, error: 'Ongeldige invoer.', fieldErrors: parsed.error.flatten().fieldErrors };
-    }
-    const value = parsed.data;
-
-    const imageUpload = await uploadToDirectus(formData.get('imageFile') as File | null, 5 * 1024 * 1024);
-    if (!imageUpload.success) return { success: false, error: imageUpload.error };
-
-    const documentUpload = await uploadDocumentToDirectus(formData.get('documentFile') as File | null);
-    if (!documentUpload.success) return { success: false, error: documentUpload.error };
-
-    try {
-        const [inserted] = await db.insert(schema.vacancies).values({
-            title: value.title,
-            company: value.company,
-            description: value.description,
-            type: value.type,
-            contact_email: value.contact_email,
-            contact_phone: value.contact_phone || null,
-            contact_website: value.contact_website || null,
-            location: value.location,
-            salary: value.salary || null,
-            employment_type: value.employment_type || null,
-            working_hours: value.working_hours || null,
-            is_visible: value.is_visible,
-            skills: value.skills,
-            image: imageUpload.id,
-            document: documentUpload.id,
-            published_at: new Date().toISOString(),
-            created_by: user.id
-        }).returning({ id: schema.vacancies.id });
-
-        if (value.type === 'internship' && value.directions.length > 0) {
-            const directionIds = await resolveDirectionIds(value.directions);
-            if (directionIds.length > 0) {
-                await db.insert(schema.vacancy_direction_links).values(
-                    directionIds.map((vacancy_ict_directions_id) => ({ vacancies_id: inserted.id, vacancy_ict_directions_id }))
-                );
-            }
+        if (!outcome.success) {
+            return { success: false, error: outcome.error };
         }
 
-        await logAuditAction('admin_vacancy_created', 'SUCCESS', { context: 'vacature', context_name: value.title, id: inserted.id });
+        await logAuditAction('admin_vacancy_created', 'SUCCESS', {
+            context: 'vacature',
+            context_name: input.fields.title,
+            id: outcome.id,
+        });
         revalidateVacancyPaths();
-        return { success: true, id: inserted.id };
-    } catch (error) {
-        safeConsoleError('[vacancies-admin.actions.ts][createVacancyAction] ', error);
-        return { success: false, error: 'Aanmaken van de vacature is mislukt.' };
-    }
-}
+        return { success: true, id: outcome.id };
+    },
+});
 
-export async function updateVacancyAction(id: number, formData: FormData) {
-    await enforceFeatureAccess('vacatures');
+const executeUpdateVacancy = withAdminAction<
+    { id: number; formData: FormData },
+    {
+        id: number;
+        fields: VacancyAdminForm;
+        imageFile: File | null;
+        documentFile: File | null;
+        removeImage: boolean;
+        removeDocument: boolean;
+    },
+    UpdateVacancyResult
+>({
+    actionName: 'vacancies-admin.actions.ts][updateVacancyAction',
+    feature: 'vacatures',
+    schema: updateVacancyInputSchema,
+    mapInput: ({ id, formData }) => {
+        const attachments = extractVacancyAttachments(formData);
+        return {
+            id,
+            fields: buildAdminFieldsCandidate(formData),
+            imageFile: attachments.imageFile,
+            documentFile: attachments.documentFile,
+            removeImage: formData.get('removeImage') === 'true',
+            removeDocument: formData.get('removeDocument') === 'true',
+        };
+    },
+    validationErrorMessage: 'Ongeldige invoer.',
+    fallbackErrorMessage: 'Bijwerken van de vacature is mislukt.',
+    handler: async (input) => {
+        const outcome = await createVacancyService().updateVacancy({
+            id: input.id,
+            data: input.fields,
+            imageFile: input.imageFile,
+            documentFile: input.documentFile,
+            removeImage: input.removeImage,
+            removeDocument: input.removeDocument,
+        });
 
-    const parsed = parseVacancyFormData(formData);
-    if (!parsed.success) {
-        return { success: false, error: 'Ongeldige invoer.', fieldErrors: parsed.error.flatten().fieldErrors };
-    }
-    const value = parsed.data;
-
-    const imageUpload = await uploadToDirectus(formData.get('imageFile') as File | null, 5 * 1024 * 1024);
-    if (!imageUpload.success) return { success: false, error: imageUpload.error };
-
-    const documentUpload = await uploadDocumentToDirectus(formData.get('documentFile') as File | null);
-    if (!documentUpload.success) return { success: false, error: documentUpload.error };
-
-    const removeImage = formData.get('removeImage') === 'true';
-    const removeDocument = formData.get('removeDocument') === 'true';
-
-    try {
-        await db.update(schema.vacancies).set({
-            title: value.title,
-            company: value.company,
-            description: value.description,
-            type: value.type,
-            contact_email: value.contact_email,
-            contact_phone: value.contact_phone || null,
-            contact_website: value.contact_website || null,
-            location: value.location,
-            salary: value.salary || null,
-            employment_type: value.employment_type || null,
-            working_hours: value.working_hours || null,
-            is_visible: value.is_visible,
-            skills: value.skills,
-            ...(imageUpload.id ? { image: imageUpload.id } : removeImage ? { image: null } : {}),
-            ...(documentUpload.id ? { document: documentUpload.id } : removeDocument ? { document: null } : {}),
-            updated_at: new Date().toISOString()
-        }).where(eq(schema.vacancies.id, id));
-
-        await db.delete(schema.vacancy_direction_links).where(eq(schema.vacancy_direction_links.vacancies_id, id));
-        if (value.type === 'internship' && value.directions.length > 0) {
-            const directionIds = await resolveDirectionIds(value.directions);
-            if (directionIds.length > 0) {
-                await db.insert(schema.vacancy_direction_links).values(
-                    directionIds.map((vacancy_ict_directions_id) => ({ vacancies_id: id, vacancy_ict_directions_id }))
-                );
-            }
+        if (!outcome.success) {
+            return { success: false, error: outcome.error };
         }
 
-        await logAuditAction('admin_vacancy_updated', 'SUCCESS', { context: 'vacature', context_name: value.title, id });
+        await logAuditAction('admin_vacancy_updated', 'SUCCESS', {
+            context: 'vacature',
+            context_name: input.fields.title,
+            id: input.id,
+        });
         revalidateVacancyPaths();
         return { success: true };
-    } catch (error) {
-        safeConsoleError('[vacancies-admin.actions.ts][updateVacancyAction] ', error);
-        return { success: false, error: 'Bijwerken van de vacature is mislukt.' };
-    }
-}
+    },
+});
 
-export async function deleteVacancyAction(id: number) {
-    await enforceFeatureAccess('vacatures');
+const executeDeleteVacancy = withAdminAction<number, number, DeleteVacancyResult>({
+    actionName: 'vacancies-admin.actions.ts][deleteVacancyAction',
+    feature: 'vacatures',
+    schema: positiveIdSchema,
+    validationErrorMessage: 'Ongeldig vacature-ID.',
+    fallbackErrorMessage: 'Verwijderen van de vacature is mislukt.',
+    handler: async (id) => {
+        const outcome = await createVacancyService().deleteVacancy(id);
+        if (!outcome.success) {
+            return { success: false, error: outcome.error };
+        }
 
-    try {
-        await db.delete(schema.vacancies).where(eq(schema.vacancies.id, id));
         await logAuditAction('admin_vacancy_deleted', 'SUCCESS', { context: 'vacature', id });
         revalidateVacancyPaths();
         return { success: true };
-    } catch (error) {
-        safeConsoleError('[vacancies-admin.actions.ts][deleteVacancyAction] ', error);
-        return { success: false, error: 'Verwijderen van de vacature is mislukt.' };
-    }
-}
+    },
+});
 
-export async function approveSubmissionAction(submissionId: number) {
-    const { user } = await enforceFeatureAccess('vacatures');
-
-    try {
-        const submission = await db.query.vacancy_submissions.findFirst({
-            where: eq(schema.vacancy_submissions.id, submissionId),
-            with: { vacancy_submission_direction_links: { with: { vacancy_ict_direction: true } } }
-        });
-
-        if (!submission) return { success: false, error: 'Aanmelding niet gevonden.' };
-        if (submission.status !== 'pending_review') {
-            return { success: false, error: 'Deze aanmelding is niet gereed voor goedkeuring.' };
+const executeApproveSubmission = withAdminAction<number, number, ApproveSubmissionResult>({
+    actionName: 'vacancies-admin.actions.ts][approveSubmissionAction',
+    feature: 'vacatures',
+    schema: positiveIdSchema,
+    validationErrorMessage: 'Ongeldig aanmeldings-ID.',
+    fallbackErrorMessage: 'Goedkeuren van de aanmelding is mislukt.',
+    handler: async (submissionId, ctx) => {
+        const outcome = await createVacancyService().approveSubmission(submissionId, ctx.userId);
+        if (!outcome.success) {
+            return { success: false, error: outcome.error };
         }
 
-        const [vacancy] = await db.insert(schema.vacancies).values({
-            title: submission.title,
-            company: submission.company,
-            description: submission.description,
-            type: submission.type,
-            contact_email: submission.contact_email,
-            contact_phone: submission.contact_phone,
-            contact_website: submission.contact_website,
-            location: submission.location,
-            salary: submission.salary,
-            employment_type: submission.employment_type,
-            working_hours: submission.working_hours,
-            skills: submission.skills,
-            image: submission.image,
-            document: submission.document,
-            is_visible: true,
-            published_at: new Date().toISOString()
-        }).returning({ id: schema.vacancies.id });
+        await logAuditAction('admin_vacancy_submission_approved', 'SUCCESS', {
+            context: 'vacature',
+            context_name: outcome.title,
+            id: submissionId,
+            vacancy_id: outcome.vacancyId,
+        });
+        revalidateVacancyPaths();
+        return { success: true, vacancyId: outcome.vacancyId };
+    },
+});
 
-        const directionIds = submission.vacancy_submission_direction_links
-            .map((l) => l.vacancy_ict_direction?.id)
-            .filter((id): id is number => typeof id === 'number');
-        if (directionIds.length > 0) {
-            await db.insert(schema.vacancy_direction_links).values(
-                directionIds.map((vacancy_ict_directions_id) => ({ vacancies_id: vacancy.id, vacancy_ict_directions_id }))
-            );
+const executeRejectSubmission = withAdminAction<
+    { submissionId: number; reason: string },
+    { submissionId: number; reason: string },
+    RejectSubmissionResult
+>({
+    actionName: 'vacancies-admin.actions.ts][rejectSubmissionAction',
+    feature: 'vacatures',
+    schema: rejectSubmissionInputSchema,
+    validationErrorMessage: 'Geef een reden op voor afwijzing.',
+    fallbackErrorMessage: 'Afwijzen van de aanmelding is mislukt.',
+    handler: async (input, ctx) => {
+        const outcome = await createVacancyService().rejectSubmission(
+            input.submissionId,
+            input.reason,
+            ctx.userId
+        );
+        if (!outcome.success) {
+            return { success: false, error: outcome.error };
         }
 
-        const now = new Date().toISOString();
-        await db.update(schema.vacancy_submissions).set({
-            status: 'approved',
-            approved_vacancy_id: vacancy.id,
-            reviewed_by: user.id,
-            reviewed_at: now
-        }).where(eq(schema.vacancy_submissions.id, submissionId));
-
-        await sendVacancyMail(submission.contact_email ?? '', 'vacancy_approved', {
-            firstName: submission.company ?? '',
-            title: submission.title ?? ''
+        await logAuditAction('admin_vacancy_submission_rejected', 'SUCCESS', {
+            context: 'vacature',
+            context_name: outcome.title,
+            id: input.submissionId,
         });
-
-        await logAuditAction('admin_vacancy_submission_approved', 'SUCCESS', { context: 'vacature', context_name: submission.title, id: submissionId, vacancy_id: vacancy.id });
-        revalidateVacancyPaths();
-        return { success: true, vacancyId: vacancy.id };
-    } catch (error) {
-        safeConsoleError('[vacancies-admin.actions.ts][approveSubmissionAction] ', error);
-        return { success: false, error: 'Goedkeuren van de aanmelding is mislukt.' };
-    }
-}
-
-export async function rejectSubmissionAction(submissionId: number, reason: string) {
-    const { user } = await enforceFeatureAccess('vacatures');
-
-    if (!reason || reason.trim().length === 0) {
-        return { success: false, error: 'Geef een reden op voor afwijzing.' };
-    }
-
-    try {
-        const submission = await db.query.vacancy_submissions.findFirst({
-            where: eq(schema.vacancy_submissions.id, submissionId)
-        });
-        if (!submission) return { success: false, error: 'Aanmelding niet gevonden.' };
-
-        const now = new Date().toISOString();
-        await db.update(schema.vacancy_submissions).set({
-            status: 'rejected',
-            rejection_reason: reason,
-            reviewed_by: user.id,
-            reviewed_at: now
-        }).where(eq(schema.vacancy_submissions.id, submissionId));
-
-        await sendVacancyMail(submission.contact_email ?? '', 'vacancy_rejected', {
-            firstName: submission.company ?? '',
-            title: submission.title ?? '',
-            reason
-        });
-
-        await logAuditAction('admin_vacancy_submission_rejected', 'SUCCESS', { context: 'vacature', context_name: submission.title, id: submissionId });
         revalidateVacancyPaths();
         return { success: true };
-    } catch (error) {
-        safeConsoleError('[vacancies-admin.actions.ts][rejectSubmissionAction] ', error);
-        return { success: false, error: 'Afwijzen van de aanmelding is mislukt.' };
-    }
-}
+    },
+});
 
-export async function deleteSubmissionAction(submissionId: number) {
-    await enforceFeatureAccess('vacatures');
+const executeDeleteSubmission = withAdminAction<number, number, DeleteSubmissionResult>({
+    actionName: 'vacancies-admin.actions.ts][deleteSubmissionAction',
+    feature: 'vacatures',
+    schema: positiveIdSchema,
+    validationErrorMessage: 'Ongeldig aanmeldings-ID.',
+    fallbackErrorMessage: 'Verwijderen van de aanmelding is mislukt.',
+    handler: async (submissionId) => {
+        const outcome = await createVacancyService().deleteSubmission(submissionId);
+        if (!outcome.success) {
+            return { success: false, error: outcome.error };
+        }
 
-    try {
-        const submission = await db.query.vacancy_submissions.findFirst({
-            where: eq(schema.vacancy_submissions.id, submissionId)
+        await logAuditAction('admin_vacancy_submission_deleted', 'SUCCESS', {
+            context: 'vacature',
+            context_name: outcome.title,
+            id: submissionId,
         });
-        if (!submission) return { success: false, error: 'Aanmelding niet gevonden.' };
-
-        await db.delete(schema.vacancy_submissions).where(eq(schema.vacancy_submissions.id, submissionId));
-
-        await logAuditAction('admin_vacancy_submission_deleted', 'SUCCESS', { context: 'vacature', context_name: submission.title, id: submissionId });
         revalidateVacancyPaths();
         return { success: true };
-    } catch (error) {
-        safeConsoleError('[vacancies-admin.actions.ts][deleteSubmissionAction] ', error);
-        return { success: false, error: 'Verwijderen van de aanmelding is mislukt.' };
-    }
+    },
+});
+
+export async function getAdminVacancies(): Promise<AdminVacancyListItemDTO[]> {
+    return executeGetAdminVacancies(undefined);
+}
+
+export async function getAdminVacancyById(id: number): Promise<AdminVacancyDetailDTO | null> {
+    return executeGetAdminVacancyById(id);
+}
+
+export async function getPendingSubmissions(): Promise<VacancySubmissionDTO[]> {
+    return executeGetPendingSubmissions(undefined);
+}
+
+export async function createVacancyAction(formData: FormData): Promise<CreateVacancyResult> {
+    return executeCreateVacancy(formData);
+}
+
+export async function updateVacancyAction(id: number, formData: FormData): Promise<UpdateVacancyResult> {
+    return executeUpdateVacancy({ id, formData });
+}
+
+export async function deleteVacancyAction(id: number): Promise<DeleteVacancyResult> {
+    return executeDeleteVacancy(id);
+}
+
+export async function approveSubmissionAction(submissionId: number): Promise<ApproveSubmissionResult> {
+    return executeApproveSubmission(submissionId);
+}
+
+export async function rejectSubmissionAction(
+    submissionId: number,
+    reason: string
+): Promise<RejectSubmissionResult> {
+    return executeRejectSubmission({ submissionId, reason });
+}
+
+export async function deleteSubmissionAction(submissionId: number): Promise<DeleteSubmissionResult> {
+    return executeDeleteSubmission(submissionId);
 }

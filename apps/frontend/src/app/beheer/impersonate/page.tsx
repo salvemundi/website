@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { Box } from '@mantine/core';
 import ImpersonateIsland from '@/components/islands/beheer/ImpersonateIsland';
 import { checkBeheerAccess } from '@/server/actions/beheer/beheer-utils.actions';
 
@@ -13,12 +14,12 @@ export default async function ImpersonatePage() {
     const activeToken = cookieStore.get('directus_impersonation_token')?.value || null;
 
     return (
-        <div className="w-full">
-            <ImpersonateIsland 
-                activeToken={activeToken} 
+        <Box w="100%">
+            <ImpersonateIsland
+                activeToken={activeToken}
                 impersonatedName={impersonation?.targetName || null}
                 impersonatedCommittees={impersonation?.targetCommittees || []}
             />
-        </div>
+        </Box>
     );
 }

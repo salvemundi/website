@@ -1,7 +1,7 @@
 import React from 'react';
 import { CreditCard } from 'lucide-react';
+import { Card, Divider, Group, Stack, Text, Title } from '@mantine/core';
 import { TripPricingResult } from '@/lib/reis/pricing';
-
 
 interface PaymentSummaryProps {
     pricing: TripPricingResult;
@@ -11,59 +11,76 @@ interface PaymentSummaryProps {
 
 export function PaymentSummary({ pricing, paymentType, hideHeader = false }: PaymentSummaryProps) {
     return (
-        <div className="space-y-8">
+        <Stack gap="xl">
             {!hideHeader && (
-                <header className="mb-6 border-b border-black/5 pb-4 dark:border-white/10">
-                    <h2 className="mb-1 flex items-center gap-3 text-2xl font-black tracking-tighter text-(--text-main) italic sm:text-3xl">
-                        <CreditCard className="size-7 text-theme-purple" />
-                        Betalingssamenvatting
-                    </h2>
-                    <p className="text-sm text-(--text-muted)">Controleer de gegevens voordat we je doorsturen naar Mollie.</p>
-                </header>
+                <Stack gap={4}>
+                    <Group gap="sm">
+                        <Text span c="brand" lh={1}>
+                            <CreditCard size={26} />
+                        </Text>
+                        <Title order={2} size="h2">
+                            Betalingssamenvatting
+                        </Title>
+                    </Group>
+                    <Text size="sm" c="dimmed">
+                        Controleer de gegevens voordat we je doorsturen naar Mollie.
+                    </Text>
+                    <Divider mt="sm" />
+                </Stack>
             )}
 
-            <div className="space-y-4">
-                <div className="space-y-3 rounded-2xl border border-black/5 bg-(--bg-card) p-6 shadow-md dark:border-white/10">
-                    <div className="flex items-center justify-between text-sm">
-                        <span className="text-text-muted">Basisprijs Reis</span>
-                        <span className="font-bold text-text-main">€{pricing.base.toFixed(2)}</span>
-                    </div>
-                    {pricing.discount > 0 && (
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="text-emerald-600 italic dark:text-emerald-400">Crew Korting</span>
-                            <span className="font-bold text-emerald-600 dark:text-emerald-400">-€{pricing.discount.toFixed(2)}</span>
-                        </div>
-                    )}
-                    {pricing.actPrice > 0 && (
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="text-text-muted">Optionele Activiteiten</span>
-                            <span className="font-bold text-text-main">+€{pricing.actPrice.toFixed(2)}</span>
-                        </div>
-                    )}
-                    <div className="flex items-center justify-between border-t border-black/5 pt-3 dark:border-white/10">
-                        <span className="text-xs font-bold tracking-widest text-text-main">Totaalbedrag</span>
-                        <span className="text-xl font-bold text-text-main italic">€{pricing.total.toFixed(2)}</span>
-                    </div>
-                    {paymentType === 'final' && (
-                        <div className="flex items-center justify-between pt-2 text-sm">
-                            <span className="text-emerald-600 italic dark:text-emerald-400">Reeds voldaan (Aanbetaling)</span>
-                            <span className="font-bold text-emerald-600 dark:text-emerald-400">-€{pricing.deposit.toFixed(2)}</span>
-                        </div>
-                    )}
-                </div>
+            <Stack gap="md">
+                <Card padding="lg" radius="lg" withBorder shadow="md">
+                    <Stack gap="sm">
+                        <Group justify="space-between">
+                            <Text size="sm" c="dimmed">Basisprijs Reis</Text>
+                            <Text size="sm" fw={700}>€{pricing.base.toFixed(2)}</Text>
+                        </Group>
+                        {pricing.discount > 0 && (
+                            <Group justify="space-between">
+                                <Text size="sm" c="success" fs="italic">Crew Korting</Text>
+                                <Text size="sm" fw={700} c="success">-€{pricing.discount.toFixed(2)}</Text>
+                            </Group>
+                        )}
+                        {pricing.actPrice > 0 && (
+                            <Group justify="space-between">
+                                <Text size="sm" c="dimmed">Optionele Activiteiten</Text>
+                                <Text size="sm" fw={700}>+€{pricing.actPrice.toFixed(2)}</Text>
+                            </Group>
+                        )}
+                        <Divider />
+                        <Group justify="space-between">
+                            <Text size="xs" fw={700} tt="uppercase">Totaalbedrag</Text>
+                            <Text size="xl" fw={700}>€{pricing.total.toFixed(2)}</Text>
+                        </Group>
+                        {paymentType === 'final' && (
+                            <Group justify="space-between">
+                                <Text size="sm" c="success" fs="italic">Reeds voldaan (Aanbetaling)</Text>
+                                <Text size="sm" fw={700} c="success">-€{pricing.deposit.toFixed(2)}</Text>
+                            </Group>
+                        )}
+                    </Stack>
+                </Card>
 
-                <div className="rounded-3xl bg-linear-to-br from-theme-purple to-theme-purple-dark p-8 text-white shadow-xl shadow-theme-purple/10">
-                    <div className="flex items-end justify-between">
-                        <div>
-                            <p className="mb-1 text-[10px] font-bold tracking-[0.2em] opacity-80">
+                <Card
+                    padding="xl"
+                    radius="xl"
+                    shadow="lg"
+                    style={{ backgroundColor: 'var(--primary)', color: '#FFFFFF' }}
+                >
+                    <Group justify="space-between" align="flex-end">
+                        <Stack gap={4}>
+                            <Text size="xs" fw={700} tt="uppercase" c="white" style={{ opacity: 0.85 }}>
                                 {paymentType === 'deposit' ? 'Nu te voldoen (Aanbetaling)' : 'Nu te voldoen (Restbetaling)'}
-                            </p>
-                            <h3 className="text-5xl font-black tracking-tighter italic italic">€{pricing.toPayNow.toFixed(2)}</h3>
-                        </div>
-                        <CreditCard className="-mr-2 -mb-2 size-12 opacity-30" />
-                    </div>
-                </div>
-            </div>
-        </div>
+                            </Text>
+                            <Title order={3} fz="3rem" c="white">
+                                €{pricing.toPayNow.toFixed(2)}
+                            </Title>
+                        </Stack>
+                        <CreditCard size={48} style={{ opacity: 0.3 }} />
+                    </Group>
+                </Card>
+            </Stack>
+        </Stack>
     );
 }

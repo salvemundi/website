@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Flex } from '@mantine/core';
 import { cn } from '@/lib/utils/cn';
 import { authClient } from '@/lib/auth';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -81,8 +82,8 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
             className={cn(
             "fixed z-100 flex w-full flex-col justify-center transition-all duration-300",
                 (mounted && isScrolled)
-                    ? "bg-white/95 shadow-md backdrop-blur-md dark:bg-black/95"
-                    : "bg-white/50 backdrop-blur-sm dark:bg-black/50"
+                    ? "bg-background/95 shadow-md backdrop-blur-md"
+                    : "bg-background/80 backdrop-blur-sm"
             )}
             style={{
                 top: 'var(--impersonation-banner-height, 0px)',
@@ -90,9 +91,9 @@ export function HeaderShell({ children, mobileMenu }: HeaderShellProps) {
                 paddingTop: 'env(safe-area-inset-top, 0px)'
             }}
         >
-            <div className="flex min-h-20 w-full flex-1 items-center">
+            <Flex mih={80} w="100%" flex={1} align="center">
                 {children}
-            </div>
+            </Flex>
             {mobileMenu}
         </header>
     );

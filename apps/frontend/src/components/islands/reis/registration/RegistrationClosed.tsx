@@ -1,5 +1,6 @@
 import React from 'react';
 import { Clock, Lock } from 'lucide-react';
+import { Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 
 interface RegistrationClosedProps {
     registrationStartText: string;
@@ -7,18 +8,29 @@ interface RegistrationClosedProps {
 
 export function RegistrationClosed({ registrationStartText }: RegistrationClosedProps) {
     const isWaitingForDate = registrationStartText.includes('opent op');
-    
+
     return (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-(--border-color)/20 bg-theme-purple/5 px-6 py-10 text-center">
-            <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-theme-purple/10 text-theme-purple opacity-60">
-                {isWaitingForDate ? <Clock className="size-6" /> : <Lock className="size-6" />}
-            </div>
-            <h3 className="mb-1 text-lg font-bold text-(--text-main) dark:text-gray-300">
-                {isWaitingForDate ? 'Binnenkort Open' : 'Inschrijving Gesloten'}
-            </h3>
-            <p className="max-w-xs text-sm text-(--text-muted)">
-                {registrationStartText}
-            </p>
-        </div>
+        <Paper
+            p="xl"
+            radius="lg"
+            withBorder
+            ta="center"
+            style={{
+                backgroundColor: 'color-mix(in srgb, var(--primary) 6%, transparent)',
+                borderColor: 'color-mix(in srgb, var(--primary) 20%, transparent)',
+            }}
+        >
+            <Stack align="center" gap="sm" py="md">
+                <ThemeIcon size={48} radius="xl" variant="light" color="brand">
+                    {isWaitingForDate ? <Clock size={24} /> : <Lock size={24} />}
+                </ThemeIcon>
+                <Title order={3} size="h4">
+                    {isWaitingForDate ? 'Binnenkort Open' : 'Inschrijving Gesloten'}
+                </Title>
+                <Text size="sm" c="dimmed" maw={320}>
+                    {registrationStartText}
+                </Text>
+            </Stack>
+        </Paper>
     );
 }

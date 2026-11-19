@@ -1,15 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import {
-    Ticket,
-    Calendar,
-    MapPin,
-    QrCode,
-    Search,
-    X
-} from 'lucide-react';
+import { useState } from 'react';
+import { Ticket, Calendar, MapPin, QrCode, Search } from 'lucide-react';
+import { Box, Card, Divider, Group, Modal, Paper, SimpleGrid, Stack, Text, TextInput, ThemeIcon, Title, UnstyledButton } from '@mantine/core';
 import QRDisplay from '@/shared/ui/QRDisplay';
 import { formatDate } from '@/shared/lib/utils/date';
 
@@ -32,18 +25,6 @@ interface TicketListIslandProps {
 export default function TicketListIsland({ tickets }: TicketListIslandProps) {
     const [selectedTicket, setSelectedTicket] = useState<TicketData | null>(null);
     const [search, setSearch] = useState('');
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    useEffect(() => {
-        if (selectedTicket) {
-            document.body.style.overflow = 'hidden';
-            return () => { document.body.style.overflow = 'unset'; };
-        }
-    }, [selectedTicket]);
 
     const handleTicketSelect = (ticket: TicketData) => setSelectedTicket(ticket);
     const handleCloseModal = () => setSelectedTicket(null);
@@ -53,121 +34,144 @@ export default function TicketListIsland({ tickets }: TicketListIslandProps) {
     );
 
     return (
-        <div className="space-y-12">
-            <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-                <div className="squircle group flex h-14 w-full items-center gap-3 border border-(--border-color) bg-(--bg-card) px-4 transition-all focus-within:border-(--theme-purple) focus-within:ring-4 focus-within:ring-(--theme-purple)/10 md:w-96">
-                    <Search className="size-5 shrink-0 text-(--text-muted) transition-colors group-focus-within:text-(--theme-purple)" />
-                    <input
-                        type="text"
-                        placeholder="Tickets zoeken..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="form-input w-full border-none bg-transparent p-0 text-sm font-black tracking-widest uppercase outline-none"
-                    />
-                </div>
-                <div className="flex gap-4">
-                    <div className="squircle flex items-center gap-3 border border-(--border-color) bg-(--bg-card) px-6 py-3">
-                        <div className="rounded-lg bg-(--theme-purple)/10 p-2 text-(--theme-purple)">
-                            <Ticket className="size-4" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Totaal aantal tickets</p>
-                            <p className="text-sm font-black text-(--text-main)">{tickets.length}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <Stack gap="xl">
+            <Group justify="space-between" align="center" wrap="wrap" gap="md">
+                <TextInput
+                    placeholder="Tickets zoeken..."
+                    value={search}
+                    onChange={(e) => setSearch(e.currentTarget.value)}
+                    leftSection={<Search size={18} />}
+                    size="md"
+                    w={{ base: '100%', md: 384 }}
+                />
+
+                <Paper p="sm" px="lg" radius="lg" withBorder>
+                    <Group gap="sm">
+                        <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                            <Ticket size={16} />
+                        </ThemeIcon>
+                        <Stack gap={0}>
+                            <Text size="10px" fw={900} tt="uppercase" c="dimmed">
+                                Totaal aantal tickets
+                            </Text>
+                            <Text size="sm" fw={900}>
+                                {tickets.length}
+                            </Text>
+                        </Stack>
+                    </Group>
+                </Paper>
+            </Group>
 
             {filteredTickets.length === 0 ? (
-                <div className="squircle-xl border border-dashed border-(--border-color) bg-(--bg-card) py-32 text-center">
-                    <Ticket className="mx-auto mb-4 size-16 text-(--text-muted) opacity-20" />
-                    <h3 className="text-xl font-black tracking-tight text-(--text-main) uppercase italic">Geen tickets <span className="text-(--theme-purple)">gevonden</span></h3>
-                    <p className="mt-2 font-medium text-(--text-muted)">Je hebt nog geen tickets voor aankomende activiteiten.</p>
-                </div>
+                <Paper p="xl" radius="xl" withBorder ta="center" style={{ borderStyle: 'dashed' }}>
+                    <Stack align="center" gap="sm" py="xl">
+                        <Text span c="dimmed" opacity={0.3} lh={1}>
+                            <Ticket size={64} />
+                        </Text>
+                        <Title order={3} size="h4" tt="uppercase">
+                            Geen tickets <Text span c="brand" inherit>gevonden</Text>
+                        </Title>
+                        <Text c="dimmed" fw={500}>
+                            Je hebt nog geen tickets voor aankomende activiteiten.
+                        </Text>
+                    </Stack>
+                </Paper>
             ) : (
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="lg">
                     {filteredTickets.map((ticket) => (
-                        <div
+                        <UnstyledButton
                             key={ticket.id}
+                            type="button"
                             onClick={() => handleTicketSelect(ticket)}
-                            className="group squircle-lg relative cursor-pointer border border-(--border-color) bg-(--bg-card) p-6 transition-all duration-300 hover:-translate-y-1 hover:border-(--theme-purple)/50 hover:shadow-(--theme-purple)/5 hover:shadow-2xl"
+                            w="100%"
                         >
-                            <div className="mb-4 flex items-start justify-between">
-                                <div className="squircle bg-(--theme-purple)/5 p-3 text-(--theme-purple) transition-all duration-500 group-hover:bg-(--theme-purple) group-hover:text-white">
-                                    <QrCode className="size-6" />
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-[10px] font-black tracking-widest text-(--text-muted) uppercase">{formatDate(ticket.date_created)}</p>
-                                    <p className="text-[10px] font-black tracking-widest text-(--theme-purple) uppercase">#{ticket.id}</p>
-                                </div>
-                            </div>
+                            <Card padding="lg" radius="lg" withBorder shadow="sm" h="100%">
+                                <Stack gap="md" justify="space-between" h="100%">
+                                    <Group justify="space-between" align="flex-start">
+                                        <ThemeIcon size={48} radius="md" variant="light" color="brand">
+                                            <QrCode size={24} />
+                                        </ThemeIcon>
+                                        <Stack gap={0} ta="right">
+                                            <Text size="10px" fw={900} tt="uppercase" c="dimmed">
+                                                {formatDate(ticket.date_created)}
+                                            </Text>
+                                            <Text size="10px" fw={900} tt="uppercase" c="brand">
+                                                #{ticket.id}
+                                            </Text>
+                                        </Stack>
+                                    </Group>
 
-                            <h3 className="mb-4 line-clamp-1 text-xl font-black tracking-tighter text-(--text-main) uppercase italic">
-                                {ticket.event_id?.name || 'Activiteit'}
-                            </h3>
+                                    <Title order={3} size="h4" tt="uppercase" lineClamp={1}>
+                                        {ticket.event_id?.name || 'Activiteit'}
+                                    </Title>
 
-                            <div className="space-y-2 border-t border-(--border-color)/30 pt-4">
-                                <div className="flex items-center gap-2 text-(--text-muted)">
-                                    <Calendar className="size-3" />
-                                    <span className="text-[10px] font-bold uppercase">{formatDate(ticket.event_id?.event_date)}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-(--text-muted)">
-                                    <MapPin className="size-3" />
-                                    <span className="truncate text-[10px] font-bold uppercase">{ticket.event_id?.location || 'Strijp-S'}</span>
-                                </div>
-                            </div>
-                        </div>
+                                    <Stack gap={6}>
+                                        <Divider />
+                                        <Group gap={6} c="dimmed">
+                                            <Calendar size={12} />
+                                            <Text size="xs" fw={700} tt="uppercase">
+                                                {formatDate(ticket.event_id?.event_date)}
+                                            </Text>
+                                        </Group>
+                                        <Group gap={6} c="dimmed" wrap="nowrap">
+                                            <MapPin size={12} style={{ flexShrink: 0 }} />
+                                            <Text size="xs" fw={700} tt="uppercase" truncate>
+                                                {ticket.event_id?.location || 'Strijp-S'}
+                                            </Text>
+                                        </Group>
+                                    </Stack>
+                                </Stack>
+                            </Card>
+                        </UnstyledButton>
                     ))}
-                </div>
+                </SimpleGrid>
             )}
 
-            {mounted && createPortal(
-                selectedTicket && (
-                    <div className="fixed inset-0 isolate z-9999 flex items-center justify-center p-4">
-                        <div
-                            onClick={handleCloseModal}
-                            className="animate-in fade-in absolute inset-0 bg-black/60 backdrop-blur-xl duration-300"
-                        />
+            <Modal
+                opened={Boolean(selectedTicket)}
+                onClose={handleCloseModal}
+                centered
+                radius="xl"
+                size="md"
+                aria-label="Digitaal ticket"
+            >
+                {selectedTicket && (
+                    <Stack align="center" gap="lg" p="md" ta="center">
+                        <Stack gap={4}>
+                            <Text size="xs" fw={900} tt="uppercase" c="brand">
+                                Jouw Digitale Ticket
+                            </Text>
+                            <Title order={2} size="h2" tt="uppercase">
+                                {selectedTicket.event_id?.name || 'Activiteit'}
+                            </Title>
+                        </Stack>
 
-                        <div
-                            className="squircle-xl animate-in fade-in zoom-in-[0.98] slide-in-from-bottom-4 relative z-10 w-full max-w-lg overflow-hidden border border-white/10 bg-(--bg-card) shadow-2xl duration-300 ease-out"
-                        >
-                            <button
-                                onClick={handleCloseModal}
-                                className="group absolute top-6 right-6 z-20 icon-button flex size-10 items-center justify-center rounded-full bg-black/5 p-2 transition-colors hover:bg-black/10"
-                                type="button">
-                                <X className="size-5 text-(--text-muted) transition-colors group-hover:text-(--text-main)" />
-                            </button>
+                        <Box p="lg" bg="#FFFFFF" style={{ borderRadius: 'var(--mantine-radius-lg)', boxShadow: 'var(--mantine-shadow-lg)' }}>
+                            <QRDisplay qrToken={selectedTicket.qr_token} size={240} />
+                        </Box>
 
-                            <div className="flex flex-col items-center space-y-8 p-8 md:p-12">
-                                <div className="space-y-2 text-center">
-                                    <p className="text-[10px] font-black tracking-[0.3em] text-(--theme-purple) uppercase">Jouw Digitale Ticket</p>
-                                    <h2 className="text-3xl font-black tracking-tighter text-(--text-main) uppercase italic">
-                                        {selectedTicket.event_id?.name || 'Activiteit'}
-                                    </h2>
-                                </div>
+                        <Stack gap={4}>
+                            <Text size="lg" fw={900} tt="uppercase">
+                                {selectedTicket.participant_name}
+                            </Text>
+                            <Text size="xs" fw={700} tt="uppercase" c="dimmed">
+                                Toon deze code bij de entree
+                            </Text>
+                        </Stack>
 
-                                <div className="squircle-lg bg-white p-6 shadow-2xl ring-1 ring-black/5">
-                                    <QRDisplay qrToken={selectedTicket.qr_token} size={240} />
-                                </div>
+                        <Divider w="100%" />
 
-                                <div className="space-y-1 text-center">
-                                    <p className="text-lg font-black tracking-tight text-(--text-main) uppercase italic">{selectedTicket.participant_name}</p>
-                                    <p className="text-xs font-bold tracking-widest text-(--text-muted) uppercase italic opacity-60">Toon deze code bij de entree</p>
-                                </div>
-
-                                <div className="w-full border-t border-(--border-color)/50 pt-8">
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Inschrijfdatum</p>
-                                        <p className="text-sm font-bold text-(--text-main) uppercase">{formatDate(selectedTicket.date_created)}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ),
-                document.body
-            )}
-        </div>
+                        <Stack gap={2} w="100%" ta="left">
+                            <Text size="10px" fw={900} tt="uppercase" c="dimmed">
+                                Inschrijfdatum
+                            </Text>
+                            <Text size="sm" fw={700} tt="uppercase">
+                                {formatDate(selectedTicket.date_created)}
+                            </Text>
+                        </Stack>
+                    </Stack>
+                )}
+            </Modal>
+        </Stack>
     );
 }

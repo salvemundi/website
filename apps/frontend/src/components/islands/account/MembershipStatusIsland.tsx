@@ -1,31 +1,22 @@
 'use client';
 
 import { useTransition } from 'react';
+import { Check } from 'lucide-react';
+import { Alert, Badge, Button, Card, Group, Paper, Stack, Text, ThemeIcon } from '@mantine/core';
 import DeletionTimer from '@/components/ui/account/DeletionTimer';
 import { initiateMembershipPaymentAction } from '@/server/actions/profile/membership.actions';
 import type { SignupFormData } from '@salvemundi/validations/schema/membership.zod';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { formatDate } from '@/shared/lib/utils/date';
-
-export interface MembershipUserData {
-    id: string;
-    first_name: string;
-    last_name?: string;
-    email: string;
-    membership_status?: string;
-    membership_expiry?: string;
-    phone_number?: string;
-    date_of_birth?: string;
-}
+import type { EnrichedUser } from '@/types/auth';
 
 interface MembershipStatusIslandProps {
-    user: MembershipUserData;
+    user: EnrichedUser;
     baseAmount: number;
 }
 
 export default function MembershipStatusIsland({ user, baseAmount }: MembershipStatusIslandProps) {
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
     const isExpired = user.membership_status !== 'active';
 
@@ -39,7 +30,7 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
     const handleRenewal = async () => {
         startTransition(async () => {
             const formData: SignupFormData = {
-                voornaam: user.first_name,
+                voornaam: user.first_name || '',
                 achternaam: user.last_name || '',
                 email: user.email,
                 telefoon: user.phone_number || '',
@@ -57,111 +48,146 @@ export default function MembershipStatusIsland({ user, baseAmount }: MembershipS
         });
     };
 
+    const discountNotice = baseAmount === 10 && (
+        <Paper
+            p="sm"
+            radius="md"
+            withBorder
+            style={{
+                backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)',
+                borderColor: 'color-mix(in srgb, var(--primary) 25%, transparent)',
+            }}
+        >
+            <Group justify="center" gap="sm" wrap="wrap">
+                <Badge color="brand" size="sm">Actief Lid</Badge>
+                <Text size="xs" fw={700} c="brand">
+                    Commissie-korting toegepast: Jouw verlenging kost slechts €10,00.
+                </Text>
+            </Group>
+        </Paper>
+    );
+
     if (!isExpired) {
         return (
-            <div className="text-theme-text dark:text-white">
-                <div className="squircle mb-6 flex items-start gap-4 border border-green-500/20 bg-green-500/10 p-5 dark:border-green-500/40 dark:bg-green-500/20">
-                    <div className="mt-0.5 rounded-full bg-green-500 p-1 shadow-sm shadow-green-500/20">
-                        <svg className="size-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p className="text-lg leading-tight font-bold text-green-700 dark:text-green-400">Actief Lid</p>
-                        <p className="text-sm opacity-80 dark:text-white/70">Je bent een lid van Salve Mundi.</p>
-                    </div>
-                </div>
+            <Stack gap="lg">
+                <Alert
+                    color="success"
+                    variant="light"
+                    radius="lg"
+                    icon={
+                        <ThemeIcon color="success" radius="xl" size="sm">
+                            <Check size={14} strokeWidth={3} />
+                        </ThemeIcon>
+                    }
+                    title="Actief Lid"
+                >
+                    Je bent een lid van Salve Mundi.
+                </Alert>
 
-                <p className="mb-6 text-lg">
-                    Welkom terug, <span className="font-bold text-theme-purple dark:text-purple-400">{user.first_name}</span>!
-                </p>
+                <Text size="lg">
+                    Welkom terug,{' '}
+                    <Text span fw={700} c="brand">
+                        {user.first_name}
+                    </Text>
+                    !
+                </Text>
 
-                <div className="squircle-lg mb-8 border border-purple-100 bg-purple-50 p-5 dark:border-purple-800/30 dark:bg-purple-900/10">
-                    <p className="mb-3 text-xs font-bold tracking-widest text-theme-purple uppercase dark:text-purple-400">Jouw gegevens</p>
-                    <div className="space-y-1">
-                        <p className="text-xl leading-tight font-bold dark:text-white">
+                <Card
+                    padding="lg"
+                    radius="lg"
+                    withBorder
+                    style={{
+                        backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
+                        borderColor: 'color-mix(in srgb, var(--primary) 20%, transparent)',
+                    }}
+                >
+                    <Stack gap="sm">
+                        <Text size="xs" fw={700} tt="uppercase" c="brand">
+                            Jouw gegevens
+                        </Text>
+                        <Text size="xl" fw={700}>
                             {user.first_name} {user.last_name}
-                        </p>
-                        <p className="text-sm font-medium wrap-break-word opacity-60 dark:text-white/60">
-                            <span className="opacity-70">E-mailadres:</span> {user.email.split('').map((char, i) => (
-                                <span key={i}>
+                        </Text>
+                        <Text size="sm" c="dimmed" style={{ wordBreak: 'break-word' }}>
+                            E-mailadres:{' '}
+                            {user.email.split('').map((char, i) => (
+                                <Text span inherit key={i}>
                                     {char}
                                     {(char === '@' || char === '.' || char === '-' || char === '_') && <wbr />}
-                                </span>
+                                </Text>
                             ))}
-                        </p>
-                    </div>
-                    {user.membership_expiry && (
-                        <div className="mt-4 border-t border-purple-100 pt-4 dark:border-purple-800/30">
-                            <p className="flex items-center gap-2 text-sm opacity-70 dark:text-white/70">
-                                <span className="size-1.5 rounded-full bg-theme-purple dark:bg-purple-400"></span>
-                                Geldig tot: <span className="font-bold">{formatDate(user.membership_expiry)}</span>
-                            </p>
-                        </div>
-                    )}
-                </div>
+                        </Text>
+                        {user.membership_expiry && (
+                            <Group
+                                gap="xs"
+                                pt="sm"
+                                style={{ borderTop: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)' }}
+                            >
+                                <Text size="sm" c="dimmed">
+                                    Geldig tot:{' '}
+                                    <Text span fw={700} c="var(--mantine-color-text)">
+                                        {formatDate(user.membership_expiry)}
+                                    </Text>
+                                </Text>
+                            </Group>
+                        )}
+                    </Stack>
+                </Card>
 
                 {canRenew && (
-                    <div className="squircle-lg mb-4 border border-purple-100 bg-purple-50 p-6 text-center dark:border-white/10 dark:bg-white/5">
-                        <p className="mb-2 text-sm font-bold tracking-widest text-theme-purple uppercase dark:text-purple-400">Lidmaatschap Verlengen</p>
-                        <p className="mb-6 text-sm opacity-80">
-                            Wil je je lidmaatschap alvast met een jaar verlengen?
-                        </p>
-                        {baseAmount === 10 && (
-                            <div className="squircle mb-4 flex items-center justify-center gap-3 border border-purple-500/20 bg-purple-500/10 p-3">
-                                <span className="rounded-full bg-purple-500 px-2 py-0.5 text-[10px] font-black text-white uppercase">Actief Lid</span>
-                                <p className="text-xs font-bold text-theme-purple dark:text-purple-400">
-                                    Commissie-korting toegepast: Jouw verlenging kost slechts €10,00.
-                                </p>
-                            </div>
-                        )}
-                        <button
-                            onClick={() => { void handleRenewal(); }}
-                            disabled={isPending}
-                            className="form-button shadow-glow transition-transform active:scale-95"
-                            type="button">
-                            {isPending ? 'Verwerken...' : `Nu Verlengen (€${baseAmount.toFixed(2).replace('.', ',')})`}
-                        </button>
-                    </div>
+                    <Card padding="lg" radius="lg" ta="center">
+                        <Stack gap="md" align="center">
+                            <Text size="sm" fw={700} tt="uppercase" c="brand">
+                                Lidmaatschap Verlengen
+                            </Text>
+                            <Text size="sm" c="dimmed">
+                                Wil je je lidmaatschap alvast met een jaar verlengen?
+                            </Text>
+                            {discountNotice}
+                            <Button
+                                type="button"
+                                size="md"
+                                loading={isPending}
+                                onClick={() => { void handleRenewal(); }}
+                            >
+                                {isPending ? 'Verwerken...' : `Nu Verlengen (€${baseAmount.toFixed(2).replace('.', ',')})`}
+                            </Button>
+                        </Stack>
+                    </Card>
                 )}
-
-                <BeheerToast toast={toast} onClose={hideToast} />
-            </div>
+            </Stack>
         );
     }
 
     return (
-        <div className="text-theme-text dark:text-white">
+        <Stack gap="lg">
             {user.membership_expiry && <DeletionTimer expiryDateStr={user.membership_expiry} />}
 
-            <div className="mb-6">
-                <p className="mb-2 text-2xl leading-tight font-bold text-theme-purple dark:text-purple-400">
+            <Stack gap="xs">
+                <Text size="xl" fw={700} c="brand">
                     Welkom terug, {user.first_name}.
-                </p>
-                <p className="text-lg leading-relaxed opacity-80">
+                </Text>
+                <Text size="md" c="dimmed">
                     Je lidmaatschap is verlopen. Om weer toegang te krijgen tot alle activiteiten en je account te behouden, vragen we je de jaarlijkse contributie te voldoen.
-                </p>
-                {baseAmount === 10 && (
-                    <div className="squircle mt-4 flex items-center gap-3 border border-purple-500/20 bg-purple-500/10 p-3">
-                        <span className="rounded-full bg-purple-500 px-2 py-0.5 text-[10px] font-black text-white uppercase">Actief Lid</span>
-                        <p className="text-sm font-bold text-theme-purple dark:text-purple-400">
-                            Commissie-korting toegepast: Jouw verlenging kost slechts €10,00.
-                        </p>
-                    </div>
-                )}
-            </div>
+                </Text>
+                {discountNotice}
+            </Stack>
 
-            <div className="squircle-lg mb-8 border border-purple-100 bg-purple-50 p-6 text-center dark:border-white/10 dark:bg-white/5">
-                <p className="mb-6 text-sm font-bold tracking-widest text-theme-purple uppercase dark:text-purple-400">Contributie Verlengen</p>
-                <button
-                    onClick={() => { void handleRenewal(); }}
-                    disabled={isPending}
-                    className="form-button shadow-glow transition-transform active:scale-95"
-                    type="button">
-                    {isPending ? 'Verwerken...' : `Nu Verlengen (€${baseAmount.toFixed(2).replace('.', ',')})`}
-                </button>
-            </div>
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+            <Card padding="xl" radius="lg" ta="center">
+                <Stack gap="md" align="center">
+                    <Text size="sm" fw={700} tt="uppercase" c="brand">
+                        Contributie Verlengen
+                    </Text>
+                    <Button
+                        type="button"
+                        size="md"
+                        loading={isPending}
+                        onClick={() => { void handleRenewal(); }}
+                    >
+                        {isPending ? 'Verwerken...' : `Nu Verlengen (€${baseAmount.toFixed(2).replace('.', ',')})`}
+                    </Button>
+                </Stack>
+            </Card>
+        </Stack>
     );
 }

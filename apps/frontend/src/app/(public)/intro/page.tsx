@@ -1,6 +1,20 @@
 import { connection } from 'next/server';
-import Link from 'next/link';
+import Link from '@/components/ui/Link';
 import { CalendarClock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import {
+    Anchor,
+    Card,
+    Center,
+    Container,
+    Group,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    ThemeIcon,
+    Title,
+    VisuallyHidden
+} from '@mantine/core';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { hasParentSignup, getIntroSignupStatusPublic } from '@/server/actions/public/intro.actions';
 import { IntroStudentIsland } from '@/components/islands/intro/IntroStudentIsland';
@@ -14,77 +28,95 @@ export const metadata = {
 };
 
 const IntroInfoStudent = () => (
-    <div className="space-y-6">
-        <h2 className="mb-4 text-3xl font-black tracking-tight text-theme-purple">
+    <Stack gap="lg">
+        <Title order={2} c="brand">
             Klaar om je studententijd met een knal te beginnen?
-        </h2>
-        <p className="text-lg leading-relaxed font-medium text-text-muted">
+        </Title>
+        <Text size="lg" c="dimmed">
             Voordat de boeken opengaan en de eerste regels code geschreven worden, is er maar één plek waar je moet zijn: de Salve Mundi Introductie!
-        </p>
+        </Text>
 
-        <div className="space-y-4">
-            <h3 className="text-sm font-bold text-purple-500 dark:text-purple-400">Waarom je dit niet wilt missen</h3>
-            <ul className="grid gap-3">
-                <li className="flex gap-3 font-medium text-text-muted">
-                    <span className="font-black text-purple-500 dark:text-purple-400">01</span>
-                    <span><strong>Legendarische Feesten:</strong> Ontdek het Eindhovense nachtleven met mensen die dezelfde passie delen.</span>
-                </li>
-                <li className="flex gap-3 font-medium text-text-muted">
-                    <span className="font-black text-purple-500 dark:text-purple-400">02</span>
-                    <span><strong>Connecties:</strong> Leer de ouderejaars kennen; zij weten precies hoe je die lastige vakken straks haalt.</span>
-                </li>
-                <li className="flex gap-3 font-medium text-text-muted">
-                    <span className="font-black text-purple-500 dark:text-purple-400">03</span>
-                    <span><strong>Gezelligheid boven alles:</strong> Geen ontgroening, maar een warm welkom bij dè studievereniging van Fontys ICT.</span>
-                </li>
-            </ul>
-        </div>
+        <Stack gap="sm">
+            <Title order={3} size="sm" c="brand">
+                Waarom je dit niet wilt missen
+            </Title>
+            <Stack gap="sm">
+                <Group gap="sm" align="flex-start" wrap="nowrap">
+                    <Text fw={900} c="brand">01</Text>
+                    <Text c="dimmed">
+                        <strong>Legendarische Feesten:</strong> Ontdek het Eindhovense nachtleven met mensen die dezelfde passie delen.
+                    </Text>
+                </Group>
+                <Group gap="sm" align="flex-start" wrap="nowrap">
+                    <Text fw={900} c="brand">02</Text>
+                    <Text c="dimmed">
+                        <strong>Connecties:</strong> Leer de ouderejaars kennen; zij weten precies hoe je die lastige vakken straks haalt.
+                    </Text>
+                </Group>
+                <Group gap="sm" align="flex-start" wrap="nowrap">
+                    <Text fw={900} c="brand">03</Text>
+                    <Text c="dimmed">
+                        <strong>Gezelligheid boven alles:</strong> Geen ontgroening, maar een warm welkom bij dè studievereniging van Fontys ICT.
+                    </Text>
+                </Group>
+            </Stack>
+        </Stack>
 
-        <div className="squircle border border-border-color/20 bg-bg-soft p-6 shadow-inner">
-            <p className="text-sm leading-relaxed font-bold text-text-muted italic">
+        <Paper p="lg" radius="lg" bg="var(--mantine-color-body)">
+            <Text size="sm" fw={700} fs="italic" c="dimmed">
                 Of je nu een hardcore gamer bent, een toekomstige developer of gewoon houdt van een goed feestje: bij Salve Mundi hoor je erbij.
-            </p>
-        </div>
-    </div>
+            </Text>
+        </Paper>
+    </Stack>
 );
 
 const IntroInfoParent = () => (
-    <div className="space-y-6">
-        <h2 className="mb-4 text-3xl font-black tracking-tight text-theme-purple">
-            Wat zijn Intro Ouders?
-            <span className="mt-2 block text-xl font-semibold text-text-muted">
+    <Stack gap="lg">
+        <Stack gap={4}>
+            <Title order={2} c="brand">
+                Wat zijn Intro Ouders?
+            </Title>
+            <Text size="xl" fw={600} c="dimmed">
                 Begeleid de nieuwe lichting
-            </span>
-        </h2>
-        <p className="text-lg leading-relaxed font-medium text-text-muted">
+            </Text>
+        </Stack>
+        <Text size="lg" c="dimmed">
             Als ervaren Salve Mundi-lid kun je tijdens de Introweek het verschil maken. Als Intro Ouder begeleid je eerstejaars,
             help je ze wegwijs te worden in studie en stad, en zorg je dat ze zich welkom voelen.
-        </p>
+        </Text>
 
-        <div className="space-y-4">
-            <h3 className="text-sm font-bold text-purple-500 dark:text-purple-400">Wat doet een Intro Ouder?</h3>
-            <ul className="grid gap-3">
-                <li className="flex gap-3 font-medium text-text-muted">
-                    <span className="font-black text-purple-500 dark:text-purple-400">★</span>
-                    <span><strong>Begeleiden:</strong> Help kleine groepjes nieuwe leden tijdens activiteiten and zorg voor een veilige sfeer.</span>
-                </li>
-                <li className="flex gap-3 font-medium text-text-muted">
-                    <span className="font-black text-purple-500 dark:text-purple-400">★</span>
-                    <span><strong>Mentorschap:</strong> Geef tips over studie, rooster en het vinden van de weg in Eindhoven.</span>
-                </li>
-                <li className="flex gap-3 font-medium text-text-muted">
-                    <span className="font-black text-purple-500 dark:text-purple-400">★</span>
-                    <span><strong>Gezelligheid:</strong> Organiseer leuke momenten binnen je groep – simpele spellen en samen eten doen wonderen.</span>
-                </li>
-            </ul>
-        </div>
+        <Stack gap="sm">
+            <Title order={3} size="sm" c="brand">
+                Wat doet een Intro Ouder?
+            </Title>
+            <Stack gap="sm">
+                <Group gap="sm" align="flex-start" wrap="nowrap">
+                    <Text fw={900} c="brand">★</Text>
+                    <Text c="dimmed">
+                        <strong>Begeleiden:</strong> Help kleine groepjes nieuwe leden tijdens activiteiten en zorg voor een veilige sfeer.
+                    </Text>
+                </Group>
+                <Group gap="sm" align="flex-start" wrap="nowrap">
+                    <Text fw={900} c="brand">★</Text>
+                    <Text c="dimmed">
+                        <strong>Mentorschap:</strong> Geef tips over studie, rooster en het vinden van de weg in Eindhoven.
+                    </Text>
+                </Group>
+                <Group gap="sm" align="flex-start" wrap="nowrap">
+                    <Text fw={900} c="brand">★</Text>
+                    <Text c="dimmed">
+                        <strong>Gezelligheid:</strong> Organiseer leuke momenten binnen je groep – simpele spellen en samen eten doen wonderen.
+                    </Text>
+                </Group>
+            </Stack>
+        </Stack>
 
-        <div className="squircle border border-border-color/20 bg-bg-soft p-6 shadow-inner">
-            <p className="text-sm leading-relaxed font-bold text-text-muted italic">
+        <Paper p="lg" radius="lg" bg="var(--mantine-color-body)">
+            <Text size="sm" fw={700} fs="italic" c="dimmed">
                 Heb je vragen? Neem contact op met de introcommissie.
-            </p>
-        </div>
-    </div>
+            </Text>
+        </Paper>
+    </Stack>
 );
 
 export default async function IntroPage() {
@@ -99,63 +131,72 @@ export default async function IntroPage() {
 
     return (
         <PublicPageShell>
-            <h1 className="sr-only">Introductie</h1>
+            <VisuallyHidden component="h1">Introductie</VisuallyHidden>
 
-            <section className="px-fluid-md py-fluid-lg">
-                <div className="mx-auto mb-8 w-full max-w-7xl">
-                    <Link
-                        href="/qr-code"
-                        className="group squircle-lg hover:scale-1.01 flex items-center justify-between gap-4 bg-purple-600 px-6 py-5 text-white shadow-lg transition-all hover:shadow-xl sm:px-8 sm:py-6"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="squircle flex size-11 shrink-0 items-center justify-center bg-white/15 sm:size-12">
-                                <CalendarClock className="size-5 sm:size-6" />
-                            </div>
-                            <div>
-                                <p className="text-base leading-tight font-black sm:text-lg">Bekijk de planning van de introweek</p>
-                                <p className="text-xs font-medium text-white/80 sm:text-sm">Live schema, contact en meer</p>
-                            </div>
-                        </div>
-                        <ArrowRight className="size-5 shrink-0 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                </div>
+            <Container component="section" size="xl" py="xl">
+                <Stack gap="xl">
+                    <Anchor component={Link} href="/qr-code" underline="never">
+                        <Card>
+                            <Group justify="space-between" wrap="nowrap" gap="md">
+                                <Group gap="md" wrap="nowrap">
+                                    <ThemeIcon size={48} radius="lg" variant="light" color="brand">
+                                        <CalendarClock size={22} />
+                                    </ThemeIcon>
+                                    <Stack gap={2}>
+                                        <Text fw={900} size="lg">
+                                            Bekijk de planning van de introweek
+                                        </Text>
+                                        <Text size="sm" c="dimmed">
+                                            Live schema, contact en meer
+                                        </Text>
+                                    </Stack>
+                                </Group>
+                                <ThemeIcon size="lg" radius="xl" variant="light" color="brand">
+                                    <ArrowRight size={18} />
+                                </ThemeIcon>
+                            </Group>
+                        </Card>
+                    </Anchor>
 
-                <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-6 lg:flex-row lg:items-stretch lg:gap-10">
-                    <div className="flex flex-1 flex-col space-y-6">
-                        <div className="squircle-xl flex flex-1 flex-col bg-bg-card p-fluid-md shadow-xl sm:p-10 dark:border dark:border-white/10">
-                            {user ? <IntroInfoParent /> : <IntroInfoStudent />}
-                        </div>
-                        {!user && <IntroLightboxIsland />}
-                    </div>
+                    <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="xl">
+                        <Stack gap="lg">
+                            <Card padding="xl" style={{ flex: 1 }}>
+                                {user ? <IntroInfoParent /> : <IntroInfoStudent />}
+                            </Card>
+                            {!user && <IntroLightboxIsland />}
+                        </Stack>
 
-                    <div className="flex w-full flex-1 flex-col">
-                        {user ? (
-                            isAlreadyParent ? (
-                                <div className="dark:bg-gradient-theme squircle-xl flex min-h-75 flex-1 flex-col items-center justify-center border border-border-color bg-bg-card p-10 text-center shadow-xl">
-                                    <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-purple-100 dark:bg-white/20">
-                                        <CheckCircle2 className="size-10 text-brand-primary dark:text-white" />
-                                    </div>
-                                    <h3 className="mb-4 text-3xl font-black tracking-tight text-text-main dark:text-white">Aangemeld!</h3>
-                                    <p className="max-w-sm font-medium text-text-muted dark:text-white/80">
-                                        Bedankt! Je inschrijving als Intro Ouder is ontvangen. We nemen snel contact met je op.
-                                    </p>
-                                </div>
+                        <Stack gap="lg">
+                            {user ? (
+                                isAlreadyParent ? (
+                                    <Card padding="xl" mih={300} style={{ flex: 1 }}>
+                                        <Center h="100%">
+                                            <Stack align="center" ta="center" gap="md">
+                                                <ThemeIcon size={72} radius="xl" variant="light" color="success">
+                                                    <CheckCircle2 size={36} />
+                                                </ThemeIcon>
+                                                <Title order={3}>Aangemeld!</Title>
+                                                <Text c="dimmed" maw={360}>
+                                                    Bedankt! Je inschrijving als Intro Ouder is ontvangen. We nemen snel contact met je op.
+                                                </Text>
+                                            </Stack>
+                                        </Center>
+                                    </Card>
+                                ) : (
+                                    <IntroParentIsland
+                                        isOpen={signupStatus.parentSignupsOpen}
+                                        initialPhone={user.phone_number || ''}
+                                    />
+                                )
                             ) : (
-                                <IntroParentIsland
-                                    isOpen={signupStatus.parentSignupsOpen}
-                                    initialPhone={user.phone_number || ''}
-                                    className="flex-1"
+                                <IntroStudentIsland
+                                    isOpen={signupStatus.studentSignupsOpen}
                                 />
-                            )
-                        ) : (
-                            <IntroStudentIsland
-                                isOpen={signupStatus.studentSignupsOpen}
-                                className="flex-1"
-                            />
-                        )}
-                    </div>
-                </div>
-            </section>
+                            )}
+                        </Stack>
+                    </SimpleGrid>
+                </Stack>
+            </Container>
         </PublicPageShell>
     );
 }

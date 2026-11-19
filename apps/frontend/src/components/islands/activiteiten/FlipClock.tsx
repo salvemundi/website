@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { Box, Button, Group, Stack, Text, Title } from '@mantine/core';
 
 const flipStyles = `
     @keyframes slideDownIn {
@@ -11,8 +14,6 @@ const flipStyles = `
         0% { transform: translateY(0%); opacity: 1; }
         100% { transform: translateY(100%); opacity: 0; }
     }
-    .digit-in { animation: slideDownIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-    .digit-out { animation: slideDownOut 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 `;
 
 interface FlipClockProps {
@@ -34,29 +35,53 @@ const FlipDigit: React.FC<{ digit: number }> = ({ digit }) => {
     }, [digit, current]);
 
     return (
-        <div className="relative h-16 w-8 overflow-hidden sm:h-28 sm:w-14 lg:h-32 lg:w-16"
+        <Box
+            pos="relative"
+            h={{ base: 64, sm: 112, lg: 128 }}
+            w={{ base: 32, sm: 56, lg: 64 }}
             style={{
+                overflow: 'hidden',
                 maskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)',
-                WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)'
-            }}>
-
+                WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)',
+            }}
+        >
             {previous !== null && (
-                <div
+                <Text
                     key={`prev-${previous}`}
-                    className="digit-out absolute inset-0 flex items-center justify-center text-4xl leading-none font-black text-(--text-main) sm:text-5xl md:text-6xl"
+                    fw={900}
+                    lh={1}
+                    fz={{ base: '2.25rem', sm: '3rem', md: '3.75rem' }}
+                    pos="absolute"
+                    inset={0}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        animation: 'slideDownOut 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                    }}
                     onAnimationEnd={() => setPrevious(null)}
                 >
                     {previous}
-                </div>
+                </Text>
             )}
 
-            <div
+            <Text
                 key={`curr-${current}`}
-                className="digit-in absolute inset-0 flex items-center justify-center text-4xl leading-none font-black text-(--text-main) sm:text-5xl md:text-6xl"
+                fw={900}
+                lh={1}
+                fz={{ base: '2.25rem', sm: '3rem', md: '3.75rem' }}
+                pos="absolute"
+                inset={0}
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    animation: 'slideDownIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                }}
             >
                 {current}
-            </div>
-        </div>
+            </Text>
+        </Box>
     );
 };
 
@@ -64,16 +89,16 @@ const FlipBlock: React.FC<{ value: number; label: string }> = ({ value, label })
     const digits = Math.max(value, 0).toString().padStart(2, '0').split('').map(Number);
 
     return (
-        <div className="flex flex-col items-center gap-2">
-            <div className="flex gap-0">
+        <Stack align="center" gap="xs">
+            <Group gap={0}>
                 {digits.map((digit, index) => (
                     <FlipDigit key={index} digit={digit} />
                 ))}
-            </div>
-            <span className="text-[10px] font-bold text-purple-600 opacity-70 sm:text-xs dark:text-purple-400">
+            </Group>
+            <Text size="xs" fw={700} c="brand" style={{ opacity: 0.8 }}>
                 {label}
-            </span>
-        </div>
+            </Text>
+        </Stack>
     );
 };
 
@@ -142,48 +167,47 @@ const FlipClock: React.FC<FlipClockProps> = ({ targetDate, title, href, serverTi
     const isLive = timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0;
 
     return (
-        <div className="flex flex-col items-center">
+        <Stack align="center" gap="lg">
             <style>{flipStyles}</style>
 
             {title && (
-                <div className="mb-8 text-center">
-                    <h2 className="mb-2 text-[clamp(1.5rem,6cqw,3rem)] font-black tracking-tight text-purple-800 dark:text-purple-200">
+                <Stack align="center" gap={4} ta="center">
+                    <Title order={2} c="brand" style={{ fontSize: 'clamp(1.5rem, 6cqw, 3rem)' }}>
                         {title}
-                    </h2>
-                    <p className="text-sm font-semibold text-purple-600 opacity-80 sm:text-base dark:text-purple-400">
+                    </Title>
+                    <Text size="md" fw={600} c="brand" style={{ opacity: 0.8 }}>
                         Begint over
-                    </p>
-                </div>
+                    </Text>
+                </Stack>
             )}
 
-            <div className="flex flex-wrap items-center justify-center gap-0.5 sm:gap-3">
+            <Group justify="center" align="center" gap="sm" wrap="wrap">
                 <FlipBlock value={timeLeft.days} label={timeLeft.days === 1 ? 'Dag' : 'Dagen'} />
-                <span className="hidden pb-6 text-xl font-black text-(--theme-purple)/20 min-[340px]:block sm:text-3xl lg:text-4xl">-</span>
+                <Text fw={900} c="brand" opacity={0.25} fz={{ base: '1.25rem', sm: '1.875rem', lg: '2.25rem' }} pb="lg" visibleFrom="xs">
+                    -
+                </Text>
                 <FlipBlock value={timeLeft.hours} label="Uur" />
-                <span className="hidden pb-6 text-xl font-black text-(--theme-purple)/20 min-[340px]:block sm:text-3xl lg:text-4xl">-</span>
+                <Text fw={900} c="brand" opacity={0.25} fz={{ base: '1.25rem', sm: '1.875rem', lg: '2.25rem' }} pb="lg" visibleFrom="xs">
+                    -
+                </Text>
                 <FlipBlock value={timeLeft.minutes} label="Min" />
-                <span className="hidden pb-6 text-xl font-black text-(--theme-purple)/20 min-[340px]:block sm:text-3xl lg:text-4xl">-</span>
+                <Text fw={900} c="brand" opacity={0.25} fz={{ base: '1.25rem', sm: '1.875rem', lg: '2.25rem' }} pb="lg" visibleFrom="xs">
+                    -
+                </Text>
                 <FlipBlock value={timeLeft.seconds} label="Sec" />
-            </div>
+            </Group>
 
             {href && !isLive && (
-                <div className="mt-8">
-                    <a
-                        href={href}
-                        className="group relative inline-flex items-center gap-2 overflow-hidden rounded-2xl bg-purple-600 px-8 py-4 font-bold text-white shadow-xl transition-all hover:-translate-y-1 hover:bg-purple-700 hover:shadow-2xl"
-                    >
-                        <span className="relative z-10 flex items-center gap-2">
-                            Bekijk Activiteit
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1">
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                <polyline points="12 5 19 12 12 19"></polyline>
-                            </svg>
-                        </span>
-                        <div className="absolute inset-0 translate-y-full bg-white/10 transition-transform duration-300 group-hover:translate-y-0" />
-                    </a>
-                </div>
+                <Button
+                    component={Link}
+                    href={href}
+                    size="lg"
+                    rightSection={<ArrowRight size={18} />}
+                >
+                    Bekijk Activiteit
+                </Button>
             )}
-        </div>
+        </Stack>
     );
 };
 

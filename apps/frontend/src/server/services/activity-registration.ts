@@ -3,7 +3,6 @@ import 'server-only';
 import { z } from 'zod';
 
 import { type Activiteit, type EventSignup, eventSignupFormSchema, type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
-import { type EnrichedUser } from '@/types/auth';
 import { revalidateTag } from 'next/cache';
 
 import {
@@ -160,7 +159,7 @@ export async function signupForActivityForUser(data: EventSignupForm, session: {
             }
         }
 
-        const user = session?.user as unknown as EnrichedUser | undefined;
+        const user = session?.user;
         const isMember = user ? user.membership_status === 'active' : false;
 
         if (activity.only_members && !isMember) {

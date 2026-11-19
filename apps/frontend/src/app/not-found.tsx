@@ -1,44 +1,52 @@
 'use client';
 
+import Link from 'next/link';
 import { Home, Search, ArrowLeft } from 'lucide-react';
-import BackButton from '@/components/ui/navigation/BackButton';
+import { Button, Center, Container, Group, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 
 export default function NotFound() {
     return (
-        <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
-            <div className="relative mb-8 pt-10">
-                <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto size-40 rounded-full bg-purple-500/10 blur-3xl" />
-                <div className="squircle-lg relative inline-block border border-(--border-color)/20 bg-(--bg-card) p-6 text-purple-500 shadow-2xl">
-                    <Search className="size-16" />
-                </div>
-                <div className="absolute top-1/2 left-1/2 -z-10 -translate-1/2 select-none">
-                    <span className="text-9xl font-black tracking-tighter text-purple-500/5">404</span>
-                </div>
-            </div>
+        <Container size="sm" py="xl">
+            <Center mih="70vh">
+                <Stack align="center" ta="center" gap="lg">
+                    <ThemeIcon size={72} radius="xl" variant="light" color="brand">
+                        <Search size={36} />
+                    </ThemeIcon>
 
-            <h2 className="mb-3 text-4xl font-black tracking-tight text-(--text-main)">
-                Pagina niet gevonden
-            </h2>
-            
-            <p className="mx-auto mb-10 max-w-md font-medium text-(--text-muted)">
-                Oeps! De pagina die je zoekt lijkt te zijn verhuisd of bestaat niet meer. Geen probleem, we helpen je graag terug.
-            </p>
+                    <Text size="sm" fw={900} c="brand" tt="uppercase" lts={2}>
+                        404
+                    </Text>
 
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <BackButton 
-                    href="/" 
-                    text="Terug naar Home" 
-                    icon={Home} 
-                    className="squircle px-8 py-3.5"
-                />
+                    <Title order={1} fz={{ base: '2rem', sm: '2.5rem' }}>
+                        Pagina niet gevonden
+                    </Title>
 
-                <BackButton 
-                    onClick={() => window.history.back()} 
-                    text="Vorige Pagina" 
-                    icon={ArrowLeft} 
-                    className="squircle px-8 py-3.5"
-                />
-            </div>
-        </div>
+                    <Text c="dimmed" maw={440}>
+                        Oeps! De pagina die je zoekt lijkt te zijn verhuisd of bestaat niet meer. Geen probleem, we helpen je graag terug.
+                    </Text>
+
+                    <Group justify="center" gap="md">
+                        <Button
+                            component={Link}
+                            href="/"
+                            size="md"
+                            leftSection={<Home size={16} />}
+                        >
+                            Terug naar Home
+                        </Button>
+
+                        <Button
+                            type="button"
+                            variant="default"
+                            size="md"
+                            onClick={() => window.history.back()}
+                            leftSection={<ArrowLeft size={16} />}
+                        >
+                            Vorige Pagina
+                        </Button>
+                    </Group>
+                </Stack>
+            </Center>
+        </Container>
     );
 }

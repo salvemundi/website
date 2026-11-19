@@ -1,7 +1,35 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Beer, Building2 as AssocIcon, Download, ExternalLink, Grid, RefreshCw, Sheet, Search, Table as TableIcon, Users, Building2, ChevronDown, UserPlus } from 'lucide-react';
+import { useState } from 'react';
+import {
+    Beer,
+    Building2,
+    ChevronDown,
+    Download,
+    ExternalLink,
+    Grid,
+    RefreshCw,
+    Search,
+    Sheet,
+    Table as TableIcon,
+    UserPlus,
+    Users,
+} from 'lucide-react';
+import {
+    ActionIcon,
+    Alert,
+    Button,
+    Card,
+    Checkbox,
+    Divider,
+    Group,
+    Popover,
+    ScrollArea,
+    Stack,
+    Tabs,
+    Text,
+    TextInput,
+} from '@mantine/core';
 
 interface StatsToolbarProps {
     viewMode: 'table' | 'groups' | 'associations';
@@ -18,7 +46,12 @@ interface StatsToolbarProps {
     onSyncSheet: () => void;
     onExportCsv: () => void;
     isExporting: boolean;
-    syncState: { status: 'idle' | 'syncing' | 'ok' | 'error'; at?: Date; message?: string; url?: string | null };
+    syncState: {
+        status: 'idle' | 'syncing' | 'ok' | 'error';
+        at?: Date;
+        message?: string;
+        url?: string | null;
+    };
     onAddParticipant: () => void;
     hasSignups: boolean;
 }
@@ -40,262 +73,318 @@ export default function StatsToolbar({
     isExporting,
     syncState,
     onAddParticipant,
-    hasSignups
+    hasSignups,
 }: StatsToolbarProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsDropdownOpen(false);
-            }
-        }
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
 
     const isAllSelected = enabledGroups.length === groupNames.length + 1;
     const isUnassignedSelected = enabledGroups.includes('unassigned');
 
+    const dropdownLabel = isAllSelected
+        ? 'Alle groepen'
+        : enabledGroups.length === 0
+          ? 'Geen groepen'
+          : enabledGroups.length === 1
+            ? enabledGroups[0] === 'unassigned'
+                ? 'Niet ingedeeld'
+                : enabledGroups[0]
+            : `${enabledGroups.length} geselecteerd`;
+
+    const syncLabel =
+        syncState.status === 'syncing'
+            ? 'Synchroniseren...'
+            : syncState.status === 'error'
+              ? syncState.message?.startsWith('Geen Google Sheet')
+                  ? 'Geen sheet ingesteld'
+                  : 'Sync mislukt – opnieuw'
+              : syncState.at
+                ? `Sheet gesynct ${syncState.at.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}`
+                : 'Nu syncen';
+
     return (
-        <div className="space-y-4 rounded-2xl border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-(--shadow-card)">
-            <div className="flex flex-col items-start justify-between gap-4 xl:flex-row xl:items-center">
-                {/* Tabs for Table/Groups View + Inline Stats */}
-                <div className="flex w-full flex-wrap items-center gap-6 xl:w-auto">
-                    <div className="flex rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) p-1">
-                        <button
-                            onClick={() => setViewMode('groups')}
-                            className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
-                                viewMode === 'groups' ? 'bg-(--beheer-accent) text-white shadow-xs' : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-bg)/50 hover:text-(--beheer-text)'
-                            }`}
-                            type="button">
-                            <Grid className="size-4" />
-                            Groepen Weergave
-                        </button>
-                        <button
-                            onClick={() => setViewMode('table')}
-                            className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
-                                viewMode === 'table' ? 'bg-(--beheer-accent) text-white shadow-xs' : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-bg)/50 hover:text-(--beheer-text)'
-                            }`}
-                            type="button">
-                            <TableIcon className="size-4" />
-                            Tabel Weergave
-                        </button>
-                        <button
-                            onClick={() => setViewMode('associations')}
-                            className={`tab-button flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
-                                viewMode === 'associations' ? 'bg-(--beheer-accent) text-white shadow-xs' : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-bg)/50 hover:text-(--beheer-text)'
-                            }`}
-                            type="button">
-                            <AssocIcon className="size-4" />
-                            Per Vereniging
-                        </button>
-                    </div>
+        <Card p="lg" shadow="sm">
+            <Stack gap="md">
+                <Group justify="space-between" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="wrap">
+                        <Tabs
+                            value={viewMode}
+                            onChange={(val) =>
+                                setViewMode(
+                                    (val as 'table' | 'groups' | 'associations' | null) ?? 'groups'
+                                )
+                            }
+                            variant="pills"
+                        >
+                            <Tabs.List>
+                                <Tabs.Tab value="groups" leftSection={<Grid size={16} />}>
+                                    Groepen Weergave
+                                </Tabs.Tab>
+                                <Tabs.Tab value="table" leftSection={<TableIcon size={16} />}>
+                                    Tabel Weergave
+                                </Tabs.Tab>
+                                <Tabs.Tab
+                                    value="associations"
+                                    leftSection={<Building2 size={16} />}
+                                >
+                                    Per Vereniging
+                                </Tabs.Tab>
+                            </Tabs.List>
+                        </Tabs>
 
-                    {/* Inline Stats */}
-                    <div className="flex flex-wrap items-center gap-4 border-l border-(--beheer-border) pl-4 text-xs font-semibold text-(--beheer-text-muted)">
-                        <div className="flex items-center gap-1.5">
-                            <Beer className="size-3.5 text-(--beheer-accent)" />
-                            <span>Deelnemers: <strong className="text-(--beheer-text)">{totalTicketsCount}</strong></span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <Building2 className="size-3.5 text-emerald-500 dark:text-emerald-400" />
-                            <span>Verenigingen: <strong className="text-(--beheer-text)">{totalAssociationsCount}</strong></span>
-                        </div>
-                    </div>
-                </div>
+                        <Divider orientation="vertical" visibleFrom="sm" />
 
-                <div className="flex w-full flex-wrap items-center justify-end gap-3 xl:w-auto">
-                    <button
-                        onClick={onAddParticipant}
-                        className="beheer-button flex cursor-pointer items-center gap-2 rounded-xl bg-(--beheer-accent) px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:opacity-90 active:scale-95"
-                        type="button">
-                        <UserPlus className="size-4" />
-                        Deelnemer Toevoegen
-                    </button>
+                        <Group gap="md">
+                            <Group gap={6}>
+                                <Text span c="brand" lh={1}>
+                                    <Beer size={15} />
+                                </Text>
+                                <Text size="xs" fw={600} c="dimmed">
+                                    Deelnemers:{' '}
+                                    <Text span fw={700} c="var(--mantine-color-text)">
+                                        {totalTicketsCount}
+                                    </Text>
+                                </Text>
+                            </Group>
+                            <Group gap={6}>
+                                <Text span c="success" lh={1}>
+                                    <Building2 size={15} />
+                                </Text>
+                                <Text size="xs" fw={600} c="dimmed">
+                                    Verenigingen:{' '}
+                                    <Text span fw={700} c="var(--mantine-color-text)">
+                                        {totalAssociationsCount}
+                                    </Text>
+                                </Text>
+                            </Group>
+                        </Group>
+                    </Group>
 
-                    {groupNames.length > 0 && (
-                        <button
-                            onClick={onAutoDistribute}
-                            disabled={isPending || !hasSignups}
-                            className="beheer-button flex cursor-pointer items-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-5 py-2.5 text-xs font-semibold text-(--beheer-text) shadow-xs transition-all hover:bg-(--beheer-card-soft) active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-                            type="button">
-                            Automatisch verdelen
-                        </button>
-                    )}
+                    <Group gap="sm" wrap="wrap">
+                        <Button
+                            type="button"
+                            size="xs"
+                            onClick={onAddParticipant}
+                            leftSection={<UserPlus size={16} />}
+                        >
+                            Deelnemer Toevoegen
+                        </Button>
 
-                    <button
-                        onClick={onExportCsv}
-                        disabled={isExporting}
-                        title="Groepsindeling downloaden als CSV (zelfde indeling als de Google Sheet)"
-                        className="beheer-button flex cursor-pointer items-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-5 py-2.5 text-xs font-semibold text-(--beheer-text) shadow-xs transition-all hover:bg-(--beheer-card-soft) active:scale-95 disabled:cursor-wait disabled:opacity-60"
-                        type="button">
-                        <Download className="size-4" />
-                        {isExporting ? 'Exporteren...' : 'Exporteer CSV'}
-                    </button>
-
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={onSyncSheet}
-                            disabled={syncState.status === 'syncing'}
-                            title={syncState.message ?? 'Wijzigingen worden 5 minuten na de laatste aanpassing automatisch naar de sheet gezet. Klik om nu direct te syncen.'}
-                            className="beheer-button flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-emerald-700 active:scale-95 disabled:cursor-wait disabled:opacity-70"
-                            type="button">
-                            {syncState.status === 'syncing'
-                                ? <RefreshCw className="size-4 animate-spin" />
-                                : <Sheet className="size-4" />}
-                            {syncState.status === 'syncing'
-                                ? 'Synchroniseren...'
-                                : syncState.status === 'error'
-                                    ? (syncState.message?.startsWith('Geen Google Sheet') ? 'Geen sheet ingesteld' : 'Sync mislukt – opnieuw')
-                                    : syncState.at
-                                        ? `Sheet gesynct ${syncState.at.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}`
-                                        : 'Nu syncen'}
-                        </button>
-                        {syncState.url && (
-                            <a
-                                href={syncState.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                title="Open Google Sheet"
-                                className="icon-button rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) p-2.5 text-(--beheer-text-muted) transition-all hover:text-emerald-600">
-                                <ExternalLink className="size-4" />
-                            </a>
+                        {groupNames.length > 0 && (
+                            <Button
+                                type="button"
+                                size="xs"
+                                variant="default"
+                                onClick={onAutoDistribute}
+                                disabled={isPending || !hasSignups}
+                            >
+                                Automatisch verdelen
+                            </Button>
                         )}
-                    </div>
-                </div>
-            </div>
 
-            {syncState.status === 'error' && syncState.message && (
-                <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-600 dark:text-red-400">
-                    Google Sheet: {syncState.message}
-                </p>
-            )}
+                        <Button
+                            type="button"
+                            size="xs"
+                            variant="default"
+                            onClick={onExportCsv}
+                            loading={isExporting}
+                            title="Groepsindeling downloaden als CSV (zelfde indeling als de Google Sheet)"
+                            leftSection={<Download size={16} />}
+                        >
+                            {isExporting ? 'Exporteren...' : 'Exporteer CSV'}
+                        </Button>
 
-            {viewMode !== 'associations' && (
-            <div className="flex flex-col gap-4 md:flex-row">
-                <div className="group flex flex-1 items-center gap-3 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 transition-all focus-within:border-(--beheer-accent) focus-within:ring-2 focus-within:ring-(--beheer-accent)/20">
-                    <Search className="size-4 shrink-0 text-(--beheer-text-muted) transition-colors group-focus-within:text-(--beheer-accent)" />
-                    <input
-                        type="text"
-                        placeholder="Zoek op naam (ook meegekomen deelnemers), e-mail, vereniging of groep..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        autoComplete="off"
-                        spellCheck={false}
-                        className="beheer-input w-full border-none bg-transparent p-0 text-sm font-medium text-(--beheer-text) outline-none placeholder:text-(--beheer-text-muted) focus:ring-0"
-                    />
-                </div>
-
-                <div className="relative w-full md:w-64" ref={dropdownRef}>
-                    <button
-                        type="button"
-                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className="group beheer-button flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 text-xs font-semibold text-(--beheer-text) shadow-xs transition-all hover:border-(--beheer-accent)/50 hover:bg-(--beheer-card-soft) focus:ring-2 focus:ring-(--beheer-accent)/20 focus:outline-none"
-                    >
-                        <div className="flex items-center gap-2 truncate">
-                            <Users className="size-4 shrink-0 text-(--beheer-accent)" />
-                            <span className="truncate">
-                                {isAllSelected
-                                    ? 'Alle groepen'
-                                    : enabledGroups.length === 0
-                                    ? 'Geen groepen'
-                                    : enabledGroups.length === 1
-                                    ? enabledGroups[0] === 'unassigned'
-                                        ? 'Niet ingedeeld'
-                                        : enabledGroups[0]
-                                    : `${enabledGroups.length} geselecteerd`}
-                            </span>
-                        </div>
-                        <ChevronDown className={`size-4 text-(--beheer-text-muted) transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-(--beheer-accent)' : ''}`} />
-                    </button>
-
-                    {isDropdownOpen && (
-                        <div className="animate-in fade-in zoom-in-95 absolute inset-x-0 z-50 mt-2 origin-top overflow-hidden rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) p-1.5 shadow-(--shadow-card-elevated) duration-150 focus:outline-none">
-                            <div className="custom-scrollbar max-h-75 space-y-1 overflow-y-auto">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        const allOptions = [...groupNames, 'unassigned'];
-                                        if (isAllSelected) {
-                                            setEnabledGroups([]);
-                                        } else {
-                                            setEnabledGroups(allOptions);
-                                        }
-                                    }}
-                                    className={`beheer-button flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all ${
-                                        isAllSelected
-                                            ? 'bg-(--beheer-accent)/10 text-(--beheer-accent)'
-                                            : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) hover:text-(--beheer-text)'
-                                    }`}
+                        <Group gap="xs" wrap="nowrap">
+                            <Button
+                                type="button"
+                                size="xs"
+                                color="success"
+                                onClick={onSyncSheet}
+                                loading={syncState.status === 'syncing'}
+                                title={
+                                    syncState.message ??
+                                    'Wijzigingen worden 5 minuten na de laatste aanpassing automatisch naar de sheet gezet. Klik om nu direct te syncen.'
+                                }
+                                leftSection={
+                                    syncState.status === 'syncing' ? (
+                                        <RefreshCw size={16} />
+                                    ) : (
+                                        <Sheet size={16} />
+                                    )
+                                }
+                            >
+                                {syncLabel}
+                            </Button>
+                            {syncState.url && (
+                                <ActionIcon
+                                    component="a"
+                                    href={syncState.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    variant="default"
+                                    size="md"
+                                    title="Open Google Sheet"
+                                    aria-label="Open Google Sheet"
                                 >
-                                    <span>Alle groepen</span>
-                                    <input
-                                        type="checkbox"
-                                        checked={isAllSelected}
-                                        readOnly
-                                        className="size-3.5 cursor-pointer rounded border-(--beheer-border) accent-(--beheer-accent)"
-                                    />
-                                </button>
-                                <button
+                                    <ExternalLink size={16} />
+                                </ActionIcon>
+                            )}
+                        </Group>
+                    </Group>
+                </Group>
+
+                {syncState.status === 'error' && syncState.message && (
+                    <Alert color="error" variant="light" py="xs">
+                        <Text size="xs" fw={600}>
+                            Google Sheet: {syncState.message}
+                        </Text>
+                    </Alert>
+                )}
+
+                {viewMode !== 'associations' && (
+                    <Group gap="md" wrap="wrap">
+                        <TextInput
+                            flex={1}
+                            miw={240}
+                            placeholder="Zoek op naam (ook meegekomen deelnemers), e-mail, vereniging of groep..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            leftSection={<Search size={16} />}
+                            autoComplete="off"
+                            spellCheck={false}
+                        />
+
+                        <Popover
+                            opened={isDropdownOpen}
+                            onChange={setIsDropdownOpen}
+                            width={260}
+                            position="bottom-end"
+                            shadow="md"
+                        >
+                            <Popover.Target>
+                                <Button
                                     type="button"
-                                    onClick={() => {
-                                        if (isUnassignedSelected) {
-                                            setEnabledGroups(enabledGroups.filter(g => g !== 'unassigned'));
-                                        } else {
-                                            setEnabledGroups([...enabledGroups, 'unassigned']);
-                                        }
-                                    }}
-                                    className={`beheer-button flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all ${
-                                        isUnassignedSelected
-                                            ? 'bg-(--beheer-accent)/10 text-(--beheer-accent)'
-                                            : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) hover:text-(--beheer-text)'
-                                    }`}
+                                    variant="default"
+                                    w={{ base: '100%', md: 256 }}
+                                    justify="space-between"
+                                    onClick={() => setIsDropdownOpen((prev) => !prev)}
+                                    leftSection={
+                                        <Text span c="brand" lh={1}>
+                                            <Users size={16} />
+                                        </Text>
+                                    }
+                                    rightSection={<ChevronDown size={16} />}
                                 >
-                                    <span>Niet ingedeeld</span>
-                                    <input
-                                        type="checkbox"
-                                        checked={isUnassignedSelected}
-                                        readOnly
-                                        className="size-3.5 cursor-pointer rounded border-(--beheer-border) accent-(--beheer-accent)"
-                                    />
-                                </button>
-                                {groupNames.map((name) => {
-                                    const isSelected = enabledGroups.includes(name);
-                                    return (
-                                        <button
-                                            key={name}
+                                    <Text size="xs" fw={600} truncate>
+                                        {dropdownLabel}
+                                    </Text>
+                                </Button>
+                            </Popover.Target>
+
+                            <Popover.Dropdown p="xs">
+                                <ScrollArea.Autosize mah={300}>
+                                    <Stack gap={4}>
+                                        <Button
                                             type="button"
+                                            variant={isAllSelected ? 'light' : 'subtle'}
+                                            size="xs"
+                                            justify="space-between"
+                                            fullWidth
                                             onClick={() => {
-                                                if (isSelected) {
-                                                    setEnabledGroups(enabledGroups.filter(g => g !== name));
+                                                const allOptions = [...groupNames, 'unassigned'];
+                                                if (isAllSelected) {
+                                                    setEnabledGroups([]);
                                                 } else {
-                                                    setEnabledGroups([...enabledGroups, name]);
+                                                    setEnabledGroups(allOptions);
                                                 }
                                             }}
-                                            className={`beheer-button flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-all ${
-                                                isSelected
-                                                    ? 'bg-(--beheer-accent)/10 text-(--beheer-accent)'
-                                                    : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-soft) hover:text-(--beheer-text)'
-                                            }`}
+                                            rightSection={
+                                                <Checkbox
+                                                    checked={isAllSelected}
+                                                    readOnly
+                                                    size="xs"
+                                                    tabIndex={-1}
+                                                />
+                                            }
                                         >
-                                            <span className="truncate">{name}</span>
-                                            <input
-                                                type="checkbox"
-                                                checked={isSelected}
-                                                readOnly
-                                                className="size-3.5 cursor-pointer rounded border-(--beheer-border) accent-(--beheer-accent)"
-                                            />
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-            )}
-        </div>
+                                            Alle groepen
+                                        </Button>
+
+                                        <Button
+                                            type="button"
+                                            variant={isUnassignedSelected ? 'light' : 'subtle'}
+                                            size="xs"
+                                            justify="space-between"
+                                            fullWidth
+                                            onClick={() => {
+                                                if (isUnassignedSelected) {
+                                                    setEnabledGroups(
+                                                        enabledGroups.filter(
+                                                            (g) => g !== 'unassigned'
+                                                        )
+                                                    );
+                                                } else {
+                                                    setEnabledGroups([
+                                                        ...enabledGroups,
+                                                        'unassigned',
+                                                    ]);
+                                                }
+                                            }}
+                                            rightSection={
+                                                <Checkbox
+                                                    checked={isUnassignedSelected}
+                                                    readOnly
+                                                    size="xs"
+                                                    tabIndex={-1}
+                                                />
+                                            }
+                                        >
+                                            Niet ingedeeld
+                                        </Button>
+
+                                        {groupNames.map((name) => {
+                                            const isSelected = enabledGroups.includes(name);
+                                            return (
+                                                <Button
+                                                    key={name}
+                                                    type="button"
+                                                    variant={isSelected ? 'light' : 'subtle'}
+                                                    size="xs"
+                                                    justify="space-between"
+                                                    fullWidth
+                                                    onClick={() => {
+                                                        if (isSelected) {
+                                                            setEnabledGroups(
+                                                                enabledGroups.filter(
+                                                                    (g) => g !== name
+                                                                )
+                                                            );
+                                                        } else {
+                                                            setEnabledGroups([
+                                                                ...enabledGroups,
+                                                                name,
+                                                            ]);
+                                                        }
+                                                    }}
+                                                    rightSection={
+                                                        <Checkbox
+                                                            checked={isSelected}
+                                                            readOnly
+                                                            size="xs"
+                                                            tabIndex={-1}
+                                                        />
+                                                    }
+                                                >
+                                                    {name}
+                                                </Button>
+                                            );
+                                        })}
+                                    </Stack>
+                                </ScrollArea.Autosize>
+                            </Popover.Dropdown>
+                        </Popover>
+                    </Group>
+                )}
+            </Stack>
+        </Card>
     );
 }

@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
+import Link from '@/components/ui/Link';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Group, SimpleGrid, Stack } from '@mantine/core';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
-import BackButton from '@/components/ui/navigation/BackButton';
 import WebshopGalleryIsland from '@/components/islands/webshop/WebshopGalleryIsland';
 import WebshopProductDetailIsland from '@/components/islands/webshop/WebshopProductDetailIsland';
 import { getProductBySlug } from '@/server/actions/public/webshop.actions';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -38,22 +39,33 @@ export default async function WebshopProductPage({ params }: PageProps) {
 
     if (!product) notFound();
 
-    const user = session?.user as MembershipUserData | undefined;
+    const user = session?.user;
     const isLoggedIn = !!session?.user;
     const isMember = user?.membership_status === 'active';
 
     return (
         <PublicPageShell>
-            <div className="mx-auto max-w-6xl px-4 pt-8 pb-16 sm:px-6 sm:pb-24 lg:px-8">
-                <div className="mb-6">
-                    <BackButton href="/merch" title="Terug naar merch" />
-                </div>
+            <Container size="lg" py="xl">
+                <Stack gap="lg">
+                    <Group>
+                        <Button
+                            component={Link}
+                            href="/merch"
+                            title="Terug naar merch"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                    </Group>
 
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
-                    <WebshopGalleryIsland media={product.media} productName={product.name} />
-                    <WebshopProductDetailIsland product={product} isLoggedIn={isLoggedIn} isMember={isMember} />
-                </div>
-            </div>
+                    <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
+                        <WebshopGalleryIsland media={product.media} productName={product.name} />
+                        <WebshopProductDetailIsland product={product} isLoggedIn={isLoggedIn} isMember={isMember} />
+                    </SimpleGrid>
+                </Stack>
+            </Container>
         </PublicPageShell>
     );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useTransition } from 'react';
+import { Stack, Tabs } from '@mantine/core';
 import { type CoboGuestBoard } from '@salvemundi/validations';
 import {
     addGuestBoardAction,
@@ -239,7 +240,7 @@ export default function CoboQueueManager({
     };
 
     return (
-        <div className="space-y-6">
+        <Stack gap="lg">
             <CoboAddBoardForm onAddBoard={handleAddBoard} isPending={isPending} />
 
             <CoboCurrentBoardCard
@@ -250,46 +251,26 @@ export default function CoboQueueManager({
                 onNext={handleNext}
             />
 
-            <div className="flex items-center gap-2 overflow-x-auto border-b border-border-color pb-3">
-                <button
-                    type="button"
-                    onClick={() => handleSubTabChange('queue')}
-                    className={`tab-button flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-colors sm:min-h-9 sm:text-sm ${
-                        activeTab === 'queue'
-                            ? 'bg-purple-600 text-white shadow-xs'
-                            : 'border border-border-color bg-bg-card text-text-muted hover:bg-bg-soft hover:text-text-main'
-                    }`}
-                >
-                    <Users className="size-4" />
-                    <span>Wachtrij ({waitingBoards.length})</span>
-                </button>
-
-                <button
-                    type="button"
-                    onClick={() => handleSubTabChange('completed')}
-                    className={`tab-button flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-colors sm:min-h-9 sm:text-sm ${
-                        activeTab === 'completed'
-                            ? 'bg-purple-600 text-white shadow-xs'
-                            : 'border border-border-color bg-bg-card text-text-muted hover:bg-bg-soft hover:text-text-main'
-                    }`}
-                >
-                    <CheckCircle2 className="size-4" />
-                    <span>Geweest ({completedBoards.length})</span>
-                </button>
-
-                <button
-                    type="button"
-                    onClick={() => handleSubTabChange('late')}
-                    className={`tab-button flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-colors sm:min-h-9 sm:text-sm ${
-                        activeTab === 'late'
-                            ? 'bg-amber-600 text-white shadow-xs'
-                            : 'border border-border-color bg-bg-card text-text-muted hover:bg-bg-soft hover:text-text-main'
-                    }`}
-                >
-                    <Clock className="size-4" />
-                    <span>Niet op tijd ({lateBoards.length})</span>
-                </button>
-            </div>
+            <Tabs
+                value={activeTab}
+                onChange={(val) => {
+                    if (val === 'queue' || val === 'completed' || val === 'late') {
+                        handleSubTabChange(val);
+                    }
+                }}
+            >
+                <Tabs.List>
+                    <Tabs.Tab value="queue" leftSection={<Users size={15} />}>
+                        Wachtrij ({waitingBoards.length})
+                    </Tabs.Tab>
+                    <Tabs.Tab value="completed" leftSection={<CheckCircle2 size={15} />}>
+                        Geweest ({completedBoards.length})
+                    </Tabs.Tab>
+                    <Tabs.Tab value="late" color="accent" leftSection={<Clock size={15} />}>
+                        Niet op tijd ({lateBoards.length})
+                    </Tabs.Tab>
+                </Tabs.List>
+            </Tabs>
 
             {activeTab === 'queue' && (
                 <CoboWaitingList
@@ -316,6 +297,6 @@ export default function CoboQueueManager({
                     onDelete={handleDelete}
                 />
             )}
-        </div>
+        </Stack>
     );
 }

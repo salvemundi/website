@@ -3,24 +3,19 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Alert, Anchor, Box, Button, Checkbox, InputWrapper, Paper, Stack, Text, TextInput, ThemeIcon, Title } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
 import { createTripSignup } from '@/server/actions/events/reis/reis-public.actions';
 import type { Trip } from '@salvemundi/validations/schema/beheer-trip.zod';
 import { reisSignupFormSchema, type ReisSignupForm } from '@salvemundi/validations/schema/trip.zod';
-import { FormField } from '@/shared/ui/FormField';
-import { Input } from '@/shared/ui/Input';
-import { DateInput } from '@/shared/ui/DateInput';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
 import { toLocalISOString } from '@/lib/utils/date-utils';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ArrowRight, Calendar } from 'lucide-react';
 import { NameConfirmModal } from './shared/NameConfirmModal';
-
-// Sub-components
 import { RegistrationSuccess } from './registration/RegistrationSuccess';
 import { RegistrationClosed } from './registration/RegistrationClosed';
-
 import { type EnrichedUser } from '@/types/auth';
 
 interface ReisRegistrationFormProps {
@@ -32,6 +27,16 @@ interface ReisRegistrationFormProps {
     termsFileUrl?: string | null;
 }
 
+const parseNlDate = (input: string): string | null => {
+    const trimmed = input.trim();
+    const nlMatch = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(trimmed);
+    if (nlMatch) {
+        return `${nlMatch[3]}-${nlMatch[2].padStart(2, '0')}-${nlMatch[1].padStart(2, '0')}`;
+    }
+    const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    return isoMatch ? trimmed : null;
+};
+
 export function ReisRegistrationForm({
     nextTrip,
     canSignUp,
@@ -42,7 +47,7 @@ export function ReisRegistrationForm({
 }: ReisRegistrationFormProps) {
     const [isSuccess, setIsSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [showNameConfirm, setShowNameConfirm] = useState(false);
     const [pendingData, setPendingData] = useState<ReisSignupForm | null>(null);
 
@@ -61,7 +66,7 @@ export function ReisRegistrationForm({
         resolver: zodResolver(reisSignupFormSchema),
         defaultValues: {
             trip_id: nextTrip?.id || 0,
-            /* 
+            /*
              * We intentionally leave the first name empty even if the user is logged in.
              * This forces the user to look at their passport and type it manually
              * to prevent mismatches with airline tickets.
@@ -121,17 +126,28 @@ export function ReisRegistrationForm({
 
     if (!nextTrip) {
         return (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-theme-purple/10 bg-theme-purple/5 px-4 py-12 text-center">
-                <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-theme-purple/10">
-                    <svg className="size-8 text-theme-purple opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                </div>
-                <h2 className="dark:text-theme-white mb-2 text-xl font-bold text-theme-purple">Geen reis gepland</h2>
-                <p className="max-w-xs text-sm text-(--text-muted)">
-                    Momenteel is er geen reis gepland. Houd deze pagina in de gaten voor nieuwe data!
-                </p>
-            </div>
+            <Paper
+                p="xl"
+                radius="lg"
+                withBorder
+                ta="center"
+                style={{
+                    backgroundColor: 'color-mix(in srgb, var(--primary) 6%, transparent)',
+                    borderColor: 'color-mix(in srgb, var(--primary) 15%, transparent)',
+                }}
+            >
+                <Stack align="center" gap="sm" py="md">
+                    <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                        <Calendar size={32} />
+                    </ThemeIcon>
+                    <Title order={2} size="h3" c="brand">
+                        Geen reis gepland
+                    </Title>
+                    <Text size="sm" c="dimmed" maw={320}>
+                        Momenteel is er geen reis gepland. Houd deze pagina in de gaten voor nieuwe data!
+                    </Text>
+                </Stack>
+            </Paper>
         );
     }
 
@@ -150,69 +166,78 @@ export function ReisRegistrationForm({
 
             <form
                 onSubmit={(e) => { void handleSubmit(onSubmit)(e); }}
-                className="flex flex-col gap-4"
                 autoComplete="off"
                 suppressHydrationWarning
             >
-                <p className="mb-2 text-sm font-medium text-theme-text dark:text-white/90">
-                    Let op: dit is een vrijblijvende aanmelding. De daadwerkelijke betaling volgt later.
-                </p>
+                <Stack gap="md">
+                    <Text size="sm" fw={500} c="dimmed">
+                        Let op: dit is een vrijblijvende aanmelding. De daadwerkelijke betaling volgt later.
+                    </Text>
 
-                <div className="flex flex-col gap-4">
-                    <FormField id="field-first_name" label="Voornaam" required error={errors.first_name?.message}>
-                        <Input
-                            {...register('first_name')}
+                    <Stack gap="xs">
+                        <TextInput
                             id="field-first_name"
+                            label="Voornaam"
+                            required
                             placeholder="Voornaam"
-                            /* We use 'one-time-code' to block Chrome's aggressive autofill. */
                             autoComplete="one-time-code"
+                            error={errors.first_name?.message}
+                            {...register('first_name')}
                         />
-                        <div className="mt-2 flex items-start gap-3 rounded-2xl border border-theme-purple/10 bg-theme-purple/5 p-4">
-                            <div className="mt-0.5 flex items-center gap-1">
-                                <AlertCircle className="size-4 shrink-0 text-theme-purple opacity-60" />
-                            </div>
-                            <p className="text-[10px] leading-relaxed font-semibold tracking-wider text-(--text-muted) opacity-70">
-                                <span className="font-bold text-theme-purple">LET OP:</span> Gebruik je volledige voornaam zoals op je paspoort/ID. Dit is essentieel voor je ticket!
-                            </p>
-                        </div>
-                    </FormField>
+                        <Alert color="brand" variant="light" radius="md" icon={<AlertCircle size={16} />}>
+                            <Text size="xs" fw={600}>
+                                <Text span fw={700} c="brand">LET OP:</Text> Gebruik je volledige voornaam zoals op je paspoort/ID. Dit is essentieel voor je ticket!
+                            </Text>
+                        </Alert>
+                    </Stack>
 
-                    <FormField id="field-last_name" label="Tussenvoegsel & Achternaam" required error={errors.last_name?.message}>
-                        <Input
-                            {...register('last_name')}
-                            id="field-last_name"
-                            placeholder="Achternaam (incl. tussenvoegsel)"
-                            autoComplete="off"
-                        />
-                    </FormField>
+                    <TextInput
+                        id="field-last_name"
+                        label="Tussenvoegsel & Achternaam"
+                        required
+                        placeholder="Achternaam (incl. tussenvoegsel)"
+                        autoComplete="off"
+                        error={errors.last_name?.message}
+                        {...register('last_name')}
+                    />
 
-                    <FormField id="field-email" label="E-mailadres" required error={errors.email?.message}>
-                        <Input
-                            {...register('email')}
-                            id="field-email"
-                            type="email"
-                            placeholder="jouw@email.nl"
-                            autoComplete="off"
-                            data-lpignore="true"
-                        />
-                    </FormField>
+                    <TextInput
+                        id="field-email"
+                        type="email"
+                        label="E-mailadres"
+                        required
+                        placeholder="jouw@email.nl"
+                        autoComplete="off"
+                        data-lpignore="true"
+                        error={errors.email?.message}
+                        {...register('email')}
+                    />
 
-                    <FormField id="field-date_of_birth" label="Geboortedatum" required error={errors.date_of_birth?.message}>
-                        <Controller
-                            name="date_of_birth"
-                            control={control}
-                            render={({ field }) => (
-                                <DateInput
-                                    {...field}
-                                    id="field-date_of_birth"
-                                    placeholder="dd-mm-jjjj"
-                                    autoComplete="off"
-                                />
-                            )}
-                        />
-                    </FormField>
+                    <Controller
+                        name="date_of_birth"
+                        control={control}
+                        render={({ field }) => (
+                            <DateInput
+                                id="field-date_of_birth"
+                                label="Geboortedatum"
+                                required
+                                value={field.value || null}
+                                onChange={(val) => field.onChange(val ?? '')}
+                                valueFormat="DD-MM-YYYY"
+                                dateParser={parseNlDate}
+                                placeholder="dd-mm-jjjj"
+                                autoComplete="off"
+                                error={errors.date_of_birth?.message}
+                            />
+                        )}
+                    />
 
-                    <FormField id="field-phone_number" label="Telefoonnummer" required error={errors.phone_number?.message}>
+                    <InputWrapper
+                        id="field-phone_number"
+                        label="Telefoonnummer"
+                        required
+                        error={errors.phone_number?.message}
+                    >
                         <Controller
                             name="phone_number"
                             control={control}
@@ -222,45 +247,55 @@ export function ReisRegistrationForm({
                                     id="field-phone_number"
                                     placeholder="06 12345678"
                                     autoComplete="off"
+                                    error={!!errors.phone_number}
                                 />
                             )}
                         />
-                    </FormField>
-                </div>
+                    </InputWrapper>
 
-                <label
-                    htmlFor="terms_accepted"
-                    className="group mt-2 flex cursor-pointer items-start gap-3 text-theme-text dark:text-white"
-                >
-                    <input
-                        {...register('terms_accepted')}
-                        id="terms_accepted"
-                        type="checkbox"
-                        className="mt-1 size-5 rounded border-theme-purple/20 accent-theme-purple transition-all group-hover:scale-110"
+                    <Controller
+                        name="terms_accepted"
+                        control={control}
+                        render={({ field }) => (
+                            <Checkbox
+                                id="terms_accepted"
+                                checked={field.value}
+                                onChange={(e) => field.onChange(e.currentTarget.checked)}
+                                error={errors.terms_accepted?.message}
+                                label={
+                                    <>
+                                        Ik accepteer de{' '}
+                                        <Anchor
+                                            href={termsFileUrl || '/reisvoorwaarden.pdf'}
+                                            download
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            c="brand"
+                                            fw={600}
+                                            td="underline"
+                                        >
+                                            algemene voorwaarden
+                                        </Anchor>
+                                    </>
+                                }
+                            />
+                        )}
                     />
-                    <span className="text-sm leading-snug">
-                        Ik accepteer de{' '}
-                        <a href={termsFileUrl || "/reisvoorwaarden.pdf"} download className="font-semibold text-theme-purple underline hover:text-theme-purple/80" target="_blank" rel="noopener noreferrer">
-                            algemene voorwaarden
-                        </a>
-                    </span>
-                </label>
-                {errors.terms_accepted && <p className="text-xs font-semibold text-red-500">{errors.terms_accepted.message}</p>}
 
-                {/* Honeypot at bottom to avoid breaking browser autofill sections */}
-                <input {...register('website')} type="text" className="hidden" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
+                    <Box style={{ display: 'none' }}>
+                        <input {...register('website')} type="text" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
+                    </Box>
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="group mt-4 form-button"
-                >
-                    <span>
+                    <Button
+                        type="submit"
+                        size="lg"
+                        loading={loading}
+                        mt="xs"
+                        rightSection={!loading ? <ArrowRight size={18} /> : undefined}
+                    >
                         {loading ? 'Bezig met aanmelden...' : 'Aanmelden voor de reis'}
-                    </span>
-                    {!loading && <span className="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>}
-                </button>
-                <BeheerToast toast={toast} onClose={hideToast} />
+                    </Button>
+                </Stack>
             </form>
         </>
     );

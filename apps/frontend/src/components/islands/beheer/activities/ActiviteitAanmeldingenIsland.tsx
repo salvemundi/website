@@ -3,16 +3,25 @@
 import { useState, useMemo, useOptimistic, useTransition } from 'react';
 import Link from 'next/link';
 import { Search, Download, UserPlus, QrCode, Mail } from 'lucide-react';
+import {
+    Button,
+    Card,
+    Group,
+    Select,
+    Stack,
+    Text,
+    TextInput,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
 import { deleteSignupAction, toggleCheckInAction } from '@/server/actions/beheer/activiteiten/beheer-activiteiten-signups.actions';
 import ManualSignupModal from './ManualSignupModal';
 import EventMailModal from './EventMailModal';
 import { useRouter } from 'next/navigation';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { getSignupName, getSignupEmail, getSignupPhone } from '@/lib/activities/activity-signup.utils';
 import { exportSignupsToCSV } from '@/lib/activities/activity-export';
 import ActivitySignupTable from '@/components/admin/activities/ActivitySignupTable';
-import BeheerSelect from '@/components/ui/beheer/BeheerSelect';
 
 export interface Signup {
     id: number;
@@ -64,7 +73,7 @@ export default function ActiviteitAanmeldingenIsland({
     canAccessEdit?: boolean;
 }) {
     const router = useRouter();
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [, startTransition] = useTransition();
     const [searchQuery, setSearchQuery] = useState('');
     const [paymentFilter, setPaymentFilter] = useState<'all' | 'paid' | 'open'>('all');
@@ -151,116 +160,123 @@ export default function ActiviteitAanmeldingenIsland({
     }
 
     return (
-        <div className="w-full">
-            <div className="flex flex-col gap-8">
-                <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
-                    <div className="order-2 flex flex-wrap items-center gap-1.5 sm:order-1">
-                        <Link
-                            href={`/beheer/activiteiten/${event.id}/scanner`}
-                            className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--theme-purple) px-6 py-2.5 text-xs font-semibold text-white shadow-(--theme-purple)/20 shadow-lg transition-all active:scale-95 md:hidden"
+        <Stack gap="lg" w="100%">
+            <Group justify="space-between" align="flex-end" wrap="wrap" gap="md">
+                <Group gap="xs" wrap="wrap">
+                    <Button
+                        component={Link}
+                        href={`/beheer/activiteiten/${event.id}/scanner`}
+                        hiddenFrom="md"
+                        leftSection={<QrCode size={15} />}
+                    >
+                        Scanner
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="default"
+                        onClick={() => exportSignupsToCSV(filteredSignups, event.name)}
+                        disabled={filteredSignups.length === 0}
+                        leftSection={<Download size={15} />}
+                    >
+                        Exporteer
+                    </Button>
+                    {canAccessEdit && (
+                        <Button
+                            type="button"
+                            color="accent"
+                            onClick={() => setIsManualModalOpen(true)}
+                            leftSection={<UserPlus size={15} />}
                         >
-                            <QrCode className="size-3.5" />
-                            Scanner
-                        </Link>
-                        <button
-                            onClick={() => exportSignupsToCSV(filteredSignups, event.name)}
-                            disabled={filteredSignups.length === 0}
-                            className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-6 py-2.5 text-xs font-semibold text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 active:scale-95 disabled:opacity-50"
-                            type="button">
-                            <Download className="size-3.5" />
-                            Exporteer
-                        </button>
-                        {canAccessEdit && (
-                            <button
-                                onClick={() => setIsManualModalOpen(true)}
-                                className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--beheer-accent) px-6 py-2.5 text-xs font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
-                                type="button">
-                                <UserPlus className="size-3.5" />
-                                Handmatig
-                            </button>
-                        )}
-                        {canAccessEdit && (
-                            <button
-                                onClick={() => setIsMailModalOpen(true)}
-                                disabled={optimisticSignups.length === 0}
-                                className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-6 py-2.5 text-xs font-semibold text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 active:scale-95 disabled:opacity-50"
-                                type="button">
-                                <Mail className="size-3.5" />
-                                Mail
-                            </button>
-                        )}
-                    </div>
-
-                    <div className="order-1 flex w-full flex-col items-stretch gap-3 sm:order-2 sm:w-auto sm:flex-row sm:items-center">
-                        <div className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 shadow-sm transition-colors hover:border-(--beheer-accent)/30">
-                            <label className="text-[11px] font-semibold whitespace-nowrap text-(--beheer-text-muted) opacity-75">Betaling:</label>
-                            <BeheerSelect
-                                value={paymentFilter}
-                                onChange={(val) => setPaymentFilter(val as 'all' | 'paid' | 'open')}
-                                options={PAYMENT_OPTIONS}
-                            />
-                        </div>
-
-                        <div className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 shadow-sm transition-colors hover:border-(--beheer-accent)/30">
-                            <label className="text-[11px] font-semibold whitespace-nowrap text-(--beheer-text-muted) opacity-75">Lidmaatschap:</label>
-                            <BeheerSelect
-                                value={membershipFilter}
-                                onChange={(val) => setMembershipFilter(val as 'all' | 'member' | 'guest')}
-                                options={MEMBERSHIP_OPTIONS}
-                            />
-                        </div>
-
-                        <div className="group relative w-full sm:w-70">
-                            <Search className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-(--beheer-text-muted) opacity-40 transition-all group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100" />
-                            <input
-                                type="text"
-                                placeholder="Zoek deelnemers..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="beheer-input w-full py-2 pr-4 pl-11!"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <ManualSignupModal
-                    isOpen={isManualModalOpen}
-                    onClose={() => setIsManualModalOpen(false)}
-                    eventId={event.id}
-                    eventName={event.name}
-                />
-
-                <EventMailModal
-                    isOpen={isMailModalOpen}
-                    onClose={() => setIsMailModalOpen(false)}
-                    eventId={event.id}
-                    eventName={event.name}
-                    signups={optimisticSignups}
-                />
-
-                <div className="overflow-hidden rounded-(--beheer-radius) bg-(--beheer-card-bg) shadow-sm ring-1 ring-(--beheer-border)">
-                    {filteredSignups.length === 0 ? (
-                        <div className="p-20 text-center">
-                            <div className="mb-6 inline-flex size-20 items-center justify-center rounded-full bg-(--beheer-card-soft)">
-                                <Search className="size-10 text-(--beheer-text-muted) opacity-20" />
-                            </div>
-                            <h3 className="mb-2 text-xl font-semibold tracking-tighter text-(--beheer-text)">Geen resultaten</h3>
-                            <p className="mx-auto max-w-xs text-[10px] font-semibold tracking-widest text-(--beheer-text-muted)">
-                               {searchQuery ? "We konden niemand vinden die voldoet aan je zoekopdracht." : "Er zijn nog geen aanmeldingen voor deze activiteit."}
-                            </p>
-                        </div>
-                    ) : (
-                        <ActivitySignupTable
-                            signups={filteredSignups}
-                            canAccessEdit={canAccessEdit}
-                            onToggleCheckIn={(id, checkedIn) => { void handleToggleCheckIn(id, checkedIn); }}
-                            onDelete={(id, email) => { void handleDelete(id, email); }}
-                            isDeletingId={isDeleting}
-                        />
+                            Handmatig
+                        </Button>
                     )}
-                </div>
-            </div>
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+                    {canAccessEdit && (
+                        <Button
+                            type="button"
+                            variant="default"
+                            onClick={() => setIsMailModalOpen(true)}
+                            disabled={optimisticSignups.length === 0}
+                            leftSection={<Mail size={15} />}
+                        >
+                            Mail
+                        </Button>
+                    )}
+                </Group>
+
+                <Group gap="sm" align="flex-end" wrap="wrap">
+                    <Select
+                        label="Betaling"
+                        size="sm"
+                        w={130}
+                        value={paymentFilter}
+                        onChange={(val) => {
+                            if (val) setPaymentFilter(val as 'all' | 'paid' | 'open');
+                        }}
+                        data={[...PAYMENT_OPTIONS]}
+                        allowDeselect={false}
+                    />
+
+                    <Select
+                        label="Lidmaatschap"
+                        size="sm"
+                        w={130}
+                        value={membershipFilter}
+                        onChange={(val) => {
+                            if (val) setMembershipFilter(val as 'all' | 'member' | 'guest');
+                        }}
+                        data={[...MEMBERSHIP_OPTIONS]}
+                        allowDeselect={false}
+                    />
+
+                    <TextInput
+                        size="sm"
+                        placeholder="Zoek deelnemers..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                        leftSection={<Search size={16} />}
+                        miw={{ sm: 240 }}
+                    />
+                </Group>
+            </Group>
+
+            <ManualSignupModal
+                isOpen={isManualModalOpen}
+                onClose={() => setIsManualModalOpen(false)}
+                eventId={event.id}
+                eventName={event.name}
+            />
+
+            <EventMailModal
+                isOpen={isMailModalOpen}
+                onClose={() => setIsMailModalOpen(false)}
+                eventId={event.id}
+                eventName={event.name}
+                signups={optimisticSignups}
+            />
+
+            <Card withBorder padding={0} radius="lg" style={{ overflow: 'hidden' }}>
+                {filteredSignups.length === 0 ? (
+                    <Stack align="center" gap="sm" p="xl" py={64} ta="center">
+                        <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                            <Search size={28} />
+                        </ThemeIcon>
+                        <Title order={3} size="h4">Geen resultaten</Title>
+                        <Text size="xs" c="dimmed" maw={320}>
+                            {searchQuery
+                                ? 'We konden niemand vinden die voldoet aan je zoekopdracht.'
+                                : 'Er zijn nog geen aanmeldingen voor deze activiteit.'}
+                        </Text>
+                    </Stack>
+                ) : (
+                    <ActivitySignupTable
+                        signups={filteredSignups}
+                        canAccessEdit={canAccessEdit}
+                        onToggleCheckIn={(id, checkedIn) => { void handleToggleCheckIn(id, checkedIn); }}
+                        onDelete={(id, email) => { void handleDelete(id, email); }}
+                        isDeletingId={isDeleting}
+                    />
+                )}
+            </Card>
+        </Stack>
     );
 }

@@ -41,16 +41,15 @@ export const getHeroBanners = unstable_cache(async (): Promise<HeroBanner[]> => 
     return parsed.data;
 }, ['hero_banners_cache'], { tags: ['hero_banners'], revalidate: 3600 });
 
-export const getUpcomingActiviteiten = unstable_cache(async (limit: number = 4): Promise<Activiteit[]> => {
+const getUpcomingActiviteitenCached = unstable_cache(async (today: string, limit: number): Promise<Activiteit[]> => {
     const now = new Date();
-    const today = toLocalISOString(now) ?? new Date().toISOString();
 
     const [regularEvents, pubCrawlEvents, tripEvents, disabledRoutes] = await Promise.all([
         getActivitiesInternal(true),
         db.query.pub_crawl_events.findMany({
             where: (events, { gte }) => gte(events.date, today),
             orderBy: (events, { asc }) => [asc(events.date)],
-            limit: limit
+            limit
         }),
         getUpcomingTrips(),
         getDisabledRoutes()
@@ -135,11 +134,11 @@ export const getUpcomingActiviteiten = unstable_cache(async (limit: number = 4):
         });
 
     const allEvents = [...mappedRegular, ...mappedPubCrawl, ...mappedTrips]
-        .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
-        .filter(event => {
-            const date = new Date(event.event_date);
-            return date >= new Date(new Date().setHours(0, 0, 0, 0));
+        .filter((event) => {
+            const relevantDate = (event.event_date_end || event.event_date).slice(0, 10);
+            return relevantDate >= today;
         })
+        .sort((a, b) => a.event_date.localeCompare(b.event_date))
         .slice(0, limit);
 
     const parsed = activitiesSchema.safeParse(allEvents);
@@ -150,6 +149,11 @@ export const getUpcomingActiviteiten = unstable_cache(async (limit: number = 4):
 
     return parsed.data;
 }, ['upcoming_activities_cache'], { tags: ['events', 'pub_crawl_events', 'trips'], revalidate: 3600 });
+
+export async function getUpcomingActiviteiten(limit: number = 4): Promise<Activiteit[]> {
+    const today = toLocalISOString(new Date()) ?? new Date().toISOString().slice(0, 10);
+    return getUpcomingActiviteitenCached(today, limit);
+}
 
 export const getSponsors = unstable_cache(async (): Promise<Sponsor[]> => {
     const rawData = await db.query.sponsors.findMany({

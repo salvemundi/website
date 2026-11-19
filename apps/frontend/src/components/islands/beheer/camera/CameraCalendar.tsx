@@ -2,6 +2,18 @@
 
 import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+    ActionIcon,
+    Badge,
+    Box,
+    Card,
+    Group,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    Title,
+} from '@mantine/core';
 import type { CameraAdminLoan, CameraAdminRequest } from '@salvemundi/validations';
 import { formatDate } from '@/shared/lib/utils/date';
 
@@ -17,23 +29,22 @@ interface Entry {
     times: string | null;
 }
 
-const KIND_LABEL: Record<EntryKind, string> = {
-    out: 'Uitgeleend',
-    reserved: 'Gereserveerd',
-    requested: 'Aangevraagd',
-};
+const LEGEND: { kind: EntryKind; label: string; color: string; variant: 'filled' | 'light' }[] = [
+    { kind: 'out', label: 'Uitgeleend', color: 'brand', variant: 'filled' },
+    { kind: 'reserved', label: 'Gereserveerd', color: 'success', variant: 'light' },
+    { kind: 'requested', label: 'Aangevraagd', color: 'accent', variant: 'light' },
+];
 
-const KIND_CLASS: Record<EntryKind, string> = {
-    out: 'bg-purple-600 text-white',
-    reserved: 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-200',
-    requested: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200',
-};
-
-const LEGEND = (['out', 'reserved', 'requested'] as const).map((kind) => ({
-    kind,
-    label: KIND_LABEL[kind],
-    className: KIND_CLASS[kind],
-}));
+function getKindMeta(kind: EntryKind): { label: string; color: string; variant: 'filled' | 'light' } {
+    switch (kind) {
+        case 'out':
+            return { label: 'Uitgeleend', color: 'brand', variant: 'filled' };
+        case 'reserved':
+            return { label: 'Gereserveerd', color: 'success', variant: 'light' };
+        case 'requested':
+            return { label: 'Aangevraagd', color: 'accent', variant: 'light' };
+    }
+}
 
 const WEEKDAYS = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'];
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -60,7 +71,6 @@ export default function CameraCalendar({
             label: l.event_name,
             who: l.borrower_name,
             start: l.start_date,
-            // Een open uitleen loopt door tot de afgesproken einddatum, of tot vandaag als het te laat is.
             end: l.returned_on ?? (today > l.agreed_end_date ? today : l.agreed_end_date),
             times: null,
         }));
@@ -80,7 +90,7 @@ export default function CameraCalendar({
 
     const cells = useMemo(() => {
         const first = new Date(Date.UTC(year, month, 1));
-        const offset = (first.getUTCDay() + 6) % 7; // maandag eerst
+        const offset = (first.getUTCDay() + 6) % 7;
         const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
         const out: (string | null)[] = Array.from({ length: offset }, () => null);
         for (let d = 1; d <= daysInMonth; d++) out.push(toKey(year, month, d));
@@ -104,97 +114,132 @@ export default function CameraCalendar({
     const selectedEntries = forDay(selected);
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between gap-3">
-                <button
+        <Stack gap="md">
+            <Group justify="space-between" align="center">
+                <ActionIcon
                     type="button"
+                    variant="subtle"
                     onClick={() => shift(-1)}
                     aria-label="Vorige maand"
-                    className="icon-button cursor-pointer rounded-lg p-2 hover:bg-bg-soft"
                 >
-                    <ChevronLeft className="size-4" />
-                </button>
-                <h3 className="text-sm font-bold text-text-main capitalize">{monthLabel}</h3>
-                <button
+                    <ChevronLeft size={16} />
+                </ActionIcon>
+                <Title order={3} size="h5" tt="capitalize">{monthLabel}</Title>
+                <ActionIcon
                     type="button"
+                    variant="subtle"
                     onClick={() => shift(1)}
                     aria-label="Volgende maand"
-                    className="icon-button cursor-pointer rounded-lg p-2 hover:bg-bg-soft"
                 >
-                    <ChevronRight className="size-4" />
-                </button>
-            </div>
+                    <ChevronRight size={16} />
+                </ActionIcon>
+            </Group>
 
-            <div className="flex flex-wrap gap-3 text-[11px] font-semibold text-text-muted">
-                {LEGEND.map(({ kind, label, className }) => (
-                    <span key={kind} className="inline-flex items-center gap-1.5">
-                        <span className={`inline-block size-3 rounded ${className}`} />
+            <Group gap="md" wrap="wrap">
+                {LEGEND.map(({ kind, label, color, variant }) => (
+                    <Badge key={kind} color={color} variant={variant} size="sm">
                         {label}
-                    </span>
+                    </Badge>
                 ))}
-                <span className="inline-flex items-center gap-1.5">
-                    <span className="inline-block size-3 rounded border border-border-color bg-bg-card" />
+                <Badge variant="default" size="sm">
                     Beschikbaar
-                </span>
-            </div>
+                </Badge>
+            </Group>
 
-            <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black tracking-widest text-text-muted uppercase">
+            <SimpleGrid cols={7} spacing={4}>
                 {WEEKDAYS.map((w) => (
-                    <span key={w}>{w}</span>
+                    <Text key={w} ta="center" size="xs" fw={700} c="dimmed" tt="uppercase">
+                        {w}
+                    </Text>
                 ))}
-            </div>
-            <div className="grid grid-cols-7 gap-1">
+            </SimpleGrid>
+
+            <SimpleGrid cols={7} spacing={4}>
                 {cells.map((day, i) => {
-                    if (!day) return <div key={`empty-${i}`} />;
+                    if (!day) return <Box key={`empty-${i}`} />;
                     const dayEntries = forDay(day);
                     const isSelected = day === selected;
+                    const isToday = day === today;
                     return (
-                        <button
+                        <Paper
                             key={day}
+                            component="button"
                             type="button"
+                            withBorder
+                            p={6}
+                            radius="md"
                             onClick={() => setSelected(day)}
-                            className={`beheer-button flex min-h-16 cursor-pointer flex-col items-stretch gap-0.5 rounded-lg border p-1 text-left transition-colors sm:min-h-20 ${
-                                isSelected ? 'border-purple-500 ring-1 ring-purple-500' : 'border-border-color'
-                            } ${day === today ? 'bg-purple-50 dark:bg-purple-500/10' : 'bg-bg-card'}`}
+                            style={{
+                                minHeight: 76,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'stretch',
+                                gap: 2,
+                                textAlign: 'left',
+                                cursor: 'pointer',
+                                borderColor: isSelected ? 'var(--mantine-color-brand-filled)' : undefined,
+                                boxShadow: isSelected ? '0 0 0 1px var(--mantine-color-brand-filled)' : undefined,
+                                backgroundColor: isToday ? 'var(--mantine-color-brand-light)' : undefined,
+                            }}
                         >
-                            <span className="text-[11px] font-bold text-text-main">{Number(day.slice(8))}</span>
-                            {dayEntries.slice(0, 2).map((e) => (
-                                <span
-                                    key={e.key}
-                                    className={`truncate rounded px-1 text-[9px] leading-4 font-semibold ${KIND_CLASS[e.kind]}`}
-                                >
-                                    {e.label}
-                                </span>
-                            ))}
+                            <Text size="xs" fw={700}>{Number(day.slice(8))}</Text>
+                            {dayEntries.slice(0, 2).map((e) => {
+                                const meta = getKindMeta(e.kind);
+                                return (
+                                    <Badge
+                                        key={e.key}
+                                        color={meta.color}
+                                        variant={meta.variant}
+                                        size="xs"
+                                        radius="sm"
+                                        fullWidth
+                                    >
+                                        {e.label}
+                                    </Badge>
+                                );
+                            })}
                             {dayEntries.length > 2 && (
-                                <span className="text-[9px] font-bold text-text-muted">+{dayEntries.length - 2}</span>
+                                <Text size="xs" fw={700} c="dimmed">+{dayEntries.length - 2}</Text>
                             )}
-                        </button>
+                        </Paper>
                     );
                 })}
-            </div>
+            </SimpleGrid>
 
-            <div className="space-y-2 rounded-2xl border border-border-color bg-bg-card p-4">
-                <h4 className="text-xs font-bold text-text-main">{formatDate(selected, 'EEEE d MMMM yyyy')}</h4>
-                {selectedEntries.length === 0 ? (
-                    <p className="text-xs font-semibold text-green-700 dark:text-green-300">De camera is deze dag beschikbaar.</p>
-                ) : (
-                    <ul className="space-y-1.5">
-                        {selectedEntries.map((e) => (
-                            <li key={e.key} className="flex flex-wrap items-center gap-2 text-xs">
-                                <span className={`rounded-full px-2 py-0.5 text-[9px] font-black tracking-widest uppercase ${KIND_CLASS[e.kind]}`}>
-                                    {KIND_LABEL[e.kind]}
-                                </span>
-                                <span className="font-bold text-text-main">{e.label}</span>
-                                <span className="text-text-muted">
-                                    {e.who} · {formatDate(e.start, 'd MMM')} – {formatDate(e.end, 'd MMM')}
-                                    {e.times && ` · ${e.times}`}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </div>
-        </div>
+            <Card withBorder padding="md" radius="lg">
+                <Stack gap="xs">
+                    <Title order={4} size="xs" fw={700}>
+                        {formatDate(selected, 'EEEE d MMMM yyyy')}
+                    </Title>
+                    {selectedEntries.length === 0 ? (
+                        <Text size="xs" fw={600} c="success">
+                            De camera is deze dag beschikbaar.
+                        </Text>
+                    ) : (
+                        <Stack gap={6}>
+                            {selectedEntries.map((e) => {
+                                const meta = getKindMeta(e.kind);
+                                return (
+                                    <Group key={e.key} gap="xs" wrap="wrap">
+                                        <Badge
+                                            color={meta.color}
+                                            variant={meta.variant}
+                                            size="xs"
+                                        >
+                                            {meta.label}
+                                        </Badge>
+                                        <Text size="xs" fw={700}>{e.label}</Text>
+                                        <Text size="xs" c="dimmed">
+                                            {e.who} · {formatDate(e.start, 'd MMM')} – {formatDate(e.end, 'd MMM')}
+                                            {e.times && ` · ${e.times}`}
+                                        </Text>
+                                    </Group>
+                                );
+                            })}
+                        </Stack>
+                    )}
+                </Stack>
+            </Card>
+        </Stack>
     );
 }

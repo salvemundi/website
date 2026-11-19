@@ -2,6 +2,7 @@
 
 import { authClient } from '@/lib/auth';
 import { getLoginCallbackURL } from '@/lib/utils/login-redirect';
+import type { EnrichedUser } from '@/types/auth';
 
 /**
  * Enhanced useAuth hook that leverages Better Auth session.
@@ -9,10 +10,11 @@ import { getLoginCallbackURL } from '@/lib/utils/login-redirect';
  */
 export function useAuth() {
     const { data: session, isPending, error } = authClient.useSession();
+    const user: EnrichedUser | null = session?.user ?? null;
 
     return {
         isAuthenticated: !!session,
-        user: session?.user ?? null,
+        user,
         isPending,
         error
     };

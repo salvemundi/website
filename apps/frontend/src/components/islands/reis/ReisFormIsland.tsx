@@ -8,8 +8,8 @@ import { ReisSignupStatus } from './ReisSignupStatus';
 import { ReisRegistrationForm } from './ReisRegistrationForm';
 import { RefreshCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { ActionIcon, Card, Group, Stack, Title } from '@mantine/core';
 import { revalidateReisAction } from '@/server/actions/events/reis/reis-public.actions';
-import { StandardFormCard } from '@/components/ui/forms/StandardFormCard';
 import { type EnrichedUser } from '@/types/auth';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -54,21 +54,26 @@ export function ReisFormIsland({
     };
 
     return (
-        <StandardFormCard
-            title={nextTrip?.name || 'Inschrijven'}
-            className="w-full lg:w-1/2"
-            headerActions={
-                <button
-                    onClick={() => { void handleRefresh(); }}
-                    disabled={refreshing}
-                    className="icon-button rounded-2xl bg-purple-500/5 p-3 text-(--text-muted) transition-all hover:bg-purple-500/10 hover:text-purple-500 active:scale-90 disabled:opacity-50"
-                    title="Gegevens vernieuwen"
-                    type="button">
-                    <RefreshCcw className={`size-5 ${refreshing ? 'animate-spin' : ''}`} />
-                </button>
-            }
-        >
-            <div className="duration-700">
+        <Card padding="xl" radius="xl" shadow="xl" withBorder w={{ base: '100%', lg: '50%' }}>
+            <Stack gap="lg">
+                <Group justify="space-between" align="center" gap="md">
+                    <Title order={2} size="h2" c="brand">
+                        {nextTrip?.name || 'Inschrijven'}
+                    </Title>
+                    <ActionIcon
+                        type="button"
+                        variant="light"
+                        color="brand"
+                        size="xl"
+                        onClick={() => { void handleRefresh(); }}
+                        disabled={refreshing}
+                        title="Gegevens vernieuwen"
+                        aria-label="Gegevens vernieuwen"
+                    >
+                        <RefreshCcw size={18} className={refreshing ? 'animate-spin' : undefined} />
+                    </ActionIcon>
+                </Group>
+
                 {userSignup ? (
                     <ReisSignupStatus
                         userSignup={userSignup}
@@ -85,7 +90,7 @@ export function ReisFormIsland({
                         termsFileUrl={termsFileUrl}
                     />
                 )}
-            </div>
-        </StandardFormCard>
+            </Stack>
+        </Card>
     );
 }

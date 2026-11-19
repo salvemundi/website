@@ -1,6 +1,7 @@
 'use client';
 
-import { ChevronRight, CreditCard, MessageCircle, Briefcase, FileSignature, Users, Pizza, Camera } from 'lucide-react';
+import { CreditCard, MessageCircle, Briefcase, FileSignature, Users, Pizza, Camera } from 'lucide-react';
+import { SimpleGrid } from '@mantine/core';
 import { Tile, QuickLink } from './ProfielUI';
 import { ROUTES } from '@/lib/config/routes';
 
@@ -13,51 +14,51 @@ interface ProfielQuickLinksProps {
 export default function ProfielQuickLinks({ user = {} }: ProfielQuickLinksProps) {
     const isMember = user.membership_status === 'active';
     return (
-        <Tile title="Snelle links" icon={<ChevronRight className="size-5" />} className="h-fit">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Tile title="Snelle links">
+            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                 <QuickLink
                     label="Lidmaatschap"
-                    icon={<CreditCard className="size-6" />}
+                    icon={<CreditCard size={22} />}
                     href="/lidmaatschap"
                 />
                 <QuickLink
                     label="Transacties"
-                    icon={<CreditCard className="size-6" />}
+                    icon={<CreditCard size={22} />}
                     href="/profiel/transacties"
                 />
                 <QuickLink
                     label="WhatsApp"
-                    icon={<MessageCircle className="size-6" />}
+                    icon={<MessageCircle size={22} />}
                     href="/profiel/whatsapp"
                     locked={!isMember}
                 />
                 <QuickLink
                     label="Bijbanenbank"
-                    icon={<Briefcase className="size-6" />}
+                    icon={<Briefcase size={22} />}
                     href={ROUTES.BIJBANENBANK}
                 />
                 <QuickLink
                     label="Clubs"
-                    icon={<Users className="size-6" />}
+                    icon={<Users size={22} />}
                     href={ROUTES.CLUBS}
                 />
                 <QuickLink
                     label="Pizza-rondes"
-                    icon={<Pizza className="size-6" />}
+                    icon={<Pizza size={22} />}
                     href={ROUTES.PIZZA}
                 />
                 <QuickLink
                     label="Camera aanvragen"
-                    icon={<Camera className="size-6" />}
+                    icon={<Camera size={22} />}
                     href={ROUTES.CAMERA}
                     locked={!isMember}
                 />
                 <QuickLink
                     label="Mijn NDA's"
-                    icon={<FileSignature className="size-6" />}
+                    icon={<FileSignature size={22} />}
                     href="/profiel/nda"
                 />
-            </div>
+            </SimpleGrid>
         </Tile>
     );
 }

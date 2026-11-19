@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Button, Group, Modal, Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 
 interface NameConfirmModalProps {
     isOpen: boolean;
@@ -12,103 +11,75 @@ interface NameConfirmModalProps {
 }
 
 export function NameConfirmModal({ isOpen, name, onConfirm, onCancel }: NameConfirmModalProps) {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-            return () => { document.body.style.overflow = 'unset'; };
-        }
-    }, [isOpen]);
-
-    useEffect(() => {
-        const handleEsc = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && isOpen) {
-                onCancel();
+    return (
+        <Modal
+            opened={isOpen}
+            onClose={onCancel}
+            centered
+            radius="xl"
+            size="md"
+            title={
+                <Group gap="xs">
+                    <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                        <AlertCircle size={18} />
+                    </ThemeIcon>
+                    <Text size="xs" fw={700} tt="uppercase">
+                        Naam Bevestigen
+                    </Text>
+                </Group>
             }
-        };
-        window.addEventListener('keydown', handleEsc);
-        return () => window.removeEventListener('keydown', handleEsc);
-    }, [isOpen, onCancel]);
+        >
+            <Stack gap="lg" ta="center" pt="xs">
+                <Title order={3} size="h2">
+                    Klopt je voornaam?
+                </Title>
 
-    if (!mounted || !isOpen) return null;
+                <Paper
+                    p="lg"
+                    radius="lg"
+                    withBorder
+                    style={{
+                        backgroundColor: 'color-mix(in srgb, var(--primary) 6%, transparent)',
+                        borderColor: 'color-mix(in srgb, var(--primary) 20%, transparent)',
+                    }}
+                >
+                    <Text size="sm" fw={500} c="dimmed" mb={4}>
+                        Ingevulde voornaam:
+                    </Text>
+                    <Text size="xl" fw={700} c="brand">
+                        {name}
+                    </Text>
+                </Paper>
 
-    return createPortal(
-        <div className="fixed inset-0 isolate z-9999 flex items-center justify-center p-4 sm:p-6">
-            <div
-                className="animate-in fade-in absolute inset-0 bg-slate-950/60 backdrop-blur-xl duration-300"
-                onClick={onCancel}
-            />
+                <Text size="md" c="dimmed">
+                    Komt dit <Text span fw={700} fs="italic" c="var(--mantine-color-text)">exact</Text> overeen met de naam op je paspoort of ID-kaart?
+                    <br />
+                    <Text span size="xs" mt="xs" display="inline-block">
+                        Een typefout kan leiden tot problemen bij de gate!
+                    </Text>
+                </Text>
 
-            <div
-                className="animate-in fade-in zoom-in-95 slide-in-from-bottom-4 relative z-10 flex w-full max-w-xl flex-col overflow-hidden rounded-[2.5rem] border border-(--border-color) bg-(--bg-card) shadow-(--shadow-card-elevated) ring-1 ring-white/10 duration-300 ease-out dark:border-white/10"
-            >
-                <div className="pointer-events-none absolute -top-24 -right-24 size-48 rounded-full bg-theme-purple/20 blur-[80px]" />
-                <div className="pointer-events-none absolute -bottom-24 -left-24 size-48 rounded-full bg-theme-purple/10 blur-[80px]" />
-
-                <div className="relative flex items-center justify-between px-8 pt-8 pb-4">
-                    <div className="flex items-center gap-3">
-                        <div className="rounded-2xl bg-theme-purple/10 p-2.5 text-theme-purple">
-                            <AlertCircle className="size-5" />
-                        </div>
-                        <h2 className="text-[10px] font-bold tracking-[0.2em] text-(--text-main)">
-                            Naam Bevestigen
-                        </h2>
-                    </div>
-                    <button
+                <Stack gap="xs">
+                    <Button
+                        type="button"
+                        fullWidth
+                        size="md"
+                        leftSection={<CheckCircle2 size={18} />}
+                        onClick={onConfirm}
+                    >
+                        Ja, dit klopt exact
+                    </Button>
+                    <Button
+                        type="button"
+                        fullWidth
+                        size="md"
+                        variant="default"
                         onClick={onCancel}
-                        className="icon-button rounded-full p-2.5 text-(--text-muted) transition-all hover:text-(--text-main) active:scale-90"
-                        type="button">
-                        <X className="size-5" />
-                    </button>
-                </div>
-
-                <div className="px-10 py-6 text-center">
-                    <h3 className="mb-4 text-3xl font-bold tracking-tight text-(--text-main)">
-                        Klopt je voornaam?
-                    </h3>
-
-                    <div className="mb-8 rounded-3xl border border-theme-purple/10 bg-theme-purple/5 p-6">
-                        <p className="mb-2 text-sm font-medium tracking-wide text-(--text-muted) opacity-70">
-                            Ingevulde voornaam:
-                        </p>
-                        <p className="text-2xl font-bold tracking-tight text-theme-purple">
-                            {name}
-                        </p>
-                    </div>
-
-                    <p className="mb-8 text-base leading-relaxed text-(--text-muted)">
-                        Komt dit <span className="font-bold text-(--text-main) italic">exact</span> overeen met de naam op je paspoort of ID-kaart?
-                        <br />
-                        <span className="mt-2 inline-block text-xs opacity-80">
-                            Een typefout kan leiden tot problemen bij de gate!
-                        </span>
-                    </p>
-
-                    <div className="mb-2 flex flex-col gap-3">
-                        <button
-                            onClick={onConfirm}
-                            className="form-button flex w-full items-center justify-center gap-3 rounded-2xl bg-theme-purple py-4 text-sm font-bold tracking-wider text-white shadow-lg shadow-theme-purple/20 transition-all hover:bg-theme-purple-dark"
-                            type="button">
-                            <CheckCircle2 className="size-5" />
-                            Ja, dit klopt exact
-                        </button>
-                        <button
-                            onClick={onCancel}
-                            className="tab-button w-full rounded-2xl border border-(--border-color) bg-(--bg-card) py-4 text-sm font-bold text-(--text-main) transition-all hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
-                            type="button">
-                            Nee, aanpassen
-                        </button>
-                    </div>
-                </div>
-
-                <div className="h-1.5 w-full bg-linear-to-r from-transparent via-theme-purple/30 to-transparent opacity-50" />
-            </div>
-        </div>,
-        document.body
+                    >
+                        Nee, aanpassen
+                    </Button>
+                </Stack>
+            </Stack>
+        </Modal>
     );
 }

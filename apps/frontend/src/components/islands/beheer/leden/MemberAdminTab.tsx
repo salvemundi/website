@@ -1,19 +1,32 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-    Shield, 
-    ShieldAlert, 
-    Plus, 
-    Loader2, 
-    Award, 
-    Trash, 
-    CalendarPlus, 
-    RefreshCw 
+import {
+    Shield,
+    ShieldAlert,
+    Plus,
+    Award,
+    Trash,
+    CalendarPlus,
+    RefreshCw,
 } from 'lucide-react';
+import {
+    ActionIcon,
+    Alert,
+    Box,
+    Button,
+    Card,
+    Group,
+    Loader,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
 import { cleanName } from './LedenSharedComponents';
 import { COMMITTEES } from '@/shared/lib/permissions-config';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 
 interface Member {
@@ -43,10 +56,10 @@ interface Props {
     member: Member;
     optimisticMemberships: CommitteeMembership[];
     availableCommittees: Committee[];
-    onProvision: () => Promise<{ success: boolean, message: string } | null>;
+    onProvision: () => Promise<{ success: boolean; message: string } | null>;
     onMembershipChange: (groupId: string, action: 'add' | 'remove', name: string) => Promise<void>;
-    onRenew: (months: number) => Promise<{ success: boolean, message: string } | null>;
-    onSync: () => Promise<{ success: boolean, message: string } | null>;
+    onRenew: (months: number) => Promise<{ success: boolean; message: string } | null>;
+    onSync: () => Promise<{ success: boolean; message: string } | null>;
     isActionInProgress: string | null;
 }
 
@@ -58,9 +71,9 @@ export default function MemberAdminTab({
     onMembershipChange,
     onRenew,
     onSync,
-    isActionInProgress
+    isActionInProgress,
 }: Props) {
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [provisioningLoading, setProvisioningLoading] = useState(false);
     const [renewMonths, setRenewMonths] = useState(12);
     const [renewLoading, setRenewLoading] = useState(false);
@@ -94,159 +107,230 @@ export default function MemberAdminTab({
     };
 
     return (
-        <div className="space-y-6">
-            {/* Azure Provisioning */}
+        <Stack gap="lg">
             {!member.entra_id && (
-                <div className="rounded-(--beheer-radius) border border-l-8 border-(--beheer-border) border-l-amber-500 bg-(--beheer-card-bg) p-8 shadow-sm">
-                    <div className="mb-8 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="flex size-12 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500">
-                                <ShieldAlert className="size-6" />
-                            </div>
-                            <div>
-                                <h3 className="text-xl leading-tight font-semibold text-(--beheer-text)">Azure Account Ontbreekt</h3>
-                                <p className="mt-1 text-xs font-semibold text-(--beheer-text-muted) opacity-60">Dit lid is nog niet bekend in Microsoft Entra ID.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mb-8 rounded-xl border border-amber-500/10 bg-amber-500/5 p-4 text-xs leading-relaxed font-semibold text-amber-700 dark:text-amber-300">
-                        Door een account aan te maken krijgt het lid een salvemundi.nl e-mailadres en toegang tot Office 365. 
-                        Het tijdelijke wachtwoord wordt direct naar hun persoonlijke e-mailadres gestuurd.
-                    </div>
-                    <button
-                        onClick={() => { void handleProvision(); }}
-                        disabled={provisioningLoading}
-                        className="beheer-button flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-amber-500 px-8 py-4 text-xs font-semibold text-white shadow-lg shadow-amber-500/20 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 sm:w-auto"
-                        type="button">
-                        {provisioningLoading ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
-                        Azure AD Account Aanmaken
-                    </button>
-                </div>
+                <Card p="xl" shadow="sm" style={{ borderLeft: '6px solid var(--accent)' }}>
+                    <Stack gap="lg">
+                        <Group gap="md">
+                            <ThemeIcon size={48} radius="md" variant="light" color="accent">
+                                <ShieldAlert size={22} />
+                            </ThemeIcon>
+                            <Box>
+                                <Title order={3} size="h4">
+                                    Azure Account Ontbreekt
+                                </Title>
+                                <Text size="xs" c="dimmed">
+                                    Dit lid is nog niet bekend in Microsoft Entra ID.
+                                </Text>
+                            </Box>
+                        </Group>
+
+                        <Alert color="accent" variant="light">
+                            Door een account aan te maken krijgt het lid een salvemundi.nl e-mailadres en toegang tot Office 365. Het tijdelijke wachtwoord wordt direct naar hun persoonlijke e-mailadres gestuurd.
+                        </Alert>
+
+                        <Button
+                            type="button"
+                            color="accent"
+                            w={{ base: '100%', sm: 'fit-content' }}
+                            loading={provisioningLoading}
+                            leftSection={<Plus size={16} />}
+                            onClick={() => {
+                                void handleProvision();
+                            }}
+                        >
+                            Azure AD Account Aanmaken
+                        </Button>
+                    </Stack>
+                </Card>
             )}
 
-            {/* Azure Committee Management */}
-            <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-sm">
-                <div className="mb-8 flex items-center justify-between">
-                    <div>
-                        <h3 className="text-xl leading-tight font-semibold text-(--beheer-text)">Azure Groepsbeheer</h3>
-                        <p className="mt-1 text-xs font-semibold text-(--beheer-text-muted) opacity-60">Lidmaatschappen direct in Azure AD aanpassen</p>
-                    </div>
-                    <div className="flex size-12 items-center justify-center rounded-2xl bg-(--beheer-accent)/10 text-(--beheer-accent) shadow-sm">
-                        <Shield className="size-6" />
-                    </div>
-                </div>
+            <Card p="xl" shadow="sm">
+                <Stack gap="xl">
+                    <Group justify="space-between" wrap="nowrap">
+                        <Box>
+                            <Title order={3} size="h4">
+                                Azure Groepsbeheer
+                            </Title>
+                            <Text size="xs" c="dimmed">
+                                Lidmaatschappen direct in Azure AD aanpassen
+                            </Text>
+                        </Box>
+                        <ThemeIcon size={48} radius="md" variant="light" color="brand">
+                            <Shield size={22} />
+                        </ThemeIcon>
+                    </Group>
 
-                <div className="mb-10 space-y-6">
-                    <h4 className="text-xs font-semibold text-(--beheer-text-muted) opacity-40">Huidige Lidmaatschappen</h4>
-                    {optimisticMemberships.filter(m => m.committee_id.azure_group_id).length === 0 ? (
-                        <p className="text-xs font-medium text-(--beheer-text-muted) italic opacity-30">Geen Azure-gekoppelde commissies.</p>
-                    ) : (
-                        <div className="grid grid-cols-1 gap-3">
-                            {optimisticMemberships.filter(m => m.committee_id.azure_group_id).map(m => {
-                                const groupId = m.committee_id.azure_group_id;
-                                if (!groupId) return null;
-                                return (
-                                    <div key={m.id} className="group flex items-center justify-between rounded-2xl border border-(--beheer-border) bg-(--beheer-card-soft)/50 p-4">
-                                        <div className="flex items-center gap-3">
-                                            <Award className={`size-5 ${m.is_leader && m.committee_id.azure_group_id !== COMMITTEES.BESTUUR ? 'text-(--beheer-accent)' : 'text-(--beheer-text-muted) opacity-20'}`} />
-                                            <span className="text-sm font-semibold text-(--beheer-text)">{cleanName(m.committee_id.name)}</span>
-                                        </div>
-                                        <button
-                                            onClick={() => { void onMembershipChange(groupId, 'remove', m.committee_id.name); }}
-                                            disabled={isActionInProgress === `remove-${m.committee_id.azure_group_id}`}
-                                            className="icon-button cursor-pointer rounded-xl p-2 text-(--beheer-text-muted) transition-all hover:bg-red-500/10 hover:text-red-500 disabled:opacity-50"
-                                            type="button">
-                                            {isActionInProgress === `remove-${m.committee_id.azure_group_id}` ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
-                                        </button>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
+                    <Stack gap="sm">
+                        <Text size="xs" fw={600} c="dimmed">
+                            Huidige Lidmaatschappen
+                        </Text>
+                        {optimisticMemberships.filter((m) => m.committee_id.azure_group_id).length === 0 ? (
+                            <Text size="xs" c="dimmed" fs="italic">
+                                Geen Azure-gekoppelde commissies.
+                            </Text>
+                        ) : (
+                            <Stack gap="xs">
+                                {optimisticMemberships
+                                    .filter((m) => m.committee_id.azure_group_id)
+                                    .map((m) => {
+                                        const groupId = m.committee_id.azure_group_id;
+                                        if (!groupId) return null;
+                                        const isLeader =
+                                            m.is_leader &&
+                                            m.committee_id.azure_group_id !== COMMITTEES.BESTUUR;
+                                        return (
+                                            <Paper key={m.id} p="md" withBorder radius="md">
+                                                <Group justify="space-between" wrap="nowrap">
+                                                    <Group gap="sm" wrap="nowrap">
+                                                        <Text span c={isLeader ? 'brand' : 'dimmed'} lh={1}>
+                                                            <Award size={18} />
+                                                        </Text>
+                                                        <Text size="sm" fw={600}>
+                                                            {cleanName(m.committee_id.name)}
+                                                        </Text>
+                                                    </Group>
+                                                    <ActionIcon
+                                                        type="button"
+                                                        variant="subtle"
+                                                        color="error"
+                                                        onClick={() => {
+                                                            void onMembershipChange(
+                                                                groupId,
+                                                                'remove',
+                                                                m.committee_id.name
+                                                            );
+                                                        }}
+                                                        loading={isActionInProgress === `remove-${groupId}`}
+                                                        aria-label={`Verwijder uit ${cleanName(m.committee_id.name)}`}
+                                                    >
+                                                        <Trash size={16} />
+                                                    </ActionIcon>
+                                                </Group>
+                                            </Paper>
+                                        );
+                                    })}
+                            </Stack>
+                        )}
+                    </Stack>
 
-                <div className="space-y-6">
-                    <h4 className="text-xs font-semibold text-(--beheer-text-muted) opacity-40">Toevoegen aan Azure Groep</h4>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        {availableCommittees.map(c => (
-                            <button
-                                key={c.id}
-                                onClick={() => {
-                                    if (c.azure_group_id) {
-                                        void onMembershipChange(c.azure_group_id, 'add', c.name);
+                    <Stack gap="sm">
+                        <Text size="xs" fw={600} c="dimmed">
+                            Toevoegen aan Azure Groep
+                        </Text>
+                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                            {availableCommittees.map((c) => (
+                                <Button
+                                    key={c.id}
+                                    type="button"
+                                    variant="default"
+                                    h="auto"
+                                    py="sm"
+                                    px="md"
+                                    justify="space-between"
+                                    disabled={isActionInProgress === `add-${c.azure_group_id}`}
+                                    onClick={() => {
+                                        if (c.azure_group_id) {
+                                            void onMembershipChange(c.azure_group_id, 'add', c.name);
+                                        }
+                                    }}
+                                    rightSection={
+                                        isActionInProgress === `add-${c.azure_group_id}` ? (
+                                            <Loader size={14} />
+                                        ) : (
+                                            <Plus size={16} />
+                                        )
                                     }
-                                }}
-                                disabled={isActionInProgress === `add-${c.azure_group_id}`}
-                                className="group beheer-button flex items-center justify-between rounded-2xl border border-(--beheer-border) bg-(--beheer-card-bg) p-4 text-left shadow-sm transition-all hover:border-(--beheer-accent)/50 hover:bg-(--beheer-accent)/5"
-                                type="button">
-                                <div className="min-w-0 flex-1">
-                                    <p className="truncate text-xs font-semibold text-(--beheer-text)">{cleanName(c.name)}</p>
-                                    <p className="text-[9px] font-medium text-(--beheer-text-muted) opacity-60">Azure ID: {c.azure_group_id?.substring(0, 8)}...</p>
-                                </div>
-                                <div className="rounded-lg bg-(--beheer-card-soft) p-2 transition-all group-hover:bg-(--beheer-accent) group-hover:text-white">
-                                    {isActionInProgress === `add-${c.azure_group_id}` ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
+                                >
+                                    <Box ta="left" miw={0}>
+                                        <Text size="xs" fw={600} truncate>
+                                            {cleanName(c.name)}
+                                        </Text>
+                                        <Text size="xs" c="dimmed">
+                                            Azure ID: {c.azure_group_id?.substring(0, 8)}...
+                                        </Text>
+                                    </Box>
+                                </Button>
+                            ))}
+                        </SimpleGrid>
+                    </Stack>
+                </Stack>
+            </Card>
 
-            {/* Membership Renewal */}
-            <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-sm">
-                <div className="mb-8 flex items-center gap-4">
-                    <div className="flex size-12 items-center justify-center rounded-2xl bg-green-500/10 text-green-500 shadow-sm">
-                        <CalendarPlus className="size-6" />
-                    </div>
-                    <div>
-                        <h3 className="text-xl leading-tight font-semibold text-(--beheer-text)">Lidmaatschap Verlengen</h3>
-                        <p className="mt-1 text-xs font-semibold text-(--beheer-text-muted) opacity-60">Handmatig verlengen (bv. bij contante betaling)</p>
-                    </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <label className="text-xs font-semibold text-(--beheer-text-muted) opacity-60">Verlengen met:</label>
-                    <div className="flex gap-2">
-                        {[1, 6, 12].map(m => (
-                            <button
-                                key={m}
-                                onClick={() => setRenewMonths(m)}
-                                className={`beheer-button cursor-pointer rounded-xl px-4 py-3 text-xs font-semibold transition-all ${renewMonths === m ? 'bg-(--beheer-accent) text-white shadow-md' : 'bg-(--beheer-card-soft) text-(--beheer-text-muted) hover:bg-(--beheer-border)/50'}`}
-                                type="button">
-                                {m} maand{m > 1 ? 'en' : ''}
-                            </button>
-                        ))}
-                    </div>
-                    <button
-                        onClick={() => { void handleRenew(); }}
-                        disabled={renewLoading}
-                        className="beheer-button flex cursor-pointer items-center gap-2 rounded-xl bg-green-500 px-6 py-3 text-xs font-semibold text-white shadow-lg shadow-green-500/20 transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
-                        type="button">
-                        {renewLoading ? <Loader2 className="size-4 animate-spin" /> : <CalendarPlus className="size-4" />}
-                        Verlengen
-                    </button>
-                    <BeheerToast toast={toast} onClose={hideToast} />
-                </div>
-            </div>
+            <Card p="xl" shadow="sm">
+                <Stack gap="lg">
+                    <Group gap="md">
+                        <ThemeIcon size={48} radius="md" variant="light" color="success">
+                            <CalendarPlus size={22} />
+                        </ThemeIcon>
+                        <Box>
+                            <Title order={3} size="h4">
+                                Lidmaatschap Verlengen
+                            </Title>
+                            <Text size="xs" c="dimmed">
+                                Handmatig verlengen (bv. bij contante betaling)
+                            </Text>
+                        </Box>
+                    </Group>
 
-            {/* Force Sync */}
+                    <Group gap="sm" wrap="wrap">
+                        <Text size="xs" fw={600} c="dimmed">
+                            Verlengen met:
+                        </Text>
+                        <Group gap="xs">
+                            {[1, 6, 12].map((m) => (
+                                <Button
+                                    key={m}
+                                    type="button"
+                                    size="xs"
+                                    variant={renewMonths === m ? 'filled' : 'default'}
+                                    onClick={() => setRenewMonths(m)}
+                                >
+                                    {m} maand{m > 1 ? 'en' : ''}
+                                </Button>
+                            ))}
+                        </Group>
+                        <Button
+                            type="button"
+                            color="success"
+                            loading={renewLoading}
+                            leftSection={<CalendarPlus size={16} />}
+                            onClick={() => {
+                                void handleRenew();
+                            }}
+                        >
+                            Verlengen
+                        </Button>
+                    </Group>
+                </Stack>
+            </Card>
+
             {member.entra_id && (
-                <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-sm">
-                    <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
-                        <div>
-                            <h3 className="text-lg leading-tight font-semibold text-(--beheer-text)">Azure AD Synchronisatie</h3>
-                            <p className="mt-1 text-xs font-semibold text-(--beheer-text-muted) opacity-60">Forceer een directe sync van dit lid met Azure AD.</p>
-                        </div>
-                        <button
-                            onClick={() => { void handleSync(); }}
-                            disabled={syncLoading}
-                            className="beheer-button flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-(--beheer-border)/50 bg-(--beheer-card-soft) px-6 py-3 text-xs font-semibold text-(--beheer-text) transition-all hover:bg-(--beheer-border)/50 active:scale-95 sm:w-auto"
-                            type="button">
-                            <RefreshCw className={`size-4 ${syncLoading ? 'animate-spin' : ''}`} />
+                <Card p="xl" shadow="sm">
+                    <Group justify="space-between" wrap="wrap" gap="md">
+                        <Box>
+                            <Title order={3} size="h5">
+                                Azure AD Synchronisatie
+                            </Title>
+                            <Text size="xs" c="dimmed">
+                                Forceer een directe sync van dit lid met Azure AD.
+                            </Text>
+                        </Box>
+                        <Button
+                            type="button"
+                            variant="default"
+                            w={{ base: '100%', sm: 'auto' }}
+                            loading={syncLoading}
+                            leftSection={<RefreshCw size={16} />}
+                            onClick={() => {
+                                void handleSync();
+                            }}
+                        >
                             Synchroniseer
-                        </button>
-                    </div>
-                </div>
+                        </Button>
+                    </Group>
+                </Card>
             )}
-        </div>
+        </Stack>
     );
 }

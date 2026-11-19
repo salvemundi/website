@@ -1,11 +1,9 @@
 'use client';
 
-import { X, Loader2, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { Button, Modal, SimpleGrid, Stack, Text, Textarea, TextInput, Title } from '@mantine/core';
 import { searchLocations, reverseGeocode, type LocationSearchResult } from '@/shared/lib/utils/geolocation';
-import { IconButton } from '@/components/ui/buttons/IconButton';
-import { Button } from '@/components/ui/buttons/Button';
 import { LocationPicker } from '../LocationPicker';
 import { PhotoUploader } from '../PhotoUploader';
 
@@ -46,7 +44,7 @@ export default function AddStickerModal({
     onRemoveImage,
     imagePreview,
     selectedLocation,
-    setSelectedLocation
+    setSelectedLocation,
 }: AddStickerModalProps) {
     const [addressQuery, setAddressQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
@@ -77,8 +75,6 @@ export default function AddStickerModal({
         return () => clearTimeout(timer);
     }, [addressQuery]);
 
-    if (!show) return null;
-
     const handleAddressSearch = async () => {
         if (!addressQuery) return;
         setIsSearching(true);
@@ -106,7 +102,7 @@ export default function AddStickerModal({
                 ...prev,
                 city: result.city,
                 country: result.country,
-                location_name: shouldAutoFill ? result.city : prev.location_name
+                location_name: shouldAutoFill ? result.city : prev.location_name,
             };
         });
         setAddressQuery(result.displayName);
@@ -139,7 +135,7 @@ export default function AddStickerModal({
                             ...prev,
                             city,
                             country,
-                            location_name: shouldAutoFill ? city : prev.location_name
+                            location_name: shouldAutoFill ? city : prev.location_name,
                         };
                     });
                     setAddressQuery(city && country ? `${city}, ${country}` : addressQuery);
@@ -155,17 +151,13 @@ export default function AddStickerModal({
         );
     };
 
-    const handleUseCurrentLocationSync = () => {
-        handleUseCurrentLocation();
-    };
-
     const handleResetLocation = () => {
         setSelectedLocation(null);
         setFormData((prev) => ({
             ...prev,
             city: '',
             country: '',
-            location_name: isAutoFilledName ? '' : prev.location_name
+            location_name: isAutoFilledName ? '' : prev.location_name,
         }));
         setIsAutoFilledName(false);
         setAddressQuery('');
@@ -179,116 +171,104 @@ export default function AddStickerModal({
         }
     };
 
-    return createPortal(
-        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 p-2 backdrop-blur-xl sm:p-4">
-            <div className="flex max-h-[95vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-(--bg-card) shadow-2xl">
-                <div className="flex shrink-0 items-center justify-between bg-linear-to-r from-(--theme-purple) to-(--theme-purple-dark) p-4 text-white sm:p-6">
-                    <div>
-                        <h2 className="text-xl font-black tracking-tighter uppercase italic sm:text-2xl">Nieuwe Sticker <span className="text-white/70">Plakken</span></h2>
-                        <p className="mt-1 text-[10px] font-black tracking-widest uppercase opacity-80">{selectedLocation ? 'Locatie geselecteerd op kaart' : 'Selecteer of zoek locatie'}</p>
-                    </div>
-                    <IconButton onClick={onClose} aria-label="Sluiten">
-                        <X className="size-6" />
-                    </IconButton>
-                </div>
+    return (
+        <Modal
+            opened={show}
+            onClose={onClose}
+            size="lg"
+            radius="lg"
+            centered
+            title={
+                <Stack gap={2}>
+                    <Title order={3} size="h4" c="brand">
+                        Nieuwe Sticker Plakken
+                    </Title>
+                    <Text size="xs" c="dimmed">
+                        {selectedLocation ? 'Locatie geselecteerd op kaart' : 'Selecteer of zoek locatie'}
+                    </Text>
+                </Stack>
+            }
+        >
+            <form onSubmit={onSubmit} autoComplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other">
+                <Stack gap="md">
+                    <LocationPicker
+                        selectedLocation={selectedLocation}
+                        formData={formData}
+                        onReset={handleResetLocation}
+                        onUseCurrentLocation={handleUseCurrentLocation}
+                        isLocatingCurrent={isLocatingCurrent}
+                        addressQuery={addressQuery}
+                        onAddressQueryChange={setAddressQuery}
+                        onAddressSearch={handleAddressSearchSync}
+                        isSearching={isSearching}
+                        searchResults={searchResults}
+                        onSelectResult={handleSelectResult}
+                        locationError={locationError}
+                    />
 
-                <form onSubmit={onSubmit} autoComplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" className="space-y-6 overflow-y-auto p-4 sm:p-8">
-                    <div className="space-y-4">
-                        <LocationPicker
-                            selectedLocation={selectedLocation}
-                            formData={formData}
-                            onReset={handleResetLocation}
-                            onUseCurrentLocation={handleUseCurrentLocationSync}
-                            isLocatingCurrent={isLocatingCurrent}
-                            addressQuery={addressQuery}
-                            onAddressQueryChange={setAddressQuery}
-                            onAddressSearch={handleAddressSearchSync}
-                            isSearching={isSearching}
-                            searchResults={searchResults}
-                            onSelectResult={handleSelectResult}
-                            locationError={locationError}
+                    <TextInput
+                        label="Naam van de Locatie"
+                        required
+                        placeholder="Bijv. Eiffeltoren, Fontys R10..."
+                        value={formData.location_name}
+                        onChange={(e) => {
+                            setIsAutoFilledName(false);
+                            setFormData((prev) => ({ ...prev, location_name: e.currentTarget.value }));
+                        }}
+                    />
+
+                    <SimpleGrid cols={2} spacing="md">
+                        <TextInput
+                            label="Stad"
+                            placeholder="Vul de stad in"
+                            value={formData.city}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, city: e.currentTarget.value }))}
                         />
+                        <TextInput
+                            label="Land"
+                            placeholder="Vul het land in"
+                            value={formData.country}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, country: e.currentTarget.value }))}
+                        />
+                    </SimpleGrid>
 
-                        <div>
-                            <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Naam van de Locatie</label>
-                            <input
-                                required
-                                type="text"
-                                placeholder="Bijv. Eiffeltoren, Fontys R10..."
-                                value={formData.location_name}
-                                onChange={(e) => {
-                                    setIsAutoFilledName(false);
-                                    setFormData((prev) => ({ ...prev, location_name: e.target.value }));
-                                }}
-                                suppressHydrationWarning
-                                className="form-input w-full rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 px-4 py-3 text-sm transition-all outline-none focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
-                            />
-                        </div>
+                    {selectedLocation && (!formData.city || !formData.country) && (
+                        <Text size="sm" c="dimmed">
+                            Stad en land konden niet automatisch worden bepaald. Vul ze hierboven in.
+                        </Text>
+                    )}
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Stad</label>
-                                <input
-                                    type="text"
-                                    placeholder="Vul de stad in"
-                                    value={formData.city}
-                                    onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
-                                    suppressHydrationWarning
-                                    className="form-input w-full rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 px-4 py-3 text-sm outline-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Land</label>
-                                <input
-                                    type="text"
-                                    placeholder="Vul het land in"
-                                    value={formData.country}
-                                    onChange={(e) => setFormData((prev) => ({ ...prev, country: e.target.value }))}
-                                    suppressHydrationWarning
-                                    className="form-input w-full rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 px-4 py-3 text-sm outline-none"
-                                />
-                            </div>
-                        </div>
+                    <Textarea
+                        label="Beschrijving"
+                        rows={3}
+                        placeholder="Wat een mooie plek voor een Salve sticker!"
+                        value={formData.description}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, description: e.currentTarget.value }))}
+                    />
 
-                        {selectedLocation && (!formData.city || !formData.country) && (
-                            <p className="text-sm text-(--text-muted)">
-                                Stad en land konden niet automatisch worden bepaald. Vul ze hierboven in.
-                            </p>
-                        )}
-
-                        <div>
-                            <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Beschrijving</label>
-                            <textarea
-                                rows={3}
-                                placeholder="Wat een mooie plek voor een Salve sticker!"
-                                value={formData.description}
-                                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                                className="form-input w-full resize-none rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 px-4 py-3 text-sm transition-all outline-none focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="mb-2 ml-1 block text-[10px] font-black tracking-widest text-(--text-muted) uppercase">Foto Bewijs</label>
-                            <PhotoUploader
-                                imagePreview={imagePreview}
-                                onImageChange={handleImageChange}
-                                onRemoveImage={handleRemovePhoto}
-                            />
-                        </div>
-                    </div>
+                    <Stack gap={6}>
+                        <Text size="sm" fw={500}>
+                            Foto Bewijs
+                        </Text>
+                        <PhotoUploader
+                            imagePreview={imagePreview}
+                            onImageChange={handleImageChange}
+                            onRemoveImage={handleRemovePhoto}
+                        />
+                    </Stack>
 
                     <Button
                         type="submit"
                         size="lg"
+                        fullWidth
+                        loading={isPending}
                         disabled={isPending || !selectedLocation || !formData.city.trim() || !formData.country.trim()}
-                        className="flex w-full items-center justify-center gap-3 rounded-2xl bg-linear-to-r from-(--theme-purple) to-orange-500 font-black tracking-[0.2em] text-white uppercase shadow-xl hover:shadow-2xl active:scale-95"
+                        leftSection={<Plus size={18} />}
                     >
-                        {isPending ? <Loader2 className="size-5 animate-spin" /> : <Plus className="size-5" />}
                         Sticker Registreren
                     </Button>
-                </form>
-            </div>
-        </div>,
-        document.body
+                </Stack>
+            </form>
+        </Modal>
     );
 }

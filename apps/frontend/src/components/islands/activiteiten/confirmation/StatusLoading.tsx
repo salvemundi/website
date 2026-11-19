@@ -1,21 +1,21 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
+import { Loader, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 
 export default function StatusLoading() {
     return (
-        <div className="animate-in fade-in space-y-8 py-20 text-center duration-500">
-            <div className="mx-auto flex size-24 items-center justify-center rounded-full bg-(--theme-purple)/10 ring-1 ring-(--theme-purple)/20">
-                <Loader2 className="size-12 animate-spin text-(--theme-purple)" />
-            </div>
-            <div className="space-y-2">
-                <h2 className="text-4xl font-semibold tracking-tighter text-(--text-main) italic">
-                    Betaling <span className="text-(--theme-purple)">verifiëren</span>
-                </h2>
-                <p className="mx-auto max-w-sm text-lg font-medium text-(--text-muted)">
+        <Stack align="center" gap="xl" py="xl" ta="center">
+            <ThemeIcon size={96} radius="xl" variant="light" color="brand">
+                <Loader size="lg" color="brand" />
+            </ThemeIcon>
+            <Stack gap="xs" align="center">
+                <Title order={2} fz={{ base: '2rem', md: '2.5rem' }}>
+                    Betaling <Text span c="brand" inherit>verifiëren</Text>
+                </Title>
+                <Text size="lg" c="dimmed" maw={400}>
                     Eén moment geduld, we controleren de status van je transactie bij de bank...
-                </p>
-            </div>
-        </div>
+                </Text>
+            </Stack>
+        </Stack>
     );
 }

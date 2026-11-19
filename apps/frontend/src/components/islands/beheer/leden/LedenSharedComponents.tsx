@@ -1,13 +1,17 @@
 'use client';
 
-import { 
-    Shield, 
-    Award, 
-    Hash 
-} from 'lucide-react';
+import { Shield, Award, Hash, type LucideIcon } from 'lucide-react';
+import {
+    Badge,
+    Box,
+    Card,
+    Group,
+    Paper,
+    Stack,
+    Text,
+    ThemeIcon,
+} from '@mantine/core';
 import { COMMITTEES } from '@/shared/lib/permissions-config';
-
-import { LucideIcon } from 'lucide-react';
 
 interface CommitteeMembership {
     committee_id: {
@@ -17,49 +21,85 @@ interface CommitteeMembership {
     is_leader?: boolean;
 }
 
-export function InfoRow({ icon: Icon, label, value }: { icon: LucideIcon, label: string, value: string }) {
+export function InfoRow({
+    icon: Icon,
+    label,
+    value,
+}: {
+    icon: LucideIcon;
+    label: string;
+    value: string;
+}) {
     return (
-        <div className="group flex items-center gap-4">
-            <div className="squircle flex size-10 shrink-0 items-center justify-center border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text-muted) transition-colors group-hover:text-(--beheer-accent)">
-                <Icon className="size-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-                <p className="mb-0.5 text-xs font-semibold text-(--beheer-text-muted)">{label}</p>
-                <p className="truncate text-sm font-semibold text-(--beheer-text)">{value}</p>
-            </div>
-        </div>
+        <Group gap="md" wrap="nowrap">
+            <ThemeIcon size={40} variant="default" radius="md">
+                <Icon size={18} />
+            </ThemeIcon>
+            <Box miw={0} flex={1}>
+                <Text size="xs" fw={600} c="dimmed">
+                    {label}
+                </Text>
+                <Text size="sm" fw={600} truncate>
+                    {value}
+                </Text>
+            </Box>
+        </Group>
     );
 }
 
-export function CommitteeCard({ membership, cleanName }: { membership: CommitteeMembership, cleanName: (n: string) => string }) {
+export function CommitteeCard({
+    membership,
+    cleanName,
+}: {
+    membership: CommitteeMembership;
+    cleanName: (n: string) => string;
+}) {
     return (
-        <div className="squircle-lg group flex flex-col gap-3 border border-(--beheer-border) bg-(--beheer-card-bg) p-5 shadow-sm transition-all hover:border-(--beheer-accent)/30">
-            <div className="flex items-center gap-4">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--beheer-accent)/10 text-(--beheer-accent) transition-transform group-hover:scale-110">
-                    <Shield className="size-5" />
-                </div>
-                <div className="min-w-0">
-                    <p className="truncate font-semibold text-(--beheer-text)">{cleanName(membership.committee_id.name)}</p>
-                    {membership.is_leader && membership.committee_id.azure_group_id !== COMMITTEES.BESTUUR && (
-                        <span className="mt-0.5 inline-flex items-center gap-1.5 text-[10px] font-semibold text-(--beheer-accent)">
-                            <Award className="size-3" />
-                            Commissie Leider
-                        </span>
-                    )}
-                </div>
-            </div>
-        </div>
+        <Card p="md" shadow="sm">
+            <Group gap="md" wrap="nowrap">
+                <ThemeIcon size={40} radius="xl" variant="light" color="brand">
+                    <Shield size={18} />
+                </ThemeIcon>
+                <Box miw={0} flex={1}>
+                    <Text fw={600} truncate>
+                        {cleanName(membership.committee_id.name)}
+                    </Text>
+                    {membership.is_leader &&
+                        membership.committee_id.azure_group_id !== COMMITTEES.BESTUUR && (
+                            <Badge
+                                mt={4}
+                                size="xs"
+                                variant="light"
+                                color="brand"
+                                leftSection={<Award size={12} />}
+                            >
+                                Commissie Leider
+                            </Badge>
+                        )}
+                </Box>
+            </Group>
+        </Card>
     );
 }
 
-export function GroupCard({ membership, cleanName }: { membership: CommitteeMembership, cleanName: (n: string) => string }) {
+export function GroupCard({
+    membership,
+    cleanName,
+}: {
+    membership: CommitteeMembership;
+    cleanName: (n: string) => string;
+}) {
     return (
-        <div className="squircle group flex items-center gap-4 border border-(--beheer-border) bg-(--beheer-card-bg) p-4 shadow-sm transition-all hover:border-(--beheer-accent)/30">
-            <div className="squircle flex size-10 shrink-0 items-center justify-center border border-(--beheer-border) bg-(--beheer-card-soft) text-(--beheer-text-muted) shadow-sm transition-all group-hover:bg-(--beheer-accent) group-hover:text-white">
-                <Hash className="size-5" />
-            </div>
-            <p className="truncate text-sm font-semibold text-(--beheer-text)">{cleanName(membership.committee_id.name)}</p>
-        </div>
+        <Card p="sm" shadow="sm">
+            <Group gap="md" wrap="nowrap">
+                <ThemeIcon size={40} variant="default" radius="md">
+                    <Hash size={18} />
+                </ThemeIcon>
+                <Text size="sm" fw={600} truncate>
+                    {cleanName(membership.committee_id.name)}
+                </Text>
+            </Group>
+        </Card>
     );
 }
 
@@ -67,34 +107,38 @@ export function SignupStatus({ status }: { status: string }) {
     switch (status) {
         case 'paid':
             return (
-                <span className="rounded-full bg-green-500/10 px-3 py-1 text-[10px] font-semibold text-green-500">
+                <Badge size="sm" variant="light" color="success">
                     Betaald
-                </span>
+                </Badge>
             );
         case 'failed':
         case 'canceled':
             return (
-                <span className="rounded-full bg-red-500/10 px-3 py-1 text-[10px] font-semibold text-red-500">
+                <Badge size="sm" variant="light" color="error">
                     Mislukt
-                </span>
+                </Badge>
             );
         default:
             return (
-                <span className="rounded-full bg-amber-500/10 px-3 py-1 text-[10px] font-semibold text-amber-500">
+                <Badge size="sm" variant="light" color="accent">
                     Open
-                </span>
+                </Badge>
             );
     }
 }
 
-export function EmptyState({ icon: Icon, message }: { icon: LucideIcon, message: string }) {
+export function EmptyState({ icon: Icon, message }: { icon: LucideIcon; message: string }) {
     return (
-        <div className="squircle-lg border-2 border-dashed border-(--beheer-border) py-16 text-center">
-            <div className="mb-3 inline-flex size-12 items-center justify-center rounded-full bg-(--beheer-card-soft) text-(--beheer-text-muted) opacity-30">
-                <Icon className="size-6" />
-            </div>
-            <p className="text-sm font-medium text-(--beheer-text-muted) italic">{message}</p>
-        </div>
+        <Paper p="xl" withBorder radius="lg" style={{ borderStyle: 'dashed' }} ta="center">
+            <Stack align="center" gap="xs" py="md">
+                <ThemeIcon size={48} radius="xl" variant="default">
+                    <Icon size={22} />
+                </ThemeIcon>
+                <Text size="sm" fw={500} c="dimmed" fs="italic">
+                    {message}
+                </Text>
+            </Stack>
+        </Paper>
     );
 }
 

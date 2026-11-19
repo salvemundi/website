@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { Container } from '@mantine/core';
 import { getVacancyById } from '@/server/actions/vacancies/vacancies-public.actions';
 import VacancyDetailIsland from '@/components/islands/vacancies/VacancyDetailIsland';
 
@@ -27,10 +28,8 @@ export default async function VacancyDetailPage({ params }: VacancyDetailPagePro
     if (!vacancy) notFound();
 
     return (
-        <div className="pt-8">
-            <div className="container mx-auto max-w-7xl px-4 py-12">
-                <VacancyDetailIsland vacancy={vacancy} />
-            </div>
-        </div>
+        <Container size="xl" py="xl">
+            <VacancyDetailIsland vacancy={vacancy} />
+        </Container>
     );
 }

@@ -3,7 +3,6 @@
 import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import BeheerVisibilityToggle from '@/components/ui/beheer/BeheerVisibilityToggle';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { toggleIntroParentSignups } from '@/server/actions/beheer/intro/beheer-intro-core.actions';
 
@@ -15,7 +14,7 @@ export default function IntroParentSignupToggleIsland({ initialOpen }: Props) {
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(initialOpen);
     const [isPending, startTransition] = useTransition();
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
 
     const handleToggle = () => {
         startTransition(async () => {
@@ -35,14 +34,11 @@ export default function IntroParentSignupToggleIsland({ initialOpen }: Props) {
     };
 
     return (
-        <>
-            <BeheerVisibilityToggle
-                isVisible={isOpen}
-                onToggle={handleToggle}
-                isPending={isPending}
-                label="Inschrijving Ouders"
-            />
-            {toast && <BeheerToast toast={toast} onClose={hideToast} />}
-        </>
+        <BeheerVisibilityToggle
+            isVisible={isOpen}
+            onToggle={handleToggle}
+            isPending={isPending}
+            label="Inschrijving Ouders"
+        />
     );
 }

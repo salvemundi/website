@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
+import { Box } from '@mantine/core';
 import { getTripSignupByToken } from '@/server/actions/events/reis/reis-payment.actions';
 import ReisPaymentFlowIsland from '@/components/islands/reis/ReisPaymentFlowIsland';
 import { TripAccessDenied, TripWaitlisted } from '@/components/ui/reis/ReisPaymentStates';
@@ -40,7 +41,7 @@ export default async function AanbetalingPage({ searchParams }: PageProps) {
     }
 
     return (
-        <div className="w-full">
+        <Box w="100%">
             <ReisPaymentFlowIsland
                 signup={signup}
                 trip={trip}
@@ -49,6 +50,6 @@ export default async function AanbetalingPage({ searchParams }: PageProps) {
                 paymentType="deposit"
                 token={token}
             />
-        </div>
+        </Box>
     );
 }

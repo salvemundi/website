@@ -1,4 +1,7 @@
 import type { Metadata } from 'next';
+import Link from '@/components/ui/Link';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Group, Stack, Text, Title } from '@mantine/core';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import BeheerUnauthorized from '@/components/ui/beheer/BeheerUnauthorized';
 import { notFound } from 'next/navigation';
@@ -6,7 +9,6 @@ import {
     getActivityByIdInternal,
     getActivitySignupsInternal
 } from '@/server/queries/activiteiten/beheer-activiteiten.queries';
-import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
 import AttendanceIsland from '@/components/islands/activiteiten/AttendanceIsland';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -38,7 +40,7 @@ export default async function ScannerPage({ params }: { params: Promise<{ id: st
 
     try {
         eventData = await getActivityByIdInternal(id);
-        
+
         if (eventData) {
             const dbSignups = await getActivitySignupsInternal(id) as unknown as Array<{
                 id?: number | null;
@@ -75,14 +77,32 @@ export default async function ScannerPage({ params }: { params: Promise<{ id: st
     }
 
     return (
-        <BeheerPageShell
-            title="Scanner"
-            subtitle={`Scanner voor: "${eventData.name}"`}
-            backHref={`/beheer/activiteiten/${id}/aanmeldingen`}
-        >
-            <div className="pb-20">
+        <Container size="xl" py="lg">
+            <Stack gap="lg">
+                <Group justify="space-between" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href={`/beheer/activiteiten/${id}/aanmeldingen`}
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                        <Stack gap={2}>
+                            <Title order={1} size="h2" c="brand">
+                                Scanner
+                            </Title>
+                            <Text size="sm" c="dimmed">
+                                Scanner voor: &quot;{eventData.name}&quot;
+                            </Text>
+                        </Stack>
+                    </Group>
+                </Group>
+
                 <AttendanceIsland eventId={String(id)} eventName={eventData.name} initialSignups={initialSignups} />
-            </div>
-        </BeheerPageShell>
+            </Stack>
+        </Container>
     );
 }

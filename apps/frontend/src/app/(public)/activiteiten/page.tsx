@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
+import { Box, Center, Container, Stack, VisuallyHidden } from '@mantine/core';
 import ActivitiesBannerIsland from '@/components/islands/activiteiten/ActivitiesBannerIsland';
 import ActivitiesProviderIsland from '@/components/islands/activiteiten/ActivitiesProviderIsland';
 import { getActivities } from '@/server/actions/events/activiteiten/activiteiten-public.actions';
@@ -30,23 +31,27 @@ export default async function ActivitiesPage() {
     const serverTime = new Date().toISOString();
 
     return (
-        <div className="min-h-screen">
-            <h1 className="sr-only">Activiteiten Salve Mundi</h1>
+        <Box mih="100vh">
+            <VisuallyHidden component="h1">Activiteiten Salve Mundi</VisuallyHidden>
 
-            <div className="flex w-full justify-center p-4 md:py-8">
-                <ActivitiesBannerIsland events={events} serverTime={serverTime} />
-            </div>
+            <Container size="xl" py="xl">
+                <Stack gap="xl">
+                    <Center>
+                        <ActivitiesBannerIsland events={events} serverTime={serverTime} />
+                    </Center>
 
-            <main className="mx-auto w-full max-w-7xl p-4 sm:py-6 md:py-8">
-                <ActivitiesProviderIsland 
-                    events={events} 
-                    serverTime={serverTime} 
-                    initialViewMode={initialViewMode} 
-                    initialShowPast={initialShowPast}
-                    isLoggedIn={!!session}
-                    calendarToken={calendarToken}
-                />
-            </main>
-        </div>
+                    <Box component="main">
+                        <ActivitiesProviderIsland
+                            events={events}
+                            serverTime={serverTime}
+                            initialViewMode={initialViewMode}
+                            initialShowPast={initialShowPast}
+                            isLoggedIn={!!session}
+                            calendarToken={calendarToken}
+                        />
+                    </Box>
+                </Stack>
+            </Container>
+        </Box>
     );
-}
+}

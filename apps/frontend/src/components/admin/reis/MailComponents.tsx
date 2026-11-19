@@ -1,59 +1,75 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Check } from 'lucide-react';
+import { Button, Group, Paper, Select, Stack, Text, ThemeIcon } from '@mantine/core';
 
-export function Card({ title, icon, children }: { title: string, icon: React.ReactNode, children: React.ReactNode }) {
+export function Card({ title, icon, children }: { title: string, icon: ReactNode, children: ReactNode }) {
     return (
-        <div className="rounded-3xl border border-(--beheer-border) bg-(--beheer-card-bg) p-8 shadow-lg">
-            <div className="mb-6 flex items-center gap-3 text-(--beheer-accent)">
-                <div className="rounded-xl bg-(--beheer-accent)/10 p-2">
-                    {icon}
-                </div>
-                <span className="text-[10px] font-semibold tracking-widest text-(--beheer-text-muted) uppercase">{title}</span>
-            </div>
-            {children}
-        </div>
+        <Paper withBorder radius="lg" p="lg">
+            <Stack gap="md">
+                <Group gap="sm">
+                    <ThemeIcon variant="light" color="accent" size="md" radius="md">
+                        {icon}
+                    </ThemeIcon>
+                    <Text size="xs" fw={700} tt="uppercase" c="dimmed" lts={1}>
+                        {title}
+                    </Text>
+                </Group>
+                {children}
+            </Stack>
+        </Paper>
     );
 }
 
-import BeheerSelect from '@/components/ui/beheer/BeheerSelect';
-
-export function FilterField({ label, value, onChange, options }: { label: string, value: string, onChange: (fieldValue: string) => void, options: { value: string; label: string }[] }) {
+export function FilterField({
+    label,
+    value,
+    onChange,
+    options
+}: {
+    label: string,
+    value: string,
+    onChange: (fieldValue: string) => void,
+    options: { value: string; label: string }[]
+}) {
     return (
-        <div className="space-y-2">
-            <label className="ml-1 text-[10px] font-semibold tracking-widest text-(--beheer-text-muted) uppercase opacity-60">{label}</label>
-            <BeheerSelect 
-                value={value}
-                onChange={onChange}
-                options={options}
-                size="sm"
-            />
-        </div>
+        <Select
+            label={label}
+            value={value}
+            onChange={(val) => {
+                if (val !== null) onChange(val);
+            }}
+            data={options}
+            size="sm"
+            allowDeselect={false}
+        />
     );
 }
 
-export function TypeTab({ active, onClick, children }: { active: boolean, onClick: () => void, children: React.ReactNode }) {
+export function TypeTab({ active, onClick, children }: { active: boolean, onClick: () => void, children: ReactNode }) {
     return (
-        <button
+        <Button
+            type="button"
+            variant={active ? 'filled' : 'subtle'}
+            color={active ? 'accent' : undefined}
+            size="xs"
             onClick={onClick}
-            className={`tab-button rounded-xl px-5 py-2.5 text-[10px] font-semibold tracking-widest uppercase transition-all active:scale-95 ${
-                active 
-                    ? 'bg-(--beheer-accent) text-white shadow-lg' 
-                    : 'text-(--beheer-text-muted) hover:bg-(--beheer-card-bg) hover:text-(--beheer-text)'
-            }`}
-            type="button">
+        >
             {children}
-        </button>
+        </Button>
     );
 }
 
-export function TickItem({ children }: { children: React.ReactNode }) {
+export function TickItem({ children }: { children: ReactNode }) {
     return (
-        <li className="flex items-center gap-3 py-1 text-xs font-semibold text-(--beheer-text-muted)">
-            <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-green-500/10">
-                <Check className="size-3 text-green-500" />
-            </div>
-            {children}
-        </li>
+        <Group component="li" gap="sm" wrap="nowrap" py={2}>
+            <ThemeIcon size="sm" radius="xl" variant="light" color="success">
+                <Check size={12} />
+            </ThemeIcon>
+            <Text size="xs" fw={600} c="dimmed">
+                {children}
+            </Text>
+        </Group>
     );
 }

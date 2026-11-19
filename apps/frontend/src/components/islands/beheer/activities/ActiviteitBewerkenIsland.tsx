@@ -1,14 +1,26 @@
 'use client';
 
 import { useState, useOptimistic, useActionState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Save, Loader2, Trash, X } from 'lucide-react';
+import { ChevronLeft, Save, Trash, X } from 'lucide-react';
+import {
+    ActionIcon,
+    Box,
+    Button,
+    Container,
+    Divider,
+    Grid,
+    Group,
+    SimpleGrid,
+    Stack,
+    Text,
+    Title,
+} from '@mantine/core';
 import { updateActivityAction, deleteActivity } from '@/server/actions/events/activiteiten/activiteiten-write.actions';
-import BeheerToolbar from '@/components/ui/beheer/BeheerToolbar';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
-import { BeheerActivity, Committee } from '@salvemundi/validations';
-import { useActivityForm, ActivityStatus } from '@/hooks/use-activity-form';
+import { type BeheerActivity, type Committee } from '@salvemundi/validations';
+import { useActivityForm, type ActivityStatus } from '@/hooks/use-activity-form';
 import {
     GeneralInfoSection,
     PlanningLocationSection,
@@ -34,7 +46,7 @@ export default function ActiviteitBewerkenIsland({
     committees = []
 }: ActiviteitBewerkenIslandProps) {
     const router = useRouter();
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
 
     const {
         status, setStatus,
@@ -102,126 +114,129 @@ export default function ActiviteitBewerkenIsland({
     const initialData = (state.initialData || event) as { [key: string]: unknown };
 
     const handleValidatedImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    const MAX_SIZE_MB = 10;
+        const file = e.target.files?.[0];
+        const MAX_SIZE_MB = 10;
 
-    if (file && file.size > MAX_SIZE_MB * 1024 * 1024) {
-        showToast(`Bestand is te groot. Maximaal ${MAX_SIZE_MB}MB toegestaan.`, 'error');
-        e.target.value = '';
-        return;
-    }
-    
-    handleImageChange(e);
+        if (file && file.size > MAX_SIZE_MB * 1024 * 1024) {
+            showToast(`Bestand is te groot. Maximaal ${MAX_SIZE_MB}MB toegestaan.`, 'error');
+            e.target.value = '';
+            return;
+        }
+
+        handleImageChange(e);
     };
+
+    const actionButtons = (
+        <Stack gap="sm">
+            <Button
+                type="submit"
+                size="md"
+                fullWidth
+                disabled={optimisticSaving}
+                loading={optimisticSaving}
+                leftSection={<Save size={16} />}
+            >
+                {optimisticSaving ? 'Opslaan...' : 'Wijzigingen opslaan'}
+            </Button>
+
+            <Button
+                type="button"
+                variant="default"
+                size="md"
+                fullWidth
+                onClick={() => router.back()}
+                leftSection={<X size={16} />}
+            >
+                Annuleren
+            </Button>
+
+            <Divider my="xs" />
+
+            <Button
+                type="button"
+                variant="light"
+                color="error"
+                size="md"
+                fullWidth
+                onClick={() => { void handleDelete(); }}
+                disabled={isDeleting || optimisticSaving}
+                loading={isDeleting}
+                leftSection={<Trash size={16} />}
+            >
+                Activiteit verwijderen
+            </Button>
+        </Stack>
+    );
+
     return (
-        <div className="pb-20">
-            <BeheerToolbar title="Activiteit bewerken" subtitle={`Wijzig "${event.name}"`} backHref="/beheer/activiteiten" />
-            <div className="container mx-auto max-w-7xl px-4 py-8">
-                <form action={formAction} className="space-y-6">
-                    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-                        <div className="lg:col-span-8">
-                            <GeneralInfoSection initialData={initialData} formErrors={state.fieldErrors} />
-                        </div>
+        <Container size="xl" py="xl" pb={80}>
+            <Stack gap="xl">
+                <Group gap="md" align="center">
+                    <ActionIcon
+                        component={Link}
+                        href="/beheer/activiteiten"
+                        variant="default"
+                        size="lg"
+                        aria-label="Terug"
+                    >
+                        <ChevronLeft size={18} />
+                    </ActionIcon>
+                    <Stack gap={2}>
+                        <Title order={1} size="h2" c="brand">
+                            Activiteit bewerken
+                        </Title>
+                        <Text size="sm" c="dimmed">
+                            {`Wijzig "${event.name}"`}
+                        </Text>
+                    </Stack>
+                </Group>
 
-                        <div className="space-y-6 lg:sticky lg:top-8 lg:col-span-4">
-                            <BannerSection
-                                imagePreview={imagePreview}
-                                onUploadClick={() => fileInputRef.current?.click()}
-                                onRemoveClick={handleRemoveImage}
-                                fileInputRef={fileInputRef}
-                                onFileChange={handleValidatedImageChange}
-                            />
-                            <StatusSection
-                                status={status}
-                                onStatusChange={(val) => setStatus(val as ActivityStatus)}
+                <form action={formAction}>
+                    <Stack gap="lg">
+                        <Grid gap="lg" align="flex-start">
+                            <Grid.Col span={{ base: 12, lg: 8 }}>
+                                <GeneralInfoSection initialData={initialData} formErrors={state.fieldErrors} />
+                            </Grid.Col>
+
+                            <Grid.Col span={{ base: 12, lg: 4 }} pos={{ lg: 'sticky' }} top={{ lg: 32 }}>
+                                <Stack gap="lg">
+                                    <BannerSection
+                                        imagePreview={imagePreview}
+                                        onUploadClick={() => fileInputRef.current?.click()}
+                                        onRemoveClick={handleRemoveImage}
+                                        fileInputRef={fileInputRef}
+                                        onFileChange={handleValidatedImageChange}
+                                    />
+                                    <StatusSection
+                                        status={status}
+                                        onStatusChange={(val) => setStatus(val as ActivityStatus)}
+                                        initialData={initialData}
+                                    />
+                                    <Box visibleFrom="lg">{actionButtons}</Box>
+                                </Stack>
+                            </Grid.Col>
+                        </Grid>
+
+                        <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="lg">
+                            <PlanningLocationSection initialData={initialData} formErrors={state.fieldErrors} />
+                            <CapacityCostsSection
                                 initialData={initialData}
+                                committees={committees}
+                                contactEmail={contactEmail}
+                                onContactEmailChange={setContactEmail}
+                                onCommitteeChange={handleCommitteeChange}
+                                onlyMembers={onlyMembers}
+                                onOnlyMembersChange={setOnlyMembers}
+                                formErrors={state.fieldErrors}
                             />
+                        </SimpleGrid>
 
-                            <div className="space-y-3">
-                                <button
-                                    type="submit"
-                                    disabled={optimisticSaving}
-                                    className="group active:scale-0.98 form-button flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--theme-purple) px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:opacity-90 disabled:opacity-50"
-                                >
-                                    {optimisticSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4 transition-transform group-hover:scale-110" />}
-                                    <span>{optimisticSaving ? 'Opslaan...' : 'Wijzigingen opslaan'}</span>
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => router.back()}
-                                    className="btn-cancel active:scale-0.98 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-(--border-color) bg-transparent px-6 py-3.5 text-base font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/30 hover:bg-(--bg-main)/60 dark:hover:bg-white/5"
-                                >
-                                    <X className="size-4 text-(--text-muted)" />
-                                    <span>Annuleren</span>
-                                </button>
-
-                                <div className="border-t border-(--border-color)/30 pt-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => { void handleDelete(); }}
-                                        disabled={isDeleting || optimisticSaving}
-                                        className="btn-delete group flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-6 py-3.5 text-base font-semibold text-red-500 transition-all hover:bg-red-500 hover:text-white active:scale-95 disabled:opacity-50"
-                                    >
-                                        {isDeleting ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4 transition-transform group-hover:scale-110" />}
-                                        <span>Activiteit verwijderen</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                        <PlanningLocationSection initialData={initialData} formErrors={state.fieldErrors} />
-                        <CapacityCostsSection
-                            initialData={initialData}
-                            committees={committees}
-                            contactEmail={contactEmail}
-                            onContactEmailChange={setContactEmail}
-                            onCommitteeChange={handleCommitteeChange}
-                            onlyMembers={onlyMembers}
-                            onOnlyMembersChange={setOnlyMembers}
-                            formErrors={state.fieldErrors}
-                        />
-                    </div>
-
-                    {/* Mobile bottom action buttons */}
-                    <div className="block space-y-3 pt-4 lg:hidden">
-                        <button
-                            type="submit"
-                            disabled={optimisticSaving}
-                            className="group active:scale-0.98 form-button flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-(--theme-purple) px-8 py-4 text-base font-semibold text-white shadow-lg transition-all hover:opacity-90 disabled:opacity-50"
-                        >
-                            {optimisticSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4 transition-transform group-hover:scale-110" />}
-                            <span>{optimisticSaving ? 'Opslaan...' : 'Wijzigingen opslaan'}</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => router.back()}
-                            className="btn-cancel active:scale-0.98 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-(--border-color) bg-transparent px-6 py-3.5 text-base font-semibold text-(--text-main) transition-all hover:border-(--theme-purple)/30 hover:bg-(--bg-main)/60 dark:hover:bg-white/5"
-                        >
-                            <X className="size-4 text-(--text-muted)" />
-                            <span>Annuleren</span>
-                        </button>
-
-                        <div className="border-t border-(--border-color)/30 pt-2">
-                            <button
-                                type="button"
-                                onClick={() => { void handleDelete(); }}
-                                disabled={isDeleting || optimisticSaving}
-                                className="btn-delete group flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-6 py-3.5 text-base font-semibold text-red-500 transition-all hover:bg-red-500 hover:text-white active:scale-95 disabled:opacity-50"
-                            >
-                                {isDeleting ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4 transition-transform group-hover:scale-110" />}
-                                <span>Activiteit verwijderen</span>
-                            </button>
-                        </div>
-                    </div>
+                        <Box hiddenFrom="lg" pt="sm">
+                            {actionButtons}
+                        </Box>
+                    </Stack>
                 </form>
-            </div>
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+            </Stack>
+        </Container>
     );
 }
-
-

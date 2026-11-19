@@ -1,10 +1,10 @@
 import Image from 'next/image';
-import type { SafeHaven } from '@salvemundi/validations/schema/safe-havens.zod';
 import { Phone } from 'lucide-react';
+import { Alert, Box, Card, Group, Paper, Stack, Text, Title } from '@mantine/core';
+import type { SafeHaven } from '@salvemundi/validations/schema/safe-havens.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
-
-import { BRAND_CONFIG } from '@/lib/config/brand';
+import { FallbackLogo } from '@/components/ui/media/FallbackLogo';
 
 interface SafeHavenCardProps {
     safeHaven?: SafeHaven;
@@ -16,11 +16,20 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
         : null;
 
     return (
-        <div
-            className="squircle-lg bg-bg-main/30 flex h-full flex-col border border-border-color p-5 shadow-sm transition-all duration-300 hover:border-purple-300 hover:shadow-md sm:p-6 dark:hover:border-white/20"
-        >
-            <div className="flex items-center gap-4">
-                <div className="squircle bg-bg-main relative size-16 shrink-0 overflow-hidden shadow-md sm:size-20">
+        <Card h="100%" padding="lg" radius="lg" style={{ display: 'flex', flexDirection: 'column' }}>
+            <Group gap="md" wrap="nowrap">
+                <Box
+                    pos="relative"
+                    w={{ base: 64, sm: 80 }}
+                    h={{ base: 64, sm: 80 }}
+                    bg="var(--mantine-color-body)"
+                    style={{
+                        flexShrink: 0,
+                        overflow: 'hidden',
+                        borderRadius: 'var(--mantine-radius-md)',
+                        boxShadow: 'var(--mantine-shadow-md)',
+                    }}
+                >
                     {imageUrl ? (
                         <Image
                             src={imageUrl}
@@ -30,56 +39,54 @@ export default function SafeHavenCard({ safeHaven }: SafeHavenCardProps) {
                             className="object-cover"
                         />
                     ) : (
-                        <>
-                            <Image
-                                src={BRAND_CONFIG.logoFallbackLight}
-                                alt={safeHaven?.contact_name || 'Safe Haven'}
-                                fill
-                                unoptimized
-                                className="object-cover dark:hidden"
-                            />
-                            <Image
-                                src={BRAND_CONFIG.logoFallbackDark}
-                                alt={safeHaven?.contact_name || 'Safe Haven'}
-                                fill
-                                unoptimized
-                                className="hidden object-cover dark:block"
-                            />
-                        </>
+                        <FallbackLogo
+                            alt={safeHaven?.contact_name || 'Safe Haven'}
+                            className="object-cover"
+                        />
                     )}
-                </div>
-                <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-lg font-bold text-theme-purple sm:text-xl">
-                        {safeHaven?.contact_name || ''}
-                    </h3>
-                    <p className="text-sm font-semibold text-purple-500">
-                        Safe Haven
-                    </p>
-                </div>
-            </div>
+                </Box>
 
-            <div className="mt-5 space-y-2">
+                <Stack gap={2} miw={0} flex={1}>
+                    <Title order={3} size="h4" c="brand" lineClamp={1}>
+                        {safeHaven?.contact_name || ''}
+                    </Title>
+                    <Text size="sm" fw={600} c="brand">
+                        Safe Haven
+                    </Text>
+                </Stack>
+            </Group>
+
+            <Stack gap="xs" mt="lg">
                 {safeHaven?.email || safeHaven?.phone_number ? (
                     <>
-                        <ObfuscatedEmail
-                            email={safeHaven.email || ''}
-                            className="flex w-full items-center gap-3 rounded-xl border border-border-color bg-bg-card p-3 text-sm font-medium text-text-main shadow-sm transition-colors hover:border-purple-300"
-                        />
+                        <Paper p="sm" radius="md" bg="var(--mantine-color-body)" style={{ border: '1px solid var(--border)' }}>
+                            <ObfuscatedEmail
+                                email={safeHaven.email || ''}
+                                size="sm"
+                                fullWidth
+                            />
+                        </Paper>
                         {safeHaven.phone_number && (
-                            <div className="flex items-center gap-3 rounded-xl border border-border-color bg-bg-card p-3 text-sm font-medium text-text-main shadow-sm">
-                                <Phone className="size-4 text-purple-400" />
-                                <span>{safeHaven.phone_number}</span>
-                            </div>
+                            <Paper p="sm" radius="md" bg="var(--mantine-color-body)" style={{ border: '1px solid var(--border)' }}>
+                                <Group gap="sm">
+                                    <Text span c="brand" lh={1}>
+                                        <Phone size={16} />
+                                    </Text>
+                                    <Text size="sm" fw={500}>
+                                        {safeHaven.phone_number}
+                                    </Text>
+                                </Group>
+                            </Paper>
                         )}
                     </>
                 ) : (
-                    <div className="rounded-xl border border-amber-200/50 bg-amber-50/50 p-3 dark:border-amber-800/30 dark:bg-amber-950/20">
-                        <p className="text-center text-xs font-semibold text-amber-700 dark:text-amber-400">
+                    <Alert color="accent" variant="light" radius="md" py="xs">
+                        <Text size="xs" fw={600} ta="center">
                             Log in om contactgegevens te zien
-                        </p>
-                    </div>
+                        </Text>
+                    </Alert>
                 )}
-            </div>
-        </div>
+            </Stack>
+        </Card>
     );
 }

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { Stack } from '@mantine/core';
 import { getAssociationStats, signupMatchesSearch } from '@/lib/utils/kroegentocht-signups';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -11,7 +12,7 @@ import {
     createManualPubCrawlSignup,
     syncPubCrawlGoogleSheet,
     getPubCrawlGroupsCsvRows,
-    getPubCrawlTicketsByEvent
+    getPubCrawlTicketsByEvent,
 } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
 import StatsToolbar from './signup-list/StatsToolbar';
 import SignupTableView from './signup-list/SignupTableView';
@@ -75,7 +76,7 @@ export default function SignupList({
     onEdit,
     eventGroups = [],
     onUpdateGroup,
-    onRefresh
+    onRefresh,
 }: SignupListProps) {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
@@ -84,38 +85,44 @@ export default function SignupList({
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     const [enabledGroups, setEnabledGroups] = useState<string[]>(() => {
-        const initialGroups = eventGroups.map((g: unknown): string => {
-            if (typeof g === 'string') return g;
-            const obj = g && typeof g === 'object' ? (g as { name?: unknown }) : {};
-            return typeof obj.name === 'string' ? obj.name : '';
-        }).filter(Boolean);
+        const initialGroups = eventGroups
+            .map((g: unknown): string => {
+                if (typeof g === 'string') return g;
+                const obj = g && typeof g === 'object' ? (g as { name?: unknown }) : {};
+                return typeof obj.name === 'string' ? obj.name : '';
+            })
+            .filter(Boolean);
         return [...initialGroups, 'unassigned'];
     });
 
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [previewData, setPreviewData] = useState<{
         assignments: { signupId: number; groupName: string }[];
-        groups: { name: string; signups: { signupId: number; name: string; amountTickets: number; oldGroup: string | null }[]; ticketCount: number }[];
+        groups: {
+            name: string;
+            signups: { signupId: number; name: string; amountTickets: number; oldGroup: string | null }[];
+            ticketCount: number;
+        }[];
     } | null>(null);
 
-    const groupConfigs: GroupConfig[] = eventGroups.map((g: unknown): GroupConfig => {
-        if (typeof g === 'string') {
-            return { name: g, leaders: [] };
-        }
-        if (g && typeof g === 'object') {
-            const obj = g as { name?: unknown; leaders?: unknown };
-            const name = typeof obj.name === 'string' ? obj.name : '';
-            const leaders = Array.isArray(obj.leaders)
-                ? (obj.leaders as GroupLeader[])
-                : [];
-            return { name, leaders };
-        }
-        return { name: '', leaders: [] };
-    }).filter(g => g.name !== '');
+    const groupConfigs: GroupConfig[] = eventGroups
+        .map((g: unknown): GroupConfig => {
+            if (typeof g === 'string') {
+                return { name: g, leaders: [] };
+            }
+            if (g && typeof g === 'object') {
+                const obj = g as { name?: unknown; leaders?: unknown };
+                const name = typeof obj.name === 'string' ? obj.name : '';
+                const leaders = Array.isArray(obj.leaders) ? (obj.leaders as GroupLeader[]) : [];
+                return { name, leaders };
+            }
+            return { name: '', leaders: [] };
+        })
+        .filter((g) => g.name !== '');
 
-    const groupNames = groupConfigs.map(g => g.name);
+    const groupNames = groupConfigs.map((g) => g.name);
 
-    const paidSignups = signups.filter(s => s.payment_status === 'paid');
+    const paidSignups = signups.filter((s) => s.payment_status === 'paid');
     const totalTicketsCount = paidSignups.reduce((sum, s) => sum + (s.amount_tickets || 0), 0);
     const totalAssociationsCount = getAssociationStats(paidSignups).length;
 
@@ -145,8 +152,10 @@ export default function SignupList({
 
         type GroupEntry = { signupId: number; name: string; amountTickets: number; oldGroup: string | null };
         // Externe groepsleiders tellen mee als persoon in hun groep.
-        const ticketCounts = new Map<string, number>(groupConfigs.map(g => [g.name, (g.leaders || []).filter(l => !l.signupId).length]));
-        const groupSignups = new Map<string, GroupEntry[]>(groupNames.map(n => [n, []]));
+        const ticketCounts = new Map<string, number>(
+            groupConfigs.map((g) => [g.name, (g.leaders || []).filter((l) => !l.signupId).length])
+        );
+        const groupSignups = new Map<string, GroupEntry[]>(groupNames.map((n) => [n, []]));
 
         const assignmentsList: { signupId: number; groupName: string }[] = [];
 
@@ -188,7 +197,7 @@ export default function SignupList({
                 signupId: Number(signup.id),
                 name: signup.name,
                 amountTickets: signup.amount_tickets,
-                oldGroup: signup.group_name || null
+                oldGroup: signup.group_name || null,
             });
             ticketCounts.set(bestGroup, (ticketCounts.get(bestGroup) ?? 0) + signup.amount_tickets);
 
@@ -197,11 +206,11 @@ export default function SignupList({
 
         setPreviewData({
             assignments: assignmentsList,
-            groups: groupNames.map(name => ({
+            groups: groupNames.map((name) => ({
                 name,
                 signups: groupSignups.get(name) ?? [],
-                ticketCount: ticketCounts.get(name) ?? 0
-            }))
+                ticketCount: ticketCounts.get(name) ?? 0,
+            })),
         });
         setIsPreviewOpen(true);
     };
@@ -226,16 +235,16 @@ export default function SignupList({
     const handleAddLeader = (groupName: string, name: string, signupId: number | null) => {
         void (async () => {
             try {
-                const currentGroups = groupConfigs.map(g => ({
+                const currentGroups = groupConfigs.map((g) => ({
                     name: g.name,
-                    leaders: g.leaders || []
+                    leaders: g.leaders || [],
                 }));
 
-                const groupObj = currentGroups.find(g => g.name === groupName);
+                const groupObj = currentGroups.find((g) => g.name === groupName);
                 if (groupObj) {
                     const newLeader = {
                         name,
-                        signupId
+                        signupId,
                     };
                     groupObj.leaders = [...groupObj.leaders, newLeader];
                 }
@@ -252,15 +261,19 @@ export default function SignupList({
     const handleRemoveLeader = (groupName: string, leaderToRemove: GroupLeader) => {
         void (async () => {
             try {
-                const currentGroups = groupConfigs.map(g => ({
+                const currentGroups = groupConfigs.map((g) => ({
                     name: g.name,
-                    leaders: g.leaders || []
+                    leaders: g.leaders || [],
                 }));
 
-                const groupObj = currentGroups.find(g => g.name === groupName);
+                const groupObj = currentGroups.find((g) => g.name === groupName);
                 if (groupObj) {
-                    groupObj.leaders = groupObj.leaders.filter((l) =>
-                        !(l.name === leaderToRemove.name && l.signupId === (leaderToRemove.signupId || null))
+                    groupObj.leaders = groupObj.leaders.filter(
+                        (l) =>
+                            !(
+                                l.name === leaderToRemove.name &&
+                                l.signupId === (leaderToRemove.signupId || null)
+                            )
                     );
                 }
 
@@ -273,10 +286,12 @@ export default function SignupList({
         })();
     };
 
-    const filteredSignups = signups.filter(s => {
+    const filteredSignups = signups.filter((s) => {
         if (s.payment_status !== 'paid') return false;
         if (!signupMatchesSearch(s, searchQuery)) return false;
-        return s.group_name ? enabledGroups.includes(s.group_name) : enabledGroups.includes('unassigned');
+        return s.group_name
+            ? enabledGroups.includes(s.group_name)
+            : enabledGroups.includes('unassigned');
     });
 
     // --- Google Sheet sync ---
@@ -290,9 +305,11 @@ export default function SignupList({
         setSyncState(prev => ({ ...prev, status: 'syncing' }));
         try {
             const res = await syncPubCrawlGoogleSheet(Number(eventId));
-            setSyncState(res.success
-                ? { status: 'ok', at: new Date(), url: res.url }
-                : { status: 'error', message: res.error, url: res.url });
+            setSyncState(
+                res.success
+                    ? { status: 'ok', at: new Date(), url: res.url }
+                    : { status: 'error', message: res.error, url: res.url }
+            );
         } catch (error) {
             safeConsoleError('[SignupList.tsx][syncSheet]', error);
             setSyncState({ status: 'error', message: 'Synchroniseren mislukt' });
@@ -347,7 +364,7 @@ export default function SignupList({
     // Deze knop is alleen voor een handmatige 'sync nu'.
 
     return (
-        <div className="space-y-6">
+        <Stack gap="lg">
             <StatsToolbar
                 viewMode={viewMode}
                 setViewMode={setViewMode}
@@ -407,6 +424,6 @@ export default function SignupList({
                 groupNames={groupNames}
                 onAdd={handleAddParticipant}
             />
-        </div>
+        </Stack>
     );
 }

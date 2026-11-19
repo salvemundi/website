@@ -1,13 +1,14 @@
 import { Lock, MessageCircle } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
+import Link from '@/components/ui/Link';
+import { Box, Button, Card, CardSection, Spoiler, Stack, Text, Title } from '@mantine/core';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { stripHtmlToText } from '@/lib/utils/html-utils';
 import { DiscordIcon } from '@/shared/icons/social';
 import { ROUTES } from '@/lib/config/routes';
 import type { Club } from '@salvemundi/validations/schema/clubs.zod';
 
-import { BRAND_CONFIG } from '@/lib/config/brand';
+import { FallbackLogo } from '@/components/ui/media/FallbackLogo';
 
 interface ClubCardProps {
     club: Club;
@@ -19,30 +20,23 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
     const hasImage = !!club.image;
     const imageUrl = getImageUrl(club.image);
     const description = club.description ? stripHtmlToText(club.description) : null;
-    const needsExpand = !!description && (description.length > 160 || description.includes('\n'));
 
     return (
-        <div className="group squircle-lg flex h-full flex-col overflow-hidden bg-bg-card shadow-lg transition hover:-translate-y-1 hover:shadow-2xl dark:border dark:border-white/10">
-            <div className="relative h-61 w-full overflow-hidden bg-linear-to-br from-purple-500/20 to-purple-900/40">
+        <Card h="100%" padding="lg" radius="lg" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <CardSection
+                pos="relative"
+                h={244}
+                style={{
+                    overflow: 'hidden',
+                    background: 'linear-gradient(135deg, var(--mantine-color-brand-light), var(--mantine-color-purple-filled))',
+                }}
+            >
                 {!hasImage ? (
-                    <>
-                        <Image
-                            src={BRAND_CONFIG.logoFallbackLight}
-                            alt={club.name}
-                            fill
-                            className="object-contain p-12 opacity-40 transition-all duration-500 dark:hidden"
-                            unoptimized
-                            priority={index < 4}
-                        />
-                        <Image
-                            src={BRAND_CONFIG.logoFallbackDark}
-                            alt={club.name}
-                            fill
-                            className="hidden object-contain p-12 opacity-40 transition-all duration-500 dark:block"
-                            unoptimized
-                            priority={index < 4}
-                        />
-                    </>
+                    <FallbackLogo
+                        alt={club.name}
+                        className="object-contain p-12 opacity-40 transition-all duration-500"
+                        priority={index < 4}
+                    />
                 ) : (
                     <Image
                         src={imageUrl}
@@ -53,75 +47,82 @@ export const ClubCard = ({ club, index = 0, isActiveMember = false }: ClubCardPr
                         priority={index < 4}
                     />
                 )}
-                <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent" />
-            </div>
+                <Box
+                    pos="absolute"
+                    inset={0}
+                    style={{
+                        pointerEvents: 'none',
+                        background: 'linear-gradient(to top, rgba(0, 0, 0, 0.2), transparent)',
+                    }}
+                />
+            </CardSection>
 
-            <div className="flex flex-1 flex-col p-6 sm:p-8">
-                <h3 className="mb-4 text-xl font-black tracking-tight wrap-break-word hyphens-auto text-theme-purple md:text-2xl">
-                    {club.name}
-                </h3>
+            <Stack flex={1} justify="space-between" pt="lg" gap="md">
+                <Stack gap="sm">
+                    <Title
+                        order={3}
+                        size="h3"
+                        c="brand"
+                        style={{ overflowWrap: 'break-word', hyphens: 'auto' }}
+                    >
+                        {club.name}
+                    </Title>
 
-                {description && (
-                    needsExpand ? (
-                        <details className="group mb-8 text-sm leading-relaxed text-text-muted">
-                            <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                                <p className="line-clamp-3 whitespace-pre-line group-open:hidden">
-                                    {description}
-                                </p>
-                                <p className="hidden whitespace-pre-line group-open:block">
-                                    {description}
-                                </p>
-                                <span className="mt-2 inline-block text-xs font-bold text-purple-500 group-open:hidden">
-                                    Lees meer
-                                </span>
-                            </summary>
-                        </details>
-                    ) : (
-                        <p className="mb-8 text-sm leading-relaxed whitespace-pre-line text-text-muted">
-                            {description}
-                        </p>
-                    )
-                )}
+                    {description && (
+                        <Spoiler maxHeight={68} showLabel="Lees meer" hideLabel="Minder tonen">
+                            <Text size="sm" c="dimmed" style={{ whiteSpace: 'pre-line' }}>
+                                {description}
+                            </Text>
+                        </Spoiler>
+                    )}
+                </Stack>
 
                 {(club.whatsapp_link || club.discord_link) && (
-                    <div className="mt-auto flex flex-col gap-2">
+                    <Stack gap="xs" mt="auto">
                         {club.whatsapp_link && (
                             isActiveMember ? (
-                                <a
+                                <Button
+                                    component="a"
                                     href={club.whatsapp_link}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-500/10 px-4 py-3 text-sm font-bold text-green-600 transition hover:bg-green-500/20 dark:text-green-400"
+                                    variant="light"
+                                    fullWidth
+                                    leftSection={<MessageCircle size={16} />}
                                 >
-                                    <MessageCircle className="size-4" />
                                     WhatsApp groep
-                                </a>
+                                </Button>
                             ) : (
-                                <Link
+                                <Button
+                                    component={Link}
                                     href={ROUTES.MEMBERSHIP}
-                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-bg-soft px-4 py-3 text-sm font-bold text-text-muted transition hover:bg-bg-soft/70"
+                                    variant="default"
+                                    fullWidth
+                                    leftSection={<Lock size={16} />}
                                     title="Alleen zichtbaar voor leden met een actief lidmaatschap"
                                 >
-                                    <Lock className="size-4" />
                                     Alleen voor leden
-                                </Link>
+                                </Button>
                             )
                         )}
 
                         {club.discord_link && (
-                            <a
+                            <Button
+                                component="a"
                                 href={club.discord_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-500/10 px-4 py-3 text-sm font-bold text-indigo-600 transition hover:bg-indigo-500/20 dark:text-indigo-400"
+                                variant="light"
+                                color="brand"
+                                fullWidth
+                                leftSection={<DiscordIcon className="size-4" />}
                             >
-                                <DiscordIcon className="size-4" />
                                 Discord
-                            </a>
+                            </Button>
                         )}
-                    </div>
+                    </Stack>
                 )}
-            </div>
-        </div>
+            </Stack>
+        </Card>
     );
 };

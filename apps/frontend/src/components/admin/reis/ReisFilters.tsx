@@ -2,7 +2,7 @@
 
 import { Search, Download, Mail, Compass } from 'lucide-react';
 import Link from 'next/link';
-import BeheerSelect from '@/components/ui/beheer/BeheerSelect';
+import { Button, Group, Paper, Select, TextInput } from '@mantine/core';
 
 interface ReisFiltersProps {
     searchQuery: string;
@@ -41,64 +41,68 @@ export default function ReisFilters({
     tripId
 }: ReisFiltersProps) {
     return (
-        <div className="rounded-3xl border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm">
-            <div className="flex flex-col items-stretch gap-3 p-3 lg:flex-row lg:items-center">
-                <div className="group relative flex-1">
-                    <Search className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-(--beheer-text-muted) opacity-50 transition-all group-focus-within:text-(--beheer-accent) group-focus-within:opacity-100" />
-                    <input
-                        type="text"
-                        placeholder="Zoek deelnemers..."
-                        value={searchQuery}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        className="beheer-input w-full py-2 pr-4 pl-11!"
-                    />
-                </div>
+        <Paper withBorder radius="lg" p="sm">
+            <Group gap="sm" wrap="wrap" align="center">
+                <TextInput
+                    placeholder="Zoek deelnemers..."
+                    value={searchQuery}
+                    onChange={(e) => onSearchChange(e.currentTarget.value)}
+                    leftSection={<Search size={16} />}
+                    style={{ flex: 1, minWidth: 200 }}
+                />
 
-                <div className="flex flex-col flex-wrap items-center gap-2 sm:flex-row">
-                    <div className="w-full sm:w-44">
-                        <BeheerSelect
-                            value={statusFilter}
-                            onChange={onStatusChange}
-                            options={statusOptions}
-                            size="sm"
-                        />
-                    </div>
+                <Select
+                    value={statusFilter}
+                    onChange={(val) => {
+                        if (val !== null) onStatusChange(val);
+                    }}
+                    data={statusOptions}
+                    size="sm"
+                    allowDeselect={false}
+                    w={{ base: '100%', sm: 176 }}
+                />
 
-                    <div className="w-full sm:w-40">
-                        <BeheerSelect
-                            value={roleFilter}
-                            onChange={onRoleChange}
-                            options={roleOptions}
-                            size="sm"
-                        />
-                    </div>
+                <Select
+                    value={roleFilter}
+                    onChange={(val) => {
+                        if (val !== null) onRoleChange(val);
+                    }}
+                    data={roleOptions}
+                    size="sm"
+                    allowDeselect={false}
+                    w={{ base: '100%', sm: 160 }}
+                />
 
-                    <div className="flex w-full flex-wrap items-center justify-center gap-1.5 sm:w-auto">
-                        <Link
-                            href={`/beheer/reis/activiteiten?tripId=${tripId}`}
-                            className="flex items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-xs font-semibold whitespace-nowrap text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 hover:bg-(--beheer-accent)/5"
-                        >
-                            <Compass className="size-3.5 text-(--beheer-accent)" />
-                            Activiteiten
-                        </Link>
-                        <Link
-                            href="/beheer/reis/mail"
-                            className="flex items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2 text-xs font-semibold whitespace-nowrap text-(--beheer-text) shadow-sm transition-all hover:border-(--beheer-accent)/50 hover:bg-(--beheer-accent)/5"
-                        >
-                            <Mail className="size-3.5 text-(--beheer-accent)" />
-                            Mailen
-                        </Link>
-                        <button
-                            onClick={onDownloadCSV}
-                            className="beheer-button flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-emerald-700 px-5 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-sm transition-all hover:bg-emerald-800"
-                            type="button"
-                        >
-                            <Download className="size-3.5" />
-                            Exporteer CSV
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+                <Group gap="xs" wrap="wrap" justify="center">
+                    <Button
+                        component={Link}
+                        href={`/beheer/reis/activiteiten?tripId=${tripId}`}
+                        variant="default"
+                        size="sm"
+                        leftSection={<Compass size={14} />}
+                    >
+                        Activiteiten
+                    </Button>
+                    <Button
+                        component={Link}
+                        href="/beheer/reis/mail"
+                        variant="default"
+                        size="sm"
+                        leftSection={<Mail size={14} />}
+                    >
+                        Mailen
+                    </Button>
+                    <Button
+                        type="button"
+                        color="success"
+                        size="sm"
+                        onClick={onDownloadCSV}
+                        leftSection={<Download size={14} />}
+                    >
+                        Exporteer CSV
+                    </Button>
+                </Group>
+            </Group>
+        </Paper>
     );
 }

@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { type CoboGuestBoard } from '@salvemundi/validations';
+import { ActionIcon, Box, Button, Group, Paper, Select, Stack, Text } from '@mantine/core';
 import { GripVertical, ArrowUpToLine, MoveUp, MoveDown, Play, Clock, Trash2 } from 'lucide-react';
 import CoboActivityBadge from './CoboActivityBadge';
-import BeheerSelect from '@/components/ui/beheer/BeheerSelect';
 
 interface Props {
     board: CoboGuestBoard;
@@ -41,114 +41,136 @@ export default function CoboQueueItem({
     }));
 
     return (
-        <div
+        <Paper
+            withBorder
+            p="md"
+            radius="md"
             draggable
             onDragStart={onDragStart}
             onDragOver={onDragOver}
             onDrop={onDrop}
             onDragEnd={onDragEnd}
-            className={`group flex flex-col items-start justify-between gap-3 rounded-xl border bg-bg-card p-3.5 transition-all sm:flex-row sm:items-center sm:p-4 ${
-                isDragged
-                    ? 'scale-0.99 border-purple-500 opacity-40'
-                    : isDragOver
-                    ? 'border-purple-500 bg-purple-500/5'
-                    : 'border-border-color hover:border-purple-500/40'
-            }`}
+            style={{
+                opacity: isDragged ? 0.4 : 1,
+                borderColor: isDragged || isDragOver ? 'var(--mantine-color-brand-filled)' : undefined,
+                backgroundColor: isDragOver ? 'var(--mantine-color-brand-light)' : undefined,
+                transition: 'all 150ms ease',
+            }}
         >
-            <div className="flex min-w-0 flex-1 items-center gap-3">
-                <div
-                    className="-ml-1 shrink-0 cursor-grab rounded-md p-1 text-text-muted transition-colors hover:text-purple-600 active:cursor-grabbing dark:hover:text-purple-400"
-                    title="Sleep om volgorde direct te wijzigen"
-                >
-                    <GripVertical className="size-4" />
-                </div>
+            <Group justify="space-between" align="center" wrap="wrap" gap="sm">
+                <Group gap="sm" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
+                    <Box
+                        c="dimmed"
+                        style={{ cursor: 'grab', display: 'flex', alignItems: 'center', flexShrink: 0 }}
+                        title="Sleep om volgorde direct te wijzigen"
+                    >
+                        <GripVertical size={16} />
+                    </Box>
 
-                <div className="relative shrink-0" title="Klik om direct naar positie te springen">
-                    <BeheerSelect
-                        value={(index + 1).toString()}
-                        onChange={(val) => {
-                            const targetPos = parseInt(val, 10) - 1;
-                            onReorder(index, targetPos);
-                        }}
-                        options={positionOptions}
-                    />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                    <h4 className="truncate text-sm font-semibold text-text-main sm:text-base">
-                        {board.board_name}
-                    </h4>
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                        <CoboActivityBadge
-                            type={board.activity_type}
-                            custom={board.activity_custom}
+                    <Box title="Klik om direct naar positie te springen" style={{ flexShrink: 0 }}>
+                        <Select
+                            value={(index + 1).toString()}
+                            onChange={(val) => {
+                                if (!val) return;
+                                const targetPos = parseInt(val, 10) - 1;
+                                onReorder(index, targetPos);
+                            }}
+                            data={positionOptions}
+                            size="xs"
+                            w={76}
+                            allowDeselect={false}
+                            aria-label="Positie in wachtrij"
                         />
-                    </div>
-                </div>
-            </div>
+                    </Box>
 
-            <div className="flex w-full flex-wrap items-center justify-end gap-1.5 sm:w-auto">
-                {index > 0 && (
-                    <button
+                    <Stack gap={4} style={{ minWidth: 0, flex: 1 }}>
+                        <Text size="sm" fw={600} truncate>
+                            {board.board_name}
+                        </Text>
+                        <Group gap="xs">
+                            <CoboActivityBadge
+                                type={board.activity_type}
+                                custom={board.activity_custom}
+                            />
+                        </Group>
+                    </Stack>
+                </Group>
+
+                <Group gap={6} wrap="wrap" justify="flex-end">
+                    {index > 0 && (
+                        <Button
+                            type="button"
+                            variant="light"
+                            color="brand"
+                            size="xs"
+                            onClick={() => onReorder(index, 0)}
+                            title="Direct naar boven (#1)"
+                            leftSection={<ArrowUpToLine size={14} />}
+                        >
+                            Naar #1
+                        </Button>
+                    )}
+
+                    <ActionIcon.Group>
+                        <ActionIcon
+                            type="button"
+                            variant="default"
+                            size="md"
+                            onClick={() => onReorder(index, index - 1)}
+                            disabled={index === 0}
+                            title="Eén plek omhoog"
+                            aria-label="Eén plek omhoog"
+                        >
+                            <MoveUp size={14} />
+                        </ActionIcon>
+                        <ActionIcon
+                            type="button"
+                            variant="default"
+                            size="md"
+                            onClick={() => onReorder(index, index + 1)}
+                            disabled={index === totalCount - 1}
+                            title="Eén plek omlaag"
+                            aria-label="Eén plek omlaag"
+                        >
+                            <MoveDown size={14} />
+                        </ActionIcon>
+                    </ActionIcon.Group>
+
+                    <Button
                         type="button"
-                        onClick={() => onReorder(index, 0)}
-                        title="Direct naar boven (#1)"
-                        className="beheer-button flex min-h-11 cursor-pointer items-center gap-1 rounded-lg border border-purple-500/20 bg-purple-500/10 px-2.5 py-1 text-xs font-semibold text-purple-700 transition-colors hover:bg-purple-600 hover:text-white sm:min-h-8 dark:text-purple-300"
+                        variant="light"
+                        color="brand"
+                        size="xs"
+                        onClick={() => onStatusChange(board.id, 'current', board.board_name || 'Bestuur')}
+                        title="Nu aan de beurt zetten"
+                        leftSection={<Play size={12} />}
                     >
-                        <ArrowUpToLine className="size-3.5" />
-                        <span className="hidden md:inline">Naar #1</span>
-                    </button>
-                )}
+                        Nu
+                    </Button>
 
-                <div className="flex min-h-11 items-center rounded-lg border border-border-color/60 bg-bg-soft p-0.5 sm:min-h-8">
-                    <button
+                    <ActionIcon
                         type="button"
-                        onClick={() => onReorder(index, index - 1)}
-                        disabled={index === 0}
-                        title="Eén plek omhoog"
-                        className="icon-button flex min-h-10 min-w-10 cursor-pointer items-center justify-center p-1 text-text-muted hover:text-purple-500 disabled:cursor-not-allowed disabled:opacity-20 sm:min-h-7 sm:min-w-7"
+                        variant="subtle"
+                        color="accent"
+                        onClick={() => onStatusChange(board.id, 'late', board.board_name || 'Bestuur')}
+                        title="Markeren als niet op tijd"
+                        aria-label="Markeren als niet op tijd"
                     >
-                        <MoveUp className="size-3.5" />
-                    </button>
-                    <button
+                        <Clock size={14} />
+                    </ActionIcon>
+
+                    <ActionIcon
                         type="button"
-                        onClick={() => onReorder(index, index + 1)}
-                        disabled={index === totalCount - 1}
-                        title="Eén plek omlaag"
-                        className="icon-button flex min-h-10 min-w-10 cursor-pointer items-center justify-center p-1 text-text-muted hover:text-purple-500 disabled:cursor-not-allowed disabled:opacity-20 sm:min-h-7 sm:min-w-7"
+                        variant="subtle"
+                        color="error"
+                        onClick={() => onDelete(board.id, board.board_name || 'Bestuur')}
+                        title="Verwijderen"
+                        aria-label="Verwijderen"
                     >
-                        <MoveDown className="size-3.5" />
-                    </button>
-                </div>
-
-                <button
-                    type="button"
-                    onClick={() => onStatusChange(board.id, 'current', board.board_name || 'Bestuur')}
-                    title="Nu aan de beurt zetten"
-                    className="beheer-button flex min-h-11 cursor-pointer items-center gap-1 rounded-lg border border-purple-500/20 bg-purple-500/10 px-2.5 py-1 text-xs font-semibold text-purple-700 transition-colors hover:bg-purple-600 hover:text-white sm:min-h-8 dark:text-purple-300"
-                >
-                    <Play className="size-3" />
-                    <span>Nu</span>
-                </button>
-
-                <button
-                    type="button"
-                    onClick={() => onStatusChange(board.id, 'late', board.board_name || 'Bestuur')}
-                    title="Markeren als niet op tijd"
-                    className="icon-button flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg p-1.5 text-text-muted transition-colors hover:bg-amber-500/10 hover:text-amber-500 sm:min-h-8 sm:min-w-8"
-                >
-                    <Clock className="size-3.5" />
-                </button>
-
-                <button
-                    type="button"
-                    onClick={() => onDelete(board.id, board.board_name || 'Bestuur')}
-                    title="Verwijderen"
-                    className="icon-button flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg p-1.5 text-text-muted transition-colors hover:bg-rose-500/10 hover:text-rose-500 sm:min-h-8 sm:min-w-8"
-                >
-                    <Trash2 className="size-3.5" />
-                </button>
-            </div>
-        </div>
+                        <Trash2 size={14} />
+                    </ActionIcon>
+                </Group>
+            </Group>
+        </Paper>
     );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { type CoboGuestBoard } from '@salvemundi/validations';
+import { ActionIcon, Button, Card, Group, Paper, Stack, Text } from '@mantine/core';
 import { CheckCircle2, Clock, RotateCcw, Trash2 } from 'lucide-react';
 import CoboActivityBadge from './CoboActivityBadge';
 
@@ -21,73 +22,84 @@ export default function CoboArchivedList({
 
     if (boards.length === 0) {
         return (
-            <div className="rounded-2xl border border-dashed border-border-color bg-bg-card py-12 text-center">
-                {isCompleted ? (
-                    <CheckCircle2 className="mx-auto mb-3 size-10 text-text-muted/40" />
-                ) : (
-                    <Clock className="mx-auto mb-3 size-10 text-text-muted/40" />
-                )}
-                <p className="text-sm font-medium text-text-muted">
-                    {isCompleted
-                        ? 'Nog geen besturen geweest.'
-                        : 'Geen te late of afwezige besturen.'}
-                </p>
-            </div>
+            <Paper withBorder p="xl" ta="center" radius="lg" style={{ borderStyle: 'dashed' }}>
+                <Stack align="center" gap="xs" py="md">
+                    {isCompleted ? (
+                        <CheckCircle2 size={36} opacity={0.35} />
+                    ) : (
+                        <Clock size={36} opacity={0.35} />
+                    )}
+                    <Text size="sm" fw={500} c="dimmed">
+                        {isCompleted
+                            ? 'Nog geen besturen geweest.'
+                            : 'Geen te late of afwezige besturen.'}
+                    </Text>
+                </Stack>
+            </Paper>
         );
     }
 
     return (
-        <div className="space-y-2.5">
+        <Stack gap="xs">
             {boards.map((board) => (
-                <div
+                <Card
                     key={board.id}
-                    className={`flex flex-col items-start justify-between gap-3 rounded-xl border bg-bg-card p-4 transition-colors sm:flex-row sm:items-center ${
+                    withBorder
+                    padding="md"
+                    radius="md"
+                    style={
                         isCompleted
-                            ? 'border-border-color opacity-85 hover:opacity-100'
-                            : 'border-amber-500/30 bg-amber-500/5'
-                    }`}
+                            ? { opacity: 0.85 }
+                            : { borderColor: 'var(--mantine-color-accent-outline)' }
+                    }
                 >
-                    <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                            <h4
-                                className={`truncate text-sm font-semibold text-text-main sm:text-base ${
-                                    isCompleted ? 'text-text-muted line-through' : ''
-                                }`}
+                    <Group justify="space-between" align="center" wrap="wrap" gap="sm">
+                        <Stack gap={4} style={{ minWidth: 0, flex: 1 }}>
+                            <Text
+                                size="sm"
+                                fw={600}
+                                c={isCompleted ? 'dimmed' : undefined}
+                                td={isCompleted ? 'line-through' : undefined}
+                                truncate
                             >
                                 {board.board_name}
-                            </h4>
-                        </div>
-                        <div className="mt-1 flex flex-wrap items-center gap-2">
-                            <CoboActivityBadge
-                                type={board.activity_type}
-                                custom={board.activity_custom}
-                            />
-                        </div>
-                    </div>
+                            </Text>
+                            <Group gap="xs">
+                                <CoboActivityBadge
+                                    type={board.activity_type}
+                                    custom={board.activity_custom}
+                                />
+                            </Group>
+                        </Stack>
 
-                    <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
-                        <button
-                            type="button"
-                            onClick={() => onRestore(board.id, board.board_name || 'Bestuur')}
-                            className="beheer-button flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg border border-purple-500/20 bg-purple-500/10 px-3 py-1.5 text-xs font-semibold text-purple-700 transition-colors hover:bg-purple-600 hover:text-white sm:min-h-9 dark:text-purple-300"
-                        >
-                            <RotateCcw className="size-3.5" />
-                            <span>{isCompleted ? 'Herstel naar wachtrij' : 'Terug in wachtrij'}</span>
-                        </button>
-
-                        {!isCompleted && onDelete && (
-                            <button
+                        <Group gap="xs" wrap="nowrap">
+                            <Button
                                 type="button"
-                                onClick={() => onDelete(board.id, board.board_name || 'Bestuur')}
-                                title="Verwijderen"
-                                className="icon-button flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg p-2 text-text-muted transition-colors hover:bg-rose-500/10 hover:text-rose-500 sm:min-h-9 sm:min-w-9"
+                                variant="light"
+                                color="brand"
+                                size="xs"
+                                onClick={() => onRestore(board.id, board.board_name || 'Bestuur')}
+                                leftSection={<RotateCcw size={14} />}
                             >
-                                <Trash2 className="size-4" />
-                            </button>
-                        )}
-                    </div>
-                </div>
+                                {isCompleted ? 'Herstel naar wachtrij' : 'Terug in wachtrij'}
+                            </Button>
+
+                            {!isCompleted && onDelete && (
+                                <ActionIcon
+                                    type="button"
+                                    variant="subtle"
+                                    color="error"
+                                    onClick={() => onDelete(board.id, board.board_name || 'Bestuur')}
+                                    title="Verwijderen"
+                                    aria-label="Verwijderen"
+                                >
+                                    <Trash2 size={16} />
+                                </ActionIcon>
+                            )}
+                        </Group>
+                    </Group>
+                </Card>
             ))}
-        </div>
+        </Stack>
     );
 }

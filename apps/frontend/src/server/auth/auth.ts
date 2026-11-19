@@ -76,14 +76,14 @@ export const auth = betterAuth({
             updatedAt: "updatedat"
         },
         additionalFields: {
-            first_name: { type: "string" },
-            last_name: { type: "string" },
+            first_name: { type: "string", input: false },
+            last_name: { type: "string", input: false },
             membership_status: { type: "string", input: false },
             membership_expiry: { type: "string", input: false },
-            phone_number: { type: "string" },
-            date_of_birth: { type: "string" },
-            avatar: { type: "string" },
-            minecraft_username: { type: "string" },
+            phone_number: { type: "string", input: false },
+            date_of_birth: { type: "string", input: false },
+            avatar: { type: "string", input: false },
+            minecraft_username: { type: "string", input: false },
             entra_id: { type: "string", input: false },
             role: { type: "string", input: false }
         }

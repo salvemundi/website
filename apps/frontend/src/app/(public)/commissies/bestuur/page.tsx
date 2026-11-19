@@ -1,14 +1,17 @@
 import type { Metadata } from 'next';
+import Link from '@/components/ui/Link';
 import { notFound } from 'next/navigation';
+import { connection } from 'next/server';
+import { ChevronLeft } from 'lucide-react';
+import { Box, Button, Container, Group, Stack } from '@mantine/core';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { getCommitteeBySlug } from '@/server/actions/public/committees.actions';
 import { CommitteeDetail } from '@/components/ui/commissies/CommitteeDetail';
-import BackButton from '@/components/ui/navigation/BackButton';
-import { connection } from 'next/server';
 
 export const metadata: Metadata = {
     title: 'Bestuur | Salve Mundi',
-    description: 'Het bestuur van Salve Mundi' };
+    description: 'Het bestuur van Salve Mundi'
+};
 
 export default async function BestuurPage() {
     await connection();
@@ -20,12 +23,25 @@ export default async function BestuurPage() {
 
     return (
         <PublicPageShell>
-            <div className="container  max-w-7xl px-4 pt-8 pb-4">
-                <BackButton href="/commissies" title="Terug naar overzicht" />
-            </div>
-            <main className="max-w-app mx-auto px-4 pb-24 sm:px-6 lg:px-8">
-                <CommitteeDetail committee={committee} />
-            </main>
+            <Container size="xl" py="xl">
+                <Stack gap="xl">
+                    <Group>
+                        <Button
+                            component={Link}
+                            href="/commissies"
+                            title="Terug naar overzicht"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                    </Group>
+                    <Box component="main">
+                        <CommitteeDetail committee={committee} />
+                    </Box>
+                </Stack>
+            </Container>
         </PublicPageShell>
     );
 }

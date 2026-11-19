@@ -3,41 +3,41 @@
 import React from 'react';
 import Link from 'next/link';
 import { ChevronRight, Lock, ExternalLink } from 'lucide-react';
+import { Box, Button, Card, Group, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 
 interface TileProps {
     title?: string;
     icon?: React.ReactNode;
     children: React.ReactNode;
-    className?: string;
     actions?: React.ReactNode;
 }
 
 export function Tile({
-    title, icon, children, className = "", actions
+    title, icon, children, actions
 }: TileProps) {
     return (
-        <section className={`squircle-xl relative overflow-hidden border border-transparent bg-(--bg-card) shadow-lg dark:border-white/10 ${className}`}>
-            <div className="relative p-6 sm:p-8">
+        <Card padding="xl" radius="lg" shadow="md">
+            <Stack gap="lg">
                 {(title || actions) && (
-                    <header className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex min-w-0 items-center gap-3">
+                    <Group justify="space-between" align="center" wrap="wrap" gap="md">
+                        <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
                             {icon && (
-                                <div className="flex shrink-0 items-center justify-center text-purple-700 dark:text-purple-300">
+                                <ThemeIcon variant="light" color="brand" size="lg" radius="md">
                                     {icon}
-                                </div>
+                                </ThemeIcon>
                             )}
                             {title && (
-                                <h2 className="min-w-0 text-xl font-bold wrap-break-word whitespace-normal text-purple-700 sm:text-2xl dark:text-white">
+                                <Title order={2} size="h3" c="brand" style={{ wordBreak: 'break-word' }}>
                                     {title}
-                                </h2>
+                                </Title>
                             )}
-                        </div>
-                        {actions && <div className="flex w-full justify-start sm:w-auto sm:justify-end">{actions}</div>}
-                    </header>
+                        </Group>
+                        {actions && <Box>{actions}</Box>}
+                    </Group>
                 )}
-                <div className="text-(--text-main)">{children}</div>
-            </div>
-        </section>
+                <Box>{children}</Box>
+            </Stack>
+        </Card>
     );
 }
 
@@ -54,43 +54,75 @@ interface QuickLinkProps {
 export function QuickLink({
     label, subtitle, icon, onClick, href, locked, external
 }: QuickLinkProps) {
-    const common = "group flex items-center gap-4 squircle bg-licht-paars/10 dark:bg-white/5 p-5 transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-300 border border-licht-paars/20 dark:border-white/10 hover:border-purple-300 shadow-sm w-full hover:-translate-y-0.5";
+    const rightSection = (
+        <Group gap="xs" wrap="nowrap" c="dimmed">
+            {locked && <Lock size={14} />}
+            {external && <ExternalLink size={14} />}
+            <ChevronRight size={16} />
+        </Group>
+    );
 
-    const inner = (
-        <>
-            <div className="flex shrink-0 items-center justify-center text-purple-700 transition-transform group-hover:scale-110 dark:text-purple-300">
+    const content = (
+        <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
+            <Text span inherit lh={1}>
                 {icon}
-            </div>
-            <span className="flex flex-1 items-center justify-between text-sm font-bold text-purple-700 dark:text-white">
-                <div className="flex flex-col items-start gap-0.5">
-                    <span>{label}</span>
-                    {subtitle && <span className="text-[10px] leading-none font-medium text-purple-500 opacity-80 dark:text-purple-400">{subtitle}</span>}
-                </div>
-                <div className="flex items-center gap-2">
-                    {locked && <Lock className="size-3 opacity-50" />}
-                    {external && <ExternalLink className="size-3 opacity-50" />}
-                    <ChevronRight className="size-4 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
-                </div>
-            </span>
-        </>
+            </Text>
+            <Stack gap={0} align="flex-start" style={{ minWidth: 0 }}>
+                <Text span inherit truncate>
+                    {label}
+                </Text>
+                {subtitle && (
+                    <Text size="xs" c="dimmed" fw={500} lh={1.2}>
+                        {subtitle}
+                    </Text>
+                )}
+            </Stack>
+        </Group>
     );
 
     if (href) {
         return (
-            <Link href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} className={common}>
-                {inner}
-            </Link>
+            <Button
+                component={Link}
+                href={href}
+                target={external ? '_blank' : undefined}
+                rel={external ? 'noopener noreferrer' : undefined}
+                variant="light"
+                fullWidth
+                size="md"
+                h="auto"
+                py="sm"
+                justify="space-between"
+                rightSection={rightSection}
+            >
+                {content}
+            </Button>
         );
     }
-    return <button type="button" onClick={onClick} className={`form-button ${common}`}>{inner}</button>;
+
+    return (
+        <Button
+            type="button"
+            onClick={onClick}
+            variant="light"
+            fullWidth
+            size="md"
+            h="auto"
+            py="sm"
+            justify="space-between"
+            rightSection={rightSection}
+        >
+            {content}
+        </Button>
+    );
 }
 
 export const formatForBreak = (text: string | null | undefined) => {
     if (!text) return null;
     return text.split('').map((char, i) => (
-        <span key={i}>
+        <Text span inherit key={i}>
             {char}
             {(char === '@' || char === '.' || char === '-' || char === '_') && <wbr />}
-        </span>
+        </Text>
     ));
 };

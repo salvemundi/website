@@ -107,31 +107,17 @@ const eslintConfig = [
                     "message": "Zero-Skeleton rendering: `<Suspense>` is strictly forbidden. Await data directly at the component/page level to ensure atomic page loads without intermediate loading states."
                 },
                 {
-                    "selector": "JSXOpeningElement[name.name='input']:not(:has(JSXAttribute[name.name='type'][value.value=/hidden|checkbox|radio|file/])):not(:has(JSXAttribute[name.name='className'] Literal[value=/form-input|beheer-input|sr-only|hidden/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-input|beheer-input|sr-only|hidden/]))",
-                    "message": "Zichtbare rauwe <input> gevonden zonder 'form-input' of 'beheer-input' klasse."
+                    "selector": "JSXOpeningElement[name.name=/^(div|span|p|h[1-6]|button|select|textarea|details|summary|section)$/]",
+                    "message": "Raw HTML layout, typography, and interactive elements are forbidden. Use Mantine components (Box, Flex, Group, Stack, Grid, SimpleGrid, Text, Title, Button, ActionIcon, Select, Textarea, Spoiler, VisuallyHidden) instead."
                 },
                 {
-                    "selector": "JSXOpeningElement[name.name='button']:not(:has(JSXAttribute[name.name='className'] Literal[value=/form-button|beheer-button|icon-button|tab-button|btn-|beheer-select/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-button|beheer-button|icon-button|tab-button|btn-|beheer-select/]))",
-                    "message": "Rauwe <button> gevonden zonder 'form-button', 'beheer-button', 'icon-button', 'tab-button', 'btn-*' of 'beheer-select-*' klasse."
-                },
-                {
-                    "selector": "JSXOpeningElement[name.name='select']:not(:has(JSXAttribute[name.name='className'] Literal[value=/form-input|beheer-input|beheer-select/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-input|beheer-input|beheer-select/]))",
-                    "message": "Rauwe <select> gevonden zonder geldige klasse."
-                },
-                {
-                    "selector": "JSXOpeningElement[name.name='textarea']:not(:has(JSXAttribute[name.name='className'] Literal[value=/form-input|beheer-input/])):not(:has(JSXAttribute[name.name='className'] TemplateElement[value.raw=/form-input|beheer-input/]))",
-                    "message": "Rauwe <textarea> gevonden zonder 'form-input' of 'beheer-input' klasse."
+                    "selector": "JSXOpeningElement[name.name=/^(Box|Flex|Group|Stack|Grid|GridCol|SimpleGrid|Container|Center|Card|Paper|Button|ActionIcon|Text|Title|Anchor|Badge|Avatar|ThemeIcon|Alert|Modal|Drawer|Tabs|NavLink|Spoiler|Divider|TextInput|Select|NativeSelect|Textarea|Checkbox|Switch|NumberInput|ColorInput|Typography)$/] > JSXAttribute[name.name='className']",
+                    "message": "Passing className to Mantine components is forbidden. Use Mantine style props (p, px, py, gap, fz, fw, c, bg, visibleFrom, hiddenFrom, mod, style) and global theme configuration in theme.ts instead."
                 }
             ],
 
             "react-hooks/set-state-in-effect": "off",
             "react-hooks/incompatible-library": "off"
-        }
-    },
-    {
-        files: ["src/shared/ui/**/*", "src/components/ui/**/*"],
-        rules: {
-            "no-restricted-syntax": "off"
         }
     },
     {
@@ -158,9 +144,10 @@ const eslintConfig = [
         }
     },
     {
-        files: ["src/app/**/opengraph-image.tsx", "src/app/**/twitter-image.tsx"],
+        files: ["src/app/**/opengraph-image.tsx", "src/app/**/twitter-image.tsx", "src/lib/utils/og-utils.tsx"],
         rules: {
-            "@next/next/no-img-element": "off"
+            "@next/next/no-img-element": "off",
+            "no-restricted-syntax": "off"
         }
     }
 ];

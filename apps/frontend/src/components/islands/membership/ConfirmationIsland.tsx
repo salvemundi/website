@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, Home, User, XCircle, Loader2, AlertTriangle } from 'lucide-react';
+import { CheckCircle, Home, User, XCircle, AlertTriangle } from 'lucide-react';
+import { Button, Card, Group, Loader, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import { getTransactionStatusAction } from '@/server/actions/profile/membership.actions';
 
 interface ConfirmationIslandProps {
@@ -43,82 +44,90 @@ export default function ConfirmationIsland({ transactionId, type, initialStatus 
         switch (status) {
             case 'loading':
                 return (
-                    <div className="flex flex-col items-center py-12">
-                        <Loader2 className="mb-6 size-16 animate-spin text-theme-purple" />
-                        <h1 className="mb-4 text-3xl font-bold dark:text-white">Status controleren...</h1>
-                    </div>
+                    <Stack align="center" gap="lg" py="xl">
+                        <Loader size="xl" color="brand" />
+                        <Title order={1} size="h2">
+                            Status controleren...
+                        </Title>
+                    </Stack>
                 );
             case 'paid':
                 return (
-                    <>
-                        <div className="mx-auto mb-6 flex size-24 items-center justify-center rounded-full bg-green-500/20 shadow-glow shadow-green-500/20 dark:bg-green-500/30 dark:shadow-green-500/40">
-                            <CheckCircle className="size-14 text-green-500 dark:text-green-400" />
-                        </div>
-                        <h1 className="mb-4 text-4xl font-semibold tracking-tight text-theme-purple dark:text-purple-400">GESLAAGD!</h1>
-                        <p className="mx-auto mb-8 max-w-lg text-lg leading-relaxed opacity-80 dark:text-white/80">
+                    <Stack align="center" gap="md">
+                        <ThemeIcon size={96} radius="xl" variant="light" color="success">
+                            <CheckCircle size={56} />
+                        </ThemeIcon>
+                        <Title order={1} size="h1" c="brand">
+                            GESLAAGD!
+                        </Title>
+                        <Text size="lg" c="dimmed" maw={500}>
                             {type === 'renewal'
                                 ? 'Welkom terug! Je lidmaatschap is succesvol verlengd. Je hebt weer volledige toegang tot alle activiteiten.'
                                 : 'Bedankt voor je inschrijving! Je bent nu officieel lid van Salve Mundi. We hebben een bevestigingsmail naar je gestuurd.'}
-                        </p>
-                    </>
+                        </Text>
+                    </Stack>
                 );
             case 'failed':
                 return (
-                    <>
-                        <div className="mx-auto mb-6 flex size-24 items-center justify-center rounded-full bg-red-500/20 dark:bg-red-500/30">
-                            <XCircle className="text-theme-error size-14 dark:text-red-400" />
-                        </div>
-                        <h1 className="text-theme-error mb-4 text-3xl font-bold dark:text-red-400">Betaling Mislukt</h1>
-                        <p className="mx-auto mb-8 max-w-lg text-lg opacity-80 dark:text-white/80">
+                    <Stack align="center" gap="md">
+                        <ThemeIcon size={96} radius="xl" variant="light" color="error">
+                            <XCircle size={56} />
+                        </ThemeIcon>
+                        <Title order={1} size="h2" c="error">
+                            Betaling Mislukt
+                        </Title>
+                        <Text size="lg" c="dimmed" maw={500}>
                             Helaas is de betaling niet gelukt. Je kunt het opnieuw proberen om je lidmaatschap te activeren.
-                        </p>
-                        <button
-                            onClick={() => router.push('/lidmaatschap')}
-                            className="form-button rounded-2xl bg-theme-purple px-8 py-4 font-bold text-white shadow-lg transition-transform hover:scale-105 dark:bg-purple-500"
-                            type="button">
+                        </Text>
+                        <Button type="button" size="lg" onClick={() => router.push('/lidmaatschap')}>
                             Opnieuw proberen
-                        </button>
-                    </>
+                        </Button>
+                    </Stack>
                 );
             default:
                 return (
-                    <>
-                        <div className="mx-auto mb-6 flex size-24 items-center justify-center rounded-full bg-yellow-500/20">
-                            <AlertTriangle className="size-14 text-yellow-500" />
-                        </div>
-                        <h1 className="mb-4 text-3xl font-bold dark:text-white">Verwerking...</h1>
-                        <p className="mx-auto mb-8 max-w-lg text-lg opacity-80">
+                    <Stack align="center" gap="md">
+                        <ThemeIcon size={96} radius="xl" variant="light" color="accent">
+                            <AlertTriangle size={56} />
+                        </ThemeIcon>
+                        <Title order={1} size="h2">
+                            Verwerking...
+                        </Title>
+                        <Text size="lg" c="dimmed" maw={500}>
                             We wachten nog op bevestiging van de betaling. Dit kan een ogenblik duren.
-                        </p>
-                    </>
+                        </Text>
+                    </Stack>
                 );
         }
     };
 
     return (
-        <div
-            className="w-full max-w-2xl rounded-[2.5rem] bg-(--bg-card) p-8 text-center shadow-2xl sm:p-12 dark:border dark:border-white/10"
-        >
-            {renderContent()}
+        <Card padding="xl" radius="xl" shadow="xl" maw={672} w="100%" ta="center">
+            <Stack gap="xl" align="center">
+                {renderContent()}
 
-            <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-                {status === 'paid' && (
-                    <button
-                        onClick={() => router.push('/profiel')}
-                        className="form-button flex items-center justify-center gap-2 rounded-2xl bg-theme-purple px-8 py-4 font-bold text-white shadow-glow transition-all hover:scale-105"
-                        type="button">
-                        <User className="size-5" />
-                        Naar mijn account
-                    </button>
-                )}
-                <button
-                    onClick={() => router.push('/')}
-                    className="form-button flex items-center justify-center gap-2 rounded-2xl border border-purple-100 bg-purple-50 px-8 py-4 font-bold text-theme-purple transition-all hover:bg-purple-100 dark:border-white/10 dark:bg-white/5 dark:text-purple-400 dark:hover:bg-white/10"
-                    type="button">
-                    <Home className="size-5" />
-                    Terug naar Home
-                </button>
-            </div>
-        </div>
+                <Group justify="center" gap="md" wrap="wrap">
+                    {status === 'paid' && (
+                        <Button
+                            type="button"
+                            size="lg"
+                            leftSection={<User size={20} />}
+                            onClick={() => router.push('/profiel')}
+                        >
+                            Naar mijn account
+                        </Button>
+                    )}
+                    <Button
+                        type="button"
+                        size="lg"
+                        variant="default"
+                        leftSection={<Home size={20} />}
+                        onClick={() => router.push('/')}
+                    >
+                        Terug naar Home
+                    </Button>
+                </Group>
+            </Stack>
+        </Card>
     );
 }

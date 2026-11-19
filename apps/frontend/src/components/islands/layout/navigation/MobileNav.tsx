@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth';
 import type { IconName } from '@/lib/utils/icons';
 import MobileMenu from './MobileMenu';
+import { ActionIcon } from '@mantine/core';
 import { type EnrichedUser } from '@/types/auth';
 import { safeConsoleError } from '@/server/utils/logger';
 
@@ -15,9 +16,10 @@ interface MobileNavProps {
     navItems: { name: string; href: string; icon: IconName }[];
     canAccessAdmin: boolean;
     onLogout: () => void;
+    visible?: boolean;
 }
 
-export function MobileNav({ user, isAuthenticated, navItems, canAccessAdmin }: Omit<MobileNavProps, 'onLogout'>) {
+export function MobileNav({ user, isAuthenticated, navItems, canAccessAdmin, visible = true }: Omit<MobileNavProps, 'onLogout'>) {
     const [menuOpen, setMenuOpen] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
@@ -38,22 +40,25 @@ export function MobileNav({ user, isAuthenticated, navItems, canAccessAdmin }: O
     }, [pathname]);
 
     useEffect(() => {
-        document.body.style.overflow = menuOpen ? 'hidden' : '';
+        document.body.style.overflow = visible && menuOpen ? 'hidden' : '';
         return () => { document.body.style.overflow = ''; };
-    }, [menuOpen]);
+    }, [menuOpen, visible]);
+
+    if (!visible) return null;
 
     return (
         <>
-            <button
-                type="button"
-                className="relative z-210 icon-button inline-flex items-center justify-center rounded-full p-2 text-(--text-main) shadow-sm transition-transform duration-200 hover:scale-110 hover:bg-purple-100 active:scale-95 lg:hidden dark:hover:bg-white/10"
-                style={{ backgroundColor: 'color-mix(in srgb, var(--bg-card) 80%, transparent)' }}
+            <ActionIcon
+                variant="subtle"
+                size="lg"
+                pos="relative"
+                style={{ zIndex: 210 }}
                 onClick={() => setMenuOpen(!menuOpen)}
                 aria-label={menuOpen ? "Sluit menu" : "Open menu"}
                 aria-expanded={menuOpen}
             >
-                {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-            </button>
+                {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            </ActionIcon>
 
             <MobileMenu
                 isOpen={menuOpen}

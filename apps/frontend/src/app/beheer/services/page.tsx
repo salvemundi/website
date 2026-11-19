@@ -1,11 +1,12 @@
-import React from 'react';
+import Link from '@/components/ui/Link';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Divider, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import SystemManagementIsland from '@/components/islands/beheer/SystemManagementIsland';
-import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
 import { getServicesStatusAction } from '@/server/actions/infrastructure/services-status.actions';
 import { getSystemAutomationSettings } from '@/server/actions/beheer/services/beheer-automation.actions';
 
 export const metadata = {
-    title: 'Systeem Beheer | SV Salve Mundi' 
+    title: 'Systeem Beheer | SV Salve Mundi'
 };
 
 export default async function ServicesStatusPage() {
@@ -15,45 +16,62 @@ export default async function ServicesStatusPage() {
     ]);
 
     const initialAutomationSettings = automationRes.success ? automationRes.settings || [] : [];
-    
+
     const issuesCount = initialStatuses.filter(s => s.status !== 'online').length;
     const automationCount = initialAutomationSettings.filter(s => s.isActive).length;
     const mailCount = initialAutomationSettings.filter(s => s.id.startsWith('mail') && s.isActive).length;
 
     return (
-        <BeheerPageShell 
-            title="Systeem & Automatisering"
-            backHref="/beheer"
-            actions={
-                <div className="flex items-center gap-4 rounded-2xl border border-border-color/50 bg-bg-soft px-4 py-2 shadow-sm">
-                    <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Systemen</span>
-                        <span className="text-sm leading-none font-bold text-text-main">{initialStatuses.length}</span>
-                    </div>
-                    <div className="h-6 w-px bg-border-color/20" />
-                    <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Automatisering</span>
-                        <span className="text-sm leading-none font-bold text-text-main">{automationCount}</span>
-                    </div>
-                    <div className="h-6 w-px bg-border-color/20" />
-                    <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Mail Flows</span>
-                        <span className="text-sm leading-none font-bold text-text-main">{mailCount}</span>
-                    </div>
-                    <div className="h-6 w-px bg-border-color/20" />
-                    <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Gezondheid</span>
-                        <span className={`text-sm leading-none font-bold ${issuesCount === 0 ? 'text-emerald-500' : 'text-amber-500'}`}>
-                            {issuesCount === 0 ? '100%' : 'Check'}
-                        </span>
-                    </div>
-                </div>
-            }
-        >
-            <SystemManagementIsland 
-                initialStatuses={initialStatuses} 
-                initialAutomationSettings={initialAutomationSettings}
-            />
-        </BeheerPageShell>
+        <Container size="xl" py="lg">
+            <Stack gap="lg">
+                <Group justify="space-between" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href="/beheer"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                        <Title order={1} size="h2" c="brand">
+                            Systeem &amp; Automatisering
+                        </Title>
+                    </Group>
+
+                    <Paper withBorder px="md" py="xs" radius="lg">
+                        <Group gap="md" wrap="nowrap">
+                            <Stack gap={2} align="center" px={4}>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Systemen</Text>
+                                <Text size="sm" fw={700} lh={1}>{initialStatuses.length}</Text>
+                            </Stack>
+                            <Divider orientation="vertical" />
+                            <Stack gap={2} align="center" px={4}>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Automatisering</Text>
+                                <Text size="sm" fw={700} lh={1}>{automationCount}</Text>
+                            </Stack>
+                            <Divider orientation="vertical" />
+                            <Stack gap={2} align="center" px={4}>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Mail Flows</Text>
+                                <Text size="sm" fw={700} lh={1}>{mailCount}</Text>
+                            </Stack>
+                            <Divider orientation="vertical" />
+                            <Stack gap={2} align="center" px={4}>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Gezondheid</Text>
+                                <Text size="sm" fw={700} lh={1} c={issuesCount === 0 ? 'success' : 'accent'}>
+                                    {issuesCount === 0 ? '100%' : 'Check'}
+                                </Text>
+                            </Stack>
+                        </Group>
+                    </Paper>
+                </Group>
+
+                <SystemManagementIsland
+                    initialStatuses={initialStatuses}
+                    initialAutomationSettings={initialAutomationSettings}
+                />
+            </Stack>
+        </Container>
     );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { connection } from 'next/server';
 import {
     Shield,
     Lock,
@@ -11,6 +12,7 @@ import {
     Heart,
     Phone
 } from 'lucide-react';
+import { Alert, Button, Card, Container, Grid, GridCol, Group, Paper, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 
 import { getSafeHavens } from '@/server/actions/public/safe-haven.actions';
 import SafeHavenCard from '@/components/ui/social/SafeHavenCard';
@@ -19,31 +21,8 @@ import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
 
 export const metadata: Metadata = {
     title: 'Safe Havens',
-    description: 'Een veilig aanspreekpunt waar je terechtkunt met zorgen, vragen of problemen. Wij luisteren zonder te oordelen.' };
-
-function BentoCard({
-    children,
-    className = '' }: {
-    children: React.ReactNode;
-    className?: string;
-}) {
-    return (
-        <section
-            className={[
-                'squircle sm:squircle-lg',
-                'bg-bg-card border border-border-color dark:border-white/10',
-                'shadow-lg sm:shadow-xl',
-                'p-6 sm:p-8',
-                'transition-all duration-300 hover:shadow-2xl',
-                className,
-            ].join(' ')}
-        >
-            {children}
-        </section>
-    );
-}
-
-import { connection } from 'next/server';
+    description: 'Een veilig aanspreekpunt waar je terechtkunt met zorgen, vragen of problemen. Wij luisteren zonder te oordelen.'
+};
 
 export default async function SafeHavensPage() {
     return (
@@ -56,192 +35,183 @@ export default async function SafeHavensPage() {
 async function SafeHavensContent() {
     await connection();
     const topics = [
-        { Icon: AlertTriangle, text: 'Agressie & geweld', color: 'from-purple-600 to-purple-800' },
-        { Icon: Heart, text: 'Seksuele intimidatie', color: 'from-purple-600 to-purple-800' },
-        { Icon: UserX, text: 'Pesten & uitsluiting', color: 'from-purple-600 to-purple-800' },
-        { Icon: Users, text: 'Discriminatie', color: 'from-purple-600 to-purple-800' },
-        { Icon: Shield, text: 'Grensoverschrijdend gedrag', color: 'from-purple-600 to-purple-800' },
-        { Icon: MessageSquare, text: 'Persoonlijke situaties', color: 'from-purple-600 to-purple-800' },
+        { Icon: AlertTriangle, text: 'Agressie & geweld' },
+        { Icon: Heart, text: 'Seksuele intimidatie' },
+        { Icon: UserX, text: 'Pesten & uitsluiting' },
+        { Icon: Users, text: 'Discriminatie' },
+        { Icon: Shield, text: 'Grensoverschrijdend gedrag' },
+        { Icon: MessageSquare, text: 'Persoonlijke situaties' },
     ];
 
     // NUCLEAR SSR: Fetch all data at the page level for zero-drift hydration
     const safeHavens = await getSafeHavens();
 
     return (
-        <div className="max-w-app mx-auto px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
-            <div className="mx-auto max-w-7xl">
-                {/* Industrial Columnar Bento Grid - Solves empty space issues on desktop */}
-                <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-                    
-                    {/* MAIN COLUMN (LEFT) */}
-                    <div className="space-y-6 lg:col-span-8">
-                        
-                        {/* Intro Section */}
-                        <BentoCard>
-                            <div className="flex flex-col gap-6">
-                                <div className="flex items-start gap-4 sm:gap-6">
-                                    <div className="squircle flex size-14 shrink-0 items-center justify-center bg-purple-600 shadow-lg sm:size-16">
-                                        <Shield className="size-7 text-white sm:size-8" />
-                                    </div>
+        <Container size="xl" py="xl">
+            <Grid gap="lg" align="flex-start">
+                <GridCol span={{ base: 12, lg: 8 }}>
+                    <Stack gap="lg">
+                        <Card component="section" padding="xl">
+                            <Stack gap="lg">
+                                <Group align="flex-start" gap="lg" wrap="nowrap">
+                                    <ThemeIcon size={56} radius="lg" variant="filled" color="brand">
+                                        <Shield size={28} />
+                                    </ThemeIcon>
 
-                                    <div className="min-w-0 flex-1">
-                                        <h2 className="text-2xl font-black text-theme-purple sm:text-3xl lg:text-4xl">
+                                    <Stack gap="xs" style={{ flex: 1 }}>
+                                        <Title order={1} size="h2" c="brand">
                                             Wat zijn Safe Havens?
-                                        </h2>
-                                        <p className="mt-3 text-base leading-relaxed text-text-muted sm:text-lg">
+                                        </Title>
+                                        <Text size="lg" c="dimmed">
                                             Binnen Salve Mundi vinden wij een veilige en respectvolle omgeving essentieel.
                                             Safe Havens zijn zorgvuldig geselecteerde personen die voor jou klaarstaan:
                                             ze luisteren zonder te oordelen, denken met je mee en helpen je een passende vervolgstap te vinden.
-                                        </p>
-                                    </div>
-                                </div>
+                                        </Text>
+                                    </Stack>
+                                </Group>
 
-                                <div className="grid gap-4 sm:grid-cols-2">
-                                    <div className="squircle bg-bg-main/50 hover:bg-bg-main border border-border-color p-5 transition-colors">
-                                        <div className="flex items-start gap-3">
-                                            <Lock className="mt-0.5 size-5 shrink-0 text-purple-500" />
-                                            <div>
-                                                <p className="text-base font-bold text-text-main">
-                                                    Volledige vertrouwelijkheid
-                                                </p>
-                                                <p className="mt-1.5 text-sm leading-relaxed text-text-muted">
+                                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                                    <Paper p="lg" radius="lg" bg="var(--mantine-color-body)">
+                                        <Group align="flex-start" gap="sm" wrap="nowrap">
+                                            <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                                                <Lock size={16} />
+                                            </ThemeIcon>
+                                            <Stack gap={4}>
+                                                <Text fw={700}>Volledige vertrouwelijkheid</Text>
+                                                <Text size="sm" c="dimmed">
                                                     Safe Havens hebben geheimhoudingsplicht. Wat je deelt blijft tussen jullie,
                                                     tenzij jij expliciet toestemming geeft om informatie te delen.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
+                                                </Text>
+                                            </Stack>
+                                        </Group>
+                                    </Paper>
 
-                                    <div className="squircle bg-bg-main/50 hover:bg-bg-main border border-border-color p-5 transition-colors">
-                                        <div className="flex items-start gap-3">
-                                            <Users className="mt-0.5 size-5 shrink-0 text-purple-500" />
-                                            <div>
-                                                <p className="text-base font-bold text-text-main">
-                                                    Diverse achtergronden
-                                                </p>
-                                                <p className="mt-1.5 text-sm leading-relaxed text-text-muted">
+                                    <Paper p="lg" radius="lg" bg="var(--mantine-color-body)">
+                                        <Group align="flex-start" gap="sm" wrap="nowrap">
+                                            <ThemeIcon size="md" radius="md" variant="light" color="brand">
+                                                <Users size={16} />
+                                            </ThemeIcon>
+                                            <Stack gap={4}>
+                                                <Text fw={700}>Diverse achtergronden</Text>
+                                                <Text size="sm" c="dimmed">
                                                     We streven naar Safe Havens met verschillende achtergronden,
                                                     zodat er sneller iemand is waarbij jij je comfortabel voelt.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </BentoCard>
+                                                </Text>
+                                            </Stack>
+                                        </Group>
+                                    </Paper>
+                                </SimpleGrid>
+                            </Stack>
+                        </Card>
 
-                        {/* Safe Havens list */}
-                        <BentoCard>
-                            <div className="flex flex-col gap-6">
-                                <div>
-                                    <h2 className="text-2xl font-black text-theme-purple sm:text-3xl lg:text-4xl">
+                        <Card component="section" padding="xl">
+                            <Stack gap="lg">
+                                <Stack gap={4}>
+                                    <Title order={2} c="brand">
                                         Onze Safe Havens
-                                    </h2>
-                                    <p className="mt-2 text-sm text-text-muted sm:text-base">
+                                    </Title>
+                                    <Text c="dimmed">
                                         Kies een persoon waarbij jij je het meest comfortabel voelt.
-                                    </p>
-                                </div>
+                                    </Text>
+                                </Stack>
 
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    {safeHavens.length > 0 ? (
-                                        safeHavens.map((safeHaven) => (
+                                {safeHavens.length > 0 ? (
+                                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                                        {safeHavens.map((safeHaven) => (
                                             <SafeHavenCard key={safeHaven.id} safeHaven={safeHaven} />
-                                        ))
-                                    ) : (
-                                        <div className="squircle bg-bg-main/50 col-span-full border border-dashed border-border-color p-10 text-center">
-                                            <Shield className="mx-auto mb-4 size-8 text-purple-500" />
-                                            <p className="text-lg font-bold text-text-main opacity-60">Wordt binnenkort aangevuld</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </BentoCard>
-                    </div>
+                                        ))}
+                                    </SimpleGrid>
+                                ) : (
+                                    <Paper p="xl" radius="lg" bg="var(--mantine-color-body)">
+                                        <Stack align="center" ta="center" gap="sm">
+                                            <ThemeIcon size={48} radius="xl" variant="light" color="brand">
+                                                <Shield size={24} />
+                                            </ThemeIcon>
+                                            <Text size="lg" fw={700} c="dimmed">
+                                                Wordt binnenkort aangevuld
+                                            </Text>
+                                        </Stack>
+                                    </Paper>
+                                )}
+                            </Stack>
+                        </Card>
+                    </Stack>
+                </GridCol>
 
-                    {/* SIDE COLUMN (RIGHT) */}
-                    <div className="space-y-6 lg:col-span-4">
-                        
-                        {/* Topics section */}
-                        <BentoCard>
-                            <div>
-                                <h2 className="text-xl font-black text-theme-purple sm:text-2xl">
-                                    Onderwerpen
-                                </h2>
-                                <p className="mt-2 text-sm text-text-muted">
-                                    Onder andere bij de volgende thema&apos;s:
-                                </p>
-                            </div>
+                <GridCol span={{ base: 12, lg: 4 }}>
+                    <Stack gap="lg">
+                        <Card component="section" padding="xl">
+                            <Stack gap="md">
+                                <Stack gap={4}>
+                                    <Title order={2} size="h3" c="brand">
+                                        Onderwerpen
+                                    </Title>
+                                    <Text size="sm" c="dimmed">
+                                        Onder andere bij de volgende thema&apos;s:
+                                    </Text>
+                                </Stack>
 
-                            <ul className="mt-5 space-y-2.5">
-                                {topics.map((topic, index) => (
-                                    <li
-                                        key={index}
-                                        className="group bg-bg-main/40 hover:bg-bg-main flex items-center gap-3 rounded-xl border border-transparent p-3 transition-all duration-200 hover:border-border-color"
-                                    >
-                                        <div className={`size-9 rounded-lg bg-linear-to-br ${topic.color} flex shrink-0 items-center justify-center shadow-sm transition-shadow group-hover:shadow-md`}>
-                                            <topic.Icon className="size-4 text-white" />
-                                        </div>
-                                        <span className="text-sm font-medium text-text-main">
-                                            {topic.text}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </BentoCard>
+                                <Stack gap="xs">
+                                    {topics.map((topic) => (
+                                        <Paper key={topic.text} p="sm" radius="md" bg="var(--mantine-color-body)">
+                                            <Group gap="sm" wrap="nowrap">
+                                                <ThemeIcon size="md" radius="md" variant="filled" color="brand">
+                                                    <topic.Icon size={16} />
+                                                </ThemeIcon>
+                                                <Text size="sm" fw={500}>
+                                                    {topic.text}
+                                                </Text>
+                                            </Group>
+                                        </Paper>
+                                    ))}
+                                </Stack>
+                            </Stack>
+                        </Card>
 
-                        {/* External help section */}
-                        <BentoCard>
-                            <div className="flex flex-col gap-6">
-                                <div className="text-center">
-                                    <div className="squircle mx-auto mb-5 flex size-14 items-center justify-center bg-purple-600 shadow-lg">
-                                        <MapPin className="size-7 text-white" />
-                                    </div>
-
-                                    <h2 className="text-xl font-black text-theme-purple sm:text-2xl">
+                        <Card component="section" padding="xl">
+                            <Stack gap="lg">
+                                <Stack align="center" ta="center" gap="sm">
+                                    <ThemeIcon size={56} radius="lg" variant="filled" color="brand">
+                                        <MapPin size={28} />
+                                    </ThemeIcon>
+                                    <Title order={2} size="h3" c="brand">
                                         Externe hulp
-                                    </h2>
-
-                                    <p className="mt-3 text-sm leading-relaxed text-text-muted">
+                                    </Title>
+                                    <Text size="sm" c="dimmed">
                                         Hulp buiten onze vereniging nodig? Hier vind je belangrijke contactgegevens.
-                                    </p>
-                                </div>
+                                    </Text>
+                                </Stack>
 
-                                <div className="space-y-3">
-                                    <a
+                                <Stack gap="sm">
+                                    <Button
+                                        component="a"
                                         href="https://www.fontys.nl/fontyshelpt.htm"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="group squircle hover:scale-1.02 flex items-center justify-between gap-3 bg-purple-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl"
+                                        fullWidth
+                                        size="md"
+                                        leftSection={<Shield size={18} />}
+                                        rightSection={<ExternalLink size={16} />}
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <Shield className="size-5" />
-                                            <span className="text-sm font-semibold">
-                                                Fontys Safe Haven
-                                            </span>
-                                        </div>
-                                        <ExternalLink className="size-4 opacity-70 group-hover:opacity-100" />
-                                    </a>
+                                        Fontys Safe Haven
+                                    </Button>
 
-                                    <div className="group squircle flex items-center justify-center gap-2 bg-purple-800 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl">
+                                    <Paper p="md" radius="md" bg="var(--mantine-color-body)" ta="center">
                                         <ObfuscatedEmail
                                             email="bestuur@salvemundi.nl"
-                                            className="text-white hover:text-white"
                                             showIcon={false}
                                         />
-                                    </div>
+                                    </Paper>
 
-                                    <div className="squircle mt-4 border-2 border-red-200 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-950/30">
-                                        <div className="mb-2 flex items-center justify-center gap-2 text-red-600 dark:text-red-400">
-                                            <Phone className="size-4" />
-                                            <p className="text-center text-sm font-bold">Noodgeval? Bel 112</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </BentoCard>
-                    </div>
-                </div>
-            </div>
-        </div>
+                                    <Alert color="error" variant="light" icon={<Phone size={16} />}>
+                                        <Text size="sm" fw={700}>Noodgeval? Bel 112</Text>
+                                    </Alert>
+                                </Stack>
+                            </Stack>
+                        </Card>
+                    </Stack>
+                </GridCol>
+            </Grid>
+        </Container>
     );
 }

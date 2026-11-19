@@ -1,36 +1,37 @@
-import BackButton from '@/components/ui/navigation/BackButton';
-import { Home } from 'lucide-react';
+import Link from '@/components/ui/Link';
+import { AlertTriangle, Home } from 'lucide-react';
+import { Button, Card, Center, Container, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 
 export default function Page() {
     return (
-        <div className="flex min-h-[80vh] flex-col items-center justify-center p-6 text-center">
-            <div 
-                className="w-full max-w-md rounded-2xl border border-(--border-color) p-10 shadow-xl transition-all"
-                style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' }}
-            >
-                <div className="mb-6 flex justify-center">
-                    <div className="rounded-full p-3" style={{ backgroundColor: 'rgba(var(--color-purple-500-rgb), 0.1)' }}>
-                        <svg className="size-12" style={{ color: 'var(--theme-error)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                    </div>
-                </div>
-                
-                <h1 className="mb-4 text-3xl font-extrabold tracking-tight" style={{ color: 'var(--text-main)' }}>
-                    Login Mislukt
-                </h1>
-                
-                <p className="mb-10 leading-relaxed" style={{ color: 'var(--text-subtle)' }}>
-                    Er is een fout opgetreden tijdens het inloggen. Probeer het opnieuw of neem contact op met de ICT-commissie voor ondersteuning.
-                </p>
-                
-                <BackButton 
-                    href="/" 
-                    text="Terug naar Home" 
-                    icon={Home} 
-                    className="w-full justify-center rounded-xl py-4 shadow-lg"
-                />
-            </div>
-        </div>
+        <Container size="xs" py="xl">
+            <Center mih="75vh">
+                <Card w="100%" padding="xl">
+                    <Stack align="center" ta="center" gap="lg">
+                        <ThemeIcon size={64} radius="xl" variant="light" color="error">
+                            <AlertTriangle size={32} />
+                        </ThemeIcon>
+
+                        <Title order={1} size="h2">
+                            Login Mislukt
+                        </Title>
+
+                        <Text c="dimmed">
+                            Er is een fout opgetreden tijdens het inloggen. Probeer het opnieuw of neem contact op met de ICT-commissie voor ondersteuning.
+                        </Text>
+
+                        <Button
+                            component={Link}
+                            href="/"
+                            fullWidth
+                            size="md"
+                            leftSection={<Home size={16} />}
+                        >
+                            Terug naar Home
+                        </Button>
+                    </Stack>
+                </Card>
+            </Center>
+        </Container>
     );
 }

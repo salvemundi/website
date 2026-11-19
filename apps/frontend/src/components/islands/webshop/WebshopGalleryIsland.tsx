@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import MediaAsset from '@/components/ui/media/MediaAsset';
+import { useState } from 'react';
 import { ImageOff } from 'lucide-react';
+import { AspectRatio, Box, Center, Modal, SimpleGrid, Stack, Text, UnstyledButton } from '@mantine/core';
+import MediaAsset from '@/components/ui/media/MediaAsset';
 import { type WebshopProductMedia } from '@salvemundi/validations/schema/webshop.zod';
 
 interface WebshopGalleryIslandProps {
@@ -13,116 +14,108 @@ interface WebshopGalleryIslandProps {
 export default function WebshopGalleryIsland({ media, productName }: WebshopGalleryIslandProps) {
     const [activeIndex, setActiveIndex] = useState(0);
     const [lightboxOpen, setLightboxOpen] = useState(false);
-    const closeButtonRef = useRef<HTMLButtonElement>(null);
-    const previouslyFocusedRef = useRef<HTMLElement | null>(null);
-
-    useEffect(() => {
-        if (!lightboxOpen) return;
-
-        previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
-        closeButtonRef.current?.focus();
-
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                setLightboxOpen(false);
-                return;
-            }
-
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                closeButtonRef.current?.focus();
-            }
-        };
-
-        document.body.style.overflow = 'hidden';
-        window.addEventListener('keydown', onKey);
-        return () => {
-            document.body.style.overflow = '';
-            window.removeEventListener('keydown', onKey);
-            previouslyFocusedRef.current?.focus();
-        };
-    }, [lightboxOpen]);
 
     if (media.length === 0) {
         return (
-            <div className="flex aspect-square w-full items-center justify-center rounded-[1.75rem] bg-(--bg-soft)">
-                <ImageOff className="size-12 text-(--theme-purple)/20" />
-            </div>
+            <AspectRatio ratio={1}>
+                <Center
+                    w="100%"
+                    h="100%"
+                    style={{
+                        borderRadius: 'var(--mantine-radius-xl)',
+                        backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
+                    }}
+                >
+                    <Text span c="brand" opacity={0.3} lh={1}>
+                        <ImageOff size={48} />
+                    </Text>
+                </Center>
+            </AspectRatio>
         );
     }
 
     const active = media.at(activeIndex) ?? media[0];
 
     return (
-        <div className="space-y-3">
-            <button
+        <Stack gap="sm">
+            <UnstyledButton
                 type="button"
                 onClick={() => setLightboxOpen(true)}
-                className="relative form-button block aspect-square w-full cursor-zoom-in overflow-hidden rounded-[1.75rem] bg-(--bg-soft)"
                 aria-label={`${productName} - vergroot media ${activeIndex + 1}`}
+                w="100%"
+                style={{ cursor: 'zoom-in' }}
             >
-                <MediaAsset
-                    asset={{ id: active.asset, type: active.asset_type }}
-                    alt={`${productName} - foto ${activeIndex + 1}`}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    objectFit="cover"
-                    priority
-                />
-            </button>
+                <AspectRatio
+                    ratio={1}
+                    style={{
+                        borderRadius: 'var(--mantine-radius-xl)',
+                        overflow: 'hidden',
+                        backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
+                    }}
+                >
+                    <MediaAsset
+                        asset={{ id: active.asset, type: active.asset_type }}
+                        alt={`${productName} - foto ${activeIndex + 1}`}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        objectFit="cover"
+                        priority
+                    />
+                </AspectRatio>
+            </UnstyledButton>
 
             {media.length > 1 && (
-                <div className="grid grid-cols-5 gap-2">
+                <SimpleGrid cols={5} spacing="xs">
                     {media.map((item, idx) => (
-                        <button
+                        <UnstyledButton
                             key={item.id}
                             type="button"
                             onClick={() => setActiveIndex(idx)}
-                            className={`relative form-button aspect-square overflow-hidden rounded-xl border-2 transition-colors ${idx === activeIndex ? 'border-(--theme-purple)' : 'border-transparent hover:border-(--border-color)'}`}
                             aria-label={`Bekijk media ${idx + 1}`}
                             aria-current={idx === activeIndex}
+                            w="100%"
                         >
-                            <MediaAsset
-                                asset={{ id: item.asset, type: item.asset_type }}
-                                alt={`${productName} - miniatuur ${idx + 1}`}
-                                fill
-                                sizes="20vw"
-                                objectFit="cover"
-                            />
-                        </button>
+                            <AspectRatio
+                                ratio={1}
+                                style={{
+                                    borderRadius: 'var(--mantine-radius-md)',
+                                    overflow: 'hidden',
+                                    border: idx === activeIndex
+                                        ? '2px solid var(--primary)'
+                                        : '2px solid transparent',
+                                }}
+                            >
+                                <MediaAsset
+                                    asset={{ id: item.asset, type: item.asset_type }}
+                                    alt={`${productName} - miniatuur ${idx + 1}`}
+                                    fill
+                                    sizes="20vw"
+                                    objectFit="cover"
+                                />
+                            </AspectRatio>
+                        </UnstyledButton>
                     ))}
-                </div>
+                </SimpleGrid>
             )}
 
-            {lightboxOpen && (
-                <div
-                    role="dialog"
-                    aria-modal="true"
-                    aria-label={`${productName} - vergrote weergave`}
-                    className="bg-background/90 animate-in fade-in fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm duration-200 sm:p-6"
-                    onClick={(e) => {
-                        if (e.target === e.currentTarget) setLightboxOpen(false);
-                    }}
-                >
-                    <button
-                        ref={closeButtonRef}
-                        onClick={() => setLightboxOpen(false)}
-                        className="bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground border-border absolute top-4 right-4 z-50 form-button rounded-full border p-2 backdrop-blur-sm transition-colors"
-                        aria-label="Sluiten"
-                        type="button">
-                        ×
-                    </button>
-
-                    <div className="relative h-[80vh] w-full max-w-4xl overflow-hidden rounded-3xl bg-black/20 p-2" onClick={(e) => e.stopPropagation()}>
-                        <MediaAsset
-                            asset={{ id: active.asset, type: active.asset_type }}
-                            alt={`${productName} - vergrote foto ${activeIndex + 1}`}
-                            fill
-                            objectFit="contain"
-                        />
-                    </div>
-                </div>
-            )}
-        </div>
+            <Modal
+                opened={lightboxOpen}
+                onClose={() => setLightboxOpen(false)}
+                size="xl"
+                centered
+                radius="lg"
+                padding="xs"
+                aria-label={`${productName} - vergrote weergave`}
+            >
+                <Box pos="relative" h="75vh" w="100%" style={{ borderRadius: 'var(--mantine-radius-md)', overflow: 'hidden' }}>
+                    <MediaAsset
+                        asset={{ id: active.asset, type: active.asset_type }}
+                        alt={`${productName} - vergrote foto ${activeIndex + 1}`}
+                        fill
+                        objectFit="contain"
+                    />
+                </Box>
+            </Modal>
+        </Stack>
     );
 }

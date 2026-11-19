@@ -1,16 +1,17 @@
 export const dynamic = 'force-dynamic';
 
+import type { Metadata } from 'next';
+import Link from '@/components/ui/Link';
 import { connection } from 'next/server';
+import { Wine, Calendar, ChevronLeft } from 'lucide-react';
+import { Button, Card, Container, Group, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
-import BackButton from '@/components/ui/navigation/BackButton';
 import { getFeatureFlagSettings } from '@/server/actions/beheer/beheer-utils.actions';
 import {
     getLatestActiveCoboDb,
     getCoboGuestBoardsDb
 } from '@/server/queries/cobo/beheer-cobo.queries';
 import CoboPublicQueueIsland from '@/components/islands/cobo/CoboPublicQueueIsland';
-import { Wine, Calendar } from 'lucide-react';
-import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: 'Wachtlijst | Constitutieborrel (CoBo) | Salve Mundi',
@@ -37,19 +38,21 @@ export default async function CoboWachtlijstPage() {
                 title="Wachtlijst CoBo"
                 description="Wachtlijst van besturen/gasten."
             >
-                <div className="mx-auto max-w-4xl px-fluid-md pt-fluid-lg pb-16">
-                    <div className="squircle-lg mx-auto max-w-xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
-                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10">
-                            <Wine className="size-8 text-purple-700 dark:text-purple-300" />
-                        </div>
-                        <h2 className="text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
-                            CoBo Gesloten
-                        </h2>
-                        <p className="mt-2 text-sm leading-relaxed font-medium text-text-muted">
-                            {featureFlag.disabled_message || 'De CoBo module is momenteel gesloten.'}
-                        </p>
-                    </div>
-                </div>
+                <Container size="sm" py="xl">
+                    <Card padding="xl">
+                        <Stack align="center" ta="center" gap="md">
+                            <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                                <Wine size={32} />
+                            </ThemeIcon>
+                            <Title order={2} c="brand">
+                                CoBo Gesloten
+                            </Title>
+                            <Text size="sm" c="dimmed">
+                                {featureFlag.disabled_message || 'De CoBo module is momenteel gesloten.'}
+                            </Text>
+                        </Stack>
+                    </Card>
+                </Container>
             </PublicPageShell>
         );
     }
@@ -60,19 +63,21 @@ export default async function CoboWachtlijstPage() {
                 title="Wachtlijst CoBo"
                 description="Wachtlijst van besturen/gasten."
             >
-                <div className="mx-auto max-w-4xl px-fluid-md pt-fluid-lg pb-16">
-                    <div className="squircle-lg mx-auto max-w-xl border border-border-color bg-bg-card p-8 text-center shadow-lg sm:p-12">
-                        <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full border border-purple-500/20 bg-purple-500/10">
-                            <Calendar className="size-8 text-purple-700 dark:text-purple-300" />
-                        </div>
-                        <h2 className="text-xl font-black text-purple-700 sm:text-2xl dark:text-purple-300">
-                            Geen actieve CoBo gevonden
-                        </h2>
-                        <p className="mt-2 text-sm leading-relaxed font-medium text-text-muted">
-                            Er is momenteel geen actieve Constitutieborrel gepland.
-                        </p>
-                    </div>
-                </div>
+                <Container size="sm" py="xl">
+                    <Card padding="xl">
+                        <Stack align="center" ta="center" gap="md">
+                            <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                                <Calendar size={32} />
+                            </ThemeIcon>
+                            <Title order={2} c="brand">
+                                Geen actieve CoBo gevonden
+                            </Title>
+                            <Text size="sm" c="dimmed">
+                                Er is momenteel geen actieve Constitutieborrel gepland.
+                            </Text>
+                        </Stack>
+                    </Card>
+                </Container>
             </PublicPageShell>
         );
     }
@@ -84,16 +89,27 @@ export default async function CoboWachtlijstPage() {
             title={`Live Wachtlijst: ${activeCobo.title || 'CoBo'}`}
             description="Realtime live volgorde van feliciterende besturen en verenigingen."
         >
-            <div className="mx-auto max-w-4xl space-y-6 px-fluid-md pt-fluid-sm pb-16">
-                <div>
-                    <BackButton href="/cobo" title="Terug naar CoBo overzicht" />
-                </div>
+            <Container size="md" py="xl">
+                <Stack gap="lg">
+                    <Group>
+                        <Button
+                            component={Link}
+                            href="/cobo"
+                            title="Terug naar CoBo overzicht"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                    </Group>
 
-                <CoboPublicQueueIsland
-                    coboId={activeCobo.id}
-                    initialGuestBoards={guestBoards}
-                />
-            </div>
+                    <CoboPublicQueueIsland
+                        coboId={activeCobo.id}
+                        initialGuestBoards={guestBoards}
+                    />
+                </Stack>
+            </Container>
         </PublicPageShell>
     );
 }

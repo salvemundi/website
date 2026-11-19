@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Lock, LogIn, ShieldAlert } from 'lucide-react';
+import { Alert, Badge, Box, Button, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import { useAuthActions } from '@/features/auth/providers/auth-provider';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
 import { formatDate } from '@/shared/lib/utils/date';
@@ -29,65 +30,81 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
     };
 
     return (
-        <div className="space-y-6">
-            <div>
-                <span className="mb-3 inline-block rounded-full bg-(--bg-soft) px-3 py-1 text-[10px] font-bold tracking-wider text-(--theme-purple) uppercase">
-                    {product.type === 'clothing' ? 'Kleding' : 'Item'}
-                </span>
-                <h1 className="text-3xl font-bold text-(--theme-purple)/90">{product.name}</h1>
-            </div>
+        <Stack gap="lg">
+            <Stack gap="xs">
+                <Box>
+                    <Badge variant="light" color="brand" size="sm">
+                        {product.type === 'clothing' ? 'Kleding' : 'Item'}
+                    </Badge>
+                </Box>
+                <Title order={1} size="h1" c="brand">
+                    {product.name}
+                </Title>
+            </Stack>
 
             {product.description && (
-                <SafeMarkdown content={product.description} className="text-(--text-muted)" />
+                <Text c="dimmed" component="div">
+                    <SafeMarkdown content={product.description} />
+                </Text>
             )}
 
-            <div className="space-y-1 rounded-2xl border border-(--border-color) p-4">
-                <div className="flex items-center justify-between">
-                    <span className="text-sm text-(--text-muted)">Prijs</span>
-                    <span className="text-xl font-bold text-(--theme-purple)/90">€{price}</span>
-                </div>
-            </div>
+            <Paper p="md" radius="lg" withBorder>
+                <Group justify="space-between" align="center">
+                    <Text size="sm" c="dimmed">Prijs</Text>
+                    <Text size="xl" fw={700} c="brand">€{price}</Text>
+                </Group>
+            </Paper>
 
-            <div className="space-y-1 rounded-2xl bg-(--bg-soft) p-4 text-sm text-(--text-muted)">
-                <p className="font-bold text-(--theme-purple)/80">{hasDrop ? 'Dit is een preorder drop' : 'Volledige betaling'}</p>
-                <p>Je betaalt nu de volledige prijs. Er is geen bezorging, je haalt je bestelling op tijdens een afgesproken afhaalmoment.</p>
-                {closesAt && (
-                    <p>{isDropOpen ? `Bestellen kan tot ${formatDate(closesAt, 'd MMMM yyyy HH:mm')}.` : `Deze drop is gesloten sinds ${formatDate(closesAt, 'd MMMM yyyy HH:mm')}.`}</p>
-                )}
-            </div>
+            <Paper p="md" radius="lg" withBorder>
+                <Stack gap={4}>
+                    <Text size="sm" fw={700} c="brand">
+                        {hasDrop ? 'Dit is een preorder drop' : 'Volledige betaling'}
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                        Je betaalt nu de volledige prijs. Er is geen bezorging, je haalt je bestelling op tijdens een afgesproken afhaalmoment.
+                    </Text>
+                    {closesAt && (
+                        <Text size="sm" c="dimmed">
+                            {isDropOpen
+                                ? `Bestellen kan tot ${formatDate(closesAt, 'd MMMM yyyy HH:mm')}.`
+                                : `Deze drop is gesloten sinds ${formatDate(closesAt, 'd MMMM yyyy HH:mm')}.`}
+                        </Text>
+                    )}
+                </Stack>
+            </Paper>
 
             {isSoldOut ? (
-                <button type="button" disabled className="form-button flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-full bg-(--theme-purple)/10 py-3 font-bold text-(--theme-purple)/40">
-                    <Lock className="size-4" />
+                <Button type="button" disabled fullWidth size="md" leftSection={<Lock size={16} />}>
                     Uitverkocht
-                </button>
+                </Button>
             ) : !isDropOpen ? (
-                <button type="button" disabled className="form-button flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-full bg-(--theme-purple)/10 py-3 font-bold text-(--theme-purple)/40">
-                    <Lock className="size-4" />
+                <Button type="button" disabled fullWidth size="md" leftSection={<Lock size={16} />}>
                     Drop gesloten
-                </button>
+                </Button>
             ) : !isLoggedIn ? (
-                <button
+                <Button
                     type="button"
                     onClick={handleLogin}
-                    className="hover:scale-1.02 form-button flex w-full items-center justify-center gap-2 rounded-full bg-(--theme-purple) py-3 font-bold text-white shadow-(--theme-purple)/20 shadow-lg transition-all"
+                    fullWidth
+                    size="md"
+                    leftSection={<LogIn size={16} />}
                 >
-                    <LogIn className="size-4" />
                     Log in om te bestellen
-                </button>
+                </Button>
             ) : !isMember ? (
-                <div className="flex w-full items-center justify-center gap-2 rounded-full bg-(--theme-warning)/10 px-4 py-3 text-center font-bold text-(--theme-warning)">
-                    <ShieldAlert className="size-4 shrink-0" />
+                <Alert color="accent" variant="light" radius="xl" icon={<ShieldAlert size={16} />}>
                     Bestellen is alleen voor leden van Salve Mundi.
-                </div>
+                </Alert>
             ) : (
-                <Link
+                <Button
+                    component={Link}
                     href={`/merch/bestellen?product=${product.slug}`}
-                    className="hover:scale-1.02 flex w-full items-center justify-center gap-2 rounded-full bg-(--theme-purple) py-3 font-bold text-white no-underline shadow-(--theme-purple)/20 shadow-lg transition-all"
+                    fullWidth
+                    size="md"
                 >
                     Bestel nu
-                </Link>
+                </Button>
             )}
-        </div>
+        </Stack>
     );
 }

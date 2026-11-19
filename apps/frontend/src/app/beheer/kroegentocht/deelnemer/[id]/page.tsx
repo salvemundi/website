@@ -1,5 +1,7 @@
+import Link from '@/components/ui/Link';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Group, Stack, Text, Title } from '@mantine/core';
 import SignupForm from '@/components/islands/beheer/kroegentocht/SignupForm';
-import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
 import { getPubCrawlSignup, getPubCrawlEvent } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
 import { notFound } from 'next/navigation';
 import { unstable_noStore as noStore } from 'next/cache';
@@ -40,12 +42,32 @@ export default async function DeelnemerPage({ params }: DeelnemerPageProps) {
         : [];
 
     return (
-        <BeheerPageShell
-            title="Deelnemer Beheer"
-            subtitle={`Inschrijving van ${signup.name}`}
-            backHref="/beheer/kroegentocht"
-        >
-            <SignupForm signup={signup} eventGroups={eventGroups} />
-        </BeheerPageShell>
+        <Container size="xl" py="lg">
+            <Stack gap="lg">
+                <Group justify="space-between" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href="/beheer/kroegentocht"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                        <Stack gap={2}>
+                            <Title order={1} size="h2" c="brand">
+                                Deelnemer Beheer
+                            </Title>
+                            <Text size="sm" c="dimmed">
+                                Inschrijving van {signup.name}
+                            </Text>
+                        </Stack>
+                    </Group>
+                </Group>
+
+                <SignupForm signup={signup} eventGroups={eventGroups} />
+            </Stack>
+        </Container>
     );
 }

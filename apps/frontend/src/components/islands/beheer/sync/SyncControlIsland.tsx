@@ -2,6 +2,19 @@
 
 import React from 'react';
 import { RefreshCw, X, Info } from 'lucide-react';
+import {
+    Button,
+    Card,
+    Divider,
+    Group,
+    Paper,
+    Stack,
+    Switch,
+    Text,
+    TextInput,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
 import { useSync } from './SyncContext';
 
 export default function SyncControlIsland() {
@@ -11,7 +24,7 @@ export default function SyncControlIsland() {
         activeOnly, setActiveOnly, sendExpiryEmails, setSendExpiryEmails,
         convertUpn, setConvertUpn, ignoreGracePeriod, setIgnoreGracePeriod,
         handleFullSync, handleStopSync, handleResetSync,
-        userId, setUserId, handleUserSync, syncFieldOptions, status
+        userId, setUserId, handleUserSync, syncFieldOptions, status,
     } = useSync();
 
     const isBusy = isStartingSync || isStopping || isResetting || isUserSyncLoading;
@@ -21,130 +34,152 @@ export default function SyncControlIsland() {
         { label: 'Alleen Actieve Leden', value: activeOnly, setValue: setActiveOnly },
         { label: 'Verstuur Expiratie E-mails', value: sendExpiryEmails, setValue: setSendExpiryEmails },
         { label: 'Automatische UPN Conversie', value: convertUpn, setValue: setConvertUpn },
-        { label: 'Negeer 14-Dagen Gratieperiode (Direct Verwijderen)', value: ignoreGracePeriod, setValue: setIgnoreGracePeriod }
+        { label: 'Negeer 14-Dagen Gratieperiode (Direct Verwijderen)', value: ignoreGracePeriod, setValue: setIgnoreGracePeriod },
     ];
 
     return (
-        <div className={`mb-8 flex flex-col gap-6 ${isBusy ? 'pointer-events-none opacity-70' : ''}`}>
-            <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
-                <div className="mb-6 flex items-center gap-4">
-                    <div className="rounded-xl bg-(--beheer-accent)/10 p-2.5 text-(--beheer-accent)">
-                        <RefreshCw className="size-5" />
-                    </div>
-                    <h3 className="text-lg font-semibold tracking-tight text-(--beheer-text)">Volledige Sync</h3>
-                </div>
+        <Stack gap="lg" mb="xl" style={isBusy ? { opacity: 0.7, pointerEvents: 'none' } : undefined}>
+            <Card p="lg" shadow="sm">
+                <Stack gap="lg">
+                    <Group gap="md">
+                        <ThemeIcon size="lg" variant="light" color="brand" radius="md">
+                            <RefreshCw size={20} />
+                        </ThemeIcon>
+                        <Title order={3} size="h4">
+                            Volledige Sync
+                        </Title>
+                    </Group>
 
-                <div className="space-y-6">
-                    <div>
-                        <label className="mb-3 block text-xs font-semibold text-(--beheer-text-muted)">Velden om te synchroniseren</label>
-                        <div className="flex flex-wrap gap-2">
+                    <Stack gap="xs">
+                        <Text size="xs" fw={600} c="dimmed">
+                            Velden om te synchroniseren
+                        </Text>
+                        <Group gap="xs" wrap="wrap">
                             {syncFieldOptions.map((field: { id: string; label: string }) => {
                                 const isSelected = selectedSyncFields.includes(field.id);
                                 return (
-                                    <button
+                                    <Button
                                         key={field.id}
+                                        type="button"
+                                        size="xs"
+                                        variant={isSelected ? 'filled' : 'default'}
+                                        color={isSelected ? 'brand' : undefined}
                                         onClick={() => toggleField(field.id)}
                                         disabled={isBusy}
-                                        className={`beheer-button rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all ${
-                                            isSelected 
-                                                ? 'border-(--beheer-accent) bg-(--beheer-accent) text-white shadow-sm' 
-                                                : 'border-(--beheer-border)/50 bg-(--beheer-card-bg) text-(--beheer-text-muted) hover:border-(--beheer-accent)/30 hover:text-(--beheer-text)'
-                                        }`}
-                                        type="button">
+                                    >
                                         {field.label}
-                                    </button>
+                                    </Button>
                                 );
                             })}
-                        </div>
-                    </div>
+                        </Group>
+                    </Stack>
 
-                    <div className="grid grid-cols-1 gap-2.5 border-t border-(--beheer-border)/50 pt-4">
-                        {toggles.map((item, idx) => (
-                            <button
-                                key={idx}
-                                onClick={() => item.setValue(!item.value)}
-                                disabled={isBusy}
-                                className={`beheer-button flex items-center justify-between rounded-xl border p-3.5 transition-all ${item.value ? 'border-(--beheer-accent) bg-(--beheer-card-soft)' : 'group border-(--beheer-border) bg-(--beheer-card-bg) hover:border-(--beheer-accent)/30'}`}
-                                type="button">
-                                <span className={`text-[11px] font-semibold transition-colors ${item.value ? 'text-(--beheer-text)' : 'text-(--beheer-text-muted) group-hover:text-(--beheer-text)'}`}>
-                                    {item.label}
-                                </span>
-                                <div className={`relative h-4 w-8 rounded-full transition-all ${item.value ? 'bg-(--beheer-accent)' : 'bg-slate-300 dark:bg-slate-700'}`}>
-                                    <div className={`absolute top-1 size-2 rounded-full bg-white transition-all ${item.value ? 'right-1' : 'left-1'}`} />
-                                </div>
-                            </button>
+                    <Divider />
+
+                    <Stack gap="xs">
+                        {toggles.map((item) => (
+                            <Paper key={item.label} p="sm" withBorder radius="md">
+                                <Switch
+                                    checked={item.value}
+                                    onChange={(e) => item.setValue(e.currentTarget.checked)}
+                                    disabled={isBusy}
+                                    label={item.label}
+                                    labelPosition="left"
+                                    styles={{
+                                        root: { width: '100%' },
+                                        body: { width: '100%', justifyContent: 'space-between' },
+                                        label: { fontSize: 'var(--mantine-font-size-xs)', fontWeight: 600 },
+                                    }}
+                                />
+                            </Paper>
                         ))}
-                    </div>
+                    </Stack>
 
-                    <div className="flex flex-col gap-3 pt-4">
+                    <Stack gap="xs" pt="xs">
                         {status?.active ? (
                             <>
-                                <button
+                                <Button
+                                    type="button"
+                                    fullWidth
+                                    color="error"
                                     onClick={() => { void handleStopSync(); }}
                                     disabled={isStopping || status.abortRequested}
-                                    className="hover:scale-1.01 beheer-button flex w-full items-center justify-center gap-2 rounded-xl bg-(--beheer-inactive) py-3.5 text-xs font-semibold text-white shadow-md transition-all active:scale-95 disabled:opacity-50"
-                                    type="button">
-                                    <X className={`size-4 ${isStopping ? 'animate-spin' : ''}`} />
+                                    loading={isStopping}
+                                    leftSection={<X size={16} />}
+                                >
                                     {status.abortRequested ? 'Afbreken aangevraagd...' : 'Synchronisatie Stoppen'}
-                                </button>
+                                </Button>
                                 {status.abortRequested && (
-                                    <button
+                                    <Button
+                                        type="button"
+                                        fullWidth
+                                        variant="subtle"
+                                        color="error"
+                                        size="xs"
                                         onClick={() => { void handleResetSync(); }}
                                         disabled={isResetting}
-                                        className="beheer-button flex w-full items-center justify-center gap-2 py-2 text-[11px] font-semibold text-(--beheer-inactive) hover:underline disabled:opacity-50"
-                                        type="button">
-                                        <RefreshCw className={`size-3 ${isResetting ? 'animate-spin' : ''}`} />
+                                        loading={isResetting}
+                                        leftSection={<RefreshCw size={14} />}
+                                    >
                                         Forceer Reset (Emergency)
-                                    </button>
+                                    </Button>
                                 )}
                             </>
                         ) : (
-                            <button
+                            <Button
+                                type="button"
+                                fullWidth
+                                color="brand"
                                 onClick={() => { void handleFullSync(); }}
                                 disabled={isStartingSync || !!status?.error}
-                                className="hover:scale-1.01 beheer-button flex w-full items-center justify-center gap-2 rounded-xl bg-(--beheer-accent) py-3.5 text-xs font-semibold text-white shadow-md transition-all active:scale-95 disabled:opacity-50"
-                                type="button">
-                                <RefreshCw className={`size-4 ${isStartingSync ? 'animate-spin' : ''}`} />
+                                loading={isStartingSync}
+                                leftSection={<RefreshCw size={16} />}
+                            >
                                 Start Volledige Synchronisatie
-                            </button>
+                            </Button>
                         )}
-                    </div>
-                </div>
-            </div>
+                    </Stack>
+                </Stack>
+            </Card>
 
-            <div className="rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
-                <div className="mb-6 flex items-center gap-4">
-                    <div className="rounded-xl bg-(--beheer-accent)/10 p-2.5 text-(--beheer-accent)">
-                        <Info className="size-5" />
-                    </div>
-                    <h3 className="text-lg font-semibold tracking-tight text-(--beheer-text)">Specifieke Gebruiker</h3>
-                </div>
+            <Card p="lg" shadow="sm">
+                <Stack gap="md">
+                    <Group gap="md">
+                        <ThemeIcon size="lg" variant="light" color="brand" radius="md">
+                            <Info size={20} />
+                        </ThemeIcon>
+                        <Title order={3} size="h4">
+                            Specifieke Gebruiker
+                        </Title>
+                    </Group>
 
-                <p className="mb-6 text-[11px] leading-relaxed font-semibold text-(--beheer-text-muted) opacity-70">
-                    Synchroniseer een specifieke gebruiker op basis van their Entra ID (UUID).
-                </p>
+                    <Text size="xs" c="dimmed">
+                        Synchroniseer een specifieke gebruiker op basis van their Entra ID (UUID).
+                    </Text>
 
-                <form onSubmit={(e) => { void handleUserSync(e); }} className="space-y-3">
-                    <input
-                        type="text"
-                        value={userId}
-                        autoComplete="off"
-                        suppressHydrationWarning
-                        disabled={isBusy}
-                        onChange={(e) => setUserId(e.target.value)}
-                        placeholder="Entra ID (UUID)..."
-                        className="beheer-input w-full rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) px-5 py-3.5 text-xs font-semibold text-(--beheer-text) transition-all placeholder:text-(--beheer-text-muted)/30 focus:border-(--beheer-accent) focus:outline-none"
-                    />
-                    <button
-                        type="submit"
-                        disabled={isUserSyncLoading || !userId.trim() || !!status?.error}
-                        className="beheer-button flex w-full items-center justify-center gap-2 rounded-xl border border-(--beheer-border) bg-(--beheer-card-soft) py-3.5 text-xs font-semibold text-(--beheer-text) transition-all hover:border-(--beheer-accent) hover:text-(--beheer-accent) active:scale-95 disabled:opacity-50"
-                    >
-                        <RefreshCw className={`size-4 ${isUserSyncLoading ? 'animate-spin' : ''}`} />
-                        Sync Gebruiker
-                    </button>
-                </form>
-            </div>
-        </div>
+                    <form onSubmit={(e) => { void handleUserSync(e); }}>
+                        <Stack gap="sm">
+                            <TextInput
+                                value={userId}
+                                autoComplete="off"
+                                disabled={isBusy}
+                                onChange={(e) => setUserId(e.target.value)}
+                                placeholder="Entra ID (UUID)..."
+                            />
+                            <Button
+                                type="submit"
+                                fullWidth
+                                variant="default"
+                                disabled={isUserSyncLoading || !userId.trim() || !!status?.error}
+                                loading={isUserSyncLoading}
+                                leftSection={<RefreshCw size={16} />}
+                            >
+                                Sync Gebruiker
+                            </Button>
+                        </Stack>
+                    </form>
+                </Stack>
+            </Card>
+        </Stack>
     );
 }

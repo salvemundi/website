@@ -2,6 +2,20 @@
 
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Crown, Plus, Users, X } from 'lucide-react';
+import {
+    Badge,
+    Box,
+    Button,
+    Card,
+    Divider,
+    Group,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
 import ResendTicketEmailButton from './ResendTicketEmailButton';
 import GroupSelectDropdown from './GroupSelectDropdown';
 import AddLeaderForm from './AddLeaderForm';
@@ -23,6 +37,8 @@ interface GroupLeader {
     signupId?: number | null;
 }
 
+export type GroupAccentColor = 'brand' | 'accent' | 'success' | 'error';
+
 interface GroupCardProps {
     groupName: string;
     groupSignups: ExtendedSignup[];
@@ -33,12 +49,7 @@ interface GroupCardProps {
     onUpdateGroup?: (signupId: number, newGroupName: string | null) => Promise<void>;
     onAddLeader?: (groupName: string, name: string, signupId: number | null) => void;
     onRemoveLeader?: (groupName: string, leader: GroupLeader) => void;
-    color: {
-        bg: string;
-        border: string;
-        text: string;
-        badge: string;
-    };
+    color: GroupAccentColor;
     isUnassigned?: boolean;
     layoutColumns?: number;
 }
@@ -55,233 +66,281 @@ export default function GroupCard({
     onRemoveLeader,
     color,
     isUnassigned = false,
-    layoutColumns = 1
+    layoutColumns = 1,
 }: GroupCardProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showAddLeaderForm, setShowAddLeaderForm] = useState(false);
     const [confirmRemoveIdx, setConfirmRemoveIdx] = useState<number | null>(null);
 
-    // Eén blok per inschrijving: inschrijver bovenaan, meegekomen deelnemers eronder.
-    // Groepsleiders worden apart getoond en hier weggelaten.
-    // Groepsleiders blijven in hun eigen blok staan (met kroontje), zodat altijd
-    // duidelijk is wie heeft ingeschreven.
-    const isLeaderName = (signupId: number, name: string) => !isUnassigned && leadersList.some(
-        (l) => l.signupId === signupId && l.name.trim().toLowerCase() === name.trim().toLowerCase()
-    );
-    const signupBlocks = groupSignups.map((signup) => ({ signup, names: getParticipantNames(signup) }));
+    const isLeaderName = (signupId: number, name: string) =>
+        !isUnassigned &&
+        leadersList.some(
+            (l) =>
+                l.signupId === signupId &&
+                l.name.trim().toLowerCase() === name.trim().toLowerCase()
+        );
+    const signupBlocks = groupSignups.map((signup) => ({
+        signup,
+        names: getParticipantNames(signup),
+    }));
 
     const limit = layoutColumns === 3 ? 12 : layoutColumns === 2 ? 8 : 5;
     const visibleBlocks = isExpanded ? signupBlocks : signupBlocks.slice(0, limit);
 
-    const listGridClass = layoutColumns === 3
-        ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2"
-        : layoutColumns === 2
-            ? "grid grid-cols-1 md:grid-cols-2 gap-2"
-            : "space-y-2";
-
-    const leaderGridClass = layoutColumns === 3
-        ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mb-3"
-        : layoutColumns === 2
-            ? "grid grid-cols-1 md:grid-cols-2 gap-2 mb-3"
-            : "space-y-1.5 mb-3";
+    const badgeColor = isUnassigned ? 'error' : color;
+    const gridCols =
+        layoutColumns === 3
+            ? { base: 1, md: 2, lg: 3 }
+            : layoutColumns === 2
+              ? { base: 1, md: 2 }
+              : 1;
 
     return (
-        <div
-            className={`flex flex-col justify-between rounded-2xl border p-5 shadow-md ring-1 transition-all ${
-                isUnassigned
-                    ? 'border-red-500/20 bg-red-500/5 ring-red-500/10 hover:border-red-500/30'
-                    : `ring-(--border-color)/20 ${color.bg} ${color.border}`
-            }`}
+        <Card
+            withBorder
+            p="lg"
+            shadow="sm"
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                borderColor: isUnassigned ? 'var(--destructive)' : undefined,
+            }}
         >
-            <div className="space-y-4">
-                {/* Header info */}
-                <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                        <div
-                            className={`flex items-center justify-center rounded-xl border border-current/10 p-2 ${
-                                isUnassigned
-                                    ? 'border-red-500/10 bg-red-500/10 text-red-600 dark:text-red-400'
-                                    : color.badge
-                            }`}
-                        >
-                            <Users className="size-4.5" />
-                        </div>
-                        <div>
-                            <h3
-                                className={`text-base leading-tight font-bold tracking-tight ${
-                                    isUnassigned ? 'text-red-700 dark:text-red-400' : color.text
-                                }`}
-                            >
+            <Stack gap="md">
+                <Group justify="space-between" align="flex-start" wrap="nowrap">
+                    <Group gap="sm" wrap="nowrap" miw={0}>
+                        <ThemeIcon size={36} radius="md" variant="light" color={badgeColor}>
+                            <Users size={18} />
+                        </ThemeIcon>
+                        <Box miw={0}>
+                            <Title order={3} size="h5" c={badgeColor} lineClamp={1}>
                                 {groupName}
-                            </h3>
-                        </div>
-                    </div>
-                    <span
-                        className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-bold ring-1 ${
-                            isUnassigned
-                                ? 'bg-red-500/10 text-red-600 ring-1 ring-red-500/20'
-                                : `${color.badge} ring-current/20`
-                        }`}
-                    >
-                        {totalTickets} {totalTickets === 1 ? 'deelnemer' : 'deelnemers'}
-                    </span>
-                </div>
+                            </Title>
+                            <Text size="xs" fw={600} c="dimmed" tt="uppercase">
+                                {groupSignups.length} aanmeldingen
+                            </Text>
+                        </Box>
+                    </Group>
 
-                {/* Participant list */}
-                <div className="space-y-2 border-t border-(--border-color)/10 pt-2">
-                    {/* Leaders first */}
+                    <Badge size="sm" variant="light" color={badgeColor} style={{ flexShrink: 0 }}>
+                        {totalTickets} {totalTickets === 1 ? 'deelnemer' : 'deelnemers'}
+                    </Badge>
+                </Group>
+
+                <Divider />
+
+                <Stack gap="sm">
                     {!isUnassigned && leadersList.length > 0 && (
-                        <div className={leaderGridClass}>
+                        <SimpleGrid cols={gridCols} spacing="xs">
                             {leadersList.map((leader, lIdx) => (
-                                <div
+                                <Paper
                                     key={`leader-${lIdx}`}
-                                    className="group relative flex items-center justify-between overflow-hidden rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs shadow-sm ring-1 ring-amber-500/5"
+                                    withBorder
+                                    px="sm"
+                                    py={6}
+                                    radius="md"
+                                    style={{ borderColor: 'var(--accent)' }}
                                 >
-                                    <div className="flex min-w-0 items-center gap-2">
-                                        <Crown
-                                            className="size-3.5 shrink-0 animate-bounce fill-amber-500/20 text-amber-500"
-                                            style={{ animationDuration: '3s' }}
-                                        />
-                                        <div className="flex min-w-0 flex-col">
-                                            <span
-                                                className="max-w-32.5 truncate font-bold text-amber-700 sm:max-w-42.5 dark:text-amber-300"
-                                                title={leader.name}
-                                            >
-                                                {leader.name}
-                                            </span>
-                                            <span className="text-[8px] font-semibold tracking-wide text-amber-600 uppercase dark:text-amber-400">
-                                                Groepsleider {leader.signupId ? '' : '(Extern)'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    {confirmRemoveIdx === lIdx ? (
-                                        <div className="flex shrink-0 items-center gap-1">
-                                            <button
+                                    <Group justify="space-between" wrap="nowrap" gap="xs">
+                                        <Group gap="xs" wrap="nowrap" miw={0}>
+                                            <Text span c="accent" lh={1}>
+                                                <Crown size={14} />
+                                            </Text>
+                                            <Box miw={0}>
+                                                <Text
+                                                    size="xs"
+                                                    fw={700}
+                                                    c="accent"
+                                                    truncate
+                                                    title={leader.name}
+                                                >
+                                                    {leader.name}
+                                                </Text>
+                                                <Text size="xs" fw={600} c="dimmed" tt="uppercase">
+                                                    Groepsleider {leader.signupId ? '' : '(Extern)'}
+                                                </Text>
+                                            </Box>
+                                        </Group>
+                                        {confirmRemoveIdx === lIdx ? (
+                                            <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
+                                                <Button
+                                                    type="button"
+                                                    size="compact-xs"
+                                                    color="error"
+                                                    onClick={() => {
+                                                        setConfirmRemoveIdx(null);
+                                                        onRemoveLeader?.(groupName, leader);
+                                                    }}
+                                                >
+                                                    Ja, afzetten
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    size="compact-xs"
+                                                    variant="default"
+                                                    onClick={() => setConfirmRemoveIdx(null)}
+                                                >
+                                                    Nee
+                                                </Button>
+                                            </Group>
+                                        ) : (
+                                            <Button
                                                 type="button"
-                                                onClick={() => { setConfirmRemoveIdx(null); onRemoveLeader?.(groupName, leader); }}
-                                                className="beheer-button cursor-pointer rounded-md bg-red-500 px-2 py-1 text-[10px] font-bold text-white hover:bg-red-600"
+                                                size="compact-xs"
+                                                variant="subtle"
+                                                color="error"
+                                                leftSection={<X size={12} />}
+                                                onClick={() => setConfirmRemoveIdx(lIdx)}
+                                                title="Groepsleider afzetten (wordt weer gewone deelnemer)"
+                                                style={{ flexShrink: 0 }}
                                             >
-                                                Ja, afzetten
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setConfirmRemoveIdx(null)}
-                                                className="beheer-button cursor-pointer rounded-md px-2 py-1 text-[10px] font-bold text-(--text-muted) hover:bg-(--bg-main)/50"
-                                            >
-                                                Nee
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            onClick={() => setConfirmRemoveIdx(lIdx)}
-                                            className="beheer-button flex shrink-0 cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-[10px] font-bold text-amber-700 transition-all hover:bg-red-500/10 hover:text-red-500 dark:text-amber-300"
-                                            title="Groepsleider afzetten (wordt weer gewone deelnemer)"
-                                        >
-                                            <X className="size-3.5" /> Afzetten
-                                        </button>
-                                    )}
-                                </div>
+                                                Afzetten
+                                            </Button>
+                                        )}
+                                    </Group>
+                                </Paper>
                             ))}
-                        </div>
+                        </SimpleGrid>
                     )}
 
                     {signupBlocks.length === 0 ? (
-                        <p className="py-3 text-center text-xs text-(--text-muted) italic">
+                        <Text py="sm" ta="center" size="xs" c="dimmed" fs="italic">
                             Geen deelnemers in deze groep
-                        </p>
+                        </Text>
                     ) : (
-                        <div className={listGridClass}>
-                            {visibleBlocks.map(({ signup, names }) => {
-                                const [primary, ...others] = names;
-                                const sid = Number(signup.id);
-                                return (
-                                    <div
-                                        key={String(signup.id)}
-                                        className="flex items-start justify-between gap-2 rounded-lg border border-(--border-color)/20 bg-(--bg-card)/60 px-3 py-2 text-xs transition-all hover:border-(--border-color)/40"
-                                    >
-                                        <div className="flex min-w-0 flex-col">
-                                            <span className="truncate font-semibold text-(--text-main)" title={primary}>
-                                                {isLeaderName(sid, primary) && <Crown className="mr-1 inline size-3 text-amber-500" />}
-                                                {primary}
-                                            </span>
-                                            {others.map((name, i) => (
-                                                <span key={i} className="truncate pl-2 text-[11px] text-(--text-main)/80" title={name}>
-                                                    + {isLeaderName(sid, name) && <Crown className="mr-1 inline size-3 text-amber-500" />}{name}
-                                                </span>
-                                            ))}
-                                            <span className="truncate text-[9px] text-(--text-muted)">
-                                                {signup.association || '-'}
-                                            </span>
-                                        </div>
+                        <Stack gap="xs">
+                            <SimpleGrid cols={gridCols} spacing="xs">
+                                {visibleBlocks.map(({ signup, names }) => {
+                                    const [primary, ...others] = names;
+                                    const sid = Number(signup.id);
+                                    return (
+                                        <Paper
+                                            key={String(signup.id)}
+                                            withBorder
+                                            px="sm"
+                                            py={6}
+                                            radius="md"
+                                        >
+                                            <Group justify="space-between" align="flex-start" wrap="nowrap" gap="xs">
+                                                <Stack gap={2} miw={0} flex={1}>
+                                                    <Group gap={4} wrap="nowrap" miw={0}>
+                                                        {isLeaderName(sid, primary) && (
+                                                            <Text span c="accent" lh={1} style={{ flexShrink: 0 }}>
+                                                                <Crown size={12} />
+                                                            </Text>
+                                                        )}
+                                                        <Text size="xs" fw={600} truncate title={primary}>
+                                                            {primary}
+                                                        </Text>
+                                                    </Group>
+                                                    {others.map((name, i) => (
+                                                        <Group key={i} gap={4} wrap="nowrap" pl={8} miw={0}>
+                                                            {isLeaderName(sid, name) && (
+                                                                <Text span c="accent" lh={1} style={{ flexShrink: 0 }}>
+                                                                    <Crown size={12} />
+                                                                </Text>
+                                                            )}
+                                                            <Text size="xs" c="dimmed" truncate title={name}>
+                                                                + {name}
+                                                            </Text>
+                                                        </Group>
+                                                    ))}
+                                                    <Text size="xs" c="dimmed" truncate>
+                                                        {signup.association || '-'}
+                                                    </Text>
+                                                </Stack>
 
-                                        {onUpdateGroup && (
-                                            <GroupSelectDropdown
-                                                value={isUnassigned ? '' : groupName}
-                                                options={groupNames}
-                                                onChange={(val) => {
-                                                    void onUpdateGroup(Number(signup.id), val);
-                                                }}
-                                                size="xs"
-                                            />
-                                        )}
-                                    </div>
-                                );
-                            })}
+                                                {onUpdateGroup && (
+                                                    <GroupSelectDropdown
+                                                        value={isUnassigned ? '' : groupName}
+                                                        options={groupNames}
+                                                        onChange={(val) => {
+                                                            void onUpdateGroup(sid, val);
+                                                        }}
+                                                        size="xs"
+                                                    />
+                                                )}
+                                            </Group>
+                                        </Paper>
+                                    );
+                                })}
+                            </SimpleGrid>
 
                             {signupBlocks.length > limit && (
-                                <button
+                                <Button
+                                    type="button"
+                                    variant="default"
+                                    size="xs"
+                                    fullWidth
                                     onClick={() => setIsExpanded(!isExpanded)}
-                                    className="col-span-full mt-2 beheer-button flex w-full items-center justify-center gap-1.5 rounded-lg border border-(--border-color)/40 bg-(--bg-main)/30 py-1.5 text-[10px] font-bold text-(--text-muted) transition-all hover:bg-(--bg-main)/60 hover:text-(--text-main)"
-                                    type="button">
-                                    {isExpanded ? (
-                                        <>
-                                            Toon minder <ChevronUp className="size-3" />
-                                        </>
-                                    ) : (
-                                        <>
-                                            Toon alles ({signupBlocks.length - limit} meer) <ChevronDown className="size-3" />
-                                        </>
-                                    )}
-                                </button>
+                                    rightSection={
+                                        isExpanded ? (
+                                            <ChevronUp size={14} />
+                                        ) : (
+                                            <ChevronDown size={14} />
+                                        )
+                                    }
+                                >
+                                    {isExpanded
+                                        ? 'Toon minder'
+                                        : `Toon alles (${signupBlocks.length - limit} meer)`}
+                                </Button>
                             )}
-                        </div>
+                        </Stack>
                     )}
-                </div>
-            </div>
+                </Stack>
+            </Stack>
 
-            <div className="mt-4 space-y-2 border-t border-(--border-color)/10 pt-3">
-                {groupSignups.map(signup => (
-                    <div key={String(signup.id)} className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-xs text-(--text-muted)">{signup.name}</span>
-                        <ResendTicketEmailButton signupId={Number(signup.id)} email={signup.email} paid={signup.payment_status === 'paid'} />
-                    </div>
-                ))}
-            </div>
-
-            {/* Action to add a leader */}
-            {!isUnassigned && onAddLeader && (
-                <div className="mt-4 border-t border-(--border-color)/10 pt-3">
-                    {showAddLeaderForm ? (
-                        <AddLeaderForm
-                            participantsList={participantsList}
-                            onAdd={(name, signupId) => {
-                                onAddLeader(groupName, name, signupId);
-                                setShowAddLeaderForm(false);
-                            }}
-                            onCancel={() => setShowAddLeaderForm(false)}
-                        />
-                    ) : (
-                        <button
-                            type="button"
-                            onClick={() => setShowAddLeaderForm(true)}
-                            className="beheer-button flex w-full cursor-pointer items-center justify-center gap-1 rounded-xl border border-(--border-color)/30 bg-(--bg-main)/30 py-1.5 text-[10px] font-bold text-(--text-muted) transition-all hover:border-(--theme-purple)/40 hover:bg-(--bg-main)/60 hover:text-(--theme-purple)"
+            <Box mt="md">
+                <Divider mb="sm" />
+                <Stack gap="xs">
+                    {groupSignups.map((signup) => (
+                        <Group
+                            key={String(signup.id)}
+                            justify="space-between"
+                            wrap="wrap"
+                            gap="xs"
                         >
-                            <Plus className="size-3" /> Leider toevoegen
-                        </button>
-                    )}
-                </div>
-            )}
-        </div>
+                            <Text size="xs" c="dimmed">
+                                {signup.name}
+                            </Text>
+                            <ResendTicketEmailButton
+                                signupId={Number(signup.id)}
+                                email={signup.email}
+                                paid={signup.payment_status === 'paid'}
+                            />
+                        </Group>
+                    ))}
+                </Stack>
+
+                {!isUnassigned && onAddLeader && (
+                    <Box mt="sm">
+                        <Divider mb="sm" />
+                        {showAddLeaderForm ? (
+                            <AddLeaderForm
+                                participantsList={participantsList}
+                                onAdd={(name, signupId) => {
+                                    onAddLeader(groupName, name, signupId);
+                                    setShowAddLeaderForm(false);
+                                }}
+                                onCancel={() => setShowAddLeaderForm(false)}
+                            />
+                        ) : (
+                            <Button
+                                type="button"
+                                variant="default"
+                                size="xs"
+                                fullWidth
+                                onClick={() => setShowAddLeaderForm(true)}
+                                leftSection={<Plus size={12} />}
+                            >
+                                Leider toevoegen
+                            </Button>
+                        )}
+                    </Box>
+                )}
+            </Box>
+        </Card>
     );
 }

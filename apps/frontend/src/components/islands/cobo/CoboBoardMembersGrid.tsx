@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import type { CoboBoardPreference } from '@salvemundi/validations';
 import { Wine } from 'lucide-react';
+import { Badge, Box, Card, Divider, Group, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { FallbackLogo } from '@/components/ui/media/FallbackLogo';
 
@@ -53,18 +54,26 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
     }
 
     return (
-        <section className="space-y-8 border-t border-border-color/10 pt-6">
-            <div className="flex flex-col items-center text-center">
-                <div className="flex items-center gap-3 text-3xl font-black text-theme-purple sm:text-4xl">
-                    <h2>Het Bestuur &amp; Voorkeuren</h2>
-                </div>
-                <div className="my-4 h-1.5 w-24 rounded-full bg-linear-to-r from-transparent via-purple-500 to-transparent" />
-                <p className="max-w-xl text-sm font-medium text-text-muted">
+        <Stack gap="xl" pt="md">
+            <Divider />
+            <Stack align="center" gap="sm" ta="center">
+                <Title order={2} fz={{ base: '1.875rem', sm: '2.25rem' }} c="brand">
+                    Het Bestuur &amp; Voorkeuren
+                </Title>
+                <Box
+                    w={96}
+                    h={6}
+                    style={{
+                        borderRadius: '9999px',
+                        background: 'linear-gradient(to right, transparent, var(--primary), transparent)',
+                    }}
+                />
+                <Text size="sm" fw={500} c="dimmed" maw={560}>
                     Bekijk per bestuurslid de functie, alcoholvoorkeur en veto&apos;s voordat je gaat recipiëren.
-                </p>
-            </div>
+                </Text>
+            </Stack>
 
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="lg">
                 {boardMembers.map((member) => {
                     const memberName = [member.user?.first_name, member.user?.last_name].filter(Boolean).join(' ') || 'Bestuurslid';
                     const vetoList = member.vetoes
@@ -72,100 +81,129 @@ export default function CoboBoardMembersGrid({ boardMembers: initialMembers, cob
                         : [];
 
                     return (
-                        <div
-                            key={member.user_id || member.id}
-                            className="flex flex-col justify-between space-y-5 rounded-3xl border border-border-color bg-bg-card p-6 shadow-md"
-                        >
-                            <div className="space-y-4">
-                                <div className="flex flex-col items-center text-center">
-                                    <div className="squircle relative mb-4 size-32 overflow-hidden shadow-md ring-4 ring-bg-soft">
+                        <Card key={member.user_id || member.id} padding="lg" radius="xl" withBorder>
+                            <Stack gap="md">
+                                <Stack align="center" gap="xs" ta="center">
+                                    <Box
+                                        pos="relative"
+                                        w={128}
+                                        h={128}
+                                        mb="xs"
+                                        style={{
+                                            borderRadius: 'var(--mantine-radius-lg)',
+                                            overflow: 'hidden',
+                                            boxShadow: 'var(--mantine-shadow-md)',
+                                            border: '4px solid color-mix(in srgb, var(--primary) 15%, transparent)',
+                                        }}
+                                    >
                                         {member.user?.avatar ? (
                                             <Image
                                                 src={getImageUrl(member.user.avatar)}
                                                 alt={memberName}
                                                 fill
-                                                className="object-cover"
+                                                style={{ objectFit: 'cover' }}
                                                 unoptimized
                                             />
                                         ) : (
                                             <FallbackLogo className="object-contain p-4 opacity-45" />
                                         )}
-                                    </div>
+                                    </Box>
 
-                                    <h3 className="text-lg font-black text-text-main">
+                                    <Title order={3} size="h5">
                                         {memberName}
-                                    </h3>
-                                    <span className="mt-1.5 rounded-full border border-border-color/10 bg-bg-soft px-3.5 py-1 text-[11px] font-bold text-text-muted shadow-xs">
+                                    </Title>
+                                    <Badge variant="default" size="sm" radius="xl">
                                         {member.user?.functie || 'Bestuurslid'}
-                                    </span>
-                                </div>
+                                    </Badge>
+                                </Stack>
 
-                                <div className="flex items-center justify-between rounded-2xl border border-border-color/40 bg-bg-soft p-3">
-                                    <div className="flex items-center gap-2">
-                                        <Wine className={`size-4 ${member.drinks_alcohol ? 'text-emerald-500' : 'text-slate-400'}`} />
-                                        <span className="text-xs font-semibold text-text-main">Alcohol</span>
-                                    </div>
-                                    {member.drinks_alcohol ? (
-                                        <span className="inline-flex items-center rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                                            Drinkt alcohol
-                                        </span>
-                                    ) : (
-                                        <span className="inline-flex items-center rounded-full border border-rose-500/20 bg-rose-500/10 px-2.5 py-0.5 text-[11px] font-bold text-rose-600 dark:text-rose-400">
-                                            Geen alcohol (0.0%)
-                                        </span>
-                                    )}
-                                </div>
+                                <Paper p="sm" radius="md" withBorder>
+                                    <Group justify="space-between" align="center">
+                                        <Group gap="xs">
+                                            <Text span c={member.drinks_alcohol ? 'success' : 'dimmed'} lh={1}>
+                                                <Wine size={16} />
+                                            </Text>
+                                            <Text size="xs" fw={600}>
+                                                Alcohol
+                                            </Text>
+                                        </Group>
+                                        {member.drinks_alcohol ? (
+                                            <Badge color="success" variant="light" size="sm">
+                                                Drinkt alcohol
+                                            </Badge>
+                                        ) : (
+                                            <Badge color="error" variant="light" size="sm">
+                                                Geen alcohol (0.0%)
+                                            </Badge>
+                                        )}
+                                    </Group>
+                                </Paper>
 
-                                <div>
-                                    <div className="mb-2 flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-text-muted uppercase">
-                                        <span>Veto&apos;s</span>
-                                    </div>
-
+                                <Stack gap={6}>
+                                    <Text size="xs" fw={700} tt="uppercase" c="dimmed">
+                                        Veto&apos;s
+                                    </Text>
                                     {vetoList.length > 0 ? (
-                                        <div className="flex flex-wrap gap-1.5">
+                                        <Group gap={6} wrap="wrap">
                                             {vetoList.map((veto) => (
-                                                <span
-                                                    key={veto}
-                                                    className="inline-flex items-center rounded-xl border border-rose-500/20 bg-rose-500/10 px-2.5 py-1 text-xs font-bold text-rose-700 shadow-xs dark:text-rose-300"
-                                                >
+                                                <Badge key={veto} color="error" variant="light" radius="md" size="md">
                                                     {veto}
-                                                </span>
+                                                </Badge>
                                             ))}
-                                        </div>
+                                        </Group>
                                     ) : (
-                                        <p className="text-xs text-text-muted italic">
+                                        <Text size="xs" c="dimmed" fs="italic">
                                             Geen specifieke veto&apos;s opgegeven.
-                                        </p>
+                                        </Text>
                                     )}
-                                </div>
+                                </Stack>
 
                                 {Boolean(member.dietary_requirements) && (
-                                    <div>
-                                        <div className="mb-1 flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-text-muted uppercase">
-                                            <span>Allergieën</span>
-                                        </div>
-                                        <p className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs font-medium text-text-main">
-                                            {member.dietary_requirements}
-                                        </p>
-                                    </div>
+                                    <Stack gap={4}>
+                                        <Text size="xs" fw={700} tt="uppercase" c="dimmed">
+                                            Allergieën
+                                        </Text>
+                                        <Paper
+                                            p="sm"
+                                            radius="md"
+                                            withBorder
+                                            style={{
+                                                backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+                                                borderColor: 'color-mix(in srgb, var(--accent) 25%, transparent)',
+                                            }}
+                                        >
+                                            <Text size="xs" fw={500}>
+                                                {member.dietary_requirements}
+                                            </Text>
+                                        </Paper>
+                                    </Stack>
                                 )}
 
                                 {Boolean(member.notes) && (
-                                    <div>
-                                        <div className="mb-1 flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-text-muted uppercase">
-                                            <span>Opmerking</span>
-                                        </div>
-                                        <p className="rounded-2xl border border-blue-500/20 bg-blue-500/10 p-3 text-xs font-medium text-text-main">
-                                            {member.notes}
-                                        </p>
-                                    </div>
+                                    <Stack gap={4}>
+                                        <Text size="xs" fw={700} tt="uppercase" c="dimmed">
+                                            Opmerking
+                                        </Text>
+                                        <Paper
+                                            p="sm"
+                                            radius="md"
+                                            withBorder
+                                            style={{
+                                                backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)',
+                                                borderColor: 'color-mix(in srgb, var(--primary) 25%, transparent)',
+                                            }}
+                                        >
+                                            <Text size="xs" fw={500}>
+                                                {member.notes}
+                                            </Text>
+                                        </Paper>
+                                    </Stack>
                                 )}
-                            </div>
-                        </div>
+                            </Stack>
+                        </Card>
                     );
                 })}
-            </div>
-        </section>
+            </SimpleGrid>
+        </Stack>
     );
 }
-

@@ -1,6 +1,16 @@
 'use client';
 
 import { Ticket } from 'lucide-react';
+import {
+    Badge,
+    Divider,
+    Group,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    Title,
+} from '@mantine/core';
 import { type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
 import SignupTicketCard from './SignupTicketCard';
 
@@ -25,40 +35,55 @@ export default function SignupTicketList({
     togglingId,
     handleToggleCheckIn,
     handleDeleteTicket,
-    handleTicketChange
+    handleTicketChange,
 }: SignupTicketListProps) {
     return (
-        <div className="border-t border-(--border-color)/30 pt-8">
-            <div className="mb-6 flex items-center justify-between">
-                <h3 className="flex items-center gap-2 text-sm font-semibold text-(--text-main)">
-                    <Ticket className="size-4 text-(--theme-purple)" />
-                    Tickets ({tickets.length})
-                </h3>
-                <span className="rounded-full bg-(--theme-purple)/10 px-3 py-1 text-[9px] font-semibold text-(--theme-purple) ring-1 ring-(--theme-purple)/20">
-                    {amountTickets} Gereserveerd
-                </span>
-            </div>
+        <>
+            <Divider />
+            <Stack gap="md">
+                <Group justify="space-between">
+                    <Group gap="xs">
+                        <Text span c="brand" lh={1}>
+                            <Ticket size={16} />
+                        </Text>
+                        <Title order={3} size="h5">
+                            Tickets ({tickets.length})
+                        </Title>
+                    </Group>
+                    <Badge variant="light" color="brand" size="sm">
+                        {amountTickets} Gereserveerd
+                    </Badge>
+                </Group>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {ticketsData.map((ticket, idx) => (
-                    <SignupTicketCard
-                        key={ticket.id}
-                        ticket={ticket}
-                        idx={idx}
-                        editingTicketId={editingTicketId}
-                        setEditingTicketId={setEditingTicketId}
-                        togglingId={togglingId}
-                        handleToggleCheckIn={handleToggleCheckIn}
-                        handleDeleteTicket={handleDeleteTicket}
-                        handleTicketChange={handleTicketChange}
-                    />
-                ))}
-                {tickets.length === 0 && (
-                    <div className="rounded-xl border-2 border-dashed border-(--border-color)/30 bg-(--bg-main)/30 py-8 text-center">
-                        <p className="text-xs font-medium text-(--text-subtle) italic">Geen tickets gegenereerd. Deze verschijnen zodra de betaling op &quot;Betaald&quot; staat.</p>
-                    </div>
-                )}
-            </div>
-        </div>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                    {ticketsData.map((ticket, idx) => (
+                        <SignupTicketCard
+                            key={ticket.id}
+                            ticket={ticket}
+                            idx={idx}
+                            editingTicketId={editingTicketId}
+                            setEditingTicketId={setEditingTicketId}
+                            togglingId={togglingId}
+                            handleToggleCheckIn={handleToggleCheckIn}
+                            handleDeleteTicket={handleDeleteTicket}
+                            handleTicketChange={handleTicketChange}
+                        />
+                    ))}
+                    {tickets.length === 0 && (
+                        <Paper
+                            withBorder
+                            p="lg"
+                            radius="md"
+                            ta="center"
+                            style={{ borderStyle: 'dashed', gridColumn: '1 / -1' }}
+                        >
+                            <Text size="xs" c="dimmed" fs="italic">
+                                Geen tickets gegenereerd. Deze verschijnen zodra de betaling op &quot;Betaald&quot; staat.
+                            </Text>
+                        </Paper>
+                    )}
+                </SimpleGrid>
+            </Stack>
+        </>
     );
 }

@@ -3,6 +3,7 @@
 import { type WhatsAppGroup } from '@salvemundi/validations/schema/profiel.zod';
 import { MessageCircle, ExternalLink, ShieldAlert, Info, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { Alert, Anchor, Badge, Button, Card, Container, Divider, Group, List, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import { stripHtml } from '@/shared/lib/text';
 
 interface WhatsAppGroupsIslandProps {
@@ -11,110 +12,110 @@ interface WhatsAppGroupsIslandProps {
 }
 
 export const WhatsAppGroupsIsland: React.FC<WhatsAppGroupsIslandProps> = ({ groups, gedragscodeUrl }) => {
-
     const handleJoinGroup = (inviteLink: string) => {
         window.open(inviteLink, '_blank', 'noopener,noreferrer');
     };
 
     return (
-        <div className="mx-auto max-w-6xl">
-            {/* Info Banner */}
-            <div className="mb-8 rounded-2xl bg-bg-card p-6 shadow-md">
-                <div className="flex items-start gap-4">
-                    <div className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/5 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/5 dark:text-purple-300">
-                        <Info className="size-6" />
-                    </div>
-                    <div>
-                        <h3 className="mb-2 font-semibold text-text-main">Over WhatsApp Groepen</h3>
-                        <p className="text-sm text-text-muted">
-                            Deze groepen zijn exclusief voor actieve leden. Klik op een groep om via WhatsApp lid te worden.
-                            Wees respectvol en volg de groepsregels.
-                        </p>
-                    </div>
-                </div>
-            </div>
+        <Container size="lg" p={0}>
+            <Stack gap="lg">
+                <Alert
+                    color="brand"
+                    variant="light"
+                    radius="lg"
+                    title="Over WhatsApp Groepen"
+                    icon={<Info size={20} />}
+                >
+                    Deze groepen zijn exclusief voor actieve leden. Klik op een groep om via WhatsApp lid te worden.
+                    Wees respectvol en volg de groepsregels.
+                </Alert>
 
-            {/* Groups Section */}
-            {groups.length === 0 ? (
-                <div className="rounded-3xl bg-bg-card py-12 text-center shadow-sm">
-                    <MessageCircle className="mx-auto mb-4 size-16 text-slate-400" />
-                    <div className="mb-4 font-semibold text-text-main">Momenteel geen WhatsApp groepen beschikbaar.</div>
-                    <p className="mb-4 text-sm text-text-muted">
-                        Kom later terug voor nieuwe groepen om lid van te worden!
-                    </p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    {groups.map((group) => (
-                        <div key={group.id} className="relative flex h-full flex-col justify-between overflow-hidden rounded-3xl bg-bg-card p-6 shadow-lg transition-all hover:shadow-xl">
-                            <div className="mb-4 flex items-start gap-4">
-                                <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-500 dark:bg-transparent dark:text-purple-300">
-                                    <MessageCircle className="size-8" />
-                                </div>
-                                <div className="mt-1 flex-1">
-                                    <h3 className="mb-2 text-xl font-bold text-text-main">
-                                        {group.name}
-                                    </h3>
-                                    {group.description && (
-                                        <p className="text-sm leading-relaxed wrap-break-word whitespace-pre-line text-text-muted sm:text-base">
-                                            {stripHtml(group.description)}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
+                {groups.length === 0 ? (
+                    <Card padding="xl" radius="xl" ta="center">
+                        <Stack align="center" gap="sm" py="lg">
+                            <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                                <MessageCircle size={32} />
+                            </ThemeIcon>
+                            <Text fw={600}>
+                                Momenteel geen WhatsApp groepen beschikbaar.
+                            </Text>
+                            <Text size="sm" c="dimmed">
+                                Kom later terug voor nieuwe groepen om lid van te worden!
+                            </Text>
+                        </Stack>
+                    </Card>
+                ) : (
+                    <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+                        {groups.map((group) => (
+                            <Card key={group.id} padding="lg" radius="xl" shadow="md">
+                                <Stack justify="space-between" h="100%" gap="md">
+                                    <Group align="flex-start" wrap="nowrap" gap="md">
+                                        <ThemeIcon size={56} radius="xl" variant="light" color="brand">
+                                            <MessageCircle size={28} />
+                                        </ThemeIcon>
+                                        <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
+                                            <Title order={3} size="h4">
+                                                {group.name}
+                                            </Title>
+                                            {group.description && (
+                                                <Text size="sm" c="dimmed" style={{ whiteSpace: 'pre-line', wordBreak: 'break-word' }}>
+                                                    {stripHtml(group.description)}
+                                                </Text>
+                                            )}
+                                        </Stack>
+                                    </Group>
 
-                            <div className="mt-auto flex items-center justify-between border-t border-purple-100 pt-4 dark:border-white/10">
-                                <div className="flex items-center gap-2 text-sm">
-                                    <span className="flex items-center gap-1 rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-500 dark:border dark:border-purple-500/20 dark:bg-purple-500/10 dark:text-purple-300">
-                                        <ShieldAlert className="size-3" />
-                                        Alleen Leden
-                                    </span>
-                                </div>
-                                <button
-                                    onClick={() => handleJoinGroup(group.invite_link)}
-                                    className="form-button flex items-center gap-2 rounded-full bg-purple-500 px-6 py-2 font-semibold text-white shadow-md transition-transform hover:-translate-y-0.5"
-                                    type="button">
-                                    <span>Word Lid</span>
-                                    <ArrowRight className="size-4" />
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                                    <Divider />
 
-            {/* Additional Info */}
-            <div className="mt-8 rounded-3xl bg-bg-card p-6 shadow-lg">
-                <h3 className="mb-4 text-lg font-semibold text-text-main">Groepsregels</h3>
-                <ul className="space-y-3 text-sm text-text-muted">
-                    <li className="flex items-center gap-2">
-                        <div className="size-1.5 rounded-full bg-purple-500" />
-                        <span>Wees respectvol naar alle leden</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                        <div className="size-1.5 rounded-full bg-purple-500" />
-                        <span>Houd gesprekken relevant voor het groepsonderwerp</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                        <div className="size-1.5 rounded-full bg-purple-500" />
-                        <span>Geen spam of promotionele inhoud</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                        <div className="size-1.5 rounded-full bg-purple-500" />
-                        <span>
-                            Volg de{' '}
-                            <Link
-                                href={gedragscodeUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 font-semibold text-purple-500 hover:underline"
-                            >
-                                gedragscode van Salve Mundi <ExternalLink className="size-3" />
-                            </Link>
-                        </span>
-                    </li>
-                </ul>
-            </div>
-        </div>
+                                    <Group justify="space-between" align="center">
+                                        <Badge
+                                            variant="light"
+                                            color="brand"
+                                            size="md"
+                                            leftSection={<ShieldAlert size={12} />}
+                                        >
+                                            Alleen Leden
+                                        </Badge>
+                                        <Button
+                                            type="button"
+                                            onClick={() => handleJoinGroup(group.invite_link)}
+                                            rightSection={<ArrowRight size={16} />}
+                                        >
+                                            Word Lid
+                                        </Button>
+                                    </Group>
+                                </Stack>
+                            </Card>
+                        ))}
+                    </SimpleGrid>
+                )}
+
+                <Card padding="lg" radius="xl" shadow="md">
+                    <Stack gap="sm">
+                        <Title order={3} size="h5">
+                            Groepsregels
+                        </Title>
+                        <List size="sm" c="dimmed" spacing="xs">
+                            <List.Item>Wees respectvol naar alle leden</List.Item>
+                            <List.Item>Houd gesprekken relevant voor het groepsonderwerp</List.Item>
+                            <List.Item>Geen spam of promotionele inhoud</List.Item>
+                            <List.Item>
+                                Volg de{' '}
+                                <Anchor
+                                    component={Link}
+                                    href={gedragscodeUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    c="brand"
+                                    fw={600}
+                                >
+                                    gedragscode van Salve Mundi <ExternalLink size={12} style={{ display: 'inline', verticalAlign: 'middle' }} />
+                                </Anchor>
+                            </List.Item>
+                        </List>
+                    </Stack>
+                </Card>
+            </Stack>
+        </Container>
     );
 };

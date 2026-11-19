@@ -1,55 +1,75 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { FileSignature } from 'lucide-react';
-import BackButton from '@/components/ui/navigation/BackButton';
+import Link from '@/components/ui/Link';
+import { ChevronLeft, FileSignature } from 'lucide-react';
+import { Button, Card, Container, Group, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import { getMyNdas } from '@/server/actions/nda/member-nda.actions';
 
 export const metadata: Metadata = {
     title: 'Mijn NDA\'s | SV Salve Mundi'
 };
 
-const statusLabel: Record<string, string> = {
-    pending: 'Actie vereist: ondertekenen',
-    signed: 'Getekend',
-    expired: 'Verlopen',
-    superseded: 'Vervangen',
-};
+function getStatusLabel(status: string): string {
+    switch (status) {
+        case 'pending':
+            return 'Actie vereist: ondertekenen';
+        case 'signed':
+            return 'Getekend';
+        case 'expired':
+            return 'Verlopen';
+        case 'superseded':
+            return 'Vervangen';
+        default:
+            return status;
+    }
+}
 
 export default async function MyNdasPage() {
     const ndas = await getMyNdas();
 
     return (
-        <div>
-            <header className="bg-(--bg-soft) py-12">
-                <div className="max-w-app mx-auto space-y-4 px-4">
-                    <BackButton href="/profiel" text="Terug naar profiel" />
-                    <h1 className="text-4xl font-extrabold text-(--text-main)">Mijn NDA&apos;s</h1>
-                </div>
-            </header>
+        <Container size="xl" py="xl">
+            <Stack gap="xl">
+                <Stack component="header" gap="md">
+                    <Group>
+                        <Button
+                            component={Link}
+                            href="/profiel"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug naar profiel
+                        </Button>
+                    </Group>
+                    <Title order={1}>Mijn NDA&apos;s</Title>
+                </Stack>
 
-            <div className="max-w-app mx-auto space-y-4 px-4 py-8 sm:px-6 lg:px-8">
-                {ndas.length === 0 && (
-                    <p className="text-(--text-muted)">Je hebt nog geen NDA-uitnodigingen.</p>
-                )}
-                {ndas.map((nda) => (
-                    <div key={nda.id} className="flex items-center justify-between gap-4 rounded-3xl border border-purple-100 bg-(--bg-card) p-6 shadow-sm">
-                        <div className="flex items-center gap-4">
-                            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--theme-purple)/10 text-(--theme-purple)">
-                                <FileSignature className="size-5" />
-                            </div>
-                            <div>
-                                <p className="font-bold text-(--text-main)">{nda.committeeName}</p>
-                                <p className="text-sm text-(--text-muted)">{statusLabel[nda.status] ?? nda.status}</p>
-                            </div>
-                        </div>
-                        {nda.status === 'pending' && (
-                            <Link href={`/profiel/nda/${nda.id}`} className="form-button rounded-xl bg-(--theme-purple) px-4 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90">
-                                Ondertekenen
-                            </Link>
-                        )}
-                    </div>
-                ))}
-            </div>
-        </div>
+                <Stack gap="md">
+                    {ndas.length === 0 && (
+                        <Text c="dimmed">Je hebt nog geen NDA-uitnodigingen.</Text>
+                    )}
+                    {ndas.map((nda) => (
+                        <Card key={nda.id}>
+                            <Group justify="space-between" gap="md" wrap="wrap">
+                                <Group gap="md">
+                                    <ThemeIcon size={40} radius="xl" variant="light" color="brand">
+                                        <FileSignature size={20} />
+                                    </ThemeIcon>
+                                    <Stack gap={2}>
+                                        <Text fw={700}>{nda.committeeName}</Text>
+                                        <Text size="sm" c="dimmed">{getStatusLabel(nda.status)}</Text>
+                                    </Stack>
+                                </Group>
+                                {nda.status === 'pending' && (
+                                    <Button component={Link} href={`/profiel/nda/${nda.id}`} size="sm">
+                                        Ondertekenen
+                                    </Button>
+                                )}
+                            </Group>
+                        </Card>
+                    ))}
+                </Stack>
+            </Stack>
+        </Container>
     );
 }

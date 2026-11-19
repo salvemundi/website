@@ -1,5 +1,5 @@
-import { LocateFixed, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/buttons/Button';
+import { LocateFixed } from 'lucide-react';
+import { Box, Button, Group, Paper, Stack, Text, TextInput } from '@mantine/core';
 import { type LocationSearchResult } from '@/shared/lib/utils/geolocation';
 
 interface LocationPickerProps {
@@ -29,86 +29,106 @@ export const LocationPicker = ({
     isSearching,
     searchResults,
     onSelectResult,
-    locationError
+    locationError,
 }: LocationPickerProps) => {
     return (
-        <div className="space-y-2">
-            <p className="text-[10px] font-black tracking-widest uppercase opacity-80">Locatie</p>
-            <div className="flex items-center gap-3">
-                <div className="text-sm text-(--text-main)">
+        <Stack gap="xs">
+            <Text size="xs" fw={900} tt="uppercase" c="dimmed" style={{ letterSpacing: '0.08em' }}>
+                Locatie
+            </Text>
+
+            <Group justify="space-between" gap="sm" wrap="nowrap">
+                <Text size="sm" flex={1}>
                     {selectedLocation ? (
-                        <span>
+                        <>
                             {formData.city && formData.country ? `${formData.city}, ${formData.country}` : 'Locatie geselecteerd'}
                             {' '}({selectedLocation.lat.toFixed(5)}, {selectedLocation.lng.toFixed(5)})
-                        </span>
+                        </>
                     ) : (
-                        <span>Geen locatie geselecteerd</span>
+                        'Geen locatie geselecteerd'
                     )}
-                </div>
+                </Text>
                 <Button
                     type="button"
-                    variant="secondary"
-                    size="sm"
+                    variant="default"
+                    size="xs"
                     onClick={onReset}
-                    className="ml-auto inline-flex items-center gap-2 text-xs font-black tracking-widest uppercase"
                 >
                     Reset
                 </Button>
-            </div>
+            </Group>
 
             <Button
                 type="button"
-                variant="secondary"
-                size="md"
+                variant="default"
+                fullWidth
                 onClick={onUseCurrentLocation}
-                disabled={isLocatingCurrent}
-                className="inline-flex w-full items-center justify-center gap-2 text-xs font-black tracking-widest text-(--text-main) uppercase"
+                loading={isLocatingCurrent}
+                leftSection={<LocateFixed size={16} />}
             >
-                {isLocatingCurrent ? <Loader2 className="size-4 animate-spin" /> : <LocateFixed className="size-4" />}
                 Gebruik mijn huidige locatie
             </Button>
 
-            <div className="relative">
-                <div className="flex gap-2">
-                    <input
+            <Box pos="relative">
+                <Group gap="xs">
+                    <TextInput
                         value={addressQuery}
-                        onChange={(e) => onAddressQueryChange(e.target.value)}
+                        onChange={(e) => onAddressQueryChange(e.currentTarget.value)}
                         placeholder="Zoek adres of plaats"
-                        className="form-input flex-1 rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 px-3 py-2 text-sm outline-none"
+                        style={{ flex: 1 }}
                     />
                     <Button
                         type="button"
-                        variant="primary"
+                        variant="default"
                         size="sm"
+                        hiddenFrom="sm"
                         onClick={onAddressSearch}
-                        disabled={isSearching}
-                        className="inline-flex items-center gap-2 text-xs uppercase sm:hidden"
+                        loading={isSearching}
                     >
-                        {isSearching ? 'Zoeken…' : 'Zoek'}
+                        Zoek
                     </Button>
-                </div>
+                </Group>
 
                 {searchResults.length > 0 && (
-                    <div className="absolute inset-x-0 top-full z-20 mt-1 divide-y divide-(--border-color)/20 overflow-hidden rounded-xl border border-(--border-color)/30 bg-(--bg-card) shadow-2xl">
-                        {searchResults.map((result, idx) => (
-                            <Button
-                                key={`${result.lat}-${result.lng}-${idx}`}
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => onSelectResult(result)}
-                                className="w-full justify-start px-3 py-2 text-left text-xs text-(--text-main) transition-colors hover:bg-(--theme-purple)/10"
-                            >
-                                {result.displayName}
-                            </Button>
-                        ))}
-                    </div>
+                    <Paper
+                        shadow="xl"
+                        radius="md"
+                        pos="absolute"
+                        left={0}
+                        right={0}
+                        top="100%"
+                        mt={4}
+                        bg="var(--mantine-color-default)"
+                        style={{
+                            zIndex: 20,
+                            overflow: 'hidden',
+                            border: '1px solid var(--border)',
+                        }}
+                    >
+                        <Stack gap={0}>
+                            {searchResults.map((result, idx) => (
+                                <Button
+                                    key={`${result.lat}-${result.lng}-${idx}`}
+                                    type="button"
+                                    variant="subtle"
+                                    size="xs"
+                                    fullWidth
+                                    justify="flex-start"
+                                    onClick={() => onSelectResult(result)}
+                                >
+                                    {result.displayName}
+                                </Button>
+                            ))}
+                        </Stack>
+                    </Paper>
                 )}
-            </div>
+            </Box>
 
             {locationError && (
-                <p className="text-xs font-bold text-red-400">{locationError}</p>
+                <Text size="xs" fw={700} c="error">
+                    {locationError}
+                </Text>
             )}
-        </div>
+        </Stack>
     );
 };

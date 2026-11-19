@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
+import Link from '@/components/ui/Link';
 import { redirect } from 'next/navigation';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Group, Stack, Text, Title } from '@mantine/core';
 import { getIntroAttendanceAccess, getAttendanceGroupsForUser } from '@/server/actions/public/intro-attendance.actions';
 import IntroAttendanceIsland from '@/components/islands/account/intro/IntroAttendanceIsland';
-import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata: Metadata = {
     title: 'Groepje Aanwezigheid | SV Salve Mundi'
@@ -26,22 +28,28 @@ export default async function IntroAttendancePage({ searchParams }: Props) {
     const groups = await getAttendanceGroupsForUser();
 
     return (
-        <div>
-            <header className="bg-(--bg-soft) py-12">
-                <div className="max-w-app mx-auto px-4">
-                    <div className="mb-6">
-                        <BackButton href="/profiel" />
-                    </div>
-                    <h1 className="text-4xl font-extrabold text-(--text-main)">Groepje Aanwezigheid</h1>
-                    <p className="mt-2 max-w-3xl text-lg text-(--text-muted)">
+        <Container size="xl" py="xl">
+            <Stack gap="xl">
+                <Stack component="header" gap="md">
+                    <Group>
+                        <Button
+                            component={Link}
+                            href="/profiel"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                    </Group>
+                    <Title order={1}>Groepje Aanwezigheid</Title>
+                    <Text size="lg" c="dimmed" maw={720}>
                         Houd per dag bij wie er aanwezig is en wie er &apos;s avonds al naar huis is.
-                    </p>
-                </div>
-            </header>
+                    </Text>
+                </Stack>
 
-            <div className="max-w-app mx-auto px-4 py-8 sm:py-10 md:py-12">
                 <IntroAttendanceIsland groups={groups} isCrew={isCrew} initialGroupId={initialGroupId} />
-            </div>
-        </div>
+            </Stack>
+        </Container>
     );
 }

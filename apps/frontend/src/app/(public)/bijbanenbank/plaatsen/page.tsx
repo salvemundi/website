@@ -1,3 +1,4 @@
+import { Container } from '@mantine/core';
 import VacancySubmissionFormIsland from '@/components/islands/vacancies/VacancySubmissionFormIsland';
 
 export const metadata = {
@@ -7,10 +8,8 @@ export const metadata = {
 
 export default function VacancySubmissionPage() {
     return (
-        <div className="min-h-dvh w-full pt-8">
-            <div className="mx-auto max-w-3xl px-4 py-12">
-                <VacancySubmissionFormIsland />
-            </div>
-        </div>
+        <Container size="md" py="xl">
+            <VacancySubmissionFormIsland />
+        </Container>
     );
 }

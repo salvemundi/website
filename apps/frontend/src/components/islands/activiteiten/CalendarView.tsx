@@ -2,9 +2,9 @@
 
 import { useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ActionIcon, Box, Button, Card, Group, Paper, SimpleGrid, Stack, Text, Title, UnstyledButton } from '@mantine/core';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { isEventOnDay } from '@/shared/lib/utils/date';
-import { cn } from '@/lib/utils/cn';
 
 interface CalendarViewProps {
     currentDate: Date;
@@ -71,51 +71,71 @@ export default function CalendarView({
     }, [days, events]);
 
     return (
-        <section aria-label="Activiteitenkalender" className="overflow-hidden rounded-2xl bg-(--bg-card) shadow-xl sm:rounded-3xl dark:border dark:border-white/10">
-            <div className="flex items-center justify-between p-5 text-purple-700 sm:p-6 dark:text-purple-300">
-                <h2 className="text-xl font-black tracking-tight capitalize sm:text-2xl">
+        <Card component="section" aria-label="Activiteitenkalender" padding={0} radius="xl" shadow="xl" withBorder style={{ overflow: 'hidden' }}>
+            <Group justify="space-between" align="center" p={{ base: 'md', sm: 'lg' }}>
+                <Title order={2} size="h3" tt="capitalize" c="brand">
                     {currentDate.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}
-                </h2>
-                <div className="flex items-center gap-2">
-                    <button
+                </Title>
+                <Group gap="xs">
+                    <ActionIcon
                         type="button"
+                        variant="subtle"
+                        color="brand"
+                        size="lg"
                         onClick={onPrevMonth}
-                        className="icon-button flex size-9 items-center justify-center rounded-full text-purple-700 transition-colors hover:bg-purple-500/10 dark:text-purple-300 dark:hover:bg-purple-400/10"
                         aria-label="Vorige maand"
                     >
-                        <ChevronLeft className="size-5" />
-                    </button>
-                    <button
+                        <ChevronLeft size={20} />
+                    </ActionIcon>
+                    <Button
                         type="button"
+                        variant="light"
+                        color="brand"
+                        size="xs"
                         onClick={() => {
                             const today = new Date();
                             onSelectDay(today);
                             onGoToDate?.(today);
                         }}
-                        className="tab-button rounded-full bg-purple-500/10 px-4 py-1.5 text-xs font-bold text-purple-700 transition-colors hover:bg-purple-500/20 dark:bg-purple-400/10 dark:text-purple-300 dark:hover:bg-purple-400/20"
                     >
                         Vandaag
-                    </button>
-                    <button
+                    </Button>
+                    <ActionIcon
                         type="button"
+                        variant="subtle"
+                        color="brand"
+                        size="lg"
                         onClick={onNextMonth}
-                        className="icon-button flex size-9 items-center justify-center rounded-full text-purple-700 transition-colors hover:bg-purple-500/10 dark:text-purple-300 dark:hover:bg-purple-400/10"
                         aria-label="Volgende maand"
                     >
-                        <ChevronRight className="size-5" />
-                    </button>
-                </div>
-            </div>
+                        <ChevronRight size={20} />
+                    </ActionIcon>
+                </Group>
+            </Group>
 
-            <div className="grid grid-cols-7 border-y border-(--border-color)/30 bg-(--bg-soft)">
+            <SimpleGrid
+                cols={7}
+                spacing={0}
+                style={{
+                    borderTop: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)',
+                    borderBottom: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)',
+                    backgroundColor: 'color-mix(in srgb, var(--primary) 6%, transparent)',
+                }}
+            >
                 {WEEK_DAYS.map(day => (
-                    <div key={day} className="py-2.5 text-center text-[11px] font-black tracking-wider text-(--text-muted) uppercase">
+                    <Text key={day} py="xs" ta="center" size="xs" fw={900} tt="uppercase" c="dimmed">
                         {day}
-                    </div>
+                    </Text>
                 ))}
-            </div>
+            </SimpleGrid>
 
-            <div className="grid auto-rows-fr grid-cols-7 gap-px bg-(--border-color)/40">
+            <SimpleGrid
+                cols={7}
+                spacing={1}
+                style={{
+                    backgroundColor: 'color-mix(in srgb, var(--primary) 20%, transparent)',
+                }}
+            >
                 {days.map((day) => {
                     const dayKey = day.toDateString();
                     const dayEvents = eventsByDayKey.get(dayKey) ?? [];
@@ -126,71 +146,95 @@ export default function CalendarView({
                     const overflowCount = dayEvents.length - maxVisibleEvents;
 
                     return (
-                        <div
+                        <Box
                             key={dayKey}
                             onClick={() => onSelectDay(day)}
-                            className={cn(
-                                "group relative flex min-h-28 cursor-pointer flex-col justify-between p-2 transition-colors",
-                                !isCurrentMonth ? "bg-(--bg-soft)/40 text-(--text-muted)/60" : "bg-(--bg-card) text-(--text-main)",
-                                isSelected && "bg-purple-500/5 ring-2 ring-purple-600 ring-inset dark:bg-purple-400/5 dark:ring-purple-400",
-                                !isSelected && "hover:bg-purple-500/4 dark:hover:bg-purple-400/4"
-                            )}
+                            p="xs"
+                            mih={112}
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                cursor: 'pointer',
+                                backgroundColor: isSelected
+                                    ? 'color-mix(in srgb, var(--primary) 12%, var(--mantine-color-default))'
+                                    : isCurrentMonth
+                                        ? 'var(--mantine-color-default)'
+                                        : 'var(--mantine-color-body)',
+                                opacity: isCurrentMonth ? 1 : 0.65,
+                                boxShadow: isSelected ? 'inset 0 0 0 2px var(--primary)' : undefined,
+                            }}
                         >
-                            <div className="flex items-center justify-between">
-                                <span
-                                    className={cn(
-                                        "flex size-7 items-center justify-center rounded-full text-xs transition-colors",
-                                        isDayToday
-                                            ? "bg-(--theme-purple) font-black text-white shadow-xs"
-                                            : isSelected
-                                                ? "font-black text-purple-700 dark:text-purple-300"
-                                                : isCurrentMonth
-                                                    ? "font-semibold text-(--text-main)"
-                                                    : "text-(--text-muted)/60"
-                                    )}
+                            <Group justify="space-between" align="center" wrap="nowrap">
+                                <Box
+                                    w={28}
+                                    h={28}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        borderRadius: '9999px',
+                                        backgroundColor: isDayToday ? 'var(--primary)' : undefined,
+                                        color: isDayToday ? '#FFFFFF' : isSelected ? 'var(--primary)' : undefined,
+                                    }}
                                 >
-                                    {day.getDate()}
-                                </span>
+                                    <Text size="xs" fw={isDayToday || isSelected ? 900 : 600}>
+                                        {day.getDate()}
+                                    </Text>
+                                </Box>
                                 {dayEvents.length > 0 && (
-                                    <span className="hidden text-[10px] font-bold text-(--text-muted) opacity-70 group-hover:opacity-100 sm:inline-block">
-                                        {dayEvents.length} {dayEvents.length === 1 ? 'act.' : 'act.'}
-                                    </span>
+                                    <Text size="10px" fw={700} c="dimmed" visibleFrom="sm">
+                                        {dayEvents.length} act.
+                                    </Text>
                                 )}
-                            </div>
+                            </Group>
 
-                            <div className="mt-1.5 flex flex-col gap-1">
+                            <Stack gap={4} mt={6}>
                                 {dayEvents.slice(0, maxVisibleEvents).map((event) => (
-                                    <button
+                                    <UnstyledButton
                                         key={event.id}
                                         type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onEventClick(event);
                                         }}
-                                        className="tab-button group/item flex w-full items-center gap-1.5 rounded-md border border-purple-500/15 bg-purple-500/10 px-2 py-1 text-left text-[11px] font-bold text-purple-800 transition-colors duration-150 hover:border-purple-500/35 hover:bg-purple-500/20 dark:border-purple-400/20 dark:bg-purple-400/10 dark:text-purple-200 dark:hover:border-purple-400/40 dark:hover:bg-purple-400/20"
+                                        w="100%"
                                         title={`${event.event_time ? event.event_time.split(':').slice(0, 2).join(':') : '00:00'} - ${event.name}`}
                                     >
-                                        {event.event_time && (
-                                            <span className="shrink-0 text-[10px] font-black opacity-60">
-                                                {event.event_time.split(':').slice(0, 2).join(':')}
-                                            </span>
-                                        )}
-                                        <span className="truncate">
-                                            {event.name}
-                                        </span>
-                                    </button>
+                                        <Paper
+                                            px={6}
+                                            py={3}
+                                            radius="sm"
+                                            withBorder
+                                            style={{
+                                                backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)',
+                                                borderColor: 'color-mix(in srgb, var(--primary) 25%, transparent)',
+                                            }}
+                                        >
+                                            <Group gap={4} wrap="nowrap">
+                                                {event.event_time && (
+                                                    <Text size="10px" fw={900} c="brand" style={{ flexShrink: 0, opacity: 0.75 }}>
+                                                        {event.event_time.split(':').slice(0, 2).join(':')}
+                                                    </Text>
+                                                )}
+                                                <Text size="11px" fw={700} c="brand" truncate>
+                                                    {event.name}
+                                                </Text>
+                                            </Group>
+                                        </Paper>
+                                    </UnstyledButton>
                                 ))}
 
                                 {overflowCount > 0 && (
-                                    <div className="mt-0.5 text-center text-[10px] font-bold text-purple-700 dark:text-purple-300">
+                                    <Text size="10px" fw={700} c="brand" ta="center">
                                         +{overflowCount} meer
-                                    </div>
+                                    </Text>
                                 )}
-                            </div>
-                        </div>
+                            </Stack>
+                        </Box>
                     );
                 })}
-            </div>
-        </section>
+            </SimpleGrid>
+        </Card>
     );
 }

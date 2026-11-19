@@ -5,20 +5,6 @@ import { type ExtendedUser } from "./types";
 import { safeConsoleError } from '@/server/utils/logger';
 import { toLocalISOString } from "@/lib/utils/date-utils";
 
-interface RawImpersonationDbUser {
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-    email: string;
-    avatar: string | null;
-    membership_status: string | null;
-    membership_expiry: string | Date | null;
-    phone_number: string | null;
-    date_of_birth: string | Date | null;
-    minecraft_username: string | null;
-    role: string | null;
-}
-
 export async function getImpersonatedUser(testToken: string, _pool?: Pool | null): Promise<ExtendedUser | null> {
     try {
         const redis = await getRedis();
@@ -61,13 +47,16 @@ export async function getImpersonatedUser(testToken: string, _pool?: Pool | null
             phone_number: schema.directus_users.phone_number,
             date_of_birth: schema.directus_users.date_of_birth,
             minecraft_username: schema.directus_users.minecraft_username,
+            entra_id: schema.directus_users.entra_id,
             role: schema.directus_users.role
         }).from(schema.directus_users).where(eq(schema.directus_users.id, rawImpUser.id)).limit(1);
 
         if (dbUsers.length === 0) return null;
 
-        const dbUser = dbUsers[0] as RawImpersonationDbUser;
-        const impCommittees = await db.select({
+        const dbUser = dbUsers[0];
+        if (!dbUser.email) return null;
+
+        const typedCommittees: Committee[] = await db.select({
             id: schema.committees.id,
             name: schema.committees.name,
             azure_group_id: schema.committees.azure_group_id,
@@ -77,7 +66,6 @@ export async function getImpersonatedUser(testToken: string, _pool?: Pool | null
         .innerJoin(schema.committees, eq(schema.committee_members.committee_id, schema.committees.id))
         .where(eq(schema.committee_members.user_id, dbUser.id));
 
-        const typedCommittees = impCommittees as unknown as Committee[];
         const perms = getPermissions(typedCommittees);
 
         const targetUser: ExtendedUser = {
@@ -92,6 +80,7 @@ export async function getImpersonatedUser(testToken: string, _pool?: Pool | null
             phone_number: dbUser.phone_number || undefined,
             date_of_birth: toLocalISOString(dbUser.date_of_birth) || undefined,
             minecraft_username: dbUser.minecraft_username || undefined,
+            entra_id: dbUser.entra_id || undefined,
             role: dbUser.role || undefined,
             committees: typedCommittees,
             emailVerified: true,

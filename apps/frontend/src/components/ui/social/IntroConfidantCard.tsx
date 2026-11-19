@@ -1,9 +1,10 @@
 import Image from 'next/image';
 import { Phone } from 'lucide-react';
+import { Box, Button, Card, CardSection, Paper, Stack, Text, Title } from '@mantine/core';
 import type { IntroConfidant } from '@salvemundi/validations/schema/intro.zod';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import { ObfuscatedEmail } from '@/components/ui/security/ObfuscatedEmail';
-import { BRAND_CONFIG } from '@/lib/config/brand';
+import { FallbackLogo } from '@/components/ui/media/FallbackLogo';
 
 interface IntroConfidantCardProps {
     confidant: IntroConfidant;
@@ -15,44 +16,56 @@ export default function IntroConfidantCard({ confidant }: IntroConfidantCardProp
         : null;
 
     return (
-        <div className="squircle-lg bg-bg-main/30 flex h-full flex-col overflow-hidden border border-border-color shadow-sm transition-all duration-300 hover:border-purple-300 hover:shadow-md dark:hover:border-white/20">
-            <div className="bg-bg-main relative aspect-4/3 w-full shrink-0">
+        <Card h="100%" padding="md" radius="lg" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <CardSection pos="relative" bg="var(--mantine-color-body)" style={{ aspectRatio: '4 / 3', overflow: 'hidden' }}>
                 {imageUrl ? (
                     <Image src={imageUrl} alt={confidant.name} fill unoptimized className="object-cover object-top" />
                 ) : (
-                    <>
-                        <Image src={BRAND_CONFIG.logoFallbackLight} alt={confidant.name} fill unoptimized className="object-cover dark:hidden" />
-                        <Image src={BRAND_CONFIG.logoFallbackDark} alt={confidant.name} fill unoptimized className="hidden object-cover dark:block" />
-                    </>
+                    <FallbackLogo alt={confidant.name} className="object-cover" />
                 )}
-            </div>
+            </CardSection>
 
-            <div className="flex flex-1 flex-col p-3.5 sm:p-4">
-                <h3 className="truncate text-sm font-bold text-theme-purple sm:text-base">{confidant.name}</h3>
-                <p className="text-[11px] font-semibold text-purple-500 sm:text-xs">Vertrouwenscontactpersoon</p>
+            <Stack flex={1} justify="space-between" pt="md" gap="sm">
+                <Box>
+                    <Title order={3} size="h5" c="brand" lineClamp={1}>
+                        {confidant.name}
+                    </Title>
+                    <Text size="xs" fw={600} c="brand">
+                        Vertrouwenscontactpersoon
+                    </Text>
 
-                {confidant.bio && (
-                    <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-text-muted">{confidant.bio}</p>
-                )}
+                    {confidant.bio && (
+                        <Text size="xs" c="dimmed" lineClamp={2} mt="xs">
+                            {confidant.bio}
+                        </Text>
+                    )}
+                </Box>
 
-                <div className="mt-3 space-y-1.5">
+                <Stack gap="xs" mt="auto">
                     {confidant.email && (
-                        <ObfuscatedEmail
-                            email={confidant.email}
-                            className="flex w-full min-w-0 items-center gap-2 overflow-hidden rounded-lg border border-border-color bg-bg-card px-2.5 py-2 text-xs font-medium text-text-main shadow-sm transition-colors hover:border-purple-300"
-                        />
+                        <Paper p="xs" radius="md" bg="var(--mantine-color-body)" style={{ border: '1px solid var(--border)' }}>
+                            <ObfuscatedEmail
+                                email={confidant.email}
+                                size="xs"
+                                fullWidth
+                            />
+                        </Paper>
                     )}
                     {confidant.phone_number && (
-                        <a
+                        <Button
+                            component="a"
                             href={`tel:${confidant.phone_number.replace(/\s+/g, '')}`}
-                            className="flex w-full min-w-0 items-center gap-2 overflow-hidden rounded-lg border border-border-color bg-bg-card px-2.5 py-2 text-xs font-medium text-text-main shadow-sm transition-colors hover:border-purple-300"
+                            variant="default"
+                            size="xs"
+                            fullWidth
+                            justify="flex-start"
+                            leftSection={<Phone size={14} />}
                         >
-                            <Phone className="size-3.5 shrink-0 text-purple-400" />
-                            <span className="truncate">{confidant.phone_number}</span>
-                        </a>
+                            {confidant.phone_number}
+                        </Button>
                     )}
-                </div>
-            </div>
-        </div>
+                </Stack>
+            </Stack>
+        </Card>
     );
 }

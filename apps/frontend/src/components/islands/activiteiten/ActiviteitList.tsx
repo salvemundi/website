@@ -1,11 +1,11 @@
 'use client';
 
+import { Card, SimpleGrid, Stack, Text } from '@mantine/core';
 import { stripHtml } from '@/shared/lib/text';
 import ActiviteitCard from './ActiviteitCard';
 import { isEventPast } from '@/shared/lib/utils/date';
 import { useAuth } from '@/features/auth/providers/auth-provider';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
-import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 
 interface ActiviteitListProps {
     events: (Activiteit & { is_signed_up?: boolean })[];
@@ -19,15 +19,15 @@ export default function ActiviteitList({ events, onEventClick, variant = 'list',
 
     if (events.length === 0) {
         return (
-            <div className="rounded-3xl bg-(--bg-card) py-12 text-center shadow-sm">
-                <p className="text-(--text-muted)">Geen activiteiten gevonden.</p>
-            </div>
+            <Card padding="xl" radius="xl" shadow="sm" ta="center">
+                <Text c="dimmed">Geen activiteiten gevonden.</Text>
+            </Card>
         );
     }
 
     if (variant === 'grid') {
         return (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
                 {events.map((event) => {
                     const isFull = event.max_sign_ups !== null && (event.signup_count ?? 0) >= event.max_sign_ups;
                     return (
@@ -42,7 +42,7 @@ export default function ActiviteitList({ events, onEventClick, variant = 'list',
                             startTime={event.event_time ?? undefined}
                             endTime={event.event_time_end ?? undefined}
                             location={event.location ?? undefined}
-                            price={user && (user as unknown as MembershipUserData).membership_status === 'active' ? event.price_members : event.price_non_members}
+                            price={user?.membership_status === 'active' ? event.price_members : event.price_non_members}
                             image={event.afbeelding_id ?? undefined}
                             isPast={isEventPast(
                                 event.event_date_end || event.event_date,
@@ -63,12 +63,12 @@ export default function ActiviteitList({ events, onEventClick, variant = 'list',
                         />
                     );
                 })}
-            </div>
+            </SimpleGrid>
         );
     }
 
     return (
-        <div className="space-y-4">
+        <Stack gap="md">
             {events.map((event) => {
                 const isFull = event.max_sign_ups !== null && (event.signup_count ?? 0) >= event.max_sign_ups;
                 return (
@@ -83,7 +83,7 @@ export default function ActiviteitList({ events, onEventClick, variant = 'list',
                         startTime={event.event_time ?? undefined}
                         endTime={event.event_time_end ?? undefined}
                         location={event.location ?? undefined}
-                        price={user && (user as unknown as MembershipUserData).membership_status === 'active' ? event.price_members : event.price_non_members}
+                        price={user?.membership_status === 'active' ? event.price_members : event.price_non_members}
                         image={event.afbeelding_id ?? undefined}
                         isPast={isEventPast(
                             event.event_date_end || event.event_date,
@@ -104,6 +104,6 @@ export default function ActiviteitList({ events, onEventClick, variant = 'list',
                     />
                 );
             })}
-        </div>
+        </Stack>
     );
 }

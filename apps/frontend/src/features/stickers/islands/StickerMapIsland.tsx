@@ -3,12 +3,14 @@
 import { useEffect, useState, useTransition, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Filter, BarChart3 } from 'lucide-react';
+import { Box, Button, Group, Stack } from '@mantine/core';
 
 import { createStickerPublic, uploadFileAction } from '@/server/actions/public/stickers.actions';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
-
 import StickerMap from '@/components/ui/maps/StickerMap';
+import { type EnrichedUser } from '@/types/auth';
+import { type StickerPublic } from '@salvemundi/validations';
+import { compressStickerImage, readFileAsDataUrl } from '@/shared/lib/utils/image-compression';
 
 import StickerStats from '../components/map/StickerStats';
 import StickerFilters from '../components/map/StickerFilters';
@@ -16,20 +18,12 @@ import StickerActionPanel from '../components/map/StickerActionPanel';
 import AddStickerModal from '../components/map/AddStickerModal';
 import { MobileOverlays } from '../components/MobileOverlays';
 
-import { type EnrichedUser } from '@/types/auth';
-import { type StickerPublic } from '@salvemundi/validations';
-import { compressStickerImage, readFileAsDataUrl } from '@/shared/lib/utils/image-compression';
-import { reverseGeocode } from '@/shared/lib/utils/geolocation';
-
-type MapSticker = Omit<StickerPublic, 'user_updated' | 'date_updated' | 'address' | 'status'>;
-
 interface StickerMapIslandProps {
-    initialStickers: MapSticker[];
+    initialStickers: StickerPublic[];
     user: EnrichedUser | null;
-    className?: string;
 }
 
-interface DirectusStickerResponse {
+interface CreatedStickerResponse {
     id: string | number;
     latitude: string | number;
     longitude: string | number;
@@ -41,16 +35,21 @@ interface DirectusStickerResponse {
     date_created?: string | null;
 }
 
+const EMPTY_FORM_DATA = {
+    location_name: '',
+    description: '',
+    city: '',
+    country: '',
+    image: null as File | null,
+};
+
 export default function StickerMapIsland({
     initialStickers,
     user,
-    className
 }: StickerMapIslandProps) {
-    const { toast, showToast, hideToast } = useAdminToast();
-    const [stickers, setStickers] = useState(initialStickers);
+    const { showToast } = useAdminToast();
+    const [stickers, setStickers] = useState<StickerPublic[]>(initialStickers);
     const [isPending, startTransition] = useTransition();
-    const [isLocating, setIsLocating] = useState(false);
-    const cameraInputRef = useRef<HTMLInputElement>(null);
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -60,55 +59,16 @@ export default function StickerMapIsland({
     const [filterCountry, setFilterCountry] = useState('');
     const [filterCity, setFilterCity] = useState('');
 
-    const [formData, setFormData] = useState({
-        location_name: '',
-        description: '',
-        city: '',
-        country: '',
-        image: null as File | null
-    });
+    const [formData, setFormData] = useState(EMPTY_FORM_DATA);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-    const setStickerImage = async (file: File, overrides: Partial<typeof formData> = {}) => {
-        const compressedFile = await compressStickerImage(file);
-        const preview = await readFileAsDataUrl(compressedFile);
-
-        setFormData(prev => ({
-            ...prev,
-            ...overrides,
-            image: compressedFile
-        }));
-        setImagePreview(preview);
-        return compressedFile;
-    };
-
-    useEffect(() => {
-        document.body.style.overflow = (showMobileFilters || showMobileStats) ? 'hidden' : '';
-        return () => { document.body.style.overflow = ''; };
-    }, [showMobileFilters, showMobileStats]);
-
-    const closeMobileOverlays = () => {
-        setShowMobileFilters(false);
-        setShowMobileStats(false);
-    };
-
-    const openMobileFilters = () => {
-        setShowMobileStats(false);
-        setShowMobileFilters(true);
-    };
-
-    const openMobileStats = () => {
-        setShowMobileFilters(false);
-        setShowMobileStats(true);
-    };
 
     const handlePlaceSticker = useCallback(() => {
         if (!user) {
-            showToast("Log in om een sticker te plakken.", 'error');
+            showToast('Log in om een sticker te plakken.', 'error');
             return;
         }
 
-        setFormData({ location_name: '', description: '', city: '', country: '', image: null });
+        setFormData(EMPTY_FORM_DATA);
         setImagePreview(null);
         setSelectedLocation(null);
         setShowAddModal(true);
@@ -129,145 +89,19 @@ export default function StickerMapIsland({
         window.history.replaceState({}, '', url);
     }, [searchParams, handlePlaceSticker]);
 
-    const handleAutomatedFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const compressedFile = await compressStickerImage(file);
-
-        setIsLocating(true);
-        showToast('Foto ontvangen! Locatie bepalen...', 'success');
-
-        if (!(navigator as Partial<Navigator>).geolocation) {
-            showToast("Je browser ondersteunt geen geolocatie. We openen de handmatige kaartomgeving.", 'error');
-            void setStickerImage(compressedFile);
-            setSelectedLocation(null);
-            setShowAddModal(true);
-            setIsLocating(false);
-            e.target.value = '';
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                void (async () => {
-                    const { latitude, longitude } = position.coords;
-                    
-                    const { city: reverseCity, country: reverseCountry } = await reverseGeocode(latitude, longitude);
-                    
-                    const city = reverseCity || 'Onbekende Stad';
-                    const country = reverseCountry || 'Onbekend Land';
-
-                    startTransition(async () => {
-                        try {
-                            showToast('Foto uploaden...', 'success');
-                            const fileData = new FormData();
-                            fileData.append('file', compressedFile);
-                            const uploadResult = await uploadFileAction(fileData);
-                            
-                            if (!uploadResult.success) {
-                                throw new Error(uploadResult.error || 'Foto upload mislukt.');
-                            }
-                            const imageId = uploadResult.data;
-
-                            showToast('Sticker registreren...', 'success');
-                            const locationName = `${city}`;
-                            const response = (await createStickerPublic({
-                                latitude,
-                                longitude,
-                                location_name: locationName,
-                                description: '',
-                                city,
-                                country,
-                                image: imageId
-                            })) as { success: boolean; data?: unknown; error?: string };
-
-                            if (!response.success || !response.data) {
-                                throw new Error(response.error || 'Kon sticker niet opslaan.');
-                            }
-
-                            const userCreatedInfo = user ? {
-                                id: user.id,
-                                first_name: user.first_name || null,
-                                last_name: user.last_name || null,
-                                avatar: user.avatar || null
-                            } : null;
-
-                            const responseData = response.data as unknown as DirectusStickerResponse;
-                            const stickerToAppend: MapSticker = {
-                                id: Number(responseData.id),
-                                latitude: Number(responseData.latitude),
-                                longitude: Number(responseData.longitude),
-                                location_name: responseData.location_name || locationName,
-                                description: responseData.description || '',
-                                city: responseData.city || city,
-                                country: responseData.country || country,
-                                image: responseData.image || imageId,
-                                date_created: responseData.date_created || new Date().toISOString(),
-                                user_created: userCreatedInfo
-                            };
-
-                            setStickers((prev: MapSticker[]) => [stickerToAppend, ...prev]);
-                            showToast('Sticker succesvol geplaatst!', 'success');
-                        } catch (err: unknown) {
-                            const errMsg = err instanceof Error ? err.message : 'Fout bij automatisch plaatsen.';
-                            if (typeof errMsg === 'string' && errMsg.includes('Failed to find Server Action')) {
-                                showToast('Serveractie niet gevonden. Herlaad de pagina en probeer opnieuw (mogelijke verouderde deployment).', 'error');
-                            } else {
-                                showToast(errMsg, 'error');
-                            }
-                            
-                            void setStickerImage(compressedFile, {
-                                location_name: city !== 'Onbekende Stad' ? city : '',
-                                description: '',
-                                city: city !== 'Onbekende Stad' ? city : '',
-                                country: country !== 'Onbekend Land' ? country : ''
-                            });
-                            setSelectedLocation({ lat: latitude, lng: longitude });
-                            setShowAddModal(true);
-                        } finally {
-                            setIsLocating(false);
-                        }
-                    });
-                })();
-            },
-            (error) => {
-                let msg = "Kon je locatie niet bepalen. We openen de handmatige kaartomgeving.";
-                if (error.code === 1) msg = "Locatie toegang geweigerd. We openen de handmatige kaartomgeving.";
-                showToast(msg, 'error');
-
-                void setStickerImage(compressedFile, {
-                    city: '',
-                    country: ''
-                });
-                setSelectedLocation(null);
-                setShowAddModal(true);
-                setIsLocating(false);
-            },
-            { enableHighAccuracy: true, timeout: 10000 }
-        );
-
-        e.target.value = '';
+        void (async () => {
+            const compressedFile = await compressStickerImage(file);
+            const preview = await readFileAsDataUrl(compressedFile);
+            setFormData((prev) => ({ ...prev, image: compressedFile }));
+            setImagePreview(preview);
+        })();
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            void setStickerImage(file);
-        }
-    };
-
-    const uploadImage = async (file: File): Promise<string> => {
-        const formData = new FormData();
-        formData.append('file', file);
-        const result = await uploadFileAction(formData);
-        if (!result.success) {
-            throw new Error(result.error || 'Foto upload mislukt.');
-        }
-        return result.data;
-    };
-
-    const handleSubmit = async (e: React.SyntheticEvent) => {
+    const handleSubmit = (e: React.SyntheticEvent) => {
         e.preventDefault();
         if (!selectedLocation) return;
 
@@ -275,7 +109,13 @@ export default function StickerMapIsland({
             try {
                 let imageId: string | null = null;
                 if (formData.image) {
-                    imageId = await uploadImage(formData.image);
+                    const fd = new FormData();
+                    fd.append('file', formData.image);
+                    const uploadResult = await uploadFileAction(fd);
+                    if (!uploadResult.success) {
+                        throw new Error(uploadResult.error || 'Foto upload mislukt.');
+                    }
+                    imageId = uploadResult.data;
                 }
 
                 const response = (await createStickerPublic({
@@ -285,22 +125,15 @@ export default function StickerMapIsland({
                     description: formData.description,
                     city: formData.city,
                     country: formData.country,
-                    image: imageId
+                    image: imageId,
                 })) as { success: boolean; data?: unknown; error?: string };
 
                 if (!response.success || !response.data) {
                     throw new Error(response.error || 'Kon sticker niet opslaan.');
                 }
 
-                const userCreatedInfo = user ? {
-                    id: user.id,
-                    first_name: user.first_name || null,
-                    last_name: user.last_name || null,
-                    avatar: user.avatar || null
-                } : null;
-
-                const responseData = response.data as unknown as DirectusStickerResponse;
-                const stickerToAppend: MapSticker = {
+                const responseData = response.data as CreatedStickerResponse;
+                const newSticker: StickerPublic = {
                     id: Number(responseData.id),
                     latitude: Number(responseData.latitude),
                     longitude: Number(responseData.longitude),
@@ -308,117 +141,140 @@ export default function StickerMapIsland({
                     description: responseData.description || formData.description,
                     city: responseData.city || formData.city,
                     country: responseData.country || formData.country,
+                    address: null,
+                    status: 'published',
                     image: responseData.image || imageId,
                     date_created: responseData.date_created || new Date().toISOString(),
-                    user_created: userCreatedInfo
+                    user_created: user
+                        ? {
+                            id: user.id,
+                            first_name: user.first_name || null,
+                            last_name: user.last_name || null,
+                            avatar: user.avatar || null,
+                        }
+                        : null,
                 };
 
-                setStickers((prev: MapSticker[]) => [stickerToAppend, ...prev]);
+                setStickers((prev) => [newSticker, ...prev]);
                 setShowAddModal(false);
                 setSelectedLocation(null);
-                setFormData({ location_name: '', description: '', city: '', country: '', image: null });
+                setFormData(EMPTY_FORM_DATA);
                 setImagePreview(null);
                 showToast('Sticker succesvol toegevoegd!', 'success');
             } catch (error: unknown) {
                 const errMsg = error instanceof Error ? error.message : String(error);
-                if (typeof errMsg === 'string' && errMsg.includes('Failed to find Server Action')) {
+                if (errMsg.includes('Failed to find Server Action')) {
                     showToast('Serveractie niet gevonden. Herlaad de pagina en probeer opnieuw (mogelijke verouderde deployment).', 'error');
                 } else {
-                    showToast('Fout bij toevoegen: ' + errMsg, 'error');
+                    showToast(`Fout bij toevoegen: ${errMsg}`, 'error');
                 }
             }
         });
     };
 
-    const handleSubmitSync = (e: React.SyntheticEvent) => {
-        void handleSubmit(e);
-    };
-
-    const handleAutomatedFileChangeSync = (e: React.ChangeEvent<HTMLInputElement>) => {
-        void handleAutomatedFileChange(e);
-    };
-
     return (
-        <div className="flex h-full flex-col gap-4 sm:gap-6">
-            <div className="hidden shrink-0 md:block">
-                <StickerStats stickers={stickers as unknown as StickerPublic[]} />
-            </div>
+        <Stack h="100%" gap="md">
+            <Box visibleFrom="md" style={{ flexShrink: 0 }}>
+                <StickerStats stickers={stickers} />
+            </Box>
 
-            <div className="group relative min-h-0 flex-1">
-                <div className="absolute inset-0 -z-10 bg-linear-to-r from-purple-500/5 to-orange-500/5 blur-3xl" />
-
+            <Box pos="relative" flex={1} style={{ minHeight: 0 }}>
                 <StickerMap
-                    stickers={stickers as unknown as StickerPublic[]}
+                    stickers={stickers}
                     user={user}
                     selectedLocation={selectedLocation}
                     filterCountry={filterCountry}
                     filterCity={filterCity}
-                    stretchToContainer
-                    className={className}
                 />
 
-                <div className="pointer-events-none absolute inset-x-0 top-4 z-90 px-4 md:inset-auto md:top-4 md:right-auto md:bottom-auto md:left-4 md:w-80 md:px-0">
-                    <div className="pointer-events-auto flex items-center gap-3 md:hidden">
-                        <button
+                <Box
+                    pos="absolute"
+                    top={16}
+                    left={{ base: 0, md: 16 }}
+                    right={{ base: 0, md: 'auto' }}
+                    w={{ md: 320 }}
+                    px={{ base: 'md', md: 0 }}
+                    style={{ zIndex: 90, pointerEvents: 'none' }}
+                >
+                    <Group gap="sm" hiddenFrom="md" style={{ pointerEvents: 'auto' }}>
+                        <Button
                             type="button"
-                            onClick={openMobileFilters}
-                            className="form-button inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-bg-card/95 px-3 py-2.5 text-[10px] font-black tracking-[0.18em] whitespace-nowrap text-text-main uppercase shadow-2xl backdrop-blur-md"
+                            flex={1}
+                            variant="default"
+                            size="sm"
+                            leftSection={<Filter size={14} />}
+                            onClick={() => {
+                                setShowMobileStats(false);
+                                setShowMobileFilters(true);
+                            }}
                         >
-                            <Filter className="size-4 shrink-0 text-theme-purple" />
                             Filters
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="button"
-                            onClick={openMobileStats}
-                            className="form-button inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-bg-card/95 px-3 py-2.5 text-[10px] font-black tracking-[0.18em] whitespace-nowrap text-text-main uppercase shadow-2xl backdrop-blur-md"
+                            flex={1}
+                            variant="default"
+                            size="sm"
+                            leftSection={<BarChart3 size={14} />}
+                            onClick={() => {
+                                setShowMobileFilters(false);
+                                setShowMobileStats(true);
+                            }}
                         >
-                            <BarChart3 className="size-4 shrink-0 text-theme-purple" />
                             Stats
-                        </button>
-                    </div>
+                        </Button>
+                    </Group>
 
-                    <div className="pointer-events-auto hidden gap-3 md:flex md:flex-col-reverse">
-                        <StickerActionPanel
-                            user={user}
-                            isLocating={isLocating}
-                            onPlaceSticker={handlePlaceSticker}
-                        />
+                    <Stack gap="sm" visibleFrom="md" style={{ pointerEvents: 'auto' }}>
                         <StickerFilters
                             filterCountry={filterCountry}
                             setFilterCountry={setFilterCountry}
                             filterCity={filterCity}
                             setFilterCity={setFilterCity}
                         />
-                    </div>
-                </div>
-
-                <div className="pointer-events-none absolute inset-x-4 bottom-4 z-90 md:hidden">
-                    <div className="pointer-events-auto w-full">
                         <StickerActionPanel
                             user={user}
-                            isLocating={isLocating}
+                            onPlaceSticker={handlePlaceSticker}
+                        />
+                    </Stack>
+                </Box>
+
+                <Box
+                    pos="absolute"
+                    bottom={16}
+                    left={16}
+                    right={16}
+                    hiddenFrom="md"
+                    style={{ zIndex: 90, pointerEvents: 'none' }}
+                >
+                    <Box w="100%" style={{ pointerEvents: 'auto' }}>
+                        <StickerActionPanel
+                            user={user}
                             onPlaceSticker={handlePlaceSticker}
                             compact
                         />
-                    </div>
-                </div>
-            </div>
+                    </Box>
+                </Box>
+            </Box>
 
             <MobileOverlays
                 showMobileFilters={showMobileFilters}
                 showMobileStats={showMobileStats}
-                closeMobileOverlays={closeMobileOverlays}
+                closeMobileOverlays={() => {
+                    setShowMobileFilters(false);
+                    setShowMobileStats(false);
+                }}
                 filterCountry={filterCountry}
                 setFilterCountry={setFilterCountry}
                 filterCity={filterCity}
                 setFilterCity={setFilterCity}
-                stickers={stickers as unknown as StickerPublic[]}
+                stickers={stickers}
             />
 
             <AddStickerModal
                 show={showAddModal}
                 onClose={() => setShowAddModal(false)}
-                onSubmit={handleSubmitSync}
+                onSubmit={handleSubmit}
                 isPending={isPending}
                 formData={formData}
                 setFormData={setFormData}
@@ -428,17 +284,6 @@ export default function StickerMapIsland({
                 selectedLocation={selectedLocation}
                 setSelectedLocation={setSelectedLocation}
             />
-
-            <input
-                type="file"
-                ref={cameraInputRef}
-                accept="image/*"
-                capture="environment"
-                onChange={handleAutomatedFileChangeSync}
-                className="hidden"
-            />
-
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+        </Stack>
     );
 }

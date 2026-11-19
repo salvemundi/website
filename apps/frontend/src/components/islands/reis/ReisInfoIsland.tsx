@@ -1,6 +1,7 @@
 'use client';
 
 import { Calendar, Info, ShieldCheck, Mail, ExternalLink } from 'lucide-react';
+import { Anchor, Box, Card, Group, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import type { Trip } from '@salvemundi/validations/schema/beheer-trip.zod';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
@@ -24,7 +25,6 @@ const formatFullDate = (d: Date) => {
 };
 
 export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
-
     const nextTripStartDate = nextTrip?.start_date ? new Date(nextTrip.start_date) : null;
     const nextTripEndDate = nextTrip?.end_date ? new Date(nextTrip.end_date) : null;
 
@@ -37,89 +37,85 @@ export function ReisInfoIsland({ nextTrip }: ReisInfoIslandProps) {
         : null;
 
     return (
-        <div className="flex w-full flex-col gap-8 lg:w-1/2">
+        <Stack w={{ base: '100%', lg: '50%' }} gap="xl">
             {nextTrip && (
-                <div className="group relative overflow-hidden rounded-3xl bg-bg-card shadow-2xl dark:border dark:border-white/10">
-                    {nextTrip.image ? (
-                        <div className="relative h-75 w-full overflow-hidden bg-purple-950/5 sm:h-105 dark:bg-black/20">
+                <Card padding={0} radius="xl" shadow="xl" withBorder style={{ overflow: 'hidden' }}>
+                    {nextTrip.image && (
+                        <Box
+                            pos="relative"
+                            h={{ base: 300, sm: 420 }}
+                            w="100%"
+                            style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 6%, transparent)' }}
+                        >
                             <MediaAsset
                                 asset={nextTrip.image}
                                 alt={nextTrip.name ?? 'Reis'}
                                 fill
                                 objectFit="contain"
                             />
-                        </div>
-                    ) : (
-                        <div />
+                        </Box>
                     )}
 
-                    <div className="p-6 sm:p-8">
-                        <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
-                            <div className="flex items-center gap-4">
-                                <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl border border-theme-purple/20 bg-theme-purple/10">
-                                    <Calendar className="size-7 text-theme-purple" />
-                                </div>
-                                <div>
-                                    <p className="mt-1 text-xl font-bold text-theme-purple sm:text-2xl">
-                                        {formattedFromDate && formattedUntilDate ? (
-                                            formattedFromDate === formattedUntilDate ? formattedFromDate : `${formattedFromDate} – ${formattedUntilDate}`
-                                        ) : (
-                                            'Wordt aangekondigd'
-                                        )}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    <Box p={{ base: 'lg', sm: 'xl' }}>
+                        <Group gap="md" wrap="nowrap">
+                            <ThemeIcon size={56} radius="md" variant="light" color="brand">
+                                <Calendar size={28} />
+                            </ThemeIcon>
+                            <Text size="xl" fw={700} c="brand">
+                                {formattedFromDate && formattedUntilDate ? (
+                                    formattedFromDate === formattedUntilDate ? formattedFromDate : `${formattedFromDate} – ${formattedUntilDate}`
+                                ) : (
+                                    'Wordt aangekondigd'
+                                )}
+                            </Text>
+                        </Group>
+                    </Box>
+                </Card>
             )}
 
             {nextTrip?.description && (
-                <div className="relative overflow-hidden rounded-3xl bg-bg-card p-6 shadow-2xl sm:p-10 dark:border dark:border-white/10">
-                    <div className="absolute -bottom-12 -left-12 size-32 rounded-full bg-theme-purple/5 blur-3xl" />
-                    <div className="relative z-10">
-                        <h3 className="mb-6 flex items-center gap-3 text-xl font-bold text-theme-purple sm:text-2xl">
+                <Card padding="xl" radius="xl" shadow="xl" withBorder>
+                    <Stack gap="md">
+                        <Title order={3} size="h3" c="brand">
                             Over de Reis
-                        </h3>
+                        </Title>
                         <SafeMarkdown
-                            className="prose prose-sm max-w-none space-y-4 font-medium text-text-muted prose-purple sm:prose dark:prose-invert prose-p:leading-relaxed"
                             content={nextTrip.description}
                         />
-                    </div>
-                </div>
+                    </Stack>
+                </Card>
             )}
 
-            <div className="relative overflow-hidden rounded-3xl bg-bg-card p-6 shadow-2xl sm:p-10 dark:border dark:border-white/10">
-                <div className="absolute top-0 right-0 p-8 opacity-5">
-                    <ShieldCheck className="size-32 text-theme-purple" />
-                </div>
-                <div className="relative z-10">
-                    <h3 className="mb-8 flex items-center gap-3 text-xl font-bold text-theme-purple sm:text-2xl">
+            <Card padding="xl" radius="xl" shadow="xl" withBorder>
+                <Stack gap="lg">
+                    <Title order={3} size="h3" c="brand">
                         Goed om te weten
-                    </h3>
+                    </Title>
 
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
                         {[
-                            { icon: <ShieldCheck className="size-5" />, title: 'Lidmaatschap', content: <>Je hoeft <strong>geen lid</strong> te zijn om mee te gaan.</> },
-                            { icon: <Mail className="size-5" />, title: 'Bevestiging', content: <>Je krijgt direct een mail na je inschrijving.</> },
-                            { icon: <Info className="size-5" />, title: 'Leeftijd', content: <>Minimumleeftijd voor deelname is 18 jaar.</> },
-                            { icon: <ExternalLink className="size-5" />, title: 'Vragen?', content: <>Mail ons op <a href="mailto:reis@salvemundi.nl" className="font-bold text-theme-purple hover:underline">reis@salvemundi.nl</a></> },
+                            { icon: <ShieldCheck size={20} />, title: 'Lidmaatschap', content: <>Je hoeft <strong>geen lid</strong> te zijn om mee te gaan.</> },
+                            { icon: <Mail size={20} />, title: 'Bevestiging', content: <>Je krijgt direct een mail na je inschrijving.</> },
+                            { icon: <Info size={20} />, title: 'Leeftijd', content: <>Minimumleeftijd voor deelname is 18 jaar.</> },
+                            { icon: <ExternalLink size={20} />, title: 'Vragen?', content: <>Mail ons op <Anchor href="mailto:reis@salvemundi.nl" fw={700} c="brand">reis@salvemundi.nl</Anchor></> },
                         ].map((item, i) => (
-                            <div key={i} className="group flex gap-4">
-                                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-theme-purple/10 bg-theme-purple/5 text-theme-purple transition-colors group-hover:bg-theme-purple/10">
+                            <Group key={i} align="flex-start" wrap="nowrap" gap="md">
+                                <ThemeIcon size={40} radius="md" variant="light" color="brand">
                                     {item.icon}
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-bold tracking-widest text-text-muted">{item.title}</p>
-                                    <div className="text-sm leading-relaxed font-medium text-text-main">
+                                </ThemeIcon>
+                                <Stack gap={2}>
+                                    <Text size="xs" fw={700} c="dimmed">
+                                        {item.title}
+                                    </Text>
+                                    <Text size="sm" fw={500} component="div">
                                         {item.content}
-                                    </div>
-                                </div>
-                            </div>
+                                    </Text>
+                                </Stack>
+                            </Group>
                         ))}
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </SimpleGrid>
+                </Stack>
+            </Card>
+        </Stack>
     );
 }

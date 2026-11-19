@@ -1,4 +1,5 @@
 import React from 'react';
+import { Box } from '@mantine/core';
 
 interface PublicPageShellProps {
     title?: string;
@@ -13,32 +14,45 @@ interface PublicPageShellProps {
     hideHeader?: boolean;
 }
 
-export default function PublicPageShell({ 
-    children, 
-    backgroundImage, 
-    imageFilter = 'brightness(0.65)' 
+export default function PublicPageShell({
+    children,
+    backgroundImage,
+    imageFilter = 'brightness(0.65)',
 }: PublicPageShellProps) {
     if (backgroundImage) {
         return (
-            <div className="relative flex min-h-dvh w-full flex-col overflow-hidden">
-                <div 
-                    className="pointer-events-none absolute inset-0 -z-10 bg-cover bg-center"
+            <Box pos="relative" mih="100dvh" w="100%" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <Box
+                    pos="absolute"
+                    inset={0}
                     style={{
+                        zIndex: -10,
+                        pointerEvents: 'none',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
                         backgroundImage: `url(${backgroundImage})`,
-                        filter: imageFilter
+                        filter: imageFilter,
                     }}
                 />
-                <div className="pointer-events-none absolute inset-0 -z-10 bg-black/40" />
-                <div className="relative z-10 grow">
+                <Box
+                    pos="absolute"
+                    inset={0}
+                    style={{
+                        zIndex: -10,
+                        pointerEvents: 'none',
+                        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                    }}
+                />
+                <Box pos="relative" style={{ zIndex: 10, flexGrow: 1 }}>
                     {children}
-                </div>
-            </div>
+                </Box>
+            </Box>
         );
     }
 
     return (
-        <div className="min-h-dvh w-full">
+        <Box mih="100dvh" w="100%">
             {children}
-        </div>
+        </Box>
     );
 }

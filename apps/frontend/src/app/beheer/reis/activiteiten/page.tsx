@@ -1,13 +1,15 @@
 import type { Metadata } from 'next';
+import Link from '@/components/ui/Link';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Center, Container, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import ReisActivitiesIsland from '@/components/islands/beheer/reis/ReisActivitiesIsland';
 import type { Signup } from '@/components/islands/beheer/reis/ReisActivitySignupsModal';
 import { getTrips, getTripActivities } from '@/server/queries/reis/beheer-reis.queries';
 import { notFound } from 'next/navigation';
 import { getTripSignupActivitiesAction } from '@/server/actions/beheer/reis/beheer-reis-signups.actions';
-import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
 import { safeConsoleError } from '@/server/utils/logger';
-import { db, schema } from "@salvemundi/db";
-import { eq } from "drizzle-orm";
+import { db, schema } from '@salvemundi/db';
+import { eq } from 'drizzle-orm';
 
 interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -44,13 +46,34 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
 
     if (trips.length === 0) {
         return (
-            <BeheerPageShell title="Reis Activiteiten" backHref="/beheer/reis">
-                <div className="mx-auto py-20 text-center">
-                    <p className="text-base font-bold text-(--beheer-text-muted)">
-                        Geen reizen gevonden.
-                    </p>
-                </div>
-            </BeheerPageShell>
+            <Container size="xl" py="lg">
+                <Stack gap="lg">
+                    <Group justify="space-between" wrap="wrap" gap="md">
+                        <Group gap="md" wrap="wrap">
+                            <Button
+                                component={Link}
+                                href="/beheer/reis"
+                                variant="default"
+                                size="sm"
+                                leftSection={<ChevronLeft size={16} />}
+                            >
+                                Terug
+                            </Button>
+                            <Title order={1} size="h2" c="brand">
+                                Reis Activiteiten
+                            </Title>
+                        </Group>
+                    </Group>
+
+                    <Paper withBorder p="xl" radius="lg">
+                        <Center py="xl">
+                            <Text fw={700} c="dimmed">
+                                Geen reizen gevonden.
+                            </Text>
+                        </Center>
+                    </Paper>
+                </Stack>
+            </Container>
         );
     }
 
@@ -83,14 +106,12 @@ export default async function ReisActiviteitenPage({ searchParams }: PageProps) 
     const signupsByActivityObj = Object.fromEntries(signupsByActivity.entries());
 
     return (
-        <BeheerPageShell title="Reis Activiteiten" hideToolbar={true}>
-            <ReisActivitiesIsland
-                initialTrips={trips}
-                initialActivities={activities}
-                initialSelectedTripId={activeTripId}
-                initialSignupsByActivity={signupsByActivityObj}
-                tripName={activeTrip.name || 'Onbekende reis'}
-            />
-        </BeheerPageShell>
+        <ReisActivitiesIsland
+            initialTrips={trips}
+            initialActivities={activities}
+            initialSelectedTripId={activeTripId}
+            initialSignupsByActivity={signupsByActivityObj}
+            tripName={activeTrip.name || 'Onbekende reis'}
+        />
     );
 }

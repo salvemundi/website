@@ -1,7 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircle, AlertTriangle, X, Info, Users } from 'lucide-react';
+import { CheckCircle, AlertTriangle, X, Info, Users, ChevronDown, ChevronRight } from 'lucide-react';
+import {
+    Badge,
+    Box,
+    Button,
+    Center,
+    Code,
+    Collapse,
+    Divider,
+    Group,
+    Paper,
+    ScrollArea,
+    Stack,
+    Text,
+    ThemeIcon,
+    UnstyledButton,
+} from '@mantine/core';
 import { SyncStatus } from '@/components/islands/beheer/sync/SyncContext';
 
 interface LogItem {
@@ -22,82 +38,135 @@ interface ResultRowProps {
     changes?: { field: string; old: unknown; new: unknown }[];
 }
 
+function getTypeIcon(type: ResultRowProps['type']): React.ReactNode {
+    switch (type) {
+        case 'success':
+            return <ThemeIcon variant="light" color="success" radius="xl" size="md"><CheckCircle size={16} /></ThemeIcon>;
+        case 'warning':
+            return <ThemeIcon variant="light" color="accent" radius="xl" size="md"><AlertTriangle size={16} /></ThemeIcon>;
+        case 'error':
+            return <ThemeIcon variant="light" color="error" radius="xl" size="md"><X size={16} /></ThemeIcon>;
+        case 'info':
+            return <ThemeIcon variant="light" color="brand" radius="xl" size="md"><Info size={16} /></ThemeIcon>;
+        case 'excluded':
+            return <ThemeIcon variant="default" radius="xl" size="md"><Users size={16} /></ThemeIcon>;
+    }
+}
+
+function getBadgeColor(type: ResultRowProps['type']): string | undefined {
+    switch (type) {
+        case 'success':
+            return 'success';
+        case 'warning':
+            return 'accent';
+        case 'error':
+            return 'error';
+        case 'info':
+            return 'brand';
+        default:
+            return undefined;
+    }
+}
+
 function ResultRow({ email, message, type, timestamp, stack, changes }: ResultRowProps) {
     const [isExpanded, setIsExpanded] = useState(false);
-    const hasDetails = !!(timestamp || stack || (changes && changes.length > 0));
-    const icons = new Map<string, React.ReactNode>([
-        ['success', <CheckCircle key="success" className="size-5 text-(--beheer-active)" />],
-        ['warning', <AlertTriangle key="warning" className="size-5 text-(--theme-warning)" />],
-        ['error', <X key="error" className="size-5 text-(--beheer-inactive)" />],
-        ['info', <Info key="info" className="size-5 text-(--theme-info)" />],
-        ['excluded', <Users key="excluded" className="size-5 text-(--beheer-text-muted)" />],
-    ]);
+    const hasDetails = Boolean(timestamp || stack || (changes && changes.length > 0));
+    const badgeColor = getBadgeColor(type);
+
+    const rowHeader = (
+        <Group align="flex-start" justify="space-between" wrap="nowrap" gap="md" p="md" w="100%">
+            <Group align="flex-start" gap="md" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
+                {getTypeIcon(type)}
+                <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
+                    <Text size="sm" fw={600} style={{ wordBreak: 'break-all' }}>
+                        {email}
+                    </Text>
+                    {message && (
+                        <Text size="xs" c="dimmed">
+                            {message}
+                        </Text>
+                    )}
+                </Stack>
+            </Group>
+            <Group gap="xs" wrap="nowrap">
+                <Badge
+                    variant={badgeColor ? 'light' : 'default'}
+                    color={badgeColor}
+                    size="sm"
+                    tt="capitalize"
+                >
+                    {type}
+                </Badge>
+                {hasDetails && (
+                    <ChevronDown
+                        size={16}
+                        style={{
+                            transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                            transition: 'transform 200ms ease',
+                        }}
+                    />
+                )}
+            </Group>
+        </Group>
+    );
 
     return (
-        <div
-            className={`flex flex-col border-b border-(--beheer-border)/10 transition-colors last:border-0 ${hasDetails ? 'cursor-pointer hover:bg-(--beheer-accent)/5' : ''}`}
-            onClick={() => hasDetails && setIsExpanded(!isExpanded)}
-        >
-            <div className="flex items-start gap-4 p-4 transition-colors">
-                <div className="mt-0.5">{icons.get(type)}</div>
-                <div className="min-w-0 flex-1">
-                    <div className="text-base font-semibold break-all text-(--beheer-text)">{email}</div>
-                    {message && <div className="mt-1 text-sm font-medium text-(--beheer-text-muted)">{message}</div>}
-                </div>
-                <div className="ml-auto flex items-center gap-3">
-                    <div className="text-sm font-semibold text-(--beheer-text-muted)/50 capitalize">
-                        {type}
-                    </div>
-                    {hasDetails && (
-                        <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180 text-(--beheer-accent)' : 'text-(--beheer-text-muted)'}`}>
-                            <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {isExpanded && hasDetails && (
-                <div className="animate-in fade-in slide-in-from-top-2 px-12 pb-6 duration-300">
-                    <div className="space-y-3 rounded-2xl border border-(--beheer-border)/30 bg-(--beheer-card-soft) p-4">
-                        {timestamp && (
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-semibold text-(--beheer-text-muted)">Tijdstip:</span>
-                                <span className="text-base font-semibold text-(--beheer-text)">{new Date(timestamp).toLocaleString()}</span>
-                            </div>
-                        )}
-                        {stack && (
-                            <div className="space-y-1.5">
-                                <span className="text-sm font-semibold text-(--beheer-text-muted)">Stack trace:</span>
-                                <pre className="custom-scrollbar overflow-x-auto rounded-xl border border-(--theme-error)/10 bg-(--theme-error)/5 p-3 font-mono text-sm leading-relaxed text-(--theme-error)/70">
-                                    {stack}
-                                </pre>
-                            </div>
-                        )}
-                        {changes && changes.length > 0 && (
-                            <div className="space-y-2">
-                                <span className="text-sm font-semibold text-(--beheer-text-muted)">Wijzigingen:</span>
-                                <div className="space-y-1">
-                                    {changes.map((change, idx) => (
-                                        <div key={idx} className="flex flex-col gap-0.5 rounded-xl border border-(--beheer-border)/20 bg-(--beheer-card-bg) p-2">
-                                            <span className="text-sm font-semibold text-(--beheer-text)">{change.field}</span>
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <span className="text-sm break-all text-(--beheer-text-muted)">{String(change.old ?? 'leeg')}</span>
-                                                <svg className="size-3 shrink-0 text-(--beheer-text-muted)/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-                                                </svg>
-                                                <span className="text-sm font-semibold break-all text-(--beheer-active)">{String(change.new ?? 'leeg')}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
+        <Box>
+            {hasDetails ? (
+                <UnstyledButton type="button" w="100%" onClick={() => setIsExpanded(!isExpanded)}>
+                    {rowHeader}
+                </UnstyledButton>
+            ) : (
+                rowHeader
             )}
-        </div>
+
+            {hasDetails && (
+                <Collapse expanded={isExpanded}>
+                    <Box px="lg" pb="md">
+                        <Paper withBorder radius="md" p="md">
+                            <Stack gap="sm">
+                                {timestamp && (
+                                    <Group gap="xs">
+                                        <Text size="xs" fw={600} c="dimmed">Tijdstip:</Text>
+                                        <Text size="sm" fw={600}>{new Date(timestamp).toLocaleString()}</Text>
+                                    </Group>
+                                )}
+                                {stack && (
+                                    <Stack gap={4}>
+                                        <Text size="xs" fw={600} c="dimmed">Stack trace:</Text>
+                                        <Code block c="error">
+                                            {stack}
+                                        </Code>
+                                    </Stack>
+                                )}
+                                {changes && changes.length > 0 && (
+                                    <Stack gap="xs">
+                                        <Text size="xs" fw={600} c="dimmed">Wijzigingen:</Text>
+                                        <Stack gap="xs">
+                                            {changes.map((change, idx) => (
+                                                <Paper key={idx} withBorder radius="sm" p="xs">
+                                                    <Text size="xs" fw={700}>{change.field}</Text>
+                                                    <Group gap="xs" wrap="wrap">
+                                                        <Text size="xs" c="dimmed" style={{ wordBreak: 'break-all' }}>
+                                                            {String(change.old ?? 'leeg')}
+                                                        </Text>
+                                                        <ChevronRight size={12} opacity={0.5} />
+                                                        <Text size="xs" fw={600} c="success" style={{ wordBreak: 'break-all' }}>
+                                                            {String(change.new ?? 'leeg')}
+                                                        </Text>
+                                                    </Group>
+                                                </Paper>
+                                            ))}
+                                        </Stack>
+                                    </Stack>
+                                )}
+                            </Stack>
+                        </Paper>
+                    </Box>
+                </Collapse>
+            )}
+            <Divider />
+        </Box>
     );
 }
 
@@ -118,7 +187,6 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 50;
 
-    // Reset pagination to page 1 whenever the filter changes
     React.useEffect(() => {
         setCurrentPage(1);
     }, [resultFilter]);
@@ -127,12 +195,10 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
 
     const addItem = (email: string, node: React.ReactNode, type: string) => {
         const key = `${email}-${type}`;
-        const globalKey = email;
-
         if (resultFilter !== 'all') {
             itemMap.set(key, node);
         } else {
-            itemMap.set(globalKey, node);
+            itemMap.set(email, node);
         }
     };
 
@@ -208,44 +274,55 @@ export default function SyncLogs({ resultFilter, status }: SyncLogsProps) {
     const paginatedItems = items.slice(startIndex, startIndex + itemsPerPage);
 
     return (
-        <div className="flex flex-col overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm">
-            <div className="custom-scrollbar max-h-120 overflow-y-auto">
+        <Paper withBorder radius="lg" style={{ overflow: 'hidden' }}>
+            <ScrollArea.Autosize mah={480}>
                 {paginatedItems.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center p-20 text-(--beheer-text-muted)">
-                        <Users className="mb-4 size-12 opacity-20" />
-                        <p className="text-center text-base font-semibold">Geen resultaten gevonden voor dit filter.</p>
-                    </div>
+                    <Center py={64}>
+                        <Stack align="center" gap="sm">
+                            <Users size={48} opacity={0.25} />
+                            <Text size="sm" fw={600} c="dimmed" ta="center">
+                                Geen resultaten gevonden voor dit filter.
+                            </Text>
+                        </Stack>
+                    </Center>
                 ) : (
-                    <div className="divide-y divide-(--beheer-border)/10">{paginatedItems}</div>
+                    <Stack gap={0}>{paginatedItems}</Stack>
                 )}
-            </div>
+            </ScrollArea.Autosize>
 
             {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-(--beheer-border)/20 bg-(--beheer-card-soft) px-6 py-4">
-                    <span className="text-[11px] font-semibold text-(--beheer-text-muted)">
-                        Rij {startIndex + 1} t/m {Math.min(startIndex + itemsPerPage, totalItems)} van {totalItems}
-                    </span>
-                    <div className="flex items-center gap-2">
-                        <button
-                            disabled={currentPage === 1}
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            className="beheer-button rounded-lg border border-(--beheer-border) px-3.5 py-1.5 text-[11px] font-bold text-(--beheer-text) transition-all hover:border-(--beheer-accent) disabled:opacity-40"
-                            type="button">
-                            Vorige
-                        </button>
-                        <span className="px-2 text-[11px] font-bold text-(--beheer-text)">
-                            {currentPage} / {totalPages}
-                        </span>
-                        <button
-                            disabled={currentPage === totalPages}
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                            className="beheer-button rounded-lg border border-(--beheer-border) px-3.5 py-1.5 text-[11px] font-bold text-(--beheer-text) transition-all hover:border-(--beheer-accent) disabled:opacity-40"
-                            type="button">
-                            Volgende
-                        </button>
-                    </div>
-                </div>
+                <>
+                    <Divider />
+                    <Group justify="space-between" px="lg" py="md">
+                        <Text size="xs" fw={600} c="dimmed">
+                            Rij {startIndex + 1} t/m {Math.min(startIndex + itemsPerPage, totalItems)} van {totalItems}
+                        </Text>
+                        <Group gap="xs">
+                            <Button
+                                type="button"
+                                variant="default"
+                                size="xs"
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            >
+                                Vorige
+                            </Button>
+                            <Text size="xs" fw={700} px="xs">
+                                {currentPage} / {totalPages}
+                            </Text>
+                            <Button
+                                type="button"
+                                variant="default"
+                                size="xs"
+                                disabled={currentPage === totalPages}
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            >
+                                Volgende
+                            </Button>
+                        </Group>
+                    </Group>
+                </>
             )}
-        </div>
+        </Paper>
     );
 }

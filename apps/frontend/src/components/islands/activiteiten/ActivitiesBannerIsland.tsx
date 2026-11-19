@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { Center } from '@mantine/core';
 import FlipClock from './FlipClock';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { getActivityUrl } from '@/shared/lib/utils/activity';
@@ -34,7 +35,7 @@ export default function ActivitiesBannerIsland({ events, serverTime }: Activitie
 
     const datePart = upcomingEvent.event_date.split('T')[0];
     return (
-        <div className="@container relative flex w-full justify-center py-4">
+        <Center pos="relative" w="100%" py="md" style={{ containerType: 'inline-size' }}>
             <FlipClock
                 targetDate={upcomingEvent.event_time
                     ? `${datePart}T${upcomingEvent.event_time}`
@@ -44,6 +45,6 @@ export default function ActivitiesBannerIsland({ events, serverTime }: Activitie
                 href={getActivityUrl({ name: upcomingEvent.name || '', custom_url: upcomingEvent.custom_url })}
                 serverTime={serverTime}
             />
-        </div>
+        </Center>
     );
 }

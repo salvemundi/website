@@ -1,14 +1,15 @@
+import { connection } from 'next/server';
+import { Lock, ShieldCheck, Mail, Info, ExternalLink } from 'lucide-react';
+import { Anchor, Box, Card, Container, Flex, Group, SimpleGrid, Stack, Text, ThemeIcon, Title, VisuallyHidden } from '@mantine/core';
 import { getReisSiteSettings, getUpcomingTrips, getUserTripSignup, getTripParticipantsCount, getCurrentUserProfileAction, getLatestPastTrip } from '@/server/actions/events/reis/reis-public.actions';
 import { getDocumenten } from '@/server/actions/public/website.actions';
 import { ReisFormIsland } from '@/components/islands/reis/ReisFormIsland';
 import { ReisInfoIsland } from '@/components/islands/reis/ReisInfoIsland';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { connection } from 'next/server';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import type { TripSignup } from '@salvemundi/validations/schema/trip.zod';
 import type { EnrichedUser } from '@/types/auth';
 import { formatDate } from '@/shared/lib/utils/date';
-import { Lock, ShieldCheck, Mail, Info, ExternalLink } from 'lucide-react';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 
@@ -75,7 +76,7 @@ export default async function ReisPage() {
                 : 'Inschrijving geopend!'));
 
     const reisvoorwaardenDoc = documents.find(
-        doc => doc.category?.toLowerCase() === 'reis' || 
+        doc => doc.category?.toLowerCase() === 'reis' ||
                doc.title.toLowerCase().includes('reisvoorwaarde') ||
                doc.title.toLowerCase().includes('reisvoorwaarden')
     );
@@ -85,126 +86,132 @@ export default async function ReisPage() {
 
     if (showClosedLayout) {
         const pastTrip = nextTrip ? null : await getLatestPastTrip();
-        
+
         const isWaitingForDate = Boolean(
-            nextTrip && 
-            registrationStartDate && 
+            nextTrip &&
+            registrationStartDate &&
             now < registrationStartDate
         );
 
-        const announcementTitle = isWaitingForDate ? "Binnenkort Open" : "Inschrijvingen Gesloten";
+        const announcementTitle = isWaitingForDate ? 'Binnenkort Open' : 'Inschrijvingen Gesloten';
         const announcementMessage = nextTrip ? registrationStartText : reisDisabledMessage;
-        
+
         const displayTrip = nextTrip || pastTrip;
         const displayTripImage = displayTrip?.image;
         const displayTripName = displayTrip?.name;
         const displayTripDescription = displayTrip?.description;
         const isPast = !nextTrip;
 
+        const infoItems = [
+            { icon: <ShieldCheck size={20} />, title: 'Lidmaatschap', content: <>Je hoeft <strong>geen lid</strong> te zijn om mee te gaan.</> },
+            { icon: <Mail size={20} />, title: 'Bevestiging', content: <>Je krijgt direct een mail na je inschrijving.</> },
+            { icon: <Info size={20} />, title: 'Leeftijd', content: <>Minimumleeftijd voor deelname is 18 jaar.</> },
+            {
+                icon: <ExternalLink size={20} />,
+                title: 'Vragen?',
+                content: (
+                    <>
+                        Mail ons op{' '}
+                        <Anchor href="mailto:reis@salvemundi.nl" c="brand" fw={700}>
+                            reis@salvemundi.nl
+                        </Anchor>
+                    </>
+                )
+            },
+        ];
+
         return (
             <PublicPageShell>
-                <h1 className="sr-only">Reis</h1>
-                <div className="max-w-app mx-auto px-4 pt-8 pb-16 sm:px-6 sm:pt-12 sm:pb-24 lg:px-8 lg:pt-16 lg:pb-32">
-                    <div className="flex flex-col items-start gap-8 lg:flex-row">
-                        {/* Left Column: Announcement & Goed om te weten */}
-                        <div className="flex w-full flex-col gap-8 lg:w-1/2">
-                            {/* Announcement card */}
-                            <div className="relative overflow-hidden rounded-3xl bg-bg-card p-6 text-center shadow-2xl sm:p-10 dark:border dark:border-white/10">
-                                <div className="absolute top-0 right-0 p-8 opacity-5">
-                                    <Lock className="size-32 text-theme-purple" />
-                                </div>
-                                <div className="relative z-10 flex flex-col items-center justify-center">
-                                    <div className="mb-6 flex size-16 items-center justify-center rounded-full border border-theme-purple/10 bg-theme-purple/5 text-theme-purple">
-                                        <Lock className="size-8 text-theme-purple" />
-                                    </div>
-                                    <h2 className="mb-4 text-2xl font-bold text-theme-purple sm:text-3xl">
+                <VisuallyHidden component="h1">Reis</VisuallyHidden>
+                <Container size="xl" py="xl">
+                    <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="xl">
+                        <Stack gap="lg">
+                            <Card padding="xl">
+                                <Stack align="center" ta="center" gap="md">
+                                    <ThemeIcon size={64} radius="xl" variant="light" color="brand">
+                                        <Lock size={32} />
+                                    </ThemeIcon>
+                                    <Title order={2} c="brand">
                                         {announcementTitle}
-                                    </h2>
-                                    <p className="max-w-lg text-sm leading-relaxed font-semibold text-text-muted sm:text-base">
+                                    </Title>
+                                    <Text c="dimmed" maw={480}>
                                         {announcementMessage}
-                                    </p>
-                                </div>
-                            </div>
+                                    </Text>
+                                </Stack>
+                            </Card>
 
-                            {/* Goed om te weten card */}
-                            <div className="relative overflow-hidden rounded-3xl bg-bg-card p-6 shadow-2xl sm:p-10 dark:border dark:border-white/10">
-                                <div className="absolute top-0 right-0 p-8 opacity-5">
-                                    <ShieldCheck className="size-32 text-theme-purple" />
-                                </div>
-                                <div className="relative z-10">
-                                    <h3 className="mb-8 flex items-center gap-3 text-xl font-bold text-theme-purple sm:text-2xl">
+                            <Card padding="xl">
+                                <Stack gap="lg">
+                                    <Title order={3} c="brand">
                                         Goed om te weten
-                                    </h3>
+                                    </Title>
 
-                                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                                        {[
-                                            { icon: <ShieldCheck className="size-5" />, title: 'Lidmaatschap', content: <>Je hoeft <strong>geen lid</strong> te zijn om mee te gaan.</> },
-                                            { icon: <Mail className="size-5" />, title: 'Bevestiging', content: <>Je krijgt direct een mail na je inschrijving.</> },
-                                            { icon: <Info className="size-5" />, title: 'Leeftijd', content: <>Minimumleeftijd voor deelname is 18 jaar.</> },
-                                            { icon: <ExternalLink className="size-5" />, title: 'Vragen?', content: <>Mail ons op <a href="mailto:reis@salvemundi.nl" className="font-bold text-theme-purple hover:underline">reis@salvemundi.nl</a></> },
-                                        ].map((item, i) => (
-                                            <div key={i} className="group flex gap-4">
-                                                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-theme-purple/10 bg-theme-purple/5 text-theme-purple transition-colors group-hover:bg-theme-purple/10">
+                                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
+                                        {infoItems.map((item) => (
+                                            <Group key={item.title} align="flex-start" gap="md" wrap="nowrap">
+                                                <ThemeIcon size={40} radius="md" variant="light" color="brand">
                                                     {item.icon}
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-[10px] font-bold tracking-widest text-text-muted">{item.title}</p>
-                                                    <div className="text-sm leading-relaxed font-medium text-text-main">
+                                                </ThemeIcon>
+                                                <Stack gap={2}>
+                                                    <Text size="xs" fw={700} tt="uppercase" c="dimmed">
+                                                        {item.title}
+                                                    </Text>
+                                                    <Text size="sm" fw={500}>
                                                         {item.content}
-                                                    </div>
-                                                </div>
-                                            </div>
+                                                    </Text>
+                                                </Stack>
+                                            </Group>
                                         ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                    </SimpleGrid>
+                                </Stack>
+                            </Card>
+                        </Stack>
 
-                        {/* Right Column: Trip Info */}
-                        <div className="flex w-full flex-col gap-8 lg:w-1/2">
+                        <Stack gap="lg">
                             {displayTrip && (
-                                <div className="relative overflow-hidden rounded-3xl bg-bg-card shadow-2xl dark:border dark:border-white/10">
+                                <Card p={0} style={{ overflow: 'hidden' }}>
                                     {displayTripImage && (
-                                        <div className="relative h-75 w-full overflow-hidden bg-purple-950/5 sm:h-105 dark:bg-black/20">
+                                        <Box pos="relative" h={{ base: 300, sm: 420 }} w="100%" bg="var(--mantine-color-body)">
                                             <MediaAsset
                                                 asset={displayTripImage}
                                                 alt={displayTripName ?? 'Reis'}
                                                 fill
                                                 objectFit="contain"
                                             />
-                                        </div>
+                                        </Box>
                                     )}
-                                    <div className="p-6 sm:p-10">
-                                        <h3 className="mb-6 flex items-center gap-3 text-xl font-bold text-theme-purple sm:text-2xl">
-                                            {isPast 
-                                                ? `Hoe was onze vorige Reis${displayTripName ? `: ${displayTripName}` : ''}?`
-                                                : displayTripName || 'Over de Reis'
-                                            }
-                                        </h3>
-                                        <div className="prose prose-sm max-w-none space-y-4 font-medium text-text-muted prose-purple sm:prose dark:prose-invert prose-p:leading-relaxed">
-                                            {displayTripDescription ? (
-                                                <SafeMarkdown content={displayTripDescription} />
-                                            ) : (
-                                                <p>
-                                                    Elk jaar organiseert de Reiscommissie van SV Salve Mundi een geweldige reis naar een prachtige bestemming in Europa. Tijdens deze reizen bezoeken we cultuurrijke locaties, lokale brouwerijen, en organiseren we gezellige activiteiten zoals een pubcrawl door de stad. Houd onze pagina en socials in de gaten voor de bekendmaking van de volgende reis!
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+                                    <Box p="xl">
+                                        <Stack gap="md">
+                                            <Title order={3} c="brand">
+                                                {isPast
+                                                    ? `Hoe was onze vorige Reis${displayTripName ? `: ${displayTripName}` : ''}?`
+                                                    : displayTripName || 'Over de Reis'}
+                                            </Title>
+                                            <Box c="dimmed">
+                                                {displayTripDescription ? (
+                                                    <SafeMarkdown content={displayTripDescription} />
+                                                ) : (
+                                                    <Text c="dimmed">
+                                                        Elk jaar organiseert de Reiscommissie van SV Salve Mundi een geweldige reis naar een prachtige bestemming in Europa. Tijdens deze reizen bezoeken we cultuurrijke locaties, lokale brouwerijen, en organiseren we gezellige activiteiten zoals een pubcrawl door de stad. Houd onze pagina en socials in de gaten voor de bekendmaking van de volgende reis!
+                                                    </Text>
+                                                )}
+                                            </Box>
+                                        </Stack>
+                                    </Box>
+                                </Card>
                             )}
-                        </div>
-                    </div>
-                </div>
+                        </Stack>
+                    </SimpleGrid>
+                </Container>
             </PublicPageShell>
         );
     }
 
     return (
         <PublicPageShell>
-            <h1 className="sr-only">Reis</h1>
-            <div className="max-w-app mx-auto px-4 pt-8 pb-16 sm:px-6 sm:pt-12 sm:pb-24 lg:px-8 lg:pt-16 lg:pb-32">
-                <div className="flex flex-col items-start gap-8 lg:flex-row">
+            <VisuallyHidden component="h1">Reis</VisuallyHidden>
+            <Container size="xl" py="xl">
+                <Flex direction={{ base: 'column', lg: 'row' }} align="flex-start" gap="xl">
                     <ReisFormIsland
                         nextTrip={nextTrip}
                         userSignup={userSignup}
@@ -215,8 +222,8 @@ export default async function ReisPage() {
                         termsFileUrl={termsFileUrl}
                     />
                     <ReisInfoIsland nextTrip={nextTrip} />
-                </div>
-            </div>
+                </Flex>
+            </Container>
         </PublicPageShell>
     );
 }

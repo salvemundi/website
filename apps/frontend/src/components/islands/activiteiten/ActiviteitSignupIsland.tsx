@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Button, Card, Stack, Text, Title } from '@mantine/core';
 import { signupForActivity } from '@/server/actions/events/activiteiten/activiteiten-public.actions';
 import { type EventSignupForm } from '@salvemundi/validations/schema/activity.zod';
 import { formatPhoneNumber } from '@/lib/utils/phone-utils';
@@ -101,7 +103,7 @@ export default function ActiviteitSignupIsland({
             const signupId = signupStatus.signupId || Number(urlParams.get('id'));
 
             if (!signupId || isNaN(signupId)) {
-                setServerError("Kon aanmeldings-ID niet vinden voor herbetaling.");
+                setServerError('Kon aanmeldings-ID niet vinden voor herbetaling.');
                 return;
             }
 
@@ -111,11 +113,11 @@ export default function ActiviteitSignupIsland({
                 if (result.success && result.checkoutUrl) {
                     window.location.href = result.checkoutUrl;
                 } else {
-                    setServerError(result.error || "Herbetaling mislukt.");
+                    setServerError(result.error || 'Herbetaling mislukt.');
                 }
             } catch (error) {
                 safeConsoleError('[ActiviteitSignupIsland.tsx][ActiviteitSignupIsland] ', error);
-                setServerError("Er is een fout opgetreden bij het herstarten van de betaling.");
+                setServerError('Er is een fout opgetreden bij het herstarten van de betaling.');
             }
         };
 
@@ -144,25 +146,24 @@ export default function ActiviteitSignupIsland({
 
     if (isMembersOnly && !isMember) {
         return (
-            <div className="rounded-2xl border border-(--border-color) bg-(--bg-card) p-6 text-center shadow-card">
-                <h3 className="text-lg font-semibold text-(--text-main)">
-                    Exclusief voor leden
-                </h3>
-                <p className="mt-2 text-sm text-(--text-muted)">
-                    Deze activiteit is speciaal voor onze leden. Log in om je in te schrijven. Heb je nog geen account? Word dan lid en doe gezellig mee!
-                </p>
-                <a
-                    href="/lidmaatschap"
-                    className="mt-4 inline-block rounded-xl bg-(--theme-purple) px-6 py-3 text-sm font-bold tracking-widest text-white uppercase transition-opacity hover:opacity-90"
-                >
-                    Word lid van Salve Mundi
-                </a>
-            </div>
+            <Card padding="lg" radius="lg" withBorder ta="center">
+                <Stack align="center" gap="sm">
+                    <Title order={3} size="h4">
+                        Exclusief voor leden
+                    </Title>
+                    <Text size="sm" c="dimmed">
+                        Deze activiteit is speciaal voor onze leden. Log in om je in te schrijven. Heb je nog geen account? Word dan lid en doe gezellig mee!
+                    </Text>
+                    <Button component={Link} href="/lidmaatschap" size="md" mt="xs">
+                        Word lid van Salve Mundi
+                    </Button>
+                </Stack>
+            </Card>
         );
     }
 
-    const fullName = user?.first_name 
-        ? `${user.first_name} ${user.last_name || ''}`.trim() 
+    const fullName = user?.first_name
+        ? `${user.first_name} ${user.last_name || ''}`.trim()
         : (user?.name || '');
 
     return (

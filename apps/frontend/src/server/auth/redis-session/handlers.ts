@@ -126,7 +126,7 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
 
         const { db, schema } = await import("@salvemundi/db");
         const { eq } = await import("drizzle-orm");
-        const realCommittees = await db.select({
+        const typedCommittees: Committee[] = await db.select({
             id: schema.committees.id,
             name: schema.committees.name,
             azure_group_id: schema.committees.azure_group_id,
@@ -136,7 +136,6 @@ export async function afterHandler(ctx: AuthContext, pool: Pool) {
         .innerJoin(schema.committees, eq(schema.committee_members.committee_id, schema.committees.id))
         .where(eq(schema.committee_members.user_id, userId));
 
-        const typedCommittees = realCommittees as unknown as Committee[];
         sessionWithUser.user.committees = typedCommittees;
         Object.assign(sessionWithUser.user, {
             permissions: getPermissions(typedCommittees)

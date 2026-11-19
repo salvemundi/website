@@ -1,48 +1,56 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { Toast, ToastType } from '@/components/ui/beheer/BeheerToast';
+import { useState, useCallback } from 'react';
+import { notifications } from '@mantine/notifications';
+
+export type ToastType = 'success' | 'error' | 'info' | 'warning' | 'loading';
+
+export interface Toast {
+    id: string;
+    message: string;
+    type: ToastType;
+}
+
+function getToastColor(type: ToastType): string {
+    switch (type) {
+        case 'success':
+            return 'success';
+        case 'error':
+            return 'error';
+        case 'warning':
+            return 'accent';
+        case 'info':
+        case 'loading':
+        default:
+            return 'brand';
+    }
+}
 
 export function useAdminToast() {
     const [toast, setToast] = useState<Toast | null>(null);
-    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const showToast = useCallback((message: string, type: ToastType = 'info', duration: number = 5000) => {
-        // Clear existing timeout
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-        }
-
         const id = Math.random().toString(36).substring(2, 9);
         setToast({ id, message, type });
 
-        if (duration > 0 && type !== 'loading') {
-            timeoutRef.current = setTimeout(() => {
-                setToast(null);
-            }, duration);
-        }
+        notifications.show({
+            id,
+            message,
+            color: getToastColor(type),
+            loading: type === 'loading',
+            autoClose: type === 'loading' ? false : duration > 0 ? duration : false,
+        });
     }, []);
 
     const hideToast = useCallback(() => {
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-        }
         setToast(null);
-    }, []);
-
-    // Cleanup on unmount
-    useEffect(() => {
-        return () => {
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-            }
-        };
+        notifications.clean();
     }, []);
 
     return {
         toast,
         showToast,
         hideToast,
-        setToast // Direct access if needed for complex states
+        setToast,
     };
 }

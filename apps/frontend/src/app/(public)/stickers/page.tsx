@@ -1,5 +1,5 @@
+import { Box, Flex } from '@mantine/core';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
-import type { EnrichedUser } from '@/types/auth';
 import { getPublicStickers } from '@/server/actions/public/stickers.actions';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import StickerMapBridge from '@/features/stickers/islands/StickerMapBridge';
@@ -18,7 +18,7 @@ export default async function StickersPage() {
         getEnrichedSession()
     ]);
 
-    const currentUser = session?.user ? (session.user as unknown as EnrichedUser) : null;
+    const currentUser = session?.user ?? null;
     const isActiveMember = currentUser?.membership_status === 'active';
     const activeUser = isActiveMember ? currentUser : null;
     const isLoggedIn = !!activeUser;
@@ -28,28 +28,39 @@ export default async function StickersPage() {
             title="Stickerkaart"
             description="Onze leden reizen de hele wereld over. Bekijk hier waar de Salve Mundi stickers allemaal te vinden zijn!"
         >
-            <div className="h-[calc(100vh-var(--header-total-height))] min-h-150 w-full p-4 md:p-8">
-                <div className="flex h-full flex-col items-stretch gap-8 lg:flex-row">
-                    <div className={`order-1 min-w-0 flex-1 lg:h-full ${isLoggedIn ? 'h-[42vh]' : 'h-[80vh]'}`}>
-                        <div className="squircle-lg h-full overflow-hidden">
-                            <StickerMapBridge
-                                initialStickers={stickers}
-                                user={activeUser}
-                                className="shadow-2xl"
-                            />
-                        </div>
-                    </div>
+            <Box
+                h={{ base: 'auto', lg: 'calc(100dvh - var(--header-total-height))' }}
+                mih={600}
+                w="100%"
+                p={{ base: 'md', md: 'xl' }}
+            >
+                <Flex h="100%" direction={{ base: 'column', lg: 'row' }} align="stretch" gap="xl">
+                    <Box
+                        flex={1}
+                        miw={0}
+                        h={{ base: isLoggedIn ? '56vh' : '78vh', lg: '100%' }}
+                        style={{ order: 1 }}
+                    >
+                        <StickerMapBridge
+                            initialStickers={stickers}
+                            user={activeUser}
+                        />
+                    </Box>
 
                     {isLoggedIn && (
-                        <div className="order-2 h-[48vh] w-full shrink-0 lg:h-full lg:w-100">
+                        <Box
+                            w={{ base: '100%', lg: 380 }}
+                            h={{ base: '48vh', lg: '100%' }}
+                            style={{ order: 2, flexShrink: 0 }}
+                        >
                             <Leaderboard
                                 stickers={stickers}
                                 currentUser={activeUser}
                             />
-                        </div>
+                        </Box>
                     )}
-                </div>
-            </div>
+                </Flex>
+            </Box>
         </PublicPageShell>
     );
 }

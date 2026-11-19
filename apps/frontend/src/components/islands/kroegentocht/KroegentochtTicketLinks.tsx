@@ -1,74 +1,105 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowRight, FileDown, MessageCircle, Ticket, X } from 'lucide-react';
+import { ArrowRight, FileDown, MessageCircle, Ticket } from 'lucide-react';
+import {
+    Button,
+    Card,
+    Group,
+    Modal,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
 import {
     claimKroegentochtTickets,
-    type MyKroegTickets
+    type MyKroegTickets,
 } from '@/server/actions/events/kroegentocht/kroegentocht-tickets.actions';
 
-/** Knoppen voor WhatsApp-community en PDF-download van één inschrijving. */
-export function KroegentochtTicketButtons({ tickets, dark = false }: { tickets: MyKroegTickets; dark?: boolean }) {
+export function KroegentochtTicketButtons({ tickets }: { tickets: MyKroegTickets }) {
     return (
-        <div className="flex flex-col gap-3">
+        <Stack gap="sm">
             {tickets.whatsappUrl && (
-                <a
+                <Button
+                    component="a"
                     href={tickets.whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3.5 font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600"
+                    fullWidth
+                    size="md"
+                    leftSection={<MessageCircle size={16} />}
+                    rightSection={<ArrowRight size={16} />}
                 >
-                    <MessageCircle className="size-4" />
                     Join de WhatsApp community
-                    <ArrowRight className="size-4" />
-                </a>
+                </Button>
             )}
-            <a
+            <Button
+                component="a"
                 href={tickets.pdfUrl}
                 download
-                className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 font-semibold transition-all ${
-                    dark
-                        ? 'border border-white/20 bg-white/10 text-white hover:bg-white/20'
-                        : 'bg-theme-purple text-white shadow-lg hover:opacity-90'
-                }`}
+                variant={tickets.whatsappUrl ? 'light' : 'filled'}
+                fullWidth
+                size="md"
+                leftSection={<FileDown size={16} />}
             >
-                <FileDown className="size-4" />
                 Download tickets (PDF met QR-code{tickets.names.length === 1 ? '' : 's'})
-            </a>
-        </div>
+            </Button>
+        </Stack>
     );
 }
 
-/** Blok op de kroegentocht-pagina: tickets van deze browser (cookie, 14 dagen). */
 export function KroegentochtMyTicketsCard({ items }: { items: MyKroegTickets[] }) {
     if (items.length === 0) return null;
+
     return (
-        <section className="squircle-lg mb-8 bg-bg-card p-6 shadow-xl sm:p-8 dark:border dark:border-white/10">
-            <h2 className="mb-1 flex items-center gap-2 text-2xl font-black text-theme-purple">
-                <Ticket className="size-6" />
-                Jouw kroegentocht-tickets
-            </h2>
-            <p className="mb-6 text-sm text-text-muted">
-                Je bent ingeschreven! Hier vind je de WhatsApp-community en je tickets terug.
-            </p>
-            <div className="grid gap-6 md:grid-cols-2">
-                {items.map((item) => (
-                    <div key={item.signupId} className="rounded-2xl border border-border-color/40 p-5">
-                        <p className="text-xs font-bold tracking-wider text-text-muted uppercase">{item.eventName}</p>
-                        <p className="mt-1 mb-4 text-sm font-semibold text-text-main">{item.names.join(', ')}</p>
-                        <KroegentochtTicketButtons tickets={item} />
-                    </div>
-                ))}
-            </div>
-        </section>
+        <Card component="section" padding="xl">
+            <Stack gap="lg">
+                <Stack gap={4}>
+                    <Group gap="sm">
+                        <ThemeIcon size="lg" radius="md" variant="light" color="brand">
+                            <Ticket size={20} />
+                        </ThemeIcon>
+                        <Title order={2} size="h3" c="brand">
+                            Jouw kroegentocht-tickets
+                        </Title>
+                    </Group>
+                    <Text size="sm" c="dimmed">
+                        Je bent ingeschreven! Hier vind je de WhatsApp-community en je tickets terug.
+                    </Text>
+                </Stack>
+
+                <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+                    {items.map((item) => (
+                        <Paper key={item.signupId} withBorder p="md">
+                            <Stack gap="md">
+                                <Stack gap={2}>
+                                    <Text size="xs" fw={700} tt="uppercase" c="dimmed">
+                                        {item.eventName}
+                                    </Text>
+                                    <Text size="sm" fw={600}>
+                                        {item.names.join(', ')}
+                                    </Text>
+                                </Stack>
+                                <KroegentochtTicketButtons tickets={item} />
+                            </Stack>
+                        </Paper>
+                    ))}
+                </SimpleGrid>
+            </Stack>
+        </Card>
     );
 }
 
-/**
- * Popup op de bevestigingspagina. Probeert de tickets te claimen tot de betaling binnen is
- * (de webhook van Mollie kan een paar seconden achterlopen), en zet daarbij de cookie.
- */
-export function KroegentochtClaimTicketsPopup({ signupId, token }: { signupId?: number; token?: string }) {
+export function KroegentochtClaimTicketsPopup({
+    signupId,
+    token,
+}: {
+    signupId?: number;
+    token?: string;
+}) {
     const [tickets, setTickets] = useState<MyKroegTickets | null>(null);
     const [isOpen, setIsOpen] = useState(true);
 
@@ -83,38 +114,47 @@ export function KroegentochtClaimTicketsPopup({ signupId, token }: { signupId?: 
             if (res.status === 'ok') {
                 setTickets(res.tickets);
             } else if (res.status === 'pending' && attempts < 40) {
-                setTimeout(() => { void tryClaim(); }, 3000);
+                setTimeout(() => {
+                    void tryClaim();
+                }, 3000);
             }
         };
         void tryClaim();
-        return () => { cancelled = true; };
+        return () => {
+            cancelled = true;
+        };
     }, [signupId, token]);
 
     if (!tickets || !isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md">
-            <div className="relative mx-4 w-full max-w-md rounded-3xl border border-white/15 bg-white/10 p-8 text-white shadow-2xl backdrop-blur-2xl">
-                <button
-                    onClick={() => setIsOpen(false)}
-                    className="absolute top-4 right-4 icon-button text-white/60 transition-colors hover:text-white"
-                    aria-label="Sluiten"
-                    type="button">
-                    <X className="size-5" />
-                </button>
+        <Modal
+            opened={isOpen}
+            onClose={() => setIsOpen(false)}
+            centered
+            radius="xl"
+            size="sm"
+            withCloseButton
+            aria-label="Je bent ingeschreven!"
+        >
+            <Stack gap="md">
+                <ThemeIcon size={48} radius="md" variant="light" color="brand">
+                    <Ticket size={24} />
+                </ThemeIcon>
 
-                <div className="mb-6 flex size-12 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/20 text-emerald-400">
-                    <Ticket className="size-6" />
-                </div>
+                <Stack gap="xs">
+                    <Title order={3} size="h4">
+                        Je bent ingeschreven!
+                    </Title>
+                    <Text size="sm" c="dimmed">
+                        Join de WhatsApp-community voor routes, tijden en groepsindelingen, en
+                        download je tickets. Je kunt deze links de komende 14 dagen ook terugvinden
+                        op de kroegentocht-pagina.
+                    </Text>
+                </Stack>
 
-                <h3 className="mb-2 text-xl font-semibold">Je bent ingeschreven!</h3>
-                <p className="mb-6 text-sm leading-relaxed text-white/70">
-                    Join de WhatsApp-community voor routes, tijden en groepsindelingen, en download je tickets.
-                    Je kunt deze links de komende 14 dagen ook terugvinden op de kroegentocht-pagina.
-                </p>
-
-                <KroegentochtTicketButtons tickets={tickets} dark />
-            </div>
-        </div>
+                <KroegentochtTicketButtons tickets={tickets} />
+            </Stack>
+        </Modal>
     );
 }

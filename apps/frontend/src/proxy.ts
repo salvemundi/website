@@ -1,78 +1,42 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { PUBLIC_ROUTES } from '@/lib/config/routes';
-import { getRedis } from '@/server/auth/redis-client';
 import { getDisabledRoutes } from '@/lib/config/feature-flags';
 import { safeConsoleError } from '@/server/utils/logger';
+import { applySecurityHeaders, generateCspNonce } from '@/server/security/security-headers';
+import { sessionService } from '@/server/security/SessionService';
 
-interface SessionPayload {
-    user?: unknown;
+function appendSetCookies(response: NextResponse, setCookieHeaders: readonly string[]): NextResponse {
+    for (const cookieHeader of setCookieHeaders) {
+        response.headers.append('set-cookie', cookieHeader);
+    }
+    return response;
 }
 
-interface CachedSession {
-    user?: unknown;
-    response?: SessionPayload;
-}
-
-interface InternalSessionResponse {
-    user?: unknown;
-    response?: SessionPayload;
-}
-
-async function proxy(request: NextRequest) {
+async function proxy(request: NextRequest): Promise<NextResponse> {
     const { pathname, origin } = request.nextUrl;
-    const nonce = btoa(crypto.randomUUID()).substring(0, 16);
-    
-    const withSecurity = (res: NextResponse) => {
-        const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL || '';
-        const cspHeader = `
-            default-src 'self';
-            script-src 'self' 'nonce-${nonce}' https://static.cloudflareinsights.com ${origin.includes('localhost') ? "'unsafe-eval'" : ""};
-            style-src-elem 'self' 'unsafe-inline';
-            style-src-attr 'unsafe-inline';
-            img-src 'self' blob: data: ${directusUrl} https://*.tile.openstreetmap.org https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com;
-            media-src 'self' blob: data: ${directusUrl};
-            font-src 'self' data:;
-            connect-src 'self' ${directusUrl} https://login.microsoftonline.com https://basemaps.cartocdn.com https://*.basemaps.cartocdn.com https://nominatim.openstreetmap.org https://cloudflareinsights.com;
-            frame-src 'self' https://login.microsoftonline.com;
-            worker-src 'self' blob:;
-            object-src 'none';
-            base-uri 'self';
-            form-action 'self';
-            frame-ancestors 'none';
-            ${origin.includes('localhost') ? '' : 'upgrade-insecure-requests;'}
-        `.replace(/\s+/g, ' ').trim();
-        
-        res.headers.set('Content-Security-Policy', cspHeader);
-        res.headers.set('x-nonce', nonce);
-        res.headers.set('X-Content-Type-Options', 'nosniff');
-        res.headers.set('X-Frame-Options', 'DENY');
-        res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        
-        if (!origin.includes('localhost')) {
-            res.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
-        }
-        return res;
-    };
+    const nonce = generateCspNonce();
+
+    const withSecurity = (res: NextResponse): NextResponse => applySecurityHeaders(res, { nonce, origin });
 
     const forwardedFor = request.headers.get('x-forwarded-for');
-    const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : (request.headers.get('x-real-ip') || 'unknown');
-    
-    const nextWithNonce = (forceForward = false) => {
+    const clientIp = forwardedFor ? forwardedFor.split(',').at(0)?.trim() || 'unknown' : (request.headers.get('x-real-ip') || 'unknown');
+
+    const nextWithNonce = (forceForward = false): NextResponse => {
         const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method);
         const isPrefetch = request.headers.get('x-next-prefetch') === '1' || request.headers.get('purpose') === 'prefetch';
         const isDataRequest = pathname.includes('/_next/data/');
         const isRscRequest = request.headers.has('x-next-rsc');
-        
+
         const requestHeaders = new Headers(request.headers);
         requestHeaders.delete('x-trusted-ip');
         requestHeaders.set('x-trusted-ip', clientIp);
         requestHeaders.set('x-nonce', nonce);
-        
+
         if (!forceForward && (isMutation || isPrefetch || isDataRequest || isRscRequest)) {
             return withSecurity(NextResponse.next());
         }
-        
+
         try {
             return withSecurity(NextResponse.next({
                 request: { headers: requestHeaders }
@@ -84,13 +48,13 @@ async function proxy(request: NextRequest) {
         }
     };
 
-    const publicUrl = process.env.PUBLIC_URL || origin;
+    const publicUrl = origin;
     const internalToken = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
-    
+
     if (internalToken && request.headers.get('authorization') === `Bearer ${internalToken}`) {
         return nextWithNonce();
     }
-    
+
     if (pathname === '/api/mobile/v1' || pathname.startsWith('/api/mobile/v1/') || pathname === '/.well-known/apple-app-site-association') {
         if (process.env.ENV_NAME !== 'acc' || process.env.MOBILE_API_ENABLED !== 'true') {
             return withSecurity(NextResponse.json({ error: { code: 'not_found', message: 'Niet gevonden.' } }, { status: 404 }));
@@ -101,121 +65,30 @@ async function proxy(request: NextRequest) {
     if (pathname === '/api/finance/webhook/mollie' || pathname.startsWith('/api/auth/')) {
         return nextWithNonce();
     }
-    
+
     const disabledRoutes = await getDisabledRoutes();
     if (disabledRoutes.some(r => pathname === r || pathname.startsWith(`${r}/`))) {
         return withSecurity(NextResponse.rewrite(new URL('/404', request.url)));
     }
-    
+
     const isPublic = PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(`${r}/`));
     if (!isPublic) {
         try {
-            const rawCookie = request.headers.get('cookie') || '';
-            const sessionTokenRaw = request.cookies.get('better-auth.session_token')?.value ||
-                request.cookies.get('better-auth.session-token')?.value ||
-                request.cookies.get('__Secure-better-auth.session_token')?.value ||
-                request.cookies.get('__Secure-better-auth.session-token')?.value ||
-                rawCookie.split('better-auth.session_token=')[1]?.split(';')[0]?.trim() ||
-                rawCookie.split('better-auth.session-token=')[1]?.split(';')[0]?.trim();
-                
-            const testTokenRaw = request.cookies.get('directus_impersonation_token')?.value ||
-                rawCookie.split('directus_impersonation_token=')[1]?.split(';')[0]?.trim();
-                
-            const hasTestToken = !!testTokenRaw;
-            const sessionToken = sessionTokenRaw ? sessionTokenRaw.split('.')[0] : undefined;
-            let hasSession = false;
-            const hasSessionCookie = !!sessionTokenRaw || !!testTokenRaw;
-            
-            if (sessionToken && !hasTestToken) {
-                try {
-                    const redis = await getRedis();
-                    const cached = await redis.get(`session:${sessionToken}`);
-                    if (cached) {
-                        const sessionData = JSON.parse(cached) as CachedSession;
-                        if (sessionData.user || (sessionData.response && sessionData.response.user)) {
-                            hasSession = true;
-                        }
-                    }
-                } catch (redisError) {
-                    const typedRedisError = redisError instanceof Error ? redisError : new Error(String(redisError));
-                    safeConsoleError('[proxy.ts][proxy] ', `Redis session cache check failed (falling back to database): ${typedRedisError.message}`);
-                }
-            }
-            
-            if (!hasSession && hasSessionCookie) {
-                const host = request.headers.get('host') || 'localhost:3000';
-                const internalBase = process.env.NEXT_APP_INTERNAL_URL || origin;
-                const sessionUrl = new URL('/api/auth/get-session', internalBase);
-                
-                try {
-                    const sessionRes = await fetch(sessionUrl, {
-                        headers: {
-                            'cookie': rawCookie,
-                            'user-agent': request.headers.get('user-agent') || 'NextJS-Proxy',
-                            'accept': 'application/json',
-                            'origin': publicUrl,
-                            'referer': request.headers.get('referer') || publicUrl,
-                            'host': host,
-                            'x-better-auth-origin': publicUrl,
-                            'x-forwarded-host': host,
-                            'x-forwarded-proto': origin.startsWith('https') ? 'https' : 'http',
-                            'x-forwarded-for': request.headers.get('x-forwarded-for') || clientIp,
-                            'x-real-ip': clientIp
-                        },
-                        cache: 'no-store',
-                        signal: AbortSignal.timeout(10000)
-                    });
-                    
-                    if (sessionRes.ok && sessionRes.status !== 204) {
-                        const text = await sessionRes.text();
-                        if (text && text !== 'null' && text !== '{}') {
-                            try {
-                                const parsed = JSON.parse(text) as InternalSessionResponse;
-                                const sessionData = parsed.response ? parsed.response : parsed;
-                                if (sessionData.user) {
-                                    hasSession = true;
-                                    if (request.nextUrl.searchParams.has('needLogin')) {
-                                        const cleanUrl = new URL(request.url);
-                                        cleanUrl.searchParams.delete('needLogin');
-                                        cleanUrl.searchParams.delete('callbackURL');
-                                        const response = NextResponse.redirect(cleanUrl);
-                                        sessionRes.headers.forEach((value, key) => {
-                                            if (key.toLowerCase() === 'set-cookie') {
-                                                response.headers.append('set-cookie', value);
-                                            }
-                                        });
-                                        return withSecurity(response);
-                                    }
-                                    const response = nextWithNonce();
-                                    sessionRes.headers.forEach((value, key) => {
-                                        if (key.toLowerCase() === 'set-cookie') {
-                                            response.headers.append('set-cookie', value);
-                                        }
-                                    });
-                                    return response;
-                                }
-                            } catch (parseError) {
-                                const typedParseError = parseError instanceof Error ? parseError : new Error(String(parseError));
-                                safeConsoleError('[proxy.ts][proxy] ', `Failed to parse session text response: ${typedParseError.message}`);
-                            }
-                        }
-                    }
-                } catch (fetchError) {
-                    const typedFetchError = fetchError instanceof Error ? fetchError : new Error(String(fetchError));
-                    safeConsoleError('[proxy.ts][proxy] ', `Fetch error retrieving session from internal API: ${typedFetchError.message}`);
-                }
-            }
-            
+            const { hasSession, setCookieHeaders } = await sessionService.resolveProxySession(request, {
+                clientIp,
+                publicUrl
+            });
+
             if (hasSession) {
                 if (request.nextUrl.searchParams.has('needLogin')) {
                     const cleanUrl = new URL(request.url);
                     cleanUrl.searchParams.delete('needLogin');
                     cleanUrl.searchParams.delete('callbackURL');
-                    return withSecurity(NextResponse.redirect(cleanUrl));
+                    return withSecurity(appendSetCookies(NextResponse.redirect(cleanUrl), setCookieHeaders));
                 }
-                return nextWithNonce();
+                return appendSetCookies(nextWithNonce(), setCookieHeaders);
             }
-            
+
             const callbackUrl = encodeURIComponent(pathname + request.nextUrl.search);
             const authRedirectUrl = new URL(`/?needLogin=true&callbackURL=${callbackUrl}`, publicUrl);
             return withSecurity(NextResponse.redirect(authRedirectUrl));
@@ -225,11 +98,12 @@ async function proxy(request: NextRequest) {
             return withSecurity(NextResponse.rewrite(new URL('/404', request.url)));
         }
     }
+
     return nextWithNonce();
 }
 
 export const config = {
-    matcher: ['/((?!_next/static|_next/image|fonts|map|img|favicon.ico|robots.txt|.well-known|sw.js|manifest.json|manifest.webmanifest|workbox-|logo.png|icons/|api/assets|api/auth).*)']
+    matcher: ['/((?!_next/static|_next/image|fonts|map|img|favicon.ico|robots.txt|sw.js|manifest.webmanifest|api/assets).*)']
 };
 
 export { proxy };

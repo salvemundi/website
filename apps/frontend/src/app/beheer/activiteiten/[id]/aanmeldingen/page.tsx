@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Divider, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import BeheerUnauthorized from '@/components/ui/beheer/BeheerUnauthorized';
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
+import Link from '@/components/ui/Link';
 import ActiviteitAanmeldingenIsland, { type Signup, type AdminEvent } from '@/components/islands/beheer/activities/ActiviteitAanmeldingenIsland';
 import {
     getActivityByIdInternal,
     getActivitySignupsInternal
 } from '@/server/queries/activiteiten/beheer-activiteiten.queries';
-import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
-import { type EnrichedUser } from '@/types/auth';
 
 export const metadata: Metadata = {
     title: 'Activiteit Aanmeldingen | SV Salve Mundi'
@@ -22,7 +22,7 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
     const session = await getEnrichedSession();
     if (!session) return <BeheerUnauthorized title="Activiteit Aanmeldingen" />;
 
-    const user = session.user as unknown as EnrichedUser;
+    const user = session.user;
     const hasAccess = !!user.permissions?.includes('activiteiten');
 
     const eventData = await getActivityByIdInternal(id);
@@ -65,49 +65,69 @@ export default async function AanmeldingenPage({ params }: { params: Promise<{ i
     const spotsLeft = event.max_sign_ups ? event.max_sign_ups - totalSignups : null;
 
     return (
-        <BeheerPageShell
-            title="Aanmeldingen"
-            subtitle={`Lijst van deelnemers voor "${event.name}"`}
-            backHref={`/beheer/activiteiten`}
-            actions={
-                <div className="flex items-center gap-4">
-                    <Link href={`/beheer/activiteiten/${id}/scanner`} className="hidden md:inline-block">
-                        <button
-                            className="beheer-button flex h-10 items-center gap-2 rounded-xl bg-theme-purple px-4 text-sm font-bold text-white shadow-lg shadow-theme-purple/20 transition-all hover:scale-105"
-                            type="button">
+        <Container size="xl" py="lg">
+            <Stack gap="lg">
+                <Group justify="space-between" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href="/beheer/activiteiten"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                        <Stack gap={2}>
+                            <Title order={1} size="h2" c="brand">
+                                Aanmeldingen
+                            </Title>
+                            <Text size="sm" c="dimmed">
+                                Lijst van deelnemers voor &quot;{event.name}&quot;
+                            </Text>
+                        </Stack>
+                    </Group>
+
+                    <Group gap="md" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href={`/beheer/activiteiten/${id}/scanner`}
+                            size="sm"
+                            visibleFrom="md"
+                        >
                             Scanner
-                        </button>
-                    </Link>
-                    <div className="hidden items-center gap-4 rounded-2xl border border-border-color/50 bg-bg-soft px-4 py-2 shadow-sm md:flex">
-                        <div className="flex flex-col items-center px-2">
-                            <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Totaal</span>
-                            <span className="text-sm leading-none font-bold text-text-main">{totalSignups}</span>
-                        </div>
-                        <div className="h-6 w-px bg-border-color/20" />
-                        <div className="flex flex-col items-center px-2">
-                            <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Ingecheckt</span>
-                            <span className="text-sm leading-none font-bold text-beheer-active">{checkedInCount}</span>
-                        </div>
-                        {spotsLeft !== null && (
-                            <>
-                                <div className="h-6 w-px bg-border-color/20" />
-                                <div className="flex flex-col items-center px-2">
-                                    <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Plekken over</span>
-                                    <span className="text-sm leading-none font-bold text-text-main">{spotsLeft}</span>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
-            }
-        >
-            <div className="pb-20">
+                        </Button>
+                        <Paper withBorder px="md" py="xs" radius="lg" visibleFrom="md">
+                            <Group gap="md" wrap="nowrap">
+                                <Stack gap={2} align="center" px={4}>
+                                    <Text size="xs" c="dimmed" fw={600} lh={1}>Totaal</Text>
+                                    <Text size="sm" fw={700} lh={1}>{totalSignups}</Text>
+                                </Stack>
+                                <Divider orientation="vertical" />
+                                <Stack gap={2} align="center" px={4}>
+                                    <Text size="xs" c="dimmed" fw={600} lh={1}>Ingecheckt</Text>
+                                    <Text size="sm" fw={700} lh={1} c="success">{checkedInCount}</Text>
+                                </Stack>
+                                {spotsLeft !== null && (
+                                    <>
+                                        <Divider orientation="vertical" />
+                                        <Stack gap={2} align="center" px={4}>
+                                            <Text size="xs" c="dimmed" fw={600} lh={1}>Plekken over</Text>
+                                            <Text size="sm" fw={700} lh={1}>{spotsLeft}</Text>
+                                        </Stack>
+                                    </>
+                                )}
+                            </Group>
+                        </Paper>
+                    </Group>
+                </Group>
+
                 <ActiviteitAanmeldingenIsland
                     event={event}
                     initialSignups={signups}
                     canAccessEdit={!!user.permissions?.includes('activiteiten:edit')}
                 />
-            </div>
-        </BeheerPageShell>
+            </Stack>
+        </Container>
     );
 }

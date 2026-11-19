@@ -1,7 +1,24 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, Trash2, Check, Home, LogOut, MoonStar, HelpCircle, Loader2, Pencil, MessageSquarePlus, ChevronDown, History, Search, X } from 'lucide-react';
+import { Plus, Trash2, Check, Home, LogOut, MoonStar, HelpCircle, Pencil, MessageSquarePlus, ChevronDown, History, Search, X } from 'lucide-react';
+import {
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Card,
+    Center,
+    Divider,
+    Group,
+    Loader,
+    Paper,
+    Stack,
+    Text,
+    TextInput,
+    Title,
+} from '@mantine/core';
+import { DateInput, TimeInput } from '@mantine/dates';
 import type { IntroGroupWithDetails, IntroGroupMemberWithAttendance, IntroGroupAttendanceStatus, IntroGroupMemberNoteWithAuthor, IntroGroupAttendanceLogWithAuthor } from '@salvemundi/validations/schema/intro.zod';
 import {
     getGroupAttendanceForDate,
@@ -15,7 +32,6 @@ import {
     getMemberAttendanceLog
 } from '@/server/actions/public/intro-attendance.actions';
 import { formatDate } from '@/shared/lib/utils/date';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 
 interface Props {
@@ -25,6 +41,18 @@ interface Props {
 }
 
 const todayIso = () => new Date().toISOString().split('T')[0];
+
+const parseNlDate = (input: string): string | null => {
+    const trimmed = input.trim();
+    const nlMatch = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(trimmed);
+    if (nlMatch) {
+        const day = nlMatch[1].padStart(2, '0');
+        const month = nlMatch[2].padStart(2, '0');
+        return `${nlMatch[3]}-${month}-${day}`;
+    }
+    const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    return isoMatch ? trimmed : null;
+};
 
 const formatTime = (iso: string) => new Intl.DateTimeFormat('nl-NL', {
     timeZone: 'Europe/Amsterdam',
@@ -60,13 +88,23 @@ function getStatusLabel(status: IntroGroupAttendanceStatus): string {
     }
 }
 
-function getStatusCardStyle(status: IntroGroupAttendanceStatus): string {
+function getStatusColor(status: IntroGroupAttendanceStatus): string {
     switch (status) {
-        case 'present': return 'bg-sky-500/10 border-sky-500/30';
-        case 'went_home': return 'bg-amber-500/10 border-amber-500/30';
-        case 'home': return 'bg-emerald-500/10 border-emerald-500/30';
-        case 'staying_out': return 'bg-purple-500/10 border-purple-500/30';
-        default: return 'bg-(--bg-card) border-(--border-color)';
+        case 'present': return 'brand';
+        case 'went_home': return 'accent';
+        case 'home': return 'success';
+        case 'staying_out': return 'lightPurple';
+        default: return 'dimmed';
+    }
+}
+
+function getStatusAccentCssVar(status: IntroGroupAttendanceStatus): string | null {
+    switch (status) {
+        case 'present': return 'var(--primary)';
+        case 'went_home': return 'var(--accent)';
+        case 'home': return 'var(--success)';
+        case 'staying_out': return 'var(--secondary)';
+        default: return null;
     }
 }
 
@@ -77,16 +115,6 @@ function getStatusIcon(status: IntroGroupAttendanceStatus): typeof HelpCircle {
         case 'home': return Home;
         case 'staying_out': return MoonStar;
         default: return HelpCircle;
-    }
-}
-
-function getStatusBadgeStyle(status: IntroGroupAttendanceStatus): string {
-    switch (status) {
-        case 'present': return 'bg-sky-500/15 text-sky-600 dark:text-sky-400';
-        case 'went_home': return 'bg-amber-500/15 text-amber-600 dark:text-amber-400';
-        case 'home': return 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400';
-        case 'staying_out': return 'bg-purple-500/15 text-purple-600 dark:text-purple-400';
-        default: return 'bg-(--bg-soft) text-(--text-muted)';
     }
 }
 
@@ -144,9 +172,9 @@ function updateSummaryOnStatusChange(
 const STATUS_ORDER: IntroGroupAttendanceStatus[] = ['not_reported', 'present', 'went_home', 'home', 'staying_out'];
 
 export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }: Props) {
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const initialValid = initialGroupId !== null && initialGroupId !== undefined && groups.some(g => g.id === initialGroupId);
-    const [selectedGroupId, setSelectedGroupId] = useState<number | null>(initialValid ? (initialGroupId as number) : (groups[0]?.id ?? null));
+    const [selectedGroupId, setSelectedGroupId] = useState<number | null>(initialValid ? initialGroupId : (groups[0]?.id ?? null));
     const [selectedDate, setSelectedDate] = useState(todayIso());
     const [members, setMembers] = useState<IntroGroupMemberWithAttendance[]>([]);
     const [loading, setLoading] = useState(false);
@@ -204,9 +232,11 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
 
     if (groups.length === 0 || selectedGroupId === null) {
         return (
-            <div className="py-16 text-center text-(--text-muted)">
-                <p className="font-semibold">Je bent nog niet gekoppeld aan een groepje.</p>
-            </div>
+            <Center py="xl">
+                <Text fw={600} c="dimmed">
+                    Je bent nog niet gekoppeld aan een groepje.
+                </Text>
+            </Center>
         );
     }
 
@@ -375,169 +405,198 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
     };
 
     return (
-        <div>
+        <Stack gap="md">
             {isCrew && (
-                <div className="mb-4 rounded-xl border border-(--border-color) bg-(--bg-card) p-3">
-                    <p className="mb-2 text-xs font-semibold tracking-wide text-(--text-muted) uppercase">
-                        Totaal alle groepjes &middot; {formatDate(selectedDate, 'd MMMM')}
-                    </p>
-                    {loadingSummary && !totalSummary ? (
-                        <div className="flex justify-center py-2">
-                            <Loader2 className="size-4 animate-spin text-theme-purple" />
-                        </div>
-                    ) : totalSummary && (
-                        <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="mr-1 text-xs font-bold text-(--text-main)">
-                                {STATUS_ORDER.reduce((sum, s) => sum + getSummaryCount(totalSummary, s), 0)} kiddos
-                            </span>
-                            {STATUS_ORDER.filter(s => getSummaryCount(totalSummary, s) > 0).map(s => {
-                                const Icon = getStatusIcon(s);
-                                return (
-                                    <span
-                                        key={s}
-                                        className={`flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold ${getStatusBadgeStyle(s)}`}
-                                    >
-                                        <Icon className="size-3" />
-                                        {getSummaryCount(totalSummary, s)} {getStatusLabel(s)}
-                                    </span>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
+                <Card padding="sm" radius="md" withBorder>
+                    <Stack gap="xs">
+                        <Text size="xs" fw={600} tt="uppercase" c="dimmed">
+                            Totaal alle groepjes &middot; {formatDate(selectedDate, 'd MMMM')}
+                        </Text>
+                        {loadingSummary && !totalSummary ? (
+                            <Center py="xs">
+                                <Loader size="xs" color="brand" />
+                            </Center>
+                        ) : totalSummary && (
+                            <Group gap="xs" wrap="wrap">
+                                <Text size="xs" fw={700} mr={4}>
+                                    {STATUS_ORDER.reduce((sum, s) => sum + getSummaryCount(totalSummary, s), 0)} kiddos
+                                </Text>
+                                {STATUS_ORDER.filter(s => getSummaryCount(totalSummary, s) > 0).map(s => {
+                                    const Icon = getStatusIcon(s);
+                                    const color = getStatusColor(s);
+                                    return (
+                                        <Badge
+                                            key={s}
+                                            variant={color === 'dimmed' ? 'default' : 'light'}
+                                            color={color === 'dimmed' ? undefined : color}
+                                            size="sm"
+                                            leftSection={<Icon size={12} />}
+                                        >
+                                            {getSummaryCount(totalSummary, s)} {getStatusLabel(s)}
+                                        </Badge>
+                                    );
+                                })}
+                            </Group>
+                        )}
+                    </Stack>
+                </Card>
             )}
 
             {groups.length > 1 && (
-                <div className="mb-4">
-                    <p className="mb-2 text-xs font-semibold tracking-wide text-(--text-muted) uppercase">Kies een groepje</p>
-                    <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <Stack gap="xs">
+                    <Text size="xs" fw={600} tt="uppercase" c="dimmed">
+                        Kies een groepje
+                    </Text>
+                    <Group gap="xs" wrap="nowrap" style={{ overflowX: 'auto' }} pb={4}>
                         {groups.map(g => (
-                            <button
+                            <Button
                                 key={g.id}
+                                type="button"
+                                size="sm"
+                                variant={selectedGroupId === g.id ? 'filled' : 'default'}
                                 onClick={() => setSelectedGroupId(g.id)}
-                                className={`form-button shrink-0 rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all ${selectedGroupId === g.id ? 'bg-theme-purple text-white shadow-md' : 'border border-(--border-color) bg-(--bg-card) text-(--text-muted) hover:text-(--text-main)'}`}
-                                type="button">
+                                style={{ flexShrink: 0 }}
+                            >
                                 {g.name}
-                            </button>
+                            </Button>
                         ))}
-                    </div>
-                </div>
+                    </Group>
+                </Stack>
             )}
 
-            {selectedGroup && (
-                <div className="mb-1 flex items-center gap-2">
-                    <span className="text-xs font-semibold tracking-wide text-(--text-muted) uppercase">Je bekijkt</span>
-                </div>
-            )}
-
-            <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Stack gap={4}>
                 {selectedGroup && (
-                    <h2 className="text-xl font-bold text-theme-purple">{selectedGroup.name}</h2>
+                    <Text size="xs" fw={600} tt="uppercase" c="dimmed">
+                        Je bekijkt
+                    </Text>
                 )}
-                <input
-                    type="date"
-                    value={selectedDate}
-                    onChange={e => setSelectedDate(e.target.value)}
-                    className="form-input w-full rounded-xl border border-(--border-color) bg-(--bg-card) px-4 py-2.5 text-sm font-semibold text-(--text-main) outline-none focus:ring-2 focus:ring-theme-purple sm:ml-auto sm:w-auto"
-                />
-            </div>
+                <Group justify="space-between" align="center" wrap="wrap" gap="sm">
+                    {selectedGroup && (
+                        <Title order={2} size="h3" c="brand">
+                            {selectedGroup.name}
+                        </Title>
+                    )}
+                    <DateInput
+                        value={selectedDate}
+                        onChange={(val) => { if (val) setSelectedDate(val); }}
+                        valueFormat="DD-MM-YYYY"
+                        dateParser={parseNlDate}
+                        aria-label="Datum selecteren"
+                        w={{ base: '100%', sm: 'auto' }}
+                    />
+                </Group>
+            </Stack>
 
             {members.length > 0 && (
-                <div className="mb-4 flex flex-wrap items-center gap-1.5">
+                <Group gap="xs" wrap="wrap">
                     {STATUS_ORDER.filter(s => (statusCounts.get(s) ?? 0) > 0).map(s => {
                         const Icon = getStatusIcon(s);
                         const isActive = statusFilter === s;
+                        const color = getStatusColor(s);
                         return (
-                            <button
+                            <Button
                                 key={s}
+                                type="button"
+                                size="compact-xs"
+                                variant={isActive ? 'filled' : color === 'dimmed' ? 'default' : 'light'}
+                                color={color === 'dimmed' ? undefined : color}
+                                leftSection={<Icon size={12} />}
                                 onClick={() => setStatusFilter(prev => prev === s ? null : s)}
-                                className={`form-button flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold transition-all active:scale-90 ${getStatusBadgeStyle(s)} ${isActive ? 'scale-105 ring-2 ring-theme-purple ring-offset-1 ring-offset-(--bg-main)' : 'opacity-80 hover:opacity-100'}`}
-                                type="button">
-                                <Icon className="size-3" />
+                            >
                                 {statusCounts.get(s)} {getStatusLabel(s)}
-                            </button>
+                            </Button>
                         );
                     })}
                     {statusFilter && (
-                        <button
+                        <Button
+                            type="button"
+                            size="compact-xs"
+                            variant="subtle"
+                            color="dimmed"
+                            leftSection={<X size={12} />}
                             onClick={() => setStatusFilter(null)}
-                            className="form-button flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold text-(--text-muted) transition-colors hover:text-(--text-main)"
-                            type="button">
-                            <X className="size-3" />
+                        >
                             Filter wissen
-                        </button>
+                        </Button>
                     )}
-                </div>
+                </Group>
             )}
 
-            <div className="mb-3 flex items-center gap-3 rounded-xl border border-(--border-color) bg-(--bg-card) px-4 py-2.5 transition-all focus-within:ring-2 focus-within:ring-theme-purple">
-                <Search className="size-4 shrink-0 text-(--text-muted)" />
-                <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Zoek op naam..."
-                    className="form-input w-full border-none bg-transparent p-0 text-sm font-semibold text-(--text-main) outline-none placeholder:text-(--text-muted)/50"
-                />
-            </div>
+            <TextInput
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.currentTarget.value)}
+                placeholder="Zoek op naam..."
+                leftSection={<Search size={16} />}
+            />
 
             {showAddInput ? (
-                <div className="mb-6 flex items-stretch gap-2">
-                    <input
-                        type="text"
+                <Group gap="xs" align="stretch" wrap="nowrap">
+                    <TextInput
                         value={newName}
-                        onChange={e => setNewName(e.target.value)}
+                        onChange={e => setNewName(e.currentTarget.value)}
                         onKeyDown={e => { if (e.key === 'Enter') void handleAddMember(); }}
                         placeholder="Naam van kiddo..."
                         autoFocus
-                        className="form-input flex-1 rounded-xl border border-(--border-color) bg-(--bg-card) px-4 py-3 text-sm font-semibold text-(--text-main) outline-none placeholder:text-(--text-muted)/50 focus:ring-2 focus:ring-theme-purple"
+                        style={{ flex: 1 }}
                     />
-                    <button
+                    <ActionIcon
+                        type="button"
+                        size={36}
+                        variant="filled"
                         onClick={() => { void handleAddMember(); }}
                         disabled={!newName.trim() || addingMember}
-                        className="form-button flex shrink-0 items-center justify-center gap-2 rounded-xl bg-theme-purple px-4 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+                        loading={addingMember}
                         title="Toevoegen"
-                        type="button">
-                        {addingMember ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
-                    </button>
-                    <button
+                        aria-label="Toevoegen"
+                    >
+                        <Plus size={16} />
+                    </ActionIcon>
+                    <ActionIcon
+                        type="button"
+                        size={36}
+                        variant="default"
                         onClick={() => { setShowAddInput(false); setNewName(''); }}
-                        className="form-button flex shrink-0 items-center justify-center rounded-xl border border-(--border-color) bg-(--bg-card) p-3 text-(--text-muted) transition-colors hover:text-(--text-main)"
                         title="Annuleren"
-                        type="button">
-                        <X className="size-4" />
-                    </button>
-                </div>
+                        aria-label="Annuleren"
+                    >
+                        <X size={16} />
+                    </ActionIcon>
+                </Group>
             ) : (
-                <button
-                    onClick={() => setShowAddInput(true)}
-                    className="mb-6 form-button flex w-full items-center justify-center gap-2 rounded-xl bg-theme-purple px-4 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 sm:w-auto"
-                    type="button">
-                    <Plus className="size-4" />
-                    Kiddo toevoegen
-                </button>
+                <Box>
+                    <Button
+                        type="button"
+                        onClick={() => setShowAddInput(true)}
+                        leftSection={<Plus size={16} />}
+                        w={{ base: '100%', sm: 'auto' }}
+                    >
+                        Kiddo toevoegen
+                    </Button>
+                </Box>
             )}
 
             {loading ? (
-                <div className="flex justify-center py-16">
-                    <Loader2 className="size-6 animate-spin text-theme-purple" />
-                </div>
+                <Center py="xl">
+                    <Loader size="md" color="brand" />
+                </Center>
             ) : members.length === 0 ? (
-                <div className="py-16 text-center text-(--text-muted)">
-                    <p className="font-semibold">Nog geen kiddos in dit groepje.</p>
-                </div>
+                <Center py="xl">
+                    <Text fw={600} c="dimmed">
+                        Nog geen kiddos in dit groepje.
+                    </Text>
+                </Center>
             ) : filteredMembers.length === 0 ? (
-                <div className="py-16 text-center text-(--text-muted)">
-                    <p className="font-semibold">
+                <Center py="xl">
+                    <Text fw={600} c="dimmed" ta="center">
                         {searchQuery.trim() && statusFilter
                             ? <>Geen kiddo gevonden voor &quot;{searchQuery}&quot; met status &quot;{getStatusLabel(statusFilter)}&quot;.</>
                             : searchQuery.trim()
                                 ? <>Geen kiddo gevonden voor &quot;{searchQuery}&quot;.</>
                                 : <>Geen kiddo met status &quot;{statusFilter ? getStatusLabel(statusFilter) : ''}&quot;.</>}
-                    </p>
-                </div>
+                    </Text>
+                </Center>
             ) : (
-                <div className="grid gap-2">
+                <Stack gap="xs">
                     {filteredMembers.map(member => {
                         const isPending = pendingMemberId === member.id;
                         const status = member.attendance?.status ?? 'not_reported';
@@ -545,200 +604,263 @@ export default function IntroAttendanceIsland({ groups, isCrew, initialGroupId }
                         const isEditingTime = editingTimeMemberId === member.id;
                         const detailsExpanded = expandedDetailsIds.includes(member.id);
                         const notes = notesByMember.get(member.id) || [];
+                        const accentVar = getStatusAccentCssVar(status);
 
                         return (
-                            <div
+                            <Paper
                                 key={member.id}
-                                className={`fade-in rounded-xl border p-2.5 transition-all duration-300 ${getStatusCardStyle(status)} ${justUpdatedId === member.id ? 'scale-1.02 shadow-md ring-2 ring-theme-purple/50' : 'scale-100'}`}
+                                p="sm"
+                                radius="md"
+                                withBorder
+                                style={{
+                                    backgroundColor: accentVar ? `color-mix(in srgb, ${accentVar} 10%, transparent)` : undefined,
+                                    borderColor: accentVar ? `color-mix(in srgb, ${accentVar} 35%, transparent)` : undefined,
+                                    boxShadow: justUpdatedId === member.id ? '0 0 0 2px var(--primary)' : undefined,
+                                }}
                             >
-                                <div className="mb-1.5 flex items-center justify-between gap-2">
-                                    <div className="flex min-w-0 items-center gap-1.5">
-                                        <span className="truncate text-sm font-semibold text-(--text-main)">{member.name}</span>
-                                        {status === 'home' && (
-                                            <span className="fade-in flex shrink-0 items-center gap-1 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                                                <Home className="size-2.5" />
-                                                Thuis
-                                            </span>
-                                        )}
-                                    </div>
-                                    <button
-                                        onClick={() => toggleDetails(member.id)}
-                                        className="form-button flex shrink-0 items-center gap-1 text-[11px] font-semibold text-(--text-muted) transition-colors hover:text-theme-purple"
-                                        type="button">
-                                        Details
-                                        {notes.length > 0 && ` · ${notes.length}`}
-                                        <ChevronDown className={`size-3 transition-transform ${detailsExpanded ? 'rotate-180' : ''}`} />
-                                    </button>
-                                </div>
-
-                                <div className="flex flex-wrap gap-1">
-                                    {STATUS_OPTIONS.map(opt => (
-                                        <button
-                                            key={opt.value}
-                                            onClick={() => { void handleSetStatus(member, opt.value); }}
-                                            disabled={isPending}
-                                            className={`form-button flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold transition-all duration-200 active:scale-90 disabled:opacity-50 ${status === opt.value ? 'scale-105 bg-theme-purple text-white shadow-sm' : 'border border-(--border-color) bg-(--bg-soft) text-(--text-muted) hover:text-(--text-main)'}`}
-                                            type="button">
-                                            <opt.icon className="size-3" />
-                                            {opt.label}
-                                        </button>
-                                    ))}
-                                    {status === 'went_home' && (
-                                        <button
-                                            onClick={() => { void handleSetStatus(member, 'home'); }}
-                                            disabled={isPending}
-                                            className="fade-in form-button flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 py-1.5 text-[11px] font-semibold text-emerald-500 transition-all hover:bg-emerald-500/20 active:scale-90 disabled:opacity-50"
-                                            type="button">
-                                            <Home className="size-3" />
-                                            Thuis
-                                        </button>
-                                    )}
-                                </div>
-
-                                {detailsExpanded && (
-                                    <div className="fade-in mt-2 space-y-3 border-t border-(--border-color) pt-2">
-                                        {status !== 'not_reported' && statusAt && (
-                                            <div className="flex items-center gap-2 text-xs text-(--text-muted)">
-                                                {isEditingTime ? (
-                                                    <>
-                                                        <input
-                                                            type="time"
-                                                            value={editingTimeValue}
-                                                            onChange={e => setEditingTimeValue(e.target.value)}
-                                                            className="form-input rounded-lg border border-(--border-color) bg-(--bg-soft) px-2 py-1 text-xs font-semibold text-(--text-main) outline-none focus:ring-2 focus:ring-theme-purple"
-                                                        />
-                                                        <button
-                                                            onClick={() => { void handleSaveTime(member); }}
-                                                            disabled={isPending}
-                                                            className="form-button rounded-lg bg-theme-purple px-2.5 py-1 text-xs font-semibold text-white disabled:opacity-50"
-                                                            type="button">
-                                                            Opslaan
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setEditingTimeMemberId(null)}
-                                                            className="form-button rounded-lg px-2.5 py-1 text-xs font-semibold text-(--text-muted) hover:text-(--text-main)"
-                                                            type="button">
-                                                            Annuleren
-                                                        </button>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <span>{getStatusSinceLabel(status)} {formatTime(statusAt)}</span>
-                                                        <button
-                                                            onClick={() => startEditTime(member)}
-                                                            className="form-button rounded p-1 text-(--text-muted) transition-colors hover:text-theme-purple"
-                                                            title="Tijd aanpassen"
-                                                            type="button">
-                                                            <Pencil className="size-3" />
-                                                        </button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        <div>
-                                            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-(--text-main)">
-                                                <MessageSquarePlus className="size-3.5" />
-                                                Notities
-                                            </p>
-                                            {loadingNotesId === member.id ? (
-                                                <div className="flex justify-center py-4">
-                                                    <Loader2 className="size-4 animate-spin text-theme-purple" />
-                                                </div>
-                                            ) : (
-                                                <div className="space-y-2">
-                                                    {notes.length === 0 ? (
-                                                        <p className="text-xs text-(--text-muted) opacity-60">Nog geen notities.</p>
-                                                    ) : (
-                                                        notes.map(note => (
-                                                            <div key={note.id} className="rounded-lg bg-(--bg-soft) p-3">
-                                                                <p className="text-sm whitespace-pre-wrap text-(--text-main)">{note.note}</p>
-                                                                <div className="mt-1.5 flex items-center justify-between">
-                                                                    <span className="text-[11px] text-(--text-muted) opacity-70">
-                                                                        {formatDate(note.created_at, 'd MMMM yyyy HH:mm')}{note.author_name ? ` · ${note.author_name}` : ''}
-                                                                    </span>
-                                                                    <button
-                                                                        onClick={() => { void handleDeleteNote(member.id, note.id); }}
-                                                                        className="form-button text-[11px] text-red-500 hover:underline"
-                                                                        type="button">
-                                                                        Verwijderen
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        ))
-                                                    )}
-                                                    <div className="flex items-center gap-2">
-                                                        <input
-                                                            type="text"
-                                                            value={newNoteByMember.get(member.id) || ''}
-                                                            onChange={e => setNewNoteByMember(prev => new Map(prev).set(member.id, e.target.value))}
-                                                            onKeyDown={e => { if (e.key === 'Enter') void handleAddNote(member.id); }}
-                                                            placeholder="Notitie toevoegen..."
-                                                            className="form-input flex-1 rounded-lg border border-(--border-color) bg-(--bg-soft) px-3 py-2 text-xs font-medium text-(--text-main) outline-none placeholder:text-(--text-muted)/50 focus:ring-2 focus:ring-theme-purple"
-                                                        />
-                                                        <button
-                                                            onClick={() => { void handleAddNote(member.id); }}
-                                                            disabled={!(newNoteByMember.get(member.id) || '').trim() || addingNoteId === member.id}
-                                                            className="form-button shrink-0 rounded-lg bg-theme-purple px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
-                                                            type="button">
-                                                            {addingNoteId === member.id ? <Loader2 className="size-3.5 animate-spin" /> : 'Toevoegen'}
-                                                        </button>
-                                                    </div>
-                                                </div>
+                                <Stack gap="xs">
+                                    <Group justify="space-between" align="center" wrap="nowrap" gap="xs">
+                                        <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
+                                            <Text size="sm" fw={600} truncate>
+                                                {member.name}
+                                            </Text>
+                                            {status === 'home' && (
+                                                <Badge
+                                                    size="xs"
+                                                    color="success"
+                                                    leftSection={<Home size={10} />}
+                                                    style={{ flexShrink: 0 }}
+                                                >
+                                                    Thuis
+                                                </Badge>
                                             )}
-                                        </div>
+                                        </Group>
+                                        <Button
+                                            type="button"
+                                            size="compact-xs"
+                                            variant="subtle"
+                                            color="dimmed"
+                                            onClick={() => toggleDetails(member.id)}
+                                            rightSection={
+                                                <ChevronDown
+                                                    size={12}
+                                                    style={{
+                                                        transform: detailsExpanded ? 'rotate(180deg)' : undefined,
+                                                        transition: 'transform 150ms ease',
+                                                    }}
+                                                />
+                                            }
+                                        >
+                                            Details{notes.length > 0 ? ` · ${notes.length}` : ''}
+                                        </Button>
+                                    </Group>
 
-                                        {isCrew && (
-                                            <div>
-                                                <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-(--text-main)">
-                                                    <History className="size-3.5" />
-                                                    Logboek
-                                                </p>
-                                                {loadingLogId === member.id ? (
-                                                    <div className="flex justify-center py-4">
-                                                        <Loader2 className="size-4 animate-spin text-theme-purple" />
-                                                    </div>
-                                                ) : (
-                                                    (() => {
-                                                        const log = logByMember.get(`${member.id}:${selectedDate}`) || [];
-                                                        return log.length === 0 ? (
-                                                            <p className="text-xs text-(--text-muted) opacity-60">Nog geen wijzigingen op deze dag.</p>
-                                                        ) : (
-                                                            <div className="space-y-1.5">
-                                                                {log.map(entry => (
-                                                                    <div key={entry.id} className="flex items-center justify-between gap-2 text-[11px] text-(--text-muted)">
-                                                                        <span className="font-semibold text-(--text-main)">{getStatusLabel(entry.status)}</span>
-                                                                        <span className="opacity-70">
-                                                                            {entry.status_at ? formatTime(entry.status_at) : '-'} · {entry.author_name || 'onbekend'}
-                                                                        </span>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        );
-                                                    })()
-                                                )}
-                                            </div>
-                                        )}
-
-                                        <div className="border-t border-(--border-color) pt-2">
-                                            <button
-                                                onClick={() => { void handleRemoveMember(member.id, member.name); }}
+                                    <Group gap={6} wrap="wrap">
+                                        {STATUS_OPTIONS.map(opt => (
+                                            <Button
+                                                key={opt.value}
+                                                type="button"
+                                                size="compact-xs"
+                                                variant={status === opt.value ? 'filled' : 'default'}
                                                 disabled={isPending}
-                                                className="form-button flex items-center gap-1.5 text-[11px] font-semibold text-red-500 transition-colors hover:text-red-600 disabled:opacity-50"
-                                                type="button">
-                                                {isPending && !isEditingTime ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
-                                                Kiddo verwijderen
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                                                leftSection={<opt.icon size={12} />}
+                                                onClick={() => { void handleSetStatus(member, opt.value); }}
+                                            >
+                                                {opt.label}
+                                            </Button>
+                                        ))}
+                                        {status === 'went_home' && (
+                                            <Button
+                                                type="button"
+                                                size="compact-xs"
+                                                variant="light"
+                                                color="success"
+                                                disabled={isPending}
+                                                leftSection={<Home size={12} />}
+                                                onClick={() => { void handleSetStatus(member, 'home'); }}
+                                            >
+                                                Thuis
+                                            </Button>
+                                        )}
+                                    </Group>
+
+                                    {detailsExpanded && (
+                                        <>
+                                            <Divider />
+                                            <Stack gap="sm">
+                                                {status !== 'not_reported' && statusAt && (
+                                                    <Group gap="xs" align="center">
+                                                        {isEditingTime ? (
+                                                            <>
+                                                                <TimeInput
+                                                                    size="xs"
+                                                                    value={editingTimeValue}
+                                                                    onChange={e => setEditingTimeValue(e.currentTarget.value)}
+                                                                />
+                                                                <Button
+                                                                    type="button"
+                                                                    size="compact-xs"
+                                                                    disabled={isPending}
+                                                                    onClick={() => { void handleSaveTime(member); }}
+                                                                >
+                                                                    Opslaan
+                                                                </Button>
+                                                                <Button
+                                                                    type="button"
+                                                                    size="compact-xs"
+                                                                    variant="subtle"
+                                                                    color="dimmed"
+                                                                    onClick={() => setEditingTimeMemberId(null)}
+                                                                >
+                                                                    Annuleren
+                                                                </Button>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Text size="xs" c="dimmed">
+                                                                    {getStatusSinceLabel(status)} {formatTime(statusAt)}
+                                                                </Text>
+                                                                <ActionIcon
+                                                                    type="button"
+                                                                    size="xs"
+                                                                    variant="subtle"
+                                                                    onClick={() => startEditTime(member)}
+                                                                    title="Tijd aanpassen"
+                                                                    aria-label="Tijd aanpassen"
+                                                                >
+                                                                    <Pencil size={12} />
+                                                                </ActionIcon>
+                                                            </>
+                                                        )}
+                                                    </Group>
+                                                )}
+
+                                                <Stack gap="xs">
+                                                    <Group gap={6}>
+                                                        <MessageSquarePlus size={14} />
+                                                        <Text size="xs" fw={600}>
+                                                            Notities
+                                                        </Text>
+                                                    </Group>
+                                                    {loadingNotesId === member.id ? (
+                                                        <Center py="sm">
+                                                            <Loader size="xs" color="brand" />
+                                                        </Center>
+                                                    ) : (
+                                                        <Stack gap="xs">
+                                                            {notes.length === 0 ? (
+                                                                <Text size="xs" c="dimmed">
+                                                                    Nog geen notities.
+                                                                </Text>
+                                                            ) : (
+                                                                notes.map(note => (
+                                                                    <Paper key={note.id} p="xs" radius="sm" withBorder>
+                                                                        <Text size="sm" style={{ whiteSpace: 'pre-wrap' }}>
+                                                                            {note.note}
+                                                                        </Text>
+                                                                        <Group justify="space-between" mt={4}>
+                                                                            <Text size="xs" c="dimmed">
+                                                                                {formatDate(note.created_at, 'd MMMM yyyy HH:mm')}{note.author_name ? ` · ${note.author_name}` : ''}
+                                                                            </Text>
+                                                                            <Button
+                                                                                type="button"
+                                                                                size="compact-xs"
+                                                                                variant="subtle"
+                                                                                color="error"
+                                                                                onClick={() => { void handleDeleteNote(member.id, note.id); }}
+                                                                            >
+                                                                                Verwijderen
+                                                                            </Button>
+                                                                        </Group>
+                                                                    </Paper>
+                                                                ))
+                                                            )}
+                                                            <Group gap="xs" wrap="nowrap">
+                                                                <TextInput
+                                                                    size="xs"
+                                                                    value={newNoteByMember.get(member.id) || ''}
+                                                                    onChange={e => {
+                                                                        const val = e.currentTarget.value;
+                                                                        setNewNoteByMember(prev => new Map(prev).set(member.id, val));
+                                                                    }}
+                                                                    onKeyDown={e => { if (e.key === 'Enter') void handleAddNote(member.id); }}
+                                                                    placeholder="Notitie toevoegen..."
+                                                                    style={{ flex: 1 }}
+                                                                />
+                                                                <Button
+                                                                    type="button"
+                                                                    size="xs"
+                                                                    disabled={!(newNoteByMember.get(member.id) || '').trim() || addingNoteId === member.id}
+                                                                    loading={addingNoteId === member.id}
+                                                                    onClick={() => { void handleAddNote(member.id); }}
+                                                                >
+                                                                    Toevoegen
+                                                                </Button>
+                                                            </Group>
+                                                        </Stack>
+                                                    )}
+                                                </Stack>
+
+                                                {isCrew && (
+                                                    <Stack gap="xs">
+                                                        <Group gap={6}>
+                                                            <History size={14} />
+                                                            <Text size="xs" fw={600}>
+                                                                Logboek
+                                                            </Text>
+                                                        </Group>
+                                                        {loadingLogId === member.id ? (
+                                                            <Center py="sm">
+                                                                <Loader size="xs" color="brand" />
+                                                            </Center>
+                                                        ) : (() => {
+                                                            const log = logByMember.get(`${member.id}:${selectedDate}`) || [];
+                                                            return log.length === 0 ? (
+                                                                <Text size="xs" c="dimmed">
+                                                                    Nog geen wijzigingen op deze dag.
+                                                                </Text>
+                                                            ) : (
+                                                                <Stack gap={4}>
+                                                                    {log.map(entry => (
+                                                                        <Group key={entry.id} justify="space-between" gap="xs">
+                                                                            <Text size="xs" fw={600}>
+                                                                                {getStatusLabel(entry.status)}
+                                                                            </Text>
+                                                                            <Text size="xs" c="dimmed">
+                                                                                {entry.status_at ? formatTime(entry.status_at) : '-'} · {entry.author_name || 'onbekend'}
+                                                                            </Text>
+                                                                        </Group>
+                                                                    ))}
+                                                                </Stack>
+                                                            );
+                                                        })()}
+                                                    </Stack>
+                                                )}
+
+                                                <Divider />
+                                                <Box>
+                                                    <Button
+                                                        type="button"
+                                                        size="compact-xs"
+                                                        variant="subtle"
+                                                        color="error"
+                                                        disabled={isPending}
+                                                        loading={isPending && !isEditingTime}
+                                                        leftSection={<Trash2 size={14} />}
+                                                        onClick={() => { void handleRemoveMember(member.id, member.name); }}
+                                                    >
+                                                        Kiddo verwijderen
+                                                    </Button>
+                                                </Box>
+                                            </Stack>
+                                        </>
+                                    )}
+                                </Stack>
+                            </Paper>
                         );
                     })}
-                </div>
+                </Stack>
             )}
-
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+        </Stack>
     );
 }

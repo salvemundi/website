@@ -1,4 +1,7 @@
 import type { Metadata } from 'next';
+import Link from '@/components/ui/Link';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Group, Stack, Text, Title } from '@mantine/core';
 import { notFound } from 'next/navigation';
 import { getActivityById } from '@/server/actions/events/activiteiten/activiteiten-public.actions';
 import { getActivitySignups } from '@/server/actions/beheer/activiteiten/beheer-activiteiten-core.actions';
@@ -6,10 +9,10 @@ import AttendanceIsland from '@/components/islands/activiteiten/AttendanceIsland
 import { checkBeheerAccess } from '@/server/actions/beheer/beheer-utils.actions';
 import BeheerUnauthorized from '@/components/ui/beheer/BeheerUnauthorized';
 import { getPermissions } from '@/shared/lib/permissions';
-import BeheerToolbar from '@/components/ui/beheer/BeheerToolbar';
 
 export const metadata: Metadata = {
-    title: 'Aanwezigheidsbeheer | SV Salve Mundi' };
+    title: 'Aanwezigheidsbeheer | SV Salve Mundi'
+};
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -26,7 +29,6 @@ export default async function AttendancePage({ params }: PageProps) {
         return <BeheerUnauthorized title="Aanwezigheidsbeheer" backHref={`/beheer/activiteiten/${id}`} />;
     }
 
-    // NUCLEAR SSR: Fetch all data at the top level
     const [activity, signups] = await Promise.all([
         getActivityById(id),
         getActivitySignups(id)
@@ -34,7 +36,6 @@ export default async function AttendancePage({ params }: PageProps) {
 
     if (!activity) return notFound();
 
-    // Strictly map signups to match the component's strict interface
     const mappedSignups = signups.map(s => ({
         id: s.id || 0,
         participant_name: s.participant_name || 'Onbekend',
@@ -45,20 +46,37 @@ export default async function AttendancePage({ params }: PageProps) {
     }));
 
     return (
-        <div className="w-full">
-            <BeheerToolbar 
-                title="Aanwezigheid"
-                subtitle={`Beheer de aanwezigheid voor "${activity.name}".`}
-                backHref={`/beheer/activiteiten/${id}/aanmeldingen`}
-            />
-            <div className="admin-container py-8 pb-24">
-                <AttendanceIsland 
-                    eventId={id} 
-                    eventName={activity.name} 
-                    initialSignups={mappedSignups} 
+        <Container size="xl" py="lg">
+            <Stack gap="lg">
+                <Group justify="space-between" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href={`/beheer/activiteiten/${id}/aanmeldingen`}
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                        <Stack gap={2}>
+                            <Title order={1} size="h2" c="brand">
+                                Aanwezigheid
+                            </Title>
+                            <Text size="sm" c="dimmed">
+                                Beheer de aanwezigheid voor &quot;{activity.name}&quot;.
+                            </Text>
+                        </Stack>
+                    </Group>
+                </Group>
+
+                <AttendanceIsland
+                    eventId={id}
+                    eventName={activity.name}
+                    initialSignups={mappedSignups}
                 />
-            </div>
-        </div>
+            </Stack>
+        </Container>
     );
 }
 

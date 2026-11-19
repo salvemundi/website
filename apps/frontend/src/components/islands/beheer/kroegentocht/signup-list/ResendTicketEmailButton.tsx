@@ -1,10 +1,15 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Loader2, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
+import { Button, Stack, Text } from '@mantine/core';
 import { resendPubCrawlTicketEmail } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-signup.actions';
 
-export default function ResendTicketEmailButton({ signupId, email, paid }: {
+export default function ResendTicketEmailButton({
+    signupId,
+    email,
+    paid,
+}: {
     signupId: number;
     email?: string | null;
     paid: boolean;
@@ -22,7 +27,11 @@ export default function ResendTicketEmailButton({ signupId, email, paid }: {
         try {
             const result = await resendPubCrawlTicketEmail(signupId);
             setFailed(!result.success);
-            setMessage(result.success ? `Ticketmail klaargezet voor ${email}` : result.error || 'Verzenden mislukt');
+            setMessage(
+                result.success
+                    ? `Ticketmail klaargezet voor ${email}`
+                    : result.error || 'Verzenden mislukt'
+            );
         } catch {
             setFailed(true);
             setMessage('Ticketmail kon niet worden klaargezet. Probeer het later opnieuw.');
@@ -33,18 +42,30 @@ export default function ResendTicketEmailButton({ signupId, email, paid }: {
     };
 
     return (
-        <div className="flex flex-col items-start gap-1">
-            <button
+        <Stack gap={4} align="flex-start">
+            <Button
                 type="button"
+                size="xs"
+                color="brand"
+                loading={sending}
                 disabled={sending || !paid || !email?.trim()}
-                onClick={() => { void send(); }}
-                title={!email?.trim() ? 'Geen e-mailadres ingevuld' : `Ticketmail opnieuw versturen naar ${email}`}
-                className="beheer-button flex cursor-pointer items-center gap-1 rounded-md bg-purple-700 px-2 py-1.5 text-xs text-white hover:bg-purple-800 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-200 disabled:opacity-100"
+                onClick={() => {
+                    void send();
+                }}
+                title={
+                    !email?.trim()
+                        ? 'Geen e-mailadres ingevuld'
+                        : `Ticketmail opnieuw versturen naar ${email}`
+                }
+                leftSection={<Mail size={14} />}
             >
-                {sending ? <Loader2 className="size-3.5 animate-spin" /> : <Mail className="size-3.5" />}
                 {sending ? 'Bezig...' : 'Ticketmail versturen'}
-            </button>
-            {message && <span role="status" className={`max-w-64 text-xs ${failed ? 'text-red-500' : 'text-green-600'}`}>{message}</span>}
-        </div>
+            </Button>
+            {message && (
+                <Text role="status" size="xs" maw={256} c={failed ? 'error' : 'success'}>
+                    {message}
+                </Text>
+            )}
+        </Stack>
     );
 }

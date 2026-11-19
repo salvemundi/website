@@ -1,6 +1,7 @@
+import { Trophy, Medal, Award } from 'lucide-react';
+import { Box, Card, Center, Group, Paper, ScrollArea, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import type { StickerPublic } from '@salvemundi/validations';
 import type { EnrichedUser } from '@/types/auth';
-import { Trophy, Medal, Award } from 'lucide-react';
 
 type StickerCreator = {
     id?: string | number;
@@ -33,108 +34,150 @@ export default function Leaderboard({ stickers, currentUser }: LeaderboardProps)
 
     // Reorder for podium display: [2, 1, 3]
     const podiumDisplay = [
-        (podium[1] as typeof podium[0] | undefined) || null, // Silver
-        (podium[0] as typeof podium[0] | undefined) || null, // Gold
-        (podium[2] as typeof podium[0] | undefined) || null, // Bronze
+        (podium[1] as typeof podium[0] | undefined) || null,
+        (podium[0] as typeof podium[0] | undefined) || null,
+        (podium[2] as typeof podium[0] | undefined) || null,
     ];
 
     return (
-        <div className="flex h-full flex-col rounded-2xl border border-border-color/20 bg-bg-card p-4 shadow-lg md:rounded-3xl md:p-6">
-            <div className="mb-3 flex items-center justify-between md:mb-8">
-                <div>
-                    <h2 className="mt-0.5 text-xl font-black tracking-tight text-theme-purple md:text-2xl">Leaderboard</h2>
-                </div>
-                <Trophy className="size-6 animate-pulse text-orange-500" />
-            </div>
+        <Card h="100%" padding="lg" radius="lg" style={{ display: 'flex', flexDirection: 'column' }}>
+            <Group justify="space-between" mb="lg">
+                <Title order={2} size="h3" c="brand">
+                    Leaderboard
+                </Title>
+                <Text span c="accent" lh={1}>
+                    <Trophy size={24} />
+                </Text>
+            </Group>
 
             {leaderboard.length === 0 ? (
-                <div className="flex flex-1 items-center justify-center rounded-2xl border-2 border-dashed border-border-color/25 p-8 text-center">
-                    <p className="text-sm font-medium text-text-muted italic">Geen plakkers gevonden...</p>
-                </div>
+                <Center
+                    flex={1}
+                    p="xl"
+                    style={{
+                        borderRadius: 'var(--mantine-radius-lg)',
+                        border: '2px dashed var(--border)',
+                    }}
+                >
+                    <Text size="sm" fw={500} c="dimmed" fs="italic" ta="center">
+                        Geen plakkers gevonden...
+                    </Text>
+                </Center>
             ) : (
-                <>
-                    {/* Podium Section */}
-                    <div className="mb-4 grid grid-cols-3 items-end gap-2 px-2 md:mb-10">
+                <Stack flex={1} gap="lg" style={{ minHeight: 0 }}>
+                    <SimpleGrid cols={3} spacing="xs" style={{ alignItems: 'end' }}>
                         {podiumDisplay.map((user, idx) => {
-                            if (!user) return <div key={idx} />;
+                            if (!user) return <Box key={idx} />;
 
                             const isGold = idx === 1;
                             const isSilver = idx === 0;
                             const isMe = Boolean(currentUser && String(user.id) === String(currentUser.id));
 
+                            const bgVar = isGold
+                                ? 'var(--mantine-color-accent-filled)'
+                                : isSilver
+                                    ? 'var(--mantine-color-lightPurple-filled)'
+                                    : 'var(--mantine-color-purple-filled)';
+                            const fgColor = isGold ? '#1E1221' : '#FFFFFF';
+                            const labelColor = isGold ? 'accent' : isSilver ? 'lightPurple' : 'brand';
+
                             return (
-                                <div key={user.id} className="flex flex-col items-center">
-                                    <div className="group relative mb-3">
-                                        <div className={`
-                                            absolute inset-0 rounded-full opacity-40 blur-md transition-opacity group-hover:opacity-60
-                                            ${isGold ? 'bg-yellow-400' : isSilver ? 'bg-slate-300' : 'bg-orange-400'}
-                                        `} />
-                                        <div className={`
-                                            relative flex size-12 items-center justify-center overflow-hidden rounded-full border-2 text-base font-semibold text-white md:size-16 md:text-lg
-                                            ${isGold ? 'scale-110 border-yellow-400 bg-linear-to-br from-yellow-300 to-yellow-600' :
-                                                isSilver ? 'border-slate-300 bg-linear-to-br from-slate-200 to-slate-400' :
-                                                    'border-orange-400 bg-linear-to-br from-orange-300 to-orange-500'}
-                                            ${isMe ? 'ring-2 ring-white ring-offset-2' : ''}
-                                        `}>
-                                            {user.name ? user.name.split(' ').map(x => x[0]).slice(0, 2).join('') : '#'}
-                                        </div>
-                                        <div className={`
-                                            absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full shadow-lg
-                                            ${isGold ? 'bg-yellow-500' : isSilver ? 'bg-slate-400' : 'bg-orange-500'}
-                                        `}>
-                                            {isGold ? <Trophy className="size-3 text-white" /> :
-                                                isSilver ? <Medal className="size-3 text-white" /> :
-                                                    <Award className="size-3 text-white" />}
-                                        </div>
-                                    </div>
-                                    <div className="w-full min-w-0 px-1 text-center">
-                                        <div className="truncate text-xs font-semibold text-(--text-main)">
+                                <Stack key={user.id} align="center" gap="xs">
+                                    <Box pos="relative">
+                                        <Center
+                                            w={{ base: 48, md: 64 }}
+                                            h={{ base: 48, md: 64 }}
+                                            bg={bgVar}
+                                            c={fgColor}
+                                            fw={700}
+                                            fz={{ base: 'md', md: 'lg' }}
+                                            style={{
+                                                borderRadius: '9999px',
+                                                border: isMe ? '3px solid #FFFFFF' : '2px solid transparent',
+                                                transform: isGold ? 'scale(1.08)' : undefined,
+                                                boxShadow: 'var(--mantine-shadow-md)',
+                                            }}
+                                        >
+                                            {user.name ? user.name.split(' ').map((x) => x[0]).slice(0, 2).join('') : '#'}
+                                        </Center>
+                                        <Center
+                                            pos="absolute"
+                                            bottom={-4}
+                                            right={-4}
+                                            w={24}
+                                            h={24}
+                                            bg={bgVar}
+                                            c={fgColor}
+                                            style={{
+                                                borderRadius: '9999px',
+                                                border: '2px solid var(--mantine-color-default)',
+                                                boxShadow: 'var(--mantine-shadow-sm)',
+                                            }}
+                                        >
+                                            {isGold ? <Trophy size={12} /> : isSilver ? <Medal size={12} /> : <Award size={12} />}
+                                        </Center>
+                                    </Box>
+
+                                    <Stack gap={0} w="100%" px={4} align="center">
+                                        <Text size="xs" fw={600} truncate w="100%" ta="center">
                                             {user.name}
-                                        </div>
-                                        <div className={`text-[9px] font-bold md:text-[10px] ${isGold ? 'text-yellow-600' : isSilver ? 'text-slate-500' : 'text-orange-600'}`}>
+                                        </Text>
+                                        <Text size="xs" fw={700} c={labelColor}>
                                             {user.count} stickers
-                                        </div>
-                                    </div>
-                                    <div className={`
-                                        mt-2 flex w-full items-center justify-center rounded-t-lg text-xs font-bold text-white
-                                        ${isGold ? 'h-16 bg-linear-to-t from-yellow-500 to-yellow-400 md:h-20' :
-                                            isSilver ? 'h-12 bg-linear-to-t from-slate-400 to-slate-300 md:h-16' :
-                                                'h-8 bg-linear-to-t from-orange-500 to-orange-400 md:h-12'}
-                                    `}>
+                                        </Text>
+                                    </Stack>
+
+                                    <Center
+                                        w="100%"
+                                        h={isGold ? { base: 64, md: 80 } : isSilver ? { base: 48, md: 64 } : { base: 32, md: 48 }}
+                                        bg={bgVar}
+                                        c={fgColor}
+                                        fw={700}
+                                        fz="xs"
+                                        style={{
+                                            borderTopLeftRadius: 'var(--mantine-radius-md)',
+                                            borderTopRightRadius: 'var(--mantine-radius-md)',
+                                        }}
+                                    >
                                         {isGold ? '1' : isSilver ? '2' : '3'}
-                                    </div>
-                                </div>
+                                    </Center>
+                                </Stack>
                             );
                         })}
-                    </div>
+                    </SimpleGrid>
 
-                    {/* Scrollable List */}
-                    <div className="custom-scrollbar -mr-2 flex-1 overflow-y-auto pr-2">
-                        <div className="space-y-1">
+                    <ScrollArea flex={1} offsetScrollbars="y" style={{ minHeight: 0 }}>
+                        <Stack gap={4}>
                             {rest.map((c, idx) => {
                                 const isMe = Boolean(currentUser && String(c.id) === String(currentUser.id));
                                 return (
-                                    <div key={c.id} className={`group flex items-center justify-between rounded-xl p-2.5 transition-all duration-200 ${isMe ? 'border border-orange-500/20 bg-orange-500/10' : 'hover:bg-bg-main/50 border border-transparent'}`}>
-                                        <div className="flex min-w-0 items-center gap-3">
-                                            <div className="min-w-0">
-                                                <div className="truncate text-xs font-medium text-text-main transition-colors group-hover:text-theme-purple sm:text-sm">
+                                    <Paper
+                                        key={c.id}
+                                        p="xs"
+                                        radius="md"
+                                        bg={isMe ? 'var(--mantine-color-accent-light)' : 'transparent'}
+                                        style={isMe ? { border: '1px solid var(--mantine-color-accent-outline)' } : undefined}
+                                    >
+                                        <Group justify="space-between" wrap="nowrap" gap="sm">
+                                            <Stack gap={0} miw={0} flex={1}>
+                                                <Text size="sm" fw={500} truncate>
                                                     {c.name}
-                                                </div>
-                                                <div className="mt-0.5 text-[10px] font-normal text-text-muted">
+                                                </Text>
+                                                <Text size="xs" c="dimmed">
                                                     {c.count} sticker{c.count !== 1 ? 's' : ''}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="text-xs font-semibold text-text-muted/50 transition-colors group-hover:text-text-muted/80">
-                                            #{idx + 4}
-                                        </div>
-                                    </div>
+                                                </Text>
+                                            </Stack>
+                                            <Text size="xs" fw={600} c="dimmed">
+                                                #{idx + 4}
+                                            </Text>
+                                        </Group>
+                                    </Paper>
                                 );
                             })}
-                        </div>
-                    </div>
-                </>
+                        </Stack>
+                    </ScrollArea>
+                </Stack>
             )}
-        </div>
+        </Card>
     );
 }

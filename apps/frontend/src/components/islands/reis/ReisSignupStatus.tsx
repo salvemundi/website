@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { CheckCircle2, CreditCard, Utensils } from 'lucide-react';
+import { Alert, Button, Card, Divider, Group, Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import type { Trip } from '@salvemundi/validations/schema/beheer-trip.zod';
 import type { TripSignup } from '@salvemundi/validations/schema/trip.zod';
 
@@ -27,80 +28,88 @@ export function ReisSignupStatus({ userSignup, nextTrip, error }: ReisSignupStat
     };
 
     return (
-        <div className="rounded-2xl border border-theme-purple/20 bg-linear-to-br from-theme-purple/5 to-theme-purple/10 p-6">
-            {error && (
-                <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-500">
-                    {error}
-                </div>
-            )}
-            <div className="mb-6 flex items-center gap-4">
-                <div className="flex size-14 items-center justify-center rounded-full bg-theme-purple/20">
-                    <CheckCircle2 className="size-8 text-theme-purple" />
-                </div>
-                <div>
-                    <h3 className="text-xl font-bold text-theme-purple dark:text-white">Huidige status</h3>
-                </div>
-            </div>
+        <Card
+            padding="lg"
+            radius="lg"
+            withBorder
+            style={{
+                backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
+                borderColor: 'color-mix(in srgb, var(--primary) 25%, transparent)',
+            }}
+        >
+            <Stack gap="lg">
+                {error && (
+                    <Alert color="error" variant="light">
+                        {error}
+                    </Alert>
+                )}
 
-            <div className="mb-6 rounded-2xl border border-theme-purple/10 bg-white/50 p-6 dark:bg-black/5">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                        <p className="text-2xl font-bold tracking-tight wrap-break-word text-theme-purple sm:text-3xl dark:text-white">
+                <Group gap="md">
+                    <ThemeIcon size={56} radius="xl" variant="light" color="brand">
+                        <CheckCircle2 size={30} />
+                    </ThemeIcon>
+                    <Title order={3} size="h4" c="brand">
+                        Huidige status
+                    </Title>
+                </Group>
+
+                <Paper p="lg" radius="lg" withBorder>
+                    <Stack gap={4}>
+                        <Title order={4} fz={{ base: '1.5rem', sm: '1.875rem' }} c="brand" style={{ wordBreak: 'break-word' }}>
                             {getSignupStatusDisplay(userSignup)}
-                        </p>
+                        </Title>
                         {userSignup.status === 'registered' && (
-                            <p className="mt-1 text-xs text-text-muted italic">
+                            <Text size="xs" c="dimmed" fs="italic">
                                 Je aanmelding wordt momenteel beoordeeld door de commissie.
-                            </p>
+                            </Text>
                         )}
-                    </div>
-                </div>
-            </div>
+                    </Stack>
+                </Paper>
 
-            {userSignup.status === 'confirmed' && !userSignup.full_payment_paid && (
-                <div className="mt-4 space-y-4 border-t border-theme-purple/20 pt-4">
-                    {!userSignup.deposit_paid ? (
-                        nextTrip?.allow_deposit_payments ? (
-                            <Link
-                                href={`/reis/betalen/aanbetaling?id=${userSignup.id}`}
-                                className="group inline-flex items-center gap-2 rounded-lg bg-theme-purple px-6 py-2 text-white transition hover:bg-theme-purple-dark"
-                            >
-                                <CreditCard className="size-5 transition-transform group-hover:scale-110" />
-                                Ga naar aanbetaling
-                            </Link>
-                        ) : (
-                            <p className="text-xs leading-relaxed text-text-muted italic">
-                                De aanbetalingen zijn momenteel nog niet geopend voor deze reis. Je ontvangt een e-mail zodra je kunt betalen.
-                            </p>
-                        )
-                    ) : (
-                        <div className="space-y-4">
-                            {nextTrip?.allow_final_payments ? (
-                                <Link
+                {userSignup.status === 'confirmed' && !userSignup.full_payment_paid && (
+                    <>
+                        <Divider />
+                        <Stack gap="sm" align="flex-start">
+                            {!userSignup.deposit_paid ? (
+                                nextTrip?.allow_deposit_payments ? (
+                                    <Button
+                                        component={Link}
+                                        href={`/reis/betalen/aanbetaling?id=${userSignup.id}`}
+                                        leftSection={<CreditCard size={18} />}
+                                    >
+                                        Ga naar aanbetaling
+                                    </Button>
+                                ) : (
+                                    <Text size="xs" c="dimmed" fs="italic">
+                                        De aanbetalingen zijn momenteel nog niet geopend voor deze reis. Je ontvangt een e-mail zodra je kunt betalen.
+                                    </Text>
+                                )
+                            ) : nextTrip?.allow_final_payments ? (
+                                <Button
+                                    component={Link}
                                     href={`/reis/betalen/restbetaling?id=${userSignup.id}`}
-                                    className="group inline-flex items-center gap-2 rounded-lg bg-theme-purple px-6 py-2 text-white transition hover:bg-theme-purple-dark"
+                                    leftSection={<CreditCard size={18} />}
                                 >
-                                    <CreditCard className="size-5 transition-transform group-hover:scale-110" />
-                                    Afronden & Betalen
-                                </Link>
+                                    Afronden &amp; Betalen
+                                </Button>
                             ) : (
                                 <>
-                                    <Link
+                                    <Button
+                                        component={Link}
                                         href={`/reis/betalen/restbetaling?id=${userSignup.id}`}
-                                        className="group inline-flex items-center gap-2 rounded-lg bg-theme-purple px-6 py-2 text-white transition hover:bg-theme-purple-dark"
+                                        leftSection={<Utensils size={18} />}
                                     >
-                                        <Utensils className="size-5 transition-transform group-hover:scale-110" />
                                         Activiteiten beheren
-                                    </Link>
-                                    <p className="text-xs leading-relaxed text-(--text-muted) italic">
+                                    </Button>
+                                    <Text size="xs" c="dimmed" fs="italic">
                                         De restbetaling is momenteel nog niet geopend. Je kunt wel alvast je activiteiten doorgeven of wijzigen.
-                                    </p>
+                                    </Text>
                                 </>
                             )}
-                        </div>
-                    )}
-                </div>
-            )}
-        </div>
+                        </Stack>
+                    </>
+                )}
+            </Stack>
+        </Card>
     );
 }

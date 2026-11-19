@@ -1,6 +1,18 @@
 'use client';
 
 import { CreditCard } from 'lucide-react';
+import {
+    Badge,
+    Box,
+    Card,
+    Center,
+    Divider,
+    ScrollArea,
+    Stack,
+    Table,
+    Text,
+    Title,
+} from '@mantine/core';
 import { safeConsoleError } from '@/server/utils/logger';
 
 export interface MemberTransaction {
@@ -21,28 +33,28 @@ export function TransactionStatus({ status }: { status: string }) {
     switch (status) {
         case 'paid':
             return (
-                <span className="rounded-full bg-green-500/10 px-3 py-1 text-[10px] font-semibold text-green-500">
+                <Badge size="sm" variant="light" color="success">
                     Betaald
-                </span>
+                </Badge>
             );
         case 'expired':
             return (
-                <span className="rounded-full bg-gray-500/10 px-3 py-1 text-[10px] font-semibold text-gray-500">
+                <Badge size="sm" variant="default">
                     Verlopen
-                </span>
+                </Badge>
             );
         case 'failed':
         case 'canceled':
             return (
-                <span className="rounded-full bg-red-500/10 px-3 py-1 text-[10px] font-semibold text-red-500">
+                <Badge size="sm" variant="light" color="error">
                     Mislukt
-                </span>
+                </Badge>
             );
         default:
             return (
-                <span className="rounded-full bg-amber-500/10 px-3 py-1 text-[10px] font-semibold text-amber-500">
+                <Badge size="sm" variant="light" color="accent">
                     Open
-                </span>
+                </Badge>
             );
     }
 }
@@ -56,7 +68,7 @@ export default function MemberTransactionsTab({ transactions }: Props) {
                 month: 'long',
                 year: 'numeric',
                 hour: '2-digit',
-                minute: '2-digit'
+                minute: '2-digit',
             }).format(new Date(dateString));
         } catch (error) {
             safeConsoleError('[MemberTransactionsTab.tsx][formatDate] ', error);
@@ -69,7 +81,7 @@ export default function MemberTransactionsTab({ transactions }: Props) {
         try {
             return new Intl.NumberFormat('nl-NL', {
                 style: 'currency',
-                currency: 'EUR'
+                currency: 'EUR',
             }).format(amount);
         } catch (error) {
             safeConsoleError('[MemberTransactionsTab.tsx][formatAmount] ', error);
@@ -78,57 +90,79 @@ export default function MemberTransactionsTab({ transactions }: Props) {
     };
 
     return (
-        <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-sm">
-            <div className="border-b border-(--beheer-border) p-8">
-                <h3 className="text-xl leading-tight font-semibold text-(--beheer-text)">Transactie Geschiedenis</h3>
-                <p className="mt-1 text-xs font-semibold text-(--beheer-text-muted) opacity-60">Overzicht van alle lidmaatschap, webshop en activiteit betalingen</p>
-            </div>
+        <Card p={0} shadow="sm" style={{ overflow: 'hidden' }}>
+            <Box p="xl">
+                <Title order={3} size="h4">
+                    Transactie Geschiedenis
+                </Title>
+                <Text size="xs" c="dimmed" mt={4}>
+                    Overzicht van alle lidmaatschap, webshop en activiteit betalingen
+                </Text>
+            </Box>
+
+            <Divider />
 
             {transactions.length === 0 ? (
-                <div className="py-20 text-center">
-                    <CreditCard className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-20" />
-                    <p className="text-xs font-semibold text-(--beheer-text-muted)">Nog geen transacties gevonden</p>
-                </div>
+                <Center py={80}>
+                    <Stack align="center" gap="xs">
+                        <Text span c="dimmed" lh={1}>
+                            <CreditCard size={40} />
+                        </Text>
+                        <Text size="xs" fw={600} c="dimmed">
+                            Nog geen transacties gevonden
+                        </Text>
+                    </Stack>
+                </Center>
             ) : (
-                <div className="max-h-[60vh] scrollbar-thin scrollbar-thumb-(--beheer-border) overflow-auto">
-                    <table className="w-full border-collapse text-left">
-                        <thead>
-                            <tr className="border-b border-(--beheer-border) bg-(--beheer-card-soft)/50 text-xs font-semibold text-(--beheer-text-muted)">
-                                <th className="px-8 py-4">Product / Omschrijving</th>
-                                <th className="px-8 py-4">Type</th>
-                                <th className="px-8 py-4">Mollie ID</th>
-                                <th className="px-8 py-4">Datum</th>
-                                <th className="px-8 py-4">Bedrag</th>
-                                <th className="px-8 py-4 text-right">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-(--beheer-border)">
-                            {transactions.map(tx => (
-                                <tr key={tx.id} className="group transition-colors hover:bg-(--beheer-card-soft)/30">
-                                    <td className="px-8 py-5">
-                                        <div className="font-semibold text-(--beheer-text)">{tx.product_name || 'Lidmaatschap betaling'}</div>
-                                    </td>
-                                    <td className="px-8 py-5 text-xs font-medium text-(--beheer-text-muted) capitalize">
-                                        {tx.product_type || 'onbekend'}
-                                    </td>
-                                    <td className="px-8 py-5 font-mono text-xs text-(--beheer-text-muted) opacity-70">
-                                        {tx.mollie_id || '-'}
-                                    </td>
-                                    <td className="px-8 py-5 text-xs font-medium text-(--beheer-text-muted)">
-                                        {formatDate(tx.created_at)}
-                                    </td>
-                                    <td className="px-8 py-5 font-semibold text-(--beheer-text)">
-                                        {formatAmount(tx.amount)}
-                                    </td>
-                                    <td className="px-8 py-5 text-right">
+                <ScrollArea.Autosize mah="60vh">
+                    <Table highlightOnHover verticalSpacing="md" horizontalSpacing="xl">
+                        <Table.Thead>
+                            <Table.Tr>
+                                <Table.Th>Product / Omschrijving</Table.Th>
+                                <Table.Th>Type</Table.Th>
+                                <Table.Th>Mollie ID</Table.Th>
+                                <Table.Th>Datum</Table.Th>
+                                <Table.Th>Bedrag</Table.Th>
+                                <Table.Th ta="right">Status</Table.Th>
+                            </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
+                            {transactions.map((tx) => (
+                                <Table.Tr key={tx.id}>
+                                    <Table.Td>
+                                        <Text fw={600} size="sm">
+                                            {tx.product_name || 'Lidmaatschap betaling'}
+                                        </Text>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <Text size="xs" c="dimmed" tt="capitalize">
+                                            {tx.product_type || 'onbekend'}
+                                        </Text>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <Text size="xs" c="dimmed" ff="monospace">
+                                            {tx.mollie_id || '-'}
+                                        </Text>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <Text size="xs" c="dimmed">
+                                            {formatDate(tx.created_at)}
+                                        </Text>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <Text fw={600} size="sm">
+                                            {formatAmount(tx.amount)}
+                                        </Text>
+                                    </Table.Td>
+                                    <Table.Td ta="right">
                                         <TransactionStatus status={tx.payment_status || 'open'} />
-                                    </td>
-                                </tr>
+                                    </Table.Td>
+                                </Table.Tr>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
+                        </Table.Tbody>
+                    </Table>
+                </ScrollArea.Autosize>
             )}
-        </div>
+        </Card>
     );
 }

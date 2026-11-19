@@ -1,192 +1,62 @@
 'use server';
 
-import { z } from 'zod';
-import crypto from 'node:crypto';
-import { getEnrichedSession } from '@/server/auth/auth-utils';
-import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import { webshopPreorderFormSchema, type WebshopPreorderForm } from '@salvemundi/validations/schema/webshop.zod';
-import { fetchProductByIdDb, countActiveOrdersForProductDb } from '@/server/internal/webshop/webshop-product-db.utils';
-import { insertPreorderWithStockDb, fetchPreorderByIdDb, InsufficientStockError } from '@/server/internal/webshop/webshop-preorder-db.utils';;
-import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteiten/activiteiten.utils';
-import { safeConsoleError } from '@/server/utils/logger';
+import { withMemberAction, type ActionFieldErrors } from '@/server/actions/action-wrapper';
+import { HttpFinanceApiClient } from '@/server/integrations/FinanceApiClient';
+import { OrderRepository } from '@/server/repositories/OrderRepository';
+import { WebshopService } from '@/server/services/WebshopService';
 
-interface FinancePaymentResponse {
-    checkoutUrl?: string;
+export type SubmitPreorderResult =
+    | {
+          success: true;
+          checkoutUrl?: string;
+          preorderId: number;
+          error?: never;
+      }
+    | {
+          success: false;
+          error: string;
+          message?: string;
+          errors?: undefined;
+          fieldErrors?: ActionFieldErrors;
+          preorderId?: number;
+      };
+
+function createWebshopService(): WebshopService {
+    return new WebshopService(new OrderRepository(), new HttpFinanceApiClient());
 }
 
-interface FinanceErrorResponse {
-    error?: string;
-    message?: string;
-}
-
-async function requireMemberSession() {
-    const session = await getEnrichedSession();
-    if (!session?.user) {
-        return { ok: false as const, error: 'Je moet ingelogd zijn om te bestellen.' };
-    }
-
-    const user = session.user as unknown as MembershipUserData;
-    if (user.membership_status !== 'active') {
-        return { ok: false as const, error: 'Bestellen is alleen voor leden van Salve Mundi.' };
-    }
-
-    return { ok: true as const, session };
-}
-
-async function buildFinancePaymentRequest(preorderId: number) {
-    const preorder = await fetchPreorderByIdDb(preorderId);
-    if (!preorder) return { success: false as const, error: 'Bestelling niet gevonden.' };
-
-    if (preorder.deposit_paid) {
-        return { success: false as const, error: 'Deze bestelling is al betaald.' };
-    }
-
-    const amount = Number(preorder.subtotal_amount);
-
-    if (!(amount > 0)) {
-        return { success: false as const, error: 'Het te betalen bedrag is ongeldig.' };
-    }
-
-    const FINANCE_SERVICE_URL = getFinanceServiceUrl();
-    if (!FINANCE_SERVICE_URL) return { success: false as const, error: 'Betaalservice niet geconfigureerd.' };
-
-    const redirectUrl = `${process.env.PUBLIC_URL || ''}/merch/bevestiging?preorder=${preorderId}&token=${preorder.access_token}`;
-
-    try {
-        const response = await fetchWithTimeout(`${FINANCE_SERVICE_URL}/api/finance/create`, {
-            method: 'POST',
-            headers: getInternalHeaders(),
-            body: JSON.stringify({
-                amount,
-                description: 'Salve Mundi Webshop',
-                productName: `Bestelling webshop #${preorderId}`,
-                registrationId: preorderId,
-                registrationType: 'webshop_preorder',
-                email: preorder.email,
-                firstName: preorder.first_name,
-                lastName: preorder.last_name,
-                phoneNumber: preorder.phone_number,
-                userId: preorder.user_id,
-                redirectUrl
-            })
+const executeSubmitPreorder = withMemberAction<
+    WebshopPreorderForm,
+    WebshopPreorderForm,
+    SubmitPreorderResult
+>({
+    actionName: 'webshop-checkout.actions.ts][submitPreorderAndInitiatePayment',
+    honeypot: (formData) => formData.website,
+    honeypotErrorMessage: 'Ongeldige aanvraag.',
+    rateLimit: {
+        key: 'webshop-checkout',
+        limit: 5,
+        windowSeconds: 300,
+        errorMessage: 'Te veel bestelpogingen vanaf dit IP-adres. Probeer het over een paar minuten opnieuw.',
+    },
+    unauthenticatedErrorMessage: 'Je moet ingelogd zijn om te bestellen.',
+    nonMemberErrorMessage: 'Bestellen is alleen voor leden van Salve Mundi.',
+    schema: webshopPreorderFormSchema,
+    validationErrorMessage: 'Vul alle verplichte velden correct in.',
+    fallbackErrorMessage: 'Er is een onverwachte fout opgetreden.',
+    handler: async (data, ctx) => {
+        const redirectBaseUrl = await ctx.getBaseUrl();
+        return createWebshopService().submitPreorderAndInitiatePayment({
+            form: data,
+            userId: ctx.userId,
+            redirectBaseUrl,
         });
+    },
+});
 
-        if (!response.ok) {
-            const errData = await response.json().catch(() => ({})) as FinanceErrorResponse;
-            safeConsoleError('[webshop-checkout.actions.ts][buildFinancePaymentRequest] Finance service error:', errData);
-            return { success: false as const, error: errData.message || errData.error || 'Betaalverzoek mislukt.' };
-        }
-
-        const data = await response.json() as FinancePaymentResponse;
-        return { success: true as const, checkoutUrl: data.checkoutUrl };
-    } catch (error) {
-        safeConsoleError('[webshop-checkout.actions.ts][buildFinancePaymentRequest]', error);
-        return { success: false as const, error: 'Interne fout bij starten betaling.' };
-    }
-}
-
-export async function submitPreorderAndInitiatePayment(formData: WebshopPreorderForm) {
-    try {
-        if (formData.website) {
-            return { success: false, error: 'Ongeldige aanvraag.' };
-        }
-
-        const { checkRateLimit } = await import('@/server/utils/ratelimit');
-        const rateLimitResult = await checkRateLimit('webshop-checkout', 5, 300, 'Te veel bestelpogingen vanaf dit IP-adres. Probeer het over een paar minuten opnieuw.');
-        if (!rateLimitResult.success) return rateLimitResult;
-
-        const memberCheck = await requireMemberSession();
-        if (!memberCheck.ok) return { success: false, error: memberCheck.error };
-        const { session } = memberCheck;
-
-        const validated = webshopPreorderFormSchema.safeParse(formData);
-        if (!validated.success) {
-            return { success: false, error: 'Vul alle verplichte velden correct in.', fieldErrors: z.flattenError(validated.error).fieldErrors };
-        }
-        const data = validated.data;
-
-        if (data.lines.length !== 1) {
-            return { success: false, error: 'Er kan op dit moment maar 1 product per bestelling worden geplaatst.' };
-        }
-        const line = data.lines[0];
-
-        const product = await fetchProductByIdDb(line.product_id);
-        if (!product || !product.is_active) {
-            return { success: false, error: 'Dit product is niet meer beschikbaar.' };
-        }
-        if (product.drop_window && (product.drop_window.id !== data.drop_window_id || product.drop_window.status !== 'open')) {
-            return { success: false, error: 'Deze drop is gesloten voor nieuwe bestellingen.' };
-        }
-
-        if (product.max_orders !== null) {
-            const activeOrders = await countActiveOrdersForProductDb(product.id);
-            if (activeOrders >= product.max_orders) {
-                return { success: false, error: 'Deze drop heeft de bestellimiet bereikt.' };
-            }
-        }
-
-        let variantLabel: string | null = null;
-        if (product.type === 'clothing') {
-            if (!line.variant_id) return { success: false, error: 'Kies een maat.' };
-            const variant = product.variants.find(v => v.id === line.variant_id && v.is_active);
-            if (!variant) return { success: false, error: 'Ongeldige variant geselecteerd.' };
-            variantLabel = [variant.size, variant.color].filter(Boolean).join(' / ') || null;
-        }
-
-        const customFieldDefs = product.custom_fields ?? [];
-        const answers = line.custom_field_answers ?? [];
-        const customFieldValues: { label: string; value: string }[] = [];
-        for (const [index, def] of customFieldDefs.entries()) {
-            const value = (answers[index] ?? '').trim();
-            if (!value) return { success: false, error: `Vul "${def.label}" in.` };
-            if (value.length > def.max_length) return { success: false, error: `"${def.label}" mag maximaal ${def.max_length} tekens bevatten.` };
-            customFieldValues.push({ label: def.label, value });
-        }
-
-        const unitPrice = Number(product.price);
-        const subtotal = unitPrice * line.quantity;
-
-        let preorderId: number;
-        try {
-            preorderId = await insertPreorderWithStockDb({
-                user_id: session.user.id,
-                drop_window_id: product.drop_window?.id ?? null,
-                first_name: data.first_name,
-                last_name: data.last_name,
-                email: data.email,
-                phone_number: data.phone_number,
-                status: 'awaiting_deposit',
-                subtotal_amount: subtotal.toFixed(2),
-                // No deposit concept anymore — the full price is charged upfront. This column stays
-                // notNull in the DB, so it's kept equal to the subtotal rather than dropped.
-                deposit_amount: subtotal.toFixed(2),
-                terms_accepted: data.terms_accepted,
-                pickup_notes: data.pickup_notes || null,
-                access_token: crypto.randomUUID(),
-            }, {
-                product_id: product.id,
-                variant_id: line.variant_id ?? null,
-                quantity: line.quantity,
-                unit_price: unitPrice.toFixed(2),
-                product_name_snapshot: product.name,
-                variant_label_snapshot: variantLabel,
-                custom_field_values: customFieldValues.length > 0 ? customFieldValues : null,
-            });
-        } catch (error) {
-            if (error instanceof InsufficientStockError) {
-                return { success: false, error: error.message };
-            }
-            throw error;
-        }
-
-        const payment = await buildFinancePaymentRequest(preorderId);
-        if (!payment.success) {
-            return { success: false, error: payment.error, preorderId };
-        }
-
-        return { success: true, checkoutUrl: payment.checkoutUrl, preorderId };
-    } catch (error) {
-        safeConsoleError('[webshop-checkout.actions.ts][submitPreorderAndInitiatePayment]', error);
-        return { success: false, error: 'Er is een onverwachte fout opgetreden.' };
-    }
+export async function submitPreorderAndInitiatePayment(
+    formData: WebshopPreorderForm
+): Promise<SubmitPreorderResult> {
+    return executeSubmitPreorder(formData);
 }

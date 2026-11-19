@@ -1,5 +1,7 @@
+import Link from '@/components/ui/Link';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Divider, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import AuditLogIsland from '@/components/islands/beheer/AuditLogIsland';
-import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
 import {
     getPendingSignupsAction,
     getAuditSettingsAction,
@@ -18,7 +20,7 @@ export default async function AuditLoggingPage() {
         getSystemLogsAction(50, 'admin'),
         getSystemLogsAction(50, 'system')
     ]);
-    
+
     const combinedResolvedNames = {
         ...(adminLogsRes.success ? adminLogsRes.resolvedNames || {} : {}),
         ...(systemLogsRes.success ? systemLogsRes.resolvedNames || {} : {})
@@ -35,29 +37,46 @@ export default async function AuditLoggingPage() {
     };
 
     return (
-        <BeheerPageShell
-            title="Audit & Logboek"
-            backHref="/beheer"
-            actions={
-                <div className="flex items-center gap-4 rounded-2xl border border-(--beheer-border)/50 bg-(--beheer-card-soft) px-4 py-2 shadow-sm">
-                    <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Wachtrij</span>
-                        <span className="text-sm leading-none font-bold text-(--beheer-text)">{initialData.signups.length}</span>
-                    </div>
-                    <div className="h-6 w-px bg-(--beheer-border)/20" />
-                    <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Commissie</span>
-                        <span className="text-sm leading-none font-bold text-(--beheer-text)">{initialData.adminLogsTotal}</span>
-                    </div>
-                    <div className="h-6 w-px bg-(--beheer-border)/20" />
-                    <div className="flex flex-col items-center px-2">
-                        <span className="mb-1 text-[10px] leading-none font-semibold text-(--beheer-text-muted)">Systeem</span>
-                        <span className="text-sm leading-none font-bold text-(--beheer-text)">{initialData.systemLogsTotal}</span>
-                    </div>
-                </div>
-            }
-        >
-            <AuditLogIsland initialData={initialData} />
-        </BeheerPageShell>
+        <Container size="xl" py="lg">
+            <Stack gap="lg">
+                <Group justify="space-between" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href="/beheer"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                        <Title order={1} size="h2" c="brand">
+                            Audit &amp; Logboek
+                        </Title>
+                    </Group>
+
+                    <Paper withBorder px="md" py="xs" radius="lg">
+                        <Group gap="md" wrap="nowrap">
+                            <Stack gap={2} align="center" px={4}>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Wachtrij</Text>
+                                <Text size="sm" fw={700} lh={1}>{initialData.signups.length}</Text>
+                            </Stack>
+                            <Divider orientation="vertical" />
+                            <Stack gap={2} align="center" px={4}>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Commissie</Text>
+                                <Text size="sm" fw={700} lh={1}>{initialData.adminLogsTotal}</Text>
+                            </Stack>
+                            <Divider orientation="vertical" />
+                            <Stack gap={2} align="center" px={4}>
+                                <Text size="xs" c="dimmed" fw={600} lh={1}>Systeem</Text>
+                                <Text size="sm" fw={700} lh={1}>{initialData.systemLogsTotal}</Text>
+                            </Stack>
+                        </Group>
+                    </Paper>
+                </Group>
+
+                <AuditLogIsland initialData={initialData} />
+            </Stack>
+        </Container>
     );
 }

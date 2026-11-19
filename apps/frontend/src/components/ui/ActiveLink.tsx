@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils/cn';
 import { isPathActive } from '@/lib/utils/link-utils';
 
-type Props = LinkProps & {
+type Props = Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & LinkProps & {
     exact?: boolean;
     className?: string;
     activeClassName?: string;

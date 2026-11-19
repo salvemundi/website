@@ -1,3 +1,4 @@
+import { Card, SimpleGrid, Text } from '@mantine/core';
 import { ClubCard } from '@/components/ui/clubs/ClubCard';
 import { type Club } from '@salvemundi/validations/schema/clubs.zod';
 
@@ -9,17 +10,19 @@ interface ClubsListProps {
 export default function ClubsList({ initialClubs = [], isActiveMember = false }: ClubsListProps) {
     if (initialClubs.length === 0) {
         return (
-            <div className="rounded-3xl bg-bg-card/80 p-12 text-center shadow-lg dark:border dark:border-white/10">
-                <p className="text-lg text-text-muted italic">Geen clubs gevonden.</p>
-            </div>
+            <Card p="xl" ta="center">
+                <Text size="lg" c="dimmed" fs="italic">
+                    Geen clubs gevonden.
+                </Text>
+            </Card>
         );
     }
 
     return (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <SimpleGrid cols={{ base: 1, md: 2, lg: 4 }} spacing="lg">
             {initialClubs.map((club, idx) => (
                 <ClubCard key={club.id} club={club} index={idx} isActiveMember={isActiveMember} />
             ))}
-        </div>
+        </SimpleGrid>
     );
 }

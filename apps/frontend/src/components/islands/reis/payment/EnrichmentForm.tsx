@@ -2,17 +2,25 @@
 
 import React from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
-import { 
-    Bus,
-    AlertCircle,
-    Briefcase,
-    User
-} from 'lucide-react';
-import { DateInput } from '@/shared/ui/DateInput';
+import { Bus, AlertCircle, Briefcase, User } from 'lucide-react';
+import {
+    Box,
+    Divider,
+    Group,
+    InputWrapper,
+    Paper,
+    Select,
+    SimpleGrid,
+    Stack,
+    Switch,
+    Text,
+    Textarea,
+    TextInput,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
+import { DateInput } from '@mantine/dates';
 import { PhoneInput } from '@/shared/ui/PhoneInput';
-import { FormField } from '@/shared/ui/FormField';
-import { Input } from '@/shared/ui/Input';
-import { Switch } from '@/shared/ui/Switch';
 import { type ReisPaymentEnrichment } from '@salvemundi/validations/schema/trip.zod';
 import { type Trip } from '@salvemundi/validations';
 
@@ -21,168 +29,247 @@ interface EnrichmentFormProps {
     hideHeader?: boolean;
 }
 
+const parseNlDate = (input: string): string | null => {
+    const trimmed = input.trim();
+    const nlMatch = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(trimmed);
+    if (nlMatch) {
+        return `${nlMatch[3]}-${nlMatch[2].padStart(2, '0')}-${nlMatch[1].padStart(2, '0')}`;
+    }
+    const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    return isoMatch ? trimmed : null;
+};
+
 export function EnrichmentForm({ trip, hideHeader = false }: EnrichmentFormProps) {
     const { register, control, formState: { errors } } = useFormContext<ReisPaymentEnrichment>();
 
     return (
-        <div className="space-y-6">
+        <Stack gap="lg">
             <input type="hidden" {...register('is_bus_trip')} />
             {!hideHeader && (
-                <header className="mb-6 border-b border-black/5 pb-4 dark:border-white/10">
-                    <h2 className="mb-1 flex items-center gap-3 text-2xl font-black tracking-tighter text-(--text-main) italic sm:text-3xl">
-                        <User className="size-7 text-theme-purple" />
-                        Reisgegevens
-                    </h2>
-                    <p className="text-sm text-(--text-muted)">Vul je gegevens aan voor <span className="font-bold text-theme-purple">{trip.name}</span>.</p>
-                </header>
+                <Stack gap={4}>
+                    <Group gap="sm">
+                        <Text span c="brand" lh={1}>
+                            <User size={26} />
+                        </Text>
+                        <Title order={2} size="h2">
+                            Reisgegevens
+                        </Title>
+                    </Group>
+                    <Text size="sm" c="dimmed">
+                        Vul je gegevens aan voor <Text span fw={700} c="brand">{trip.name}</Text>.
+                    </Text>
+                    <Divider mt="sm" />
+                </Stack>
             )}
 
-            <div className="grid grid-cols-1 gap-x-6 gap-y-5 @md:grid-cols-2 @3xl:grid-cols-3">
-                {/* Identity */}
-                <div className="@md:col-span-1">
-                    <FormField id="first_name" label="Voornaam (zoals op ID/Paspoort)" required error={errors.first_name?.message}>
-                        <div className="group relative">
-                            <Input 
-                                {...register('first_name')} 
-                                placeholder="Volledige voornaam" 
-                                className="pr-10" 
-                                /* We use 'one-time-code' to block Chrome's aggressive autofill. */
-                                autoComplete="one-time-code"
+            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
+                <Stack gap={4}>
+                    <TextInput
+                        id="first_name"
+                        label="Voornaam (zoals op ID/Paspoort)"
+                        required
+                        placeholder="Volledige voornaam"
+                        autoComplete="one-time-code"
+                        rightSection={
+                            <Text span c="error" lh={1}>
+                                <AlertCircle size={18} />
+                            </Text>
+                        }
+                        error={errors.first_name?.message}
+                        {...register('first_name')}
+                    />
+                    <Text size="xs" fw={700} c="error">
+                        → LET OP: MOET EXACT OVEREENKOMEN MET JE ID-BEWIJS!
+                    </Text>
+                </Stack>
+
+                <TextInput
+                    id="last_name"
+                    label="Achternaam"
+                    required
+                    placeholder="Achternaam"
+                    error={errors.last_name?.message}
+                    {...register('last_name')}
+                />
+
+                <Controller
+                    name="date_of_birth"
+                    control={control}
+                    render={({ field }) => (
+                        <DateInput
+                            id="date_of_birth"
+                            label="Geboortedatum"
+                            required
+                            value={field.value || null}
+                            onChange={(val) => field.onChange(val ?? '')}
+                            valueFormat="DD-MM-YYYY"
+                            dateParser={parseNlDate}
+                            placeholder="dd-mm-jjjj"
+                            autoComplete="off"
+                            error={errors.date_of_birth?.message}
+                        />
+                    )}
+                />
+
+                <InputWrapper
+                    id="phone_number"
+                    label="Telefoonnummer"
+                    required
+                    error={errors.phone_number?.message}
+                >
+                    <Controller
+                        name="phone_number"
+                        control={control}
+                        render={({ field }) => (
+                            <PhoneInput
+                                {...field}
+                                id="phone_number"
+                                error={!!errors.phone_number}
                             />
-                            <AlertCircle className="absolute top-1/2 right-3 size-5 -translate-y-1/2 text-red-500 opacity-50 transition-opacity group-hover:opacity-100" />
-                        </div>
-                        <p className="mt-1 flex items-center gap-1 text-[10px] font-bold text-red-500">
-                            <span>→</span> LET OP: MOET EXACT OVEREENKOMEN MET JE ID-BEWIJS!
-                        </p>
-                    </FormField>
-                </div>
-
-                <div className="@md:col-span-1">
-                    <FormField id="last_name" label="Achternaam" required error={errors.last_name?.message}>
-                        <Input {...register('last_name')} placeholder="Achternaam" />
-                    </FormField>
-                </div>
-
-                <div className="@md:col-span-1">
-                    <FormField id="date_of_birth" label="Geboortedatum" required error={errors.date_of_birth?.message}>
-                        <Controller 
-                            name="date_of_birth"
-                            control={control}
-                            render={({ field }) => <DateInput {...field} autoComplete="off" />}
-                        />
-                    </FormField>
-                </div>
-
-                <div className="@md:col-span-1">
-                    <FormField id="phone_number" label="Telefoonnummer" required error={errors.phone_number?.message}>
-                        <Controller 
-                            name="phone_number"
-                            control={control}
-                            render={({ field }) => <PhoneInput {...field} />}
-                        />
-                    </FormField>
-                </div>
+                        )}
+                    />
+                </InputWrapper>
 
                 {!trip.is_bus_trip && (
                     <>
-                        <div className="@md:col-span-1">
-                            <FormField id="id_document" label="ID Document Type" required error={errors.id_document?.message}>
-                                <select {...register('id_document')} className="form-input" autoComplete="off">
-                                    <option value="none">Maak een keuze...</option>
-                                    <option value="id_card">ID-kaart</option>
-                                    <option value="passport">Paspoort</option>
-                                </select>
-                            </FormField>
-                        </div>
+                        <Controller
+                            name="id_document"
+                            control={control}
+                            render={({ field }) => (
+                                <Select
+                                    id="id_document"
+                                    label="ID Document Type"
+                                    required
+                                    data={[
+                                        { value: 'none', label: 'Maak een keuze...' },
+                                        { value: 'id_card', label: 'ID-kaart' },
+                                        { value: 'passport', label: 'Paspoort' },
+                                    ]}
+                                    value={field.value}
+                                    onChange={(val) => field.onChange((val ?? 'none') as ReisPaymentEnrichment['id_document'])}
+                                    allowDeselect={false}
+                                    error={errors.id_document?.message}
+                                />
+                            )}
+                        />
 
-                        <div className="@md:col-span-1">
-                            <FormField id="document_number" label="Documentnummer" required error={errors.document_number?.message}>
-                                <Input 
-                                    {...register('document_number')} 
-                                    placeholder="Bijv. ABC123456" 
+                        <TextInput
+                            id="document_number"
+                            label="Documentnummer"
+                            required
+                            placeholder="Bijv. ABC123456"
+                            autoComplete="off"
+                            minLength={6}
+                            maxLength={12}
+                            error={errors.document_number?.message}
+                            {...register('document_number')}
+                        />
+
+                        <Controller
+                            name="document_expiry_date"
+                            control={control}
+                            render={({ field }) => (
+                                <DateInput
+                                    id="document_expiry_date"
+                                    label="Vervaldatum Document"
+                                    required
+                                    value={field.value || null}
+                                    onChange={(val) => field.onChange(val ?? '')}
+                                    valueFormat="DD-MM-YYYY"
+                                    dateParser={parseNlDate}
+                                    placeholder="dd-mm-jjjj"
                                     autoComplete="off"
-                                    minLength={6}
-                                    maxLength={12}
+                                    error={errors.document_expiry_date?.message}
                                 />
-                            </FormField>
-                        </div>
-
-                        <div className="@md:col-span-1">
-                            <FormField id="document_expiry_date" label="Vervaldatum Document" required error={errors.document_expiry_date?.message}>
-                                <Controller 
-                                    name="document_expiry_date"
-                                    control={control}
-                                    render={({ field }) => <DateInput {...field} value={field.value ?? undefined} autoComplete="off" />}
-                                />
-                            </FormField>
-                        </div>
+                            )}
+                        />
                     </>
                 )}
 
-                <div className="@md:col-span-1">
-                    <FormField id="allergies" label="Allergieën & Medisch" error={errors.allergies?.message}>
-                        <textarea {...register('allergies')} placeholder="Bijv. Notenallergie, medicijngebruik..." className="min-h-20 form-input" autoComplete="off" />
-                    </FormField>
-                </div>
+                <Textarea
+                    id="allergies"
+                    label="Allergieën & Medisch"
+                    placeholder="Bijv. Notenallergie, medicijngebruik..."
+                    minRows={3}
+                    autosize
+                    autoComplete="off"
+                    error={errors.allergies?.message}
+                    {...register('allergies')}
+                />
 
-                <div className="@md:col-span-1">
-                    <FormField id="special_notes" label="Speciale Opmerkingen" error={errors.special_notes?.message}>
-                        <textarea {...register('special_notes')} placeholder="Overige zaken..." className="min-h-20 form-input" autoComplete="off" />
-                    </FormField>
-                </div>
+                <Textarea
+                    id="special_notes"
+                    label="Speciale Opmerkingen"
+                    placeholder="Overige zaken..."
+                    minRows={3}
+                    autosize
+                    autoComplete="off"
+                    error={errors.special_notes?.message}
+                    {...register('special_notes')}
+                />
 
-                <div className="col-span-1 @md:col-span-2 @3xl:col-span-3">
-                    {trip.is_bus_trip && (
-                        <div className="flex items-center justify-between gap-6 rounded-2xl border border-(--border-color) bg-(--bg-card) p-4 dark:border-white/10">
-                            <div className="flex items-center gap-3">
-                                <div className="flex size-10 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/10 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/10 dark:text-purple-300">
-                                    <Bus className="size-5" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-(--text-main)">Vrijwillige Chauffeur?</p>
-                                    <p className="text-xs text-(--text-muted)">Bereid om een busje te rijden.</p>
-                                </div>
-                            </div>
-                            <Controller
-                                name="willing_to_drive"
-                                control={control}
-                                render={({ field }) => (
-                                    <Switch
-                                        checked={Boolean(field.value)}
-                                        onChange={field.onChange}
-                                        ariaLabel="Vrijwillige chauffeur"
-                                    />
-                                )}
-                            />
-                        </div>
+                <Box style={{ gridColumn: '1 / -1' }}>
+                    {trip.is_bus_trip ? (
+                        <Paper p="md" radius="lg" withBorder>
+                            <Group justify="space-between" align="center" gap="md">
+                                <Group gap="sm">
+                                    <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                        <Bus size={20} />
+                                    </ThemeIcon>
+                                    <Stack gap={2}>
+                                        <Text size="sm" fw={700}>
+                                            Vrijwillige Chauffeur?
+                                        </Text>
+                                        <Text size="xs" c="dimmed">
+                                            Bereid om een busje te rijden.
+                                        </Text>
+                                    </Stack>
+                                </Group>
+                                <Controller
+                                    name="willing_to_drive"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Switch
+                                            checked={Boolean(field.value)}
+                                            onChange={(e) => field.onChange(e.currentTarget.checked)}
+                                            aria-label="Vrijwillige chauffeur"
+                                        />
+                                    )}
+                                />
+                            </Group>
+                        </Paper>
+                    ) : (
+                        <Paper p="md" radius="lg" withBorder>
+                            <Group justify="space-between" align="center" gap="md">
+                                <Group gap="sm">
+                                    <ThemeIcon size={40} radius="md" variant="light" color="brand">
+                                        <Briefcase size={20} />
+                                    </ThemeIcon>
+                                    <Stack gap={2}>
+                                        <Text size="sm" fw={700}>
+                                            Extra Koffer?
+                                        </Text>
+                                        <Text size="xs" c="dimmed">
+                                            Ik wil een grote koffer meenemen.
+                                        </Text>
+                                    </Stack>
+                                </Group>
+                                <Controller
+                                    name="extra_luggage"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Switch
+                                            checked={Boolean(field.value)}
+                                            onChange={(e) => field.onChange(e.currentTarget.checked)}
+                                            aria-label="Extra koffer meenemen"
+                                        />
+                                    )}
+                                />
+                            </Group>
+                        </Paper>
                     )}
-
-                    {!trip.is_bus_trip && (
-                        <div className="flex items-center justify-between gap-6 rounded-2xl border border-(--border-color) bg-(--bg-card) p-4 dark:border-white/10">
-                            <div className="flex items-center gap-3">
-                                <div className="flex size-10 items-center justify-center rounded-xl border border-purple-500/10 bg-purple-500/10 text-purple-700 dark:border-purple-400/10 dark:bg-purple-400/10 dark:text-purple-300">
-                                    <Briefcase className="size-5" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-(--text-main)">Extra Koffer?</p>
-                                    <p className="text-xs text-(--text-muted)">Ik wil een grote koffer meenemen.</p>
-                                </div>
-                            </div>
-                            <Controller
-                                name="extra_luggage"
-                                control={control}
-                                render={({ field }) => (
-                                    <Switch
-                                        checked={Boolean(field.value)}
-                                        onChange={field.onChange}
-                                        ariaLabel="Extra koffer meenemen"
-                                    />
-                                )}
-                            />
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
+                </Box>
+            </SimpleGrid>
+        </Stack>
     );
 }

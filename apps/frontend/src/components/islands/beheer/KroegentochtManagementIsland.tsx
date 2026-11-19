@@ -5,11 +5,22 @@ import {
     Plus,
     Settings,
     AlertCircle,
-    RefreshCw
+    RefreshCw,
+    ChevronLeft,
 } from 'lucide-react';
-import BeheerToolbar from '@/components/ui/beheer/BeheerToolbar';
+import {
+    ActionIcon,
+    Alert,
+    Box,
+    Button,
+    Container,
+    Group,
+    Paper,
+    Stack,
+    Text,
+    Title,
+} from '@mantine/core';
 import BeheerVisibilityToggle from '@/components/ui/beheer/BeheerVisibilityToggle';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -43,7 +54,7 @@ export default function KroegentochtManagementIsland({
     initialSignups = []
 }: KroegentochtManagementIslandProps) {
     const router = useRouter();
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const events = initialEvents;
     const [selectedEvent, setSelectedEvent] = useState<PubCrawlEvent | null>(
         selectPubCrawlEvent(initialEvents)
@@ -142,16 +153,31 @@ export default function KroegentochtManagementIsland({
         }
     };
 
-
-
     return (
-        <>
-            <BeheerToolbar
-                title="Kroegentocht"
-                subtitle={selectedEvent ? `Beheer: ${selectedEvent.name}` : "Aanmeldingen, tickets & event instellingen"}
-                backHref="/beheer"
-                actions={
-                    <>
+        <Container size="xl" py="xl">
+            <Stack gap="xl">
+                <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
+                    <Group gap="md" align="center">
+                        <ActionIcon
+                            component={Link}
+                            href="/beheer"
+                            variant="default"
+                            size="lg"
+                            aria-label="Terug"
+                        >
+                            <ChevronLeft size={18} />
+                        </ActionIcon>
+                        <Stack gap={2}>
+                            <Title order={1} size="h2" c="brand">
+                                Kroegentocht
+                            </Title>
+                            <Text size="sm" c="dimmed">
+                                {selectedEvent ? `Beheer: ${selectedEvent.name}` : 'Aanmeldingen, tickets & event instellingen'}
+                            </Text>
+                        </Stack>
+                    </Group>
+
+                    <Group gap="sm" wrap="wrap">
                         <KroegentochtEventDropdown
                             events={events}
                             selectedEventId={selectedEvent?.id || null}
@@ -159,24 +185,28 @@ export default function KroegentochtManagementIsland({
                         />
 
                         {selectedEvent && (
-                            <Link
+                            <Button
+                                component={Link}
                                 href={`/beheer/kroegentocht/bewerk/${selectedEvent.id}`}
-                                className="flex items-center justify-center gap-2 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) px-4 py-2.5 text-sm font-semibold text-(--beheer-text-muted) shadow-sm transition-all hover:border-(--beheer-accent)/30 hover:text-(--beheer-accent) active:scale-90"
+                                variant="default"
+                                leftSection={<Settings size={16} />}
                                 title="Event Details"
                             >
-                                <Settings className="size-4" />
-                                <span className="hidden sm:inline">Details</span>
-                            </Link>
+                                Details
+                            </Button>
                         )}
 
-                        <button
+                        <ActionIcon
+                            type="button"
+                            variant="default"
+                            size="lg"
                             onClick={handleRefresh}
                             disabled={isPending}
-                            className="icon-button rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-2.5 text-(--beheer-text-muted) transition-all hover:border-(--beheer-accent)/30 hover:text-(--beheer-accent) active:scale-90 disabled:opacity-50"
+                            aria-label="Vernieuwen"
                             title="Vernieuwen"
-                            type="button">
-                            <RefreshCw className={`size-4 ${isPending ? 'animate-spin' : ''}`} />
-                        </button>
+                        >
+                            <RefreshCw size={16} className={isPending ? 'animate-spin' : undefined} />
+                        </ActionIcon>
 
                         <BeheerVisibilityToggle
                             isVisible={settings.show}
@@ -184,64 +214,68 @@ export default function KroegentochtManagementIsland({
                             isPending={isPending}
                         />
 
-                        <Link
+                        <Button
+                            component={Link}
                             href="/beheer/kroegentocht/nieuw"
-                            className="flex items-center justify-center gap-2 rounded-(--beheer-radius) bg-(--beheer-accent) px-6 py-2.5 text-base font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
+                            color="accent"
+                            leftSection={<Plus size={16} />}
                         >
-                            <Plus className="size-4" />
                             Nieuw Event
-                        </Link>
-                    </>
-                }
-            />
+                        </Button>
+                    </Group>
+                </Group>
 
-            <div className="w-full py-4 md:py-8">
-                <div className="flex flex-col">
-
-                    {error && (
-                        <div className="mb-8 flex items-center gap-3 rounded-(--beheer-radius) border border-red-500/50 bg-red-500/10 p-4 text-base font-semibold text-red-500">
-                            <AlertCircle className="size-5" />
-                            {error}
-                            <button
+                {error && (
+                    <Alert color="error" icon={<AlertCircle size={18} />}>
+                        <Group justify="space-between" wrap="wrap" gap="sm">
+                            <Text size="sm" fw={600}>{error}</Text>
+                            <Button
+                                type="button"
+                                variant="subtle"
+                                color="error"
+                                size="xs"
                                 onClick={handleRefresh}
-                                className="ml-auto beheer-button underline"
-                                type="button">
+                            >
                                 Probeer opnieuw
-                            </button>
-                        </div>
-                    )}
+                            </Button>
+                        </Group>
+                    </Alert>
+                )}
 
-                    {selectedEvent ? (
-                        <div className="space-y-8">
-                            <KroegentochtScannerSettings key={String(selectedEvent.id)} eventId={Number(selectedEvent.id)} />
-                            <div className={`transition-opacity duration-300 ${isPending ? 'pointer-events-none opacity-50' : 'opacity-100'}`}>
-                                <SignupList
-                                    signups={signups}
-                                    eventId={selectedEvent.id}
-                                    eventName={selectedEvent.name}
-                                    onDelete={(id) => {
-                                        void handleDeleteSignup(id);
-                                    }}
-                                    onEdit={(id) => router.push(`/beheer/kroegentocht/deelnemer/${id}`)}
-                                    eventGroups={((selectedEvent.groups || []) as unknown[])}
-                                    onUpdateGroup={handleUpdateGroup}
-                                    onRefresh={handleRefresh}
-                                />
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="rounded-2xl border-2 border-dashed border-(--border-color)/30 bg-(--bg-card)/40 py-20 text-center">
-                            <AlertCircle className="mx-auto mb-4 size-16 text-(--text-muted) opacity-20" />
-                            <h2 className="text-xl font-semibold tracking-tight text-(--text-main)">Geen Event Geselecteerd</h2>
-                            <p className="mt-2 text-base text-(--text-subtle)">Kies een event hierboven om de data te bekijken.</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </>
+                {selectedEvent ? (
+                    <Stack gap="lg">
+                        <KroegentochtScannerSettings key={String(selectedEvent.id)} eventId={Number(selectedEvent.id)} />
+                        <Box
+                            style={{
+                                opacity: isPending ? 0.5 : 1,
+                                pointerEvents: isPending ? 'none' : 'auto',
+                                transition: 'opacity 300ms ease',
+                            }}
+                        >
+                            <SignupList
+                                signups={signups}
+                                eventId={selectedEvent.id}
+                                eventName={selectedEvent.name}
+                                onDelete={(id) => {
+                                    void handleDeleteSignup(id);
+                                }}
+                                onEdit={(id) => router.push(`/beheer/kroegentocht/deelnemer/${id}`)}
+                                eventGroups={((selectedEvent.groups || []) as unknown[])}
+                                onUpdateGroup={handleUpdateGroup}
+                                onRefresh={handleRefresh}
+                            />
+                        </Box>
+                    </Stack>
+                ) : (
+                    <Paper withBorder p="xl" ta="center" style={{ borderStyle: 'dashed' }}>
+                        <Stack align="center" gap="xs" py="xl">
+                            <AlertCircle size={48} opacity={0.25} />
+                            <Title order={2} size="h3">Geen Event Geselecteerd</Title>
+                            <Text size="sm" c="dimmed">Kies een event hierboven om de data te bekijken.</Text>
+                        </Stack>
+                    </Paper>
+                )}
+            </Stack>
+        </Container>
     );
 }
-
-
-

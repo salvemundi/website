@@ -1,19 +1,26 @@
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Plus, Info, ChevronLeft } from 'lucide-react';
 import {
-    Plus,
-    Info
-} from 'lucide-react';
+    Button,
+    Center,
+    Container,
+    Group,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Text,
+    Title,
+} from '@mantine/core';
 import {
     deleteTrip,
-    toggleReisVisibility
+    toggleReisVisibility,
 } from '@/server/actions/beheer/reis/beheer-reis-core.actions';
 import BeheerVisibilityToggle from '@/components/ui/beheer/BeheerVisibilityToggle';
 import type { Trip } from '@salvemundi/validations';
-import BeheerToolbar from '@/components/ui/beheer/BeheerToolbar';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { safeConsoleError } from '@/server/utils/logger';
 import ReisCard from '@/components/admin/reis/ReisCard';
@@ -24,10 +31,13 @@ interface ReisSettingsIslandProps {
     initialSettings: { show: boolean };
 }
 
-export default function ReisSettingsIsland({ initialTrips, initialSettings }: ReisSettingsIslandProps) {
+export default function ReisSettingsIsland({
+    initialTrips,
+    initialSettings,
+}: ReisSettingsIslandProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [trips, setTrips] = useState<Trip[]>(initialTrips);
     const [settings, setSettings] = useState(initialSettings);
     const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
@@ -67,7 +77,10 @@ export default function ReisSettingsIsland({ initialTrips, initialSettings }: Re
                 const result = await toggleReisVisibility();
                 if (result.success) {
                     setSettings({ show: result.show ?? false });
-                    showToast(`Reis is nu ${result.show ? 'zichtbaar' : 'verborgen'}`, 'success');
+                    showToast(
+                        `Reis is nu ${result.show ? 'zichtbaar' : 'verborgen'}`,
+                        'success'
+                    );
                     router.refresh();
                 } else {
                     showToast(result.error || 'Fout bij bijwerken zichtbaarheid', 'error');
@@ -80,13 +93,18 @@ export default function ReisSettingsIsland({ initialTrips, initialSettings }: Re
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Weet je zeker dat je deze reis wilt verwijderen? Dit verwijdert ook alle aanmeldingen!')) return;
+        if (
+            !confirm(
+                'Weet je zeker dat je deze reis wilt verwijderen? Dit verwijdert ook alle aanmeldingen!'
+            )
+        )
+            return;
 
         setIsDeleting(id);
         try {
             const res = await deleteTrip(id);
             if (res.success) {
-                setTrips(prev => prev.filter(t => t.id !== id));
+                setTrips((prev) => prev.filter((t) => t.id !== id));
                 showToast('Reis succesvol verwijderd', 'success');
                 router.refresh();
             } else {
@@ -102,28 +120,44 @@ export default function ReisSettingsIsland({ initialTrips, initialSettings }: Re
 
     return (
         <>
-            <BeheerToolbar
-                title="Reis Instellingen"
-                backHref="/beheer/reis"
-                actions={
-                    <div className="flex items-center gap-4">
-                        <BeheerVisibilityToggle
-                            isVisible={settings.show}
-                            onToggle={handleToggleVisibility}
-                            isPending={isPending}
-                        />
-                        <button
-                            onClick={handleAdd}
-                            className="group beheer-button flex items-center gap-2 rounded-xl border border-white/10 bg-(--beheer-accent) px-6 py-2.5 text-[10px] font-semibold tracking-widest text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
-                            type="button">
-                            <Plus className="size-4 transition-transform group-hover:rotate-90" />
-                            <span>Nieuwe Reis</span>
-                        </button>
-                    </div>
-                }
-            />
+            <Paper radius={0} shadow="xs" py="md">
+                <Container size="xl" py={0}>
+                    <Group justify="space-between" wrap="wrap" gap="md">
+                        <Group gap="md">
+                            <Button
+                                component={Link}
+                                href="/beheer/reis"
+                                variant="default"
+                                size="sm"
+                                leftSection={<ChevronLeft size={16} />}
+                            >
+                                Terug
+                            </Button>
+                            <Title order={1} size="h3" c="brand">
+                                Reis Instellingen
+                            </Title>
+                        </Group>
 
-            <div className="container mx-auto max-w-7xl px-4 py-8">
+                        <Group gap="md" wrap="wrap">
+                            <BeheerVisibilityToggle
+                                isVisible={settings.show}
+                                onToggle={handleToggleVisibility}
+                                isPending={isPending}
+                            />
+                            <Button
+                                type="button"
+                                size="sm"
+                                onClick={handleAdd}
+                                leftSection={<Plus size={16} />}
+                            >
+                                Nieuwe Reis
+                            </Button>
+                        </Group>
+                    </Group>
+                </Container>
+            </Paper>
+
+            <Container size="xl" py="xl">
                 {(isAdding || editingTrip) && (
                     <ReisForm
                         editingTrip={editingTrip}
@@ -134,7 +168,7 @@ export default function ReisSettingsIsland({ initialTrips, initialSettings }: Re
                 )}
 
                 {!isAdding && !editingTrip && (
-                    <div className="mb-20 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                    <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="lg" mb={64}>
                         {trips.map((trip) => (
                             <ReisCard
                                 key={trip.id}
@@ -147,15 +181,20 @@ export default function ReisSettingsIsland({ initialTrips, initialSettings }: Re
                             />
                         ))}
                         {trips.length === 0 && (
-                            <div className="col-span-full py-20 text-center">
-                                <Info className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-20" />
-                                <p className="font-semibold text-(--beheer-text-muted) italic">Nog geen reizen gepland...</p>
-                            </div>
+                            <Center py={80} style={{ gridColumn: '1 / -1' }}>
+                                <Stack align="center" gap="sm">
+                                    <Text span c="dimmed" lh={1}>
+                                        <Info size={40} />
+                                    </Text>
+                                    <Text fw={600} c="dimmed" fs="italic">
+                                        Nog geen reizen gepland...
+                                    </Text>
+                                </Stack>
+                            </Center>
                         )}
-                    </div>
+                    </SimpleGrid>
                 )}
-            </div>
-            <BeheerToast toast={toast} onClose={hideToast} />
+            </Container>
         </>
     );
 }

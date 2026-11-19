@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
+import { Box, Modal, SimpleGrid, UnstyledButton } from '@mantine/core';
 import { FallbackLogo } from '@/components/ui/media/FallbackLogo';
 
 const IMAGES = [
@@ -21,17 +22,6 @@ export const IntroLightboxIsland = () => {
         setLightboxSrc(null);
     };
 
-    useEffect(() => {
-        if (!lightboxOpen) return;
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                closeLightbox();
-            }
-        };
-        window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
-    }, [lightboxOpen]);
-
     const openLightbox = (src: string) => {
         setLightboxSrc(src);
         setLightboxOpen(true);
@@ -39,54 +29,57 @@ export const IntroLightboxIsland = () => {
 
     return (
         <>
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <SimpleGrid cols={{ base: 2, sm: 3 }} spacing="sm" mt="lg">
                 {IMAGES.map((img, idx) => {
                     const isFailed = failedImages.has(img.src);
 
                     return (
-                        <div
+                        <UnstyledButton
                             key={idx}
-                            className="relative flex h-32 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-purple-100 bg-purple-50 transition-opacity hover:opacity-80 dark:border-white/10 dark:bg-white/5"
+                            type="button"
                             onClick={() => openLightbox(img.src)}
+                            style={{ width: '100%' }}
                         >
-                            {isFailed ? (
-                                <FallbackLogo className="object-contain p-6" />
-                            ) : (
-                                <Image
-                                    src={img.src}
-                                    alt={img.alt}
-                                    fill
-                                    sizes="(max-width: 640px) 50vw, 33vw"
-                                    className="object-cover"
-                                    onError={() => setFailedImages(prev => new Set([...prev, img.src]))}
-                                />
-                            )}
-                        </div>
+                            <Box
+                                pos="relative"
+                                h={128}
+                                w="100%"
+                                style={{
+                                    borderRadius: 'var(--mantine-radius-md)',
+                                    overflow: 'hidden',
+                                    border: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)',
+                                    backgroundColor: 'color-mix(in srgb, var(--primary) 8%, transparent)',
+                                }}
+                            >
+                                {isFailed ? (
+                                    <FallbackLogo className="object-contain p-6" />
+                                ) : (
+                                    <Image
+                                        src={img.src}
+                                        alt={img.alt}
+                                        fill
+                                        sizes="(max-width: 640px) 50vw, 33vw"
+                                        style={{ objectFit: 'cover' }}
+                                        onError={() => setFailedImages(prev => new Set([...prev, img.src]))}
+                                    />
+                                )}
+                            </Box>
+                        </UnstyledButton>
                     );
                 })}
-            </div>
+            </SimpleGrid>
 
-            {lightboxOpen && lightboxSrc && (
-                <div
-                    className="bg-background/80 animate-in fade-in fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm duration-300 sm:p-6"
-                    onClick={(e) => {
-                        if (e.target === e.currentTarget) {
-                            closeLightbox();
-                        }
-                    }}
-                >
-                    <button
-                        onClick={closeLightbox}
-                        className="bg-background/80 hover:bg-background text-foreground/60 hover:text-foreground border-border absolute top-4 right-4 z-50 icon-button rounded-full border p-2 backdrop-blur-sm transition-colors"
-                        aria-label="Sluiten"
-                        type="button">
-                        ×
-                    </button>
-
-                    <div
-                        className="relative h-[80vh] w-full max-w-7xl overflow-hidden rounded-3xl bg-black/20 p-2"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+            <Modal
+                opened={lightboxOpen && Boolean(lightboxSrc)}
+                onClose={closeLightbox}
+                size="xl"
+                centered
+                radius="lg"
+                padding="xs"
+                aria-label="Foto voorbeeld"
+            >
+                {lightboxSrc && (
+                    <Box pos="relative" h="75vh" w="100%" style={{ borderRadius: 'var(--mantine-radius-md)', overflow: 'hidden' }}>
                         {failedImages.has(lightboxSrc) ? (
                             <FallbackLogo className="object-contain p-12" />
                         ) : (
@@ -94,12 +87,12 @@ export const IntroLightboxIsland = () => {
                                 src={lightboxSrc}
                                 alt="Foto"
                                 fill
-                                className="rounded-2xl object-contain"
+                                style={{ objectFit: 'contain' }}
                             />
                         )}
-                    </div>
-                </div>
-            )}
+                    </Box>
+                )}
+            </Modal>
         </>
     );
 };

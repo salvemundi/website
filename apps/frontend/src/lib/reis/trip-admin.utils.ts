@@ -5,11 +5,11 @@ import type { TripSignup } from '@salvemundi/validations';
  */
 export const getPaymentStatus = (signup: TripSignup) => {
     if (signup.full_payment_paid) {
-        return { label: 'Volledig betaald', color: 'bg-(--beheer-active)/10 text-(--beheer-active)' };
+        return { label: 'Volledig betaald', color: 'success' };
     } else if (signup.deposit_paid) {
-        return { label: 'Aanbetaling voldaan', color: 'bg-yellow-500/10 text-yellow-600' };
+        return { label: 'Aanbetaling voldaan', color: 'accent' };
     } else {
-        return { label: 'Nog geen betaling', color: 'bg-(--beheer-inactive)/10 text-(--beheer-inactive)' };
+        return { label: 'Nog geen betaling', color: 'error' };
     }
 };
 
@@ -18,10 +18,10 @@ export const getPaymentStatus = (signup: TripSignup) => {
  */
 export const getStatusBadge = (status: string) => {
     const statusMap = new Map<string, { label: string; color: string }>([
-        ['registered', { label: 'Geregistreerd', color: 'bg-(--beheer-accent)/10 text-(--beheer-accent)' }],
-        ['waitlist', { label: 'Wachtlijst', color: 'bg-yellow-500/10 text-yellow-600' }],
-        ['confirmed', { label: 'Bevestigd', color: 'bg-(--beheer-active)/10 text-(--beheer-active)' }],
-        ['cancelled', { label: 'Geannuleerd', color: 'bg-(--beheer-inactive)/10 text-(--beheer-inactive)' }]
+        ['registered', { label: 'Geregistreerd', color: 'brand' }],
+        ['waitlist', { label: 'Wachtlijst', color: 'accent' }],
+        ['confirmed', { label: 'Bevestigd', color: 'success' }],
+        ['cancelled', { label: 'Geannuleerd', color: 'error' }]
     ]);
-    return statusMap.get(status) || { label: status, color: 'bg-(--beheer-text-muted)/10 text-(--beheer-text-muted)' };
+    return statusMap.get(status) || { label: status, color: 'dimmed' };
 };

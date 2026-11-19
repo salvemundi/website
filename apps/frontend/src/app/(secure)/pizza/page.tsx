@@ -1,15 +1,18 @@
+import Link from '@/components/ui/Link';
 import { redirect } from 'next/navigation';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Group, Stack } from '@mantine/core';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { getPizzaOverview } from '@/server/actions/public/pizza.actions';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
-import BackButton from '@/components/ui/navigation/BackButton';
 import { PizzaOverviewIsland } from '@/components/islands/pizza/PizzaOverviewIsland';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
     title: 'Pizza-rondes | SV Salve Mundi',
-    description: 'Start een pizza-ronde of bestel mee met andere leden.' };
+    description: 'Start een pizza-ronde of bestel mee met andere leden.'
+};
 
 export default async function PizzaPage() {
     const session = await getEnrichedSession();
@@ -21,12 +24,22 @@ export default async function PizzaPage() {
 
     return (
         <PublicPageShell title="Pizza-rondes">
-            <div className="container mx-auto max-w-7xl px-4 pt-8">
-                <BackButton href="/profiel" />
-            </div>
-            <div className="container mx-auto max-w-7xl px-4 py-8">
-                <PizzaOverviewIsland open={overview.open} mine={overview.mine} />
-            </div>
+            <Container size="xl" py="xl">
+                <Stack gap="xl">
+                    <Group>
+                        <Button
+                            component={Link}
+                            href="/profiel"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                    </Group>
+                    <PizzaOverviewIsland open={overview.open} mine={overview.mine} />
+                </Stack>
+            </Container>
         </PublicPageShell>
     );
 }

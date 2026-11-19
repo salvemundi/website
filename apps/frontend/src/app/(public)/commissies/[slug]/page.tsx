@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import Link from '@/components/ui/Link';
 import { notFound } from 'next/navigation';
+import { ChevronLeft } from 'lucide-react';
+import { Box, Button, Container, Group, Stack } from '@mantine/core';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { CommitteeDetail } from '@/components/ui/commissies/CommitteeDetail';
 import { getCommitteeBySlug } from '@/server/actions/public/committees.actions';
-import BackButton from '@/components/ui/navigation/BackButton';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const { slug } = await params;
@@ -32,12 +34,25 @@ export default async function CommitteePage(props: { params: Promise<{ slug: str
 
     return (
         <PublicPageShell>
-            <div className="container max-w-7xl px-fluid-md pt-fluid-md pb-4">
-                <BackButton href="/commissies" title="Terug naar overzicht" />
-            </div>
-            <main className="max-w-app mx-auto px-fluid-md pb-fluid-lg">
-                <CommitteeDetail committee={committee} />
-            </main>
+            <Container size="xl" py="xl">
+                <Stack gap="xl">
+                    <Group>
+                        <Button
+                            component={Link}
+                            href="/commissies"
+                            title="Terug naar overzicht"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                    </Group>
+                    <Box component="main">
+                        <CommitteeDetail committee={committee} />
+                    </Box>
+                </Stack>
+            </Container>
         </PublicPageShell>
     );
 }

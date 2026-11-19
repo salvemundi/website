@@ -3,21 +3,28 @@
 import { useState, useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
+import {
+    ActionIcon,
+    Button,
+    Container,
+    Divider,
+    Group,
+    Paper,
+    Stack,
+    Text,
+    Title,
+} from '@mantine/core';
 
 import ActivityCard from './ActivityCard';
 import ActivityFilters from './ActivityFilters';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
-import BeheerToolbar from '@/components/ui/beheer/BeheerToolbar';
-import { useAdminToast } from '@/hooks/use-beheer-toast';
 import { isEventPast } from '@/shared/lib/utils/date';
+import { type BeheerActivity } from '@salvemundi/validations';
+import { type Committee } from '@salvemundi/validations/schema/committees.zod';
 
 function cleanCommitteeName(name: string): string {
     return name.replace(/\s*(\|\||[-–—])\s*SALVE MUNDI\s*$/gi, '').trim() || '';
 }
-
-import { type BeheerActivity } from '@salvemundi/validations';
-import { type Committee } from '@salvemundi/validations/schema/committees.zod';
 
 interface Props {
     initialEvents?: BeheerActivity[];
@@ -33,7 +40,6 @@ export default function AdminActivitiesIsland({
     permissions
 }: Props) {
     const router = useRouter();
-    const { toast, hideToast } = useAdminToast();
     const [events] = useState(initialEvents);
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
@@ -64,8 +70,6 @@ export default function AdminActivitiesIsland({
         }
         if (selectedCommittee !== 'all') result = result.filter(e => String(e.committee_id) === selectedCommittee);
 
-        // Same order as the public activities page: upcoming first (soonest -> furthest away),
-        // then past activities (most recent first).
         const getTime = (e: BeheerActivity) => (e.event_time && e.event_date.length <= 10)
             ? new Date(`${e.event_date}T${e.event_time}`).getTime()
             : new Date(e.event_date).getTime();
@@ -97,41 +101,54 @@ export default function AdminActivitiesIsland({
     const canEdit = !!permissions?.includes('activiteiten:edit');
 
     return (
-        <div className="w-full">
-            <BeheerToolbar
-                title="Activiteiten Beheer"
-                backHref="/beheer"
-                actions={
-                    <div className="flex flex-wrap items-center gap-4">
-                        <div className="flex items-center gap-4 rounded-2xl border border-border-color/50 bg-bg-soft px-4 py-2 shadow-sm">
-                            <div className="flex flex-col items-center px-2">
-                                <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Aankomend</span>
-                                <span className="text-sm leading-none font-bold text-text-main">{stats.upcoming}</span>
-                            </div>
-                            <div className="h-6 w-px bg-border-color/20" />
-                            <div className="flex flex-col items-center px-2">
-                                <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Totale activiteiten</span>
-                                <span className="text-sm leading-none font-bold text-text-main">{stats.total}</span>
-                            </div>
-                            <div className="h-6 w-px bg-border-color/20" />
-                            <div className="flex flex-col items-center px-2">
-                                <span className="mb-1 text-[10px] leading-none font-semibold text-text-muted">Aanmeldingen</span>
-                                <span className="text-sm leading-none font-bold text-text-main">{stats.signups}</span>
-                            </div>
-                        </div>
-
-                        <Link
-                            href="/beheer/activiteiten/nieuw"
-                            className="squircle flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-theme-purple px-4 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
+        <Container size="xl" py="xl">
+            <Stack gap="xl">
+                <Group justify="space-between" align="center" wrap="wrap" gap="md">
+                    <Group gap="md" align="center">
+                        <ActionIcon
+                            component={Link}
+                            href="/beheer"
+                            variant="default"
+                            size="lg"
+                            aria-label="Terug"
                         >
-                            <Plus className="size-4" />
-                            Nieuwe Activiteit
-                        </Link>
-                    </div>
-                }
-            />
+                            <ChevronLeft size={18} />
+                        </ActionIcon>
+                        <Title order={1} size="h2" c="brand">
+                            Activiteiten Beheer
+                        </Title>
+                    </Group>
 
-            <div className="admin-container flex flex-col py-4 md:py-8">
+                    <Group gap="md" wrap="wrap">
+                        <Paper withBorder px="md" py="xs" radius="lg">
+                            <Group gap="md" wrap="nowrap">
+                                <Stack gap={2} align="center" px={4}>
+                                    <Text size="xs" c="dimmed" fw={600} lh={1}>Aankomend</Text>
+                                    <Text size="sm" fw={700} lh={1}>{stats.upcoming}</Text>
+                                </Stack>
+                                <Divider orientation="vertical" />
+                                <Stack gap={2} align="center" px={4}>
+                                    <Text size="xs" c="dimmed" fw={600} lh={1}>Totale activiteiten</Text>
+                                    <Text size="sm" fw={700} lh={1}>{stats.total}</Text>
+                                </Stack>
+                                <Divider orientation="vertical" />
+                                <Stack gap={2} align="center" px={4}>
+                                    <Text size="xs" c="dimmed" fw={600} lh={1}>Aanmeldingen</Text>
+                                    <Text size="sm" fw={700} lh={1}>{stats.signups}</Text>
+                                </Stack>
+                            </Group>
+                        </Paper>
+
+                        <Button
+                            component={Link}
+                            href="/beheer/activiteiten/nieuw"
+                            leftSection={<Plus size={16} />}
+                        >
+                            Nieuwe Activiteit
+                        </Button>
+                    </Group>
+                </Group>
+
                 <ActivityFilters
                     searchQuery={searchQuery}
                     onSearchChange={setSearchQuery}
@@ -144,7 +161,7 @@ export default function AdminActivitiesIsland({
                     onCommitteeChange={setSelectedCommittee}
                 />
 
-                <div className="mt-10 grid grid-cols-1 gap-8">
+                <Stack gap="lg">
                     {displayedEvents.map((event) => (
                         <ActivityCard
                             key={event.id}
@@ -156,10 +173,8 @@ export default function AdminActivitiesIsland({
                             onEdit={(id) => router.push(`/beheer/activiteiten/${id}/bewerken`)}
                         />
                     ))}
-                </div>
-            </div>
-
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+                </Stack>
+            </Stack>
+        </Container>
     );
 }

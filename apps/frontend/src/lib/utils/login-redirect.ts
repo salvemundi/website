@@ -2,18 +2,26 @@ import { ROUTES } from '@/lib/config/routes';
 
 const LOGIN_PARAMS = ['needLogin', 'callbackURL'];
 
-/**
- * Mirrors Better Auth's relative callbackURL check (better-auth/src/auth/trusted-origins.ts).
- * Anything that does not match is rejected server-side with INVALID_CALLBACK_URL,
- * which would make the login button silently do nothing.
- */
-const BETTER_AUTH_RELATIVE_PATH = /^\/(?!\/|\\|%2f|%5c)[\w\-.+/@]*(?:\?[\w\-.+/=&%@]*)?$/;
+const SAFE_PATH_REGEX = /^\/[\w\-.+/@]*$/;
+const SAFE_QUERY_REGEX = /^[\w\-.+/=&%@]*$/;
 
 /**
  * Only allow same-site relative paths that Better Auth accepts (also prevents open redirects).
+ * Mirrors Better Auth's relative callbackURL check (better-auth/src/auth/trusted-origins.ts).
  */
 function isSafeRelativePath(value: string): boolean {
-    return BETTER_AUTH_RELATIVE_PATH.test(value);
+    const lower = value.toLowerCase();
+    if (!lower.startsWith('/') || lower.startsWith('//') || lower.startsWith('/\\') || lower.startsWith('/%2f') || lower.startsWith('/%5c')) {
+        return false;
+    }
+
+    const queryIndex = value.indexOf('?');
+    const path = queryIndex === -1 ? value : value.slice(0, queryIndex);
+    if (!SAFE_PATH_REGEX.test(path)) return false;
+
+    if (queryIndex === -1) return true;
+    const query = value.slice(queryIndex + 1);
+    return SAFE_QUERY_REGEX.test(query);
 }
 
 /**

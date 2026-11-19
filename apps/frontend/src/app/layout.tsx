@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
 import type { Metadata, Viewport } from 'next';
 import dynamic from 'next/dynamic';
-import { headers } from 'next/headers';
 import { connection } from 'next/server';
 import { Poppins } from 'next/font/google';
 
+import { Box, mantineHtmlProps } from '@mantine/core';
+import { MantineAppProvider } from '@/components/providers/MantineAppProvider';
+import { BRAND_COLORS } from '@/lib/config/theme';
 import './globals.css';
 
 import type { ExtendedSession, ImpersonationInfo } from '@/types/auth';
@@ -21,8 +23,8 @@ const FooterIsland = dynamic(() => import('@/components/islands/layout/FooterIsl
 
 export const viewport: Viewport = {
     themeColor: [
-        { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-        { media: '(prefers-color-scheme: dark)', color: '#1a141b' },
+        { media: '(prefers-color-scheme: light)', color: BRAND_COLORS.lightSurface },
+        { media: '(prefers-color-scheme: dark)', color: BRAND_COLORS.darkBase },
     ],
     viewportFit: 'cover'
 };
@@ -65,27 +67,22 @@ const poppins = Poppins({
 });
 
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-    const h = await headers();
-    const nonce = h.get('x-nonce') || '';
     const session = await getEnrichedSession();
     const adminAccess = await checkBeheerAccess();
 
     const { impersonation, isAuthorized } = adminAccess;
 
     return (
-        <html lang="nl" className="dark" suppressHydrationWarning>
-            <head>
-                <script id="theme-strategy" nonce={nonce} suppressHydrationWarning>
-                    {"(function(){try{if(localStorage.theme==='light'){document.documentElement.classList.remove('dark')}else{document.documentElement.classList.add('dark')}}catch(e){}})()"}
-                </script>
-            </head>
+        <html lang="nl" {...mantineHtmlProps} data-mantine-color-scheme="dark">
             <body className={`${poppins.variable} flex min-h-screen flex-col font-sans antialiased`}>
-                <ImpersonationWrapper impersonation={impersonation} />
-                <HeaderWrapper initialSession={session} isAuthorized={isAuthorized} />
-                <main className="flex grow flex-col pt-header-total">
-                    {children}
-                    <FooterWrapper initialSession={session} className="mt-auto w-full" />
-                </main>
+                <MantineAppProvider>
+                    <ImpersonationWrapper impersonation={impersonation} />
+                    <HeaderWrapper initialSession={session} isAuthorized={isAuthorized} />
+                    <main className="flex grow flex-col pt-header-total">
+                        {children}
+                        <FooterWrapper initialSession={session} />
+                    </main>
+                </MantineAppProvider>
             </body>
         </html>
     );
@@ -111,7 +108,7 @@ async function HeaderWrapper({ initialSession, isAuthorized }: { initialSession:
     );
 }
 
-async function FooterWrapper({ initialSession, className }: { initialSession: ExtendedSession | null; className?: string }) {
+async function FooterWrapper({ initialSession }: { initialSession: ExtendedSession | null }) {
     await connection();
     let documents: Awaited<ReturnType<typeof getDocumenten>> = [];
     let disabledRoutes: string[] = [];
@@ -131,14 +128,14 @@ async function FooterWrapper({ initialSession, className }: { initialSession: Ex
     }
 
     return (
-        <div className={className}>
+        <Box mt="auto" w="100%">
             <FooterIsland
                 documents={documents}
                 disabledRoutes={disabledRoutes}
                 committees={committees}
                 initialSession={initialSession}
             />
-        </div>
+        </Box>
     );
 }
 

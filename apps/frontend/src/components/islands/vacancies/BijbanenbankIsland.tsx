@@ -3,6 +3,21 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Briefcase, Search, X, SlidersHorizontal, LayoutGrid, List, Lock } from 'lucide-react';
+import {
+    ActionIcon,
+    Alert,
+    Box,
+    Button,
+    Center,
+    Checkbox,
+    Group,
+    Paper,
+    Select,
+    SimpleGrid,
+    Stack,
+    Text,
+    TextInput,
+} from '@mantine/core';
 import VacancyCard from './VacancyCard';
 import type { VacancyDTO } from '@salvemundi/validations';
 
@@ -120,167 +135,208 @@ export default function BijbanenbankIsland({ vacancies, isLoggedIn }: Bijbanenba
     }, [vacancies, typeTab, company, location, employmentType, workingHours, direction, salaryOnly, searchQuery, sortBy]);
 
     return (
-        <div className="space-y-6">
+        <Stack gap="lg">
             {!isLoggedIn && (
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-(--theme-purple)/20 bg-(--theme-purple)/10 p-4">
-                    <div className="flex items-center gap-3">
-                        <Lock className="size-5 shrink-0 text-(--theme-purple)" />
-                        <p className="text-sm font-semibold text-(--text-main)">
+                <Alert color="brand" variant="light" radius="lg" icon={<Lock size={20} />}>
+                    <Group justify="space-between" align="center" wrap="wrap" gap="sm">
+                        <Text size="sm" fw={600}>
                             Log in om bedrijfsnaam, omschrijving, locatie en contactgegevens te bekijken, en om te zoeken en filteren.
-                        </p>
-                    </div>
-                    <Link
-                        href="/?needLogin=true&callbackURL=/bijbanenbank"
-                        className="form-button shrink-0 rounded-xl bg-(--theme-purple) px-4 py-2 text-sm font-bold whitespace-nowrap text-white"
-                    >
-                        Inloggen
-                    </Link>
-                </div>
+                        </Text>
+                        <Button
+                            component={Link}
+                            href="/?needLogin=true&callbackURL=/bijbanenbank"
+                            size="xs"
+                        >
+                            Inloggen
+                        </Button>
+                    </Group>
+                </Alert>
             )}
 
-            <div className="flex flex-wrap gap-2" role="tablist" aria-label="Type vacature">
+            <Group gap="xs" wrap="wrap" role="tablist" aria-label="Type vacature">
                 {TABS.map((tab) => (
-                    <button
+                    <Button
                         key={tab.value}
                         type="button"
                         role="tab"
                         aria-selected={typeTab === tab.value}
+                        size="sm"
+                        variant={typeTab === tab.value ? 'filled' : 'default'}
                         onClick={() => setTypeTab(tab.value)}
-                        className={`form-button rounded-full px-4 py-2 text-sm font-bold transition-all ${
-                            typeTab === tab.value
-                                ? 'bg-(--theme-purple) text-white shadow-(--theme-purple)/20 shadow-lg'
-                                : 'bg-(--bg-soft) text-(--text-muted) hover:text-(--theme-purple)'
-                        }`}
                     >
                         {tab.label}
-                    </button>
+                    </Button>
                 ))}
-            </div>
+            </Group>
 
             {isLoggedIn && (
-                <>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-(--border-color) bg-(--bg-card) px-4 py-2.5 shadow-sm transition-colors focus-within:border-(--theme-purple) sm:max-w-md">
-                            <Search className="size-4 shrink-0 text-(--text-muted)" />
-                            <input
-                                type="text"
-                                placeholder="Zoek op titel, bedrijf, locatie, ..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="form-input-unstyled w-full border-none bg-transparent p-0 text-sm font-semibold text-(--text-main) outline-none placeholder:text-(--text-muted)"
-                            />
-                        </div>
+                <Stack gap="md">
+                    <Group gap="sm" wrap="wrap" align="center">
+                        <TextInput
+                            placeholder="Zoek op titel, bedrijf, locatie, ..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                            leftSection={<Search size={16} />}
+                            style={{ flex: 1, minWidth: 220 }}
+                            maw={{ sm: 448 }}
+                        />
 
-                        <button
+                        <Button
                             type="button"
+                            variant="default"
+                            size="sm"
+                            hiddenFrom="md"
                             onClick={() => setShowFilters((prev) => !prev)}
                             aria-expanded={showFilters}
-                            className="form-button flex items-center gap-2 rounded-2xl border border-(--border-color) bg-(--bg-card) px-4 py-2.5 text-sm font-bold text-(--text-main) shadow-sm md:hidden"
+                            leftSection={<SlidersHorizontal size={16} />}
+                            rightSection={filtersActive ? (
+                                <Box w={6} h={6} style={{ borderRadius: '9999px', backgroundColor: 'var(--primary)' }} />
+                            ) : undefined}
                         >
-                            <SlidersHorizontal className="size-4" />
                             Filters
-                            {filtersActive && <span className="size-1.5 rounded-full bg-(--theme-purple)" />}
-                        </button>
+                        </Button>
 
-                        <div className="flex shrink-0 items-center gap-1 rounded-2xl border border-(--border-color) bg-(--bg-card) p-1 shadow-sm">
-                            <button
-                                type="button"
-                                aria-label="Kaartweergave"
-                                aria-pressed={viewMode === 'grid'}
-                                onClick={() => setViewMode('grid')}
-                                className={`icon-button rounded-xl p-2 transition-colors ${viewMode === 'grid' ? 'bg-(--theme-purple) text-white' : 'text-(--text-muted) hover:text-(--theme-purple)'}`}
-                            >
-                                <LayoutGrid className="size-4" />
-                            </button>
-                            <button
-                                type="button"
-                                aria-label="Lijstweergave"
-                                aria-pressed={viewMode === 'list'}
-                                onClick={() => setViewMode('list')}
-                                className={`icon-button rounded-xl p-2 transition-colors ${viewMode === 'list' ? 'bg-(--theme-purple) text-white' : 'text-(--text-muted) hover:text-(--theme-purple)'}`}
-                            >
-                                <List className="size-4" />
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className={`${showFilters ? 'flex' : 'hidden'} flex-col gap-4 md:flex`}>
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-                            <select className="form-input text-sm" value={company} onChange={(e) => setCompany(e.target.value)}>
-                                <option value={ALL_VALUE}>Alle bedrijven</option>
-                                {companies.map((c) => <option key={c} value={c}>{c}</option>)}
-                            </select>
-                            <select className="form-input text-sm" value={location} onChange={(e) => setLocation(e.target.value)}>
-                                <option value={ALL_VALUE}>Alle locaties</option>
-                                {locations.map((l) => <option key={l} value={l}>{l}</option>)}
-                            </select>
-                            <select className="form-input text-sm" value={employmentType} onChange={(e) => setEmploymentType(e.target.value)}>
-                                <option value={ALL_VALUE}>Alle dienstverbanden</option>
-                                {employmentTypes.map((t) => <option key={t} value={t}>{t}</option>)}
-                            </select>
-                            <select className="form-input text-sm" value={workingHours} onChange={(e) => setWorkingHours(e.target.value)}>
-                                <option value={ALL_VALUE}>Alle werktijden</option>
-                                {workingHoursOptions.map((w) => <option key={w} value={w}>{w}</option>)}
-                            </select>
-                            {showDirectionFilter && (
-                                <select className="form-input text-sm" value={direction} onChange={(e) => setDirection(e.target.value)}>
-                                    <option value={ALL_VALUE}>Alle ICT-richtingen</option>
-                                    {directions.map((d) => <option key={d} value={d}>{d}</option>)}
-                                </select>
-                            )}
-                            <select className="form-input text-sm" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
-                                {SORT_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-                            </select>
-                        </div>
-
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                            <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-(--text-main)">
-                                <input
-                                    type="checkbox"
-                                    checked={salaryOnly}
-                                    onChange={(e) => setSalaryOnly(e.target.checked)}
-                                    className="size-4 accent-(--theme-purple)"
-                                />
-                                Alleen met salaris/vergoeding
-                            </label>
-
-                            {filtersActive && (
-                                <button
+                        <Paper p={4} radius="md" withBorder>
+                            <Group gap={4} wrap="nowrap">
+                                <ActionIcon
                                     type="button"
-                                    onClick={clearFilters}
-                                    className="form-button flex items-center gap-1.5 text-xs font-bold text-(--text-muted) transition-colors hover:text-(--theme-purple)"
+                                    aria-label="Kaartweergave"
+                                    aria-pressed={viewMode === 'grid'}
+                                    variant={viewMode === 'grid' ? 'filled' : 'subtle'}
+                                    onClick={() => setViewMode('grid')}
                                 >
-                                    <X className="size-3.5" />
-                                    Filters wissen
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </>
+                                    <LayoutGrid size={16} />
+                                </ActionIcon>
+                                <ActionIcon
+                                    type="button"
+                                    aria-label="Lijstweergave"
+                                    aria-pressed={viewMode === 'list'}
+                                    variant={viewMode === 'list' ? 'filled' : 'subtle'}
+                                    onClick={() => setViewMode('list')}
+                                >
+                                    <List size={16} />
+                                </ActionIcon>
+                            </Group>
+                        </Paper>
+                    </Group>
+
+                    <Box display={{ base: showFilters ? 'block' : 'none', md: 'block' }}>
+                        <Stack gap="sm">
+                            <SimpleGrid cols={{ base: 2, sm: 3, lg: showDirectionFilter ? 6 : 5 }} spacing="sm">
+                                <Select
+                                    size="sm"
+                                    value={company}
+                                    onChange={(val) => setCompany(val ?? ALL_VALUE)}
+                                    data={[
+                                        { value: ALL_VALUE, label: 'Alle bedrijven' },
+                                        ...companies.map((c) => ({ value: c, label: c })),
+                                    ]}
+                                    allowDeselect={false}
+                                />
+                                <Select
+                                    size="sm"
+                                    value={location}
+                                    onChange={(val) => setLocation(val ?? ALL_VALUE)}
+                                    data={[
+                                        { value: ALL_VALUE, label: 'Alle locaties' },
+                                        ...locations.map((l) => ({ value: l, label: l })),
+                                    ]}
+                                    allowDeselect={false}
+                                />
+                                <Select
+                                    size="sm"
+                                    value={employmentType}
+                                    onChange={(val) => setEmploymentType(val ?? ALL_VALUE)}
+                                    data={[
+                                        { value: ALL_VALUE, label: 'Alle dienstverbanden' },
+                                        ...employmentTypes.map((t) => ({ value: t, label: t })),
+                                    ]}
+                                    allowDeselect={false}
+                                />
+                                <Select
+                                    size="sm"
+                                    value={workingHours}
+                                    onChange={(val) => setWorkingHours(val ?? ALL_VALUE)}
+                                    data={[
+                                        { value: ALL_VALUE, label: 'Alle werktijden' },
+                                        ...workingHoursOptions.map((w) => ({ value: w, label: w })),
+                                    ]}
+                                    allowDeselect={false}
+                                />
+                                {showDirectionFilter && (
+                                    <Select
+                                        size="sm"
+                                        value={direction}
+                                        onChange={(val) => setDirection(val ?? ALL_VALUE)}
+                                        data={[
+                                            { value: ALL_VALUE, label: 'Alle ICT-richtingen' },
+                                            ...directions.map((d) => ({ value: d, label: d })),
+                                        ]}
+                                        allowDeselect={false}
+                                    />
+                                )}
+                                <Select
+                                    size="sm"
+                                    value={sortBy}
+                                    onChange={(val) => setSortBy((val ?? 'newest') as SortBy)}
+                                    data={SORT_OPTIONS}
+                                    allowDeselect={false}
+                                />
+                            </SimpleGrid>
+
+                            <Group justify="space-between" align="center" wrap="wrap" gap="sm">
+                                <Checkbox
+                                    label="Alleen met salaris/vergoeding"
+                                    checked={salaryOnly}
+                                    onChange={(e) => setSalaryOnly(e.currentTarget.checked)}
+                                />
+
+                                {filtersActive && (
+                                    <Button
+                                        type="button"
+                                        size="xs"
+                                        variant="subtle"
+                                        color="dimmed"
+                                        onClick={clearFilters}
+                                        leftSection={<X size={14} />}
+                                    >
+                                        Filters wissen
+                                    </Button>
+                                )}
+                            </Group>
+                        </Stack>
+                    </Box>
+                </Stack>
             )}
 
-            <p className="text-sm font-semibold text-(--text-muted)">
+            <Text size="sm" fw={600} c="dimmed">
                 {filteredVacancies.length} {filteredVacancies.length === 1 ? 'vacature' : 'vacatures'} gevonden
-            </p>
+            </Text>
 
             {filteredVacancies.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
-                    <Briefcase className="size-12 text-(--theme-purple)/20" />
-                    <p className="text-(--text-muted)">Geen vacatures gevonden die aan je filters voldoen.</p>
-                </div>
+                <Center py="xl">
+                    <Stack align="center" gap="sm" py="xl">
+                        <Text span c="brand" opacity={0.3} lh={1}>
+                            <Briefcase size={48} />
+                        </Text>
+                        <Text c="dimmed" ta="center">
+                            Geen vacatures gevonden die aan je filters voldoen.
+                        </Text>
+                    </Stack>
+                </Center>
             ) : viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
                     {filteredVacancies.map((vacancy) => (
                         <VacancyCard key={vacancy.id} vacancy={vacancy} variant="grid" isLoggedIn={isLoggedIn} />
                     ))}
-                </div>
+                </SimpleGrid>
             ) : (
-                <div className="flex flex-col gap-4">
+                <Stack gap="md">
                     {filteredVacancies.map((vacancy) => (
                         <VacancyCard key={vacancy.id} vacancy={vacancy} variant="list" isLoggedIn={isLoggedIn} />
                     ))}
-                </div>
+                </Stack>
             )}
-        </div>
+        </Stack>
     );
 }

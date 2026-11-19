@@ -2,12 +2,32 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { FileSignature, ShieldCheck, Clock, AlertTriangle, XCircle, Users, RefreshCw, Loader2 } from 'lucide-react';
-import type { NdaCommitteeOverview } from '@/server/queries/nda/beheer-nda.queries';
-import type { NdaCommitteeMember } from '@/server/queries/nda/beheer-nda.queries';
+import {
+    FileSignature,
+    ShieldCheck,
+    Clock,
+    AlertTriangle,
+    XCircle,
+    Users,
+    RefreshCw,
+} from 'lucide-react';
+import {
+    Box,
+    Button,
+    Card,
+    Divider,
+    Group,
+    NativeSelect,
+    SimpleGrid,
+    Stack,
+    Switch,
+    Text,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
+import type { NdaCommitteeOverview, NdaCommitteeMember } from '@/server/queries/nda/beheer-nda.queries';
 import { setNdaSecretary, setNdaSystemActive } from '@/server/actions/beheer/nda/beheer-nda-settings.actions';
 import { checkExpiredAndRenewNdas } from '@/server/actions/beheer/nda/beheer-nda-signatures.actions';
-import { Button } from '@/components/islands/beheer/intro/IntroTabComponents';
 
 interface Props {
     initialOverview: NdaCommitteeOverview[];
@@ -16,13 +36,25 @@ interface Props {
     initialIsActive: boolean;
 }
 
-const templateStatusLabel: Record<string, string> = {
-    draft: 'Concept',
-    signed: 'Bevestigd, klaar om te versturen',
-    archived: 'Gearchiveerd',
-};
+function getTemplateStatusLabel(status: string): string {
+    switch (status) {
+        case 'draft':
+            return 'Concept';
+        case 'signed':
+            return 'Bevestigd, klaar om te versturen';
+        case 'archived':
+            return 'Gearchiveerd';
+        default:
+            return status;
+    }
+}
 
-export default function NdaOverviewIsland({ initialOverview, bestuurMembers, initialSecretaryUserId, initialIsActive }: Props) {
+export default function NdaOverviewIsland({
+    initialOverview,
+    bestuurMembers,
+    initialSecretaryUserId,
+    initialIsActive,
+}: Props) {
     const [secretaryUserId, setSecretaryUserId] = useState(initialSecretaryUserId ?? '');
     const [savingSecretary, setSavingSecretary] = useState(false);
     const [checking, setChecking] = useState(false);
@@ -42,7 +74,9 @@ export default function NdaOverviewIsland({ initialOverview, bestuurMembers, ini
         setCheckResult(null);
         const result = await checkExpiredAndRenewNdas();
         setChecking(false);
-        setCheckResult(`${result.expiredCount} NDA('s) verlopen gezet, ${result.renewalsSent} verlenging(en) verstuurd.`);
+        setCheckResult(
+            `${result.expiredCount} NDA('s) verlopen gezet, ${result.renewalsSent} verlenging(en) verstuurd.`
+        );
     };
 
     const handleToggleActive = async () => {
@@ -55,82 +89,145 @@ export default function NdaOverviewIsland({ initialOverview, bestuurMembers, ini
     };
 
     return (
-        <div className="space-y-8">
-            <div className="space-y-6 rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm">
-                <div className="flex items-center justify-between gap-4">
-                    <div>
-                        <h3 className="text-sm font-semibold text-(--beheer-text)">NDA-systeem actief</h3>
-                        <p className="mt-0.5 text-xs text-(--beheer-text-muted)">
-                            Zet aan om de NDA-pagina zichtbaar te maken voor leden en de dagelijkse automatische verloop-check in te schakelen.
-                        </p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => { void handleToggleActive(); }}
-                        disabled={togglingActive}
-                        aria-label="NDA-systeem actief"
-                        className={`btn-toggle-nda-active relative flex h-6 w-12 shrink-0 items-center rounded-full p-1 transition-all ${isActive ? 'bg-beheer-active' : 'bg-beheer-inactive'} hover:opacity-90 active:scale-95 disabled:opacity-50`}
-                    >
-                        {togglingActive ? (
-                            <Loader2 className="mx-auto size-4 animate-spin text-white" />
-                        ) : (
-                            <div className={`size-4 rounded-full bg-white transition-transform ${isActive ? 'translate-x-6' : 'translate-x-0'} shadow-sm`} />
-                        )}
-                    </button>
-                </div>
+        <Stack gap="xl">
+            <Card p="lg" shadow="sm">
+                <Stack gap="lg">
+                    <Group justify="space-between" wrap="nowrap" gap="md">
+                        <Box>
+                            <Text size="sm" fw={600}>
+                                NDA-systeem actief
+                            </Text>
+                            <Text size="xs" c="dimmed" mt={2}>
+                                Zet aan om de NDA-pagina zichtbaar te maken voor leden en de dagelijkse automatische verloop-check in te schakelen.
+                            </Text>
+                        </Box>
+                        <Switch
+                            checked={isActive}
+                            onChange={() => {
+                                void handleToggleActive();
+                            }}
+                            disabled={togglingActive}
+                            aria-label="NDA-systeem actief"
+                            size="md"
+                        />
+                    </Group>
 
-                <div className="flex flex-col justify-between gap-4 border-t border-(--beheer-border)/50 pt-6 sm:flex-row sm:items-end">
-                    <div className="max-w-sm flex-1">
-                        <label className="px-1 text-xs font-semibold tracking-tight text-(--beheer-text-muted)">Secretaris (ondertekent namens de vereniging)</label>
-                        <select
+                    <Divider />
+
+                    <Group justify="space-between" align="flex-end" wrap="wrap" gap="md">
+                        <NativeSelect
+                            label="Secretaris (ondertekent namens de vereniging)"
                             value={secretaryUserId}
-                            onChange={(e) => { void handleSecretaryChange(e.target.value); }}
+                            onChange={(e) => {
+                                void handleSecretaryChange(e.target.value);
+                            }}
                             disabled={savingSecretary}
-                            className="mt-2 beheer-input w-full"
-                        >
-                            <option value="">Nog niet ingesteld</option>
-                            {bestuurMembers.map((m) => (
-                                <option key={m.userId} value={m.userId}>{m.displayName}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="flex flex-col items-start gap-2 sm:items-end">
-                        <Button onClick={() => { void handleCheckExpiry(); }} loading={checking} icon={RefreshCw} variant="secondary">
-                            Controleer verlopen NDA&apos;s
-                        </Button>
-                        {checkResult && <p className="text-xs text-(--beheer-text-muted)">{checkResult}</p>}
-                    </div>
-                </div>
-            </div>
+                            maw={384}
+                            flex={1}
+                            data={[
+                                { value: '', label: 'Nog niet ingesteld' },
+                                ...bestuurMembers.map((m) => ({
+                                    value: m.userId,
+                                    label: m.displayName,
+                                })),
+                            ]}
+                        />
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <Stack gap={6} align="flex-end">
+                            <Button
+                                type="button"
+                                variant="default"
+                                loading={checking}
+                                leftSection={<RefreshCw size={16} />}
+                                onClick={() => {
+                                    void handleCheckExpiry();
+                                }}
+                            >
+                                Controleer verlopen NDA&apos;s
+                            </Button>
+                            {checkResult && (
+                                <Text size="xs" c="dimmed">
+                                    {checkResult}
+                                </Text>
+                            )}
+                        </Stack>
+                    </Group>
+                </Stack>
+            </Card>
+
+            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
                 {initialOverview.map((row) => (
-                    <Link
+                    <Card
                         key={row.committee.id}
+                        component={Link}
                         href={`/beheer/nda/${row.committee.id}`}
-                        className="group block rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) p-6 shadow-sm transition-all hover:border-(--beheer-accent)/30 hover:shadow-xl"
+                        p="lg"
+                        shadow="sm"
+                        style={{ textDecoration: 'none' }}
                     >
-                        <div className="mb-4 flex items-center gap-3">
-                            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--beheer-accent)/10 text-(--beheer-accent)">
-                                <FileSignature className="size-5" />
-                            </div>
-                            <div className="min-w-0">
-                                <h4 className="truncate text-base font-semibold text-(--beheer-text)">{row.committee.name}</h4>
-                                <p className="text-xs text-(--beheer-text-muted)">
-                                    {row.templateStatus ? `${templateStatusLabel[row.templateStatus]} (${row.templateYear})` : 'Geen NDA geüpload'}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-4 text-xs text-(--beheer-text-muted)">
-                            <span className="flex items-center gap-1"><Users className="size-3.5" />{row.memberCount}</span>
-                            <span className="flex items-center gap-1 text-emerald-500"><ShieldCheck className="size-3.5" />{row.statusCounts.signed}</span>
-                            <span className="flex items-center gap-1 text-amber-500"><Clock className="size-3.5" />{row.statusCounts.pending}</span>
-                            <span className="flex items-center gap-1 text-orange-500"><AlertTriangle className="size-3.5" />{row.statusCounts.expiring_soon}</span>
-                            <span className="flex items-center gap-1 text-red-500"><XCircle className="size-3.5" />{row.statusCounts.expired}</span>
-                        </div>
-                    </Link>
+                        <Stack gap="md">
+                            <Group gap="sm" wrap="nowrap">
+                                <ThemeIcon size={40} radius="xl" variant="light" color="brand">
+                                    <FileSignature size={20} />
+                                </ThemeIcon>
+                                <Box miw={0} flex={1}>
+                                    <Title order={4} size="h5" lineClamp={1}>
+                                        {row.committee.name}
+                                    </Title>
+                                    <Text size="xs" c="dimmed">
+                                        {row.templateStatus
+                                            ? `${getTemplateStatusLabel(row.templateStatus)} (${row.templateYear})`
+                                            : 'Geen NDA geüpload'}
+                                    </Text>
+                                </Box>
+                            </Group>
+
+                            <Group gap="md" wrap="wrap">
+                                <Group gap={4}>
+                                    <Text span c="dimmed" lh={1}>
+                                        <Users size={14} />
+                                    </Text>
+                                    <Text size="xs" c="dimmed">
+                                        {row.memberCount}
+                                    </Text>
+                                </Group>
+                                <Group gap={4}>
+                                    <Text span c="success" lh={1}>
+                                        <ShieldCheck size={14} />
+                                    </Text>
+                                    <Text size="xs" c="success" fw={600}>
+                                        {row.statusCounts.signed}
+                                    </Text>
+                                </Group>
+                                <Group gap={4}>
+                                    <Text span c="accent" lh={1}>
+                                        <Clock size={14} />
+                                    </Text>
+                                    <Text size="xs" c="accent" fw={600}>
+                                        {row.statusCounts.pending}
+                                    </Text>
+                                </Group>
+                                <Group gap={4}>
+                                    <Text span c="accent" lh={1}>
+                                        <AlertTriangle size={14} />
+                                    </Text>
+                                    <Text size="xs" c="accent" fw={600}>
+                                        {row.statusCounts.expiring_soon}
+                                    </Text>
+                                </Group>
+                                <Group gap={4}>
+                                    <Text span c="error" lh={1}>
+                                        <XCircle size={14} />
+                                    </Text>
+                                    <Text size="xs" c="error" fw={600}>
+                                        {row.statusCounts.expired}
+                                    </Text>
+                                </Group>
+                            </Group>
+                        </Stack>
+                    </Card>
                 ))}
-            </div>
-        </div>
+            </SimpleGrid>
+        </Stack>
     );
 }

@@ -2,11 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Mail } from 'lucide-react';
+import { Anchor, Group, Text, VisuallyHidden, type MantineSize } from '@mantine/core';
 
 interface ObfuscatedEmailProps {
     email: string;
     showIcon?: boolean;
-    className?: string;
+    footerLink?: boolean;
+    size?: MantineSize;
+    fullWidth?: boolean;
 }
 
 /**
@@ -14,7 +17,13 @@ interface ObfuscatedEmailProps {
  * Bezoekers zien een normaal e-mailadres, maar bots scrapen verborgen valstrik-tekst.
  * De mailto: link wordt pas na hydratie of bij een klik opgebouwd.
  */
-export function ObfuscatedEmail({ email, showIcon = true, className = "" }: ObfuscatedEmailProps) {
+export function ObfuscatedEmail({
+    email,
+    showIcon = true,
+    footerLink = false,
+    size = 'sm',
+    fullWidth = false,
+}: ObfuscatedEmailProps) {
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
@@ -22,7 +31,7 @@ export function ObfuscatedEmail({ email, showIcon = true, className = "" }: Obfu
     }, []);
 
     if (!email || !email.includes('@')) {
-        return <span className={className}>{email}</span>;
+        return <Text component="span" size={size}>{email}</Text>;
     }
 
     const [user, domain] = email.split('@');
@@ -33,21 +42,46 @@ export function ObfuscatedEmail({ email, showIcon = true, className = "" }: Obfu
     };
 
     return (
-        <a
+        <Anchor
             href={isMounted ? `mailto:${user}@${domain}` : undefined}
             onClick={handleMailClick}
-            className={`inline cursor-pointer transition-colors hover:text-purple-500 ${className}`}
+            size={size}
+            fw={footerLink ? undefined : 600}
+            c={footerLink ? 'dimmed' : 'inherit'}
+            underline="never"
+            w={fullWidth ? '100%' : undefined}
+            mod={footerLink ? { 'footer-link': true } : undefined}
             title="Klik om te e-mailen"
         >
-            {showIcon && <Mail className="mr-2 inline size-4 shrink-0 opacity-70" />}
+            <Group
+                component="span"
+                gap={8}
+                wrap="nowrap"
+                style={{
+                    minWidth: 0,
+                    display: 'inline-flex',
+                    width: fullWidth ? '100%' : undefined,
+                }}
+            >
+                {showIcon && (
+                    <Text component="span" lh={1} c="dimmed" style={{ flexShrink: 0 }}>
+                        <Mail size={16} />
+                    </Text>
+                )}
 
-            <span className="inline font-semibold wrap-anywhere">
-                <span>{user}</span>
-                <span className="hidden" aria-hidden="true"> [anti-spam] </span>
-                <span>@</span>
-                <span className="hidden" aria-hidden="true"> [verwijder-dit] </span>
-                <span>{domain}</span>
-            </span>
-        </a>
+                <Text
+                    component="span"
+                    inherit
+                    truncate={fullWidth ? true : undefined}
+                    style={{ overflowWrap: 'anywhere' }}
+                >
+                    {user}
+                    <VisuallyHidden aria-hidden="true"> [anti-spam] </VisuallyHidden>
+                    @
+                    <VisuallyHidden aria-hidden="true"> [verwijder-dit] </VisuallyHidden>
+                    {domain}
+                </Text>
+            </Group>
+        </Anchor>
     );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Container, Stack, Text, Title } from '@mantine/core';
 import QrGeneratorIsland from '@/components/islands/qr-generator/QrGeneratorIsland';
 
 export const metadata: Metadata = {
@@ -8,14 +9,16 @@ export const metadata: Metadata = {
 
 export default function QrGeneratorPage() {
     return (
-        <div className="mx-auto max-w-7xl px-fluid-md py-fluid-lg">
-            <div className="mx-auto w-full max-w-5xl">
-                <h1 className="mb-2 text-center text-3xl font-black text-theme-purple">QR-code generator</h1>
-                <p className="mx-auto mb-8 max-w-2xl text-center text-text-muted">
-                    Voer een link of tekst in en download een QR-code met het Salve Mundi logo.
-                </p>
+        <Container component="section" size="lg">
+            <Stack gap="xl">
+                <Stack gap="xs" align="center">
+                    <Title order={1} ta="center">QR-code generator</Title>
+                    <Text c="dimmed" ta="center" maw={600}>
+                        Voer een link of tekst in en download een QR-code met het Salve Mundi logo.
+                    </Text>
+                </Stack>
                 <QrGeneratorIsland />
-            </div>
-        </div>
+            </Stack>
+        </Container>
     );
 }

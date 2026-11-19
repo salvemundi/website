@@ -1,10 +1,10 @@
 import { BeheerFeature, FEATURE_ACCESS, COMMITTEES } from './permissions-config';
 
 export interface Committee {
-    id: number;
+    id: number | string;
     name: string;
     azure_group_id?: string | null | undefined;
-    is_leader?: boolean;
+    is_leader?: boolean | null;
 }
 
 const featureAccessMap = new Map<string, readonly string[]>(Object.entries(FEATURE_ACCESS));

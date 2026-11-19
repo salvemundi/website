@@ -3,27 +3,42 @@
 import {
     useState, useTransition, useMemo
 } from 'react';
+import Link from 'next/link';
 import {
-    Ticket, Plus, CheckCircle, Clock, ToggleLeft, ToggleRight
+    Ticket, Plus, CheckCircle, Clock, ToggleLeft, ToggleRight, ChevronLeft
 } from 'lucide-react';
+import {
+    ActionIcon,
+    Badge,
+    Button,
+    Card,
+    Collapse,
+    Container,
+    Group,
+    Modal,
+    Paper,
+    SimpleGrid,
+    Stack,
+    Table,
+    Text,
+    ThemeIcon,
+    Title,
+} from '@mantine/core';
 import { type Coupon } from './coupon-types';
 import { getComputedCouponStatus } from '@/lib/coupons';
 import { createCoupon, deleteCoupon, toggleCouponActive } from '@/server/actions/beheer/coupons/beheer-coupons.actions';
-import BeheerStatsBar from '@/components/ui/beheer/BeheerStatsBar';
-import BeheerModal from '@/components/ui/beheer/BeheerModal';
 import CouponRow from './CouponRow';
 import CouponForm from './CouponForm';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
-import BeheerToolbar from '@/components/ui/beheer/BeheerToolbar';
 
 interface Props {
     initialCoupons?: Coupon[];
 }
 
 export default function CouponManagementIsland({
-    initialCoupons = [] }: Props) {
-    const { toast, showToast, hideToast } = useAdminToast();
+    initialCoupons = []
+}: Props) {
+    const { showToast } = useAdminToast();
     const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
     const [isAdding, setIsAdding] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
@@ -123,27 +138,39 @@ export default function CouponManagementIsland({
     ];
 
     return (
-        <>
-            <BeheerToolbar
-                title="Coupons Beheer"
-                backHref="/beheer"
-                actions={
-                    <button
-                        onClick={() => setIsAdding(true)}
-                        className="squircle beheer-button flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-theme-purple px-4 py-2 text-xs font-semibold whitespace-nowrap text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
-                        type="button">
-                        <Plus className="size-4" />
-                        <span>Nieuwe Coupon</span>
-                    </button>
-                }
-            />
+        <Container size="xl" py="xl">
+            <Stack gap="xl">
+                <Group justify="space-between" align="center" wrap="wrap" gap="md">
+                    <Group gap="md" align="center">
+                        <ActionIcon
+                            component={Link}
+                            href="/beheer"
+                            variant="default"
+                            size="lg"
+                            aria-label="Terug"
+                        >
+                            <ChevronLeft size={18} />
+                        </ActionIcon>
+                        <Title order={1} size="h2" c="brand">
+                            Coupons Beheer
+                        </Title>
+                    </Group>
 
-            <div className="admin-container py-4 md:py-8">
-                <BeheerModal
-                    isOpen={isAdding}
+                    <Button
+                        type="button"
+                        onClick={() => setIsAdding(true)}
+                        leftSection={<Plus size={16} />}
+                    >
+                        Nieuwe Coupon
+                    </Button>
+                </Group>
+
+                <Modal
+                    opened={isAdding}
                     onClose={() => setIsAdding(false)}
                     title="Nieuwe Coupon Aanmaken"
-                    maxWidth="3xl"
+                    size="xl"
+                    centered
                 >
                     <CouponForm
                         onSave={(formData, discountType) => { void handleCreate(formData, discountType); }}
@@ -151,42 +178,54 @@ export default function CouponManagementIsland({
                         isPending={isPending}
                         error={formError}
                     />
-                </BeheerModal>
+                </Modal>
 
-                <BeheerStatsBar stats={adminStats} />
+                <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="md">
+                    {adminStats.map((stat) => (
+                        <Paper key={stat.label} withBorder p="md" radius="lg">
+                            <Group justify="space-between" align="center" wrap="nowrap">
+                                <Stack gap={2}>
+                                    <Text size="xs" c="dimmed" fw={600}>
+                                        {stat.label}
+                                    </Text>
+                                    <Text size="xl" fw={700} style={{ fontVariantNumeric: 'tabular-nums' }}>
+                                        {stat.value}
+                                    </Text>
+                                </Stack>
+                                <ThemeIcon variant="light" color="brand" size="lg" radius="md">
+                                    <stat.icon size={18} />
+                                </ThemeIcon>
+                            </Group>
+                        </Paper>
+                    ))}
+                </SimpleGrid>
 
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between border-l-4 border-(--beheer-active) py-1 pl-4">
-                        <h2 className="flex items-center gap-3 text-sm font-semibold text-(--beheer-text)">
-                            Coupons
-                            <span className="rounded-full border border-(--beheer-active)/20 bg-(--beheer-active)/10 px-2.5 py-0.5 text-xs font-semibold text-(--beheer-active)">
-                                {validCoupons.length}
-                            </span>
-                        </h2>
-                    </div>
+                <Stack gap="md">
+                    <Group gap="sm">
+                        <Title order={2} size="h4">Coupons</Title>
+                        <Badge color="success" variant="light">{validCoupons.length}</Badge>
+                    </Group>
 
-                    <div
-                        className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) shadow-xl transition-all"
-                    >
+                    <Card withBorder padding={0} style={{ overflow: 'hidden' }}>
                         {validCoupons.length === 0 ? (
-                            <div className="py-24 text-center">
-                                <Ticket className="mx-auto mb-4 size-12 text-(--beheer-text-muted) opacity-10" />
-                                <p className="text-sm font-semibold text-(--beheer-text-muted)">Geen coupons gevonden</p>
-                            </div>
+                            <Stack align="center" gap="xs" py="xl">
+                                <Ticket size={40} opacity={0.2} />
+                                <Text size="sm" fw={600} c="dimmed">Geen coupons gevonden</Text>
+                            </Stack>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead className="border-b border-(--beheer-border) bg-(--beheer-card-soft)">
-                                        <tr>
-                                            <th className="px-8 py-5 text-xs font-semibold text-(--beheer-text-muted)">Code</th>
-                                            <th className="px-8 py-5 text-xs font-semibold text-(--beheer-text-muted)">Korting</th>
-                                            <th className="hidden px-8 py-5 text-xs font-semibold text-(--beheer-text-muted) sm:table-cell">Gebruik</th>
-                                            <th className="hidden px-8 py-5 text-xs font-semibold text-(--beheer-text-muted) lg:table-cell">Geldigheid</th>
-                                            <th className="px-8 py-5 text-center text-xs font-semibold text-(--beheer-text-muted)">Status</th>
-                                            <th className="px-8 py-5 text-right text-xs font-semibold text-(--beheer-text-muted)">Acties</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-(--beheer-border)">
+                            <Table.ScrollContainer minWidth={600}>
+                                <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
+                                    <Table.Thead>
+                                        <Table.Tr>
+                                            <Table.Th>Code</Table.Th>
+                                            <Table.Th>Korting</Table.Th>
+                                            <Table.Th visibleFrom="sm">Gebruik</Table.Th>
+                                            <Table.Th visibleFrom="lg">Geldigheid</Table.Th>
+                                            <Table.Th ta="center">Status</Table.Th>
+                                            <Table.Th ta="right">Acties</Table.Th>
+                                        </Table.Tr>
+                                    </Table.Thead>
+                                    <Table.Tbody>
                                         {validCoupons.map(coupon => (
                                             <CouponRow
                                                 key={coupon.id}
@@ -197,37 +236,37 @@ export default function CouponManagementIsland({
                                                 isDeleting={deletingId === coupon.id}
                                             />
                                         ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                    </Table.Tbody>
+                                </Table>
+                            </Table.ScrollContainer>
                         )}
-                    </div>
-                </div>
+                    </Card>
+                </Stack>
 
-                <div className="mt-12 space-y-4">
-                    <button
-                        onClick={() => setShowExpired(!showExpired)}
-                        className="group beheer-button flex cursor-pointer items-center gap-4 border-l-4 border-slate-500 py-1 pl-4 text-(--beheer-text-muted) transition-all hover:text-(--beheer-text)"
-                        type="button">
-                        <h2 className="flex items-center gap-3 text-sm font-semibold">
-                            {showExpired ? <ToggleRight className="size-5 text-(--beheer-accent)" /> : <ToggleLeft className="size-5" />}
+                <Stack gap="md">
+                    <Group>
+                        <Button
+                            type="button"
+                            variant="subtle"
+                            color="brand"
+                            onClick={() => setShowExpired(!showExpired)}
+                            leftSection={showExpired ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                            rightSection={<Badge variant="default" size="sm">{inactiveCoupons.length}</Badge>}
+                        >
                             Verlopen Coupons
-                            <span className="rounded-full border border-slate-500/20 bg-slate-500/10 px-2.5 py-0.5 text-xs font-semibold text-slate-500">
-                                {inactiveCoupons.length}
-                            </span>
-                        </h2>
-                    </button>
+                        </Button>
+                    </Group>
 
-                    {showExpired && (
-                        <div className="overflow-hidden rounded-(--beheer-radius) border border-(--beheer-border) bg-(--beheer-card-bg) opacity-80 shadow-lg transition-all">
+                    <Collapse expanded={showExpired}>
+                        <Card withBorder padding={0} style={{ overflow: 'hidden', opacity: 0.85 }}>
                             {inactiveCoupons.length === 0 ? (
-                                <div className="py-12 text-center text-xs font-semibold text-(--beheer-text-muted) italic">
+                                <Text py="xl" ta="center" size="xs" fw={600} c="dimmed" fs="italic">
                                     Niets gevonden
-                                </div>
+                                </Text>
                             ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left">
-                                        <tbody className="divide-y divide-(--beheer-border)">
+                                <Table.ScrollContainer minWidth={600}>
+                                    <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
+                                        <Table.Tbody>
                                             {inactiveCoupons.map(coupon => (
                                                 <CouponRow
                                                     key={coupon.id}
@@ -238,15 +277,14 @@ export default function CouponManagementIsland({
                                                     isDeleting={deletingId === coupon.id}
                                                 />
                                             ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        </Table.Tbody>
+                                    </Table>
+                                </Table.ScrollContainer>
                             )}
-                        </div>
-                    )}
-                </div>
-            </div>
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </>
+                        </Card>
+                    </Collapse>
+                </Stack>
+            </Stack>
+        </Container>
     );
 }

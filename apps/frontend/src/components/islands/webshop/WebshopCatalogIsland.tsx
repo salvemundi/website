@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { ShoppingBag } from 'lucide-react';
+import { Button, Center, Group, SimpleGrid, Stack, Text } from '@mantine/core';
 import WebshopProductCard from './WebshopProductCard';
 import { type WebshopCatalogProduct } from '@salvemundi/validations/schema/webshop.zod';
 
@@ -26,38 +27,41 @@ export default function WebshopCatalogIsland({ products }: WebshopCatalogIslandP
     }, [products, category]);
 
     return (
-        <div className="space-y-6">
-            <div className="flex gap-2" role="tablist" aria-label="Categorie filter">
+        <Stack gap="lg">
+            <Group gap="xs" role="tablist" aria-label="Categorie filter">
                 {FILTERS.map((filter) => (
-                    <button
+                    <Button
                         key={filter.value}
                         type="button"
                         role="tab"
                         aria-selected={category === filter.value}
+                        size="sm"
+                        variant={category === filter.value ? 'filled' : 'default'}
                         onClick={() => setCategory(filter.value)}
-                        className={`form-button rounded-full px-4 py-2 text-sm font-bold transition-all ${
-                            category === filter.value
-                                ? 'bg-(--theme-purple) text-white shadow-(--theme-purple)/20 shadow-lg'
-                                : 'bg-(--bg-soft) text-(--text-muted) hover:text-(--theme-purple)'
-                        }`}
                     >
                         {filter.label}
-                    </button>
+                    </Button>
                 ))}
-            </div>
+            </Group>
 
             {filteredProducts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
-                    <ShoppingBag className="size-12 text-(--theme-purple)/20" />
-                    <p className="text-(--text-muted)">Er zijn op dit moment geen producten beschikbaar in deze categorie.</p>
-                </div>
+                <Center py="xl">
+                    <Stack align="center" gap="sm" py="xl">
+                        <Text span c="brand" opacity={0.3} lh={1}>
+                            <ShoppingBag size={48} />
+                        </Text>
+                        <Text c="dimmed" ta="center">
+                            Er zijn op dit moment geen producten beschikbaar in deze categorie.
+                        </Text>
+                    </Stack>
+                </Center>
             ) : (
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} spacing="lg">
                     {filteredProducts.map((product) => (
                         <WebshopProductCard key={product.id} product={product} />
                     ))}
-                </div>
+                </SimpleGrid>
             )}
-        </div>
+        </Stack>
     );
 }

@@ -1,9 +1,11 @@
 import 'server-only';
+
+import type { VacancyMailPayload } from '@/server/services/VacancyService';
 import { safeConsoleError } from '@/server/utils/logger';
 
 const INTERNAL_SERVICE_TOKEN = process.env.INTERNAL_SERVICE_TOKEN?.replace(/^"|"$/g, '').trim();
 
-export type VacancyMailData = Record<string, string | number | boolean | null | undefined>;
+export type VacancyMailData = VacancyMailPayload;
 
 export async function sendVacancyMail(to: string, templateId: string, data: VacancyMailData): Promise<boolean> {
     if (!INTERNAL_SERVICE_TOKEN) {
@@ -16,9 +18,9 @@ export async function sendVacancyMail(to: string, templateId: string, data: Vaca
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${INTERNAL_SERVICE_TOKEN}`
+                'Authorization': `Bearer ${INTERNAL_SERVICE_TOKEN}`,
             },
-            body: JSON.stringify({ to, templateId, data })
+            body: JSON.stringify({ to, templateId, data }),
         });
 
         if (!response.ok) {
@@ -47,9 +49,9 @@ export async function sendVacancyBulkMail(
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${INTERNAL_SERVICE_TOKEN}`
+                'Authorization': `Bearer ${INTERNAL_SERVICE_TOKEN}`,
             },
-            body: JSON.stringify({ to: recipients, subject, template, data })
+            body: JSON.stringify({ to: recipients, subject, template, data }),
         });
 
         if (!response.ok) {

@@ -1,4 +1,5 @@
 import { MessageCircle, ExternalLink } from 'lucide-react';
+import { Anchor, Box, Card, Group, Stack, Text } from '@mantine/core';
 import type { WhatsAppGroup } from '@salvemundi/validations/schema/profiel.zod';
 
 interface IntroGroupsAppButtonsProps {
@@ -8,34 +9,46 @@ interface IntroGroupsAppButtonsProps {
 export default function IntroGroupsAppButtons({ groups }: IntroGroupsAppButtonsProps) {
     if (groups.length === 0) {
         return (
-            <p className="text-sm font-medium text-text-muted">
+            <Text size="sm" fw={500} c="dimmed">
                 De groepsapp-uitnodiging volgt binnenkort.
-            </p>
+            </Text>
         );
     }
 
     return (
-        <div className="grid grid-cols-1 gap-3">
-            {groups.map(group => (
-                <a
+        <Stack gap="sm">
+            {groups.map((group) => (
+                <Anchor
                     key={group.id}
                     href={group.invite_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group squircle hover:scale-1.01 flex items-start justify-between gap-3 bg-purple-600 px-5 py-4 text-white shadow-lg transition-all hover:shadow-xl"
+                    underline="never"
                 >
-                    <span className="flex min-w-0 items-start gap-3">
-                        <MessageCircle className="mt-0.5 size-5 shrink-0" />
-                        <span className="min-w-0">
-                            <span className="block text-sm font-semibold">{group.name}</span>
-                            {group.description && (
-                                <span className="mt-1 block text-xs leading-relaxed whitespace-pre-wrap text-white/80">{group.description}</span>
-                            )}
-                        </span>
-                    </span>
-                    <ExternalLink className="mt-0.5 size-4 shrink-0 opacity-70 group-hover:opacity-100" />
-                </a>
+                    <Card bg="var(--mantine-color-brand-filled)" c="white" padding="md" radius="md">
+                        <Group justify="space-between" align="flex-start" wrap="nowrap" gap="sm">
+                            <Group align="flex-start" gap="sm" wrap="nowrap" miw={0}>
+                                <Box mt={2} style={{ flexShrink: 0 }}>
+                                    <MessageCircle size={20} />
+                                </Box>
+                                <Stack gap={4} miw={0}>
+                                    <Text size="sm" fw={600} c="white">
+                                        {group.name}
+                                    </Text>
+                                    {group.description && (
+                                        <Text size="xs" c="white" opacity={0.85} style={{ whiteSpace: 'pre-wrap' }}>
+                                            {group.description}
+                                        </Text>
+                                    )}
+                                </Stack>
+                            </Group>
+                            <Box mt={2} style={{ flexShrink: 0, opacity: 0.8 }}>
+                                <ExternalLink size={16} />
+                            </Box>
+                        </Group>
+                    </Card>
+                </Anchor>
             ))}
-        </div>
+        </Stack>
     );
 }

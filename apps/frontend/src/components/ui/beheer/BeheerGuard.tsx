@@ -1,5 +1,6 @@
 'use server';
 
+import { Container } from '@mantine/core';
 import { checkBeheerAccess } from '@/server/actions/beheer/beheer-utils.actions';
 import BeheerUnauthorized from '@/components/ui/beheer/BeheerUnauthorized';
 import { checkFeatureAccess } from '@/shared/lib/permissions';
@@ -25,9 +26,9 @@ export default async function BeheerGuard({
 
     if (!accessData.user) {
         return (
-            <div className="container mx-auto px-4 py-8">
+            <Container size="xl" py="lg">
                 <BeheerUnauthorized title={title} description={description} />
-            </div>
+            </Container>
         );
     }
 
@@ -36,9 +37,9 @@ export default async function BeheerGuard({
 
     if (!hasAccess) {
         return (
-            <div className="container mx-auto px-4 py-8">
+            <Container size="xl" py="lg">
                 <BeheerUnauthorized title={title} description={description} />
-            </div>
+            </Container>
         );
     }
 

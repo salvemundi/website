@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import BeheerSelect from '@/components/ui/beheer/BeheerSelect';
+import { Button, Group, Paper, Select, Stack, TextInput } from '@mantine/core';
 
 interface Participant {
     name: string;
@@ -17,13 +17,13 @@ interface AddLeaderFormProps {
 
 const leaderTypeOptions = [
     { value: 'signup', label: 'Deelnemer uit groep' },
-    { value: 'external', label: 'Externe persoon (Handmatig typen)' }
+    { value: 'external', label: 'Externe persoon (Handmatig typen)' },
 ];
 
 export default function AddLeaderForm({
     participantsList,
     onAdd,
-    onCancel
+    onCancel,
 }: AddLeaderFormProps) {
     const [leaderType, setLeaderType] = useState<'signup' | 'external'>('signup');
     const [leaderName, setLeaderName] = useState('');
@@ -44,74 +44,65 @@ export default function AddLeaderForm({
         { value: '', label: 'Selecteer deelnemer...' },
         ...participantsList.map((p, i) => ({
             value: String(i),
-            label: `${p.name} (${p.association})`
-        }))
+            label: `${p.name} (${p.association})`,
+        })),
     ];
 
     return (
-        <div className="space-y-3 rounded-xl border border-(--border-color)/30 bg-(--bg-main)/50 p-3">
-            <div className="space-y-1">
-                <label className="text-[9px] font-bold tracking-wider text-(--text-muted) uppercase">
-                    Kies leider type
-                </label>
-                <BeheerSelect
+        <Paper withBorder p="sm" radius="md">
+            <Stack gap="xs">
+                <Select
+                    label="Kies leider type"
+                    size="xs"
                     value={leaderType}
                     onChange={(val) => {
-                        setLeaderType(val as 'signup' | 'external');
-                        setLeaderName('');
-                        setLeaderSignupId('');
+                        if (val) {
+                            setLeaderType(val as 'signup' | 'external');
+                            setLeaderName('');
+                            setLeaderSignupId('');
+                        }
                     }}
-                    options={leaderTypeOptions}
-                    size="sm"
+                    data={leaderTypeOptions}
+                    allowDeselect={false}
                 />
-            </div>
 
-            {leaderType === 'signup' ? (
-                <div className="space-y-1">
-                    <label className="text-[9px] font-bold tracking-wider text-(--text-muted) uppercase">
-                        Kies deelnemer
-                    </label>
-                    <BeheerSelect
+                {leaderType === 'signup' ? (
+                    <Select
+                        label="Kies deelnemer"
+                        size="xs"
                         value={leaderSignupId}
                         onChange={(val) => {
-                            setLeaderSignupId(val);
+                            setLeaderSignupId(val ?? '');
                         }}
-                        options={participantOptions}
-                        size="sm"
+                        data={participantOptions}
+                        searchable
                     />
-                </div>
-            ) : (
-                <div className="space-y-1">
-                    <label className="text-[9px] font-bold tracking-wider text-(--text-muted) uppercase">
-                        Naam leider
-                    </label>
-                    <input
-                        type="text"
+                ) : (
+                    <TextInput
+                        label="Naam leider"
+                        size="xs"
                         placeholder="Vul naam in..."
                         value={leaderName}
                         onChange={(e) => setLeaderName(e.target.value)}
-                        className="beheer-input w-full rounded-lg border border-(--border-color)/30 bg-(--bg-card) px-2.5 py-1.5 text-xs font-semibold text-(--text-main) focus:border-(--theme-purple) focus:ring-2 focus:ring-(--theme-purple)/10 focus:outline-none"
                     />
-                </div>
-            )}
+                )}
 
-            <div className="flex justify-end gap-2 pt-1">
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="beheer-button cursor-pointer rounded-lg border border-(--border-color)/30 bg-(--bg-card) px-2.5 py-1.5 text-[10px] font-bold text-(--text-muted) transition-all hover:bg-(--bg-main)"
-                >
-                    Annuleren
-                </button>
-                <button
-                    type="button"
-                    onClick={handleAdd}
-                    disabled={leaderType === 'signup' ? !leaderSignupId : !leaderName.trim()}
-                    className="beheer-button cursor-pointer rounded-lg bg-(--theme-purple) px-3 py-1.5 text-[10px] font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"
-                >
-                    Toevoegen
-                </button>
-            </div>
-        </div>
+                <Group justify="flex-end" gap="xs" pt={4}>
+                    <Button type="button" variant="default" size="xs" onClick={onCancel}>
+                        Annuleren
+                    </Button>
+                    <Button
+                        type="button"
+                        size="xs"
+                        onClick={handleAdd}
+                        disabled={
+                            leaderType === 'signup' ? !leaderSignupId : !leaderName.trim()
+                        }
+                    >
+                        Toevoegen
+                    </Button>
+                </Group>
+            </Stack>
+        </Paper>
     );
 }

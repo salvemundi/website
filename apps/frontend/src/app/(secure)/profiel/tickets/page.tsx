@@ -1,25 +1,34 @@
+import Link from '@/components/ui/Link';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Group, Stack, VisuallyHidden } from '@mantine/core';
 import { getMyTickets } from '@/server/actions/events/activiteiten/activiteiten-status.actions';
 import TicketListIsland from '@/components/islands/activiteiten/TicketListIsland';
-import BackButton from '@/components/ui/navigation/BackButton';
 
 export const metadata = {
     title: 'Mijn Tickets | Salve Mundi',
-    description: 'Bekijk al je actieve tickets voor aankomende activiteiten.' };
+    description: 'Bekijk al je actieve tickets voor aankomende activiteiten.'
+};
 
 export default async function TicketsPage() {
     const tickets = await getMyTickets();
 
     return (
-        <div className="pt-8">
-            <h1 className="sr-only">Mijn Tickets</h1>
-            
-            <div className="container mx-auto max-w-7xl px-4 py-12">
-                <div className="mb-8 flex items-center justify-between">
-                    <BackButton href="/profiel" />
-                </div>
+        <Container size="xl" py="xl">
+            <VisuallyHidden component="h1">Mijn Tickets</VisuallyHidden>
+            <Stack gap="xl">
+                <Group>
+                    <Button
+                        component={Link}
+                        href="/profiel"
+                        variant="default"
+                        size="sm"
+                        leftSection={<ChevronLeft size={16} />}
+                    >
+                        Terug
+                    </Button>
+                </Group>
                 <TicketListIsland tickets={tickets} />
-            </div>
-        </div>
+            </Stack>
+        </Container>
     );
 }
-

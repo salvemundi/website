@@ -1,19 +1,22 @@
 'use client';
 
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Box, Group, Text } from '@mantine/core';
 import { cn } from '@/lib/utils/cn';
 import { isPathActive } from '@/lib/utils/link-utils';
 import Image from 'next/image';
 import { ThemeToggle } from '@/components/islands/layout/ThemeToggle';
-import { ROUTES } from '@/lib/config/routes';
-import type { IconName } from '@/lib/utils/icons';
+import { getPublicNavRoutes, MIN_VISIBLE_NAV_ITEMS } from '@/lib/config/routes';
 import { HeaderShell } from './navigation/HeaderShell';
 import { NavUserSection } from './navigation/NavUserSection';
 import { MobileNav } from './navigation/MobileNav';
 import { type ExtendedSession } from '@/types/auth';
 
 import { BRAND_CONFIG } from '@/lib/config/brand';
+
+const NAV_ITEM_GAP_PX = 16;
 
 interface NavigationHeaderProps {
     disabledRoutes?: string[];
@@ -32,27 +35,78 @@ const NavigationHeader = ({
 
     const canAccessAdmin = !!(initialCanAccessAdmin || user?.permissions?.includes('ict') || (user?.committees && user.committees.length > 0));
 
-    const navItems = ([
-        { name: 'Home', href: ROUTES.HOME, icon: 'Home' },
-        { name: 'Intro', href: ROUTES.INTRO, icon: 'Sparkles' },
-        { name: 'Merch', href: ROUTES.MERCH, icon: 'Shirt' },
-        { name: 'Lidmaatschap', href: ROUTES.MEMBERSHIP, icon: 'User' },
-        { name: 'Activiteiten', href: ROUTES.ACTIVITIES, icon: 'CalendarDays' },
-        { name: 'Commissies', href: ROUTES.COMMITTEES, icon: 'Users' },
-        { name: 'Kroegentocht', href: ROUTES.PUB_CRAWL, icon: 'Beer' },
-        { name: 'CoBo', href: ROUTES.COBO, icon: 'Wine' },
-        { name: 'Reis', href: ROUTES.TRIP, icon: 'Map' },
-        { name: 'Safe Havens', href: ROUTES.SAFE_HAVENS, icon: 'Shield' },
-        { name: 'Stickers', href: ROUTES.STICKERS, icon: 'MapPin' },
-        { name: 'Contact', href: ROUTES.CONTACT, icon: 'Mail' },
-    ] as const).filter(item => !disabledRoutes.includes(item.href as string)) as { name: string; href: string; icon: IconName }[];
+    const navItems = useMemo(() => getPublicNavRoutes(disabledRoutes), [disabledRoutes]);
+    const navRef = useRef<HTMLDivElement | null>(null);
+    const measureRef = useRef<HTMLDivElement | null>(null);
+    const [visibleHrefs, setVisibleHrefs] = useState<Set<string>>(
+        () => new Set<string>(navItems.filter((item) => item.priority === 1).map((item) => item.href))
+    );
+
+    useEffect(() => {
+        const navEl = navRef.current;
+        const measureEl = measureRef.current;
+        if (!navEl || !measureEl) return;
+
+        const recalculate = () => {
+            const availableWidth = navEl.clientWidth;
+            const widthByHref = new Map<string, number>();
+
+            for (const child of Array.from(measureEl.children)) {
+                if (child instanceof HTMLElement && child.dataset.href) {
+                    widthByHref.set(child.dataset.href, child.offsetWidth);
+                }
+            }
+
+            const prioritized = [...navItems].sort((a, b) => a.priority - b.priority);
+            const selected = new Set<string>();
+            let usedWidth = 0;
+
+            for (const item of prioritized) {
+                const itemWidth = widthByHref.get(item.href) ?? 0;
+                const nextWidth = selected.size === 0 ? itemWidth : usedWidth + NAV_ITEM_GAP_PX + itemWidth;
+
+                if (nextWidth <= availableWidth) {
+                    selected.add(item.href);
+                    usedWidth = nextWidth;
+                }
+            }
+
+            const threshold = Math.min(MIN_VISIBLE_NAV_ITEMS, navItems.length);
+            const nextHrefs = selected.size < threshold ? new Set<string>() : selected;
+
+            setVisibleHrefs((prev) => {
+                if (prev.size === nextHrefs.size && [...prev].every((href) => nextHrefs.has(href))) {
+                    return prev;
+                }
+                return nextHrefs;
+            });
+        };
+
+        recalculate();
+        const ro = new ResizeObserver(recalculate);
+        ro.observe(navEl);
+        return () => ro.disconnect();
+    }, [navItems]);
+
+    const visibleNavItems = navItems.filter((item) => visibleHrefs.has(item.href));
+    const showHamburger = visibleHrefs.size === 0;
 
     return (
         <HeaderShell>
-            <div className="@container relative z-10 flex h-20 w-full items-center justify-between px-4 lg:px-8">
-                <div className="shrink-0">
+            <Group
+                h={80}
+                w="100%"
+                justify="space-between"
+                align="center"
+                gap="md"
+                px={{ base: 'md', lg: 'xl' }}
+                wrap="nowrap"
+                pos="relative"
+                style={{ zIndex: 10 }}
+            >
+                <Box style={{ flexShrink: 0 }}>
                     <Link href="/" className="group hover:scale-1.03 flex items-center gap-3 transition-transform duration-300 active:scale-95">
-                        <div className="relative size-12">
+                        <Box pos="relative" w={48} h={48}>
                             <Image
                                 src={BRAND_CONFIG.logoLightMode}
                                 alt="Salve Mundi Logo"
@@ -67,38 +121,107 @@ const NavigationHeader = ({
                                 className="hidden object-contain dark:block"
                                 priority
                             />
-                        </div>
-                        <div className="hidden text-left whitespace-nowrap transition-all duration-300 @[1024px]:block">
-                            <p className="text-[13px] leading-none font-semibold text-purple-500">Salve Mundi</p>
-                            <p className="mt-0.5 text-xs font-semibold text-(--text-main)">Fontys ICT</p>
-                        </div>
+                        </Box>
+                        <Box visibleFrom="md" style={{ whiteSpace: 'nowrap' }}>
+                            <Text fz={13} lh={1} fw={600} c="brand">
+                                Salve Mundi
+                            </Text>
+                            <Text fz="xs" fw={600} mt={2}>
+                                Fontys ICT
+                            </Text>
+                        </Box>
                     </Link>
-                </div>
+                </Box>
 
-                <nav className="hidden min-w-0 flex-1 items-center justify-center gap-x-[clamp(0.4rem,0.8vw,1.1rem)] px-4 lg:flex">
-                    {navItems.map((link) => {
-                        const active = isPathActive(pathname, link.href);
-                        return (
-                            <Link
+                <Box
+                    component="nav"
+                    ref={navRef}
+                    pos="relative"
+                    py={10}
+                    style={{
+                        flex: 1,
+                        minWidth: 0,
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                    aria-label="Hoofdnavigatie"
+                >
+                    <Group
+                        ref={measureRef}
+                        gap={NAV_ITEM_GAP_PX}
+                        wrap="nowrap"
+                        aria-hidden="true"
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            visibility: 'hidden',
+                            pointerEvents: 'none',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {navItems.map((link) => (
+                            <Box
+                                component="span"
                                 key={link.href}
-                                href={link.href}
-                                className={cn(
-                                    'group relative inline-flex shrink-0 items-center gap-2 text-sm font-semibold whitespace-nowrap transition-all duration-200',
-                                    active ? 'text-purple-500' : 'text-(--text-main)',
-                                    !active && 'hover:text-purple-500'
-                                )}
+                                data-href={link.href}
+                                fz="clamp(13px, 1vw, 15px)"
+                                fw={600}
+                                style={{
+                                    display: 'inline-flex',
+                                    flexShrink: 0,
+                                    alignItems: 'center',
+                                    whiteSpace: 'nowrap',
+                                }}
                             >
-                                <span className="text-[clamp(13px,1vw,15px)] font-semibold">{link.name}</span>
-                                <span className={cn(
-                                    'absolute -bottom-2 left-0 h-0.5 w-full origin-left rounded-full bg-purple-50 transition-transform duration-200 ease-out',
-                                    active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-                                )} />
-                            </Link>
-                        );
-                    })}
-                </nav>
+                                {link.name}
+                            </Box>
+                        ))}
+                    </Group>
 
-                <div className="flex shrink-0 items-center justify-end gap-3">
+                    {visibleNavItems.length > 0 && (
+                        <Group gap={NAV_ITEM_GAP_PX} justify="center" wrap="nowrap">
+                            {visibleNavItems.map((link) => {
+                                const active = isPathActive(pathname, link.href);
+                                return (
+                                    <Link
+                                        key={link.href}
+                                        href={link.href}
+                                        aria-current={active ? 'page' : undefined}
+                                        className={cn(
+                                            'group relative inline-flex shrink-0 items-center gap-2 text-sm font-semibold whitespace-nowrap transition-all duration-200',
+                                            active ? 'text-primary' : 'text-foreground',
+                                            !active && 'hover:text-primary'
+                                        )}
+                                    >
+                                        <Text component="span" inherit fz="clamp(13px, 1vw, 15px)" fw={600}>
+                                            {link.name}
+                                        </Text>
+                                        <Box
+                                            component="span"
+                                            mod={{ 'nav-underline': true }}
+                                            pos="absolute"
+                                            bottom={-8}
+                                            left={0}
+                                            h={2}
+                                            w="100%"
+                                            bg="var(--primary)"
+                                            style={{
+                                                transformOrigin: 'left',
+                                                borderRadius: '9999px',
+                                                transition: 'transform 200ms ease-out',
+                                            }}
+                                        />
+                                    </Link>
+                                );
+                            })}
+                        </Group>
+                    )}
+                </Box>
+
+                <Group gap="xs" wrap="nowrap" justify="flex-end" style={{ flexShrink: 0 }}>
                     <NavUserSection
                         initialSession={initialSession}
                         canAccessAdmin={canAccessAdmin}
@@ -111,9 +234,10 @@ const NavigationHeader = ({
                         isAuthenticated={isAuthenticated}
                         navItems={navItems}
                         canAccessAdmin={canAccessAdmin}
+                        visible={showHamburger}
                     />
-                </div>
-            </div>
+                </Group>
+            </Group>
         </HeaderShell>
     );
 };

@@ -1,18 +1,13 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { authClient } from '@/lib/auth';
+import { Grid, GridCol, Stack } from '@mantine/core';
 import { type ProfileEventSignup } from '@salvemundi/validations/schema/profiel.zod';
 import { type EnrichedPubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 
-import {
-    mergeUserData,
-    calculateMembershipStatus,
-    filterProfileSignups,
-    type SessionUser
-} from '@/lib/profile/profile-admin.utils';
+import { filterProfileSignups } from '@/lib/profile/profile-admin.utils';
+import { type ProfileViewDTO } from '@/server/actions/profile/profiel.actions';
 import { useProfileState } from '@/hooks/use-profile-state';
 import AvatarPreviewModal from './profile/AvatarPreviewModal';
 import ProfielHeader from './profile/ProfielHeader';
@@ -26,24 +21,19 @@ interface ProfielIslandProps {
     initialSignups?: ProfileEventSignup[];
     pubCrawlSignups?: EnrichedPubCrawlSignup[];
     borrelBarClaimStatus?: BorrelBarClaimStatus;
-    user?: SessionUser;
+    profile: ProfileViewDTO;
 }
 
 export const ProfielIsland: React.FC<ProfielIslandProps> = ({
     initialSignups = [],
     pubCrawlSignups = [],
     borrelBarClaimStatus,
-    user: initialUser = {} as SessionUser
+    profile
 }) => {
-    const { toast, showToast, hideToast } = useAdminToast();
-    const { data: session, refetch } = authClient.useSession();
-
-    const user = useMemo<SessionUser>(() => {
-        return mergeUserData(session?.user as SessionUser, initialUser);
-    }, [session?.user, initialUser]);
+    const { showToast } = useAdminToast();
 
     const {
-        optimisticUser,
+        optimisticProfile,
         isPending,
         isEditingMinecraft, setIsEditingMinecraft,
         isEditingPhoneNumber, setIsEditingPhoneNumber,
@@ -55,7 +45,7 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
         onAvatarChange,
         cancelAvatarUpload,
         confirmAvatarUpload
-    } = useProfileState({ user, refetch, showToast });
+    } = useProfileState({ profile, showToast });
 
     const [showPastEvents, setShowPastEvents] = useState(false);
 
@@ -63,65 +53,56 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
         return filterProfileSignups(initialSignups, pubCrawlSignups, showPastEvents);
     }, [initialSignups, pubCrawlSignups, showPastEvents]);
 
-    const membershipStatus = useMemo(() => {
-        return calculateMembershipStatus(optimisticUser);
-    }, [optimisticUser]);
-
     return (
-        <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-12">
-            <div className="flex flex-col gap-6 md:col-span-12 lg:col-span-4">
-                <ProfielHeader
-                    user={{
-                        ...optimisticUser,
-                        committees: (optimisticUser.committees || []).map(c => ({
-                            id: c.id,
-                            name: c.name || 'Onbekende Commissie',
-                            is_leader: !!c.is_leader
-                        })),
-                        onAvatarChange
-                    }}
-                    membershipStatus={membershipStatus}
-                />
-                <ProfielGaming
-                    user={optimisticUser}
-                    isEditingMinecraft={isEditingMinecraft}
-                    setIsEditingMinecraft={setIsEditingMinecraft}
-                    registerMinecraft={minecraftForm.register}
-                    handleSubmitMinecraft={minecraftForm.handleSubmit}
-                    onSaveMinecraft={onSaveMinecraft}
-                    resetMinecraft={minecraftForm.reset}
-                    minecraftErrors={minecraftForm.formState.errors}
-                    isPending={isPending}
-                />
-            </div>
+        <>
+            <Grid gap="lg" align="flex-start">
+                <GridCol span={{ base: 12, lg: 4 }}>
+                    <Stack gap="lg">
+                        <ProfielHeader
+                            user={{
+                                ...optimisticProfile,
+                                onAvatarChange
+                            }}
+                            membershipStatus={optimisticProfile.membershipBadge}
+                        />
+                        <ProfielGaming
+                            user={optimisticProfile}
+                            isEditingMinecraft={isEditingMinecraft}
+                            setIsEditingMinecraft={setIsEditingMinecraft}
+                            registerMinecraft={minecraftForm.register}
+                            handleSubmitMinecraft={minecraftForm.handleSubmit}
+                            onSaveMinecraft={onSaveMinecraft}
+                            isPending={isPending}
+                        />
+                    </Stack>
+                </GridCol>
 
-            <div className="flex flex-col gap-6 md:col-span-12 lg:col-span-8">
-                <ProfielDetails
-                    user={optimisticUser}
-                    borrelBarClaimStatus={borrelBarClaimStatus}
-                    isEditingPhoneNumber={isEditingPhoneNumber}
-                    setIsEditingPhoneNumber={setIsEditingPhoneNumber}
-                    registerPhone={phoneForm.register}
-                    handleSubmitPhone={phoneForm.handleSubmit}
-                    onSavePhone={onSavePhone}
-                    resetPhone={phoneForm.reset}
-                    phoneErrors={phoneForm.formState.errors}
-                    isPending={isPending}
-                />
-                <ProfielQuickLinks
-                    user={optimisticUser}
-                />
-            </div>
+                <GridCol span={{ base: 12, lg: 8 }}>
+                    <Stack gap="lg">
+                        <ProfielDetails
+                            user={optimisticProfile}
+                            borrelBarClaimStatus={borrelBarClaimStatus}
+                            isEditingPhoneNumber={isEditingPhoneNumber}
+                            setIsEditingPhoneNumber={setIsEditingPhoneNumber}
+                            registerPhone={phoneForm.register}
+                            handleSubmitPhone={phoneForm.handleSubmit}
+                            onSavePhone={onSavePhone}
+                            isPending={isPending}
+                        />
+                        <ProfielQuickLinks
+                            user={optimisticProfile}
+                        />
+                    </Stack>
+                </GridCol>
 
-            <div className="md:col-span-12">
-                <ProfielSignups
-                    filteredSignups={filteredSignups}
-                    showPastEvents={showPastEvents}
-                    setShowPastEvents={setShowPastEvents}
-                />
-            </div>
-
-            <BeheerToast toast={toast} onClose={hideToast} />
+                <GridCol span={12}>
+                    <ProfielSignups
+                        filteredSignups={filteredSignups}
+                        showPastEvents={showPastEvents}
+                        setShowPastEvents={setShowPastEvents}
+                    />
+                </GridCol>
+            </Grid>
 
             {pendingAvatar && (
                 <AvatarPreviewModal
@@ -131,6 +112,6 @@ export const ProfielIsland: React.FC<ProfielIslandProps> = ({
                     onCancel={cancelAvatarUpload}
                 />
             )}
-        </div>
+        </>
     );
 };

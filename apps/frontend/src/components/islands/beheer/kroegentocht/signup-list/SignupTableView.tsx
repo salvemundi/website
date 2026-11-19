@@ -1,6 +1,16 @@
 'use client';
 
 import { Edit, FileDown, Mail, Trash } from 'lucide-react';
+import {
+    ActionIcon,
+    Anchor,
+    Badge,
+    Card,
+    Group,
+    Stack,
+    Table,
+    Text,
+} from '@mantine/core';
 import ResendTicketEmailButton from './ResendTicketEmailButton';
 import GroupSelectDropdown from './GroupSelectDropdown';
 import { getParticipantNames } from '@/lib/utils/kroegentocht-signups';
@@ -38,135 +48,186 @@ export default function SignupTableView({
     onEdit,
     onDelete,
     onUpdateGroup,
-    ticketsBySignup
+    ticketsBySignup,
 }: SignupTableViewProps) {
     return (
-        <div className="animate-in fade-in overflow-hidden rounded-2xl bg-(--bg-card) shadow-(--shadow-card) ring-1 ring-(--border-color)/30 duration-200">
-            <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                    <thead>
-                        <tr className="border-b border-(--border-color)/30 bg-(--bg-main)/50">
-                            <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted)">Inschrijving</th>
-                            <th className="px-6 py-4 text-center text-[10px] font-semibold text-(--text-muted)">Personen</th>
-                            <th className="hidden px-6 py-4 text-[10px] font-semibold text-(--text-muted) lg:table-cell">Vereniging</th>
-                            <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted)">Tickets</th>
-                            <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted)">Groep</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-(--border-color)/20">
+        <Card p={0} shadow="sm" style={{ overflow: 'hidden' }}>
+            <Table.ScrollContainer minWidth={720}>
+                <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="lg">
+                    <Table.Thead>
+                        <Table.Tr>
+                            <Table.Th>Inschrijving</Table.Th>
+                            <Table.Th ta="center">Personen</Table.Th>
+                            <Table.Th visibleFrom="lg">Vereniging</Table.Th>
+                            <Table.Th>Tickets</Table.Th>
+                            <Table.Th>Groep</Table.Th>
+                        </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
                         {filteredSignups.length === 0 ? (
-                            <tr>
-                                <td colSpan={5} className="px-6 py-16 text-center font-medium text-(--text-muted) italic">
-                                    Geen aanmeldingen gevonden.
-                                </td>
-                            </tr>
+                            <Table.Tr>
+                                <Table.Td colSpan={5} py={64} ta="center">
+                                    <Text size="sm" c="dimmed" fs="italic">
+                                        Geen aanmeldingen gevonden.
+                                    </Text>
+                                </Table.Td>
+                            </Table.Tr>
                         ) : (
                             filteredSignups.map((signup) => {
                                 const [primaryName, ...otherNames] = getParticipantNames(signup);
-                                const leaderNames = new Set(groupConfigs.flatMap(g => (g.leaders || []).filter(l => l.signupId === Number(signup.id)).map(l => l.name.trim().toLowerCase())));
-                                const crown = (n: string) => leaderNames.has(n.trim().toLowerCase()) ? '👑 ' : '';
+                                const leaderNames = new Set(
+                                    groupConfigs.flatMap((g) =>
+                                        (g.leaders || [])
+                                            .filter((l) => l.signupId === Number(signup.id))
+                                            .map((l) => l.name.trim().toLowerCase())
+                                    )
+                                );
+                                const crown = (n: string) =>
+                                    leaderNames.has(n.trim().toLowerCase()) ? '👑 ' : '';
+
+                                const tickets = ticketsBySignup[Number(signup.id)] ?? [];
+                                const checkedIn = tickets.filter((t) => t.checkedIn).length;
+                                const mismatch = tickets.length !== signup.amount_tickets;
 
                                 return (
-                                    <tr key={signup.id} className="border-b border-(--border-color)/10 transition-colors last:border-0 hover:bg-(--bg-main)/30">
-                                        <td className="min-w-75 px-6 py-3">
-                                            <div className="flex flex-col gap-0.5">
-                                                <div className="flex items-center gap-2">
-                                                    <a href={`mailto:${signup.email ?? ''}`} className="flex items-center gap-2 text-sm font-semibold text-(--text-main) transition-colors hover:text-(--theme-purple)" title={signup.email ?? ''}>
-                                                        <Mail className="size-3.5 text-(--text-muted)" />
-                                                        {crown(primaryName)}{primaryName} <span className="text-xs font-normal text-(--text-muted)">({signup.email})</span>
-                                                    </a>
-                                                </div>
-
+                                    <Table.Tr key={signup.id}>
+                                        <Table.Td miw={300}>
+                                            <Stack gap={4}>
+                                                <Anchor
+                                                    component="a"
+                                                    href={`mailto:${signup.email ?? ''}`}
+                                                    title={signup.email ?? ''}
+                                                    size="sm"
+                                                    fw={600}
+                                                    underline="hover"
+                                                >
+                                                    <Group gap={6} wrap="nowrap">
+                                                        <Mail size={14} />
+                                                        <Text span fw={600}>
+                                                            {crown(primaryName)}
+                                                            {primaryName}
+                                                        </Text>
+                                                        <Text span size="xs" c="dimmed">
+                                                            ({signup.email})
+                                                        </Text>
+                                                    </Group>
+                                                </Anchor>
 
                                                 {otherNames.length > 0 && (
-                                                    <ul className="mt-1 space-y-0.5 pl-5.5">
+                                                    <Stack gap={2} pl={20}>
                                                         {otherNames.map((name, i) => (
-                                                            <li key={i} className="text-xs text-(--text-muted)">
-                                                                + {crown(name)}{name}
-                                                            </li>
+                                                            <Text key={i} size="xs" c="dimmed">
+                                                                + {crown(name)}
+                                                                {name}
+                                                            </Text>
                                                         ))}
-                                                    </ul>
+                                                    </Stack>
                                                 )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-3 text-center">
-                                            <span className="inline-flex items-center justify-center rounded-full bg-(--theme-purple)/10 px-2.5 py-0.5 text-[10px] font-semibold text-(--theme-purple) ring-1 ring-(--theme-purple)/30">
+                                            </Stack>
+                                        </Table.Td>
+                                        <Table.Td ta="center">
+                                            <Badge size="sm" variant="light" color="brand">
                                                 {signup.amount_tickets}
-                                            </span>
-                                        </td>
-                                        <td className="hidden px-6 py-3 text-[11px] font-medium text-(--text-muted) lg:table-cell">
-                                            {signup.association || '-'}
-                                        </td>
-                                        <td className="px-6 py-3">
-                                            {(() => {
-                                                const tickets = ticketsBySignup[Number(signup.id)] ?? [];
-                                                const checkedIn = tickets.filter((t) => t.checkedIn).length;
-                                                const mismatch = tickets.length !== signup.amount_tickets;
-                                                return (
-                                                    <div className="flex items-center gap-2">
-                                                        <span
-                                                            className={`text-[11px] font-semibold ${mismatch ? 'text-red-500' : 'text-(--text-muted)'}`}
-                                                            title={tickets.map((t) => `${t.name} ${t.initial}.${t.checkedIn ? ' – ingecheckt' : ''}`).join('\n') || 'Geen tickets'}
-                                                        >
-                                                            {tickets.length} ticket{tickets.length === 1 ? '' : 's'}
-                                                            {checkedIn > 0 && ` · ${checkedIn} ingecheckt`}
-                                                            {mismatch && ' ⚠'}
-                                                        </span>
-                                                        {tickets.length > 0 && (
-                                                            <a
-                                                                href={`/api/kroegentocht/tickets/${signup.id}`}
-                                                                download
-                                                                className="icon-button rounded-md p-1.5 text-(--text-muted) transition-all hover:bg-(--theme-purple)/10 hover:text-(--theme-purple)"
-                                                                title="Tickets downloaden (PDF met QR-codes)"
-                                                            >
-                                                                <FileDown className="size-3.5" />
-                                                            </a>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })()}
-                                        </td>
-                                        <td className="px-6 py-3">
-                                            <div className="flex items-center gap-3">
+                                            </Badge>
+                                        </Table.Td>
+                                        <Table.Td visibleFrom="lg">
+                                            <Text size="xs" c="dimmed">
+                                                {signup.association || '-'}
+                                            </Text>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Group gap="xs" wrap="nowrap">
+                                                <Text
+                                                    size="xs"
+                                                    fw={600}
+                                                    c={mismatch ? 'error' : 'dimmed'}
+                                                    title={
+                                                        tickets
+                                                            .map(
+                                                                (t) =>
+                                                                    `${t.name} ${t.initial}.${t.checkedIn ? ' – ingecheckt' : ''}`
+                                                            )
+                                                            .join('\n') || 'Geen tickets'
+                                                    }
+                                                >
+                                                    {tickets.length} ticket{tickets.length === 1 ? '' : 's'}
+                                                    {checkedIn > 0 ? ` · ${checkedIn} ingecheckt` : ''}
+                                                    {mismatch ? ' ⚠' : ''}
+                                                </Text>
+                                                {tickets.length > 0 && (
+                                                    <ActionIcon
+                                                        component="a"
+                                                        href={`/api/kroegentocht/tickets/${signup.id}`}
+                                                        download
+                                                        variant="subtle"
+                                                        color="brand"
+                                                        size="sm"
+                                                        title="Tickets downloaden (PDF met QR-codes)"
+                                                        aria-label="Tickets downloaden (PDF met QR-codes)"
+                                                    >
+                                                        <FileDown size={14} />
+                                                    </ActionIcon>
+                                                )}
+                                            </Group>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Group gap="sm" wrap="nowrap">
                                                 {onUpdateGroup && groupNames.length > 0 ? (
                                                     <GroupSelectDropdown
                                                         value={signup.group_name || ''}
                                                         options={groupNames}
-                                                        onChange={(val) => { void onUpdateGroup(Number(signup.id), val); }}
+                                                        onChange={(val) => {
+                                                            void onUpdateGroup(
+                                                                Number(signup.id),
+                                                                val
+                                                            );
+                                                        }}
                                                         size="xs"
                                                     />
                                                 ) : (
-                                                    <span className="text-xs font-semibold text-(--text-muted)">
+                                                    <Text size="xs" fw={600} c="dimmed">
                                                         {signup.group_name || 'Niet ingedeeld'}
-                                                    </span>
+                                                    </Text>
                                                 )}
 
-                                                <div className="flex shrink-0 items-center gap-1">
-                                                    <ResendTicketEmailButton signupId={Number(signup.id)} email={signup.email} paid={signup.payment_status === 'paid'} />
-                                                    <button
+                                                <Group gap={4} wrap="nowrap">
+                                                    <ResendTicketEmailButton
+                                                        signupId={Number(signup.id)}
+                                                        email={signup.email}
+                                                        paid={signup.payment_status === 'paid'}
+                                                    />
+                                                    <ActionIcon
+                                                        type="button"
+                                                        variant="subtle"
+                                                        color="brand"
                                                         onClick={() => signup.id && onEdit(signup.id)}
-                                                        className="icon-button cursor-pointer rounded-md p-1.5 text-(--text-muted) transition-all hover:bg-(--theme-purple)/10 hover:text-(--theme-purple)"
                                                         title="Inschrijving bewerken"
-                                                        type="button">
-                                                        <Edit className="size-3.5" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => signup.id && onDelete(signup.id)}
-                                                        className="icon-button cursor-pointer rounded-md p-1.5 text-(--text-muted) transition-all hover:bg-red-500/10 hover:text-red-500"
+                                                        aria-label="Inschrijving bewerken"
+                                                    >
+                                                        <Edit size={14} />
+                                                    </ActionIcon>
+                                                    <ActionIcon
+                                                        type="button"
+                                                        variant="subtle"
+                                                        color="error"
+                                                        onClick={() =>
+                                                            signup.id && onDelete(signup.id)
+                                                        }
                                                         title="Inschrijving verwijderen"
-                                                        type="button">
-                                                        <Trash className="size-3.5" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                                        aria-label="Inschrijving verwijderen"
+                                                    >
+                                                        <Trash size={14} />
+                                                    </ActionIcon>
+                                                </Group>
+                                            </Group>
+                                        </Table.Td>
+                                    </Table.Tr>
                                 );
                             })
                         )}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    </Table.Tbody>
+                </Table>
+            </Table.ScrollContainer>
+        </Card>
     );
 }

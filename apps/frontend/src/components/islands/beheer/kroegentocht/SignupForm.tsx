@@ -2,13 +2,13 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { Box, Card, Stack } from '@mantine/core';
 import {
     updatePubCrawlSignup,
     togglePubCrawlTicketCheckIn,
     updatePubCrawlTickets,
-    deletePubCrawlSignup
+    deletePubCrawlSignup,
 } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
 import SignupHeader from './signup/SignupHeader';
 import SignupPersonalDetails from './signup/SignupPersonalDetails';
@@ -24,16 +24,16 @@ interface SignupFormProps {
 
 export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps) {
     const router = useRouter();
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [isPending, startTransition] = useTransition();
     const [togglingId, setTogglingId] = useState<number | null>(null);
     const [formData, setFormData] = useState({
         name: signup.name,
         email: signup.email ?? '',
         association: signup.association || '',
-        payment_status: signup.payment_status as "paid" | "open" | "failed" | "canceled" | "expired",
+        payment_status: signup.payment_status as 'paid' | 'open' | 'failed' | 'canceled' | 'expired',
         amount_tickets: signup.amount_tickets,
-        group_name: signup.group_name || null
+        group_name: signup.group_name || null,
     });
     const [ticketsData, setTicketsData] = useState(signup.tickets || []);
     const [editingTicketId, setEditingTicketId] = useState<number | null>(null);
@@ -44,14 +44,18 @@ export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps
         if (togglingId) return;
         setTogglingId(ticketId);
         try {
-            await togglePubCrawlTicketCheckIn(ticketId, currentStatus, Number(signup.pub_crawl_event_id.id));
-            setTicketsData(prev => prev.map(t =>
-                t.id === ticketId ? { ...t, checked_in: !currentStatus } : t
-            ));
+            await togglePubCrawlTicketCheckIn(
+                ticketId,
+                currentStatus,
+                Number(signup.pub_crawl_event_id.id)
+            );
+            setTicketsData((prev) =>
+                prev.map((t) => (t.id === ticketId ? { ...t, checked_in: !currentStatus } : t))
+            );
             showToast('Kaart status bijgewerkt', 'success');
             router.refresh();
         } catch (error) {
-            showToast(`Fout bij bijwerken: ${error}`, 'error');
+            showToast(`Fout bij bijwerken: ${String(error)}`, 'error');
         } finally {
             setTogglingId(null);
         }
@@ -62,13 +66,22 @@ export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps
     };
 
     const handleTicketChange = (id: number, field: 'name' | 'initial', value: string) => {
-        setTicketsData(prev => prev.map(t =>
-            t.id === id ? { ...t, [field]: field === 'initial' ? value.slice(0, 1).toUpperCase() : value } : t
-        ));
+        setTicketsData((prev) =>
+            prev.map((t) =>
+                t.id === id
+                    ? { ...t, [field]: field === 'initial' ? value.slice(0, 1).toUpperCase() : value }
+                    : t
+            )
+        );
     };
 
     const handleDeleteSignup = async () => {
-        if (!window.confirm('Weet je zeker dat je deze volledige aanmelding wilt verwijderen? Dit kan niet ongedaan worden gemaakt.')) return;
+        if (
+            !window.confirm(
+                'Weet je zeker dat je deze volledige aanmelding wilt verwijderen? Dit kan niet ongedaan worden gemaakt.'
+            )
+        )
+            return;
 
         startTransition(async () => {
             try {
@@ -77,7 +90,7 @@ export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps
                 router.push('/beheer/kroegentocht');
                 router.refresh();
             } catch (error) {
-                showToast(`Fout bij verwijderen: ${error}`, 'error');
+                showToast(`Fout bij verwijderen: ${String(error)}`, 'error');
             }
         });
     };
@@ -89,15 +102,21 @@ export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps
     const handleDeleteTicket = async (ticketId: number) => {
         if (!window.confirm('Weet je zeker dat je dit ticket wilt verwijderen?')) return;
 
-        const { deletePubCrawlTicket } = await import('@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions');
+        const { deletePubCrawlTicket } = await import(
+            '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions'
+        );
 
         startTransition(async () => {
             try {
-                await deletePubCrawlTicket(ticketId, Number(signup.id), Number(signup.pub_crawl_event_id.id));
+                await deletePubCrawlTicket(
+                    ticketId,
+                    Number(signup.id),
+                    Number(signup.pub_crawl_event_id.id)
+                );
                 showToast('Ticket verwijderd', 'success');
                 router.refresh();
             } catch (error) {
-                showToast(`Fout bij verwijderen ticket: ${error}`, 'error');
+                showToast(`Fout bij verwijderen ticket: ${String(error)}`, 'error');
             }
         });
     };
@@ -113,69 +132,74 @@ export default function SignupForm({ signup, eventGroups = [] }: SignupFormProps
                 const eventId = Number(signup.pub_crawl_event_id.id);
                 await Promise.all([
                     updatePubCrawlSignup(Number(signup.id), eventId, formData),
-                    updatePubCrawlTickets(Number(signup.id), eventId, ticketsData.map(t => ({
-                        id: Number(t.id),
-                        name: t.name,
-                        initial: t.initial
-                    })))
+                    updatePubCrawlTickets(
+                        Number(signup.id),
+                        eventId,
+                        ticketsData.map((t) => ({
+                            id: Number(t.id),
+                            name: t.name,
+                            initial: t.initial,
+                        }))
+                    ),
                 ]);
 
                 showToast('Aanmelding en tickets succesvol bijgewerkt', 'success');
                 router.push('/beheer/kroegentocht');
                 router.refresh();
             } catch (error) {
-                showToast(`Fout bij opslaan: ${error}`, 'error');
+                showToast(`Fout bij opslaan: ${String(error)}`, 'error');
             }
         });
     };
 
     const handleReset = () => {
-        type PaymentStatus = "paid" | "open" | "failed" | "canceled" | "expired";
+        type PaymentStatus = 'paid' | 'open' | 'failed' | 'canceled' | 'expired';
         setFormData({
             name: signup.name,
             email: signup.email ?? '',
             association: signup.association || '',
             payment_status: signup.payment_status as PaymentStatus,
             amount_tickets: signup.amount_tickets,
-            group_name: signup.group_name || null
+            group_name: signup.group_name || null,
         });
         setTicketsData(signup.tickets || []);
     };
 
     return (
-        <>
-            <form onSubmit={handleSubmit} className="mx-auto max-w-3xl space-y-8" autoComplete="off">
-                <div className="rounded-2xl bg-(--bg-card) shadow-(--shadow-card) ring-1 ring-(--border-color)/30">
-                    <SignupHeader />
+        <Box maw={768} mx="auto">
+            <form onSubmit={handleSubmit} autoComplete="off">
+                <Stack gap="lg">
+                    <Card p={0} shadow="sm" style={{ overflow: 'hidden' }}>
+                        <SignupHeader />
 
-                    <div className="space-y-6 p-8">
-                        <SignupPersonalDetails
-                            formData={formData}
-                            setFormData={setFormData}
-                            eventGroups={eventGroups}
-                        />
+                        <Stack gap="lg" p="xl">
+                            <SignupPersonalDetails
+                                formData={formData}
+                                setFormData={setFormData}
+                                eventGroups={eventGroups}
+                            />
 
-                        <SignupTicketList
-                            tickets={tickets}
-                            ticketsData={ticketsData}
-                            amountTickets={formData.amount_tickets}
-                            editingTicketId={editingTicketId}
-                            setEditingTicketId={setEditingTicketId}
-                            togglingId={togglingId}
-                            handleToggleCheckIn={handleToggleCheckInSync}
-                            handleDeleteTicket={handleDeleteTicketSync}
-                            handleTicketChange={handleTicketChange}
-                        />
-                    </div>
-                </div>
+                            <SignupTicketList
+                                tickets={tickets}
+                                ticketsData={ticketsData}
+                                amountTickets={formData.amount_tickets}
+                                editingTicketId={editingTicketId}
+                                setEditingTicketId={setEditingTicketId}
+                                togglingId={togglingId}
+                                handleToggleCheckIn={handleToggleCheckInSync}
+                                handleDeleteTicket={handleDeleteTicketSync}
+                                handleTicketChange={handleTicketChange}
+                            />
+                        </Stack>
+                    </Card>
 
-                <SignupFormActions
-                    isPending={isPending}
-                    onReset={handleReset}
-                    onDelete={handleDeleteSignupSync}
-                />
+                    <SignupFormActions
+                        isPending={isPending}
+                        onReset={handleReset}
+                        onDelete={handleDeleteSignupSync}
+                    />
+                </Stack>
             </form>
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </>
+        </Box>
     );
 }

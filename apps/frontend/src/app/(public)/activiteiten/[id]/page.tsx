@@ -1,14 +1,15 @@
-import { getEnrichedSession } from '@/server/auth/auth-utils';
+import Link from '@/components/ui/Link';
 import { notFound } from 'next/navigation';
+import { connection } from 'next/server';
+import { type Metadata } from 'next';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Group } from '@mantine/core';
+import { getEnrichedSession } from '@/server/auth/auth-utils';
 import { getActivityBySlug, checkUserSignupStatus, getActivitySignupCount } from '@/server/actions/events/activiteiten/activiteiten-public.actions';
 import { getSignupStatus } from '@/server/actions/events/activiteiten/activiteiten-status.actions';
 import ActivityDetailIsland from '@/components/islands/activiteiten/ActivityDetailIsland';
 import ActiviteitSignupIsland from '@/components/islands/activiteiten/ActiviteitSignupIsland';
-import { type MembershipUserData } from '@/components/islands/account/MembershipStatusIsland';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
-import BackButton from '@/components/ui/navigation/BackButton';
-import { type Metadata } from 'next';
-import { connection } from 'next/server';
 import { isEventPast, isDeadlinePassed } from '@/shared/lib/utils/date';
 
 interface PageProps {
@@ -67,7 +68,7 @@ async function ActivityContent({ params, searchParams }: PageProps) {
         ? (await getActivitySignupCount(Number(activity.id))) >= activity.max_sign_ups
         : false;
 
-    const user = session?.user as MembershipUserData | undefined;
+    const user = session?.user;
     const isMember = user?.membership_status === 'active';
     const price = isMember ? activity.price_members : activity.price_non_members;
 
@@ -97,9 +98,20 @@ async function ActivityContent({ params, searchParams }: PageProps) {
 
     return (
         <>
-            <div className="container max-w-7xl px-4 pt-8 pb-4">
-                <BackButton href="/activiteiten" title="Terug naar activiteiten" />
-            </div>
+            <Container size="xl" pt="xl" pb={0}>
+                <Group>
+                    <Button
+                        component={Link}
+                        href="/activiteiten"
+                        title="Terug naar activiteiten"
+                        variant="default"
+                        size="sm"
+                        leftSection={<ChevronLeft size={16} />}
+                    >
+                        Terug
+                    </Button>
+                </Group>
+            </Container>
 
             <ActivityDetailIsland activity={activity} isLoggedIn={!!session?.user}>
                 <ActiviteitSignupIsland

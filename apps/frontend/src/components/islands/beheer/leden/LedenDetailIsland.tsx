@@ -6,17 +6,34 @@ import {
     History,
     Settings,
     Mail,
-    CreditCard
+    CreditCard,
 } from 'lucide-react';
-import { manageAzureMembershipAction, provisionAzureAccountAction } from '@/server/actions/beheer/leden/beheer-leden-azure.actions';
+import {
+    Avatar,
+    Badge,
+    Box,
+    Group,
+    Paper,
+    Stack,
+    Tabs,
+    Text,
+    Title,
+} from '@mantine/core';
+import {
+    manageAzureMembershipAction,
+    provisionAzureAccountAction,
+} from '@/server/actions/beheer/leden/beheer-leden-azure.actions';
 import { updateMemberProfileAction } from '@/server/actions/beheer/leden/beheer-leden-profile.actions';
 import { renewMembershipAction } from '@/server/actions/beheer/leden/beheer-leden-membership.actions';
 import { triggerUserSyncAction } from '@/server/actions/infrastructure/azure-sync/sync-tasks.actions';
 import { getImageUrl } from '@/lib/utils/image-utils';
 import MediaAsset from '@/components/ui/media/MediaAsset';
-import BeheerToast from '@/components/ui/beheer/BeheerToast';
 import { useAdminToast } from '@/hooks/use-beheer-toast';
-import { type BeheerMember, type CommitteeMembership, type BeheerSignup } from '@salvemundi/validations';
+import {
+    type BeheerMember,
+    type CommitteeMembership,
+    type BeheerSignup,
+} from '@salvemundi/validations';
 import { safeConsoleError } from '@/server/utils/logger';
 import { isMembershipActive as checkIsMembershipActive } from '@/lib/leden/leden-utils';
 
@@ -34,7 +51,12 @@ interface Props {
     initialMemberships?: CommitteeMembership[];
     signups?: BeheerSignup[];
     transactions?: MemberTransaction[];
-    allCommittees?: { id: string; name: string; is_visible: boolean; azure_group_id?: string | null | undefined }[];
+    allCommittees?: {
+        id: string;
+        name: string;
+        is_visible: boolean;
+        azure_group_id?: string | null | undefined;
+    }[];
     hasAccess?: boolean;
 }
 
@@ -44,36 +66,43 @@ export default function LedenDetailIsland({
     signups = [],
     transactions = [],
     allCommittees = [],
-    hasAccess = false
+    hasAccess = false,
 }: Props) {
-    const { toast, showToast, hideToast } = useAdminToast();
+    const { showToast } = useAdminToast();
     const [activeTab, setActiveTab] = useState<'profiel' | 'activiteiten' | 'transacties' | 'beheer'>('profiel');
 
-    // We negeren de isPending waarde door de komma vooraan te gebruiken
     const [, startTransition] = useTransition();
     const [isActionInProgress, setIsActionInProgress] = useState<string | null>(null);
     const [localMember, setLocalMember] = useState(member);
 
-    // We negeren de dispatcher door deze niet te destructuren
     const [optimisticMemberships] = useOptimistic(
         initialMemberships,
-        (state: CommitteeMembership[], { action, membership }: { action: 'add' | 'remove' | 'toggle', membership: CommitteeMembership }) => {
+        (
+            state: CommitteeMembership[],
+            { action, membership }: { action: 'add' | 'remove' | 'toggle'; membership: CommitteeMembership }
+        ) => {
             if (action === 'add') return [...state, membership];
-            if (action === 'remove') return state.filter(m => m.id !== membership.id);
-            return state.map(m => m.id === membership.id ? { ...m, is_leader: !m.is_leader } : m);
+            if (action === 'remove') return state.filter((m) => m.id !== membership.id);
+            return state.map((m) =>
+                m.id === membership.id ? { ...m, is_leader: !m.is_leader } : m
+            );
         }
     );
 
     const { realCommittees, otherGroups } = useMemo(() => {
-        const EXCLUDED_GROUPS = ['Alle gebruikers', 'Leden_Actief_Lidmaatschap', 'Leden_Verlopen_Lidmaatschap'];
+        const EXCLUDED_GROUPS = [
+            'Alle gebruikers',
+            'Leden_Actief_Lidmaatschap',
+            'Leden_Verlopen_Lidmaatschap',
+        ];
         const real: CommitteeMembership[] = [];
         const groups: CommitteeMembership[] = [];
 
-        optimisticMemberships.forEach(cm => {
+        optimisticMemberships.forEach((cm) => {
             const rawName = cm.committee_id.name || 'Onbekend';
             if (!rawName || EXCLUDED_GROUPS.includes(rawName)) return;
 
-            if (cm.committee_id.is_visible === true) {
+            if (cm.committee_id.is_visible) {
                 real.push(cm);
             } else {
                 groups.push(cm);
@@ -94,9 +123,12 @@ export default function LedenDetailIsland({
         if (cleanData.phone_number === null) delete cleanData.phone_number;
 
         try {
-            const res = await updateMemberProfileAction(localMember.id, cleanData as Parameters<typeof updateMemberProfileAction>[1]);
+            const res = await updateMemberProfileAction(
+                localMember.id,
+                cleanData as Parameters<typeof updateMemberProfileAction>[1]
+            );
             if (res.success) {
-                setLocalMember(prev => ({ ...prev, ...data }));
+                setLocalMember((prev) => ({ ...prev, ...data }));
                 return true;
             }
             return false;
@@ -106,24 +138,44 @@ export default function LedenDetailIsland({
         }
     };
 
-    const handleMembershipChange = async (azureGroupId: string, action: 'add' | 'remove', committeeName: string) => {
+    const handleMembershipChange = async (
+        azureGroupId: string,
+        action: 'add' | 'remove',
+        committeeName: string
+    ) => {
         if (!localMember.entra_id) {
-            showToast("Dit lid heeft geen gekoppeld Azure account!", "error");
+            showToast('Dit lid heeft geen gekoppeld Azure account!', 'error');
             setActiveTab('beheer');
             return;
         }
         const entraId = localMember.entra_id;
-        if (action === 'remove' && !confirm(`Weet je zeker dat je ${localMember.first_name} wilt verwijderen uit ${committeeName}?`)) return;
+        if (
+            action === 'remove' &&
+            !confirm(
+                `Weet je zeker dat je ${localMember.first_name} wilt verwijderen uit ${committeeName}?`
+            )
+        )
+            return;
 
         setIsActionInProgress(`${action}-${azureGroupId}`);
         startTransition(async () => {
             try {
-                const res = await manageAzureMembershipAction(entraId, azureGroupId, action, localMember.id);
-                if (!res.success) showToast(res.error || "Fout bij het bijwerken van lidmaatschap", "error");
-                else showToast(`Lidmaatschap succesvol ${action === 'add' ? 'toegevoegd' : 'verwijderd'}`, "success");
+                const res = await manageAzureMembershipAction(
+                    entraId,
+                    azureGroupId,
+                    action,
+                    localMember.id
+                );
+                if (!res.success)
+                    showToast(res.error || 'Fout bij het bijwerken van lidmaatschap', 'error');
+                else
+                    showToast(
+                        `Lidmaatschap succesvol ${action === 'add' ? 'toegevoegd' : 'verwijderd'}`,
+                        'success'
+                    );
             } catch (error) {
                 safeConsoleError('[LedenDetailIsland.tsx][handleMembershipChange] ', error);
-                showToast("Er is een onverwachte fout opgetreden", "error");
+                showToast('Er is een onverwachte fout opgetreden', 'error');
             } finally {
                 setIsActionInProgress(null);
             }
@@ -131,11 +183,19 @@ export default function LedenDetailIsland({
     };
 
     const handleRenewMembership = async (months: number) => {
-        if (!confirm(`Weet je zeker dat je het lidmaatschap met ${months} maand(en) wilt verlengen?`)) return null;
+        if (
+            !confirm(
+                `Weet je zeker dat je het lidmaatschap met ${months} maand(en) wilt verlengen?`
+            )
+        )
+            return null;
         try {
             const res = await renewMembershipAction(localMember.id, months);
             if (res.success) {
-                setLocalMember(prev => ({ ...prev, membership_expiry: res.newExpiry ?? prev.membership_expiry }));
+                setLocalMember((prev) => ({
+                    ...prev,
+                    membership_expiry: res.newExpiry ?? prev.membership_expiry,
+                }));
                 return { success: true, message: `Verlengd tot ${res.newExpiry}` };
             }
             return { success: false, message: res.error || 'Fout bij verlengen' };
@@ -151,7 +211,10 @@ export default function LedenDetailIsland({
         }
         try {
             const res = await triggerUserSyncAction(localMember.entra_id);
-            return { success: res.success, message: res.success ? 'Synchronisatie gestart' : (res.error || 'Sync mislukt') };
+            return {
+                success: res.success,
+                message: res.success ? 'Synchronisatie gestart' : res.error || 'Sync mislukt',
+            };
         } catch (error) {
             safeConsoleError('[LedenDetailIsland.tsx][handleForceSync] ', error);
             return { success: false, message: 'Er is een onverwachte fout opgetreden' };
@@ -159,10 +222,15 @@ export default function LedenDetailIsland({
     };
 
     const handleProvisionAzure = async () => {
-        if (!confirm(`Weet je zeker dat je een Azure account wilt aanmaken?`)) return null;
+        if (!confirm('Weet je zeker dat je een Azure account wilt aanmaken?')) return null;
         try {
             const res = await provisionAzureAccountAction(localMember.id);
-            return { success: res.success, message: res.success ? 'Aanvraag ingediend!' : (res.error || 'Provisioning mislukt') };
+            return {
+                success: res.success,
+                message: res.success
+                    ? 'Aanvraag ingediend!'
+                    : res.error || 'Provisioning mislukt',
+            };
         } catch (error) {
             safeConsoleError('[LedenDetailIsland.tsx][handleProvisionAzure] ', error);
             return { success: false, message: 'Er is een onverwachte fout opgetreden' };
@@ -172,107 +240,125 @@ export default function LedenDetailIsland({
     const availableCommittees = useMemo(() => {
         const currentAzureIds = new Set(
             optimisticMemberships
-                .map(m => m.committee_id.azure_group_id?.toLowerCase())
+                .map((m) => m.committee_id.azure_group_id?.toLowerCase())
                 .filter(Boolean)
         );
-        return allCommittees.filter(c => {
+        return allCommittees.filter((c) => {
             if (!c.azure_group_id) return false;
             return !currentAzureIds.has(c.azure_group_id.toLowerCase());
         });
     }, [allCommittees, optimisticMemberships]);
 
     return (
-        <div className="w-full overflow-x-hidden">
-            <div className="mb-12 flex flex-col gap-8 md:flex-row md:items-center">
-                <div className="group relative">
-                    <div className="flex size-28 items-center justify-center overflow-hidden rounded-4xl border border-(--beheer-border) bg-(--beheer-accent)/10 text-4xl font-semibold text-(--beheer-accent) shadow-2xl transition-transform duration-500 group-hover:scale-105">
-                        {localMember.avatar ? (
-                            <MediaAsset
-                                asset={getImageUrl(localMember.avatar, { width: 150, height: 150, fit: 'cover' }) || ''}
-                                alt="avatar"
-                                width={112}
-                                height={112}
-                                className="size-full rounded-4xl object-cover"
-                            />
-                        ) : (
-                            <>{localMember.first_name?.[0]}{localMember.last_name?.[0]}</>
-                        )}
-                    </div>
-                </div>
-                <div className="min-w-0 space-y-3">
-                    <h1 className="text-2xl leading-tight font-semibold wrap-break-word text-(--beheer-text) sm:text-3xl md:text-4xl">
+        <Stack gap="xl" w="100%">
+            <Group gap="xl" align="center" wrap="wrap">
+                {localMember.avatar ? (
+                    <Paper
+                        radius="xl"
+                        w={112}
+                        h={112}
+                        shadow="md"
+                        style={{ overflow: 'hidden', flexShrink: 0 }}
+                    >
+                        <MediaAsset
+                            asset={getImageUrl(localMember.avatar, { width: 150, height: 150, fit: 'cover' }) || ''}
+                            alt="avatar"
+                            width={112}
+                            height={112}
+                            objectFit="cover"
+                        />
+                    </Paper>
+                ) : (
+                    <Avatar size={112} radius="xl" color="brand" variant="light">
+                        {localMember.first_name?.[0]}
+                        {localMember.last_name?.[0]}
+                    </Avatar>
+                )}
+
+                <Stack gap="xs" miw={0} flex={1}>
+                    <Title order={1} fz={{ base: 'h2', md: 'h1' }}>
                         {localMember.first_name} {localMember.last_name}
-                    </h1>
-                    <div className="flex flex-wrap items-center gap-4">
-                        <span className="flex items-center gap-2 text-xs font-semibold text-(--beheer-text-muted) opacity-70">
-                            <Mail className="size-4 text-(--beheer-accent)" /> {localMember.email}
-                        </span>
-                        <div suppressHydrationWarning className={`rounded-full border px-4 py-1.5 text-[10px] font-semibold shadow-sm ${isMembershipActive
-                            ? 'border-green-500/20 bg-green-500/10 text-green-500'
-                            : 'border-red-500/20 bg-red-500/10 text-red-500'
-                            }`}>
+                    </Title>
+                    <Group gap="md" wrap="wrap">
+                        <Group gap={6}>
+                            <Text span c="brand" lh={1}>
+                                <Mail size={16} />
+                            </Text>
+                            <Text size="xs" fw={600} c="dimmed">
+                                {localMember.email}
+                            </Text>
+                        </Group>
+                        <Badge
+                            suppressHydrationWarning
+                            size="sm"
+                            variant="light"
+                            color={isMembershipActive ? 'success' : 'error'}
+                        >
                             {isMembershipActive ? 'Actief Lidmaatschap' : 'Lidmaatschap Verlopen'}
-                        </div>
-                    </div>
-                </div>
-            </div>
+                        </Badge>
+                    </Group>
+                </Stack>
+            </Group>
 
-            <div className="mb-10 flex flex-wrap gap-0 border-b border-(--beheer-border)">
-                {[
-                    { id: 'profiel', label: 'Profiel', icon: UserIcon },
-                    { id: 'activiteiten', label: 'Activiteiten', icon: History },
-                    { id: 'transacties', label: 'Transacties', icon: CreditCard },
-                    { id: 'beheer', label: 'Beheer', icon: Settings, adminOnly: true }
-                ].map(tab => (
-                    (!tab.adminOnly || hasAccess) && (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                            className={`tab-button flex cursor-pointer items-center gap-3 border-b-2 px-8 py-5 text-xs font-semibold transition-all ${activeTab === tab.id
-                                ? 'border-(--beheer-accent) text-(--beheer-accent)'
-                                : 'border-transparent text-(--beheer-text-muted) hover:text-(--beheer-text)'
-                                }`}
-                            type="button">
-                            <tab.icon className="size-4" /> {tab.label}
-                        </button>
-                    )
-                ))}
-            </div>
+            <Tabs
+                value={activeTab}
+                onChange={(val) =>
+                    setActiveTab((val as typeof activeTab | null) ?? 'profiel')
+                }
+            >
+                <Tabs.List mb="xl">
+                    <Tabs.Tab value="profiel" leftSection={<UserIcon size={16} />}>
+                        Profiel
+                    </Tabs.Tab>
+                    <Tabs.Tab value="activiteiten" leftSection={<History size={16} />}>
+                        Activiteiten
+                    </Tabs.Tab>
+                    <Tabs.Tab value="transacties" leftSection={<CreditCard size={16} />}>
+                        Transacties
+                    </Tabs.Tab>
+                    {hasAccess && (
+                        <Tabs.Tab value="beheer" leftSection={<Settings size={16} />}>
+                            Beheer
+                        </Tabs.Tab>
+                    )}
+                </Tabs.List>
 
-            <div className="min-h-100">
-                {activeTab === 'profiel' && (
-                    <MemberProfileTab
-                        member={localMember}
-                        memberships={optimisticMemberships}
-                        realCommittees={realCommittees}
-                        otherGroups={otherGroups}
-                        hasAccess={hasAccess}
-                        onUpdateProfile={handleUpdateProfile}
-                    />
-                )}
+                <Box mih={400}>
+                    <Tabs.Panel value="profiel">
+                        <MemberProfileTab
+                            member={localMember}
+                            memberships={optimisticMemberships}
+                            realCommittees={realCommittees}
+                            otherGroups={otherGroups}
+                            hasAccess={hasAccess}
+                            onUpdateProfile={handleUpdateProfile}
+                        />
+                    </Tabs.Panel>
 
-                {activeTab === 'activiteiten' && (
-                    <MemberActivitiesTab signups={signups} />
-                )}
+                    <Tabs.Panel value="activiteiten">
+                        <MemberActivitiesTab signups={signups} />
+                    </Tabs.Panel>
 
-                {activeTab === 'transacties' && (
-                    <MemberTransactionsTab transactions={transactions} />
-                )}
+                    <Tabs.Panel value="transacties">
+                        <MemberTransactionsTab transactions={transactions} />
+                    </Tabs.Panel>
 
-                {activeTab === 'beheer' && hasAccess && (
-                    <MemberAdminTab
-                        member={localMember}
-                        optimisticMemberships={optimisticMemberships}
-                        availableCommittees={availableCommittees}
-                        onProvision={handleProvisionAzure}
-                        onMembershipChange={handleMembershipChange}
-                        onRenew={handleRenewMembership}
-                        onSync={handleForceSync}
-                        isActionInProgress={isActionInProgress}
-                    />
-                )}
-            </div>
-            <BeheerToast toast={toast} onClose={hideToast} />
-        </div>
+                    {hasAccess && (
+                        <Tabs.Panel value="beheer">
+                            <MemberAdminTab
+                                member={localMember}
+                                optimisticMemberships={optimisticMemberships}
+                                availableCommittees={availableCommittees}
+                                onProvision={handleProvisionAzure}
+                                onMembershipChange={handleMembershipChange}
+                                onRenew={handleRenewMembership}
+                                onSync={handleForceSync}
+                                isActionInProgress={isActionInProgress}
+                            />
+                        </Tabs.Panel>
+                    )}
+                </Box>
+            </Tabs>
+        </Stack>
     );
 }

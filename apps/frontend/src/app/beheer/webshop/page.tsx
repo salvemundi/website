@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import BeheerPageShell from '@/components/ui/beheer/BeheerPageShell';
+import Link from '@/components/ui/Link';
+import { ChevronLeft, ClipboardList, ClipboardCheck } from 'lucide-react';
+import { Button, Container, Group, Stack, Title } from '@mantine/core';
 import BeheerWebshopProductsIsland from '@/components/islands/beheer/webshop/BeheerWebshopProductsIsland';
 import WebshopVisibilityIsland from '@/components/islands/beheer/webshop/WebshopVisibilityIsland';
 import {
@@ -12,7 +13,6 @@ import {
 import { getWebshopSettings } from '@/server/actions/public/webshop.actions';
 import { checkBeheerAccess } from '@/server/actions/beheer/beheer-utils.actions';
 import { COMMITTEES } from '@/shared/lib/permissions-config';
-import { ClipboardList, ClipboardCheck } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: 'Webshop Beheer | SV Salve Mundi'
@@ -44,37 +44,54 @@ export default async function AdminWebshopPage() {
     ));
 
     return (
-        <BeheerPageShell 
-             title="Webshop Beheer" 
-             backHref="/beheer"
-             actions={
-                 <div className="flex flex-col items-start gap-4 md:flex-row md:items-center">
-                     <div className="flex items-center gap-2">
-                         <Link
-                             href="/beheer/webshop/bestellingen"
-                             className="flex items-center justify-center gap-2 rounded-xl border border-border-color bg-bg-card px-4 py-2 text-xs font-semibold text-text-main shadow-sm transition-all hover:border-theme-purple hover:bg-theme-purple/5"
-                         >
-                             <ClipboardList className="size-3.5" />
-                             <span>Bestellingen</span>
-                         </Link>
-                         {isBoardOrIct && (
-                             <Link
-                                 href="/beheer/webshop/afhalen"
-                                 className="flex items-center justify-center gap-2 rounded-xl border border-border-color bg-bg-card px-4 py-2 text-xs font-semibold text-text-main shadow-sm transition-all hover:border-theme-purple hover:bg-theme-purple/5"
-                             >
-                                 <ClipboardCheck className="size-3.5" />
-                                 <span>Afhaallijst</span>
-                             </Link>
-                         )}
-                         <WebshopVisibilityIsland initialVisible={settings.show} />
-                     </div>
-                 </div>
-             }
-        >
-            <BeheerWebshopProductsIsland 
-                 initialDropWindows={dropWindows} 
-                 initialProducts={products} 
-             />
-        </BeheerPageShell>
+        <Container size="xl" py="lg">
+            <Stack gap="lg">
+                <Group justify="space-between" wrap="wrap" gap="md">
+                    <Group gap="md" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href="/beheer"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ChevronLeft size={16} />}
+                        >
+                            Terug
+                        </Button>
+                        <Title order={1} size="h2" c="brand">
+                            Webshop Beheer
+                        </Title>
+                    </Group>
+
+                    <Group gap="xs" wrap="wrap">
+                        <Button
+                            component={Link}
+                            href="/beheer/webshop/bestellingen"
+                            variant="default"
+                            size="sm"
+                            leftSection={<ClipboardList size={14} />}
+                        >
+                            Bestellingen
+                        </Button>
+                        {isBoardOrIct && (
+                            <Button
+                                component={Link}
+                                href="/beheer/webshop/afhalen"
+                                variant="default"
+                                size="sm"
+                                leftSection={<ClipboardCheck size={14} />}
+                            >
+                                Afhaallijst
+                            </Button>
+                        )}
+                        <WebshopVisibilityIsland initialVisible={settings.show} />
+                    </Group>
+                </Group>
+
+                <BeheerWebshopProductsIsland
+                    initialDropWindows={dropWindows}
+                    initialProducts={products}
+                />
+            </Stack>
+        </Container>
     );
 }

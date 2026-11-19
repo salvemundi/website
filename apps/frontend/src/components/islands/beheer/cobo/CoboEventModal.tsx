@@ -1,10 +1,21 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import BeheerModal from '@/components/ui/beheer/BeheerModal';
+import {
+    Button,
+    Divider,
+    Group,
+    Modal,
+    SimpleGrid,
+    Stack,
+    Text,
+    Textarea,
+    TextInput,
+} from '@mantine/core';
+import { DateTimePicker } from '@mantine/dates';
 import { createCoboEventAction, updateCoboEventAction } from '@/server/actions/beheer/cobo/beheer-cobo-management.actions';
 import { type CoboEvent } from '@salvemundi/validations';
-import { Loader2, Calendar, MapPin, FileText, Sparkles } from 'lucide-react';
+import { Calendar, MapPin, FileText, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toLocalInputValue } from '@/shared/lib/utils/date';
 
@@ -13,6 +24,12 @@ interface Props {
     onClose: () => void;
     eventToEdit?: CoboEvent | null;
     showToast: (msg: string, type: 'success' | 'error' | 'info') => void;
+}
+
+function toPickerString(isoOrDate?: string | Date | null): string | null {
+    const local = toLocalInputValue(isoOrDate);
+    if (!local) return null;
+    return `${local.replace('T', ' ')}:00`;
 }
 
 export default function CoboEventModal({
@@ -25,20 +42,19 @@ export default function CoboEventModal({
     const [isPending, startTransition] = useTransition();
 
     const [title, setTitle] = useState(eventToEdit?.title || '');
-    const [date, setDate] = useState(toLocalInputValue(eventToEdit?.date));
+    const [date, setDate] = useState<string | null>(toPickerString(eventToEdit?.date));
     const [location, setLocation] = useState(eventToEdit?.location || 'Borrelbar Eindhoven');
     const [description, setDescription] = useState(eventToEdit?.description || '');
 
-    // Reset when modal opens with new eventToEdit
     React.useEffect(() => {
         if (eventToEdit) {
             setTitle(eventToEdit.title || '');
-            setDate(toLocalInputValue(eventToEdit.date));
+            setDate(toPickerString(eventToEdit.date));
             setLocation(eventToEdit.location || 'Borrelbar Eindhoven');
             setDescription(eventToEdit.description || '');
         } else {
             setTitle('');
-            setDate('');
+            setDate(null);
             setLocation('Borrelbar Eindhoven');
             setDescription('');
         }
@@ -52,7 +68,7 @@ export default function CoboEventModal({
             return;
         }
 
-        const isoDate = date ? new Date(date).toISOString() : undefined;
+        const isoDate = date ? new Date(date.replace(' ', 'T')).toISOString() : undefined;
 
         startTransition(async () => {
             if (eventToEdit) {
@@ -91,111 +107,105 @@ export default function CoboEventModal({
     };
 
     return (
-        <BeheerModal
-            isOpen={isOpen}
+        <Modal
+            opened={isOpen}
             onClose={onClose}
-            title={eventToEdit ? `CoBo Bewerken: ${eventToEdit.title ?? ''}` : 'Nieuwe CoBo Aanmaken'}
-            subtitle={eventToEdit ? 'Pas de algemene gegevens en teksten aan' : 'Maak een nieuwe CoBo editie aan voor het komende bestuursjaar'}
-            maxWidth="lg"
+            title={
+                <Stack gap={2}>
+                    <Text fw={700} size="lg" c="brand">
+                        {eventToEdit ? `CoBo Bewerken: ${eventToEdit.title ?? ''}` : 'Nieuwe CoBo Aanmaken'}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                        {eventToEdit ? 'Pas de algemene gegevens en teksten aan' : 'Maak een nieuwe CoBo editie aan voor het komende bestuursjaar'}
+                    </Text>
+                </Stack>
+            }
+            size="lg"
+            centered
         >
-            <form onSubmit={handleSubmit} className="space-y-6" aria-busy={isPending}>
-                <div className="space-y-2">
-                    <label
-                        htmlFor="cobo-title"
-                        className="flex items-center gap-2 text-xs font-bold tracking-wider text-text-muted uppercase"
-                    >
-                        <Sparkles className="size-4 shrink-0 text-purple-500 dark:text-purple-400" />
-                        <span>Titel / Bestuursjaar *</span>
-                    </label>
-                    <input
+            <form onSubmit={handleSubmit} aria-busy={isPending}>
+                <Stack gap="md">
+                    <TextInput
                         id="cobo-title"
                         name="title"
-                        type="text"
+                        label={
+                            <Group gap={6} component="span">
+                                <Text span c="brand" lh={1}><Sparkles size={14} /></Text>
+                                <Text span inherit>Titel / Bestuursjaar</Text>
+                            </Group>
+                        }
                         value={title}
-                        onChange={(e) => setTitle(e.target.value)}
+                        onChange={(e) => setTitle(e.currentTarget.value)}
                         placeholder="Bijv. CoBo 2026 of CoBo Bestuur VIII"
                         required
-                        className="min-h-11 beheer-input w-full rounded-xl border border-border-color bg-bg-soft px-4 py-2.5 text-sm font-medium text-text-main transition-all focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
                     />
-                </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                        <label
-                            htmlFor="cobo-date"
-                            className="flex items-center gap-2 text-xs font-bold tracking-wider text-text-muted uppercase"
-                        >
-                            <Calendar className="size-4 shrink-0 text-purple-500 dark:text-purple-400" />
-                            <span>Datum &amp; Aanvangstijd</span>
-                        </label>
-                        <input
+                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                        <DateTimePicker
                             id="cobo-date"
-                            name="date"
-                            type="datetime-local"
+                            label={
+                                <Group gap={6} component="span">
+                                    <Text span c="brand" lh={1}><Calendar size={14} /></Text>
+                                    <Text span inherit>Datum &amp; Aanvangstijd</Text>
+                                </Group>
+                            }
+                            placeholder="Kies datum en tijd"
                             value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            className="min-h-11 beheer-input w-full rounded-xl border border-border-color bg-bg-soft px-4 py-2.5 text-sm font-medium text-text-main transition-all focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
+                            onChange={setDate}
+                            valueFormat="DD-MM-YYYY HH:mm"
+                            clearable
                         />
-                    </div>
 
-                    <div className="space-y-2">
-                        <label
-                            htmlFor="cobo-location"
-                            className="flex items-center gap-2 text-xs font-bold tracking-wider text-text-muted uppercase"
-                        >
-                            <MapPin className="size-4 shrink-0 text-purple-500 dark:text-purple-400" />
-                            <span>Locatie</span>
-                        </label>
-                        <input
+                        <TextInput
                             id="cobo-location"
                             name="location"
-                            type="text"
+                            label={
+                                <Group gap={6} component="span">
+                                    <Text span c="brand" lh={1}><MapPin size={14} /></Text>
+                                    <Text span inherit>Locatie</Text>
+                                </Group>
+                            }
                             value={location}
-                            onChange={(e) => setLocation(e.target.value)}
+                            onChange={(e) => setLocation(e.currentTarget.value)}
                             placeholder="Bijv. Borrelbar Eindhoven"
-                            className="min-h-11 beheer-input w-full rounded-xl border border-border-color bg-bg-soft px-4 py-2.5 text-sm font-medium text-text-main transition-all focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
                         />
-                    </div>
-                </div>
+                    </SimpleGrid>
 
-                <div className="space-y-2">
-                    <label
-                        htmlFor="cobo-description"
-                        className="flex items-center gap-2 text-xs font-bold tracking-wider text-text-muted uppercase"
-                    >
-                        <FileText className="size-4 shrink-0 text-purple-500 dark:text-purple-400" />
-                        <span>Algemene Informatie / Uitnodigingstekst</span>
-                    </label>
-                    <textarea
+                    <Textarea
                         id="cobo-description"
                         name="description"
+                        label={
+                            <Group gap={6} component="span">
+                                <Text span c="brand" lh={1}><FileText size={14} /></Text>
+                                <Text span inherit>Algemene Informatie / Uitnodigingstekst</Text>
+                            </Group>
+                        }
                         value={description}
-                        onChange={(e) => setDescription(e.target.value)}
+                        onChange={(e) => setDescription(e.currentTarget.value)}
                         rows={4}
                         placeholder="Toelichting of welkomstboodschap voor de bezoekende besturen..."
-                        className="min-h-24 beheer-input w-full resize-y rounded-xl border border-border-color bg-bg-soft px-4 py-3 text-sm font-medium text-text-main transition-all focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
                     />
-                </div>
 
-                <div className="flex items-center justify-end gap-3 border-t border-border-color/60 pt-4">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        disabled={isPending}
-                        className="beheer-button min-h-11 cursor-pointer rounded-xl border border-border-color px-5 py-2.5 text-sm font-semibold text-text-muted transition-colors hover:bg-bg-soft hover:text-text-main disabled:opacity-50"
-                    >
-                        Annuleren
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={isPending}
-                        className="beheer-button flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl bg-purple-600 px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-purple-700 hover:shadow-lg disabled:opacity-50"
-                    >
-                        {isPending && <Loader2 className="size-4 animate-spin" />}
-                        <span>{eventToEdit ? 'Wijzigingen Opslaan' : 'CoBo Aanmaken'}</span>
-                    </button>
-                </div>
+                    <Divider />
+
+                    <Group justify="flex-end" gap="sm">
+                        <Button
+                            type="button"
+                            variant="default"
+                            onClick={onClose}
+                            disabled={isPending}
+                        >
+                            Annuleren
+                        </Button>
+                        <Button
+                            type="submit"
+                            loading={isPending}
+                        >
+                            {eventToEdit ? 'Wijzigingen Opslaan' : 'CoBo Aanmaken'}
+                        </Button>
+                    </Group>
+                </Stack>
             </form>
-        </BeheerModal>
+        </Modal>
     );
 }

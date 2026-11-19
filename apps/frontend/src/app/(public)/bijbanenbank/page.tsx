@@ -1,8 +1,10 @@
+import Link from '@/components/ui/Link';
+import { ChevronLeft } from 'lucide-react';
+import { Button, Container, Group, Stack, Text, Title } from '@mantine/core';
+import type { VacancyDTO } from '@salvemundi/validations';
 import { getVacancies } from '@/server/actions/vacancies/vacancies-public.actions';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
 import BijbanenbankIsland from '@/components/islands/vacancies/BijbanenbankIsland';
-import BackButton from '@/components/ui/navigation/BackButton';
-import type { VacancyDTO } from '@salvemundi/validations';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,21 +41,29 @@ export default async function BijbanenbankPage() {
     const visibleVacancies = isLoggedIn ? vacancies : redactForAnonymous(vacancies);
 
     return (
-        <div className="pt-8">
-            <div className="container mx-auto max-w-7xl px-4 py-12">
-                <div className="mb-8 flex items-center justify-between">
-                    <BackButton href={isLoggedIn ? '/profiel' : '/'} />
-                </div>
+        <Container size="xl" py="xl">
+            <Stack gap="xl">
+                <Group>
+                    <Button
+                        component={Link}
+                        href={isLoggedIn ? '/profiel' : '/'}
+                        variant="default"
+                        size="sm"
+                        leftSection={<ChevronLeft size={16} />}
+                    >
+                        Terug
+                    </Button>
+                </Group>
 
-                <div className="mb-8">
-                    <h1 className="form-title">Bijbanenbank</h1>
-                    <p className="mt-2 max-w-2xl text-(--text-muted)">
+                <Stack gap="xs">
+                    <Title order={1} c="brand">Bijbanenbank</Title>
+                    <Text c="dimmed" maw={640}>
                         Stages en bijbanen aangeboden door bedrijven aan leden van Salve Mundi.
-                    </p>
-                </div>
+                    </Text>
+                </Stack>
 
                 <BijbanenbankIsland vacancies={visibleVacancies} isLoggedIn={isLoggedIn} />
-            </div>
-        </div>
+            </Stack>
+        </Container>
     );
 }
