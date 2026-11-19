@@ -263,6 +263,8 @@ jobs:
           DISCORD_MONITORING_WEBHOOK_URL="${{ secrets.DISCORD_MONITORING_WEBHOOK_URL }}"
           MC_WHITELIST_WEBHOOK_URL="${{ secrets.MC_WHITELIST_WEBHOOK_URL }}"
           MC_WHITELIST_WEBHOOK_TOKEN="${{ secrets.MC_WHITELIST_WEBHOOK_TOKEN }}"
+          GOOGLE_SERVICE_ACCOUNT_EMAIL="${{ secrets.GOOGLE_SERVICE_ACCOUNT_EMAIL }}"
+          GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="${{ secrets.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY }}"
           EOF
 
           echo "IMAGE_TAG=${{ needs.prepare.outputs.tag }}" >> .env.${ENV_NAME}
