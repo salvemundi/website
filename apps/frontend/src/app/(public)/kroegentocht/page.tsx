@@ -8,6 +8,8 @@ import { formatDate } from '@/shared/lib/utils/date';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import KroegentochtFormIsland from '@/components/islands/kroegentocht/KroegentochtFormIsland';
 import KroegentochtTicketsIsland from '@/components/islands/kroegentocht/KroegentochtTicketsIsland';
+import { KroegentochtMyTicketsCard } from '@/components/islands/kroegentocht/KroegentochtTicketLinks';
+import { getMyKroegentochtTickets } from '@/server/actions/events/kroegentocht/kroegentocht-tickets.actions';
 
 export const metadata = {
     title: 'Kroegentocht | Salve Mundi',
@@ -143,6 +145,8 @@ export default async function KroegentochtPage() {
     if (user?.email) {
         tickets = await getKroegentochtTickets(user.email).catch(() => []);
     }
+    // Gasten (zonder account) zien hun tickets terug via de cookie (14 dagen).
+    const myTickets = await getMyKroegentochtTickets();
 
     return (
         <PublicPageShell
@@ -155,6 +159,8 @@ export default async function KroegentochtPage() {
                 {user?.email && tickets.length > 0 && (
                     <KroegentochtTicketsIsland initialTickets={tickets} userEmail={user.email} />
                 )}
+
+                <KroegentochtMyTicketsCard items={myTickets} />
 
                 <RegistrationSection />
             </div>

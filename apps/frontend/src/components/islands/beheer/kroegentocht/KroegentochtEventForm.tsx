@@ -1,5 +1,6 @@
 'use client';
 
+import { extractGoogleSheetId } from '@/lib/utils/kroegentocht-signups';
 import { useState, useTransition } from 'react';
 import type { SyntheticEvent, ChangeEvent } from 'react';
 import {
@@ -13,6 +14,7 @@ import {
     ImagePlus,
     X,
     MessageCircle,
+    Sheet,
     Users,
     Plus
 } from 'lucide-react';
@@ -69,6 +71,7 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
         email: event?.email || 'feest@salvemundi.nl',
         image: event?.image || null,
         whatsapp_community_url: event?.whatsapp_community_url || '',
+        google_sheet_id: event?.google_sheet_id ? `https://docs.google.com/spreadsheets/d/${event.google_sheet_id}/edit` : '',
         groups: (normalizedEventGroups.length > 0 ? normalizedEventGroups : []) as GroupConfig[]
     });
     const [eventDate, setEventDate] = useState<Date | null>(() => {
@@ -111,6 +114,10 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
 
     const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (formData.google_sheet_id.trim() && !extractGoogleSheetId(formData.google_sheet_id)) {
+            showToast('Ongeldige Google Sheet-link. Plak de link uit de adresbalk van de sheet.', 'error');
+            return;
+        }
         startTransition(async () => {
             try {
                 await upsertPubCrawlEvent({
@@ -188,6 +195,22 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                         className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
                                         placeholder="Bijv. https://chat.whatsapp.com/..."
                                     />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="ml-1 flex items-center gap-2 text-[10px] font-semibold text-(--text-muted)">
+                                        <Sheet className="size-3" /> Google Sheet (link of ID)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.google_sheet_id}
+                                        onChange={(e) => setFormData({ ...formData, google_sheet_id: e.target.value })}
+                                        className="beheer-input w-full rounded-xl border-2 border-(--border-color)/50 bg-(--bg-main)/50 px-5 py-4 font-semibold text-(--text-main) transition-all focus:border-(--theme-purple) focus:ring-4 focus:ring-(--theme-purple)/10"
+                                        placeholder="Bijv. https://docs.google.com/spreadsheets/d/..."
+                                    />
+                                    <p className="ml-1 text-[10px] text-(--text-muted)">
+                                        Deel de sheet als Bewerker met het service-account; aanmeldingen worden er dan automatisch naartoe gesynchroniseerd.
+                                    </p>
                                 </div>
                             </div>
 

@@ -1,17 +1,13 @@
 'use client';
 
-import { Edit, Mail, Trash } from 'lucide-react';
+import { Edit, FileDown, Mail, Trash } from 'lucide-react';
 import ResendTicketEmailButton from './ResendTicketEmailButton';
 import GroupSelectDropdown from './GroupSelectDropdown';
+import { getParticipantNames } from '@/lib/utils/kroegentocht-signups';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
-interface Participant {
-    name: string;
-    initial: string;
-}
-
 interface ExtendedSignup extends PubCrawlSignup {
-    participants?: Participant[];
+    participants?: { name: string; initial: string }[];
     created_at: string;
 }
 
@@ -32,7 +28,7 @@ interface SignupTableViewProps {
     onUpdateGroup?: (signupId: number, newGroupName: string | null) => Promise<void>;
     onEdit: (id: number | string) => void;
     onDelete: (id: number | string) => void;
-    getParticipants: (signup: ExtendedSignup) => Participant[];
+    ticketsBySignup: Record<number, { id: number; name: string; initial: string; checkedIn: boolean }[]>;
 }
 
 export default function SignupTableView({
@@ -42,7 +38,7 @@ export default function SignupTableView({
     onEdit,
     onDelete,
     onUpdateGroup,
-    getParticipants
+    ticketsBySignup
 }: SignupTableViewProps) {
     return (
         <div className="animate-in fade-in overflow-hidden rounded-2xl bg-(--bg-card) shadow-(--shadow-card) ring-1 ring-(--border-color)/30 duration-200">
@@ -50,25 +46,25 @@ export default function SignupTableView({
                 <table className="w-full text-left">
                     <thead>
                         <tr className="border-b border-(--border-color)/30 bg-(--bg-main)/50">
-                            <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted)">Deelnemers</th>
-                            <th className="px-6 py-4 text-center text-[10px] font-semibold text-(--text-muted)">Tickets</th>
+                            <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted)">Inschrijving</th>
+                            <th className="px-6 py-4 text-center text-[10px] font-semibold text-(--text-muted)">Personen</th>
                             <th className="hidden px-6 py-4 text-[10px] font-semibold text-(--text-muted) lg:table-cell">Vereniging</th>
+                            <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted)">Tickets</th>
                             <th className="px-6 py-4 text-[10px] font-semibold text-(--text-muted)">Groep</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-(--border-color)/20">
                         {filteredSignups.length === 0 ? (
                             <tr>
-                                <td colSpan={4} className="px-6 py-16 text-center font-medium text-(--text-muted) italic">
+                                <td colSpan={5} className="px-6 py-16 text-center font-medium text-(--text-muted) italic">
                                     Geen aanmeldingen gevonden.
                                 </td>
                             </tr>
                         ) : (
                             filteredSignups.map((signup) => {
-                                const participants = getParticipants(signup);
-                                const isLeaderOfGroup = groupConfigs.find(g => 
-                                    (g.leaders || []).some(l => l.signupId === Number(signup.id))
-                                )?.name;
+                                const [primaryName, ...otherNames] = getParticipantNames(signup);
+                                const leaderNames = new Set(groupConfigs.flatMap(g => (g.leaders || []).filter(l => l.signupId === Number(signup.id)).map(l => l.name.trim().toLowerCase())));
+                                const crown = (n: string) => leaderNames.has(n.trim().toLowerCase()) ? '👑 ' : '';
 
                                 return (
                                     <tr key={signup.id} className="border-b border-(--border-color)/10 transition-colors last:border-0 hover:bg-(--bg-main)/30">
@@ -77,31 +73,19 @@ export default function SignupTableView({
                                                 <div className="flex items-center gap-2">
                                                     <a href={`mailto:${signup.email ?? ''}`} className="flex items-center gap-2 text-sm font-semibold text-(--text-main) transition-colors hover:text-(--theme-purple)" title={signup.email ?? ''}>
                                                         <Mail className="size-3.5 text-(--text-muted)" />
-                                                        {signup.name} <span className="text-xs font-normal text-(--text-muted)">({signup.email})</span>
+                                                        {crown(primaryName)}{primaryName} <span className="text-xs font-normal text-(--text-muted)">({signup.email})</span>
                                                     </a>
                                                 </div>
 
-                                                {isLeaderOfGroup && (
-                                                    <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[9px] font-semibold text-amber-700 dark:text-amber-400">
-                                                        👑 Groepsleider ({isLeaderOfGroup})
-                                                    </span>
-                                                )}
 
-                                                {participants.length > 0 && (
-                                                    <div className="mt-1.5 flex flex-wrap gap-1.5">
-                                                        {participants.map((p, i) => {
-                                                            const rawName = p.name || 'Onbekend';
-                                                            const rawInitial = p.initial || '';
-
-                                                            return (
-                                                                <div key={i} className="inline-flex items-center gap-1.5 rounded-md bg-(--bg-main)/80 px-2 py-0.5 text-[10px] font-medium text-(--text-light) ring-1 ring-(--border-color)/30">
-                                                                    <span className="max-w-30 truncate text-(--text-muted)">
-                                                                        {rawName}{rawInitial ? ` ${rawInitial}` : ''}
-                                                                    </span>
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
+                                                {otherNames.length > 0 && (
+                                                    <ul className="mt-1 space-y-0.5 pl-5.5">
+                                                        {otherNames.map((name, i) => (
+                                                            <li key={i} className="text-xs text-(--text-muted)">
+                                                                + {crown(name)}{name}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
                                                 )}
                                             </div>
                                         </td>
@@ -112,6 +96,35 @@ export default function SignupTableView({
                                         </td>
                                         <td className="hidden px-6 py-3 text-[11px] font-medium text-(--text-muted) lg:table-cell">
                                             {signup.association || '-'}
+                                        </td>
+                                        <td className="px-6 py-3">
+                                            {(() => {
+                                                const tickets = ticketsBySignup[Number(signup.id)] ?? [];
+                                                const checkedIn = tickets.filter((t) => t.checkedIn).length;
+                                                const mismatch = tickets.length !== signup.amount_tickets;
+                                                return (
+                                                    <div className="flex items-center gap-2">
+                                                        <span
+                                                            className={`text-[11px] font-semibold ${mismatch ? 'text-red-500' : 'text-(--text-muted)'}`}
+                                                            title={tickets.map((t) => `${t.name} ${t.initial}.${t.checkedIn ? ' – ingecheckt' : ''}`).join('\n') || 'Geen tickets'}
+                                                        >
+                                                            {tickets.length} ticket{tickets.length === 1 ? '' : 's'}
+                                                            {checkedIn > 0 && ` · ${checkedIn} ingecheckt`}
+                                                            {mismatch && ' ⚠'}
+                                                        </span>
+                                                        {tickets.length > 0 && (
+                                                            <a
+                                                                href={`/api/kroegentocht/tickets/${signup.id}`}
+                                                                download
+                                                                className="icon-button rounded-md p-1.5 text-(--text-muted) transition-all hover:bg-(--theme-purple)/10 hover:text-(--theme-purple)"
+                                                                title="Tickets downloaden (PDF met QR-codes)"
+                                                            >
+                                                                <FileDown className="size-3.5" />
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
                                         </td>
                                         <td className="px-6 py-3">
                                             <div className="flex items-center gap-3">

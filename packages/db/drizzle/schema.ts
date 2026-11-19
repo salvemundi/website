@@ -1248,6 +1248,7 @@ export const pub_crawl_events = pgTable("pub_crawl_events", {
 	date: timestamp({ mode: 'string' }),
 	description: text(),
 	whatsapp_community_url: varchar({ length: 255 }),
+	google_sheet_id: varchar({ length: 255 }),
 	groups: jsonb().default([]),
 }, (table) => [
 	foreignKey({

@@ -57,7 +57,7 @@ export default function DistributionPreviewModal({
                                 <div className="flex items-center justify-between border-b border-(--border-color)/10 pb-2">
                                     <span className="text-xs font-bold text-(--text-main)">{groupName}</span>
                                     <span className="rounded-full border border-(--theme-purple)/20 bg-(--theme-purple)/10 px-2 py-0.5 text-[10px] font-bold text-(--theme-purple)">
-                                        {ticketCount} tickets
+                                        {ticketCount} {ticketCount === 1 ? 'persoon' : 'personen'}
                                     </span>
                                 </div>
                                 <div className="max-h-48 space-y-1.5 overflow-y-auto pr-1">
@@ -77,7 +77,7 @@ export default function DistributionPreviewModal({
                                                         )}
                                                     </div>
                                                     <span className="shrink-0 text-[10px] font-bold text-(--text-muted)">
-                                                        {s.amountTickets} {s.amountTickets === 1 ? 'ticket' : 'tickets'}
+                                                        {s.amountTickets} {s.amountTickets === 1 ? 'persoon' : 'personen'}
                                                     </span>
                                                 </div>
                                             );

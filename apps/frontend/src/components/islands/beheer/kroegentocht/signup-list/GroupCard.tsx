@@ -6,6 +6,7 @@ import ResendTicketEmailButton from './ResendTicketEmailButton';
 import GroupSelectDropdown from './GroupSelectDropdown';
 import AddLeaderForm from './AddLeaderForm';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
+import { getParticipantNames } from '@/lib/utils/kroegentocht-signups';
 
 interface Participant {
     name: string;
@@ -58,15 +59,19 @@ export default function GroupCard({
 }: GroupCardProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showAddLeaderForm, setShowAddLeaderForm] = useState(false);
+    const [confirmRemoveIdx, setConfirmRemoveIdx] = useState<number | null>(null);
 
-    const regularParticipants = isUnassigned
-        ? participantsList
-        : participantsList.filter(
-            (p) => !leadersList.some((l) => l.signupId === p.signupId && l.name.toLowerCase() === p.name.toLowerCase())
-        );
+    // Eén blok per inschrijving: inschrijver bovenaan, meegekomen deelnemers eronder.
+    // Groepsleiders worden apart getoond en hier weggelaten.
+    // Groepsleiders blijven in hun eigen blok staan (met kroontje), zodat altijd
+    // duidelijk is wie heeft ingeschreven.
+    const isLeaderName = (signupId: number, name: string) => !isUnassigned && leadersList.some(
+        (l) => l.signupId === signupId && l.name.trim().toLowerCase() === name.trim().toLowerCase()
+    );
+    const signupBlocks = groupSignups.map((signup) => ({ signup, names: getParticipantNames(signup) }));
 
     const limit = layoutColumns === 3 ? 12 : layoutColumns === 2 ? 8 : 5;
-    const visibleParticipants = isExpanded ? regularParticipants : regularParticipants.slice(0, limit);
+    const visibleBlocks = isExpanded ? signupBlocks : signupBlocks.slice(0, limit);
 
     const listGridClass = layoutColumns === 3
         ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2"
@@ -109,9 +114,6 @@ export default function GroupCard({
                             >
                                 {groupName}
                             </h3>
-                            <p className="mt-0.5 text-[10px] font-semibold tracking-wider text-(--text-muted) uppercase">
-                                {groupSignups.length} aanmeldingen
-                            </p>
                         </div>
                     </div>
                     <span
@@ -152,56 +154,82 @@ export default function GroupCard({
                                             </span>
                                         </div>
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => onRemoveLeader?.(groupName, leader)}
-                                        className="icon-button cursor-pointer rounded p-1 text-amber-600 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500"
-                                        title="Verwijder groepsleider"
-                                    >
-                                        <X className="size-3.5" />
-                                    </button>
+                                    {confirmRemoveIdx === lIdx ? (
+                                        <div className="flex shrink-0 items-center gap-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => { setConfirmRemoveIdx(null); onRemoveLeader?.(groupName, leader); }}
+                                                className="beheer-button cursor-pointer rounded-md bg-red-500 px-2 py-1 text-[10px] font-bold text-white hover:bg-red-600"
+                                            >
+                                                Ja, afzetten
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setConfirmRemoveIdx(null)}
+                                                className="beheer-button cursor-pointer rounded-md px-2 py-1 text-[10px] font-bold text-(--text-muted) hover:bg-(--bg-main)/50"
+                                            >
+                                                Nee
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => setConfirmRemoveIdx(lIdx)}
+                                            className="beheer-button flex shrink-0 cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-[10px] font-bold text-amber-700 transition-all hover:bg-red-500/10 hover:text-red-500 dark:text-amber-300"
+                                            title="Groepsleider afzetten (wordt weer gewone deelnemer)"
+                                        >
+                                            <X className="size-3.5" /> Afzetten
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>
                     )}
 
-                    {participantsList.length === 0 ? (
+                    {signupBlocks.length === 0 ? (
                         <p className="py-3 text-center text-xs text-(--text-muted) italic">
                             Geen deelnemers in deze groep
                         </p>
                     ) : (
                         <div className={listGridClass}>
-                            {visibleParticipants.map((p, idx) => (
-                                <div
-                                    key={idx}
-                                    className="flex items-center justify-between rounded-lg border border-(--border-color)/20 bg-(--bg-card)/60 px-3 py-2 text-xs transition-all hover:border-(--border-color)/40"
-                                >
-                                    <div className="flex min-w-0 flex-col">
-                                        <span
-                                            className="max-w-32.5 truncate font-semibold text-(--text-main) sm:max-w-42.5"
-                                            title={p.name}
-                                        >
-                                            {p.name}
-                                        </span>
-                                        <span className="max-w-30 truncate text-[9px] text-(--text-muted)">
-                                            {p.association}
-                                        </span>
+                            {visibleBlocks.map(({ signup, names }) => {
+                                const [primary, ...others] = names;
+                                const sid = Number(signup.id);
+                                return (
+                                    <div
+                                        key={String(signup.id)}
+                                        className="flex items-start justify-between gap-2 rounded-lg border border-(--border-color)/20 bg-(--bg-card)/60 px-3 py-2 text-xs transition-all hover:border-(--border-color)/40"
+                                    >
+                                        <div className="flex min-w-0 flex-col">
+                                            <span className="truncate font-semibold text-(--text-main)" title={primary}>
+                                                {isLeaderName(sid, primary) && <Crown className="mr-1 inline size-3 text-amber-500" />}
+                                                {primary}
+                                            </span>
+                                            {others.map((name, i) => (
+                                                <span key={i} className="truncate pl-2 text-[11px] text-(--text-main)/80" title={name}>
+                                                    + {isLeaderName(sid, name) && <Crown className="mr-1 inline size-3 text-amber-500" />}{name}
+                                                </span>
+                                            ))}
+                                            <span className="truncate text-[9px] text-(--text-muted)">
+                                                {signup.association || '-'}
+                                            </span>
+                                        </div>
+
+                                        {onUpdateGroup && (
+                                            <GroupSelectDropdown
+                                                value={isUnassigned ? '' : groupName}
+                                                options={groupNames}
+                                                onChange={(val) => {
+                                                    void onUpdateGroup(Number(signup.id), val);
+                                                }}
+                                                size="xs"
+                                            />
+                                        )}
                                     </div>
+                                );
+                            })}
 
-                                    {onUpdateGroup && (
-                                        <GroupSelectDropdown
-                                            value={isUnassigned ? '' : groupName}
-                                            options={groupNames}
-                                            onChange={(val) => {
-                                                void onUpdateGroup(p.signupId, val);
-                                            }}
-                                            size="xs"
-                                        />
-                                    )}
-                                </div>
-                            ))}
-
-                            {regularParticipants.length > limit && (
+                            {signupBlocks.length > limit && (
                                 <button
                                     onClick={() => setIsExpanded(!isExpanded)}
                                     className="col-span-full mt-2 beheer-button flex w-full items-center justify-center gap-1.5 rounded-lg border border-(--border-color)/40 bg-(--bg-main)/30 py-1.5 text-[10px] font-bold text-(--text-muted) transition-all hover:bg-(--bg-main)/60 hover:text-(--text-main)"
@@ -212,7 +240,7 @@ export default function GroupCard({
                                         </>
                                     ) : (
                                         <>
-                                            Toon alle {regularParticipants.length} <ChevronDown className="size-3" />
+                                            Toon alles ({signupBlocks.length - limit} meer) <ChevronDown className="size-3" />
                                         </>
                                     )}
                                 </button>

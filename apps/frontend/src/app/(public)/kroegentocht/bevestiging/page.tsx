@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import PaymentStatusIsland from '@/components/islands/activiteiten/PaymentStatusIsland';
 import BackButton from '@/components/ui/navigation/BackButton';
 import { getPaymentStatusAction } from '@/server/actions/events/reis/reis-payment.actions';
-import { KroegentochtWhatsAppPopup } from '@/components/islands/kroegentocht/KroegentochtWhatsAppPopup';
+import { KroegentochtClaimTicketsPopup } from '@/components/islands/kroegentocht/KroegentochtTicketLinks';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import { CheckCircle2 } from 'lucide-react';
 
@@ -70,7 +70,7 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
                     />
                 )}
             </div>
-            <KroegentochtWhatsAppPopup signupId={id ? Number(id) : undefined} token={token} />
+            <KroegentochtClaimTicketsPopup signupId={id ? Number(id) : undefined} token={token} />
         </PublicPageShell>
     );
 }
