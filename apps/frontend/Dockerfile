@@ -12,6 +12,7 @@ COPY apps/services/finance-service/package.json ./apps/services/finance-service/
 COPY apps/services/azure-sync-service/package.json ./apps/services/azure-sync-service/
 COPY apps/services/mail-service/package.json ./apps/services/mail-service/
 COPY apps/services/azure-management-service/package.json ./apps/services/azure-management-service/
+COPY apps/services/mcp-service/package.json ./apps/services/mcp-service/
 COPY packages/validations/package.json ./packages/validations/
 COPY packages/db/package.json ./packages/db/
 
@@ -57,6 +58,10 @@ COPY --from=builder --chown=node:node /app/node_modules ./node_modules
 RUN mkdir -p apps/frontend/.next/cache && chown -R node:node apps/frontend/.next/cache
 
 USER node
+
+# Exercise the native binding and bundled libvips in the final runtime image.
+# Loading sharp during next build alone does not validate this stage.
+RUN node -e "const sharp = require('./node_modules/.pnpm/node_modules/sharp'); sharp({ create: { width: 1, height: 1, channels: 4, background: '#00000000' } }).png().toBuffer().then(() => console.log('Sharp runtime smoke test passed'), error => { console.error(error); process.exit(1); });"
 
 EXPOSE 3000
 ENV PORT=3000

@@ -17,7 +17,7 @@ Acceptance en productie zijn twee aparte instanties met elk een eigen spelstaat.
 | Productie | `mol.salvemundi.nl` | `http://v7-prod-wieisdemol:8080` |
 
 Maak in NPM per domein een Proxy Host met TLS en bij Advanced `client_max_body_size 6m;` (back-up terugzetten).
-De app vertrouwt de **laatste** waarde van `X-Forwarded-For` (door de eigen proxy toegevoegd) voor de blokkade na 5 foute pincodes.
+De app vertrouwt de **laatste** waarde van `X-Forwarded-For` (door de eigen proxy toegevoegd) voor de blokkade na 5 foute wachtwoorden.
 Het domein dat in het beheer als deelbare link wordt getoond, komt uit `WIEISDEMOL_URL` (gezet door de deploy-workflow).
 
 ## Gegevens blijven behouden
@@ -28,7 +28,13 @@ Het domein dat in het beheer als deelbare link wordt getoond, komt uit `WIEISDEM
 
 ## Let op
 - `/invul` heeft geen login: iedereen met de link kan een naam kiezen en een test maken. Deel de link alleen op het kamp.
-- Kies een lange pincode (tot 12 cijfers) voor `/beheer`.
+- `/beheer` vraagt een wachtwoord van minimaal 12 tekens met minstens één letter en één cijfer. Een spel dat nog een oude pincode heeft, blijft inloggen met die pincode, maar het beheer vraagt dan om een sterk wachtwoord te kiezen.
+- Iedereen vult in via een persoonlijke link (`/invul?code=...`); `/invul` zonder link toont geen namenlijst. Wie een link heeft, kan als die persoon invullen (bij een mol: de juiste antwoorden). De links staan ook in de back-up. Een gelekte link vervang je bij Kandidaten (nieuwe link maken).
+
+## Huisstijl
+- Achtergrond `app/static/assets/achtergrond.webp` en logo `app/static/assets/logo.svg` (wit Salve Mundi-logo uit `apps/frontend/public/img/Logo_Light.svg`).
+- Titels gebruiken Instrument Serif (staat in `app/static/assets/fonts/`).
+- Kleuren staan als variabelen bovenaan `app/static/assets/base.css`.
 - Maak na elke test een back-up (Beheer → Instellingen en back-up).
 
 ## Lokaal
@@ -39,7 +45,7 @@ Het domein dat in het beheer als deelbare link wordt getoond, komt uit `WIEISDEM
 ### Wat staat waar
 | Wil je... | Bestand |
 |---|---|
-| spelregels of de server aanpassen (afvallen, score, pincode, API) | `app/server.py` (alleen de Python-standaardbibliotheek, geen `pip install`) |
+| spelregels of de server aanpassen (afvallen, wachtwoord, mol-links, API; de score wordt berekend in `beheer.js`) | `app/server.py` (alleen de Python-standaardbibliotheek, geen `pip install`) |
 | het scherm van de kandidaten aanpassen | `app/static/invul.html` + `app/static/assets/invul.js` |
 | het beheerscherm aanpassen | `app/static/beheer.html` + `app/static/assets/beheer.js` |
 | kleuren, lettertypes of knoppen aanpassen | `app/static/assets/base.css` |
@@ -47,14 +53,14 @@ Het domein dat in het beheer als deelbare link wordt getoond, komt uit `WIEISDEM
 | de startpagina wijzigen | `app/static/index.html` |
 | uitleg voor de spelleiding | `HANDLEIDING.md` (de spelregels staan in `PRODUCT.md`) |
 
-`standaard.json` wordt alleen gelezen als er een nieuw spel wordt aangemaakt. Een lopend spel pas je aan in het beheer (Vragen en antwoorden, Kandidaten, De mol).
+`standaard.json` wordt alleen gelezen als er een nieuw spel wordt aangemaakt. Een lopend spel pas je aan in het beheer (Vragen en antwoorden, Kandidaten, De mollen).
 
 ### Lokaal draaien
 Vereist Python 3.10 of nieuwer. Vanuit de repo-root:
 ```
 python apps/wieisdemol/app/server.py
 ```
-Open daarna `http://localhost:8080/beheer` (maak een spel aan met een pincode) en `http://localhost:8080/invul`. De gegevens staan lokaal in `apps/wieisdemol/app/data/` (staat in `.gitignore`); verwijder die map om opnieuw te beginnen.
+Open daarna `http://localhost:8080/beheer` (maak een spel aan met een wachtwoord) en `http://localhost:8080/invul`. De gegevens staan lokaal in `apps/wieisdemol/app/data/` (staat in `.gitignore`); verwijder die map om opnieuw te beginnen.
 - Wijzig je `html`, `js` of `css`: ververs de browser (de server cachet niet).
 - Wijzig je `server.py`: stop de server (Ctrl+C) en start hem opnieuw.
 
@@ -76,7 +82,7 @@ Het uitrollen vervangt de container (een paar seconden niet bereikbaar). De spel
 - **Niet tijdens het kamp uitrollen**, tenzij het echt moet. Maak eerst een back-up (Beheer, Instellingen en back-up) en laat niemand midden in een test zitten.
 - **Compatibel blijven met bestaande gegevens.** `state.json` wordt zoals hij is ingelezen. Voeg je een nieuw veld toe aan de spelstaat, zorg dan dat oude gegevens zonder dat veld blijven werken (zie `normalize()` in `beheer.js` en `new_state()` in `server.py`). Verwijder of hernoem bestaande velden niet zonder dat te regelen.
 - **De server is de bron van waarheid** voor ingeleverde tests en starttijden. Het beheerscherm stuurt de hele spelstaat terug, maar kan die niet overschrijven (zie `api_put_state`). Houd dat zo.
-- **Geen geheimen in de code of repo.** De app heeft er geen nodig; de pincode staat gehasht in de gegevens.
+- **Geen geheimen in de code of repo.** De app heeft er geen nodig; het wachtwoord staat gehasht in de gegevens.
 - Na het wijzigen van de opmaak: controleer ook op een telefoon en op de beamer (donker, grote letters), want daar wordt het gebruikt.
 
 ### Gegevens terugzetten

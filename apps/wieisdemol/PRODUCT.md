@@ -1,7 +1,7 @@
 # Molproef — product
 
 ## Wat het is
-Offline testsoftware voor een kampspel in het "mol"-format: 40 kandidaten, 8 proeven en een finale. Na elke proef maakt iedere kandidaat een test over de mol. De laagste scores vallen af.
+Offline testsoftware voor een kampspel in het "mol"-format: 40 kandidaten, 8 proeven en een finale. Na elke proef maakt iedere kandidaat een test over de twee mollen. De laagste scores vallen af.
 
 ## Gebruikers en scène
 - **Spelleiding** (1–3 mensen): bereidt tests voor, vult de juiste antwoorden in, bepaalt de uitslag. Werkt op een laptop, vaak 's avonds in een donkere kampzaal.
@@ -19,9 +19,14 @@ Offline testsoftware voor een kampspel in het "mol"-format: 40 kandidaten, 8 pro
 - Beheer is opgebouwd rond "volgende stap" en vier stappen per test: vragen → afnemen → uitslag → onthulling.
 
 ## Kernregels
-- De mol valt nooit af; kandidaten met een vrijstelling ook niet.
+- De mollen vallen nooit af; kandidaten met een vrijstelling ook niet.
 - Score = goede antwoorden + jokers. Bij gelijke score valt de langzaamste af.
-- Spelleider-schermen zitten achter een pincode.
+- Spelleider-schermen zitten achter een wachtwoord (minimaal 12 tekens, letters en cijfers).
+
+## Update (2026-11-13): twee mollen
+- Er zijn twee mollen. Elke mol vult via een eigen geheime link de test over zichzelf in; die antwoorden zijn de juiste antwoorden (geen mol-profiel of handmatig aanklikken meer).
+- Kandidaten beantwoorden elke vraag voor Mol A en Mol B. Per test telt de koppeling A/B aan mol 1/2 die de kandidaat de meeste punten geeft.
+- Score = per vraag 1 punt per goed beantwoorde mol + 1 punt per goed geraden mol bij "Wie zijn de mollen?" + jokers.
 
 ## Toon
 Nederlands, kort, spannend maar duidelijk. Knoppen benoemen de actie.

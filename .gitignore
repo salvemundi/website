@@ -28,6 +28,9 @@ scratch/
 .env.production
 .env.local
 .env.*.local
+.env.acc
+.env.prod
+.env.mobile-acc
 !.env.example
 
 # Typescript

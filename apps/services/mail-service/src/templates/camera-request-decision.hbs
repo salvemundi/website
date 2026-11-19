@@ -1,0 +1,20 @@
+{{#> layout headerTitle="CAMERA-AANVRAAG"}}
+    <div class="status-badge{{#unless approved}} warning{{/unless}}">{{statusLabel}}</div>
+    <p>Beste {{name}},</p>
+
+    {{#if approved}}
+    <p>Je aanvraag voor de verenigingscamera is <strong>goedgekeurd</strong>. Spreek met het beheer af wanneer je de camera kunt ophalen.</p>
+    {{else}}
+    <p>Je aanvraag voor de verenigingscamera is helaas <strong>{{statusLabel}}</strong>.</p>
+    {{/if}}
+
+    <p><strong>Activiteit:</strong> {{eventName}}<br>
+    <strong>Periode:</strong> {{period}}{{#if photographer}}<br>
+    <strong>Fotograaf:</strong> {{photographer}}{{/if}}{{#if note}}<br>
+    <strong>Opmerking van het beheer:</strong> {{note}}{{/if}}</p>
+
+    <p style="margin-top: 30px;">Met vriendelijke groet,<br><br>
+    <strong>Salve Mundi</strong><br>
+    Rachelsmolen 1<br>
+    5612 MA Eindhoven</p>
+{{/layout}}

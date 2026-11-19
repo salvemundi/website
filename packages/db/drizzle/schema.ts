@@ -2415,3 +2415,84 @@ export const pizza_orders = pgTable("pizza_orders", {
 		}).onDelete("cascade"),
 	check("pizza_orders_price_check", sql`${table.price} > 0`),
 ]);
+
+export const camera_photographers = pgTable("camera_photographers", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	user_id: uuid().notNull(),
+	admitted_on: date().default(sql`CURRENT_DATE`).notNull(),
+	route: varchar({ length: 100 }),
+	experienced: boolean().default(false).notNull(),
+	note: varchar({ length: 300 }),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	unique("camera_photographers_user_id_unique").on(table.user_id),
+	foreignKey({
+			columns: [table.user_id],
+			foreignColumns: [directus_users.id],
+			name: "camera_photographers_user_id_directus_users_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const camera_requests = pgTable("camera_requests", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	requester_id: uuid().notNull(),
+	event_id: integer(),
+	event_name: varchar({ length: 255 }).notNull(),
+	start_date: date().notNull(),
+	start_time: time(),
+	end_date: date().notNull(),
+	end_time: time(),
+	proposed_photographer_id: uuid(),
+	assigned_photographer_id: uuid(),
+	note: varchar({ length: 500 }),
+	note_admin: varchar({ length: 500 }),
+	status: varchar({ length: 12 }).default('requested').notNull(),
+	photo_status: varchar({ length: 12 }).default('not_started').notNull(),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+	updated_at: timestamp({ withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_camera_requests_requester").using("btree", table.requester_id.asc().nullsLast().op("uuid_ops")),
+	index("idx_camera_requests_period").using("btree", table.start_date.asc().nullsLast().op("date_ops"), table.end_date.asc().nullsLast().op("date_ops")),
+	foreignKey({
+			columns: [table.requester_id],
+			foreignColumns: [directus_users.id],
+			name: "camera_requests_requester_id_directus_users_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.event_id],
+			foreignColumns: [events.id],
+			name: "camera_requests_event_id_events_id_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.proposed_photographer_id],
+			foreignColumns: [camera_photographers.id],
+			name: "camera_requests_proposed_photographer_fk"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.assigned_photographer_id],
+			foreignColumns: [camera_photographers.id],
+			name: "camera_requests_assigned_photographer_fk"
+		}).onDelete("set null"),
+	check("camera_requests_status_check", sql`${table.status} IN ('requested', 'approved', 'rejected', 'cancelled')`),
+	check("camera_requests_period_check", sql`${table.end_date} >= ${table.start_date}`),
+	check("camera_requests_photo_status_check", sql`${table.photo_status} IN ('not_started', 'editing', 'done')`),
+]);
+
+export const camera_loans = pgTable("camera_loans", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	request_id: uuid().notNull(),
+	handed_out_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	checklist: jsonb().notNull(),
+	handout_note: varchar({ length: 500 }),
+	returned_on: date(),
+	condition_on_return: varchar({ length: 500 }),
+	created_at: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_camera_loans_open").using("btree", table.returned_on.asc().nullsLast().op("date_ops")),
+	unique("camera_loans_request_id_unique").on(table.request_id),
+	foreignKey({
+			columns: [table.request_id],
+			foreignColumns: [camera_requests.id],
+			name: "camera_loans_request_id_camera_requests_id_fk"
+		}).onDelete("cascade"),
+]);

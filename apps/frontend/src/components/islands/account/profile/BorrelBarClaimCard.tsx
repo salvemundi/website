@@ -20,14 +20,18 @@ export default function BorrelBarClaimCard({ initialStatus }: BorrelBarClaimCard
     const handleClaim = () => {
         setError(null);
         startTransition(async () => {
-            const res = await claimBorrelBarLink();
-            if (res.success) {
-                setStatus((prev) => prev ? { ...prev, hasClaimed: true, passUrl: res.passUrl ?? prev.passUrl } : prev);
-                if (res.passUrl) {
-                    window.open(res.passUrl, '_blank', 'noopener,noreferrer');
+            try {
+                const res = await claimBorrelBarLink();
+                if (res.success) {
+                    setStatus((prev) => prev ? { ...prev, hasClaimed: true, passUrl: res.passUrl ?? prev.passUrl } : prev);
+                    if (res.passUrl) {
+                        window.open(res.passUrl, '_blank', 'noopener,noreferrer');
+                    }
+                } else {
+                    setError(res.error || 'Er is een fout opgetreden bij het claimen.');
                 }
-            } else {
-                setError(res.error || 'Er is een fout opgetreden bij het claimen.');
+            } catch {
+                setError('Het claimen is niet gelukt. Vernieuw de pagina en probeer het opnieuw.');
             }
         });
     };

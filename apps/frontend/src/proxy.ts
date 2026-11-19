@@ -58,7 +58,7 @@ async function proxy(request: NextRequest) {
     const forwardedFor = request.headers.get('x-forwarded-for');
     const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : (request.headers.get('x-real-ip') || 'unknown');
     
-    const nextWithNonce = () => {
+    const nextWithNonce = (forceForward = false) => {
         const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method);
         const isPrefetch = request.headers.get('x-next-prefetch') === '1' || request.headers.get('purpose') === 'prefetch';
         const isDataRequest = pathname.includes('/_next/data/');
@@ -69,7 +69,7 @@ async function proxy(request: NextRequest) {
         requestHeaders.set('x-trusted-ip', clientIp);
         requestHeaders.set('x-nonce', nonce);
         
-        if (isMutation || isPrefetch || isDataRequest || isRscRequest) {
+        if (!forceForward && (isMutation || isPrefetch || isDataRequest || isRscRequest)) {
             return withSecurity(NextResponse.next());
         }
         
@@ -91,6 +91,13 @@ async function proxy(request: NextRequest) {
         return nextWithNonce();
     }
     
+    if (pathname === '/api/mobile/v1' || pathname.startsWith('/api/mobile/v1/') || pathname === '/.well-known/apple-app-site-association') {
+        if (process.env.ENV_NAME !== 'acc' || process.env.MOBILE_API_ENABLED !== 'true') {
+            return withSecurity(NextResponse.json({ error: { code: 'not_found', message: 'Niet gevonden.' } }, { status: 404 }));
+        }
+        return nextWithNonce(true);
+    }
+
     if (pathname === '/api/finance/webhook/mollie' || pathname.startsWith('/api/auth/')) {
         return nextWithNonce();
     }

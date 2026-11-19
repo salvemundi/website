@@ -20,6 +20,7 @@ import {
     updatePubCrawlSignup
 } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
 import KroegentochtEventDropdown from '@/components/islands/beheer/kroegentocht/KroegentochtEventDropdown';
+import KroegentochtScannerSettings from '@/components/islands/beheer/kroegentocht/KroegentochtScannerSettings';
 import SignupList from '@/components/islands/beheer/kroegentocht/SignupList';
 import { type PubCrawlEvent, type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -212,6 +213,7 @@ export default function KroegentochtManagementIsland({
 
                     {selectedEvent ? (
                         <div className="space-y-8">
+                            <KroegentochtScannerSettings key={String(selectedEvent.id)} eventId={Number(selectedEvent.id)} />
                             <div className={`transition-opacity duration-300 ${isPending ? 'pointer-events-none opacity-50' : 'opacity-100'}`}>
                                 <SignupList
                                     signups={signups}

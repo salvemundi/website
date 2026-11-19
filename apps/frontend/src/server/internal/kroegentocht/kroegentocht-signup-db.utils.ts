@@ -1,6 +1,6 @@
 import 'server-only';
 import { db, schema } from '@salvemundi/db';
-import { eq, desc, asc, ilike } from 'drizzle-orm';
+import { eq, desc, asc, sql } from 'drizzle-orm';
 import { pubCrawlSignupSchema, enrichedPubCrawlSignupSchema, type PubCrawlSignup, type PubCrawlTicket } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { type EnrichedPubCrawlSignup } from './kroegentocht-types';
 import { safeConsoleError } from '@/server/utils/logger';
@@ -126,7 +126,7 @@ export async function fetchUserPubCrawlSignupsDb(email: string): Promise<Enriche
         e: schema.pub_crawl_events
     }).from(schema.pub_crawl_signups)
       .innerJoin(schema.pub_crawl_events, eq(schema.pub_crawl_signups.pub_crawl_event_id, schema.pub_crawl_events.id))
-      .where(ilike(schema.pub_crawl_signups.email, email))
+      .where(sql`LOWER(${schema.pub_crawl_signups.email}) = LOWER(${email})`)
       .orderBy(desc(schema.pub_crawl_signups.created_at));
 
     const { toLocalISOString } = await import('@/lib/utils/date-utils');

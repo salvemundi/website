@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""Molproef-server: beheerpagina voor de spelleiding, invulpagina voor kandidaten.
+"""Molproef-server: beheerpagina voor de spelleiding, invulpagina voor kandidaten en mollen.
 
 Alleen de standaardbibliotheek. Alle gegevens staan in één JSON-bestand in MOLPROEF_DATA.
-De invulpagina krijgt nooit de juiste antwoorden of de naam van de mol te zien.
+Iedereen vult in via een persoonlijke link (/invul?code=...), zodat vaststaat wie er invult.
+Er zijn twee mollen; opent een mol de eigen link, dan vult die de test over zichzelf in en dat
+zijn de juiste antwoorden. De invulpagina krijgt nooit de juiste antwoorden, de mollen of
+andermans links te zien.
 """
 import hashlib
 import json
@@ -14,7 +17,7 @@ import shutil
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC = os.path.join(ROOT, "static")
@@ -28,9 +31,14 @@ TRUST_PROXY = os.environ.get("TRUST_PROXY", "") in ("1", "true", "yes")
 MAX_BODY = 5 * 1024 * 1024
 TOKEN_TTL = 12 * 3600
 PAGES = {"/": "index.html", "/beheer": "beheer.html", "/invul": "invul.html"}
+MOL_COUNT = 2  # aantal mollen per spel
+MIN_PASSWORD = 12
 
 mimetypes.add_type("font/woff2", ".woff2")
 mimetypes.add_type("text/javascript", ".js")
+mimetypes.add_type("image/webp", ".webp")
+mimetypes.add_type("image/svg+xml", ".svg")
+mimetypes.add_type("font/otf", ".otf")
 
 lock = threading.RLock()
 tokens = {}  # token -> verloopt-op
@@ -89,9 +97,21 @@ def set_pin(st, pin):
     st["auth"] = {"salt": salt, "hash": hash_pin(pin, salt)}
 
 
-def check_pin_format(pin):
-    if not isinstance(pin, str) or not re.fullmatch(r"\d{4,12}", pin):
-        raise ApiError(400, "De pincode moet uit 4 tot 12 cijfers bestaan.")
+def password_problem(pw):
+    """Geeft een foutmelding terug als het wachtwoord te zwak is, anders None."""
+    if not isinstance(pw, str) or len(pw) < MIN_PASSWORD:
+        return f"Het wachtwoord moet minimaal {MIN_PASSWORD} tekens lang zijn."
+    if len(pw) > 128:
+        return "Het wachtwoord mag maximaal 128 tekens lang zijn."
+    if not re.search(r"[^\W\d_]", pw) or not re.search(r"\d", pw):
+        return "Het wachtwoord moet minstens één letter en één cijfer bevatten."
+    return None
+
+
+def check_password(pw):
+    problem = password_problem(pw)
+    if problem:
+        raise ApiError(400, problem)
 
 
 def new_state(camp, pin):
@@ -110,7 +130,7 @@ def new_state(camp, pin):
     def test(nr, final, proef, questions, eliminate):
         return {"id": "finale" if final else f"t{nr}", "nr": nr, "final": final,
                 "proef": proef["naam"], "desc": proef["omschrijving"], "eliminate": eliminate,
-                "status": "concept", "questions": questions, "attempts": {}, "started": {},
+                "status": "concept", "questions": questions, "attempts": {}, "started": {}, "molKeys": {},
                 "jokers": {}, "exempt": {}, "eliminated": [], "revealed": {}, "finaleShown": {}}
 
     fixed, per_test = tpl["vastePool"], tpl["perTestPool"]
@@ -133,14 +153,56 @@ def new_state(camp, pin):
 
     players = [{"id": uid(), "name": f"Kandidaat {i + 1:02d}", "status": "actief", "outNr": None}
                for i in range(tpl["aantalKandidaten"])]
-    st = {"version": 2, "rev": 0, "camp": camp, "players": players, "molId": None, "profile": {},
+    st = {"version": 4, "rev": 0, "camp": camp, "players": players, "molIds": [], "codes": {},
           "std": tpl["standaardvragen"], "tests": tests}
+    sync_codes(st, {})
     set_pin(st, pin)
     return st
 
 
 def public_state():
     return {k: v for k, v in state.items() if k != "auth"}
+
+
+def mol_ids(st=None):
+    st = st if st is not None else state
+    ids = st.get("molIds")
+    if not isinstance(ids, list):
+        ids = [st["molId"]] if st.get("molId") else []  # spel van voor de twee mollen
+    return [i for i in ids if isinstance(i, str)][:MOL_COUNT]
+
+
+def new_code():
+    return secrets.token_urlsafe(9)  # 12 tekens, niet te raden
+
+
+def prev_codes_of(st):
+    """Bestaande codes van een spelstaat (ook de oude losse mol-links blijven zo werken)."""
+    prev = {}
+    for key in ("molCodes", "codes"):
+        if isinstance(st.get(key), dict):
+            prev.update({k: v for k, v in st[key].items() if isinstance(v, str) and v})
+    return prev
+
+
+def sync_codes(st, prev_codes):
+    """Iedere kandidaat (ook de mollen) krijgt een persoonlijke code voor de eigen invullink.
+    Codes worden alleen op de server gemaakt; de beheerpagina kan ze niet zelf kiezen."""
+    st["molIds"] = mol_ids(st)
+    st.pop("molId", None)
+    st.pop("molCodes", None)
+    prev_codes = prev_codes if isinstance(prev_codes, dict) else {}
+    st["codes"] = {p["id"]: prev_codes.get(p["id"]) or new_code()
+                   for p in st.get("players", []) if isinstance(p, dict) and isinstance(p.get("id"), str)}
+
+
+def player_by_code(code):
+    if not isinstance(code, str) or not code:
+        return None
+    for pid, c in state.get("codes", {}).items():
+        if secrets.compare_digest(c, code):
+            return next((p for p in state["players"] if p["id"] == pid), None)
+    return None
 
 
 def find_test(test_id):
@@ -156,7 +218,7 @@ def q_view(t, q, depth=0):
     """Vraagtekst en opties zoals de kandidaat ze ziet, zonder juist antwoord."""
     kind = q.get("kind")
     if kind == "mol":
-        return {"id": q["id"], "text": "Wie is de mol?", "mol": True}
+        return {"id": q["id"], "text": "Wie zijn de mollen?", "mol": True}
     if kind == "std":
         s = next((s for s in state["std"] if s["key"] == q.get("stdKey")), None)
         return {"id": q["id"], "text": s["text"] if s else "", "options": s["options"] if s else []}
@@ -174,14 +236,24 @@ def open_test():
     return next((t for t in sorted(state["tests"], key=lambda t: t["nr"]) if t["status"] == "open"), None)
 
 
+LINK_ERROR = "Deze link klopt niet (meer). Vraag de spelleiding om je persoonlijke link."
+
+
+def me_from(code):
+    p = player_by_code(code)
+    if not p:
+        raise ApiError(403, LINK_ERROR)
+    return p
+
+
 def require_open(test_id, player_id):
     t = open_test()
     if not t or t["id"] != test_id:
         raise ApiError(409, "Deze test is gesloten. Vraag de spelleiding wat je moet doen.")
     part = {p["id"] for p in participants(t)}
     if player_id not in part:
-        raise ApiError(403, "Je naam staat niet op de lijst voor deze test.")
-    if player_id in t["attempts"]:
+        raise ApiError(403, "Je doet niet meer mee aan deze test.")
+    if player_id in t["attempts"] or player_id in t.get("molKeys", {}):
         raise ApiError(409, "Deze test is voor jou al ingeleverd.")
     return t, part
 
@@ -197,7 +269,7 @@ def api_setup(_h, b):
     if state is not None:
         raise ApiError(409, "Er bestaat al een spel.")
     pin = b.get("pin")
-    check_pin_format(pin)
+    check_password(pin)
     camp = str(b.get("camp") or "Kamp").strip()[:80] or "Kamp"
     state = new_state(camp, pin)
     save_state()
@@ -216,15 +288,16 @@ def api_login(h, b):
     ip = h.client_ip()
     count, until = fails.get(ip, [0, 0])
     if until > time.time():
-        raise ApiError(429, f"Te vaak een foute pincode. Probeer het over {int(until - time.time()) + 1} seconden opnieuw.")
+        raise ApiError(429, f"Te vaak een fout wachtwoord. Probeer het over {int(until - time.time()) + 1} seconden opnieuw.")
     pin = str(b.get("pin") or "")
     a = state["auth"]
     if not secrets.compare_digest(hash_pin(pin, a["salt"]), a["hash"]):
         count += 1
         fails[ip] = [0, time.time() + 60] if count >= 5 else [count, 0]
-        raise ApiError(401, "Onjuiste pincode.")
+        raise ApiError(401, "Onjuist wachtwoord.")
     fails.pop(ip, None)
-    return {"token": issue_token()}
+    # Oude spellen hebben nog een korte pincode: laat de beheerpagina vragen om een sterk wachtwoord.
+    return {"token": issue_token(), "weak": password_problem(pin) is not None}
 
 
 def api_logout(h, _b):
@@ -246,6 +319,8 @@ def api_put_state(_h, b):
         cur = find_test(t.get("id"))
         t["attempts"] = cur["attempts"] if cur else {}
         t["started"] = cur.get("started", {}) if cur else {}
+        t["molKeys"] = cur.get("molKeys", {}) if cur else {}
+    sync_codes(inc, state.get("codes"))
     inc["auth"] = state["auth"]
     inc["rev"] = state.get("rev", 0)
     inc.pop("mode", None)
@@ -260,6 +335,7 @@ def api_attempt_delete(_h, b):
         raise ApiError(404, "Test niet gevonden.")
     t["attempts"].pop(b.get("player"), None)
     t.get("started", {}).pop(b.get("player"), None)
+    t.get("molKeys", {}).pop(b.get("player"), None)
     save_state()
     return public_state()
 
@@ -272,6 +348,8 @@ def api_import(_h, b):
     for t in inc["tests"]:
         t.setdefault("attempts", {})
         t.setdefault("started", {})
+        t.setdefault("molKeys", {})
+    sync_codes(inc, prev_codes_of(inc))
     inc["auth"] = state["auth"]
     inc["rev"] = state.get("rev", 0)
     inc.pop("mode", None)
@@ -289,54 +367,116 @@ def api_reset(_h, _b):
     return {"ok": True}
 
 
+def api_new_code(_h, b):
+    """Nieuwe persoonlijke link voor één kandidaat (de oude werkt daarna niet meer)."""
+    pid = b.get("player")
+    if pid not in state.get("codes", {}):
+        raise ApiError(404, "Kandidaat niet gevonden.")
+    state["codes"][pid] = new_code()
+    save_state()
+    return public_state()
+
+
 def api_pin(_h, b):
     pin = b.get("pin")
-    check_pin_format(pin)
+    check_password(pin)
     set_pin(state, pin)
     save_state()
     return {"ok": True}
 
 
-def api_invul(_h, _b):
+def api_invul(h, _b):
+    """Iedereen opent de invulpagina via een persoonlijke link (/invul?code=...).
+    Zo weet de server wie er invult. Is die persoon een mol, dan vult die de test over zichzelf in;
+    die antwoorden zijn de juiste antwoorden. De pagina ziet nooit wie de mollen zijn."""
     if state is None:
         return {"ready": False}
+    qs = parse_qs(urlparse(h.path).query)
+    code = (qs.get("code") or qs.get("mol") or [""])[0]
+    if not code:
+        return {"ready": True, "camp": state["camp"], "needLink": True}
+    me = me_from(code)
+    is_mol = me["id"] in mol_ids()
+    base = {"ready": True, "camp": state["camp"], "me": {"name": me["name"]}, "molMode": is_mol}
     t = open_test()
     if not t:
-        return {"ready": True, "camp": state["camp"], "test": None}
-    cands = sorted(({"id": p["id"], "name": p["name"], "done": p["id"] in t["attempts"]} for p in participants(t)),
+        return {**base, "test": None}
+    part = participants(t)
+    if not any(p["id"] == me["id"] for p in part):
+        return {**base, "test": None, "out": True}
+    test = {"id": t["id"], "nr": t["nr"], "final": t["final"]}
+    if is_mol:
+        test["questions"] = [q_view(t, q) for q in t["questions"] if q.get("kind") != "mol"]
+        return {**base, "test": test, "done": me["id"] in t.get("molKeys", {})}
+    test["questions"] = [q_view(t, q) for q in t["questions"]]
+    cands = sorted(({"id": p["id"], "name": p["name"]} for p in part if p["id"] != me["id"]),
                    key=lambda c: c["name"].lower())
-    return {"ready": True, "camp": state["camp"],
-            "test": {"id": t["id"], "nr": t["nr"], "final": t["final"],
-                     "questions": [q_view(t, q) for q in t["questions"]]},
+    return {**base, "test": test, "slots": MOL_COUNT, "done": me["id"] in t["attempts"],
             "candidates": cands, "now": now_ms()}
 
 
 def api_start(_h, b):
-    t, _ = require_open(b.get("test"), b.get("player"))
+    me = me_from(b.get("code"))
+    t, _ = require_open(b.get("test"), me["id"])
     started = t.setdefault("started", {})
-    if b.get("player") not in started:
-        started[b["player"]] = now_ms()
+    if me["id"] not in started:
+        started[me["id"]] = now_ms()
         save_state()
-    return {"startedAt": started[b["player"]], "now": now_ms()}
+    return {"startedAt": started[me["id"]], "now": now_ms()}
+
+
+def valid_option(t, q, v):
+    n = len(q_view(t, q).get("options", []))
+    return isinstance(v, int) and not isinstance(v, bool) and 0 <= v < n
 
 
 def api_submit(_h, b):
-    pid = b.get("player")
+    me = me_from(b.get("code"))
+    if me["id"] in mol_ids():
+        return submit_as_mol(me["id"], b)
+    pid = me["id"]
     t, part = require_open(b.get("test"), pid)
     raw = b.get("answers") if isinstance(b.get("answers"), dict) else {}
     clean = {}
     for q in t["questions"]:
         v = raw.get(q["id"])
+        if not isinstance(v, list):
+            continue
         if q.get("kind") == "mol":
-            if isinstance(v, str) and v in part and v != pid:
-                clean[q["id"]] = v
+            # Twee verschillende namen; de volgorde maakt niet uit.
+            picks = []
+            for x in v:
+                if isinstance(x, str) and x in part and x != pid and x not in picks:
+                    picks.append(x)
+            if picks:
+                clean[q["id"]] = picks[:MOL_COUNT]
         else:
-            n = len(q_view(t, q).get("options", []))
-            if isinstance(v, int) and not isinstance(v, bool) and 0 <= v < n:
-                clean[q["id"]] = v
+            # Eén antwoord per mol (Mol A, Mol B). Welke mol A is, bepaalt de kandidaat zelf.
+            vals = [x if valid_option(t, q, x) else None for x in v[:MOL_COUNT]]
+            vals += [None] * (MOL_COUNT - len(vals))
+            if any(x is not None for x in vals):
+                clean[q["id"]] = vals
     start = t.get("started", {}).get(pid)
     now = now_ms()
     t["attempts"][pid] = {"answers": clean, "ms": now - start if start else 0, "at": now}
+    save_state()
+    return {"ok": True}
+
+
+def submit_as_mol(mid, b):
+    """Een mol levert de test over zichzelf in: dat worden de juiste antwoorden voor die mol."""
+    t, _ = require_open(b.get("test"), mid)
+    keys = t.setdefault("molKeys", {})
+    raw = b.get("answers") if isinstance(b.get("answers"), dict) else {}
+    clean = {}
+    for q in t["questions"]:
+        if q.get("kind") == "mol":
+            continue
+        v = raw.get(q["id"])
+        if not valid_option(t, q, v):
+            raise ApiError(400, "Beantwoord alle vragen voordat je inlevert.")
+        clean[q["id"]] = v
+    keys[mid] = {"answers": clean, "at": now_ms()}
     save_state()
     return {"ok": True}
 
@@ -352,6 +492,7 @@ ROUTES = {
     ("POST", "/api/admin/import"): (api_import, True),
     ("POST", "/api/admin/reset"): (api_reset, True),
     ("POST", "/api/admin/pin"): (api_pin, True),
+    ("POST", "/api/admin/new-code"): (api_new_code, True),
     ("GET", "/api/invul"): (api_invul, False),
     ("POST", "/api/invul/start"): (api_start, False),
     ("POST", "/api/invul/submit"): (api_submit, False),
@@ -416,7 +557,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(404, {"error": "Onbekend adres."})
         fn, needs_auth = route
         if needs_auth and not self.authed():
-            return self.send_json(401, {"error": "Log opnieuw in met de pincode."})
+            return self.send_json(401, {"error": "Log opnieuw in met het wachtwoord."})
         try:
             body = {}
             if self.command in ("POST", "PUT"):
@@ -458,6 +599,10 @@ def main():
     global state
     state = load_state()
     backup_on_start()
+    if state is not None:
+        for t in state["tests"]:
+            t.setdefault("molKeys", {})
+        sync_codes(state, prev_codes_of(state))
     srv = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
     print(f"Molproef draait op poort {PORT}. Beheer: /beheer  Invullen: /invul", flush=True)
     try:

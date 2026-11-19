@@ -54,7 +54,10 @@ export class MailerService {
         ['nda-signed-confirmation', 'NDA Ondertekend'],
         ['nda-renewal-reminder', 'NDA Verloopt Binnenkort'],
         ['nda-secretary-batch-sent', 'NDA\'s Verstuurd'],
-        ['nda-secretary-missing-template', 'NDA Upload Vereist']
+        ['nda-secretary-missing-template', 'NDA Upload Vereist'],
+        ['camera-request-received', 'Camera-aanvraag ontvangen'],
+        ['camera-request-decision', 'Camera-aanvraag beoordeeld'],
+        ['camera-photographer-new-request', 'Nieuwe camera-aanvraag']
     ]);
 
     private static templateCache = new Map<string, HandlebarsTemplateDelegate>();
