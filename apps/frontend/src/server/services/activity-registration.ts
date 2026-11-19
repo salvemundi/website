@@ -35,14 +35,16 @@ export async function getActivities(email?: string): Promise<(Activiteit & { is_
 
     try {
         const userSignups = await fetchUserEventSignupsDb(email);
-        const signedUpEventIds = new Set(userSignups.map(s => Number(s.event_id)));
+        const signedUpEventIds = new Set(userSignups.filter(s => s.payment_status === 'paid').map(s => Number(s.event_id)));
 
         const pubCrawlSignups = await fetchUserPubCrawlSignupsDb(email);
-        const signedUpPubCrawlIds = new Set(pubCrawlSignups.map(s => Number(s.pub_crawl_event_id.id)));
+        const signedUpPubCrawlIds = new Set(pubCrawlSignups.filter(s => s.payment_status === 'paid').map(s => Number(s.pub_crawl_event_id.id)));
 
         return activities.map(activity => ({
             ...activity,
-            is_signed_up: signedUpEventIds.has(Number(activity.id)) || ((activity as unknown as { type?: string }).type === 'pub_crawl' && signedUpPubCrawlIds.has(Number(activity.id)))
+            is_signed_up: (activity as Activiteit & { type?: string }).type === 'pub_crawl'
+                ? signedUpPubCrawlIds.has(Number(activity.id))
+                : signedUpEventIds.has(Number(activity.id))
         }));
     } catch (error: unknown) {
         const typedError = error instanceof Error ? error : new Error(String(error));

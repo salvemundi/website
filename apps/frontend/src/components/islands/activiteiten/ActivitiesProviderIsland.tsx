@@ -23,7 +23,7 @@ interface ActivitiesProviderIslandProps {
 }
 
 export default function ActivitiesProviderIsland({
-    events: initialEvents = [],
+    events = [],
     serverTime,
     initialViewMode = 'list',
     initialShowPast = false,
@@ -31,7 +31,6 @@ export default function ActivitiesProviderIsland({
     calendarToken = null
 }: ActivitiesProviderIslandProps) {
     const router = useRouter();
-    const [events] = useState<(Activiteit & { is_signed_up?: boolean })[]>(initialEvents);
     const searchParams = useSearchParams();
 
     const [viewMode, setViewModeState] = useState<'list' | 'grid' | 'calendar'>(initialViewMode);
@@ -69,7 +68,7 @@ export default function ActivitiesProviderIsland({
             });
         }
 
-        return filtered.sort((a, b) => {
+        return [...filtered].sort((a, b) => {
             const isAPast = isEventPast(
                 a.event_date_end || a.event_date,
                 a.event_time_end || a.event_time,
