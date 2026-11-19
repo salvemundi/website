@@ -1,5 +1,5 @@
 # Standalone, explicit opt-in acceptance worker. Does not alter the normal stack.
-# docker compose --env-file .env.acc --env-file .env.mobile-acc -f docker-compose.mobile-acceptance.yml --profile mobile-acceptance up -d --build
+# docker compose --env-file .env.acc --env-file .env.mobile-acc --project-directory . -f apps/mobile/docker-compose.mobile-acceptance.yml --profile mobile-acceptance up -d --build
 services:
   mobile-notifications-acceptance:
     profiles: [mobile-acceptance]

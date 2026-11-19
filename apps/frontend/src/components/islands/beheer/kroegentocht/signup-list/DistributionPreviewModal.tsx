@@ -73,7 +73,7 @@ export default function DistributionPreviewModal({
                                             {groupName}
                                         </Text>
                                         <Badge size="xs" variant="light" color="brand">
-                                            {ticketCount} tickets
+                                            {ticketCount} {ticketCount === 1 ? 'persoon' : 'personen'}
                                         </Badge>
                                     </Group>
                                     <Divider />
@@ -123,8 +123,8 @@ export default function DistributionPreviewModal({
                                                                 >
                                                                     {s.amountTickets}{' '}
                                                                     {s.amountTickets === 1
-                                                                        ? 'ticket'
-                                                                        : 'tickets'}
+                                                                        ? 'persoon'
+                                                                        : 'personen'}
                                                                 </Text>
                                                             </Group>
                                                         </Paper>

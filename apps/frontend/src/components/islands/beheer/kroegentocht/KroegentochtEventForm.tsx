@@ -1,5 +1,6 @@
 'use client';
 
+import { extractGoogleSheetId } from '@/lib/utils/kroegentocht-signups';
 import { useState, useTransition } from 'react';
 import type { SyntheticEvent } from 'react';
 import {
@@ -12,6 +13,7 @@ import {
     ImagePlus,
     X,
     MessageCircle,
+    Sheet,
     Users,
     Plus,
 } from 'lucide-react';
@@ -95,6 +97,9 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
         email: event?.email || 'feest@salvemundi.nl',
         image: event?.image || null,
         whatsapp_community_url: event?.whatsapp_community_url || '',
+        google_sheet_id: event?.google_sheet_id
+            ? `https://docs.google.com/spreadsheets/d/${event.google_sheet_id}/edit`
+            : '',
         groups: (normalizedEventGroups.length > 0 ? normalizedEventGroups : []) as GroupConfig[],
     });
     const [uploading, setUploading] = useState(false);
@@ -136,6 +141,10 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
 
     const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (formData.google_sheet_id.trim() && !extractGoogleSheetId(formData.google_sheet_id)) {
+            showToast('Ongeldige Google Sheet-link. Plak de link uit de adresbalk van de sheet.', 'error');
+            return;
+        }
         startTransition(async () => {
             try {
                 await upsertPubCrawlEvent({
@@ -220,6 +229,20 @@ export default function KroegentochtEventForm({ event }: KroegentochtEventFormPr
                                                 })
                                             }
                                             placeholder="Bijv. https://chat.whatsapp.com/..."
+                                        />
+
+                                        <TextInput
+                                            label="Google Sheet (link of ID)"
+                                            description="Deel de sheet als Bewerker met het service-account; aanmeldingen worden er dan automatisch naartoe gesynchroniseerd."
+                                            leftSection={<Sheet size={14} />}
+                                            value={formData.google_sheet_id}
+                                            onChange={(e) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    google_sheet_id: e.target.value,
+                                                })
+                                            }
+                                            placeholder="Bijv. https://docs.google.com/spreadsheets/d/..."
                                         />
                                     </Stack>
                                 </Grid.Col>

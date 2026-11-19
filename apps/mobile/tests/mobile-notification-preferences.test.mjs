@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { SourceTextModule,SyntheticModule,createContext } from 'node:vm';
-const require=createRequire(new URL('../apps/frontend/package.json',import.meta.url));
+const require=createRequire(new URL('../../frontend/package.json',import.meta.url));
 const ts=require('typescript');const {z}=require('zod');
 class MobileError extends Error {constructor(code,message,status=400){super(message);this.code=code;this.status=status;}}
 async function fixture(){
@@ -18,7 +18,7 @@ async function fixture(){
    return {rows:state.stored?[state.stored]:[]};
   }}}
  };
- const code=ts.transpileModule(readFileSync(new URL('../apps/frontend/src/server/mobile/notifications.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
+ const code=ts.transpileModule(readFileSync(new URL('../../frontend/src/server/mobile/notifications.ts',import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
  const mod=new SourceTextModule(code,{context});
  await mod.link(specifier=>{const e=exports[specifier];assert.ok(e,`Unexpected real dependency ${specifier}`);return new SyntheticModule(Object.keys(e),function(){for(const[k,v]of Object.entries(e))this.setExport(k,v);},{context});});
  await mod.evaluate();return {state,api:mod.namespace};

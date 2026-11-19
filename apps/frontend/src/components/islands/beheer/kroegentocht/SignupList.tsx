@@ -1,19 +1,23 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Stack } from '@mantine/core';
-import { downloadCSV } from '@/lib/utils/export';
+import { getAssociationStats, signupMatchesSearch } from '@/lib/utils/kroegentocht-signups';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 import { safeConsoleError } from '@/server/utils/logger';
 import {
     savePubCrawlGroupsAssignment,
     updatePubCrawlEventGroups,
     createManualPubCrawlSignup,
+    syncPubCrawlGoogleSheet,
+    getPubCrawlGroupsCsvRows,
+    getPubCrawlTicketsByEvent,
 } from '@/server/actions/beheer/kroegentocht/beheer-kroegentocht-core.actions';
 import StatsToolbar from './signup-list/StatsToolbar';
 import SignupTableView from './signup-list/SignupTableView';
 import SignupGroupsView from './signup-list/SignupGroupsView';
+import SignupAssociationsView from './signup-list/SignupAssociationsView';
 import DistributionPreviewModal from './signup-list/DistributionPreviewModal';
 import AddParticipantModal from './signup-list/AddParticipantModal';
 
@@ -48,11 +52,6 @@ interface SignupListProps {
     onRefresh?: () => void;
 }
 
-const getFilenameTimestamp = () => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}_${String(d.getHours()).padStart(2, '0')}-${String(d.getMinutes()).padStart(2, '0')}-${String(d.getSeconds()).padStart(2, '0')}`;
-};
-
 function getParticipants(signup: ExtendedSignup): Participant[] {
     const raw = signup.participants as unknown;
     if (typeof raw === 'string') {
@@ -81,7 +80,7 @@ export default function SignupList({
 }: SignupListProps) {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
-    const [viewMode, setViewMode] = useState<'table' | 'groups'>('groups');
+    const [viewMode, setViewMode] = useState<'table' | 'groups' | 'associations'>('groups');
     const [isPending, startTransition] = useTransition();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -125,7 +124,7 @@ export default function SignupList({
 
     const paidSignups = signups.filter((s) => s.payment_status === 'paid');
     const totalTicketsCount = paidSignups.reduce((sum, s) => sum + (s.amount_tickets || 0), 0);
-    const totalAssociationsCount = [...new Set(paidSignups.map((s) => s.association).filter(Boolean))].length;
+    const totalAssociationsCount = getAssociationStats(paidSignups).length;
 
     const handleAddParticipant = async (data: {
         name: string;
@@ -151,13 +150,34 @@ export default function SignupList({
             return;
         }
 
-        const sortedSignups = [...paidSignups].sort((a, b) => b.amount_tickets - a.amount_tickets);
-
         type GroupEntry = { signupId: number; name: string; amountTickets: number; oldGroup: string | null };
-        const ticketCounts = new Map<string, number>(groupNames.map((n) => [n, 0]));
+        // Externe groepsleiders tellen mee als persoon in hun groep.
+        const ticketCounts = new Map<string, number>(
+            groupConfigs.map((g) => [g.name, (g.leaders || []).filter((l) => !l.signupId).length])
+        );
         const groupSignups = new Map<string, GroupEntry[]>(groupNames.map((n) => [n, []]));
 
         const assignmentsList: { signupId: number; groupName: string }[] = [];
+
+        // Inschrijvingen met een groepsleider blijven vast in de groep van die leider.
+        const leaderGroupOf = (signupId: number) =>
+            groupConfigs.find(g => (g.leaders || []).some(l => l.signupId === signupId))?.name;
+        const pinned = paidSignups.filter(s => s.id && leaderGroupOf(Number(s.id)));
+        for (const signup of pinned) {
+            const group = leaderGroupOf(Number(signup.id)) as string;
+            groupSignups.get(group)?.push({
+                signupId: Number(signup.id),
+                name: signup.name,
+                amountTickets: signup.amount_tickets,
+                oldGroup: signup.group_name || null
+            });
+            ticketCounts.set(group, (ticketCounts.get(group) ?? 0) + signup.amount_tickets);
+            assignmentsList.push({ signupId: Number(signup.id), groupName: group });
+        }
+
+        const sortedSignups = paidSignups
+            .filter(s => !pinned.includes(s))
+            .sort((a, b) => b.amount_tickets - a.amount_tickets);
 
         for (const signup of sortedSignups) {
             if (!signup.id) continue;
@@ -239,9 +259,6 @@ export default function SignupList({
     };
 
     const handleRemoveLeader = (groupName: string, leaderToRemove: GroupLeader) => {
-        if (!confirm(`Weet je zeker dat je ${leaderToRemove.name} wilt verwijderen als groepsleider?`))
-            return;
-
         void (async () => {
             try {
                 const currentGroups = groupConfigs.map((g) => ({
@@ -270,115 +287,81 @@ export default function SignupList({
     };
 
     const filteredSignups = signups.filter((s) => {
-        const matchesSearch =
-            s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (s.email ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-            s.association.toLowerCase().includes(searchQuery.toLowerCase());
-
-        const matchesStatus = s.payment_status === 'paid';
-
-        let matchesGroup = false;
-        if (!s.group_name) {
-            matchesGroup = enabledGroups.includes('unassigned');
-        } else {
-            matchesGroup = enabledGroups.includes(s.group_name);
-        }
-
-        return matchesSearch && matchesStatus && matchesGroup;
+        if (s.payment_status !== 'paid') return false;
+        if (!signupMatchesSearch(s, searchQuery)) return false;
+        return s.group_name
+            ? enabledGroups.includes(s.group_name)
+            : enabledGroups.includes('unassigned');
     });
 
-    const exportToCSV = () => {
+    // --- Google Sheet sync ---
+    type SyncState = { status: 'idle' | 'syncing' | 'ok' | 'error'; at?: Date; message?: string; url?: string | null };
+    const [syncState, setSyncState] = useState<SyncState>({ status: 'idle' });
+    const syncingRef = useRef(false);
+
+    const syncSheet = useCallback(async () => {
+        if (syncingRef.current) return;
+        syncingRef.current = true;
+        setSyncState(prev => ({ ...prev, status: 'syncing' }));
         try {
-            const participantsPerGroup = new Map<string, string[]>();
-            participantsPerGroup.set('Niet ingedeeld', []);
-
-            groupConfigs.forEach((g) => {
-                participantsPerGroup.set(g.name, []);
-            });
-
-            filteredSignups.forEach((signup) => {
-                const groupName = signup.group_name || 'Niet ingedeeld';
-                const participants = getParticipants(signup);
-                const names: string[] = [];
-
-                if (participants.length > 0) {
-                    participants.forEach((p) => names.push(`${p.name} ${p.initial}.`.trim()));
-                } else {
-                    names.push(signup.name);
-                    for (let i = 1; i < signup.amount_tickets; i++) {
-                        names.push(`Deelnemer ${i + 1} (${signup.name})`);
-                    }
-                }
-
-                const leaders = groupConfigs.find((g) => g.name === groupName)?.leaders || [];
-                const regularNames = names.filter(
-                    (name) =>
-                        !leaders.some(
-                            (leader) =>
-                                leader.signupId !== null &&
-                                leader.signupId !== undefined &&
-                                leader.signupId === Number(signup.id) &&
-                                leader.name.trim().toLocaleLowerCase('nl') ===
-                                    name.trim().toLocaleLowerCase('nl')
-                        )
-                );
-                const currentList = participantsPerGroup.get(groupName);
-                if (currentList) {
-                    currentList.push(...regularNames);
-                } else {
-                    participantsPerGroup.set(groupName, regularNames);
-                }
-            });
-
-            const leaderCounts = groupConfigs.map((g) => g.leaders?.length ?? 0);
-            const maxLeaders = Math.max(1, ...leaderCounts);
-
-            const leaderRows = Array.from({ length: maxLeaders }, (_, leaderIndex) => {
-                const entries: [string, string][] = [
-                    ['Groepnummer:', leaderIndex === 0 ? 'groepsleiders:' : ''],
-                ];
-
-                groupConfigs.forEach((g, index) => {
-                    const colKey = `${index + 1} - ${g.name}`;
-                    const leaderName = g.leaders?.at(leaderIndex)?.name ?? '';
-                    entries.push([colKey, leaderName]);
-                });
-
-                entries.push(['Niet ingedeeld', '']);
-                return Object.fromEntries(entries);
-            });
-
-            const activeColumns = [...groupConfigs.map((g) => g.name), 'Niet ingedeeld'];
-            const maxRows = Math.max(
-                0,
-                ...activeColumns.map((col) => participantsPerGroup.get(col)?.length ?? 0)
+            const res = await syncPubCrawlGoogleSheet(Number(eventId));
+            setSyncState(
+                res.success
+                    ? { status: 'ok', at: new Date(), url: res.url }
+                    : { status: 'error', message: res.error, url: res.url }
             );
-
-            const participantRows = Array.from({ length: maxRows }, (_, rowIndex) => {
-                const entries: [string, string][] = [['Groepnummer:', '']];
-
-                groupConfigs.forEach((g, index) => {
-                    const colKey = `${index + 1} - ${g.name}`;
-                    const list = participantsPerGroup.get(g.name);
-                    entries.push([colKey, list?.at(rowIndex) ?? '']);
-                });
-
-                const unassignedList = participantsPerGroup.get('Niet ingedeeld');
-                entries.push(['Niet ingedeeld', unassignedList?.at(rowIndex) ?? '']);
-
-                return Object.fromEntries(entries);
-            });
-
-            const csvData = [...leaderRows, { 'Groepnummer:': '' }, ...participantRows];
-
-            const safeName = eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
-            const filename = `kroegentocht-${safeName}-${getFilenameTimestamp()}.csv`;
-
-            downloadCSV(csvData, filename);
         } catch (error) {
-            safeConsoleError('[SignupList.tsx][exportToCSV]', error);
+            safeConsoleError('[SignupList.tsx][syncSheet]', error);
+            setSyncState({ status: 'error', message: 'Synchroniseren mislukt' });
+        } finally {
+            syncingRef.current = false;
+        }
+    }, [eventId]);
+
+    // Tickets per inschrijving (alleen nodig in de tabelweergave).
+    type TicketMap = Awaited<ReturnType<typeof getPubCrawlTicketsByEvent>>;
+    const [ticketsBySignup, setTicketsBySignup] = useState<TicketMap>({});
+    useEffect(() => {
+        if (viewMode !== 'table') return;
+        let cancelled = false;
+        getPubCrawlTicketsByEvent(Number(eventId))
+            .then((map) => { if (!cancelled) setTicketsBySignup(map); })
+            .catch((error: unknown) => safeConsoleError('[SignupList.tsx][tickets]', error));
+        return () => { cancelled = true; };
+    }, [viewMode, eventId, signups]);
+
+    const [isExporting, setIsExporting] = useState(false);
+    const exportCsv = async () => {
+        setIsExporting(true);
+        try {
+            const rows = await getPubCrawlGroupsCsvRows(Number(eventId));
+            const esc = (v: string | number) => {
+                const str = String(v);
+                return /[";\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+            };
+            // Puntkomma als scheidingsteken: opent direct goed in Nederlandse Excel.
+            const csv = rows.map((r) => r.map(esc).join(';')).join('\r\n');
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const safeName = eventName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+            link.href = url;
+            link.download = `kroegentocht-${safeName}-${new Date().toLocaleDateString('sv-SE')}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            safeConsoleError('[SignupList.tsx][exportCsv]', error);
+            alert('Exporteren mislukt. Probeer het opnieuw.');
+        } finally {
+            setIsExporting(false);
         }
     };
+
+    // Automatische sync gebeurt op de server, 5 minuten na de laatste wijziging,
+    // zodat de pagina nooit op een lopende sync hoeft te wachten.
+    // Deze knop is alleen voor een handmatige 'sync nu'.
 
     return (
         <Stack gap="lg">
@@ -391,15 +374,20 @@ export default function SignupList({
                 setEnabledGroups={setEnabledGroups}
                 totalTicketsCount={totalTicketsCount}
                 totalAssociationsCount={totalAssociationsCount}
+                syncState={syncState}
+                onSyncSheet={() => { void syncSheet(); }}
+                onExportCsv={() => { void exportCsv(); }}
+                isExporting={isExporting}
                 groupNames={groupNames}
                 isPending={isPending}
                 onAutoDistribute={handleOpenDistributionPreview}
-                onExportCSV={exportToCSV}
                 onAddParticipant={() => setIsAddModalOpen(true)}
                 hasSignups={filteredSignups.length > 0}
             />
 
-            {viewMode === 'table' ? (
+            {viewMode === 'associations' ? (
+                <SignupAssociationsView signups={paidSignups} />
+            ) : viewMode === 'table' ? (
                 <SignupTableView
                     filteredSignups={filteredSignups}
                     groupNames={groupNames}
@@ -407,7 +395,7 @@ export default function SignupList({
                     onUpdateGroup={onUpdateGroup}
                     onEdit={onEdit}
                     onDelete={onDelete}
-                    getParticipants={getParticipants}
+                    ticketsBySignup={ticketsBySignup}
                 />
             ) : (
                 <SignupGroupsView

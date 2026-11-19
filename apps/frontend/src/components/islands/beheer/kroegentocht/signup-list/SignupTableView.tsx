@@ -1,6 +1,6 @@
 'use client';
 
-import { Edit, Mail, Trash } from 'lucide-react';
+import { Edit, FileDown, Mail, Trash } from 'lucide-react';
 import {
     ActionIcon,
     Anchor,
@@ -13,15 +13,11 @@ import {
 } from '@mantine/core';
 import ResendTicketEmailButton from './ResendTicketEmailButton';
 import GroupSelectDropdown from './GroupSelectDropdown';
+import { getParticipantNames } from '@/lib/utils/kroegentocht-signups';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
 
-interface Participant {
-    name: string;
-    initial: string;
-}
-
 interface ExtendedSignup extends PubCrawlSignup {
-    participants?: Participant[];
+    participants?: { name: string; initial: string }[];
     created_at: string;
 }
 
@@ -42,7 +38,7 @@ interface SignupTableViewProps {
     onUpdateGroup?: (signupId: number, newGroupName: string | null) => Promise<void>;
     onEdit: (id: number | string) => void;
     onDelete: (id: number | string) => void;
-    getParticipants: (signup: ExtendedSignup) => Participant[];
+    ticketsBySignup: Record<number, { id: number; name: string; initial: string; checkedIn: boolean }[]>;
 }
 
 export default function SignupTableView({
@@ -52,7 +48,7 @@ export default function SignupTableView({
     onEdit,
     onDelete,
     onUpdateGroup,
-    getParticipants,
+    ticketsBySignup,
 }: SignupTableViewProps) {
     return (
         <Card p={0} shadow="sm" style={{ overflow: 'hidden' }}>
@@ -60,16 +56,17 @@ export default function SignupTableView({
                 <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="lg">
                     <Table.Thead>
                         <Table.Tr>
-                            <Table.Th>Deelnemers</Table.Th>
-                            <Table.Th ta="center">Tickets</Table.Th>
+                            <Table.Th>Inschrijving</Table.Th>
+                            <Table.Th ta="center">Personen</Table.Th>
                             <Table.Th visibleFrom="lg">Vereniging</Table.Th>
+                            <Table.Th>Tickets</Table.Th>
                             <Table.Th>Groep</Table.Th>
                         </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
                         {filteredSignups.length === 0 ? (
                             <Table.Tr>
-                                <Table.Td colSpan={4} py={64} ta="center">
+                                <Table.Td colSpan={5} py={64} ta="center">
                                     <Text size="sm" c="dimmed" fs="italic">
                                         Geen aanmeldingen gevonden.
                                     </Text>
@@ -77,12 +74,20 @@ export default function SignupTableView({
                             </Table.Tr>
                         ) : (
                             filteredSignups.map((signup) => {
-                                const participants = getParticipants(signup);
-                                const isLeaderOfGroup = groupConfigs.find((g) =>
-                                    (g.leaders || []).some(
-                                        (l) => l.signupId === Number(signup.id)
+                                const [primaryName, ...otherNames] = getParticipantNames(signup);
+                                const leaderNames = new Set(
+                                    groupConfigs.flatMap((g) =>
+                                        (g.leaders || [])
+                                            .filter((l) => l.signupId === Number(signup.id))
+                                            .map((l) => l.name.trim().toLowerCase())
                                     )
-                                )?.name;
+                                );
+                                const crown = (n: string) =>
+                                    leaderNames.has(n.trim().toLowerCase()) ? '👑 ' : '';
+
+                                const tickets = ticketsBySignup[Number(signup.id)] ?? [];
+                                const checkedIn = tickets.filter((t) => t.checkedIn).length;
+                                const mismatch = tickets.length !== signup.amount_tickets;
 
                                 return (
                                     <Table.Tr key={signup.id}>
@@ -99,7 +104,8 @@ export default function SignupTableView({
                                                     <Group gap={6} wrap="nowrap">
                                                         <Mail size={14} />
                                                         <Text span fw={600}>
-                                                            {signup.name}
+                                                            {crown(primaryName)}
+                                                            {primaryName}
                                                         </Text>
                                                         <Text span size="xs" c="dimmed">
                                                             ({signup.email})
@@ -107,35 +113,15 @@ export default function SignupTableView({
                                                     </Group>
                                                 </Anchor>
 
-                                                {isLeaderOfGroup && (
-                                                    <Badge
-                                                        size="xs"
-                                                        variant="light"
-                                                        color="accent"
-                                                        w="fit-content"
-                                                    >
-                                                        👑 Groepsleider ({isLeaderOfGroup})
-                                                    </Badge>
-                                                )}
-
-                                                {participants.length > 0 && (
-                                                    <Group gap={6} wrap="wrap" mt={2}>
-                                                        {participants.map((p, i) => {
-                                                            const rawName = p.name || 'Onbekend';
-                                                            const rawInitial = p.initial || '';
-
-                                                            return (
-                                                                <Badge
-                                                                    key={i}
-                                                                    size="xs"
-                                                                    variant="default"
-                                                                >
-                                                                    {rawName}
-                                                                    {rawInitial ? ` ${rawInitial}` : ''}
-                                                                </Badge>
-                                                            );
-                                                        })}
-                                                    </Group>
+                                                {otherNames.length > 0 && (
+                                                    <Stack gap={2} pl={20}>
+                                                        {otherNames.map((name, i) => (
+                                                            <Text key={i} size="xs" c="dimmed">
+                                                                + {crown(name)}
+                                                                {name}
+                                                            </Text>
+                                                        ))}
+                                                    </Stack>
                                                 )}
                                             </Stack>
                                         </Table.Td>
@@ -148,6 +134,41 @@ export default function SignupTableView({
                                             <Text size="xs" c="dimmed">
                                                 {signup.association || '-'}
                                             </Text>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Group gap="xs" wrap="nowrap">
+                                                <Text
+                                                    size="xs"
+                                                    fw={600}
+                                                    c={mismatch ? 'error' : 'dimmed'}
+                                                    title={
+                                                        tickets
+                                                            .map(
+                                                                (t) =>
+                                                                    `${t.name} ${t.initial}.${t.checkedIn ? ' – ingecheckt' : ''}`
+                                                            )
+                                                            .join('\n') || 'Geen tickets'
+                                                    }
+                                                >
+                                                    {tickets.length} ticket{tickets.length === 1 ? '' : 's'}
+                                                    {checkedIn > 0 ? ` · ${checkedIn} ingecheckt` : ''}
+                                                    {mismatch ? ' ⚠' : ''}
+                                                </Text>
+                                                {tickets.length > 0 && (
+                                                    <ActionIcon
+                                                        component="a"
+                                                        href={`/api/kroegentocht/tickets/${signup.id}`}
+                                                        download
+                                                        variant="subtle"
+                                                        color="brand"
+                                                        size="sm"
+                                                        title="Tickets downloaden (PDF met QR-codes)"
+                                                        aria-label="Tickets downloaden (PDF met QR-codes)"
+                                                    >
+                                                        <FileDown size={14} />
+                                                    </ActionIcon>
+                                                )}
+                                            </Group>
                                         </Table.Td>
                                         <Table.Td>
                                             <Group gap="sm" wrap="nowrap">

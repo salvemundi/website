@@ -3,16 +3,21 @@
 import { useState } from 'react';
 import {
     Beer,
-    Download,
-    Grid,
-    Search,
-    Table as TableIcon,
-    Users,
     Building2,
     ChevronDown,
+    Download,
+    ExternalLink,
+    Grid,
+    RefreshCw,
+    Search,
+    Sheet,
+    Table as TableIcon,
     UserPlus,
+    Users,
 } from 'lucide-react';
 import {
+    ActionIcon,
+    Alert,
     Button,
     Card,
     Checkbox,
@@ -27,8 +32,8 @@ import {
 } from '@mantine/core';
 
 interface StatsToolbarProps {
-    viewMode: 'table' | 'groups';
-    setViewMode: (mode: 'table' | 'groups') => void;
+    viewMode: 'table' | 'groups' | 'associations';
+    setViewMode: (mode: 'table' | 'groups' | 'associations') => void;
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     enabledGroups: string[];
@@ -38,7 +43,15 @@ interface StatsToolbarProps {
     groupNames: string[];
     isPending: boolean;
     onAutoDistribute: () => void;
-    onExportCSV: () => void;
+    onSyncSheet: () => void;
+    onExportCsv: () => void;
+    isExporting: boolean;
+    syncState: {
+        status: 'idle' | 'syncing' | 'ok' | 'error';
+        at?: Date;
+        message?: string;
+        url?: string | null;
+    };
     onAddParticipant: () => void;
     hasSignups: boolean;
 }
@@ -55,7 +68,10 @@ export default function StatsToolbar({
     groupNames,
     isPending,
     onAutoDistribute,
-    onExportCSV,
+    onSyncSheet,
+    onExportCsv,
+    isExporting,
+    syncState,
     onAddParticipant,
     hasSignups,
 }: StatsToolbarProps) {
@@ -74,6 +90,17 @@ export default function StatsToolbar({
                 : enabledGroups[0]
             : `${enabledGroups.length} geselecteerd`;
 
+    const syncLabel =
+        syncState.status === 'syncing'
+            ? 'Synchroniseren...'
+            : syncState.status === 'error'
+              ? syncState.message?.startsWith('Geen Google Sheet')
+                  ? 'Geen sheet ingesteld'
+                  : 'Sync mislukt – opnieuw'
+              : syncState.at
+                ? `Sheet gesynct ${syncState.at.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}`
+                : 'Nu syncen';
+
     return (
         <Card p="lg" shadow="sm">
             <Stack gap="md">
@@ -82,7 +109,9 @@ export default function StatsToolbar({
                         <Tabs
                             value={viewMode}
                             onChange={(val) =>
-                                setViewMode((val as 'table' | 'groups' | null) ?? 'groups')
+                                setViewMode(
+                                    (val as 'table' | 'groups' | 'associations' | null) ?? 'groups'
+                                )
                             }
                             variant="pills"
                         >
@@ -92,6 +121,12 @@ export default function StatsToolbar({
                                 </Tabs.Tab>
                                 <Tabs.Tab value="table" leftSection={<TableIcon size={16} />}>
                                     Tabel Weergave
+                                </Tabs.Tab>
+                                <Tabs.Tab
+                                    value="associations"
+                                    leftSection={<Building2 size={16} />}
+                                >
+                                    Per Vereniging
                                 </Tabs.Tab>
                             </Tabs.List>
                         </Tabs>
@@ -104,7 +139,7 @@ export default function StatsToolbar({
                                     <Beer size={15} />
                                 </Text>
                                 <Text size="xs" fw={600} c="dimmed">
-                                    Tickets:{' '}
+                                    Deelnemers:{' '}
                                     <Text span fw={700} c="var(--mantine-color-text)">
                                         {totalTicketsCount}
                                     </Text>
@@ -149,148 +184,206 @@ export default function StatsToolbar({
                         <Button
                             type="button"
                             size="xs"
-                            color="success"
-                            onClick={onExportCSV}
-                            disabled={!hasSignups}
+                            variant="default"
+                            onClick={onExportCsv}
+                            loading={isExporting}
+                            title="Groepsindeling downloaden als CSV (zelfde indeling als de Google Sheet)"
                             leftSection={<Download size={16} />}
                         >
-                            Exporteer CSV
+                            {isExporting ? 'Exporteren...' : 'Exporteer CSV'}
                         </Button>
+
+                        <Group gap="xs" wrap="nowrap">
+                            <Button
+                                type="button"
+                                size="xs"
+                                color="success"
+                                onClick={onSyncSheet}
+                                loading={syncState.status === 'syncing'}
+                                title={
+                                    syncState.message ??
+                                    'Wijzigingen worden 5 minuten na de laatste aanpassing automatisch naar de sheet gezet. Klik om nu direct te syncen.'
+                                }
+                                leftSection={
+                                    syncState.status === 'syncing' ? (
+                                        <RefreshCw size={16} />
+                                    ) : (
+                                        <Sheet size={16} />
+                                    )
+                                }
+                            >
+                                {syncLabel}
+                            </Button>
+                            {syncState.url && (
+                                <ActionIcon
+                                    component="a"
+                                    href={syncState.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    variant="default"
+                                    size="md"
+                                    title="Open Google Sheet"
+                                    aria-label="Open Google Sheet"
+                                >
+                                    <ExternalLink size={16} />
+                                </ActionIcon>
+                            )}
+                        </Group>
                     </Group>
                 </Group>
 
-                <Group gap="md" wrap="wrap">
-                    <TextInput
-                        flex={1}
-                        miw={240}
-                        placeholder="Zoek op naam, e-mail of vereniging..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        leftSection={<Search size={16} />}
-                        autoComplete="off"
-                        spellCheck={false}
-                    />
+                {syncState.status === 'error' && syncState.message && (
+                    <Alert color="error" variant="light" py="xs">
+                        <Text size="xs" fw={600}>
+                            Google Sheet: {syncState.message}
+                        </Text>
+                    </Alert>
+                )}
 
-                    <Popover
-                        opened={isDropdownOpen}
-                        onChange={setIsDropdownOpen}
-                        width={260}
-                        position="bottom-end"
-                        shadow="md"
-                    >
-                        <Popover.Target>
-                            <Button
-                                type="button"
-                                variant="default"
-                                w={{ base: '100%', md: 256 }}
-                                justify="space-between"
-                                onClick={() => setIsDropdownOpen((prev) => !prev)}
-                                leftSection={
-                                    <Text span c="brand" lh={1}>
-                                        <Users size={16} />
+                {viewMode !== 'associations' && (
+                    <Group gap="md" wrap="wrap">
+                        <TextInput
+                            flex={1}
+                            miw={240}
+                            placeholder="Zoek op naam (ook meegekomen deelnemers), e-mail, vereniging of groep..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            leftSection={<Search size={16} />}
+                            autoComplete="off"
+                            spellCheck={false}
+                        />
+
+                        <Popover
+                            opened={isDropdownOpen}
+                            onChange={setIsDropdownOpen}
+                            width={260}
+                            position="bottom-end"
+                            shadow="md"
+                        >
+                            <Popover.Target>
+                                <Button
+                                    type="button"
+                                    variant="default"
+                                    w={{ base: '100%', md: 256 }}
+                                    justify="space-between"
+                                    onClick={() => setIsDropdownOpen((prev) => !prev)}
+                                    leftSection={
+                                        <Text span c="brand" lh={1}>
+                                            <Users size={16} />
+                                        </Text>
+                                    }
+                                    rightSection={<ChevronDown size={16} />}
+                                >
+                                    <Text size="xs" fw={600} truncate>
+                                        {dropdownLabel}
                                     </Text>
-                                }
-                                rightSection={<ChevronDown size={16} />}
-                            >
-                                <Text size="xs" fw={600} truncate>
-                                    {dropdownLabel}
-                                </Text>
-                            </Button>
-                        </Popover.Target>
+                                </Button>
+                            </Popover.Target>
 
-                        <Popover.Dropdown p="xs">
-                            <ScrollArea.Autosize mah={300}>
-                                <Stack gap={4}>
-                                    <Button
-                                        type="button"
-                                        variant={isAllSelected ? 'light' : 'subtle'}
-                                        size="xs"
-                                        justify="space-between"
-                                        fullWidth
-                                        onClick={() => {
-                                            const allOptions = [...groupNames, 'unassigned'];
-                                            if (isAllSelected) {
-                                                setEnabledGroups([]);
-                                            } else {
-                                                setEnabledGroups(allOptions);
-                                            }
-                                        }}
-                                        rightSection={
-                                            <Checkbox
-                                                checked={isAllSelected}
-                                                readOnly
-                                                size="xs"
-                                                tabIndex={-1}
-                                            />
-                                        }
-                                    >
-                                        Alle groepen
-                                    </Button>
-
-                                    <Button
-                                        type="button"
-                                        variant={isUnassignedSelected ? 'light' : 'subtle'}
-                                        size="xs"
-                                        justify="space-between"
-                                        fullWidth
-                                        onClick={() => {
-                                            if (isUnassignedSelected) {
-                                                setEnabledGroups(
-                                                    enabledGroups.filter((g) => g !== 'unassigned')
-                                                );
-                                            } else {
-                                                setEnabledGroups([...enabledGroups, 'unassigned']);
-                                            }
-                                        }}
-                                        rightSection={
-                                            <Checkbox
-                                                checked={isUnassignedSelected}
-                                                readOnly
-                                                size="xs"
-                                                tabIndex={-1}
-                                            />
-                                        }
-                                    >
-                                        Niet ingedeeld
-                                    </Button>
-
-                                    {groupNames.map((name) => {
-                                        const isSelected = enabledGroups.includes(name);
-                                        return (
-                                            <Button
-                                                key={name}
-                                                type="button"
-                                                variant={isSelected ? 'light' : 'subtle'}
-                                                size="xs"
-                                                justify="space-between"
-                                                fullWidth
-                                                onClick={() => {
-                                                    if (isSelected) {
-                                                        setEnabledGroups(
-                                                            enabledGroups.filter((g) => g !== name)
-                                                        );
-                                                    } else {
-                                                        setEnabledGroups([...enabledGroups, name]);
-                                                    }
-                                                }}
-                                                rightSection={
-                                                    <Checkbox
-                                                        checked={isSelected}
-                                                        readOnly
-                                                        size="xs"
-                                                        tabIndex={-1}
-                                                    />
+                            <Popover.Dropdown p="xs">
+                                <ScrollArea.Autosize mah={300}>
+                                    <Stack gap={4}>
+                                        <Button
+                                            type="button"
+                                            variant={isAllSelected ? 'light' : 'subtle'}
+                                            size="xs"
+                                            justify="space-between"
+                                            fullWidth
+                                            onClick={() => {
+                                                const allOptions = [...groupNames, 'unassigned'];
+                                                if (isAllSelected) {
+                                                    setEnabledGroups([]);
+                                                } else {
+                                                    setEnabledGroups(allOptions);
                                                 }
-                                            >
-                                                {name}
-                                            </Button>
-                                        );
-                                    })}
-                                </Stack>
-                            </ScrollArea.Autosize>
-                        </Popover.Dropdown>
-                    </Popover>
-                </Group>
+                                            }}
+                                            rightSection={
+                                                <Checkbox
+                                                    checked={isAllSelected}
+                                                    readOnly
+                                                    size="xs"
+                                                    tabIndex={-1}
+                                                />
+                                            }
+                                        >
+                                            Alle groepen
+                                        </Button>
+
+                                        <Button
+                                            type="button"
+                                            variant={isUnassignedSelected ? 'light' : 'subtle'}
+                                            size="xs"
+                                            justify="space-between"
+                                            fullWidth
+                                            onClick={() => {
+                                                if (isUnassignedSelected) {
+                                                    setEnabledGroups(
+                                                        enabledGroups.filter(
+                                                            (g) => g !== 'unassigned'
+                                                        )
+                                                    );
+                                                } else {
+                                                    setEnabledGroups([
+                                                        ...enabledGroups,
+                                                        'unassigned',
+                                                    ]);
+                                                }
+                                            }}
+                                            rightSection={
+                                                <Checkbox
+                                                    checked={isUnassignedSelected}
+                                                    readOnly
+                                                    size="xs"
+                                                    tabIndex={-1}
+                                                />
+                                            }
+                                        >
+                                            Niet ingedeeld
+                                        </Button>
+
+                                        {groupNames.map((name) => {
+                                            const isSelected = enabledGroups.includes(name);
+                                            return (
+                                                <Button
+                                                    key={name}
+                                                    type="button"
+                                                    variant={isSelected ? 'light' : 'subtle'}
+                                                    size="xs"
+                                                    justify="space-between"
+                                                    fullWidth
+                                                    onClick={() => {
+                                                        if (isSelected) {
+                                                            setEnabledGroups(
+                                                                enabledGroups.filter(
+                                                                    (g) => g !== name
+                                                                )
+                                                            );
+                                                        } else {
+                                                            setEnabledGroups([
+                                                                ...enabledGroups,
+                                                                name,
+                                                            ]);
+                                                        }
+                                                    }}
+                                                    rightSection={
+                                                        <Checkbox
+                                                            checked={isSelected}
+                                                            readOnly
+                                                            size="xs"
+                                                            tabIndex={-1}
+                                                        />
+                                                    }
+                                                >
+                                                    {name}
+                                                </Button>
+                                            );
+                                        })}
+                                    </Stack>
+                                </ScrollArea.Autosize>
+                            </Popover.Dropdown>
+                        </Popover>
+                    </Group>
+                )}
             </Stack>
         </Card>
     );

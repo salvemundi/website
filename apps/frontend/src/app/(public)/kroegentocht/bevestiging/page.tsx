@@ -4,7 +4,7 @@ import { CheckCircle2, ChevronLeft } from 'lucide-react';
 import { Button, Card, Center, Container, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import PaymentStatusIsland from '@/components/islands/activiteiten/PaymentStatusIsland';
 import { getPaymentStatusAction } from '@/server/actions/events/reis/reis-payment.actions';
-import { KroegentochtWhatsAppPopup } from '@/components/islands/kroegentocht/KroegentochtWhatsAppPopup';
+import { KroegentochtClaimTicketsPopup } from '@/components/islands/kroegentocht/KroegentochtTicketLinks';
 import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 
 interface PageProps {
@@ -94,7 +94,7 @@ export default async function KroegentochtConfirmationPage({ searchParams }: Pag
                     )}
                 </Center>
             </Container>
-            <KroegentochtWhatsAppPopup signupId={id ? Number(id) : undefined} token={token} />
+            <KroegentochtClaimTicketsPopup signupId={id ? Number(id) : undefined} token={token} />
         </PublicPageShell>
     );
 }

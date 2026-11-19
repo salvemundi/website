@@ -31,9 +31,9 @@ export default function AddLeaderForm({
 
     const handleAdd = () => {
         if (leaderType === 'signup') {
-            const signupIdNum = Number(leaderSignupId);
-            if (!signupIdNum) return;
-            onAdd(leaderName, signupIdNum);
+            const picked = participantsList.at(Number(leaderSignupId));
+            if (!leaderSignupId || !picked) return;
+            onAdd(picked.name, picked.signupId);
         } else {
             if (!leaderName.trim()) return;
             onAdd(leaderName.trim(), null);
@@ -42,8 +42,8 @@ export default function AddLeaderForm({
 
     const participantOptions = [
         { value: '', label: 'Selecteer deelnemer...' },
-        ...participantsList.map((p) => ({
-            value: String(p.signupId),
+        ...participantsList.map((p, i) => ({
+            value: String(i),
             label: `${p.name} (${p.association})`,
         })),
     ];
@@ -72,14 +72,7 @@ export default function AddLeaderForm({
                         size="xs"
                         value={leaderSignupId}
                         onChange={(val) => {
-                            const nextVal = val ?? '';
-                            setLeaderSignupId(nextVal);
-                            const found = participantsList.find(
-                                (p) => p.signupId === Number(nextVal)
-                            );
-                            if (found) {
-                                setLeaderName(found.name);
-                            }
+                            setLeaderSignupId(val ?? '');
                         }}
                         data={participantOptions}
                         searchable

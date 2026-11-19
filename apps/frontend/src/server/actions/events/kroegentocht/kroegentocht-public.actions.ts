@@ -18,8 +18,7 @@ import { createPubCrawlTicketsDb, deletePubCrawlTicketsBySignupIdDb } from '@/se
 import { fetchPubCrawlEventsDb } from '@/server/internal/kroegentocht/kroegentocht-event-db.utils';
 
 import { db, schema } from '@salvemundi/db';
-import { eq, and, desc, or } from 'drizzle-orm';
-import { alias } from 'drizzle-orm/pg-core';
+import { eq, and } from 'drizzle-orm';
 import crypto from 'crypto';
 
 const getFinanceServiceUrl = () =>
@@ -230,94 +229,3 @@ export async function initiateKroegentochtPayment(formData: unknown) {
     }
 }
 
-export async function getKroegentochtWhatsAppLink(
-    signupId?: number,
-    token?: string
-): Promise<{ success: boolean; url: string | null; error?: string }> {
-    try {
-        const whatsAppUrlResponseSchema = z.object({
-            whatsapp_community_url: z.string().url().nullable().optional()
-        });
-
-        const session = await getEnrichedSession();
-        if (session?.user.id) {
-            const activeEvents = await db.select({
-                id: schema.pub_crawl_events.id
-            }).from(schema.pub_crawl_events)
-            .orderBy(desc(schema.pub_crawl_events.date))
-            .limit(1);
-
-            if (activeEvents.length > 0) {
-                const eventId = activeEvents[0].id;
-
-                const registration = await db.select({
-                    payment_status: schema.pub_crawl_signups.payment_status,
-                    whatsapp_community_url: schema.pub_crawl_events.whatsapp_community_url
-                })
-                .from(schema.pub_crawl_signups)
-                .innerJoin(schema.pub_crawl_events, eq(schema.pub_crawl_signups.pub_crawl_event_id, schema.pub_crawl_events.id))
-                .where(
-                    and(
-                        eq(schema.pub_crawl_signups.directus_relations, session.user.id),
-                        eq(schema.pub_crawl_signups.pub_crawl_event_id, eventId),
-                        eq(schema.pub_crawl_signups.payment_status, 'paid')
-                    )
-                )
-                .limit(1);
-
-                if (registration.length > 0) {
-                    const validatedData = whatsAppUrlResponseSchema.parse({
-                        whatsapp_community_url: registration[0].whatsapp_community_url
-                    });
-                    return {
-                        success: true,
-                        url: validatedData.whatsapp_community_url ?? null
-                    };
-                }
-            }
-        }
-
-        if (signupId && token) {
-            // This query involves a complex multi-table join with OR conditions on access_token/mollie_id
-            // across two different transaction join paths. Raw SQL is more appropriate here.
-            const t2 = alias(schema.transactions, 't2');
-            const guestCheck = await db.select({
-                payment_status: schema.pub_crawl_signups.payment_status,
-                whatsapp_community_url: schema.pub_crawl_events.whatsapp_community_url
-            })
-            .from(schema.pub_crawl_signups)
-            .innerJoin(schema.pub_crawl_events, eq(schema.pub_crawl_signups.pub_crawl_event_id, schema.pub_crawl_events.id))
-            .leftJoin(schema.transactions, eq(schema.transactions.pub_crawl_signup, schema.pub_crawl_signups.id))
-            .leftJoin(schema.pub_crawl_signups_transactions, eq(schema.pub_crawl_signups_transactions.pub_crawl_signups_id, schema.pub_crawl_signups.id))
-            .leftJoin(t2, eq(schema.pub_crawl_signups_transactions.transactions_id, t2.id))
-            .where(
-                and(
-                    eq(schema.pub_crawl_signups.id, signupId),
-                    eq(schema.pub_crawl_signups.payment_status, 'paid'),
-                    or(
-                        eq(schema.transactions.access_token, token),
-                        eq(schema.transactions.mollie_id, token),
-                        eq(t2.access_token, token),
-                        eq(t2.mollie_id, token)
-                    )
-                )
-            )
-            .limit(1);
-
-            if (guestCheck.length > 0) {
-                const validatedData = whatsAppUrlResponseSchema.parse({
-                    whatsapp_community_url: guestCheck[0].whatsapp_community_url
-                });
-                return {
-                    success: true,
-                    url: validatedData.whatsapp_community_url ?? null
-                };
-            }
-        }
-
-        return { success: false, url: null, error: 'NO_PAID_REGISTRATION' };
-    } catch (error: unknown) {
-        safeConsoleError('[kroegentocht.actions.ts][getKroegentochtWhatsAppLink] Failed to securely check registration or fetch community link', error);
-        return { success: false, url: null, error: 'INTERNAL_SERVER_ERROR' };
-    }
-}

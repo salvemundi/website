@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Crown, Plus, Users, X } from 'lucide-react';
 import {
-    ActionIcon,
     Badge,
     Box,
     Button,
@@ -21,6 +20,7 @@ import ResendTicketEmailButton from './ResendTicketEmailButton';
 import GroupSelectDropdown from './GroupSelectDropdown';
 import AddLeaderForm from './AddLeaderForm';
 import { type PubCrawlSignup } from '@salvemundi/validations/schema/pub-crawl.zod';
+import { getParticipantNames } from '@/lib/utils/kroegentocht-signups';
 
 interface Participant {
     name: string;
@@ -70,22 +70,22 @@ export default function GroupCard({
 }: GroupCardProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showAddLeaderForm, setShowAddLeaderForm] = useState(false);
+    const [confirmRemoveIdx, setConfirmRemoveIdx] = useState<number | null>(null);
 
-    const regularParticipants = isUnassigned
-        ? participantsList
-        : participantsList.filter(
-              (p) =>
-                  !leadersList.some(
-                      (l) =>
-                          l.signupId === p.signupId &&
-                          l.name.toLowerCase() === p.name.toLowerCase()
-                  )
-          );
+    const isLeaderName = (signupId: number, name: string) =>
+        !isUnassigned &&
+        leadersList.some(
+            (l) =>
+                l.signupId === signupId &&
+                l.name.trim().toLowerCase() === name.trim().toLowerCase()
+        );
+    const signupBlocks = groupSignups.map((signup) => ({
+        signup,
+        names: getParticipantNames(signup),
+    }));
 
     const limit = layoutColumns === 3 ? 12 : layoutColumns === 2 ? 8 : 5;
-    const visibleParticipants = isExpanded
-        ? regularParticipants
-        : regularParticipants.slice(0, limit);
+    const visibleBlocks = isExpanded ? signupBlocks : signupBlocks.slice(0, limit);
 
     const badgeColor = isUnassigned ? 'error' : color;
     const gridCols =
@@ -162,58 +162,112 @@ export default function GroupCard({
                                                 </Text>
                                             </Box>
                                         </Group>
-                                        <ActionIcon
-                                            type="button"
-                                            size="sm"
-                                            variant="subtle"
-                                            color="error"
-                                            onClick={() => onRemoveLeader?.(groupName, leader)}
-                                            title="Verwijder groepsleider"
-                                            aria-label="Verwijder groepsleider"
-                                        >
-                                            <X size={14} />
-                                        </ActionIcon>
+                                        {confirmRemoveIdx === lIdx ? (
+                                            <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
+                                                <Button
+                                                    type="button"
+                                                    size="compact-xs"
+                                                    color="error"
+                                                    onClick={() => {
+                                                        setConfirmRemoveIdx(null);
+                                                        onRemoveLeader?.(groupName, leader);
+                                                    }}
+                                                >
+                                                    Ja, afzetten
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    size="compact-xs"
+                                                    variant="default"
+                                                    onClick={() => setConfirmRemoveIdx(null)}
+                                                >
+                                                    Nee
+                                                </Button>
+                                            </Group>
+                                        ) : (
+                                            <Button
+                                                type="button"
+                                                size="compact-xs"
+                                                variant="subtle"
+                                                color="error"
+                                                leftSection={<X size={12} />}
+                                                onClick={() => setConfirmRemoveIdx(lIdx)}
+                                                title="Groepsleider afzetten (wordt weer gewone deelnemer)"
+                                                style={{ flexShrink: 0 }}
+                                            >
+                                                Afzetten
+                                            </Button>
+                                        )}
                                     </Group>
                                 </Paper>
                             ))}
                         </SimpleGrid>
                     )}
 
-                    {participantsList.length === 0 ? (
+                    {signupBlocks.length === 0 ? (
                         <Text py="sm" ta="center" size="xs" c="dimmed" fs="italic">
                             Geen deelnemers in deze groep
                         </Text>
                     ) : (
                         <Stack gap="xs">
                             <SimpleGrid cols={gridCols} spacing="xs">
-                                {visibleParticipants.map((p, idx) => (
-                                    <Paper key={idx} withBorder px="sm" py={6} radius="md">
-                                        <Group justify="space-between" wrap="nowrap" gap="xs">
-                                            <Box miw={0}>
-                                                <Text size="xs" fw={600} truncate title={p.name}>
-                                                    {p.name}
-                                                </Text>
-                                                <Text size="xs" c="dimmed" truncate>
-                                                    {p.association}
-                                                </Text>
-                                            </Box>
+                                {visibleBlocks.map(({ signup, names }) => {
+                                    const [primary, ...others] = names;
+                                    const sid = Number(signup.id);
+                                    return (
+                                        <Paper
+                                            key={String(signup.id)}
+                                            withBorder
+                                            px="sm"
+                                            py={6}
+                                            radius="md"
+                                        >
+                                            <Group justify="space-between" align="flex-start" wrap="nowrap" gap="xs">
+                                                <Stack gap={2} miw={0} flex={1}>
+                                                    <Group gap={4} wrap="nowrap" miw={0}>
+                                                        {isLeaderName(sid, primary) && (
+                                                            <Text span c="accent" lh={1} style={{ flexShrink: 0 }}>
+                                                                <Crown size={12} />
+                                                            </Text>
+                                                        )}
+                                                        <Text size="xs" fw={600} truncate title={primary}>
+                                                            {primary}
+                                                        </Text>
+                                                    </Group>
+                                                    {others.map((name, i) => (
+                                                        <Group key={i} gap={4} wrap="nowrap" pl={8} miw={0}>
+                                                            {isLeaderName(sid, name) && (
+                                                                <Text span c="accent" lh={1} style={{ flexShrink: 0 }}>
+                                                                    <Crown size={12} />
+                                                                </Text>
+                                                            )}
+                                                            <Text size="xs" c="dimmed" truncate title={name}>
+                                                                + {name}
+                                                            </Text>
+                                                        </Group>
+                                                    ))}
+                                                    <Text size="xs" c="dimmed" truncate>
+                                                        {signup.association || '-'}
+                                                    </Text>
+                                                </Stack>
 
-                                            {onUpdateGroup && (
-                                                <GroupSelectDropdown
-                                                    value={isUnassigned ? '' : groupName}
-                                                    options={groupNames}
-                                                    onChange={(val) => {
-                                                        void onUpdateGroup(p.signupId, val);
-                                                    }}
-                                                    size="xs"
-                                                />
-                                            )}
-                                        </Group>
-                                    </Paper>
-                                ))}
+                                                {onUpdateGroup && (
+                                                    <GroupSelectDropdown
+                                                        value={isUnassigned ? '' : groupName}
+                                                        options={groupNames}
+                                                        onChange={(val) => {
+                                                            void onUpdateGroup(sid, val);
+                                                        }}
+                                                        size="xs"
+                                                    />
+                                                )}
+                                            </Group>
+                                        </Paper>
+                                    );
+                                })}
                             </SimpleGrid>
 
-                            {regularParticipants.length > limit && (
+                            {signupBlocks.length > limit && (
                                 <Button
                                     type="button"
                                     variant="default"
@@ -230,7 +284,7 @@ export default function GroupCard({
                                 >
                                     {isExpanded
                                         ? 'Toon minder'
-                                        : `Toon alle ${regularParticipants.length}`}
+                                        : `Toon alles (${signupBlocks.length - limit} meer)`}
                                 </Button>
                             )}
                         </Stack>

@@ -81,3 +81,15 @@ export async function createManualPubCrawlSignup(
 ): Promise<{ success: boolean; signupId: number }> {
     return signups.createManualPubCrawlSignup(eventId, data);
 }
+
+export async function syncPubCrawlGoogleSheet(eventId: number): Promise<{ success: boolean; url: string | null; error?: string }> {
+    return signups.syncPubCrawlGoogleSheet(eventId);
+}
+
+export async function getPubCrawlGroupsCsvRows(eventId: number): Promise<(string | number)[][]> {
+    return signups.getPubCrawlGroupsCsvRows(eventId);
+}
+
+export async function getPubCrawlTicketsByEvent(eventId: number): Promise<Record<number, signups.AdminPubCrawlTicket[]>> {
+    return signups.getPubCrawlTicketsByEvent(eventId);
+}

@@ -43,4 +43,4 @@ Validate Microsoft login/revocation, cross-user isolation, website registration 
 
 ## Automated checks
 
-Run `node --experimental-strip-types --test tests/mobile-security.test.mjs`, `node --test apps/services/mobile-notification-service/test/*.test.mjs`, and the frontend type/lint checks. The dedicated mobile acceptance workflow runs the policy and notification tests without service credentials. Live login/payment/scanner checks still need the acceptance services.
+Run `node --experimental-strip-types --test apps/mobile/tests/mobile-security.test.mjs`, `node --test apps/services/mobile-notification-service/test/*.test.mjs`, and the frontend type/lint checks. The dedicated mobile acceptance workflow runs the policy and notification tests without service credentials. Live login/payment/scanner checks still need the acceptance services.

@@ -59,6 +59,10 @@ RUN mkdir -p apps/frontend/.next/cache && chown -R node:node apps/frontend/.next
 
 USER node
 
+# Exercise the native binding and bundled libvips in the final runtime image.
+# Loading sharp during next build alone does not validate this stage.
+RUN node -e "const sharp = require('./node_modules/.pnpm/node_modules/sharp'); sharp({ create: { width: 1, height: 1, channels: 4, background: '#00000000' } }).png().toBuffer().then(() => console.log('Sharp runtime smoke test passed'), error => { console.error(error); process.exit(1); });"
+
 EXPOSE 3000
 ENV PORT=3000
 

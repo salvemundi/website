@@ -12,7 +12,7 @@ import { dirname, resolve } from 'node:path';
 // Run the actual route/service sources, including SQL, against an isolated real
 // relational database. Only Microsoft/browser authentication and Redis I/O are
 // injected boundaries. No production credentials or database are accessed.
-const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const sourceRoot = resolve(repo, 'apps/frontend/src');
 const userID = '11111111-1111-4111-8111-111111111111';
 const otherUserID = '22222222-2222-4222-8222-222222222222';
