@@ -106,6 +106,14 @@ export default function BeheerWebshopProductForm({
     const setStockFor = (size: string, color: string | null, value: string) =>
         setVariantStock((prev) => new Map(prev).set(`${size}|${color ?? ''}`, value));
 
+    // With sizes, the total stock is the sum of the per-size stock (null = unlimited when any
+    // size has no limit). The server derives the same value on save.
+    const hasSizes = type === 'clothing' && sizes.length > 0;
+    const sizeStockValues = sizes.flatMap((size) => (colors.length > 0 ? colors : [null]).map((color: string | null) => stockFor(size, color)));
+    const derivedTotalStock = sizeStockValues.some((value) => value === '')
+        ? null
+        : sizeStockValues.reduce((total, value) => total + Number(value), 0);
+
     const [customFields, setCustomFields] = useState<{ label: string; max_length: number }[]>(() =>
         parseCustomFieldDefs(product?.custom_fields)
     );
@@ -260,15 +268,26 @@ export default function BeheerWebshopProductForm({
                         defaultValue={product?.max_orders ?? undefined}
                     />
 
-                    <NumberInput
-                        name="stock_quantity"
-                        label="Totale voorraad (optioneel)"
-                        min={0}
-                        step={1}
-                        allowDecimal={false}
-                        placeholder="Onbeperkt"
-                        defaultValue={product?.stock_quantity ?? undefined}
-                    />
+                    {hasSizes ? (
+                        <NumberInput
+                            label="Totale voorraad"
+                            description="Som van de voorraad per maat"
+                            placeholder="Onbeperkt"
+                            value={derivedTotalStock ?? ''}
+                            disabled
+                            readOnly
+                        />
+                    ) : (
+                        <NumberInput
+                            name="stock_quantity"
+                            label="Totale voorraad (optioneel)"
+                            min={0}
+                            step={1}
+                            allowDecimal={false}
+                            placeholder="Onbeperkt"
+                            defaultValue={product?.stock_quantity ?? undefined}
+                        />
+                    )}
                 </SimpleGrid>
 
                 <Textarea

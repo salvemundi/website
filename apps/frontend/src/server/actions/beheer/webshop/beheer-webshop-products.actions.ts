@@ -175,8 +175,14 @@ export async function saveProduct(formData: FormData) {
 
     try {
         const { id: _omit, ...data } = validated.data;
+        // With sizes, the total stock is derived from the per-size stock (any unlimited size =
+        // unlimited total), so the two can never disagree. Orders decrement both, keeping them in sync.
+        const stockQuantity = data.type === 'clothing' && variantData.length > 0
+            ? (variantData.some(v => v.stock_quantity === null) ? null : variantData.reduce((total, v) => total + (v.stock_quantity ?? 0), 0))
+            : data.stock_quantity;
         const dbData = {
             ...data,
+            stock_quantity: stockQuantity,
             price: data.price.toFixed(2),
             // No deposit concept anymore — the DB column is still notNull, so it's kept equal
             // to the price rather than exposed as a separate admin field.
