@@ -258,15 +258,26 @@ export default function BeheerWebshopProductForm({
                         defaultValue={product?.price ? Number(product.price) : undefined}
                     />
 
-                    <NumberInput
-                        name="max_orders"
-                        label="Limiet bestellingen (optioneel)"
-                        min={1}
-                        step={1}
-                        allowDecimal={false}
-                        placeholder="Geen limiet"
-                        defaultValue={product?.max_orders ?? undefined}
-                    />
+                    {hasSizes ? (
+                        <NumberInput
+                            label="Limiet bestellingen"
+                            description="Gelijk aan de voorraad per maat"
+                            placeholder="Geen limiet"
+                            value={derivedTotalStock ?? ''}
+                            disabled
+                            readOnly
+                        />
+                    ) : (
+                        <NumberInput
+                            name="max_orders"
+                            label="Limiet bestellingen (optioneel)"
+                            min={1}
+                            step={1}
+                            allowDecimal={false}
+                            placeholder="Geen limiet"
+                            defaultValue={product?.max_orders ?? undefined}
+                        />
+                    )}
 
                     {hasSizes ? (
                         <NumberInput
