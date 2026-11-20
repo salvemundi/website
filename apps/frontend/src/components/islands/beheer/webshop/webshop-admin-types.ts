@@ -15,6 +15,7 @@ export interface AdminVariant {
     color: string | null;
     sku: string | null;
     is_active: boolean | null;
+    stock_quantity?: number | null;
 }
 
 export interface AdminMedia {
@@ -38,10 +39,19 @@ export interface AdminProduct {
     display_order: number | null;
     variants: AdminVariant[];
     media: AdminMedia[];
+    sales?: AdminProductSales;
+}
+
+// Units sold per product. `paid` = completed orders, `pending` = still awaiting payment.
+export interface AdminProductSales {
+    paid: number;
+    pending: number;
+    byVariant: { label: string; paid: number; pending: number }[];
 }
 
 export interface AdminPreorderLine {
     id: number;
+    product_id?: number | null;
     quantity: number;
     unit_price: string | null;
     product_name_snapshot: string | null;

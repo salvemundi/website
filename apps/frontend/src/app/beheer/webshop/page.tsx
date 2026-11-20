@@ -8,28 +8,55 @@ import {
     getBeheerDropWindows,
     getBeheerProducts,
     getBeheerProductVariants,
-    getBeheerProductMedia
+    getBeheerProductMedia,
+    getBeheerProductSales
 } from '@/server/queries/webshop/beheer-webshop.queries';
 import { getWebshopSettings } from '@/server/actions/public/webshop.actions';
 import { checkBeheerAccess } from '@/server/actions/beheer/beheer-utils.actions';
 import { COMMITTEES } from '@/shared/lib/permissions-config';
+import { type AdminProductSales } from '@/components/islands/beheer/webshop/webshop-admin-types';
 
 export const metadata: Metadata = {
     title: 'Webshop Beheer | SV Salve Mundi'
 };
 
 async function loadWebshopAdminData() {
-    const [dropWindows, products, settings] = await Promise.all([
+    const [dropWindows, products, settings, salesRows] = await Promise.all([
         getBeheerDropWindows(),
         getBeheerProducts(),
-        getWebshopSettings()
+        getWebshopSettings(),
+        getBeheerProductSales()
     ]);
+
+    const salesByProduct = new Map<number, AdminProductSales>();
+    for (const row of salesRows) {
+        if (row.product_id === null) continue;
+        const sales = salesByProduct.get(row.product_id) ?? { paid: 0, pending: 0, byVariant: [] };
+        const key = row.status === 'completed' ? 'paid' : 'pending';
+        sales[key] += row.quantity;
+        if (row.variant_label) {
+            let variant = sales.byVariant.find(v => v.label === row.variant_label);
+            if (!variant) {
+                variant = { label: row.variant_label, paid: 0, pending: 0 };
+                sales.byVariant.push(variant);
+            }
+            variant[key] += row.quantity;
+        }
+        salesByProduct.set(row.product_id, sales);
+    }
+
     const productsWithDetails = await Promise.all(products.map(async (product) => {
         const [variants, media] = await Promise.all([
             getBeheerProductVariants(product.id),
             getBeheerProductMedia(product.id)
         ]);
-        return { ...product, variants, media };
+        // Order per-variant sales the same way the sizes/colors are ordered on the product.
+        const sales = salesByProduct.get(product.id);
+        if (sales) {
+            const order = variants.map(v => [v.size, v.color].filter(Boolean).join(' / '));
+            sales.byVariant.sort((a, b) => (order.indexOf(a.label) + 1 || 9999) - (order.indexOf(b.label) + 1 || 9999));
+        }
+        return { ...product, variants, media, sales };
     }));
     return { dropWindows, products: productsWithDetails, settings };
 }

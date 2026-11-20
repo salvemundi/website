@@ -8,6 +8,7 @@ import PublicPageShell from '@/components/ui/layout/PublicPageShell';
 import WebshopCheckoutIsland from '@/components/islands/webshop/WebshopCheckoutIsland';
 import { getProductBySlug } from '@/server/actions/public/webshop.actions';
 import { getEnrichedSession } from '@/server/auth/auth-utils';
+import { isProductSoldOut } from '@/shared/lib/utils/webshop-stock';
 
 export const metadata: Metadata = {
     title: 'Bestellen | Webshop | Salve Mundi'
@@ -61,7 +62,7 @@ export default async function WebshopBestellenPage({ searchParams }: PageProps) 
     const isLoggedIn = !!session?.user;
     const isMember = user?.membership_status === 'active';
     const isDropOpen = !product.drop_window || product.drop_window.status === 'open';
-    const isSoldOut = product.stock_quantity === 0;
+    const isSoldOut = isProductSoldOut(product);
 
     return (
         <PublicPageShell>

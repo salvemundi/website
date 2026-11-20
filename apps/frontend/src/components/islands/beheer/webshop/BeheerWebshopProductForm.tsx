@@ -28,6 +28,7 @@ import {
     SimpleGrid,
     Stack,
     Switch,
+    Table,
     TagsInput,
     Text,
     Textarea,
@@ -90,6 +91,20 @@ export default function BeheerWebshopProductForm({
             new Set((product?.variants || []).map((v) => v.color).filter((v): v is string => !!v))
         )
     );
+
+    // Per size/color stock, keyed by "size|color". Empty string = unlimited.
+    const [variantStock, setVariantStock] = useState<Map<string, string>>(
+        () =>
+            new Map(
+                (product?.variants || []).map((v) => [
+                    `${v.size ?? ''}|${v.color ?? ''}`,
+                    v.stock_quantity === null || v.stock_quantity === undefined ? '' : String(v.stock_quantity),
+                ])
+            )
+    );
+    const stockFor = (size: string, color: string | null) => variantStock.get(`${size}|${color ?? ''}`) ?? '';
+    const setStockFor = (size: string, color: string | null, value: string) =>
+        setVariantStock((prev) => new Map(prev).set(`${size}|${color ?? ''}`, value));
 
     const [customFields, setCustomFields] = useState<{ label: string; max_length: number }[]>(() =>
         parseCustomFieldDefs(product?.custom_fields)
@@ -158,9 +173,9 @@ export default function BeheerWebshopProductForm({
             type === 'clothing'
                 ? colors.length > 0
                     ? sizes.flatMap((size) =>
-                          colors.map((color) => ({ size, color, sku: null, is_active: true }))
+                          colors.map((color) => ({ size, color, sku: null, is_active: true, stock_quantity: stockFor(size, color) || null }))
                       )
-                    : sizes.map((size) => ({ size, color: null, sku: null, is_active: true }))
+                    : sizes.map((size) => ({ size, color: null, sku: null, is_active: true, stock_quantity: stockFor(size, null) || null }))
                 : [];
         fd.set('variants_json', JSON.stringify(variants));
         fd.set('media_json', JSON.stringify(media));
@@ -247,7 +262,7 @@ export default function BeheerWebshopProductForm({
 
                     <NumberInput
                         name="stock_quantity"
-                        label="Voorraad (optioneel)"
+                        label="Totale voorraad (optioneel)"
                         min={0}
                         step={1}
                         allowDecimal={false}
@@ -477,6 +492,54 @@ export default function BeheerWebshopProductForm({
                                 <Text size="xs" c="dimmed" fs="italic">
                                     Voeg minimaal 1 maat toe.
                                 </Text>
+                            )}
+
+                            {sizes.length > 0 && (
+                                <Stack gap="xs">
+                                    <Box>
+                                        <Text size="sm" fw={500}>
+                                            Voorraad per maat{colors.length > 0 ? ' en kleur' : ''}
+                                        </Text>
+                                        <Text size="xs" c="dimmed">
+                                            Laat leeg voor onbeperkt, 0 = uitverkocht. De voorraad wordt automatisch verlaagd bij elke bestelling en teruggezet bij annuleren.
+                                        </Text>
+                                    </Box>
+                                    <Table.ScrollContainer minWidth={240}>
+                                        <Table withTableBorder verticalSpacing={4}>
+                                            <Table.Thead>
+                                                <Table.Tr>
+                                                    <Table.Th>Maat</Table.Th>
+                                                    {(colors.length > 0 ? colors : ['Voorraad']).map((color) => (
+                                                        <Table.Th key={color}>{color}</Table.Th>
+                                                    ))}
+                                                </Table.Tr>
+                                            </Table.Thead>
+                                            <Table.Tbody>
+                                                {sizes.map((size) => (
+                                                    <Table.Tr key={size}>
+                                                        <Table.Td fw={600}>{size}</Table.Td>
+                                                        {(colors.length > 0 ? colors : [null]).map((color: string | null) => (
+                                                            <Table.Td key={color ?? 'none'}>
+                                                                <NumberInput
+                                                                    size="xs"
+                                                                    w={96}
+                                                                    min={0}
+                                                                    step={1}
+                                                                    allowDecimal={false}
+                                                                    allowNegative={false}
+                                                                    placeholder="∞"
+                                                                    value={stockFor(size, color)}
+                                                                    onChange={(value) => setStockFor(size, color, String(value))}
+                                                                    aria-label={`Voorraad ${[size, color].filter(Boolean).join(' / ')}`}
+                                                                />
+                                                            </Table.Td>
+                                                        ))}
+                                                    </Table.Tr>
+                                                ))}
+                                            </Table.Tbody>
+                                        </Table>
+                                    </Table.ScrollContainer>
+                                </Stack>
                             )}
                         </Stack>
                     </>

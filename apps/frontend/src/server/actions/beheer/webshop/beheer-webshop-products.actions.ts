@@ -3,11 +3,12 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { requireBeheerFeature } from '@/server/auth/auth-utils';
-import { createDropWindowDb, updateDropWindowDb, deleteDropWindowDb, createProductDb, updateProductDb, deleteProductDb, fetchProductVariantsDb, createProductVariantDb, deleteProductVariantDb, fetchProductMediaDb, createProductMediaDb, deleteProductMediaDb } from '@/server/internal/webshop/webshop-product-db.utils';;
+import { createDropWindowDb, updateDropWindowDb, deleteDropWindowDb, createProductDb, updateProductDb, deleteProductDb, fetchProductVariantsDb, createProductVariantDb, updateProductVariantDb, deleteProductVariantDb, fetchProductMediaDb, createProductMediaDb, deleteProductMediaDb } from '@/server/internal/webshop/webshop-product-db.utils';;
 import {
     webshopDropWindowBeheerSchema,
     webshopProductBeheerSchema,
     webshopProductVariantBeheerSchema,
+    type WebshopProductVariantBeheer,
 } from '@salvemundi/validations/schema/beheer-webshop.zod';
 import { safeConsoleError } from '@/server/utils/logger';
 import { logAuditAction } from '@/server/actions/infrastructure/audit.actions';
@@ -100,7 +101,10 @@ interface VariantInput {
     color?: string | null;
     sku?: string | null;
     is_active?: boolean;
+    stock_quantity?: number | string | null;
 }
+
+const variantKey = (v: { size?: string | null; color?: string | null }) => `${v.size ?? ''}|${v.color ?? ''}`;
 
 interface MediaInput {
     asset: string;
@@ -158,6 +162,17 @@ export async function saveProduct(formData: FormData) {
         return { success: false, error: 'Kledingproducten hebben minimaal 1 maat/variant nodig.' };
     }
 
+    // Validate every variant before writing anything, so a bad stock value can't leave a half-saved product.
+    const variantData: Omit<WebshopProductVariantBeheer, 'id' | 'product_id'>[] = [];
+    for (const [index, variant] of variants.entries()) {
+        const parsed = webshopProductVariantBeheerSchema.safeParse({ ...variant, product_id: 0, display_order: index });
+        if (!parsed.success) {
+            return { success: false, error: `Ongeldige voorraad voor ${[variant.size, variant.color].filter(Boolean).join(' / ') || 'variant'}.` };
+        }
+        const { id: _vid, product_id: _pid, ...rest } = parsed.data;
+        variantData.push({ ...rest, stock_quantity: rest.stock_quantity ?? null });
+    }
+
     try {
         const { id: _omit, ...data } = validated.data;
         const dbData = {
@@ -174,14 +189,8 @@ export async function saveProduct(formData: FormData) {
             const ok = await updateProductDb(productId, dbData);
             if (!ok) throw new Error('Update failed');
 
-            const [existingVariants, existingMedia] = await Promise.all([
-                fetchProductVariantsDb(productId),
-                fetchProductMediaDb(productId)
-            ]);
-            await Promise.all([
-                ...existingVariants.map(v => deleteProductVariantDb(v.id)),
-                ...existingMedia.map(m => deleteProductMediaDb(m.id))
-            ]);
+            const existingMedia = await fetchProductMediaDb(productId);
+            await Promise.all(existingMedia.map(m => deleteProductMediaDb(m.id)));
 
             await logAuditAction('admin_webshop_product_updated', 'SUCCESS', { product_id: productId });
         } else {
@@ -191,12 +200,19 @@ export async function saveProduct(formData: FormData) {
             await logAuditAction('admin_webshop_product_created', 'SUCCESS', { product_id: productId });
         }
 
-        for (const variant of variants) {
-            const validatedVariant = webshopProductVariantBeheerSchema.safeParse({ ...variant, product_id: productId });
-            if (!validatedVariant.success) continue;
-            const { id: _vid, ...variantData } = validatedVariant.data;
-            await createProductVariantDb({ ...variantData, product_id: productId });
+        // Variants are matched on size/color and updated in place (not delete + recreate), so
+        // existing orders keep their variant_id link and per-variant stock/sales stay intact.
+        const existingByKey = new Map((idRaw ? await fetchProductVariantsDb(productId) : []).map(v => [variantKey(v), v]));
+        for (const variant of variantData) {
+            const existing = existingByKey.get(variantKey(variant));
+            if (existing) {
+                existingByKey.delete(variantKey(variant));
+                await updateProductVariantDb(existing.id, variant);
+            } else {
+                await createProductVariantDb({ ...variant, product_id: productId });
+            }
         }
+        await Promise.all([...existingByKey.values()].map(v => deleteProductVariantDb(v.id)));
 
         for (const [index, item] of media.entries()) {
             if (!item.asset) continue;

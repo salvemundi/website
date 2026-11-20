@@ -40,6 +40,8 @@ export const webshopProductVariantBeheerSchema = insertWebshopProductVariantsSch
     sku: z.string().nullable().optional(),
     is_active: z.any().transform(value => !!value),
     display_order: z.coerce.number().int().nullable().optional(),
+    // NULL = unlimited stock for this size/color, 0 = sold out.
+    stock_quantity: z.preprocess((value) => (value === '' || value === null || value === undefined) ? null : value, z.coerce.number().int().nonnegative('Voorraad kan niet negatief zijn').nullable()).optional(),
 });
 export type WebshopProductVariantBeheer = z.infer<typeof webshopProductVariantBeheerSchema>;
 

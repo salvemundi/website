@@ -7,6 +7,7 @@ import { useAuthActions } from '@/features/auth/providers/auth-provider';
 import { SafeMarkdown } from '@/components/ui/security/SafeMarkdown';
 import { formatDate } from '@/shared/lib/utils/date';
 import { type WebshopCatalogProduct } from '@salvemundi/validations/schema/webshop.zod';
+import { isProductSoldOut } from '@/shared/lib/utils/webshop-stock';
 
 interface WebshopProductDetailIslandProps {
     product: WebshopCatalogProduct;
@@ -21,7 +22,7 @@ export default function WebshopProductDetailIsland({ product, isLoggedIn, isMemb
     const isDropOpen = !product.drop_window || product.drop_window.status === 'open';
     const closesAt = product.drop_window?.closes_at ? new Date(product.drop_window.closes_at) : null;
     const price = Number(product.price).toFixed(2);
-    const isSoldOut = product.stock_quantity === 0;
+    const isSoldOut = isProductSoldOut(product);
 
     const handleLogin = () => {
         const returnTo = window.location.pathname + window.location.search;

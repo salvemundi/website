@@ -6,6 +6,7 @@ import { ShoppingBag } from 'lucide-react';
 import { Anchor, AspectRatio, Badge, Box, Card, Center, Divider, Group, Stack, Text, Title } from '@mantine/core';
 import MediaAsset from '@/components/ui/media/MediaAsset';
 import { type WebshopCatalogProduct } from '@salvemundi/validations/schema/webshop.zod';
+import { isProductSoldOut } from '@/shared/lib/utils/webshop-stock';
 
 interface WebshopProductCardProps {
     product: WebshopCatalogProduct;
@@ -16,7 +17,7 @@ export default function WebshopProductCard({ product }: WebshopProductCardProps)
     const cover = product.media.length > 0 ? product.media[0] : null;
     const video = product.media.find(m => m.asset_type?.startsWith('video/')) ?? null;
     const price = Number(product.price).toFixed(2);
-    const isSoldOut = product.stock_quantity === 0;
+    const isSoldOut = isProductSoldOut(product);
 
     const showVideo = isHovering && video !== null;
 

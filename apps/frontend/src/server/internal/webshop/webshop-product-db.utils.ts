@@ -1,6 +1,6 @@
 import 'server-only';
 import { db, schema } from '@salvemundi/db';
-import { eq, and, ne, asc, inArray, count } from 'drizzle-orm';
+import { eq, and, ne, asc, inArray, count, sum } from 'drizzle-orm';
 import {
     webshopCatalogProductSchema,
     type WebshopCatalogProduct,
@@ -144,6 +144,29 @@ export async function countActiveOrdersForProductDb(productId: number): Promise<
             ne(schema.webshop_preorders.status, 'cancelled')
         ));
     return result[0]?.value ?? 0;
+}
+
+export interface ProductSalesRow {
+    product_id: number | null;
+    variant_label: string | null;
+    status: string | null;
+    quantity: number;
+}
+
+// Units ordered per product / variant / order status (cancelled orders excluded). Uses the
+// variant label snapshot so sales stay attributed even if a variant is later removed.
+export async function fetchProductSalesDb(): Promise<ProductSalesRow[]> {
+    const rows = await db.select({
+        product_id: schema.webshop_preorder_lines.product_id,
+        variant_label: schema.webshop_preorder_lines.variant_label_snapshot,
+        status: schema.webshop_preorders.status,
+        quantity: sum(schema.webshop_preorder_lines.quantity),
+    })
+        .from(schema.webshop_preorder_lines)
+        .innerJoin(schema.webshop_preorders, eq(schema.webshop_preorder_lines.preorder_id, schema.webshop_preorders.id))
+        .where(ne(schema.webshop_preorders.status, 'cancelled'))
+        .groupBy(schema.webshop_preorder_lines.product_id, schema.webshop_preorder_lines.variant_label_snapshot, schema.webshop_preorders.status);
+    return rows.map(r => ({ ...r, quantity: Number(r.quantity ?? 0) }));
 }
 
 // --- Admin: variants ---
