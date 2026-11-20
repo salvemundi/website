@@ -10,6 +10,7 @@ import {
     Card,
     Center,
     Checkbox,
+    CloseButton,
     Container,
     Group,
     Paper,
@@ -162,6 +163,19 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
             .filter((g) => g.rows.length > 0);
     }, [groups, productFilter, variantFilter, hidePickedUp, search]);
 
+    const renderSearch = (width: number | string) => (
+        <TextInput
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.currentTarget.value)}
+            placeholder="Zoek op naam of e-mail"
+            aria-label="Zoek op naam of e-mail"
+            leftSection={<Search size={14} />}
+            rightSection={search ? <CloseButton size="sm" aria-label="Zoekopdracht wissen" onClick={() => setSearch('')} /> : null}
+            w={width}
+        />
+    );
+
     const selectProduct = (key: string | null) => {
         setProductFilter((prev) => (prev === key ? null : key));
         setVariantFilter(null);
@@ -197,7 +211,8 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                 </Container>
             </Paper>
 
-            <Container size="xl" py="lg">
+            {/* Extra bottom padding on mobile so the fixed search bar never covers the last order. */}
+            <Container size="xl" pt="lg" pb={{ base: 96, sm: 'lg' }}>
                 <Stack gap="lg">
                     <Text size="sm" c="dimmed">
                         {openCount} van de {preorders.length} bestellingen nog niet opgehaald.
@@ -263,14 +278,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
 
                     {preorders.length > 0 && (
                         <Group justify="space-between" gap="sm">
-                            <TextInput
-                                type="search"
-                                value={search}
-                                onChange={(e) => setSearch(e.currentTarget.value)}
-                                placeholder="Zoek op naam of e-mail"
-                                leftSection={<Search size={14} />}
-                                w={{ base: '100%', sm: 320 }}
-                            />
+                            <Box visibleFrom="sm">{renderSearch(320)}</Box>
                             <Group gap="md">
                                 {(productFilter || variantFilter) && (
                                     <Button size="xs" variant="subtle" onClick={() => selectProduct(null)}>
@@ -464,6 +472,27 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                     )}
                 </Stack>
             </Container>
+
+            {/* Mobile: search pinned to the bottom of the screen, always within thumb reach. */}
+            {preorders.length > 0 && (
+                <Paper
+                    hiddenFrom="sm"
+                    shadow="lg"
+                    radius={0}
+                    p="sm"
+                    withBorder
+                    style={{
+                        position: 'fixed',
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        zIndex: 200,
+                        paddingBottom: 'calc(var(--mantine-spacing-sm) + env(safe-area-inset-bottom))',
+                    }}
+                >
+                    {renderSearch('100%')}
+                </Paper>
+            )}
         </>
     );
 }
