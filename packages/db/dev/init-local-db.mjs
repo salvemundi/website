@@ -1,12 +1,12 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import postgres from 'postgres';
+import { connectionString } from './local-env.mjs';
 
 const packageDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const workDir = join(packageDir, 'dev', '.tmp');
-const frontendEnv = resolve(packageDir, '../../apps/frontend/.env.local');
 
 // Directus creates directus_users itself; the site stores these extra profile fields on it.
 const directusUserColumns = [
@@ -32,16 +32,6 @@ const betterAuthColumns = {
     auth_accounts: ['accountId', 'providerId', 'userId', 'accessToken', 'refreshToken', 'idToken', 'accessTokenExpiresAt', 'refreshTokenExpiresAt', 'createdAt', 'updatedAt'],
     verification: ['expiresAt', 'createdAt', 'updatedAt'],
 };
-
-function connectionString() {
-    if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
-    if (existsSync(frontendEnv)) process.loadEnvFile(frontendEnv);
-    const { DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME } = process.env;
-    if (!DB_USER || !DB_PASSWORD || !DB_HOST || !DB_PORT || !DB_NAME) {
-        throw new Error(`Set DATABASE_URL or the DB_* variables in ${frontendEnv}`);
-    }
-    return `postgres://${encodeURIComponent(DB_USER)}:${encodeURIComponent(DB_PASSWORD)}@${DB_HOST}:${DB_PORT}/${DB_NAME}`;
-}
 
 function generateAppTablesSql() {
     rmSync(workDir, { recursive: true, force: true });

@@ -78,7 +78,17 @@ Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibilite
     pnpm dev:db:init
     ```
 
-6.  **Start de development server**.
+6.  **Vul de database met voorbeelddata**.
+    Het script laadt commissies, activiteiten, clubs, sponsors en meer, deels overgenomen van salvemundi.nl en deels verzonnen.
+    Leden en (oud-)bestuursleden zijn fictief en hebben geen foto.
+    De afbeeldingen worden via Directus geïmporteerd van salvemundi.nl.
+    Elke run wist de geseede tabellen en vult ze opnieuw. Herstart `pnpm dev` als die al draait, anders toont de cache nog de oude data:
+
+    ```bash
+    pnpm dev:db:seed
+    ```
+
+7.  **Start de development server**.
     Bouw eerst `@salvemundi/db` en `@salvemundi/validations`, anders kan Next.js deze packages niet resolven (zie #374).
     Daarna draait Next.js op http://localhost:3000:
 
@@ -98,8 +108,7 @@ Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibilite
 | Postgres | `127.0.0.1:5432`      | `salvemundi` / `salvemundi`, database `salvemundi`                            |
 | Redis    | `127.0.0.1:6379`      | wachtwoord `salvemundi`                                                       |
 
-De database begint leeg, dus pagina's laden zonder inhoud.
-Voeg data toe via Directus of laad een dump in Postgres.
+Zonder `pnpm dev:db:seed` is de database leeg en laden pagina's zonder inhoud.
 
 De microservices in `apps/services` zijn optioneel.
 Zet hun URL's in `.env.local` (zie `apps/frontend/.env.example`) als je aan betalingen, mail of Azure-synchronisatie werkt.
