@@ -216,7 +216,7 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                     >
                                         <UnstyledButton onClick={() => selectProduct(group.key)} w="100%">
                                             <Group justify="space-between" align="flex-start" wrap="nowrap">
-                                                <Group gap="xs" wrap="nowrap">
+                                                <Group gap="xs" wrap="nowrap" miw={0}>
                                                     <Text span c="brand" lh={1}>
                                                         <Package size={16} />
                                                     </Text>
@@ -315,7 +315,67 @@ export default function AdminWebshopPickupIsland({ initialPreorders }: Props) {
                                         {group.rows.length} {group.rows.length === 1 ? 'bestelling' : 'bestellingen'}
                                     </Badge>
                                 </Group>
-                                <Card p={0} shadow="md" style={{ overflow: 'hidden' }}>
+                                {/* Mobile: stacked cards, so nothing needs horizontal scrolling. */}
+                                <Stack gap="xs" hiddenFrom="sm">
+                                    {group.rows.map(({ order, line }) => {
+                                        const details = formatCustomFieldValues(line.custom_field_values).replace(/^ · /, '');
+                                        return (
+                                            <Card
+                                                key={`${order.id}-${line.id}`}
+                                                shadow="sm"
+                                                withBorder
+                                                p="sm"
+                                                style={order.picked_up ? { opacity: 0.6 } : undefined}
+                                            >
+                                                <Group justify="space-between" align="flex-start" wrap="nowrap" gap="xs">
+                                                    <Box miw={0}>
+                                                        <Text size="sm" fw={600}>
+                                                            {order.first_name} {order.last_name}
+                                                        </Text>
+                                                        <Text size="xs" c="dimmed" style={{ overflowWrap: 'anywhere' }}>
+                                                            {order.email}
+                                                        </Text>
+                                                    </Box>
+                                                    <Group gap={6} wrap="nowrap">
+                                                        {line.variant_label_snapshot && (
+                                                            <Badge variant="light" tt="none">
+                                                                {line.variant_label_snapshot}
+                                                            </Badge>
+                                                        )}
+                                                        <Text size="sm" fw={600}>
+                                                            &times; {line.quantity}
+                                                        </Text>
+                                                    </Group>
+                                                </Group>
+                                                {details && (
+                                                    <Text size="xs" mt={6} style={{ overflowWrap: 'anywhere' }}>
+                                                        {details}
+                                                    </Text>
+                                                )}
+                                                {order.picked_up_at && (
+                                                    <Text size="xs" c="dimmed" mt={4}>
+                                                        Opgehaald op {formatDate(new Date(order.picked_up_at), 'd MMM yyyy HH:mm')}
+                                                    </Text>
+                                                )}
+                                                <Button
+                                                    type="button"
+                                                    size="xs"
+                                                    mt="sm"
+                                                    fullWidth
+                                                    variant="light"
+                                                    color={order.picked_up ? 'success' : 'brand'}
+                                                    disabled={isPending && updatingId === order.id}
+                                                    onClick={() => handleToggle(order.id, !order.picked_up)}
+                                                    leftSection={<CheckCircle2 size={14} />}
+                                                >
+                                                    {order.picked_up ? 'Opgehaald' : 'Markeer als opgehaald'}
+                                                </Button>
+                                            </Card>
+                                        );
+                                    })}
+                                </Stack>
+
+                                <Card p={0} shadow="md" style={{ overflow: 'hidden' }} visibleFrom="sm">
                                     <Table.ScrollContainer minWidth={600}>
                                         <Table highlightOnHover verticalSpacing="md" horizontalSpacing="lg">
                                             <Table.Thead>
