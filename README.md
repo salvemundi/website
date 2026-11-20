@@ -42,29 +42,34 @@ Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibilite
 
 ### Eerste keer opzetten
 
-1.  **Clone de repository en installeer afhankelijkheden**:
+1.  **Clone de repository**:
 
     ```bash
     git clone https://github.com/salvemundi/website.git
     cd website
+    ```
+
+2.  **Installeer dependencies**:
+
+    ```bash
     pnpm install
     ```
 
-2.  **Configureer de frontend**.
+3.  **Configureer de frontend**.
     De standaardwaarden passen bij de lokale Docker-omgeving:
 
     ```bash
     cp apps/frontend/.env.example apps/frontend/.env.local
     ```
 
-3.  **Start Postgres, Redis en Directus** (`infrastructure/dev/docker-compose.yml`).
+4.  **Start Postgres, Redis en Directus** (`infrastructure/dev/docker-compose.yml`).
     Het commando wacht tot alles gezond is:
 
     ```bash
     pnpm dev:infra
     ```
 
-4.  **Maak de tabellen van de website aan**.
+5.  **Maak de tabellen van de website aan**.
     Directus maakt bij de eerste start zijn eigen systeemtabellen aan.
     Dit script genereert de overige tabellen uit `packages/db/drizzle/schema.ts` en voegt de profielvelden toe aan `directus_users`.
     Het is veilig om het opnieuw te draaien:
@@ -73,7 +78,7 @@ Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibilite
     pnpm dev:db:init
     ```
 
-5.  **Start de development server**.
+6.  **Start de development server**.
     Bouw eerst `@salvemundi/db` en `@salvemundi/validations`, anders kan Next.js deze packages niet resolven (zie #374).
     Daarna draait Next.js op http://localhost:3000:
 
@@ -83,12 +88,6 @@ Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibilite
     ```
 
     _(Het `predev`/`prebuild` script `sync:maplibre-worker` kopieert automatisch de MapLibre v6 worker-bestanden naar `apps/frontend/public/map/worker/`.)_
-
-6.  **Validatie & kwaliteitscontrole**:
-    ```bash
-    pnpm --filter @salvemundi/frontend run validate
-    ```
-    Voert achtereenvolgens `tsc --noEmit`, `eslint src`, `knip` en `next build` uit.
 
 ### Lokale omgeving
 
