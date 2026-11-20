@@ -167,7 +167,9 @@ export async function saveProduct(formData: FormData) {
     for (const [index, variant] of variants.entries()) {
         const parsed = webshopProductVariantBeheerSchema.safeParse({ ...variant, product_id: 0, display_order: index });
         if (!parsed.success) {
-            return { success: false, error: `Ongeldige voorraad voor ${[variant.size, variant.color].filter(Boolean).join(' / ') || 'variant'}.` };
+            const issue = parsed.error.issues.at(0);
+            safeConsoleError('[beheer-webshop-products.actions.ts][saveProduct] variant validation failed', { variant, issues: parsed.error.issues });
+            return { success: false, error: `Ongeldige gegevens voor maat ${[variant.size, variant.color].filter(Boolean).join(' / ') || 'variant'} (${issue?.path.join('.') || 'onbekend veld'}: ${issue?.message ?? 'ongeldig'}).` };
         }
         const { id: _vid, product_id: _pid, ...rest } = parsed.data;
         variantData.push({ ...rest, stock_quantity: rest.stock_quantity ?? null });

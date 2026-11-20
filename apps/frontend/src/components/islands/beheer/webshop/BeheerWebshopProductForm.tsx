@@ -102,6 +102,13 @@ export default function BeheerWebshopProductForm({
                 ])
             )
     );
+    // Sent as a real number (or null = unlimited) so the server never has to coerce text.
+    const toStockNumber = (value: string): number | null => {
+        const trimmed = value.trim();
+        if (trimmed === '') return null;
+        const parsed = Number(trimmed);
+        return Number.isFinite(parsed) ? Math.trunc(parsed) : null;
+    };
     const stockFor = (size: string, color: string | null) => variantStock.get(`${size}|${color ?? ''}`) ?? '';
     const setStockFor = (size: string, color: string | null, value: string) =>
         setVariantStock((prev) => new Map(prev).set(`${size}|${color ?? ''}`, value));
@@ -181,9 +188,9 @@ export default function BeheerWebshopProductForm({
             type === 'clothing'
                 ? colors.length > 0
                     ? sizes.flatMap((size) =>
-                          colors.map((color) => ({ size, color, sku: null, is_active: true, stock_quantity: stockFor(size, color) || null }))
+                          colors.map((color) => ({ size, color, sku: null, is_active: true, stock_quantity: toStockNumber(stockFor(size, color)) }))
                       )
-                    : sizes.map((size) => ({ size, color: null, sku: null, is_active: true, stock_quantity: stockFor(size, null) || null }))
+                    : sizes.map((size) => ({ size, color: null, sku: null, is_active: true, stock_quantity: toStockNumber(stockFor(size, null)) }))
                 : [];
         fd.set('variants_json', JSON.stringify(variants));
         fd.set('media_json', JSON.stringify(media));
