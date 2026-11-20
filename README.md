@@ -1,12 +1,14 @@
 # Salve Mundi V7 Monorepo
 
-Welkom bij de broncode van Salve Mundi V7. Dit project is een moderne monorepo-architectuur voor studievereniging Salve Mundi, gebouwd met Next.js (App Router), Mantine UI v9, Drizzle ORM, Directus CMS en Fastify microservices.
+Welkom bij de broncode van Salve Mundi V7.
+Dit project is een moderne monorepo-architectuur voor studievereniging Salve Mundi, gebouwd met Next.js (App Router), Mantine UI v9, Drizzle ORM, Directus CMS en Fastify microservices.
 
 ## Project Structuur
 
 De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`):
 
-- **`/apps/frontend`**: De hoofdapplicatie gebouwd met Next.js 16 (App Router) en Mantine UI v9. Bevat de publieke website, het ledenportaal en het beheerderspaneel (`/beheer`).
+- **`/apps/frontend`**: De hoofdapplicatie gebouwd met Next.js 16 (App Router) en Mantine UI v9.
+  Bevat de publieke website, het ledenportaal en het beheerderspaneel (`/beheer`).
 - **`/apps/services`**: Diverse Fastify/Node microservices voor specifieke taken (Finance, Azure Sync, Mail, Azure Management, Monitoring, Mobile Notifications).
 - **`/infrastructure`**: Docker Compose configuraties voor de core infrastructuur (PostgreSQL, Redis, Directus).
 - **`/packages`**: Gedeelde packages zoals `@salvemundi/db` (Drizzle schema & client) en `@salvemundi/validations` (Zod v4 schema's).
@@ -25,6 +27,7 @@ De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`
 ## Package Management & Security (pnpm v11)
 
 Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibiliteit en veiligheid te garanderen:
+
 - **`overrides`**: Dwingt specifieke, veilige versies af van transitieve dependencies over de gehele monorepo.
 - **`allowBuilds`**: Uit veiligheidsoverwegingen zijn post-install scripts geblokkeerd (`false`) voor vrijwel alle packages.
 - **`patchedDependencies`**: Bevat gerichte patches (in `/patches`) voor third-party packages.
@@ -40,32 +43,44 @@ Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibilite
 ### Eerste keer opzetten
 
 1.  **Clone de repository en installeer afhankelijkheden**:
+
     ```bash
     git clone https://github.com/salvemundi/website.git
     cd website
     pnpm install
     ```
 
-2.  **Configureer de frontend**. De standaardwaarden passen bij de lokale Docker-omgeving:
+2.  **Configureer de frontend**.
+    De standaardwaarden passen bij de lokale Docker-omgeving:
+
     ```bash
     cp apps/frontend/.env.example apps/frontend/.env.local
     ```
 
-3.  **Start Postgres, Redis en Directus** (`infrastructure/dev/docker-compose.yml`). Het commando wacht tot alles gezond is:
+3.  **Start Postgres, Redis en Directus** (`infrastructure/dev/docker-compose.yml`).
+    Het commando wacht tot alles gezond is:
+
     ```bash
     pnpm dev:infra
     ```
 
-4.  **Maak de tabellen van de website aan**. Directus maakt bij de eerste start zijn eigen systeemtabellen aan. Dit script genereert de overige tabellen uit `packages/db/drizzle/schema.ts` en voegt de profielvelden toe aan `directus_users`. Het is veilig om het opnieuw te draaien:
+4.  **Maak de tabellen van de website aan**.
+    Directus maakt bij de eerste start zijn eigen systeemtabellen aan.
+    Dit script genereert de overige tabellen uit `packages/db/drizzle/schema.ts` en voegt de profielvelden toe aan `directus_users`.
+    Het is veilig om het opnieuw te draaien:
+
     ```bash
     pnpm dev:db:init
     ```
 
-5.  **Start de development server**. Dit bouwt eerst `@salvemundi/db` en `@salvemundi/validations`, daarna draait Next.js op http://localhost:3000:
+5.  **Start de development server**.
+    Dit bouwt eerst `@salvemundi/db` en `@salvemundi/validations`, daarna draait Next.js op http://localhost:3000:
+
     ```bash
     pnpm dev
     ```
-    *(Het `predev`/`prebuild` script `sync:maplibre-worker` kopieert automatisch de MapLibre v6 worker-bestanden naar `apps/frontend/public/map/worker/`.)*
+
+    _(Het `predev`/`prebuild` script `sync:maplibre-worker` kopieert automatisch de MapLibre v6 worker-bestanden naar `apps/frontend/public/map/worker/`.)_
 
 6.  **Validatie & kwaliteitscontrole**:
     ```bash
@@ -75,16 +90,18 @@ Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibilite
 
 ### Lokale omgeving
 
-| Dienst | Adres | Inlog |
-| --- | --- | --- |
-| Website | http://localhost:3000 | Microsoft-login werkt lokaal niet zonder echte Entra-gegevens in `.env.local` |
-| Directus | http://localhost:8055 | `admin@example.com` / `admin` |
-| Postgres | `127.0.0.1:5432` | `salvemundi` / `salvemundi`, database `salvemundi` |
-| Redis | `127.0.0.1:6379` | wachtwoord `salvemundi` |
+| Dienst   | Adres                 | Inlog                                                                         |
+| -------- | --------------------- | ----------------------------------------------------------------------------- |
+| Website  | http://localhost:3000 | Microsoft-login werkt lokaal niet zonder echte Entra-gegevens in `.env.local` |
+| Directus | http://localhost:8055 | `admin@example.com` / `admin`                                                 |
+| Postgres | `127.0.0.1:5432`      | `salvemundi` / `salvemundi`, database `salvemundi`                            |
+| Redis    | `127.0.0.1:6379`      | wachtwoord `salvemundi`                                                       |
 
-De database begint leeg, dus pagina's laden zonder inhoud. Voeg data toe via Directus of laad een dump in Postgres.
+De database begint leeg, dus pagina's laden zonder inhoud.
+Voeg data toe via Directus of laad een dump in Postgres.
 
-De microservices in `apps/services` zijn optioneel. Zet hun URL's in `.env.local` (zie `apps/frontend/.env.example`) als je aan betalingen, mail of Azure-synchronisatie werkt.
+De microservices in `apps/services` zijn optioneel.
+Zet hun URL's in `.env.local` (zie `apps/frontend/.env.example`) als je aan betalingen, mail of Azure-synchronisatie werkt.
 
 ### Stoppen en opnieuw beginnen
 
@@ -106,4 +123,4 @@ Het project maakt gebruik van GitHub Actions voor geautomatiseerde deployment:
 - Geen hardcoded fallback-secrets in broncode; alle geheimen worden via environment-variabelen / GitHub Secrets beheerd.
 - Werk via een feature branch en dien een Pull Request in naar `acceptance` voor review door andere developers.
 
-*Copyright © Salve Mundi*
+_Copyright © Salve Mundi_
