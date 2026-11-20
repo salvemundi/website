@@ -1,6 +1,6 @@
 import 'server-only';
 import { requireBeheerFeature } from '@/server/auth/auth-utils';
-import { fetchAllDropWindowsDb, fetchDropWindowByIdDb, fetchAllProductsDb, fetchProductByIdDb, fetchProductVariantsDb, fetchProductMediaDb } from '@/server/internal/webshop/webshop-product-db.utils';
+import { fetchAllDropWindowsDb, fetchDropWindowByIdDb, fetchAllProductsDb, fetchProductByIdDb, fetchProductVariantsDb, fetchProductMediaDb, fetchProductSalesDb } from '@/server/internal/webshop/webshop-product-db.utils';
 import { fetchAllPreordersDb, fetchPreorderWithLinesDb } from '@/server/internal/webshop/webshop-preorder-db.utils';;
 
 export async function getBeheerDropWindows() {
@@ -16,6 +16,11 @@ export async function getBeheerDropWindowById(id: number) {
 export async function getBeheerProducts() {
     await requireBeheerFeature('webshop');
     return fetchAllProductsDb();
+}
+
+export async function getBeheerProductSales() {
+    await requireBeheerFeature('webshop');
+    return fetchProductSalesDb();
 }
 
 export async function getBeheerProductById(id: number) {

@@ -58,22 +58,86 @@ function getDropStatusMeta(status: string | null): { label: string; color?: stri
     }
 }
 
+function variantLabel(v: { size: string | null; color: string | null }): string {
+    return [v.size, v.color].filter(Boolean).join('/');
+}
+
 function StockBadge({ product }: { product: AdminProduct }) {
-    if (product.stock_quantity === null) {
+    const activeVariants = product.variants.filter((v) => v.is_active);
+    const hasVariantStock = activeVariants.some((v) => v.stock_quantity !== null && v.stock_quantity !== undefined);
+    const total = product.stock_quantity ?? null;
+
+    return (
+        <Stack gap={4}>
+            {total === 0 ? (
+                <Badge size="sm" variant="light" color="error">
+                    Uitverkocht
+                </Badge>
+            ) : total !== null ? (
+                <Text size="sm">{total} stuks totaal</Text>
+            ) : (
+                !hasVariantStock && (
+                    <Text size="sm" c="dimmed">
+                        Onbeperkt
+                    </Text>
+                )
+            )}
+            {hasVariantStock && (
+                <Group gap={4} maw={240}>
+                    {activeVariants.map((v) => (
+                        <Badge
+                            key={v.id}
+                            size="xs"
+                            variant="light"
+                            color={v.stock_quantity === 0 ? 'error' : 'gray'}
+                            tt="none"
+                        >
+                            {variantLabel(v)}: {v.stock_quantity ?? '∞'}
+                        </Badge>
+                    ))}
+                </Group>
+            )}
+        </Stack>
+    );
+}
+
+function SalesCell({ product }: { product: AdminProduct }) {
+    const sales = product.sales;
+    if (!sales || (sales.paid === 0 && sales.pending === 0)) {
         return (
             <Text size="sm" c="dimmed">
-                Onbeperkt
+                0
             </Text>
         );
     }
-    if (product.stock_quantity === 0) {
-        return (
-            <Badge size="sm" variant="light" color="error">
-                Uitverkocht
-            </Badge>
-        );
-    }
-    return <Text size="sm">{product.stock_quantity} stuks</Text>;
+    return (
+        <Stack gap={4}>
+            <Text size="sm" fw={600}>
+                {sales.paid} betaald
+                {sales.pending > 0 && (
+                    <Text span size="xs" c="accent" fw={400} ml={4}>
+                        +{sales.pending} open
+                    </Text>
+                )}
+            </Text>
+            {sales.byVariant.length > 0 && (
+                <Group gap={4} maw={240}>
+                    {sales.byVariant.map((v) => (
+                        <Badge
+                            key={v.label}
+                            size="xs"
+                            variant="light"
+                            tt="none"
+                            title={v.pending > 0 ? `${v.pending} wacht nog op betaling` : undefined}
+                        >
+                            {v.label}: {v.paid}
+                            {v.pending > 0 && ` +${v.pending}`}
+                        </Badge>
+                    ))}
+                </Group>
+            )}
+        </Stack>
+    );
 }
 
 export default function BeheerWebshopProductsIsland({
@@ -332,6 +396,7 @@ export default function BeheerWebshopProductsIsland({
                                                 <Table.Th visibleFrom="lg">Drop</Table.Th>
                                                 <Table.Th>Prijs</Table.Th>
                                                 <Table.Th>Voorraad</Table.Th>
+                                                <Table.Th>Verkocht</Table.Th>
                                                 <Table.Th ta="center">Actief</Table.Th>
                                                 <Table.Th ta="right">Acties</Table.Th>
                                             </Table.Tr>
@@ -364,6 +429,9 @@ export default function BeheerWebshopProductsIsland({
                                                     </Table.Td>
                                                     <Table.Td>
                                                         <StockBadge product={product} />
+                                                    </Table.Td>
+                                                    <Table.Td>
+                                                        <SalesCell product={product} />
                                                     </Table.Td>
                                                     <Table.Td>
                                                         <Box ta="center">

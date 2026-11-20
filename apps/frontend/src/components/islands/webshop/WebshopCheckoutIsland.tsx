@@ -29,6 +29,7 @@ import MediaAsset from '@/components/ui/media/MediaAsset';
 import { webshopPreorderFormSchema, type WebshopCatalogProduct, type WebshopPreorderForm } from '@salvemundi/validations/schema/webshop.zod';
 import { submitPreorderAndInitiatePayment } from '@/server/actions/public/webshop-checkout.actions';
 import { safeConsoleError } from '@/server/utils/logger';
+import { isVariantAvailable, maxOrderableQuantity } from '@/shared/lib/utils/webshop-stock';
 
 interface WebshopCheckoutIslandProps {
     product: WebshopCatalogProduct;
@@ -94,9 +95,12 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
     const applyVariantSelection = (size: string | null, color: string | null) => {
         const matched = activeVariants.find(v =>
             (availableSizes.length === 0 || v.size === size) &&
-            (availableColors.length === 0 || v.color === color)
+            (availableColors.length === 0 || v.color === color) &&
+            isVariantAvailable(v)
         );
         setValue('lines.0.variant_id', matched?.id ?? null, { shouldValidate: true });
+        const variantMax = Math.max(1, maxOrderableQuantity(product, matched ?? null, MAX_QUANTITY));
+        if (quantity > variantMax) setValue('lines.0.quantity', variantMax, { shouldValidate: true });
     };
 
     const handleSelectSize = (size: string) => {
@@ -111,7 +115,13 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
 
     const unitPrice = Number(product.price);
     const subtotal = unitPrice * quantity;
-    const maxQuantity = product.stock_quantity === null ? MAX_QUANTITY : Math.min(MAX_QUANTITY, product.stock_quantity);
+    const selectedVariant = activeVariants.find(v => v.id === line.variant_id) ?? null;
+    const maxQuantity = Math.max(1, maxOrderableQuantity(product, selectedVariant, MAX_QUANTITY));
+
+    // A size is sold out when every color of it is sold out (and vice versa for colors);
+    // with both chosen, the exact combination decides.
+    const isSizeSoldOut = (size: string) => !activeVariants.some(v => v.size === size && (!selectedColor || v.color === selectedColor) && isVariantAvailable(v));
+    const isColorSoldOut = (color: string) => !activeVariants.some(v => v.color === color && (!selectedSize || v.size === selectedSize) && isVariantAvailable(v));
 
     const sizeError = variantTouched && availableSizes.length > 0 && !selectedSize ? 'Kies een maat.' : undefined;
     const colorError = variantTouched && availableColors.length > 0 && !selectedColor ? 'Kies een kleur.' : undefined;
@@ -233,6 +243,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                         <Group gap="xs" mt="xs" wrap="wrap">
                                             {availableSizes.map((size) => {
                                                 const isSelected = selectedSize === size;
+                                                const soldOut = isSizeSoldOut(size);
                                                 return (
                                                     <Button
                                                         key={size}
@@ -240,10 +251,14 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                                         aria-pressed={isSelected}
                                                         size="sm"
                                                         variant={isSelected ? 'filled' : 'outline'}
+                                                        disabled={soldOut && !isSelected}
+                                                        title={soldOut ? 'Uitverkocht' : undefined}
+                                                        td={soldOut ? 'line-through' : undefined}
                                                         onClick={() => handleSelectSize(size)}
                                                         leftSection={isSelected ? <Check size={14} /> : undefined}
                                                     >
                                                         {size}
+                                                        {soldOut && ' (uitverkocht)'}
                                                     </Button>
                                                 );
                                             })}
@@ -260,6 +275,7 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                         <Group gap="xs" mt="xs" wrap="wrap">
                                             {availableColors.map((color) => {
                                                 const isSelected = selectedColor === color;
+                                                const soldOut = isColorSoldOut(color);
                                                 return (
                                                     <Button
                                                         key={color}
@@ -267,10 +283,14 @@ export default function WebshopCheckoutIsland({ product, initialUser }: WebshopC
                                                         aria-pressed={isSelected}
                                                         size="sm"
                                                         variant={isSelected ? 'filled' : 'outline'}
+                                                        disabled={soldOut && !isSelected}
+                                                        title={soldOut ? 'Uitverkocht' : undefined}
+                                                        td={soldOut ? 'line-through' : undefined}
                                                         onClick={() => handleSelectColor(color)}
                                                         leftSection={isSelected ? <Check size={14} /> : undefined}
                                                     >
                                                         {color}
+                                                        {soldOut && ' (uitverkocht)'}
                                                     </Button>
                                                 );
                                             })}

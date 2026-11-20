@@ -102,6 +102,29 @@ export class OrderRepository {
                 throw new InsufficientStockError();
             }
 
+            // Per size/color stock (NULL = unlimited), reserved in the same transaction.
+            if (input.line.variantId !== null) {
+                const updatedVariant = await tx
+                    .update(schema.webshop_product_variants)
+                    .set({
+                        stock_quantity: sql`${schema.webshop_product_variants.stock_quantity} - ${quantity}`,
+                    })
+                    .where(
+                        and(
+                            eq(schema.webshop_product_variants.id, input.line.variantId),
+                            or(
+                                isNull(schema.webshop_product_variants.stock_quantity),
+                                gte(schema.webshop_product_variants.stock_quantity, quantity)
+                            )
+                        )
+                    )
+                    .returning({ id: schema.webshop_product_variants.id });
+
+                if (updatedVariant.length === 0) {
+                    throw new InsufficientStockError();
+                }
+            }
+
             const [preorder] = await tx
                 .insert(schema.webshop_preorders)
                 .values({
@@ -193,6 +216,7 @@ export class OrderRepository {
             const lines = await tx
                 .select({
                     product_id: schema.webshop_preorder_lines.product_id,
+                    variant_id: schema.webshop_preorder_lines.variant_id,
                     quantity: schema.webshop_preorder_lines.quantity,
                 })
                 .from(schema.webshop_preorder_lines)
@@ -206,6 +230,14 @@ export class OrderRepository {
                             stock_quantity: sql`${schema.webshop_products.stock_quantity} + ${line.quantity}`,
                         })
                         .where(eq(schema.webshop_products.id, line.product_id));
+                }
+                if (line.variant_id) {
+                    await tx
+                        .update(schema.webshop_product_variants)
+                        .set({
+                            stock_quantity: sql`${schema.webshop_product_variants.stock_quantity} + ${line.quantity}`,
+                        })
+                        .where(eq(schema.webshop_product_variants.id, line.variant_id));
                 }
             }
         });

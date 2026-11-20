@@ -29,7 +29,7 @@ export async function insertPreorderLinesDb(lines: PreorderLineInsert[]): Promis
     await db.insert(schema.webshop_preorder_lines).values(lines);
 }
 
-// Reserves the product's stock (when tracked - NULL stock_quantity means unlimited) and
+// Reserves the product's and the chosen variant's stock (when tracked - NULL stock_quantity means unlimited) and
 // creates the preorder + line atomically, so concurrent checkouts can never oversell a
 // limited drop.
 export async function insertPreorderWithStockDb(
@@ -50,6 +50,17 @@ export async function insertPreorderWithStockDb(
             if (updated.length === 0) throw new InsufficientStockError();
         }
 
+        if (line.variant_id) {
+            const updated = await tx.update(schema.webshop_product_variants)
+                .set({ stock_quantity: sql`${schema.webshop_product_variants.stock_quantity} - ${quantity}` })
+                .where(and(
+                    eq(schema.webshop_product_variants.id, line.variant_id),
+                    or(isNull(schema.webshop_product_variants.stock_quantity), gte(schema.webshop_product_variants.stock_quantity, quantity))
+                ))
+                .returning({ id: schema.webshop_product_variants.id });
+            if (updated.length === 0) throw new InsufficientStockError();
+        }
+
         const [preorder] = await tx.insert(schema.webshop_preorders).values(preorderData).returning({ id: schema.webshop_preorders.id });
 
         await tx.insert(schema.webshop_preorder_lines).values({ ...line, preorder_id: preorder.id });
@@ -60,13 +71,18 @@ export async function insertPreorderWithStockDb(
 
 // Restores stock for a cancelled preorder's lines. Safe to call even when stock isn't
 // tracked (NULL + qty stays NULL).
-export async function restoreStockForLinesDb(lines: Pick<PreorderLineRow, 'product_id' | 'quantity'>[]): Promise<void> {
+export async function restoreStockForLinesDb(lines: Pick<PreorderLineRow, 'product_id' | 'variant_id' | 'quantity'>[]): Promise<void> {
     await db.transaction(async (tx) => {
         for (const line of lines) {
             if (line.product_id) {
                 await tx.update(schema.webshop_products)
                     .set({ stock_quantity: sql`${schema.webshop_products.stock_quantity} + ${line.quantity}` })
                     .where(eq(schema.webshop_products.id, line.product_id));
+            }
+            if (line.variant_id) {
+                await tx.update(schema.webshop_product_variants)
+                    .set({ stock_quantity: sql`${schema.webshop_product_variants.stock_quantity} + ${line.quantity}` })
+                    .where(eq(schema.webshop_product_variants.id, line.variant_id));
             }
         }
     });
