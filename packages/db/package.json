@@ -18,7 +18,9 @@
     "build": "tsup",
     "type-check": "tsc --noEmit",
     "generate": "drizzle-kit generate",
-    "pull": "drizzle-kit pull"
+    "pull": "drizzle-kit pull",
+    "dev:init": "node dev/init-local-db.mjs",
+    "dev:seed": "node dev/seed-local-db.mjs"
   },
   "dependencies": {
     "postgres": "^3.4.4"

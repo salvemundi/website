@@ -1,12 +1,14 @@
 # Salve Mundi V7 Monorepo
 
-Welkom bij de broncode van Salve Mundi V7. Dit project is een moderne monorepo-architectuur voor studievereniging Salve Mundi, gebouwd met Next.js (App Router), Mantine UI v9, Drizzle ORM, Directus CMS en Fastify microservices.
+Welkom bij de broncode van Salve Mundi V7.
+Dit project is een moderne monorepo-architectuur voor studievereniging Salve Mundi, gebouwd met Next.js (App Router), Mantine UI v9, Drizzle ORM, Directus CMS en Fastify microservices.
 
 ## Project Structuur
 
 De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`):
 
-- **`/apps/frontend`**: De hoofdapplicatie gebouwd met Next.js 16 (App Router) en Mantine UI v9. Bevat de publieke website, het ledenportaal en het beheerderspaneel (`/beheer`).
+- **`/apps/frontend`**: De hoofdapplicatie gebouwd met Next.js 16 (App Router) en Mantine UI v9.
+  Bevat de publieke website, het ledenportaal en het beheerderspaneel (`/beheer`).
 - **`/apps/services`**: Diverse Fastify/Node microservices voor specifieke taken (Finance, Azure Sync, Mail, Azure Management, Monitoring, Mobile Notifications).
 - **`/infrastructure`**: Docker Compose configuraties voor de core infrastructuur (PostgreSQL, Redis, Directus).
 - **`/packages`**: Gedeelde packages zoals `@salvemundi/db` (Drizzle schema & client) en `@salvemundi/validations` (Zod v4 schema's).
@@ -25,37 +27,98 @@ De repository is ingericht als een monorepo (gestuurd door `pnpm-workspace.yaml`
 ## Package Management & Security (pnpm v11)
 
 Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibiliteit en veiligheid te garanderen:
+
 - **`overrides`**: Dwingt specifieke, veilige versies af van transitieve dependencies over de gehele monorepo.
 - **`allowBuilds`**: Uit veiligheidsoverwegingen zijn post-install scripts geblokkeerd (`false`) voor vrijwel alle packages.
 - **`patchedDependencies`**: Bevat gerichte patches (in `/patches`) voor third-party packages.
 
 ## Lokale Ontwikkeling
 
-1. **Clone de repository**:
-   ```bash
-   git clone https://github.com/salvemundi/website.git
-   cd website
-   ```
+### Vereisten
 
-2. **Installeer afhankelijkheden**:
-   ```bash
-   pnpm install
-   ```
+- Node.js ≥ 22.13 (de `mobile-notification-service` vraagt ≥ 24)
+- pnpm 11 (`corepack enable` pakt automatisch de versie uit `package.json`)
+- Docker met Docker Compose
 
-3. **Configureer de omgeving**:
-   Kopieer `.env.example` naar `.env` in de root en configureer `apps/frontend/.env.local` voor de Next.js frontend volgens de benodigde environment-variabelen.
+### Eerste keer opzetten
 
-4. **Start de development server**:
-   ```bash
-   pnpm dev
-   ```
-   *(Het `predev`/`prebuild` script `sync:maplibre-worker` kopieert automatisch de MapLibre v6 worker-bestanden naar `apps/frontend/public/map/worker/`.)*
+1.  **Clone de repository**:
 
-5. **Validatie & kwaliteitscontrole**:
-   ```bash
-   pnpm --filter @salvemundi/frontend run validate
-   ```
-   Voert achtereenvolgens `tsc --noEmit`, `eslint src`, `knip` en `next build` uit.
+    ```bash
+    git clone https://github.com/salvemundi/website.git
+    cd website
+    ```
+
+2.  **Installeer dependencies**:
+
+    ```bash
+    pnpm install
+    ```
+
+3.  **Configureer de frontend**.
+    De standaardwaarden passen bij de lokale Docker-omgeving:
+
+    ```bash
+    cp apps/frontend/.env.example apps/frontend/.env.local
+    ```
+
+4.  **Start Postgres, Redis en Directus** (`infrastructure/dev/docker-compose.yml`).
+    Het commando wacht tot alles gezond is:
+
+    ```bash
+    pnpm dev:infra
+    ```
+
+5.  **Maak de tabellen van de website aan**.
+    Directus maakt bij de eerste start zijn eigen systeemtabellen aan.
+    Dit script genereert de overige tabellen uit `packages/db/drizzle/schema.ts` en voegt de profielvelden toe aan `directus_users`.
+    Het is veilig om het opnieuw te draaien:
+
+    ```bash
+    pnpm dev:db:init
+    ```
+
+6.  **Vul de database met voorbeelddata**.
+    Het script laadt commissies, activiteiten, clubs, sponsors en meer, deels overgenomen van salvemundi.nl en deels verzonnen.
+    Leden en (oud-)bestuursleden zijn fictief en hebben geen foto.
+    De afbeeldingen worden via Directus geïmporteerd van salvemundi.nl.
+    Elke run wist de geseede tabellen en vult ze opnieuw. Herstart `pnpm dev` als die al draait, anders toont de cache nog de oude data:
+
+    ```bash
+    pnpm dev:db:seed
+    ```
+
+7.  **Start de development server**.
+    Bouw eerst `@salvemundi/db` en `@salvemundi/validations`, anders kan Next.js deze packages niet resolven (zie #374).
+    Daarna draait Next.js op http://localhost:3000:
+
+    ```bash
+    pnpm build:packages
+    pnpm dev
+    ```
+
+    _(Het `predev`/`prebuild` script `sync:maplibre-worker` kopieert automatisch de MapLibre v6 worker-bestanden naar `apps/frontend/public/map/worker/`.)_
+
+### Lokale omgeving
+
+| Dienst   | Adres                 | Inlog                                                                         |
+| -------- | --------------------- | ----------------------------------------------------------------------------- |
+| Website  | http://localhost:3000 | Microsoft-login werkt lokaal niet zonder echte Entra-gegevens in `.env.local` |
+| Directus | http://localhost:8055 | `admin@example.com` / `admin`                                                 |
+| Postgres | `127.0.0.1:5432`      | `salvemundi` / `salvemundi`, database `salvemundi`                            |
+| Redis    | `127.0.0.1:6379`      | wachtwoord `salvemundi`                                                       |
+
+Zonder `pnpm dev:db:seed` is de database leeg en laden pagina's zonder inhoud.
+
+De microservices in `apps/services` zijn optioneel.
+Zet hun URL's in `.env.local` (zie `apps/frontend/.env.example`) als je aan betalingen, mail of Azure-synchronisatie werkt.
+
+### Stoppen en opnieuw beginnen
+
+```bash
+pnpm dev:infra:down                                               # containers stoppen, data blijft bewaard
+docker compose -f infrastructure/dev/docker-compose.yml down -v   # alles wissen, daarna weer vanaf stap 3
+```
 
 ## Deployment
 
@@ -70,4 +133,4 @@ Het project maakt gebruik van GitHub Actions voor geautomatiseerde deployment:
 - Geen hardcoded fallback-secrets in broncode; alle geheimen worden via environment-variabelen / GitHub Secrets beheerd.
 - Werk via een feature branch en dien een Pull Request in naar `acceptance` voor review door andere developers.
 
-*Copyright © Salve Mundi*
+_Copyright © Salve Mundi_

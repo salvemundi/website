@@ -50,6 +50,9 @@ PROJECT_STATUS.md
 DESIGN_STANDARDS.md
 .vscode
 
+# Lokale database-init (packages/db/dev/init-local-db.mjs)
+packages/db/dev/.tmp/
+
 # RedisInsight
 infrastructure/databases.json
 
