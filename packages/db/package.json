@@ -16,6 +16,7 @@
   },
   "scripts": {
     "build": "tsup",
+    "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
     "generate": "drizzle-kit generate",
     "pull": "drizzle-kit pull",
