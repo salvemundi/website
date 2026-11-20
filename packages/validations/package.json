@@ -25,6 +25,7 @@
     },
     "scripts": {
         "build": "tsc",
+        "dev": "tsc --watch --preserveWatchOutput --incremental --tsBuildInfoFile dist/.tsbuildinfo",
         "type-check": "tsc --noEmit",
         "lint": "eslint .",
         "generate:zod": "node scripts/generate-zod.mjs"

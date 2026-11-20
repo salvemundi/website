@@ -89,11 +89,9 @@ Deze monorepo hanteert strikte regels via `pnpm-workspace.yaml` om compatibilite
     ```
 
 7.  **Start de development server**.
-    Bouw eerst `@salvemundi/db` en `@salvemundi/validations`, anders kan Next.js deze packages niet resolven (zie #374).
-    Daarna draait Next.js op http://localhost:3000:
+    Next.js draait op http://localhost:3000. `pnpm dev` bouwt `@salvemundi/db` en `@salvemundi/validations` automatisch als hun `dist/` nog ontbreekt, en draait daarna watchers zodat wijzigingen in deze packages direct doorkomen:
 
     ```bash
-    pnpm build:packages
     pnpm dev
     ```
 
