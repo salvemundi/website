@@ -4,7 +4,8 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { verifyPKCE, validChallenge, hashMobileToken, newMobileToken, isNativeToken, MOBILE_CALLBACK, newOpaqueCode, validBrowserFlowCookie } from '../../frontend/src/server/mobile/security.ts';
-import { mobileEnabled, mobileAssociationID } from '../../frontend/src/server/mobile/policy.ts';
+import { mobileEnabled, mobileAssociationID, mobileAndroidAssociation, mobileClientPlatform, validDeviceToken } from '../../frontend/src/server/mobile/policy.ts';
+import { readFileSync } from 'node:fs';
 
 test('native session secrets are random, hashed, and cannot be replayed using the stored value', () => {
     const first = newMobileToken();
@@ -59,6 +60,44 @@ test('Apple association requires acceptance switch and a valid real Apple Team I
             if (value === undefined) delete process.env[key]; else process.env[key] = value;
         }
     }
+});
+
+test('Android asset links require the acceptance switch and valid SHA-256 certificate fingerprints', () => {
+    const keys = ['ENV_NAME', 'MOBILE_API_ENABLED', 'MOBILE_ANDROID_PACKAGE_NAME', 'MOBILE_ANDROID_SHA256_CERT_FINGERPRINTS'];
+    const original = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+    const fingerprint = Array.from({ length: 32 }, (_, i) => i.toString(16).padStart(2, '0').toUpperCase()).join(':');
+    try {
+        process.env.ENV_NAME = 'acc'; process.env.MOBILE_API_ENABLED = 'true'; delete process.env.MOBILE_ANDROID_PACKAGE_NAME;
+        delete process.env.MOBILE_ANDROID_SHA256_CERT_FINGERPRINTS; assert.equal(mobileAndroidAssociation(), null);
+        for (const bad of ['wrong', fingerprint.slice(3), `${fingerprint}:AA`, fingerprint.replace(/:/g, ''), `${fingerprint},nope`]) {
+            process.env.MOBILE_ANDROID_SHA256_CERT_FINGERPRINTS = bad; assert.equal(mobileAndroidAssociation(), null, bad);
+        }
+        const second = fingerprint.replace(/^00/, 'FF');
+        process.env.MOBILE_ANDROID_SHA256_CERT_FINGERPRINTS = ` ${fingerprint.toLowerCase()} , ${second},${fingerprint}`;
+        assert.deepEqual(mobileAndroidAssociation(), { packageName: 'nl.salvemundi.android', fingerprints: [fingerprint, second] });
+        process.env.MOBILE_ANDROID_PACKAGE_NAME = 'nl.salvemundi.android.acc'; assert.equal(mobileAndroidAssociation().packageName, 'nl.salvemundi.android.acc');
+        process.env.MOBILE_ANDROID_PACKAGE_NAME = 'evil package'; assert.equal(mobileAndroidAssociation(), null);
+        process.env.MOBILE_ANDROID_PACKAGE_NAME = ''; process.env.MOBILE_API_ENABLED = 'false'; assert.equal(mobileAndroidAssociation(), null);
+        process.env.MOBILE_API_ENABLED = 'true'; process.env.ENV_NAME = 'prod'; assert.equal(mobileAndroidAssociation(), null);
+    } finally {
+        for (const [key, value] of Object.entries(original)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; }
+    }
+    // The proxy must let the asset links file through exactly like the Apple association file.
+    const proxy = readFileSync(new URL('../../frontend/src/proxy.ts', import.meta.url), 'utf8');
+    assert.match(proxy, /pathname === '\/\.well-known\/apple-app-site-association' \|\| pathname === '\/\.well-known\/assetlinks\.json'\) \{\n\s+if \(process\.env\.ENV_NAME !== 'acc'/);
+});
+
+test('client platform header is a closed allowlist and device tokens are validated per platform', () => {
+    const request = value => ({ headers: { get: name => (name === 'x-client-platform' ? value : null) } });
+    assert.equal(mobileClientPlatform(request('android')), 'android');
+    assert.equal(mobileClientPlatform(request(' Android ')), 'android');
+    for (const value of [null, '', 'ios', 'iOS', 'web', 'android; drop']) assert.equal(mobileClientPlatform(request(value)), 'ios');
+    const fcm = 'dGVzdC1pbnN0YW5jZQ:APA91bH' + 'Ab9_-'.repeat(28);
+    assert.equal(validDeviceToken('ios', 'ab'.repeat(32)), true);
+    assert.equal(validDeviceToken('ios', fcm), false);
+    assert.equal(validDeviceToken('android', fcm), true);
+    assert.equal(validDeviceToken('android', 'ab'.repeat(32)), false);
+    assert.equal(validDeviceToken('android', fcm + '='), false);
 });
 
 test('login completion requires the flow nonce from the initiating browser', () => {

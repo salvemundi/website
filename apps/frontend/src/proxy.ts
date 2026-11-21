@@ -55,7 +55,7 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
         return nextWithNonce();
     }
 
-    if (pathname === '/api/mobile/v1' || pathname.startsWith('/api/mobile/v1/') || pathname === '/.well-known/apple-app-site-association') {
+    if (pathname === '/api/mobile/v1' || pathname.startsWith('/api/mobile/v1/') || pathname === '/.well-known/apple-app-site-association' || pathname === '/.well-known/assetlinks.json') {
         if (process.env.ENV_NAME !== 'acc' || process.env.MOBILE_API_ENABLED !== 'true') {
             return withSecurity(NextResponse.json({ error: { code: 'not_found', message: 'Niet gevonden.' } }, { status: 404 }));
         }
