@@ -55,3 +55,60 @@ test('foreign committee selection is rejected while organizer options expose onl
  assert.equal(state.writes.length,0);
  await api.saveNotificationPreferences(user,{...basic,organizerAlmostFull:true,organizerSignupThresholds:[25]});assert.equal(state.writes.length,1);
 });
+
+// Device registration (APNs + FCM). Runs the real route and policy sources against a recording pool.
+const fcmToken='dGVzdC1pbnN0YW5jZQ:APA91bH'+'Ab9_-'.repeat(28);
+async function deviceFixture(env={}){
+ const state={queries:[]};
+ const context=createContext({console,URL,Response,Request,process:{env:{ENV_NAME:'acc',MOBILE_API_ENABLED:'true',...env}}});
+ const transpile=path=>ts.transpileModule(readFileSync(new URL(`../../frontend/src/${path}`,import.meta.url),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText;
+ const policy=new SourceTextModule(transpile('server/mobile/policy.ts'),{context});await policy.link(()=>{throw new Error('policy has no imports');});await policy.evaluate();
+ const client={async query(sql,args){state.queries.push({sql,args});return {rows:[],rowCount:0};},release(){}};
+ const exports={
+  'zod':{z},'@/server/mobile/session':{requireMobileUser:async()=>({id:'user-1',sessionId:'mobile:session-1'})},
+  '@/lib/database/db':{pool:{async connect(){return client;},query:client.query}},
+  '@/server/mobile/http':{
+   mobileRoute:handler=>async request=>handler(request),
+   mobileError:(code,message,status=400)=>Response.json({error:{code,message}},{status}),
+   mobileResponse:(data,status=200)=>Response.json({data},{status}),
+   readMobileJSON:request=>request.json()
+  }
+ };
+ const load=async path=>{const mod=new SourceTextModule(transpile(path),{context});
+  await mod.link(specifier=>{if(specifier==='@/server/mobile/policy')return policy;const e=exports[specifier];assert.ok(e,`Unexpected real dependency ${specifier}`);return new SyntheticModule(Object.keys(e),function(){for(const[k,v]of Object.entries(e))this.setExport(k,v);},{context});});
+  await mod.evaluate();return mod.namespace;};
+ return {state,register:await load('app/api/mobile/v1/devices/route.ts'),unregister:await load('app/api/mobile/v1/devices/[token]/route.ts')};
+}
+const post=(api,body)=>api.POST(new Request('https://acc.salvemundi.nl/api/mobile/v1/devices',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}));
+const inserts=state=>state.queries.filter(q=>q.sql.includes('INSERT INTO mobile_devices'));
+test('iOS clients without a platform field keep the original hex APNs registration',async()=>{
+ const {register,state}=await deviceFixture();const token='AB'.repeat(32);
+ const response=await post(register,{token,environment:'sandbox'});assert.equal(response.status,200);
+ const [insert]=inserts(state);assert.equal(insert.sql.includes('platform'),false);assert.equal(insert.args[2],token.toLowerCase());
+ assert.equal((await post(register,{token,environment:'sandbox',platform:'ios'})).status,200);
+ for(const body of [{token:fcmToken,environment:'sandbox'},{token:fcmToken,environment:'sandbox',platform:'ios'},{token,environment:'sandbox',platform:'windows'},{token,environment:'sandbox',extra:true}]){
+  const rejected=await post(register,body);assert.equal(rejected.status,400);assert.equal((await rejected.json()).error.code,'INVALID_DEVICE');
+ }
+});
+test('Android FCM tokens register verbatim with platform android and share the production gate',async()=>{
+ const {register,state}=await deviceFixture();
+ const response=await post(register,{token:fcmToken,environment:'sandbox',platform:'android'});assert.equal(response.status,200);
+ assert.equal(JSON.stringify(await response.json()),JSON.stringify({data:{success:true,registered:true}}));
+ const [insert]=inserts(state);assert.match(insert.sql,/platform\)\s+VALUES\('acc',\$1,\$2,\$3,\$4,'android'\)/);assert.equal(insert.args[2],fcmToken);
+ for(const token of ['AB'.repeat(32),'short:token','x'.repeat(99),fcmToken+'/','a'.repeat(1025),fcmToken.replace('_',' ')]){
+  const rejected=await post(register,{token,environment:'sandbox',platform:'android'});assert.equal(rejected.status,400,token.slice(0,20));
+ }
+ const gated=await post(register,{token:fcmToken,environment:'production',platform:'android'});assert.equal(gated.status,409);assert.equal((await gated.json()).error.code,'APNS_ENVIRONMENT_DISABLED');
+ const allowed=await deviceFixture({MOBILE_APNS_ALLOW_PRODUCTION:'true'});assert.equal((await post(allowed.register,{token:fcmToken,environment:'production',platform:'android'})).status,200);
+});
+test('device removal accepts APNs and (percent-encoded) FCM tokens for the current session only',async()=>{
+ const {unregister,state}=await deviceFixture();
+ const remove=token=>unregister.DELETE(new Request(`https://acc.salvemundi.nl/api/mobile/v1/devices/${token}`,{method:'DELETE'}));
+ assert.equal((await remove('AB'.repeat(32))).status,200);
+ assert.equal(JSON.stringify(state.queries.at(-1).args),JSON.stringify(['user-1','mobile:session-1',['ab'.repeat(32)]]));
+ assert.equal((await remove(encodeURIComponent(fcmToken))).status,200);assert.equal(JSON.stringify(state.queries.at(-1).args[2]),JSON.stringify([fcmToken]));
+ assert.equal((await remove(fcmToken)).status,200);assert.equal(JSON.stringify(state.queries.at(-1).args[2]),JSON.stringify([fcmToken]));
+ const before=state.queries.length;
+ for(const token of ['not-a-token','%E0%A4%A','x'.repeat(99)])assert.equal((await remove(token)).status,400);
+ assert.equal(state.queries.length,before);
+});
