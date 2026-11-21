@@ -75,3 +75,32 @@ test('shared pilot is explicit, one-account sandbox and bound to actual configur
     ]) assert.equal((await databaseChecks(clientFor(),{...pilot,...patch}))[0].passed,false);
     assert.equal((await databaseChecks(clientFor('wrong'),pilot))[0].passed,false);
 });
+
+test('dev readiness accepts Android-only delivery and verifies the dev PostgreSQL loopback', async () => {
+    const { privateKey: fcmKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+    const env = {
+        ENV_NAME: 'dev',
+        MOBILE_API_ENABLED: 'true',
+        MOBILE_NOTIFICATIONS_ENABLED: 'true',
+        MOBILE_FCM_ENABLED: 'true',
+        MOBILE_APNS_ALLOW_PRODUCTION: 'false',
+        MOBILE_NOTIFICATION_ALLOWED_USER_IDS: good.MOBILE_NOTIFICATION_ALLOWED_USER_IDS,
+        FCM_PROJECT_ID: 'salvemundi-dev',
+        FCM_CLIENT_EMAIL: 'test@salvemundi-dev.iam.gserviceaccount.com',
+        FCM_PRIVATE_KEY: fcmKey.export({ type: 'pkcs8', format: 'pem' }),
+        DB_HOST: '127.0.0.1',
+        DB_PORT: '5432',
+        DB_NAME: 'devdb',
+    };
+    assert(configurationChecks(env).every(check => check.passed));
+    for (const patch of [
+        { DB_HOST: 'v7-core-db' }, { DATABASE_URL: 'postgres://other' },
+        { MOBILE_FCM_ENABLED: 'false' }, { MOBILE_APNS_ALLOW_PRODUCTION: 'true' },
+        { MOBILE_NOTIFICATION_ALLOWED_USER_IDS: '*' }, { MOBILE_NOTIFICATION_SHARED_DB_PILOT: 'true' },
+    ]) assert(configurationChecks({ ...env, ...patch }).some(check => !check.passed));
+
+    for (const [address, name, expected] of [['127.0.0.1', 'devdb', true], ['172.18.0.1', 'devdb', false], ['127.0.0.1', 'other', false]]) {
+        const client = { query: async sql => ({ rows: sql.includes('current_database') ? [{ name, address, port: 5432 }] : [] }) };
+        assert.equal((await databaseChecks(client, env))[0].passed, expected);
+    }
+});

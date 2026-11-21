@@ -1,8 +1,29 @@
-# Android app — acceptance only
+# Android app
 
-The Android app (`nl.salvemundi.android`) uses the same acceptance-only `/api/mobile/v1`
+The Android app (`nl.salvemundi.android`) uses the same non-production `/api/mobile/v1`
 API, gates and PKCE login as iOS (`salvemundi://auth/callback`). Everything below is
 off until explicitly configured; iOS behavior is unchanged.
+
+## Test Android push on dev
+
+Use the **Development** GitHub environment. Set `MOBILE_API_ENABLED=true` and deploy `dev` so the app can register its device.
+Set `MOBILE_NOTIFICATION_TEST_USER_ID` to the UUID of one active dev member and add
+`FCM_SERVICE_ACCOUNT_JSON` as a GitHub environment secret. Use the Firebase project configured in the test app build.
+
+In **Actions → Deploy V7 Stack → Run workflow**, select branch `dev`, leave `mobile_setup_action` at `none`,
+and use `dev_notifications_action`:
+
+1. Run `migrate` once after the dev website schema exists. It applies the base and Android notification migrations to dev PostgreSQL.
+2. Run `start`. It first verifies the worker configuration and schema, then starts the separate dev worker.
+   Use `check` to run the same readiness verification without starting delivery.
+3. Install the Android debug build with `-Psalvemundi.apiBaseUrl=https://dev.salvemundi.nl`.
+   Sign in as the allowlisted member, allow Android notifications and enable registration notifications.
+4. Let the worker poll once to establish a baseline, then register for a new ordinary test activity. Background the app and allow
+   another polling cycle (about one minute). Tap the notification and verify it opens the expected activity or ticket.
+5. Run `stop` when you finish testing. If dev PostgreSQL is recreated, run `start` again so the worker joins the new database container.
+
+The dev worker sends through FCM to one Android sandbox registration account. It connects to PostgreSQL through the loopback
+of the dev database container and uses the existing mobile tables in that database. Dev setup requires no Apple credentials.
 
 ## Client platform header
 

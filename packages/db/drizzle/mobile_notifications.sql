@@ -1,4 +1,4 @@
--- MANUAL ACCEPTANCE-ONLY migration. Confirm the target database before running.
+-- MANUAL TEST-ENVIRONMENT migration. Confirm the target database before running.
 -- Nothing runs this file automatically. Existing association/auth tables are unchanged.
 BEGIN;
 CREATE TABLE IF NOT EXISTS mobile_notification_preferences (

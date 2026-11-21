@@ -7,14 +7,14 @@ import { configurationChecks, databaseChecks } from './readiness.mjs';
 import { reconcile, deliver, removeExpiredDevices, removeOldOutbox } from './worker.mjs';
 
 if (!deliveryEnabled(process.env)) {
-    console.error('Mobile notification delivery is disabled. Requires ENV_NAME=acc, MOBILE_API_ENABLED=true and MOBILE_NOTIFICATIONS_ENABLED=true.');
+    console.error('Mobile notification delivery is disabled. Requires Acceptance or the dev Android test configuration, with the mobile API and delivery enabled.');
     process.exitCode = 1;
 } else if (!allowedUserIds(process.env).length || allowedUserIds(process.env).some(id => !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))) {
     console.error('Set MOBILE_NOTIFICATION_ALLOWED_USER_IDS to explicit test-user UUIDs. An empty or invalid allowlist never sends notifications.');
     process.exitCode = 1;
 } else {
     // Validate signing configuration before connecting to the database; never log secrets.
-    providerToken(process.env);
+    if (process.env.ENV_NAME === 'acc') providerToken(process.env);
     // Android delivery is opt-in; when enabled, its service account and endpoints must be valid too.
     if (fcmEnabled(process.env)) { fcmCredentials(process.env); fcmEndpoints(process.env); }
     const pool = new pg.Pool({

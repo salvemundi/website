@@ -1,8 +1,8 @@
-// Read-only acceptance readiness check. Never sends APNs/FCM requests or applies migrations.
+// Read-only notification readiness check. Never sends APNs/FCM requests or applies migrations.
 import { createPrivateKey } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { getWorkerSessionColumns } from './session-columns.mjs';
-import { sharedPilotAllowed } from './policy.mjs';
+import { devAndroidAllowed, sharedPilotAllowed } from './policy.mjs';
 import { fcmEnabled, fcmCredentials, fcmEndpoints } from './fcm.mjs';
 
 export const requiredTables = ['mobile_notification_preferences', 'mobile_devices', 'mobile_notification_users', 'mobile_notification_observations', 'mobile_notification_outbox', 'mobile_notification_activity_users', 'mobile_notification_activity_observations'];
@@ -11,6 +11,12 @@ export const requiredOutboxKinds = ['registrations', 'payments', 'eventChanges',
 export function configurationChecks(env) {
     const checks = [];
     const add = (name, passed) => checks.push({ name, passed: Boolean(passed) });
+    if (env.ENV_NAME === 'dev') {
+        add('single-account Android test on the dev database loopback', devAndroidAllowed(env));
+        add('mobile API enabled', env.MOBILE_API_ENABLED === 'true');
+        add('notification delivery enabled', env.MOBILE_NOTIFICATIONS_ENABLED === 'true');
+        return [...checks, ...fcmConfigurationChecks(env)];
+    }
     add('acceptance environment', env.ENV_NAME === 'acc');
     add('mobile API enabled', env.MOBILE_API_ENABLED === 'true');
     add('notification delivery enabled', env.MOBILE_NOTIFICATIONS_ENABLED === 'true');
@@ -46,11 +52,20 @@ export async function databaseChecks(client, env) {
     const checks = [];
     await client.query('BEGIN READ ONLY');
     try {
-        const { rows } = await client.query('SELECT current_database() AS name');
-        if (env.MOBILE_NOTIFICATION_SHARED_DB_PILOT === 'true') {
+        const dev = env.ENV_NAME === 'dev';
+        const { rows } = await client.query(dev
+            ? 'SELECT current_database() AS name, host(inet_server_addr()) AS address, inet_server_port() AS port'
+            : 'SELECT current_database() AS name');
+        if (dev) {
+            checks.push({
+                name: 'connection matches the dev database and its private loopback',
+                passed: devAndroidAllowed(env) && rows[0]?.name === env.DB_NAME
+                    && rows[0]?.address === '127.0.0.1' && rows[0]?.port === 5432
+            });
+        } else if (env.MOBILE_NOTIFICATION_SHARED_DB_PILOT === 'true') {
             checks.push({ name: 'explicit single-account sandbox pilot on SHARED database (NOT isolated)', passed: sharedPilotAllowed(env) && env.MOBILE_ACCEPTANCE_DB_ISOLATION_CONFIRMED !== 'true' && rows[0]?.name === env.DB_NAME });
         } else {
-        checks.push({ name: 'acceptance database explicitly isolated from production', passed: env.MOBILE_ACCEPTANCE_DB_ISOLATION_CONFIRMED === 'true' && Boolean(env.PRODUCTION_DB_NAME) && typeof rows[0]?.name === 'string' && rows[0].name !== env.PRODUCTION_DB_NAME });
+            checks.push({ name: 'acceptance database explicitly isolated from production', passed: env.MOBILE_ACCEPTANCE_DB_ISOLATION_CONFIRMED === 'true' && Boolean(env.PRODUCTION_DB_NAME) && typeof rows[0]?.name === 'string' && rows[0].name !== env.PRODUCTION_DB_NAME });
         }
         const tableResult = await client.query('SELECT table_name FROM information_schema.tables WHERE table_schema=current_schema()');
         const present = new Set(tableResult.rows.map(row => row.table_name));
@@ -80,7 +95,7 @@ export async function run(env = process.env, args = process.argv.slice(2)) {
     if (args.some(arg => arg !== '--database')) throw new Error('Only --database is supported');
     const checks = configurationChecks(env);
     if (args.includes('--database')) {
-        if (env.ENV_NAME !== 'acc') checks.push({ name: 'database check refused outside acceptance', passed: false });
+        if (env.ENV_NAME !== 'acc' && !devAndroidAllowed(env)) checks.push({ name: 'database check refused outside acceptance or configured dev', passed: false });
         else {
             let client;
             try {

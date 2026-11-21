@@ -1,0 +1,92 @@
+name: Dev Android notification testing
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        type: string
+        required: true
+
+concurrency:
+  group: dev-mobile-notifications
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    if: github.ref == 'refs/heads/dev' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: Development
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare dev notification setup
+        shell: bash
+        env:
+          ACTION: ${{ inputs.action }}
+          API_ENABLED: ${{ vars.MOBILE_API_ENABLED }}
+          TEST_USER_ID: ${{ vars.MOBILE_NOTIFICATION_TEST_USER_ID }}
+          FCM_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
+        run: |
+          umask 077
+          case "$ACTION" in
+            migrate|stop) ;;
+            check|start)
+              python3 - <<'PY' > "$RUNNER_TEMP/firebase.env"
+          import json
+          import os
+          import re
+
+          user = os.environ["TEST_USER_ID"].strip().lower()
+          if not re.fullmatch(r"[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}", user):
+              raise SystemExit("Set MOBILE_NOTIFICATION_TEST_USER_ID to one dev member UUID.")
+          if os.environ["API_ENABLED"] != "true":
+              raise SystemExit("Set MOBILE_API_ENABLED=true in the Development environment.")
+          try:
+              credentials = json.loads(os.environ["FCM_JSON"])
+          except ValueError:
+              raise SystemExit("Set FCM_SERVICE_ACCOUNT_JSON to a Firebase service account JSON secret.") from None
+          if not isinstance(credentials, dict) or credentials.get("type") != "service_account":
+              raise SystemExit("FCM_SERVICE_ACCOUNT_JSON must contain a Firebase service account.")
+          print("MOBILE_NOTIFICATION_ALLOWED_USER_IDS=" + user)
+          print("FCM_SERVICE_ACCOUNT_JSON=" + json.dumps(credentials, separators=(",", ":")))
+          PY
+              ;;
+            *) exit 1 ;;
+          esac
+      - name: Connect through the deployment VPN
+        uses: Alemiz112/netbird-connect@v1
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
+      - name: Run the selected dev action
+        shell: bash
+        env:
+          ACTION: ${{ inputs.action }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          VPN_IP: ${{ secrets.VPN_IP }}
+        run: |
+          [[ "$GITHUB_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$ACTION" =~ ^(migrate|check|start|stop)$ ]]
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          for i in {1..30}; do
+            if nc -z -w 1 "$VPN_IP" 22; then break; fi
+            sleep 2
+          done
+          sources=(apps/mobile/deployment/dev.sh)
+          case "$ACTION" in
+            migrate) sources+=(packages/db/drizzle/mobile_notifications{,_android}.sql) ;;
+            check|start)
+              sources+=(apps/services/mobile-notification-service/{Dockerfile,package.json,src})
+              sources+=(apps/frontend/src/shared/lib/permissions-config.ts -C "$RUNNER_TEMP" firebase.env)
+              ;;
+          esac
+          tar -cf - "${sources[@]}" |
+            ssh -o StrictHostKeyChecking=yes -o BatchMode=yes -i ~/.ssh/deploy_key "$SSH_USER@$VPN_IP" \
+              "set -e; umask 077; stage=\$(mktemp -d); trap 'rm -rf -- \"\$stage\"' EXIT; cd \"\$stage\"; tar -xf -; bash apps/mobile/deployment/dev.sh '$ACTION' '$GITHUB_SHA'"

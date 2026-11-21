@@ -1,4 +1,4 @@
--- MANUAL ACCEPTANCE-ONLY migration for Android (FCM) device registration.
+-- MANUAL TEST-ENVIRONMENT migration for Android (FCM) device registration.
 -- Apply AFTER mobile_notifications.sql. Confirm the target database before running.
 -- Nothing runs this file automatically. Idempotent and additive: existing iOS rows
 -- become platform='ios' through the column default and keep the hex APNs token rule.

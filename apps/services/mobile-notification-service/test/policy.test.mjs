@@ -65,3 +65,20 @@ test('APNs removes invalid devices, retries transient errors and stops permanent
     assert.equal(retryDelay(1), 30);
     assert.equal(retryDelay(100), 3600);
 });
+
+test('dev can deliver only to the single allowlisted Android sandbox account', () => {
+    const user = '00000000-0000-0000-0000-000000000001';
+    const dev = {
+        ENV_NAME: 'dev', MOBILE_API_ENABLED: 'true', MOBILE_NOTIFICATIONS_ENABLED: 'true',
+        MOBILE_FCM_ENABLED: 'true', MOBILE_APNS_ALLOW_PRODUCTION: 'false',
+        MOBILE_NOTIFICATION_ALLOWED_USER_IDS: user, DB_HOST: '127.0.0.1', DB_PORT: '5432', DB_NAME: 'devdb',
+    };
+    const android = { environment: 'acc', platform: 'android', apns_environment: 'sandbox', user_id: user };
+    assert.equal(deliveryEnabled(dev), true);
+    assert.equal(deviceAllowed(android, dev), true);
+    for (const patch of [{ platform: 'ios' }, { apns_environment: 'production' }, { user_id: 'different' }]) {
+        assert.equal(deviceAllowed({ ...android, ...patch }, dev), false);
+    }
+    assert.equal(deliveryEnabled({ ...dev, MOBILE_NOTIFICATION_ALLOWED_USER_IDS: user + ',' + user }), false);
+    assert.equal(deliveryEnabled({ ...dev, ENV_NAME: 'prod' }), false);
+});

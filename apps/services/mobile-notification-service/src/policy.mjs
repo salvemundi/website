@@ -1,6 +1,16 @@
 import { createHash } from 'node:crypto';
 
+export function devAndroidAllowed(env) {
+    return env.ENV_NAME === 'dev' && env.MOBILE_FCM_ENABLED === 'true'
+        && env.MOBILE_APNS_ALLOW_PRODUCTION === 'false' && env.MOBILE_NOTIFICATION_SHARED_DB_PILOT !== 'true'
+        && env.DB_HOST === '127.0.0.1' && env.DB_PORT === '5432' && Boolean(env.DB_NAME) && !env.DATABASE_URL
+        && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(env.MOBILE_NOTIFICATION_ALLOWED_USER_IDS ?? '');
+}
+
 export function deliveryEnabled(env) {
+    if (env.ENV_NAME === 'dev') {
+        return devAndroidAllowed(env) && env.MOBILE_API_ENABLED === 'true' && env.MOBILE_NOTIFICATIONS_ENABLED === 'true';
+    }
     return env.ENV_NAME === 'acc' && env.MOBILE_API_ENABLED === 'true' && env.MOBILE_NOTIFICATIONS_ENABLED === 'true'
         && (env.MOBILE_NOTIFICATION_SHARED_DB_PILOT !== 'true' || sharedPilotAllowed(env));
 }
@@ -22,6 +32,11 @@ export function scopedUserIds(env) {
     return allowedUserIds(env).filter(id => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
 }
 export function deviceAllowed(device, env) {
+    if (env.ENV_NAME === 'dev') {
+        // The frontend uses the existing 'acc' schema namespace in the separate dev database.
+        return deliveryEnabled(env) && device.environment === 'acc' && device.platform === 'android'
+            && device.apns_environment === 'sandbox' && device.user_id === env.MOBILE_NOTIFICATION_ALLOWED_USER_IDS;
+    }
     if (env.MOBILE_NOTIFICATION_SHARED_DB_PILOT === 'true' && !sharedPilotAllowed(env)) return false;
     // Android (FCM) delivery is a separate explicit opt-in on top of every APNs gate.
     if (device.platform === 'android' && env.MOBILE_FCM_ENABLED !== 'true') return false;
