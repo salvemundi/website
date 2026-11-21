@@ -21,9 +21,9 @@ on:
         type: string
         default: ''
       dev_database_action:
-        description: 'Dev environment only (run on the dev branch): create tables / load synthetic seed data'
+        description: 'Dev environment only (run on the dev branch): create tables / load synthetic seed data / show container logs'
         type: choice
-        options: [none, init, seed, init-and-seed]
+        options: [none, init, seed, init-and-seed, app-logs]
         default: none
   push:
     branches:
@@ -432,7 +432,7 @@ jobs:
   # One-off setup of the dev database (dev branch, manual run). The runner joins the VPN and runs the repository's
   # own local-dev scripts against the dev core; acceptance/production databases are never addressed.
   dev-database:
-    if: github.event_name == 'workflow_dispatch' && inputs.dev_database_action != 'none' && github.ref == 'refs/heads/dev'
+    if: github.event_name == 'workflow_dispatch' && inputs.dev_database_action != 'none' && inputs.dev_database_action != 'app-logs' && github.ref == 'refs/heads/dev'
     name: Dev database (${{ inputs.dev_database_action }})
     runs-on: ubuntu-latest
     environment:
@@ -487,3 +487,33 @@ jobs:
           export DB_HOST="$(printf '%s' "$RAW_HOST" | tr -d '[:space:]')"
           export INTERNAL_DIRECTUS_URL="http://${DB_HOST}:${DIRECTUS_PORT}"
           pnpm dev:db:seed
+
+  # Read-only troubleshooting for the dev environment: recent logs of the v7-dev-* containers.
+  dev-logs:
+    if: github.event_name == 'workflow_dispatch' && inputs.dev_database_action == 'app-logs' && github.ref == 'refs/heads/dev'
+    name: Dev container logs
+    runs-on: ubuntu-latest
+    environment:
+      name: Development
+    steps:
+      - name: Connect to NetBird VPN
+        uses: Alemiz112/netbird-connect@v1
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+      - name: Show logs
+        run: |
+          for i in {1..30}; do timeout 1 bash -c 'cat < /dev/null > /dev/tcp/${{ secrets.VPN_IP }}/22' >/dev/null 2>&1 && break; sleep 2; done
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }} bash << 'ENDSSH'
+          docker ps -a --filter "name=v7-dev-" --format 'table {{.Names}}\t{{.Status}}'
+          for c in v7-dev-app v7-dev-finance v7-dev-directus; do
+            echo "===== $c (last 150 lines)"
+            docker logs --tail 150 "$c" 2>&1 || true
+          done
+          ENDSSH
