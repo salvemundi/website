@@ -220,7 +220,7 @@ jobs:
         if: github.ref_name == 'dev'
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }} "mkdir -p /opt/salve-mundi-v7/dev-core"
-          scp -i ~/.ssh/deploy_key infrastructure/dev-env/docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }}:/opt/salve-mundi-v7/dev-core/docker-compose.yml
+          scp -i ~/.ssh/deploy_key infrastructure/dev-server/docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }}:/opt/salve-mundi-v7/dev-core/docker-compose.yml
           ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }} bash << 'ENDSSH'
           set -e
           cd /opt/salve-mundi-v7/dev-core

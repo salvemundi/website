@@ -1,8 +1,11 @@
 # Dev environment (`dev.salvemundi.nl`)
 
 A permanent test environment next to acceptance and production on the V7 server, deployed from the `dev` branch.
-It has its **own** Postgres, Redis and Directus ("dev core", `infrastructure/dev-env/docker-compose.yml`), with
+It has its **own** Postgres, Redis and Directus ("dev core", `infrastructure/dev-server/docker-compose.yml`), with
 synthetic seed data only. Acceptance and production share `v7-core-*`; dev never touches those containers.
+
+> Not to be confused with `infrastructure/dev/`: that one starts a database on **your own PC** for local development
+> (`pnpm dev:infra`). This folder, `infrastructure/dev-server/`, is the **server** environment dev.salvemundi.nl.
 
 | | Acceptance | Dev |
 |---|---|---|
