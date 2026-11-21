@@ -33,6 +33,10 @@ on:
       - "apps/services/mcp-service/**"
       - "apps/wieisdemol/**"
       - "packages/**"
+      - "patches/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
       - "docker-compose.yml"
       - ".github/workflows/v7-stack.yml"
   pull_request:
@@ -48,6 +52,10 @@ on:
       - "apps/services/mcp-service/**"
       - "apps/wieisdemol/**"
       - "packages/**"
+      - "patches/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
       - "docker-compose.yml"
       - ".github/workflows/v7-stack.yml"
 
@@ -76,17 +84,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v4
         with:
           node-version: 26
-      - run: npm install -g pnpm@11.8.0
+          cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter=@salvemundi/db build
       - run: pnpm --filter=@salvemundi/validations build
       - name: Verify mobile activity administration and widget permissions
         run: node --experimental-vm-modules --test apps/mobile/tests/mobile-admin*.test.mjs apps/mobile/tests/mobile-notification-preferences.test.mjs
       - run: pnpm type-check
-      - run: pnpm -r lint
+      - run: pnpm lint
       - run: pnpm --filter=@salvemundi/mcp-service test
 
   build-frontend:
