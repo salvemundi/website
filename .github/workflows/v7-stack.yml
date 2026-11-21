@@ -487,6 +487,16 @@ jobs:
           export DB_HOST="$(printf '%s' "$RAW_HOST" | tr -d '[:space:]')"
           export INTERNAL_DIRECTUS_URL="http://${DB_HOST}:${DIRECTUS_PORT}"
           pnpm dev:db:seed
+      # Better Auth caches a schema check result per process, and the site caches data: restart the dev app
+      # containers so they see the new tables and seed data.
+      - name: Restart dev app containers
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }} \
+            'docker restart v7-dev-app v7-dev-finance v7-dev-mail v7-dev-management v7-dev-sync'
 
   # Read-only troubleshooting for the dev environment: recent logs of the v7-dev-* containers.
   dev-logs:
