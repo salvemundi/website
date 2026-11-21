@@ -4,6 +4,7 @@ import { pool } from '@/lib/database/db';
 import { MobileError } from './http';
 import { hashMobileToken, isNativeToken, newMobileToken } from './security';
 import { getSessionColumns } from './session-columns';
+import { mobileClientPlatform } from './policy';
 
 export interface MobileUser {
     id: string; name: string; email: string; first_name: string | null; last_name: string | null;
@@ -34,7 +35,7 @@ export async function createMobileSession(userId: string, request: Request) {
         INSERT INTO auth_sessions (id,token,${columns.userId},${columns.expiresAt},${columns.createdAt},${columns.updatedAt},${columns.userAgent})
         SELECT $1,$2,id,$3,NOW(),NOW(),$4 FROM directus_users WHERE id=$5 AND status='active'
         RETURNING id
-    `, [`mobile:${randomUUID()}`, hashMobileToken(token), expiresAt, request.headers.get('user-agent')?.slice(0, 512) || 'Salve Mundi iOS', userId]);
+    `, [`mobile:${randomUUID()}`, hashMobileToken(token), expiresAt, request.headers.get('user-agent')?.slice(0, 512) || (mobileClientPlatform(request) === 'android' ? 'Salve Mundi Android' : 'Salve Mundi iOS'), userId]);
     if (!result.rowCount) throw new MobileError('unauthorized', 'Account niet beschikbaar.', 401);
     return { token, expiresAt };
 }

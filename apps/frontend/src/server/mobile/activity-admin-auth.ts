@@ -5,6 +5,7 @@ import { fetchUserCommitteesDb } from '@/server/internal/leden/leden-db.utils';
 import { canAccess, checkFeatureAccess, type Committee } from '@/shared/lib/permissions';
 import type { EventDbRow } from '@/server/internal/activiteiten/activiteiten-db.utils';
 import { MobileError } from './http';
+import { mobileClientPlatform, type MobilePlatform } from './policy';
 import { requireMobileUser, type MobileUser } from './session';
 
 export interface ActivityAdminActor {
@@ -13,6 +14,8 @@ export interface ActivityAdminActor {
     committeeIDs: number[];
     global: boolean;
     canCreate: boolean;
+    // Client platform for audit logging only (X-Client-Platform, default ios); never used for authorization.
+    platform: MobilePlatform;
 }
 export type AdminEventRow = EventDbRow & {
     committee_name?: string | null;
@@ -24,18 +27,19 @@ export type AdminQueryClient = Pick<PoolClient, 'query'>;
 
 // This helper is server-internal, never a Server Action. The caller must have
 // verified the native session (or a widget's parent session) before passing user.
-export async function activityAdminForUser(user: MobileUser): Promise<ActivityAdminActor> {
+export async function activityAdminForUser(user: MobileUser, platform: MobilePlatform = 'ios'): Promise<ActivityAdminActor> {
     const committees = await fetchUserCommitteesDb(user.id);
     if (!canAccess(committees, 'activiteiten')) throw new MobileError('forbidden', 'Je hebt geen toegang tot activiteitenbeheer.', 403);
     return {
         user, committees,
         committeeIDs: committees.map(c => Number(c.id)).filter(id => Number.isSafeInteger(id) && id > 0),
         global: canAccess(committees, 'commissies'),
-        canCreate: checkFeatureAccess(committees, 'activiteiten').isLeader
+        canCreate: checkFeatureAccess(committees, 'activiteiten').isLeader,
+        platform
     };
 }
 export async function requireActivityAdmin(request: Request): Promise<ActivityAdminActor> {
-    return activityAdminForUser(await requireMobileUser(request));
+    return activityAdminForUser(await requireMobileUser(request), mobileClientPlatform(request));
 }
 export function requireActivityEdit(actor: ActivityAdminActor) {
     if (!actor.canCreate) throw new MobileError('forbidden', 'Alleen commissieleiders en beheer mogen dit wijzigen.', 403);

@@ -76,8 +76,8 @@ async function harness() {
  const permissions=load(resolve(source,'shared/lib/permissions-config.ts'));await permissions.evaluate();
  const committee=(id,key,leader=false)=>({id,name:key,azure_group_id:permissions.namespace.COMMITTEES[key],is_leader:leader});
  state.committees=[committee(1,'FEEST',true)];
- const call=async(name,args=[],body,method='GET',token=native)=>{
-  const headers={Authorization:`Bearer ${token}`};if(body!==undefined)headers['Content-Type']='application/json';
+ const call=async(name,args=[],body,method='GET',token=native,extraHeaders={})=>{
+  const headers={Authorization:`Bearer ${token}`,...extraHeaders};if(body!==undefined)headers['Content-Type']='application/json';
   const request=new Request('https://acc.salvemundi.nl/api/mobile/v1/admin/activities',{method,headers,body:body===undefined?undefined:JSON.stringify(body)});
   return http.namespace.mobileRoute(r=>api.namespace[name](r,...args))(request);
  };
@@ -157,4 +157,12 @@ test('permission scope version stays stable for identical rights and changes wit
  assert.equal((await access()).scopeVersion,first.scopeVersion);
  h.state.committees=[h.committee(2,'STUDY',true)];
  const changed=await access();assert.equal(changed.canCreate,first.canCreate);assert.notEqual(changed.scopeVersion,first.scopeVersion);
+});
+test('audit source follows the allowlisted client platform header and defaults to ios',async()=>{
+ const h=await harness();
+ for(const [headers,expected] of [[{},'ios'],[{'X-Client-Platform':'android'},'android'],[{'X-Client-Platform':'ANDROID'},'android'],[{'X-Client-Platform':'web'},'ios'],[{'X-Client-Platform':'ios'},'ios']]){
+  h.state.audit.length=0;
+  const response=await h.call('activityAdminCheckIn',['event:1','10'],{checkedIn:true},'PATCH',native,headers);assert.equal(response.status,200);
+  assert.equal(h.state.audit.length,1);assert.equal(h.state.audit[0].payload.source,expected,JSON.stringify(headers));
+ }
 });

@@ -33,7 +33,7 @@ export async function limitAdminOperation(actor: ActivityAdminActor, operation: 
 async function audit(actor: ActivityAdminActor, type: string, eventID: number, signupID?: number) {
     await insertSystemLogInternal({ type, status: 'SUCCESS', payload: {
         context: 'activiteit', event_id: eventID, ...(signupID === undefined ? {} : { id: signupID }),
-        admin_id: actor.user.id, admin_name: actor.user.name, source: 'ios', timestamp: new Date().toISOString()
+        admin_id: actor.user.id, admin_name: actor.user.name, source: actor.platform === 'android' ? 'android' : 'ios', timestamp: new Date().toISOString()
     } });
 }
 function invalidate(eventID: number) {
