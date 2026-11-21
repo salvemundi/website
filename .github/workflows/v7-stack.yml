@@ -23,8 +23,12 @@ on:
       dev_database_action:
         description: 'Dev environment only (run on the dev branch): create tables / load synthetic seed data / show container logs'
         type: choice
-        options: [none, init, seed, init-and-seed, app-logs]
+        options: [none, init, seed, init-and-seed, app-logs, add-member]
         default: none
+      dev_member_email:
+        description: 'add-member only: your Microsoft email; becomes an active member and leader of the ICT and activities committees in dev'
+        type: string
+        default: ''
   push:
     branches:
       - main
@@ -432,7 +436,7 @@ jobs:
   # One-off setup of the dev database (dev branch, manual run). The runner joins the VPN and runs the repository's
   # own local-dev scripts against the dev core; acceptance/production databases are never addressed.
   dev-database:
-    if: github.event_name == 'workflow_dispatch' && inputs.dev_database_action != 'none' && inputs.dev_database_action != 'app-logs' && github.ref == 'refs/heads/dev'
+    if: github.event_name == 'workflow_dispatch' && contains(fromJSON('["init","seed","init-and-seed"]'), inputs.dev_database_action) && github.ref == 'refs/heads/dev'
     name: Dev database (${{ inputs.dev_database_action }})
     runs-on: ubuntu-latest
     environment:
@@ -537,3 +541,49 @@ jobs:
             from information_schema.columns where column_name = 'entra_id';
           SQL
           ENDSSH
+
+  # Dev has no Azure sync, so members do not exist until added. Website login links to an existing member by email.
+  dev-member:
+    if: github.event_name == 'workflow_dispatch' && inputs.dev_database_action == 'add-member' && github.ref == 'refs/heads/dev'
+    name: Dev member
+    runs-on: ubuntu-latest
+    environment:
+      name: Development
+    steps:
+      - name: Connect to NetBird VPN
+        uses: Alemiz112/netbird-connect@v1
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
+      - name: Add member and committee rights
+        env:
+          RAW_HOST: ${{ secrets.VPN_IP }}
+          PGPORT: ${{ vars.DEV_DB_PORT || '5433' }}
+          PGUSER: ${{ secrets.DB_USER }}
+          PGPASSWORD: ${{ secrets.DB_PASSWORD }}
+          PGDATABASE: ${{ secrets.DB_NAME }}
+          MEMBER_EMAIL: ${{ inputs.dev_member_email }}
+        run: |
+          EMAIL="$(printf '%s' "$MEMBER_EMAIL" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')"
+          if ! printf '%s' "$EMAIL" | grep -Eq '^[^@]+@[^@]+\.[^@]+$'; then echo "Set dev_member_email to a valid email address."; exit 1; fi
+          export PGHOST="$(printf '%s' "$RAW_HOST" | tr -d '[:space:]')"
+          sudo apt-get install -y -qq postgresql-client >/dev/null
+          # Committee group ids are the public ids from apps/frontend/src/shared/lib/permissions.ts (COMMITTEES).
+          psql -v ON_ERROR_STOP=1 -v email="$EMAIL" << 'SQL'
+          BEGIN;
+          UPDATE committees SET azure_group_id = 'a4aeb401-882d-4e1e-90ee-106b7fdb23cc' WHERE name = 'ICT-commissie' AND azure_group_id IS NULL;
+          UPDATE committees SET azure_group_id = 'd4686b83-4679-46ed-9fd8-c6ff3c6a265f' WHERE name = 'Activiteitencommissie' AND azure_group_id IS NULL;
+          INSERT INTO directus_users (id, email, first_name, last_name, name, status, membership_status, membership_expiry, emailverified)
+            SELECT gen_random_uuid(), :'email', split_part(:'email', '@', 1), '', split_part(:'email', '@', 1), 'active', 'active', (now() + interval '1 year')::date, true
+            WHERE NOT EXISTS (SELECT 1 FROM directus_users WHERE lower(email) = :'email');
+          UPDATE directus_users SET status = 'active', membership_status = 'active', membership_expiry = (now() + interval '1 year')::date
+            WHERE lower(email) = :'email';
+          INSERT INTO committee_members (committee_id, user_id, is_leader, is_visible)
+            SELECT c.id, u.id, true, true FROM committees c JOIN directus_users u ON lower(u.email) = :'email'
+            WHERE c.name IN ('ICT-commissie', 'Activiteitencommissie')
+              AND NOT EXISTS (SELECT 1 FROM committee_members m WHERE m.committee_id = c.id AND m.user_id = u.id);
+          COMMIT;
+          SELECT 'member: ' || email || ' (' || membership_status || ')' FROM directus_users WHERE lower(email) = :'email';
+          SELECT 'committee: ' || c.name || ' (leader)' FROM committee_members m JOIN committees c ON c.id = m.committee_id
+            JOIN directus_users u ON u.id = m.user_id WHERE lower(u.email) = :'email';
+          SQL

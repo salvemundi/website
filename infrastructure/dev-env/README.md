@@ -64,14 +64,17 @@ Variables:
    The `Deploy V7 Stack` workflow builds the images, starts the dev core and the `v7-dev-*` containers.
 2. Actions → Deploy V7 Stack → Run workflow → branch `dev`, **dev_database_action = `init-and-seed`**.
    This creates the tables (including the mobile app tables) and loads the synthetic seed data.
-3. Open `https://dev.salvemundi.nl` and sign in with Microsoft. Your account is created on first login.
-4. Give yourself rights in the dev Directus (`http://<VPN_IP>:8056`, the admin email/password above): add your user
-   to the committees you want to test (for example the activities committee for the app's admin features).
+3. Run the workflow on `dev` with **dev_database_action = `add-member`** and **dev_member_email** = the email of your
+   Microsoft account. Dev has no Azure sync, so members don't exist until added; the website login links to an existing
+   member by email (it cannot create one). The action also makes you leader of the ICT and activities committees
+   (management rights on the website, admin and door mode in the app).
+4. Open `https://dev.salvemundi.nl` and sign in with Microsoft.
 
 ## Day to day
 - Pushing to `dev` redeploys only the dev app containers; the dev database stays online with its data.
 - Reload the seed (resets the seeded tables, keeps users): run the workflow with `dev_database_action = seed`.
   The init/seed actions restart the `v7-dev-*` app containers afterwards (Better Auth caches its schema check per process).
+  Reseeding recreates the committees, so run `add-member` again afterwards to get your rights back.
 - Troubleshooting: run the workflow with `dev_database_action = app-logs` (dev branch). It prints the container status,
   the last log lines of the website, finance service and Directus, and a read-only overview of the dev database.
 - The Android app against dev: build with `-Psalvemundi.apiBaseUrl=https://dev.salvemundi.nl`.
