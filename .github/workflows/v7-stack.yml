@@ -161,7 +161,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-buildx-action@v3
+      # The dev environment doesn't run the Wie is de Mol game, so its image isn't built there.
       - uses: docker/build-push-action@v6
+        if: ${{ !(github.ref_name == 'dev' && matrix.service == 'wieisdemol') }}
         with:
           context: .
           file: ${{ matrix.file }}
@@ -402,10 +404,17 @@ jobs:
             echo "MCP_MAX_DOWNLOAD_BYTES=${{ vars.MCP_MAX_DOWNLOAD_BYTES || '262144' }}" >> .env.${ENV_NAME}
           fi
 
-          docker compose --env-file .env.${ENV_NAME} pull
-          docker compose --env-file .env.${ENV_NAME} up -d
+          if [ "$ENV_NAME" = "dev" ]; then
+            # Dev runs without the Wie is de Mol game; the cleanup below removes its container.
+            ACTIVE_SERVICES=$(docker compose --env-file .env.${ENV_NAME} config --services | grep -vxF wieisdemol)
+            docker compose --env-file .env.${ENV_NAME} pull $ACTIVE_SERVICES
+            docker compose --env-file .env.${ENV_NAME} up -d $ACTIVE_SERVICES
+          else
+            docker compose --env-file .env.${ENV_NAME} pull
+            docker compose --env-file .env.${ENV_NAME} up -d
+            ACTIVE_SERVICES=$(docker compose --env-file .env.${ENV_NAME} config --services)
+          fi
           # Clean up removed services, preserving the independently maintained production game.
-          ACTIVE_SERVICES=$(docker compose --env-file .env.${ENV_NAME} config --services)
           for CONTAINER_ID in $(docker ps -aq --filter "label=com.docker.compose.project=v7-${ENV_NAME}"); do
             CONTAINER_NAME=$(docker inspect --format '{{.Name}}' "$CONTAINER_ID")
             if [ "$CONTAINER_NAME" = "/v7-prod-wieisdemol" ]; then
