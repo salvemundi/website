@@ -28,8 +28,10 @@ export function validDeviceToken(platform: MobilePlatform, token: string): boole
 export function mobileAndroidAssociation(): { packageName: string; fingerprints: string[] } | null {
     if (!mobileEnabled()) return null;
     const fingerprints = (process.env.MOBILE_ANDROID_SHA256_CERT_FINGERPRINTS || '').split(',').map(value => value.trim().toUpperCase()).filter(Boolean);
-    if (!fingerprints.length || !fingerprints.every(value => /^[0-9A-F]{2}(?::[0-9A-F]{2}){31}$/.test(value))) return null;
+    const validFingerprint = (value: string) => { const bytes = value.split(':'); return bytes.length === 32 && bytes.every(byte => /^[0-9A-F]{2}$/.test(byte)); };
+    if (!fingerprints.length || !fingerprints.every(validFingerprint)) return null;
     const packageName = process.env.MOBILE_ANDROID_PACKAGE_NAME?.trim() || MOBILE_ANDROID_PACKAGE_NAME;
-    if (!/^[a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z][a-zA-Z0-9_]*)+$/.test(packageName)) return null;
+    const segments = packageName.split('.');
+    if (packageName.length > 255 || segments.length < 2 || !segments.every(segment => /^[a-zA-Z][a-zA-Z0-9_]*$/.test(segment))) return null;
     return { packageName, fingerprints: [...new Set(fingerprints)] };
 }
