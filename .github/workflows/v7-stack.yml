@@ -516,4 +516,14 @@ jobs:
             echo "===== $c (last 150 lines)"
             docker logs --tail 150 "$c" 2>&1 || true
           done
+          echo "===== dev database (read-only)"
+          docker exec -i v7-dev-db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At' << 'SQL' || true
+          select 'database: ' || current_database() || ', user: ' || current_user;
+          select 'databases: ' || string_agg(datname, ', ') from pg_database where not datistemplate;
+          select 'public tables: ' || count(*) from information_schema.tables where table_schema = 'public';
+          select 'auth tables: ' || coalesce(string_agg(table_schema || '.' || table_name, ', '), 'none')
+            from information_schema.tables where table_name in ('auth_sessions', 'auth_accounts', 'verification', 'events', 'directus_users');
+          select 'entra_id column: ' || coalesce(string_agg(table_schema || '.' || table_name, ', '), 'none')
+            from information_schema.columns where column_name = 'entra_id';
+          SQL
           ENDSSH
