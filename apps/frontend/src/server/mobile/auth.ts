@@ -7,15 +7,14 @@ import { MobileError, mobileResponse, readMobileJSON } from './http';
 import { MOBILE_CALLBACK, hashMobileToken, newOpaqueCode, validChallenge, verifyPKCE, validBrowserFlowCookie } from './security';
 import { createMobileSession, requireMobileUser } from './session';
 import { rateLimit } from '@/server/utils/ratelimit';
+import { mobileAllowedAuthOrigin, mobilePublicOrigin } from './policy';
 import { getSessionColumns } from './session-columns';
 
 interface LoginFlow { challenge: string; state: string; redirectURI: string; browserNonceHash: string }
 interface LoginGrant extends LoginFlow { userId: string }
 function publicOrigin(): string {
-    const origin = new URL(process.env.BETTER_AUTH_URL || 'https://acc.salvemundi.nl').origin;
-    const url = new URL(origin);
-    const local = url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname);
-    if (origin !== 'https://acc.salvemundi.nl' && !local) {
+    const origin = new URL(process.env.BETTER_AUTH_URL || mobilePublicOrigin()).origin;
+    if (!mobileAllowedAuthOrigin(origin)) {
         throw new MobileError('configuration_error', 'Ongeldige acceptatieconfiguratie.', 503);
     }
     return origin;

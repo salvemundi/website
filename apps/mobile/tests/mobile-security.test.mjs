@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { verifyPKCE, validChallenge, hashMobileToken, newMobileToken, isNativeToken, MOBILE_CALLBACK, newOpaqueCode, validBrowserFlowCookie } from '../../frontend/src/server/mobile/security.ts';
-import { mobileEnabled, mobileAssociationID, mobileAndroidAssociation, mobileClientPlatform, validDeviceToken } from '../../frontend/src/server/mobile/policy.ts';
+import { mobileEnabled, mobileAssociationID, mobileAndroidAssociation, mobileClientPlatform, validDeviceToken, mobilePublicOrigin, mobileAllowedAuthOrigin, mobileEnvironmentName } from '../../frontend/src/server/mobile/policy.ts';
 import { readFileSync } from 'node:fs';
 
 test('native session secrets are random, hashed, and cannot be replayed using the stored value', () => {
@@ -38,6 +38,31 @@ test('mobile APIs are unavailable in production even if the enable switch is set
         process.env.ENV_NAME = 'acc'; process.env.MOBILE_API_ENABLED = 'false';
         assert.equal(mobileEnabled(), false);
         process.env.MOBILE_API_ENABLED = 'true'; assert.equal(mobileEnabled(), true);
+        // The isolated dev environment uses the same switch.
+        process.env.ENV_NAME = 'dev'; assert.equal(mobileEnabled(), true);
+        process.env.MOBILE_API_ENABLED = 'false'; assert.equal(mobileEnabled(), false);
+    } finally {
+        if (original.env === undefined) delete process.env.ENV_NAME; else process.env.ENV_NAME = original.env;
+        if (original.enabled === undefined) delete process.env.MOBILE_API_ENABLED; else process.env.MOBILE_API_ENABLED = original.enabled;
+    }
+});
+test('public links and login origin are fixed per environment, never production', () => {
+    const original = { env: process.env.ENV_NAME, enabled: process.env.MOBILE_API_ENABLED };
+    try {
+        process.env.MOBILE_API_ENABLED = 'true';
+        process.env.ENV_NAME = 'acc';
+        assert.equal(mobilePublicOrigin(), 'https://acc.salvemundi.nl');
+        assert.equal(mobileAllowedAuthOrigin('https://acc.salvemundi.nl'), true);
+        assert.equal(mobileAllowedAuthOrigin('https://dev.salvemundi.nl'), false);
+        process.env.ENV_NAME = 'dev';
+        assert.equal(mobilePublicOrigin(), 'https://dev.salvemundi.nl');
+        assert.equal(mobileAllowedAuthOrigin('https://dev.salvemundi.nl'), true);
+        assert.equal(mobileAllowedAuthOrigin('https://acc.salvemundi.nl'), false);
+        assert.equal(mobileAllowedAuthOrigin('http://localhost:3000'), true);
+        assert.equal(mobileAllowedAuthOrigin('https://evil.example'), false);
+        process.env.ENV_NAME = 'prod';
+        assert.equal(mobileEnvironmentName(), null);
+        assert.equal(mobileAllowedAuthOrigin('https://salvemundi.nl'), false);
     } finally {
         if (original.env === undefined) delete process.env.ENV_NAME; else process.env.ENV_NAME = original.env;
         if (original.enabled === undefined) delete process.env.MOBILE_API_ENABLED; else process.env.MOBILE_API_ENABLED = original.enabled;
@@ -84,7 +109,9 @@ test('Android asset links require the acceptance switch and valid SHA-256 certif
     }
     // The proxy must let the asset links file through exactly like the Apple association file.
     const proxy = readFileSync(new URL('../../frontend/src/proxy.ts', import.meta.url), 'utf8');
-    assert.match(proxy, /pathname === '\/\.well-known\/apple-app-site-association' \|\| pathname === '\/\.well-known\/assetlinks\.json'\) \{\n\s+if \(process\.env\.ENV_NAME !== 'acc'/);
+    assert.match(proxy, /pathname === '\/\.well-known\/apple-app-site-association' \|\| pathname === '\/\.well-known\/assetlinks\.json'\) \{\n\s+if \(!mobileEnabled\(\)\)/);
+    // The proxy and the route handlers share one gate.
+    assert.match(proxy, /import \{ mobileEnabled \} from '@\/server\/mobile\/policy';/);
 });
 
 test('client platform header is a closed allowlist and device tokens are validated per platform', () => {

@@ -3,6 +3,7 @@ import { MobileError } from './http';
 import { pool } from '@/lib/database/db';
 import { amsterdamToUTC } from '@/lib/utils/date-utils';
 import { type ActivityAdminActor, type AdminEventRow, requireEventScope } from './activity-admin-auth';
+import { mobilePublicOrigin } from './policy';
 
 export function adminISO(value: string | Date | null | undefined): string | null {
     if (!value) return null;
@@ -23,11 +24,11 @@ export function adminActivitySummary(row: AdminEventRow, actor: ActivityAdminAct
         activity: {
             id: `event:${row.id}`, title: row.name, description: row.description || row.short_description || null,
             startsAt: eventStart(row.event_date, row.event_time), endsAt: eventStart(row.event_date_end, row.event_time_end),
-            location: row.location, imageURL: row.image ? `https://acc.salvemundi.nl/api/assets/${row.image}` : null,
+            location: row.location, imageURL: row.image ? `${mobilePublicOrigin()}/api/assets/${row.image}` : null,
             memberPriceCents: Math.round(Number(row.price_members) * 100), guestPriceCents: Math.round(Number(row.price_non_members) * 100),
             membersOnly: row.only_members, registrationDeadline: adminISO(row.registration_deadline), capacity: row.max_sign_ups,
             signupCount: Number(row.confirmed_count || 0), kind: 'event', registrationViaWebsite: Boolean(row.custom_url),
-            websiteURL: `https://acc.salvemundi.nl/activiteiten/${row.id}`
+            websiteURL: `${mobilePublicOrigin()}/activiteiten/${row.id}`
         },
         status: scheduled ? 'scheduled' : row.status || 'draft', committeeID: row.committee_id, committeeName: row.committee_name || null,
         confirmedCount: Number(row.confirmed_count || 0), pendingCount: Number(row.pending_count || 0), checkedInCount: Number(row.checked_in_count || 0),

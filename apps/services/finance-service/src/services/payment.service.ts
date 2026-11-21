@@ -119,7 +119,7 @@ export class PaymentService {
             let approvalStatus = transaction.approval_status;
             if (approvalStatus === 'auto_approved') {
                 let manualApproval = false;
-                if (process.env.ENV_NAME === 'acc') {
+                if (process.env.ENV_NAME === 'acc' || process.env.ENV_NAME === 'dev') {
                     manualApproval = true;
                 } else {
                     try {

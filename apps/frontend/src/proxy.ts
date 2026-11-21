@@ -1,3 +1,4 @@
+import { mobileEnabled } from '@/server/mobile/policy';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { PUBLIC_ROUTES } from '@/lib/config/routes';
@@ -56,7 +57,7 @@ async function proxy(request: NextRequest): Promise<NextResponse> {
     }
 
     if (pathname === '/api/mobile/v1' || pathname.startsWith('/api/mobile/v1/') || pathname === '/.well-known/apple-app-site-association' || pathname === '/.well-known/assetlinks.json') {
-        if (process.env.ENV_NAME !== 'acc' || process.env.MOBILE_API_ENABLED !== 'true') {
+        if (!mobileEnabled()) {
             return withSecurity(NextResponse.json({ error: { code: 'not_found', message: 'Niet gevonden.' } }, { status: 404 }));
         }
         return nextWithNonce(true);

@@ -1,0 +1,105 @@
+# Persistent core for the `dev` environment (dev.salvemundi.nl): its own Postgres, Redis and Directus.
+# Fully separate from v7-core-* (acceptance/production): own containers, own volumes, own credentials.
+# The deploy workflow uploads this file to /opt/salve-mundi-v7/dev-core/ and runs:
+#   docker compose -p v7-dev-core --env-file .env.dev-core up -d --wait
+# Data lives in the v7_dev_* volumes and survives redeploys. `down -v` deletes it.
+name: v7-dev-core
+
+services:
+  v7-dev-db:
+    image: postgres:16-alpine
+    container_name: v7-dev-db
+    restart: unless-stopped
+    mem_limit: 512m
+    ports:
+      # Only on the VPN interface, so the deploy runner can initialise and seed it.
+      - "${VPN_IP:-127.0.0.1}:${DEV_DB_PORT:-5433}:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      TZ: Europe/Amsterdam
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - v7_dev_postgres_data:/var/lib/postgresql/data
+    networks:
+      - shared-network
+
+  v7-dev-redis:
+    image: redis:8-alpine
+    container_name: v7-dev-redis
+    restart: unless-stopped
+    mem_limit: 256m
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "--no-auth-warning", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - v7_dev_redis_data:/data
+    networks:
+      - shared-network
+
+  v7-dev-directus:
+    image: directus/directus:11
+    container_name: v7-dev-directus
+    restart: unless-stopped
+    mem_limit: 768m
+    command: >
+      sh -c "node /directus/cli.js bootstrap && node /directus/cli.js start"
+    ports:
+      # Admin UI and the seed's asset import, VPN only (the website proxies public assets).
+      - "${VPN_IP:-127.0.0.1}:${DEV_DIRECTUS_PORT:-8056}:8055"
+    depends_on:
+      v7-dev-db:
+        condition: service_healthy
+      v7-dev-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8055/server/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    environment:
+      KEY: ${DIRECTUS_KEY}
+      SECRET: ${DIRECTUS_SECRET}
+      DB_CLIENT: "pg"
+      DB_HOST: v7-dev-db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      CACHE_ENABLED: "true"
+      CACHE_STORE: "redis"
+      CACHE_REDIS: "redis://default:${REDIS_PASSWORD}@v7-dev-redis:6379"
+      REDIS: "redis://default:${REDIS_PASSWORD}@v7-dev-redis:6379"
+      PM2_HOME: "/tmp/pm2"
+      # Directus itself is only reachable over the VPN; the website serves assets via its own /api/assets proxy.
+      PUBLIC_URL: ${DIRECTUS_PUBLIC_URL}
+      CORS_ORIGIN: ${PUBLIC_URL}
+      ASSETS_CACHE_TTL: "86400"
+      # Local admin login only (no Microsoft SSO on the dev Directus): ADMIN_EMAIL / ADMIN_PASSWORD.
+      ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD}
+      ADMIN_TOKEN: ${DIRECTUS_STATIC_TOKEN}
+      TZ: Europe/Amsterdam
+    volumes:
+      - v7_dev_directus_uploads:/directus/uploads
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    name: salve-mundi-v7-shared
+    external: true
+
+volumes:
+  v7_dev_postgres_data:
+  v7_dev_redis_data:
+  v7_dev_directus_uploads:

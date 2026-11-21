@@ -47,8 +47,9 @@ const start = async () => {
             safeConsoleError('[server.ts][start] ', err);
         });
 
-        const disableJobs = process.env.DISABLE_BACKGROUND_JOBS === 'true' || 
-                            process.env.ENV_NAME === 'acc';
+        // Test environments never provision or sync real Microsoft accounts.
+        const disableJobs = process.env.DISABLE_BACKGROUND_JOBS === 'true' ||
+                            process.env.ENV_NAME === 'acc' || process.env.ENV_NAME === 'dev';
 
         if (disableJobs) {
             logInfo('[server.ts][start] Background/Sync jobs are DISABLED for this environment.');

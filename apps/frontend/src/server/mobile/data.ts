@@ -8,10 +8,11 @@ import { MobileError, mobileResponse, readMobileJSON } from './http';
 import { requireMobileUser, type MobileUser } from './session';
 import type { Activiteit } from '@salvemundi/validations/schema/activity.zod';
 import { z } from 'zod';
+import { mobilePublicOrigin } from './policy';
 import { limitMobileUser } from './limits';
 import { getFinanceServiceUrl, getInternalHeaders, fetchWithTimeout } from '@/server/internal/activiteiten/activiteiten.utils';
 
-function origin(): string { return 'https://acc.salvemundi.nl'; }
+function origin(): string { return mobilePublicOrigin(); }
 function eventISO(date?: string | null, time?: string | null): string | null {
     if (!date) return null;
     if (time) return amsterdamToUTC(`${date.slice(0, 10)}T${time.slice(0, 8)}`);

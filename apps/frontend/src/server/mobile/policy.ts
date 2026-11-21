@@ -1,6 +1,31 @@
 // Shared fail-closed policy, kept independent from Next.js for automated verification.
+
+// Non-production environments where the native app backend may run: acceptance and the isolated dev environment.
+// Production is never included, whatever its variables say.
+const MOBILE_ENVIRONMENTS: Record<string, string> = {
+    acc: 'https://acc.salvemundi.nl',
+    dev: 'https://dev.salvemundi.nl',
+};
+
+export function mobileEnvironmentName(): string | null {
+    const name = process.env.ENV_NAME || '';
+    return Object.prototype.hasOwnProperty.call(MOBILE_ENVIRONMENTS, name) ? name : null;
+}
+
 export function mobileEnabled(): boolean {
-    return process.env.ENV_NAME === 'acc' && process.env.MOBILE_API_ENABLED === 'true';
+    return mobileEnvironmentName() !== null && process.env.MOBILE_API_ENABLED === 'true';
+}
+
+/** Public origin for links the API returns (website, assets). Fixed per environment, never taken from request headers. */
+export function mobilePublicOrigin(): string {
+    return MOBILE_ENVIRONMENTS[mobileEnvironmentName() || 'acc'];
+}
+
+/** Login origins the mobile auth flow accepts: the environment's own origin, or a local http development server. */
+export function mobileAllowedAuthOrigin(origin: string): boolean {
+    const url = new URL(origin);
+    if (url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname)) return true;
+    return mobileEnvironmentName() !== null && origin === mobilePublicOrigin();
 }
 
 export function mobileAssociationID(): string | null {

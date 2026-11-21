@@ -7,8 +7,9 @@ import { eq } from 'drizzle-orm';
 export const FLAGS_CACHE_KEY = 'site:disabled_routes';
 const CACHE_TTL = 60;
 
+/** Test environments (acceptance and the isolated dev environment) show every route. */
 export function isAccEnvironment(): boolean {
-    return process.env.ENV_NAME === 'acc';
+    return process.env.ENV_NAME === 'acc' || process.env.ENV_NAME === 'dev';
 }
 
 export async function getDisabledRoutes(): Promise<string[]> {

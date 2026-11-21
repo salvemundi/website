@@ -33,7 +33,7 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
-      - DB_HOST=v7-core-db
+      - DB_HOST=${DB_HOST:-v7-core-db}
       - DB_PORT=${DB_PORT}
       - REDIS_URL=${REDIS_URL}
       - NEXT_APP_INTERNAL_URL=http://localhost:3000
@@ -62,7 +62,7 @@ services:
     environment:
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
       - MOLLIE_API_KEY=${MOLLIE_API_KEY}
-      - DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@v7-core-db:${DB_PORT}/${DB_NAME}
+      - DB_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST:-v7-core-db}:${DB_PORT}/${DB_NAME}
       - DIRECTUS_STATIC_TOKEN=${DIRECTUS_STATIC_TOKEN}
       - DIRECTUS_SERVICE_URL=${INTERNAL_DIRECTUS_URL}
       - REDIS_URL=${REDIS_URL}
@@ -118,7 +118,7 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
-      - DB_HOST=v7-core-db
+      - DB_HOST=${DB_HOST:-v7-core-db}
       - DB_PORT=${DB_PORT}
       - AZURE_ACTIVE_LID_GROUP_ID=${AZURE_ACTIVE_LID_GROUP_ID:-2e17c12a-28d6-49ae-981a-8b5b8d88db8a}
       - AZURE_EXPIRED_LID_GROUP_ID=${AZURE_EXPIRED_LID_GROUP_ID:-98c1d807-613a-4a23-9618-3f8821d35fe9}
@@ -168,7 +168,7 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
-      - DB_HOST=v7-core-db
+      - DB_HOST=${DB_HOST:-v7-core-db}
       - DB_PORT=${DB_PORT}
       - TZ=Europe/Amsterdam
     healthcheck:
