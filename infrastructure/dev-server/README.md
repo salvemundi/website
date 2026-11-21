@@ -62,24 +62,18 @@ Variables:
 | `DEV_DB_PORT`, `DEV_DIRECTUS_PORT` | optional; default `5433` / `8056` (VPN-only ports on the server) |
 
 ### 4. Branch and first deploy
-1. Create the `dev` branch from `acceptance` (after this change is merged there) and push it. A brand-new branch may not
-   trigger the push workflow (GitHub's `paths` filter); in that case run *Deploy V7 Stack* manually on `dev` with both actions `none`.
-   The `Deploy V7 Stack` workflow builds the images, starts the dev core and the `v7-dev-*` containers.
-2. Actions → Deploy V7 Stack → Run workflow → branch `dev`, **dev_database_action = `init-and-seed`**.
-   This creates the tables (including the mobile app tables) and loads the synthetic seed data.
-3. Run the workflow on `dev` with **dev_database_action = `add-member`** and **dev_member_email** = the email of your
-   Microsoft account. Dev has no Azure sync, so members don't exist until added; the website login links to an existing
-   member by email (it cannot create one). The action also makes you leader of the ICT and activities committees
-   (management rights on the website, admin and door mode in the app).
-4. Open `https://dev.salvemundi.nl` and sign in with Microsoft.
+1. Push the `dev` branch, or run **Deploy V7 Stack** manually on `dev` with `mobile_setup_action` set to `none`.
+   The workflow starts the dev core and app containers.
+2. For a fresh database, initialize the schema and load synthetic data using the [database setup scripts](../../README.md)
+   against the dev database. Apply any mobile SQL migrations in `packages/db/drizzle/` that the dev app needs.
+3. Add a test member whose email matches your Microsoft account before signing in at `https://dev.salvemundi.nl`.
+   Dev has no Azure sync, and website login requires an existing member.
 
 ## Day to day
-- Pushing to `dev` redeploys only the dev app containers; the dev database stays online with its data.
-- Reload the seed (resets the seeded tables, keeps users): run the workflow with `dev_database_action = seed`.
-  The init/seed actions restart the `v7-dev-*` app containers afterwards (Better Auth caches its schema check per process).
-  Reseeding recreates the committees, so run `add-member` again afterwards to get your rights back.
-- Troubleshooting: run the workflow with `dev_database_action = app-logs` (dev branch). It prints the container status,
-  the last log lines of the website, finance service and Directus, and a read-only overview of the dev database.
+
+- Pushing to `dev` runs the dev deployment. The Actions summary shows which images were built or reused and which app
+  containers were created, reused, or recreated.
+- To inspect logs from the VPS, use `docker logs --tail 150 v7-dev-app` or substitute the dev container you need.
 - The Android app against dev: build with `-Psalvemundi.apiBaseUrl=https://dev.salvemundi.nl`.
 - Start over completely (on the server, deletes all dev data):
   `cd /opt/salve-mundi-v7/dev-core && docker compose -p v7-dev-core --env-file .env.dev-core down -v`
@@ -126,8 +120,7 @@ flowchart TB
 ```
 
 - **Code** goes to acceptance exactly as reviewed. The dev-only parts are switched off there by environment:
-  - The `dev core` start, the `init` / `seed` / `add-member` / `app-logs` actions and the Wie is de Mol skip run only
-    on the `dev` branch.
+  - The dev core starts only on `dev`, where the stack runs without Wie is de Mol.
   - Acceptance and production keep deploying exactly as before: same ports and `v7-core-*` hosts, all services.
     The `DB_HOST` default and `CORE_PREFIX` both resolve to `v7-core-*` outside dev.
   - The `ENV_NAME === 'dev'` checks (feature flags, Azure sync off, manual payment approval, mobile gate) change
@@ -135,8 +128,7 @@ flowchart TB
 - **Data never moves.** Nothing you create on dev (activities, registrations, test members) reaches acceptance, and
   real acceptance/production data never reaches dev. Dev only has its own synthetic seed.
 - **Database schema changes do not apply themselves.** The website has no automatic migrations: manual SQL files in
-  `packages/db/drizzle/` must be run against each environment's database separately. Dev gets them through the
-  `init` action; acceptance and production need them applied deliberately (they share `v7-core-db`). Apply additive
+  `packages/db/drizzle/` must be run against each environment's database separately. Acceptance and production share `v7-core-db`. Apply additive
   migrations to acceptance **before** merging code that writes the new columns.
 - **Secrets and variables are per GitHub environment.** A feature that needs a new secret or variable must get it in
   *Acceptance* (and later *Production*) too; the dev values don't carry over.

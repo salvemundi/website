@@ -20,15 +20,6 @@ on:
         description: 'Explicit approved test-member UUIDs, comma separated (configure only)'
         type: string
         default: ''
-      dev_database_action:
-        description: 'Dev environment only (run on the dev branch): create tables / load synthetic seed data / show container logs'
-        type: choice
-        options: [none, init, seed, init-and-seed, app-logs, add-member]
-        default: none
-      dev_member_email:
-        description: 'add-member only: your Microsoft email; becomes an active member and leader of the ICT and activities committees in dev'
-        type: string
-        default: ''
   push:
     branches:
       - main
@@ -79,7 +70,7 @@ permissions:
   packages: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/dev' && (github.event_name == 'push' || (inputs.mobile_setup_action == 'none' && inputs.dev_database_action == 'none')) && github.ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/dev' && (github.event_name == 'push' || inputs.mobile_setup_action == 'none') && github.ref || github.run_id }}
   cancel-in-progress: false
 
 env:
@@ -87,7 +78,7 @@ env:
 
 jobs:
   prepare:
-    if: github.event_name != 'workflow_dispatch' || (inputs.mobile_setup_action == 'none' && inputs.dev_database_action == 'none')
+    if: github.event_name != 'workflow_dispatch' || inputs.mobile_setup_action == 'none'
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.plan.outputs.tag }}
@@ -222,12 +213,22 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.name }}
           labels: |
             environment=${{ needs.prepare.outputs.tag }}
+      - name: Report image result
+        env:
+          IMAGE: ${{ matrix.image }}
+          REUSED: ${{ steps.lookup.outputs.hit }}
+        run: |
+          result=Built
+          if [ "$REUSED" = true ]; then
+            result=Reused
+          fi
+          printf '%s — `%s`\n' "$result" "$IMAGE" | tee -a "$GITHUB_STEP_SUMMARY"
 
   deploy:
     name: Deploy to VPS
     runs-on: ubuntu-latest
     needs: [prepare, build-images]
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mobile_setup_action == 'none' && inputs.dev_database_action == 'none')
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mobile_setup_action == 'none')
     environment:
       name: ${{ github.ref_name == 'main' && 'Production' || (github.ref_name == 'dev' && 'Development' || 'Acceptance') }}
     steps:
@@ -304,8 +305,10 @@ jobs:
           ENDSSH
 
       - name: Execute Deployment
+        shell: bash
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }} bash << 'ENDSSH'
+          deploy_log="$RUNNER_TEMP/deploy.log"
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }} bash << 'ENDSSH' | tee "$deploy_log"
           set -e
           cd /opt/salve-mundi-v7
 
@@ -463,21 +466,51 @@ jobs:
             echo "MCP_MAX_DOWNLOAD_BYTES=${{ vars.MCP_MAX_DOWNLOAD_BYTES || '262144' }}" >> .env.${ENV_NAME}
           fi
 
+          compose=(docker compose --env-file ".env.${ENV_NAME}")
           if [ "$ENV_NAME" = "dev" ]; then
-            # Reconcile the full configuration while retaining unchanged containers and local images.
-            compose=(docker compose -f docker-compose.dev.yml -f docker-compose.dev-images.yml --env-file .env.dev)
-            CONFIGURED_SERVICES=$("${compose[@]}" config --services)
-            mapfile -t DEV_SERVICES < <(printf '%s\n' "$CONFIGURED_SERVICES" | grep -vxF wieisdemol)
-            ACTIVE_SERVICES=$(printf '%s\n' "${DEV_SERVICES[@]}")
+            compose+=(-f docker-compose.dev.yml -f docker-compose.dev-images.yml)
+          fi
+          ACTIVE_SERVICES=$("${compose[@]}" config --services)
+          if [ "$ENV_NAME" = "dev" ]; then
+            ACTIVE_SERVICES=$(printf '%s\n' "$ACTIVE_SERVICES" | grep -vxF wieisdemol)
+          fi
+          mapfile -t services <<< "$ACTIVE_SERVICES"
+
+          container_ids() {
+            docker ps -aq --filter "label=com.docker.compose.project=v7-${ENV_NAME}" \
+              --filter "label=com.docker.compose.service=$1" \
+              --filter "label=com.docker.compose.oneoff=False" | sort
+          }
+
+          set -o pipefail
+          declare -A previous_ids
+          for service in "${services[@]}"; do
+            previous_ids[$service]=$(container_ids "$service")
+          done
+
+          if [ "$ENV_NAME" = "dev" ]; then
             # Monitoring uses a mutable upstream tag and still checks for updates.
             "${compose[@]}" pull monitoring-service
-            "${compose[@]}" pull --policy missing "${DEV_SERVICES[@]}"
-            "${compose[@]}" up -d --pull never "${DEV_SERVICES[@]}"
+            "${compose[@]}" pull --policy missing "${services[@]}"
+            "${compose[@]}" up -d --pull never "${services[@]}"
           else
-            docker compose --env-file .env.${ENV_NAME} pull
-            docker compose --env-file .env.${ENV_NAME} up -d
-            ACTIVE_SERVICES=$(docker compose --env-file .env.${ENV_NAME} config --services)
+            "${compose[@]}" pull
+            "${compose[@]}" up -d
           fi
+
+          for service in "${services[@]}"; do
+            current_ids=$(container_ids "$service")
+            if [ -z "$current_ids" ]; then
+              result="No container"
+            elif [ -z "${previous_ids[$service]}" ]; then
+              result="Created"
+            elif [ "$current_ids" = "${previous_ids[$service]}" ]; then
+              result="Reused"
+            else
+              result="Recreated"
+            fi
+            printf 'Container result: %s | %s\n' "$service" "$result"
+          done
           # Clean up removed services, preserving the independently maintained production game.
           for CONTAINER_ID in $(docker ps -aq --filter "label=com.docker.compose.project=v7-${ENV_NAME}"); do
             CONTAINER_NAME=$(docker inspect --format '{{.Name}}' "$CONTAINER_ID")
@@ -492,9 +525,10 @@ jobs:
           done
           docker image prune -af
           ENDSSH
-
-
-
+          {
+            printf '### Deployed containers\n\n| Service | Result |\n| --- | --- |\n'
+            sed -n 's/^Container result: \([a-zA-Z0-9_-]*\) | \(Created\|Reused\|Recreated\|No container\)$/| `\1` | \2 |/p' "$deploy_log"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   mobile-notifications-setup:
     if: github.event_name == 'workflow_dispatch' && inputs.mobile_setup_action != 'none' && github.ref == 'refs/heads/acceptance'
@@ -505,158 +539,3 @@ jobs:
       test_user_ids: ${{ inputs.mobile_test_user_ids }}
       shared_database_pilot_ack: ${{ inputs.mobile_shared_database_pilot_ack }}
     secrets: inherit
-
-  # One-off setup of the dev database (dev branch, manual run). The runner joins the VPN and runs the repository's
-  # own local-dev scripts against the dev core; acceptance/production databases are never addressed.
-  dev-database:
-    if: github.event_name == 'workflow_dispatch' && contains(fromJSON('["init","seed","init-and-seed"]'), inputs.dev_database_action) && github.ref == 'refs/heads/dev'
-    name: Dev database (${{ inputs.dev_database_action }})
-    runs-on: ubuntu-latest
-    environment:
-      name: Development
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 26
-      - run: npm install -g pnpm@11.8.0
-      - run: pnpm install --frozen-lockfile --filter @salvemundi/db...
-      - name: Connect to NetBird VPN
-        uses: Alemiz112/netbird-connect@v1
-        with:
-          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
-          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
-      - name: Wait for the dev database
-        run: |
-          for i in {1..30}; do
-            if timeout 1 bash -c 'cat < /dev/null > /dev/tcp/${{ secrets.VPN_IP }}/${{ vars.DEV_DB_PORT || '5433' }}' >/dev/null 2>&1; then exit 0; fi
-            sleep 2
-          done
-          echo "Dev database not reachable over the VPN. Deploy the dev branch first."; exit 1
-      # Credentials are passed as separate values; local-env.mjs URL-encodes them (passwords may contain any character).
-      - name: Create tables
-        if: inputs.dev_database_action == 'init' || inputs.dev_database_action == 'init-and-seed'
-        env:
-          RAW_HOST: ${{ secrets.VPN_IP }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_PORT: ${{ vars.DEV_DB_PORT || '5433' }}
-        run: |
-          export DB_HOST="$(printf '%s' "$RAW_HOST" | tr -d '[:space:]')"
-          pnpm dev:db:init
-          # Mobile app tables (manual migrations, idempotent).
-          sudo apt-get install -y -qq postgresql-client >/dev/null
-          export PGHOST="$DB_HOST" PGPORT="$DB_PORT" PGUSER="$DB_USER" PGPASSWORD="$DB_PASSWORD" PGDATABASE="$DB_NAME"
-          psql -v ON_ERROR_STOP=1 -f packages/db/drizzle/mobile_notifications.sql
-          psql -v ON_ERROR_STOP=1 -f packages/db/drizzle/mobile_notifications_android.sql
-      - name: Load synthetic seed data
-        if: inputs.dev_database_action == 'seed' || inputs.dev_database_action == 'init-and-seed'
-        env:
-          RAW_HOST: ${{ secrets.VPN_IP }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_PORT: ${{ vars.DEV_DB_PORT || '5433' }}
-          DIRECTUS_PORT: ${{ vars.DEV_DIRECTUS_PORT || '8056' }}
-          DIRECTUS_STATIC_TOKEN: ${{ secrets.DIRECTUS_STATIC_TOKEN }}
-        run: |
-          export DB_HOST="$(printf '%s' "$RAW_HOST" | tr -d '[:space:]')"
-          export INTERNAL_DIRECTUS_URL="http://${DB_HOST}:${DIRECTUS_PORT}"
-          pnpm dev:db:seed
-      # Better Auth caches a schema check result per process, and the site caches data: restart the dev app
-      # containers so they see the new tables and seed data.
-      - name: Restart dev app containers
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }} \
-            'docker restart v7-dev-app v7-dev-finance v7-dev-mail v7-dev-management v7-dev-sync'
-
-  # Read-only troubleshooting for the dev environment: recent logs of the v7-dev-* containers.
-  dev-logs:
-    if: github.event_name == 'workflow_dispatch' && inputs.dev_database_action == 'app-logs' && github.ref == 'refs/heads/dev'
-    name: Dev container logs
-    runs-on: ubuntu-latest
-    environment:
-      name: Development
-    steps:
-      - name: Connect to NetBird VPN
-        uses: Alemiz112/netbird-connect@v1
-        with:
-          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
-          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
-      - name: Show logs
-        run: |
-          for i in {1..30}; do timeout 1 bash -c 'cat < /dev/null > /dev/tcp/${{ secrets.VPN_IP }}/22' >/dev/null 2>&1 && break; sleep 2; done
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }} bash << 'ENDSSH'
-          docker ps -a --filter "name=v7-dev-" --format 'table {{.Names}}\t{{.Status}}'
-          for c in v7-dev-app v7-dev-finance v7-dev-directus; do
-            echo "===== $c (last 150 lines)"
-            docker logs --tail 150 "$c" 2>&1 || true
-          done
-          echo "===== dev database (read-only)"
-          docker exec -i v7-dev-db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At' << 'SQL' || true
-          select 'database: ' || current_database() || ', user: ' || current_user;
-          select 'databases: ' || string_agg(datname, ', ') from pg_database where not datistemplate;
-          select 'public tables: ' || count(*) from information_schema.tables where table_schema = 'public';
-          select 'auth tables: ' || coalesce(string_agg(table_schema || '.' || table_name, ', '), 'none')
-            from information_schema.tables where table_name in ('auth_sessions', 'auth_accounts', 'verification', 'events', 'directus_users');
-          select 'entra_id column: ' || coalesce(string_agg(table_schema || '.' || table_name, ', '), 'none')
-            from information_schema.columns where column_name = 'entra_id';
-          SQL
-          ENDSSH
-
-  # Dev has no Azure sync, so members do not exist until added. Website login links to an existing member by email.
-  dev-member:
-    if: github.event_name == 'workflow_dispatch' && inputs.dev_database_action == 'add-member' && github.ref == 'refs/heads/dev'
-    name: Dev member
-    runs-on: ubuntu-latest
-    environment:
-      name: Development
-    steps:
-      - name: Connect to NetBird VPN
-        uses: Alemiz112/netbird-connect@v1
-        with:
-          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
-          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
-      - name: Add member and committee rights
-        env:
-          RAW_HOST: ${{ secrets.VPN_IP }}
-          PGPORT: ${{ vars.DEV_DB_PORT || '5433' }}
-          PGUSER: ${{ secrets.DB_USER }}
-          PGPASSWORD: ${{ secrets.DB_PASSWORD }}
-          PGDATABASE: ${{ secrets.DB_NAME }}
-          MEMBER_EMAIL: ${{ inputs.dev_member_email }}
-        run: |
-          EMAIL="$(printf '%s' "$MEMBER_EMAIL" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')"
-          if ! printf '%s' "$EMAIL" | grep -Eq '^[^@]+@[^@]+\.[^@]+$'; then echo "Set dev_member_email to a valid email address."; exit 1; fi
-          export PGHOST="$(printf '%s' "$RAW_HOST" | tr -d '[:space:]')"
-          sudo apt-get install -y -qq postgresql-client >/dev/null
-          # Committee group ids are the public ids from apps/frontend/src/shared/lib/permissions.ts (COMMITTEES).
-          psql -v ON_ERROR_STOP=1 -v email="$EMAIL" << 'SQL'
-          BEGIN;
-          UPDATE committees SET azure_group_id = 'a4aeb401-882d-4e1e-90ee-106b7fdb23cc' WHERE name = 'ICT-commissie' AND azure_group_id IS NULL;
-          UPDATE committees SET azure_group_id = 'd4686b83-4679-46ed-9fd8-c6ff3c6a265f' WHERE name = 'Activiteitencommissie' AND azure_group_id IS NULL;
-          INSERT INTO directus_users (id, email, first_name, last_name, name, status, membership_status, membership_expiry, emailverified)
-            SELECT gen_random_uuid(), :'email', split_part(:'email', '@', 1), '', split_part(:'email', '@', 1), 'active', 'active', (now() + interval '1 year')::date, true
-            WHERE NOT EXISTS (SELECT 1 FROM directus_users WHERE lower(email) = :'email');
-          UPDATE directus_users SET status = 'active', membership_status = 'active', membership_expiry = (now() + interval '1 year')::date
-            WHERE lower(email) = :'email';
-          INSERT INTO committee_members (committee_id, user_id, is_leader, is_visible)
-            SELECT c.id, u.id, true, true FROM committees c JOIN directus_users u ON lower(u.email) = :'email'
-            WHERE c.name IN ('ICT-commissie', 'Activiteitencommissie')
-              AND NOT EXISTS (SELECT 1 FROM committee_members m WHERE m.committee_id = c.id AND m.user_id = u.id);
-          COMMIT;
-          SELECT 'member: ' || email || ' (' || membership_status || ')' FROM directus_users WHERE lower(email) = :'email';
-          SELECT 'committee: ' || c.name || ' (leader)' FROM committee_members m JOIN committees c ON c.id = m.committee_id
-            JOIN directus_users u ON u.id = m.user_id WHERE lower(u.email) = :'email';
-          SQL
