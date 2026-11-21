@@ -46,6 +46,10 @@ APNS_PRIVATE_KEY=<PEM private key; literal escaped newlines are supported>
 # Either DATABASE_URL or the existing DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASSWORD.
 ```
 
+Android devices are delivered through FCM only when `MOBILE_FCM_ENABLED=true` and the FCM
+service-account variables are set; see [Android setup](mobile-android.md). The Android migration
+`packages/db/drizzle/mobile_notifications_android.sql` must be applied after the base file.
+
 Set `MOBILE_APNS_ALLOW_PRODUCTION=true` on **both acceptance frontend and worker**
 when deliberately testing TestFlight pushes. The allowlist remains mandatory.
 An enabled worker stops immediately when `ENV_NAME` is anything except `acc`.

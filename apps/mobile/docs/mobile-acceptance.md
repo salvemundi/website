@@ -1,4 +1,4 @@
-# iPhone backend — acceptance only
+# iPhone and Android backend — acceptance only
 
 The native app is maintained separately at <https://github.com/salvemundi/ios-app>. This branch adds HTTP endpoints under `/api/mobile/v1` and an optional notification worker. It is based on `acceptance` and must target `acceptance`, not `main`.
 
@@ -14,7 +14,7 @@ The existing deployment points acceptance and production at the same PostgreSQL 
 
 The app uses the existing members, activities, registrations, transactions and tickets. There is no duplicate member database. App credentials use separate `mobile:` session IDs and hashed `mobile-sha256:` token values in the existing `auth_sessions` table. Authentication reads the database on every private request and rejects inactive users and expired/revoked sessions.
 
-The only additional schema is the manually applied `packages/db/drizzle/mobile_notifications.sql`. It creates environment-scoped `mobile_*` notification tables and does not change existing member/event tables. Do not run a general schema regeneration or reset to install it.
+The only additional schema is the manually applied `packages/db/drizzle/mobile_notifications.sql` (plus `mobile_notifications_android.sql` for Android devices). It creates environment-scoped `mobile_*` notification tables and does not change existing member/event tables. Do not run a general schema regeneration or reset to install it.
 
 ## Authentication and app links
 
@@ -22,7 +22,7 @@ The app opens `/auth/start` in the system authentication browser with a PKCE cha
 
 `/auth/logout` revokes the session and removes its registered devices. Browser cookies and impersonation are never accepted as mobile API identity. Native tokens do not replace or change existing website cookies or Redis session behavior.
 
-Activity and ticket HTTPS app links use the included `/.well-known/apple-app-site-association` route. Set the GitHub Acceptance variable `MOBILE_APPLE_TEAM_ID` to the actual ten-character Apple organization Team ID; the route combines this with `nl.salvemundi.ios` and otherwise returns 404. Configure the Team ID before app-link testing. The custom URL callback is available for authentication/payment return while that host association is configured.
+Activity and ticket HTTPS app links use the included `/.well-known/apple-app-site-association` route. Set the GitHub Acceptance variable `MOBILE_APPLE_TEAM_ID` to the actual ten-character Apple organization Team ID; the route combines this with `nl.salvemundi.ios` and otherwise returns 404. Configure the Team ID before app-link testing. Android App Links use `/.well-known/assetlinks.json` (see [Android setup](mobile-android.md)). The custom URL callback is available for authentication/payment return while that host association is configured.
 
 ## Registration and profile behavior
 

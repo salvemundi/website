@@ -284,6 +284,9 @@ jobs:
             echo "MOBILE_API_ENABLED=${{ vars.MOBILE_API_ENABLED || 'false' }}" >> .env.${ENV_NAME}
             echo "MOBILE_APNS_ALLOW_PRODUCTION=${{ vars.MOBILE_APNS_ALLOW_PRODUCTION || 'false' }}" >> .env.${ENV_NAME}
             echo "MOBILE_APPLE_TEAM_ID=${{ vars.MOBILE_APPLE_TEAM_ID }}" >> .env.${ENV_NAME}
+            # Android App Links (/.well-known/assetlinks.json); public signing-cert fingerprints, not secrets.
+            echo "MOBILE_ANDROID_PACKAGE_NAME=${{ vars.MOBILE_ANDROID_PACKAGE_NAME || 'nl.salvemundi.android' }}" >> .env.${ENV_NAME}
+            echo "MOBILE_ANDROID_SHA256_CERT_FINGERPRINTS=${{ vars.MOBILE_ANDROID_SHA256_CERT_FINGERPRINTS }}" >> .env.${ENV_NAME}
           else
             echo "MOBILE_API_ENABLED=false" >> .env.${ENV_NAME}
           fi

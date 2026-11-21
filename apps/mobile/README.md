@@ -1,8 +1,9 @@
-# Mobile (iPhone app support)
+# Mobile (iPhone and Android app support)
 
-Everything in this repository that supports the native Salve Mundi iPhone app and
-can live outside framework- or build-mandated locations. The app itself lives in a
-separate repository. The mobile API and notification worker are **acceptance only**
+Everything in this repository that supports the native Salve Mundi iPhone app
+(`nl.salvemundi.ios`) and Android app (`nl.salvemundi.android`) and can live outside
+framework- or build-mandated locations. The apps themselves live in separate repositories.
+Both use the same `/api/mobile/v1` API and the `salvemundi://auth/callback` redirect. The mobile API and notification worker are **acceptance only**
 (`ENV_NAME=acc` and `MOBILE_API_ENABLED=true`); server remains the authority for
 identity, membership, pricing, capacity, payment and QR validity.
 
@@ -21,6 +22,7 @@ identity, membership, pricing, capacity, payment and QR validity.
 - [`mobile-notifications-acceptance.md`](docs/mobile-notifications-acceptance.md): worker setup, APNs configuration, stop instructions
 - [`mobile-notification-readiness.md`](docs/mobile-notification-readiness.md): read-only readiness doctor
 - [`mobile-notifications-github-setup.md`](docs/mobile-notifications-github-setup.md): GitHub workflow driven setup
+- [`mobile-android.md`](docs/mobile-android.md): Android setup (device registration, FCM, asset links, migration)
 
 ## Outside this folder (on purpose)
 
@@ -29,8 +31,8 @@ identity, membership, pricing, capacity, payment and QR validity.
 | [`apps/services/mobile-notification-service/`](../services/mobile-notification-service/) | Worker service; Docker build contexts and CI depend on this location |
 | [`apps/frontend/src/app/api/mobile/`](../frontend/src/app/api/mobile/) | Next.js route handlers must live under the app router |
 | [`apps/frontend/src/server/mobile/`](../frontend/src/server/mobile/) | Server logic imported through the frontend `@/` alias |
-| [`apps/frontend/src/app/.well-known/apple-app-site-association/`](../frontend/src/app/.well-known/apple-app-site-association/) | Must be served from the frontend |
-| [`packages/db/drizzle/mobile_notifications.sql`](../../packages/db/drizzle/mobile_notifications.sql) | Manual migration, kept with the other drizzle SQL |
+| [`apps/frontend/src/app/.well-known/apple-app-site-association/`](../frontend/src/app/.well-known/apple-app-site-association/), [`assetlinks.json/`](../frontend/src/app/.well-known/assetlinks.json/) | Must be served from the frontend |
+| [`packages/db/drizzle/mobile_notifications.sql`](../../packages/db/drizzle/mobile_notifications.sql), [`mobile_notifications_android.sql`](../../packages/db/drizzle/mobile_notifications_android.sql) | Manual migrations, kept with the other drizzle SQL (apply the Android file after the base file) |
 | [`.github/workflows/mobile-acceptance.yml`](../../.github/workflows/mobile-acceptance.yml), [`mobile-notifications-setup.yml`](../../.github/workflows/mobile-notifications-setup.yml) | GitHub only reads workflows from here |
 
 ## Running the checks
