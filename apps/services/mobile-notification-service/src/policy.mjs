@@ -23,6 +23,8 @@ export function scopedUserIds(env) {
 }
 export function deviceAllowed(device, env) {
     if (env.MOBILE_NOTIFICATION_SHARED_DB_PILOT === 'true' && !sharedPilotAllowed(env)) return false;
+    // Android (FCM) delivery is a separate explicit opt-in on top of every APNs gate.
+    if (device.platform === 'android' && env.MOBILE_FCM_ENABLED !== 'true') return false;
     return device.environment === 'acc' && allowedUserIds(env).includes(device.user_id)
         && (device.apns_environment === 'sandbox'
             || (device.apns_environment === 'production' && env.MOBILE_APNS_ALLOW_PRODUCTION === 'true'));

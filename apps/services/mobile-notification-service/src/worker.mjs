@@ -1,5 +1,6 @@
 import { scopedUserIds, deviceAllowed, snapshotOf, changesFor, notificationPayload, classifyAPNs, retryDelay, fingerprint } from './policy.mjs';
 import { sendAPNs } from './apns.mjs';
+import { sendFCM, classifyFCM } from './fcm.mjs';
 import { getWorkerSessionColumns } from './session-columns.mjs';
 
 import { reconcileActivityAlerts, futureEventsSQL } from './activity-reconcile.mjs';
@@ -7,6 +8,16 @@ import { activityKinds, activitySnapshot, activityDeliveryAllowed } from './acti
 import { currentOrganizerScope } from './activity-scope.mjs';
 
 const preferenceColumns = { registrations: 'registrations', payments: 'payments', eventChanges: 'event_changes', reminders: 'reminders' };
+
+// Route each device to its provider: Android devices use FCM, everything else (including rows
+// from before the Android migration, which have no platform column) uses APNs.
+export const devicePlatform = device => device?.platform === 'android' ? 'android' : 'ios';
+export function sendPush(device, payload, collapseID, env, kind) {
+    return devicePlatform(device) === 'android' ? sendFCM(device, payload, collapseID, env, kind) : sendAPNs(device, payload, collapseID, env);
+}
+export function classifyDelivery(device, result) {
+    return devicePlatform(device) === 'android' ? classifyFCM(result.status, result.reason, result.tokenRejected) : classifyAPNs(result.status, result.reason);
+}
 
 export async function reconcile(client, env) {
     const users = scopedUserIds(env);
@@ -64,7 +75,7 @@ export async function reconcile(client, env) {
     }
 }
 
-export async function deliver(client, env, send = sendAPNs) {
+export async function deliver(client, env, send = sendPush) {
     const users = scopedUserIds(env);
     if (!users.length) return;
     const sessionColumns = await getWorkerSessionColumns(client);
@@ -120,9 +131,9 @@ export async function deliver(client, env, send = sendAPNs) {
             }
         }
         let result;
-        try { result = await send(device, job.payload, fingerprint(job.dedupe_key), env); }
+        try { result = await send(device, job.payload, fingerprint(job.dedupe_key), env, job.kind); }
         catch { result = { status: 503, reason: 'ProviderUnavailable' }; }
-        const action = classifyAPNs(result.status, result.reason);
+        const action = classifyDelivery(device, result);
         if (action === 'remove-device') {
             await client.query(`DELETE FROM mobile_devices WHERE id=$1 AND environment='acc' AND user_id=ANY($2::uuid[]) AND (apns_environment='sandbox' OR $3::boolean)`, [device.id, users, env.MOBILE_APNS_ALLOW_PRODUCTION === 'true']);
             continue;

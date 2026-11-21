@@ -1,8 +1,9 @@
-// Read-only acceptance readiness check. Never sends APNs requests or applies migrations.
+// Read-only acceptance readiness check. Never sends APNs/FCM requests or applies migrations.
 import { createPrivateKey } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { getWorkerSessionColumns } from './session-columns.mjs';
 import { sharedPilotAllowed } from './policy.mjs';
+import { fcmEnabled, fcmCredentials, fcmEndpoints } from './fcm.mjs';
 
 export const requiredTables = ['mobile_notification_preferences', 'mobile_devices', 'mobile_notification_users', 'mobile_notification_observations', 'mobile_notification_outbox', 'mobile_notification_activity_users', 'mobile_notification_activity_observations'];
 export const requiredPreferenceColumns = ['activity_announcements', 'activity_committee_ids', 'organizer_almost_full', 'organizer_capacity_percent', 'organizer_signup_thresholds'];
@@ -25,6 +26,20 @@ export function configurationChecks(env) {
     } catch { /* Never print crypto errors or secret material. */ }
     add('APNs private key is ES256 compatible', keyValid);
     add('APNs environment choice explicit', ['true', 'false'].includes(env.MOBILE_APNS_ALLOW_PRODUCTION));
+    checks.push(...fcmConfigurationChecks(env));
+    return checks;
+}
+// Android/FCM is opt-in: when disabled it reports a passing status line so existing iOS-only
+// deployments stay ready; when enabled, credentials and endpoints must be valid.
+export function fcmConfigurationChecks(env) {
+    if (!fcmEnabled(env)) return [{ name: 'Android FCM delivery disabled (MOBILE_FCM_ENABLED is not true; Android devices are skipped)', passed: true }];
+    const checks = [{ name: 'Android FCM delivery enabled', passed: true }];
+    let credentials = false;
+    try { fcmCredentials(env); credentials = true; } catch { /* Never print credential details. */ }
+    checks.push({ name: 'FCM service account (project ID, client email, RSA private key)', passed: credentials });
+    let endpoints;
+    try { endpoints = fcmEndpoints(env); } catch { /* Refused override. */ }
+    checks.push({ name: endpoints?.overridden ? 'FCM test endpoint override (local fake sender, non-production only)' : 'FCM uses Google endpoints', passed: Boolean(endpoints) });
     return checks;
 }
 export async function databaseChecks(client, env) {
@@ -51,6 +66,10 @@ export async function databaseChecks(client, env) {
             ['mobile_notification_outbox', 'mobile_notification_outbox_kind_check']);
         const kindConstraint = outboxConstraints.rows[0];
         checks.push({ name: 'validated outbox kinds include activity notifications', passed: kindConstraint?.convalidated === true && requiredOutboxKinds.every(kind => kindConstraint.definition?.includes(`'${kind}'`)) });
+        if (fcmEnabled(env)) {
+            const deviceColumns = await client.query('SELECT column_name FROM information_schema.columns WHERE table_schema=current_schema() AND table_name=$1', ['mobile_devices']);
+            checks.push({ name: 'mobile_devices platform column (mobile_notifications_android.sql)', passed: deviceColumns.rows.some(row => row.column_name === 'platform') });
+        }
         let compatible = true;
         try { await getWorkerSessionColumns(client); } catch { compatible = false; }
         checks.push({ name: 'supported authentication session columns', passed: compatible });

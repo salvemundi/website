@@ -2,6 +2,7 @@ import pg from 'pg';
 import { setTimeout as delay } from 'node:timers/promises';
 import { deliveryEnabled, allowedUserIds } from './policy.mjs';
 import { providerToken } from './apns.mjs';
+import { fcmEnabled, fcmCredentials, fcmEndpoints } from './fcm.mjs';
 import { configurationChecks, databaseChecks } from './readiness.mjs';
 import { reconcile, deliver, removeExpiredDevices, removeOldOutbox } from './worker.mjs';
 
@@ -14,6 +15,8 @@ if (!deliveryEnabled(process.env)) {
 } else {
     // Validate signing configuration before connecting to the database; never log secrets.
     providerToken(process.env);
+    // Android delivery is opt-in; when enabled, its service account and endpoints must be valid too.
+    if (fcmEnabled(process.env)) { fcmCredentials(process.env); fcmEndpoints(process.env); }
     const pool = new pg.Pool({
         connectionString: process.env.DATABASE_URL,
         host: process.env.DB_HOST, port: Number(process.env.DB_PORT || 5432),
