@@ -91,6 +91,24 @@ export async function databaseChecks(client, env) {
         return checks;
     } finally { await client.query('ROLLBACK'); }
 }
+async function reportDevDeviceStatus(client, env) {
+    const columns = await getWorkerSessionColumns(client);
+    const { rows: [status] } = await client.query(`
+        SELECT
+            EXISTS (SELECT 1 FROM directus_users WHERE id=$1 AND status='active') AS active_member,
+            EXISTS (SELECT 1 FROM auth_sessions s WHERE CAST(s.${columns.userId} AS TEXT)=CAST($1::uuid AS TEXT)
+                AND s.id LIKE 'mobile:%' AND s.${columns.expiresAt}>now()) AS native_session,
+            EXISTS (SELECT 1 FROM mobile_devices d JOIN auth_sessions s ON s.id=d.session_id
+                WHERE d.user_id=$1 AND d.environment='acc' AND d.platform='android'
+                AND d.apns_environment='sandbox' AND s.${columns.expiresAt}>now()) AS android_linked
+    `, [env.MOBILE_NOTIFICATION_ALLOWED_USER_IDS]);
+    for (const [label, value] of [
+        ['Allowlisted member active', status.active_member],
+        ['Active native session', status.native_session],
+        ['Android sandbox device linked', status.android_linked],
+    ]) process.stdout.write(`INFO ${label}: ${value ? 'yes' : 'no'}\n`);
+}
+
 export async function run(env = process.env, args = process.argv.slice(2)) {
     if (args.some(arg => arg !== '--database')) throw new Error('Only --database is supported');
     const checks = configurationChecks(env);
@@ -102,7 +120,11 @@ export async function run(env = process.env, args = process.argv.slice(2)) {
                 const { default: pg } = await import('pg');
                 client = new pg.Client(env.DATABASE_URL ? { connectionString: env.DATABASE_URL, connectionTimeoutMillis: 5000 } : { host: env.DB_HOST, port: Number(env.DB_PORT || 5432), database: env.DB_NAME, user: env.DB_USER, password: env.DB_PASSWORD, connectionTimeoutMillis: 5000 });
                 await client.connect();
-                checks.push(...await databaseChecks(client, env));
+                const database = await databaseChecks(client, env);
+                checks.push(...database);
+                if (env.ENV_NAME === 'dev' && database.every(check => check.passed)) {
+                    await reportDevDeviceStatus(client, env);
+                }
             } catch { checks.push({ name: 'read-only database check completed', passed: false }); }
             finally { if (client) await client.end().catch(() => {}); }
         }
