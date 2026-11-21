@@ -65,6 +65,11 @@ def run(command, **kwargs):
 
 DATABASE_KEYS = {'DATABASE_URL', 'DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'}
 MOBILE_KEYS = {'ENV_NAME', 'MOBILE_API_ENABLED', 'MOBILE_NOTIFICATIONS_ENABLED', 'MOBILE_NOTIFICATION_ALLOWED_USER_IDS', 'MOBILE_APNS_ALLOW_PRODUCTION', 'APNS_KEY_ID', 'APNS_TEAM_ID', 'APNS_TOPIC', 'APNS_PRIVATE_KEY', 'MOBILE_NOTIFICATION_SHARED_DB_PILOT', 'MOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME', 'MOBILE_NOTIFICATION_SHARED_DB_USER_ID'}
+# Android (FCM) worker settings. Delivery stays off unless MOBILE_FCM_ENABLED=true is set by an
+# operator in .env.mobile-acc. Test-only endpoint overrides are deliberately never forwarded.
+FCM_KEYS = {'MOBILE_FCM_ENABLED', 'FCM_PROJECT_ID', 'FCM_SERVICE_ACCOUNT_JSON', 'FCM_CLIENT_EMAIL', 'FCM_PRIVATE_KEY'}
+MOBILE_KEYS |= FCM_KEYS
+MIGRATIONS = ('packages/db/drizzle/mobile_notifications.sql', 'packages/db/drizzle/mobile_notifications_android.sql')
 
 
 def read_selected_environment(path, allowed):
@@ -129,6 +134,10 @@ def configure(payload):
     if shared:
         values['MOBILE_NOTIFICATION_SHARED_DB_EXPECTED_NAME'] = payload['_shared_database_name']
         values['MOBILE_NOTIFICATION_SHARED_DB_USER_ID'] = payload['_shared_user_id']
+    # Reconfiguring APNs must not silently drop separately provisioned FCM credentials.
+    existing = read_selected_environment(ROOT / '.env.mobile-acc', FCM_KEYS)
+    values.update({key: existing[key] for key in sorted(FCM_KEYS) if key in existing})
+    values['MOBILE_FCM_ENABLED'] = 'true' if existing.get('MOBILE_FCM_ENABLED') == 'true' else 'false'
     content = ''.join(f'{key}={value}\n' for key, value in values.items())
     temporary = ROOT / '.env.mobile-acc.setup-tmp'
     fd = os.open(temporary, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
@@ -207,9 +216,10 @@ def execute(payload, scope, image, environment_file):
         return
     if action == 'migrate':
         # Source is fixed to the checked-out commit, never supplied as arbitrary SQL.
-        migration = (scope / 'packages/db/drizzle/mobile_notifications.sql').read_bytes()
         apply = "import pg from 'pg';let s='';for await(const c of process.stdin)s+=c;const c=new pg.Client({connectionString:process.env.DATABASE_URL,host:process.env.DB_HOST,port:Number(process.env.DB_PORT||5432),database:process.env.DB_NAME,user:process.env.DB_USER,password:process.env.DB_PASSWORD});try{await c.connect();await c.query(s)}finally{await c.end()}"
-        run(command[:-1] + ['-i', image, 'node', '--input-type=module', '-e', apply], input=migration)
+        # Base schema first, then the additive Android (platform/FCM token) migration; both idempotent.
+        for path in MIGRATIONS:
+            run(command[:-1] + ['-i', image, 'node', '--input-type=module', '-e', apply], input=(scope / path).read_bytes())
         print('PASS reviewed acceptance notification migration applied; worker not started')
         return
     if action in {'start', 'test'}:

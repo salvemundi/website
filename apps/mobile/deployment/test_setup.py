@@ -113,6 +113,57 @@ class SetupTests(unittest.TestCase):
         self.assertNotIn('pull_request_target', workflow)
 
 
+class AndroidFCMSetupTests(unittest.TestCase):
+    def test_fcm_settings_are_forwarded_but_test_endpoints_never_are(self):
+        self.assertTrue({'MOBILE_FCM_ENABLED', 'FCM_PROJECT_ID', 'FCM_SERVICE_ACCOUNT_JSON', 'FCM_CLIENT_EMAIL', 'FCM_PRIVATE_KEY'} <= setup.MOBILE_KEYS)
+        self.assertTrue({'FCM_API_BASE_URL', 'FCM_TOKEN_URL', 'MOBILE_FCM_TEST_ENDPOINTS', 'NODE_ENV'}.isdisjoint(setup.MOBILE_KEYS))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            root.joinpath('.env.acc').write_text('DB_NAME=acceptance\n')
+            root.joinpath('.env.mobile-acc').write_text('MOBILE_FCM_ENABLED=true\nFCM_SERVICE_ACCOUNT_JSON={"type":"service_account","private_key":"-----BEGIN PRIVATE KEY-----\\nx\\n-----END PRIVATE KEY-----\\n"}\nFCM_API_BASE_URL=http://127.0.0.1:9099\nMOBILE_FCM_TEST_ENDPOINTS=true\n')
+            with setup.normalized_environment(root) as filename:
+                content = Path(filename).read_text()
+            self.assertIn('MOBILE_FCM_ENABLED=true\n', content)
+            self.assertIn('FCM_SERVICE_ACCOUNT_JSON={"type":"service_account","private_key":"-----BEGIN PRIVATE KEY-----\\nx\\n-----END PRIVATE KEY-----\\n"}\n', content)
+            self.assertNotIn('FCM_API_BASE_URL', content)
+            self.assertNotIn('MOBILE_FCM_TEST_ENDPOINTS', content)
+
+    def test_configure_keeps_fcm_off_by_default_and_preserves_provisioned_credentials(self):
+        payload = {'action': 'configure', 'commit': 'a' * 40, 'key_id': 'ABCDEFGHIJ', 'team_id': 'ABCDEFGHIJ', 'private_key': '-----BEGIN PRIVATE KEY-----\nfixture\n-----END PRIVATE KEY-----', 'test_user_ids': ''}
+        with tempfile.TemporaryDirectory() as directory, patch.object(setup, 'ROOT', Path(directory)):
+            setup.configure(payload)
+            values = setup.read_selected_environment(setup.ROOT / '.env.mobile-acc', setup.MOBILE_KEYS)
+            self.assertEqual(values['MOBILE_FCM_ENABLED'], 'false')
+            self.assertNotIn('FCM_PROJECT_ID', values)
+            (setup.ROOT / '.env.mobile-acc').write_text('MOBILE_FCM_ENABLED=true\nFCM_PROJECT_ID=salve-mundi-acc\nFCM_CLIENT_EMAIL=push@salve-mundi-acc.iam.gserviceaccount.com\nFCM_PRIVATE_KEY=escaped\\nkey\nFCM_API_BASE_URL=http://127.0.0.1:1\n')
+            setup.configure(payload)
+            target = setup.ROOT / '.env.mobile-acc'
+            values = setup.read_selected_environment(target, setup.MOBILE_KEYS)
+            self.assertEqual(target.stat().st_mode & 0o777, 0o600)
+            self.assertEqual(values['MOBILE_FCM_ENABLED'], 'true')
+            self.assertEqual(values['FCM_PROJECT_ID'], 'salve-mundi-acc')
+            self.assertEqual(values['FCM_PRIVATE_KEY'], 'escaped\\nkey')
+            self.assertEqual(values['MOBILE_NOTIFICATIONS_ENABLED'], 'false')
+            self.assertNotIn('FCM_API_BASE_URL', target.read_text())
+
+    def test_migrate_applies_base_then_android_migration_from_reviewed_source(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(setup, 'ROOT', Path(directory)), patch.object(setup, 'run', return_value=b'') as run:
+            root = setup.ROOT
+            root.joinpath('.env.acc').write_text('DB_NAME=acceptance\n')
+            root.joinpath('.env.prod').write_text('DB_NAME=production\n')
+            scope = root / 'scope'
+            for relative in setup.MIGRATIONS:
+                (scope / relative).parent.mkdir(parents=True, exist_ok=True)
+                (scope / relative).write_bytes(relative.encode())
+            setup.execute({'action': 'migrate', 'commit': 'a' * 40, 'confirm_isolation': True}, scope, 'image', str(root / 'env'))
+            inputs = [call.kwargs.get('input') for call in run.call_args_list if call.kwargs.get('input')]
+            self.assertEqual(inputs, [b'packages/db/drizzle/mobile_notifications.sql', b'packages/db/drizzle/mobile_notifications_android.sql'])
+        repository = Path(__file__).resolve().parents[3]
+        migration = (repository / 'packages/db/drizzle/mobile_notifications_android.sql').read_text()
+        self.assertIn("ADD COLUMN IF NOT EXISTS platform text NOT NULL DEFAULT 'ios'", migration)
+        self.assertNotRegex(migration, r'(?i)\bDROP\s+(TABLE|COLUMN)\b|\bDELETE\b|\bTRUNCATE\b|\bUPDATE\b')
+
+
 class SharedPilotTests(unittest.TestCase):
     user = '00000000-0000-0000-0000-000000000001'
 

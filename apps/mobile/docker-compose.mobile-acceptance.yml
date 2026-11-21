@@ -15,6 +15,8 @@ services:
       MOBILE_NOTIFICATIONS_ENABLED: ${MOBILE_NOTIFICATIONS_ENABLED:-false}
       MOBILE_NOTIFICATION_ALLOWED_USER_IDS: ${MOBILE_NOTIFICATION_ALLOWED_USER_IDS:-}
       MOBILE_APNS_ALLOW_PRODUCTION: ${MOBILE_APNS_ALLOW_PRODUCTION:-false}
+      # Android (FCM) delivery is a separate opt-in; FCM credentials come from .env.mobile-acc.
+      MOBILE_FCM_ENABLED: ${MOBILE_FCM_ENABLED:-false}
     restart: "no"
     read_only: true
     cap_drop: [ALL]
