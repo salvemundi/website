@@ -456,20 +456,34 @@ jobs:
             sleep 2
           done
           echo "Dev database not reachable over the VPN. Deploy the dev branch first."; exit 1
+      # Credentials are passed as separate values; local-env.mjs URL-encodes them (passwords may contain any character).
       - name: Create tables
         if: inputs.dev_database_action == 'init' || inputs.dev_database_action == 'init-and-seed'
         env:
-          DATABASE_URL: postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.VPN_IP }}:${{ vars.DEV_DB_PORT || '5433' }}/${{ secrets.DB_NAME }}
+          RAW_HOST: ${{ secrets.VPN_IP }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PORT: ${{ vars.DEV_DB_PORT || '5433' }}
         run: |
+          export DB_HOST="$(printf '%s' "$RAW_HOST" | tr -d '[:space:]')"
           pnpm dev:db:init
           # Mobile app tables (manual migrations, idempotent).
           sudo apt-get install -y -qq postgresql-client >/dev/null
-          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f packages/db/drizzle/mobile_notifications.sql
-          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f packages/db/drizzle/mobile_notifications_android.sql
+          export PGHOST="$DB_HOST" PGPORT="$DB_PORT" PGUSER="$DB_USER" PGPASSWORD="$DB_PASSWORD" PGDATABASE="$DB_NAME"
+          psql -v ON_ERROR_STOP=1 -f packages/db/drizzle/mobile_notifications.sql
+          psql -v ON_ERROR_STOP=1 -f packages/db/drizzle/mobile_notifications_android.sql
       - name: Load synthetic seed data
         if: inputs.dev_database_action == 'seed' || inputs.dev_database_action == 'init-and-seed'
         env:
-          DATABASE_URL: postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.VPN_IP }}:${{ vars.DEV_DB_PORT || '5433' }}/${{ secrets.DB_NAME }}
-          INTERNAL_DIRECTUS_URL: http://${{ secrets.VPN_IP }}:${{ vars.DEV_DIRECTUS_PORT || '8056' }}
+          RAW_HOST: ${{ secrets.VPN_IP }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PORT: ${{ vars.DEV_DB_PORT || '5433' }}
+          DIRECTUS_PORT: ${{ vars.DEV_DIRECTUS_PORT || '8056' }}
           DIRECTUS_STATIC_TOKEN: ${{ secrets.DIRECTUS_STATIC_TOKEN }}
-        run: pnpm dev:db:seed
+        run: |
+          export DB_HOST="$(printf '%s' "$RAW_HOST" | tr -d '[:space:]')"
+          export INTERNAL_DIRECTUS_URL="http://${DB_HOST}:${DIRECTUS_PORT}"
+          pnpm dev:db:seed
