@@ -59,7 +59,8 @@ Variables:
 | `DEV_DB_PORT`, `DEV_DIRECTUS_PORT` | optional; default `5433` / `8056` (VPN-only ports on the server) |
 
 ### 4. Branch and first deploy
-1. Create the `dev` branch from `acceptance` (after this change is merged there) and push it.
+1. Create the `dev` branch from `acceptance` (after this change is merged there) and push it. A brand-new branch may not
+   trigger the push workflow (GitHub's `paths` filter); in that case run *Deploy V7 Stack* manually on `dev` with both actions `none`.
    The `Deploy V7 Stack` workflow builds the images, starts the dev core and the `v7-dev-*` containers.
 2. Actions → Deploy V7 Stack → Run workflow → branch `dev`, **dev_database_action = `init-and-seed`**.
    This creates the tables (including the mobile app tables) and loads the synthetic seed data.
@@ -70,6 +71,9 @@ Variables:
 ## Day to day
 - Pushing to `dev` redeploys only the dev app containers; the dev database stays online with its data.
 - Reload the seed (resets the seeded tables, keeps users): run the workflow with `dev_database_action = seed`.
+  The init/seed actions restart the `v7-dev-*` app containers afterwards (Better Auth caches its schema check per process).
+- Troubleshooting: run the workflow with `dev_database_action = app-logs` (dev branch). It prints the container status,
+  the last log lines of the website, finance service and Directus, and a read-only overview of the dev database.
 - The Android app against dev: build with `-Psalvemundi.apiBaseUrl=https://dev.salvemundi.nl`.
 - Start over completely (on the server, deletes all dev data):
   `cd /opt/salve-mundi-v7/dev-core && docker compose -p v7-dev-core --env-file .env.dev-core down -v`
