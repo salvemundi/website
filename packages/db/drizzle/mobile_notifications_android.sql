@@ -7,11 +7,13 @@ ALTER TABLE mobile_devices ADD COLUMN IF NOT EXISTS platform text NOT NULL DEFAU
 ALTER TABLE mobile_devices DROP CONSTRAINT IF EXISTS mobile_devices_platform_check;
 ALTER TABLE mobile_devices ADD CONSTRAINT mobile_devices_platform_check CHECK (platform IN ('ios','android'));
 -- APNs tokens stay lower-case hex. FCM registration tokens are opaque, case-sensitive
--- URL-safe strings (letters, digits, ':', '_' and '-').
+-- URL-safe strings (letters, digits, ':', '_' and '-'). PostgreSQL regex bounds
+-- are limited to 255, so check the token length separately.
 ALTER TABLE mobile_devices DROP CONSTRAINT IF EXISTS mobile_devices_token_check;
 ALTER TABLE mobile_devices ADD CONSTRAINT mobile_devices_token_check CHECK (
   (platform = 'ios' AND token ~ '^[a-f0-9]{64,200}$')
-  OR (platform = 'android' AND token ~ '^[A-Za-z0-9_:-]{100,1024}$')
+  OR (platform = 'android' AND char_length(token) BETWEEN 100 AND 1024
+    AND token !~ '[^A-Za-z0-9_:-]')
 );
 CREATE INDEX IF NOT EXISTS mobile_devices_platform ON mobile_devices(environment, platform);
 COMMIT;
