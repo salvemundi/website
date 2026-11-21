@@ -44,7 +44,14 @@ on:
       - "apps/wieisdemol/**"
       - "packages/**"
       - "docker-compose.yml"
+      - ".dockerignore"
+      - ".npmrc"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "patches/**"
       - ".github/workflows/v7-stack.yml"
+      - "infrastructure/dev-server/docker-compose.yml"
   pull_request:
     branches:
       - main
@@ -59,11 +66,21 @@ on:
       - "apps/wieisdemol/**"
       - "packages/**"
       - "docker-compose.yml"
+      - ".dockerignore"
+      - ".npmrc"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "patches/**"
       - ".github/workflows/v7-stack.yml"
 
 permissions:
   contents: read
   packages: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/dev' && (github.event_name == 'push' || (inputs.mobile_setup_action == 'none' && inputs.dev_database_action == 'none')) && github.ref || github.run_id }}
+  cancel-in-progress: false
 
 env:
   NODE_OPTIONS: "--no-deprecation"
@@ -73,12 +90,68 @@ jobs:
     if: github.event_name != 'workflow_dispatch' || (inputs.mobile_setup_action == 'none' && inputs.dev_database_action == 'none')
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.tag.outputs.value }}
+      tag: ${{ steps.plan.outputs.tag }}
+      images: ${{ steps.plan.outputs.images }}
+      compose_override: ${{ steps.plan.outputs.compose_override }}
     steps:
-      - id: tag
+      - uses: actions/checkout@v4
+      - id: plan
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          REF: ${{ github.ref }}
         run: |
-          echo "Determining tag for ref ${{ github.ref_name }}"
-          echo "value=$(echo '${{ github.ref_name }}' | tr '/' '-')" >> "$GITHUB_OUTPUT"
+          if [ "$REF" = refs/heads/dev ]; then
+            git ls-tree -rz HEAD > "$RUNNER_TEMP/deploy-tree"
+          fi
+          node <<'NODE' >> "$GITHUB_OUTPUT"
+          const { createHash } = require('node:crypto');
+          const { readFileSync } = require('node:fs');
+
+          const components = [
+            ['frontend', 'frontend', 'apps/frontend', 'v7-app'],
+            ['finance', 'finance-service', 'apps/services/finance-service', 'v7-finance'],
+            ['azure-sync', 'sync-service', 'apps/services/azure-sync-service', 'v7-sync'],
+            ['mail', 'mail-service', 'apps/services/mail-service', 'v7-mail'],
+            ['azure-management', 'management-service', 'apps/services/azure-management-service', 'v7-management'],
+            ['mcp', 'mcp-service', 'apps/services/mcp-service', 'v7-mcp'],
+            ['wieisdemol', 'wieisdemol', 'apps/wieisdemol', 'v7-wieisdemol'],
+          ];
+          const tag = process.env.REF_NAME.replaceAll('/', '-');
+          const selective = process.env.REF === 'refs/heads/dev';
+          const sharedInputs = [
+            '.dockerignore', '.npmrc', 'package.json', 'pnpm-lock.yaml',
+            'pnpm-workspace.yaml', 'patches', 'packages',
+            ...components.filter(([name]) => name !== 'wieisdemol')
+              .map(([, , directory]) => directory + '/package.json'),
+          ];
+          const tree = selective
+            ? readFileSync(process.env.RUNNER_TEMP + '/deploy-tree', 'utf8').split('\0').filter(Boolean)
+            : [];
+          const services = {};
+          const include = [];
+          for (const [name, service, directory, image] of components) {
+            if (selective && name === 'wieisdemol') continue;
+
+            let imageTag = tag;
+            if (selective) {
+              // Git tree entries cover edits, additions, removals and executable-bit changes.
+              const paths = [directory, ...sharedInputs];
+              const inputs = tree.filter(entry => {
+                const path = entry.slice(entry.indexOf('\t') + 1);
+                return paths.some(input => path === input || path.startsWith(input + '/'));
+              });
+              const hash = createHash('sha256').update(inputs.join('\0')).digest('hex');
+              // Bump the tag version to refresh unchanged builds against newer base images.
+              imageTag = 'dev-v1-' + hash;
+            }
+            const imageRef = 'ghcr.io/salvemundi/' + image + ':' + imageTag;
+            include.push({ name, file: directory + '/Dockerfile', image: imageRef });
+            services[service] = { image: imageRef };
+          }
+          console.log('tag=' + tag);
+          console.log('images=' + JSON.stringify({ include }));
+          console.log('compose_override=' + JSON.stringify({ services }));
+          NODE
 
   lint:
     needs: prepare
@@ -90,6 +163,18 @@ jobs:
         with:
           node-version: 26
       - run: npm install -g pnpm@11.8.0
+      - name: Locate pnpm store
+        if: github.ref == 'refs/heads/dev'
+        id: pnpm-store
+        run: |
+          store_path=$(pnpm store path)
+          echo "path=$store_path" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        if: github.ref == 'refs/heads/dev'
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-11-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-11-${{ runner.os }}-${{ runner.arch }}-
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter=@salvemundi/db build
       - run: pnpm --filter=@salvemundi/validations build
@@ -99,85 +184,49 @@ jobs:
       - run: pnpm -r lint
       - run: pnpm --filter=@salvemundi/mcp-service test
 
-  build-frontend:
+  build-images:
     needs: [prepare, lint]
-    name: Build Frontend
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
-        if: github.event_name != 'pull_request'
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: apps/frontend/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ghcr.io/salvemundi/v7-app:${{ needs.prepare.outputs.tag }}
-          cache-from: type=gha,scope=${{ github.workflow }}-frontend
-          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-frontend
-          labels: |
-            environment=${{ needs.prepare.outputs.tag }}
-
-  build-services:
-    needs: [prepare, lint]
-    name: Build Microservices
+    name: Build image (${{ matrix.name }})
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        service: [finance, azure-sync, mail, azure-management, mcp, wieisdemol]
-        include:
-          - service: finance
-            file: apps/services/finance-service/Dockerfile
-            image: v7-finance
-          - service: azure-sync
-            file: apps/services/azure-sync-service/Dockerfile
-            image: v7-sync
-          - service: mail
-            file: apps/services/mail-service/Dockerfile
-            image: v7-mail
-          - service: azure-management
-            file: apps/services/azure-management-service/Dockerfile
-            image: v7-management
-          - service: mcp
-            file: apps/services/mcp-service/Dockerfile
-            image: v7-mcp
-          - service: wieisdemol
-            file: apps/wieisdemol/Dockerfile
-            image: v7-wieisdemol
+      matrix: ${{ fromJSON(needs.prepare.outputs.images) }}
     steps:
-      - uses: actions/checkout@v4
       - uses: docker/login-action@v3
         if: github.event_name != 'pull_request'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check for an existing dev image
+        if: github.ref == 'refs/heads/dev'
+        id: lookup
+        env:
+          IMAGE: ${{ matrix.image }}
+        run: |
+          if docker buildx imagetools inspect "$IMAGE" >/dev/null; then
+            echo "Reusing $IMAGE"
+            echo "hit=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.lookup.outputs.hit != 'true'
       - uses: docker/setup-buildx-action@v3
-      # The dev environment doesn't run the Wie is de Mol game, so its image isn't built there.
+        if: steps.lookup.outputs.hit != 'true'
       - uses: docker/build-push-action@v6
-        if: ${{ !(github.ref_name == 'dev' && matrix.service == 'wieisdemol') }}
+        if: steps.lookup.outputs.hit != 'true'
         with:
           context: .
           file: ${{ matrix.file }}
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ghcr.io/salvemundi/${{ matrix.image }}:${{ needs.prepare.outputs.tag }}
-          cache-from: type=gha,scope=${{ github.workflow }}-${{ matrix.service }}
-          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.service }}
+          tags: ${{ matrix.image }}
+          cache-from: type=gha,scope=${{ github.workflow }}-${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.name }}
           labels: |
             environment=${{ needs.prepare.outputs.tag }}
 
   deploy:
     name: Deploy to VPS
     runs-on: ubuntu-latest
-    needs: [prepare, build-frontend, build-services]
+    needs: [prepare, build-images]
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mobile_setup_action == 'none' && inputs.dev_database_action == 'none')
     environment:
       name: ${{ github.ref_name == 'main' && 'Production' || (github.ref_name == 'dev' && 'Development' || 'Acceptance') }}
@@ -211,7 +260,17 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
 
+      - name: Upload dev Docker Compose
+        if: github.ref == 'refs/heads/dev'
+        env:
+          COMPOSE_OVERRIDE: ${{ needs.prepare.outputs.compose_override }}
+        run: |
+          cp docker-compose.yml docker-compose.dev.yml
+          printf '%s\n' "$COMPOSE_OVERRIDE" > docker-compose.dev-images.yml
+          scp -i ~/.ssh/deploy_key docker-compose.dev.yml docker-compose.dev-images.yml ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }}:/opt/salve-mundi-v7/
+
       - name: Upload Docker Compose
+        if: github.ref != 'refs/heads/dev'
         run: |
           scp -i ~/.ssh/deploy_key docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.VPN_IP }}:/opt/salve-mundi-v7/docker-compose.yml
 
@@ -405,10 +464,15 @@ jobs:
           fi
 
           if [ "$ENV_NAME" = "dev" ]; then
-            # Dev runs without the Wie is de Mol game; the cleanup below removes its container.
-            ACTIVE_SERVICES=$(docker compose --env-file .env.${ENV_NAME} config --services | grep -vxF wieisdemol)
-            docker compose --env-file .env.${ENV_NAME} pull $ACTIVE_SERVICES
-            docker compose --env-file .env.${ENV_NAME} up -d $ACTIVE_SERVICES
+            # Reconcile the full configuration while retaining unchanged containers and local images.
+            compose=(docker compose -f docker-compose.dev.yml -f docker-compose.dev-images.yml --env-file .env.dev)
+            CONFIGURED_SERVICES=$("${compose[@]}" config --services)
+            mapfile -t DEV_SERVICES < <(printf '%s\n' "$CONFIGURED_SERVICES" | grep -vxF wieisdemol)
+            ACTIVE_SERVICES=$(printf '%s\n' "${DEV_SERVICES[@]}")
+            # Monitoring uses a mutable upstream tag and still checks for updates.
+            "${compose[@]}" pull monitoring-service
+            "${compose[@]}" pull --policy missing "${DEV_SERVICES[@]}"
+            "${compose[@]}" up -d --pull never "${DEV_SERVICES[@]}"
           else
             docker compose --env-file .env.${ENV_NAME} pull
             docker compose --env-file .env.${ENV_NAME} up -d
