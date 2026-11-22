@@ -38,15 +38,15 @@
     "dependencies": {
         "@salvemundi/db": "workspace:*",
         "drizzle-zod": "^0.8.3",
-        "zod": "^4.6.6"
+        "zod": "catalog:"
     },
     "peerDependencies": {
         "drizzle-orm": "0.45.2"
     },
     "devDependencies": {
-        "@types/node": "^26.0.0",
-        "drizzle-orm": "0.45.2",
-        "eslint": "^9.39.4",
-        "typescript": "6.0.3"
+        "@types/node": "catalog:",
+        "drizzle-orm": "catalog:",
+        "eslint": "catalog:",
+        "typescript": "catalog:"
     }
 }

@@ -18,6 +18,13 @@
       "types": "./src/schema.ts",
       "import": "./dist/schema.js",
       "default": "./dist/schema.js"
+    },
+    "./relations": {
+      "bun": "./src/relations.ts",
+      "development": "./src/relations.ts",
+      "types": "./src/relations.ts",
+      "import": "./dist/relations.js",
+      "default": "./dist/relations.js"
     }
   },
   "scripts": {
@@ -35,9 +42,9 @@
     "drizzle-orm": "^0.45.2"
   },
   "devDependencies": {
-    "@types/node": "^26.0.0",
+    "@types/node": "catalog:",
     "drizzle-kit": "^0.31.10",
-    "drizzle-orm": "^0.45.2",
-    "typescript": "6.0.3"
+    "drizzle-orm": "catalog:",
+    "typescript": "catalog:"
   }
 }

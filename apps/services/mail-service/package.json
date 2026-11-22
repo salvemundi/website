@@ -10,21 +10,21 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@azure/identity": "^4.13.1",
+    "@azure/identity": "catalog:",
     "@fastify/rate-limit": "^11.0.0",
     "@salvemundi/db": "workspace:*",
     "@salvemundi/validations": "workspace:*",
-    "drizzle-orm": "0.45.2",
-    "fastify": "5.12.6",
-    "fastify-plugin": "^6.0.0",
+    "drizzle-orm": "catalog:",
+    "fastify": "catalog:",
+    "fastify-plugin": "catalog:",
     "handlebars": "4.7.10",
-    "ioredis": "^5.11.1",
-    "qrcode": "^1.5.4",
-    "zod": "^4.6.6"
+    "ioredis": "catalog:",
+    "qrcode": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^26.0.0",
-    "@types/qrcode": "^1.5.6",
-    "typescript": "6.0.3"
+    "@types/node": "catalog:",
+    "@types/qrcode": "catalog:",
+    "typescript": "catalog:"
   }
 }

@@ -4,13 +4,38 @@
   "private": true,
   "packageManager": "bun@1.4.5",
   "engines": {
-    "node": ">=22.13.1"
+    "node": ">=26.0.0"
   },
-  "workspaces": [
-    "apps/frontend",
-    "apps/services/*",
-    "packages/*"
-  ],
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^26.0.0",
+      "onFail": "download"
+    }
+  },
+  "workspaces": {
+    "packages": [
+      "apps/frontend",
+      "apps/services/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "@azure/identity": "^4.13.1",
+      "@directus/sdk": "^22.0.0",
+      "@microsoft/microsoft-graph-client": "^3.0.7",
+      "@types/node": "^26.0.0",
+      "@types/qrcode": "^1.5.6",
+      "drizzle-orm": "0.45.2",
+      "eslint": "^9.39.5",
+      "fastify": "5.12.6",
+      "fastify-plugin": "^6.0.0",
+      "ioredis": "^5.11.1",
+      "knip": "^6.45.1",
+      "qrcode": "^1.5.4",
+      "typescript": "6.0.3",
+      "zod": "^4.6.6"
+    }
+  },
   "scripts": {
     "dev": "bun run --filter @salvemundi/frontend dev",
     "dev:services": "bun run --parallel --if-present --filter './apps/services/*' dev",
@@ -66,10 +91,11 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "eslint": "^9.39.5",
+    "eslint": "catalog:",
     "eslint-plugin-security": "^4.2.1",
     "eslint-plugin-unused-imports": "^4.4.1",
-    "knip": "^6.45.1",
+    "knip": "catalog:",
+    "typescript": "catalog:",
     "typescript-eslint": "^8.73.0"
   }
 }
